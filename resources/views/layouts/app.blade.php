@@ -84,26 +84,21 @@
                 </div>
             </div>
         </nav>
+        <main class="row">
 
-        <main class="py-4">
-            @yield('content')
+            <div class="row">
+              <div class="col-3">@include('navigation')</div>
+              <div class="col"> @yield('content')</div>
+            </div>
+
+
+            <div class="row">
+              <div class="col">Footer</div>
+            </div>
         </main>
-        <div class="col-md-4 bg-danger" style="width: 10%;" >
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                      <a class="nav-link active" aria-current="page" href="#">Active</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                    </li>
-                </ul>
-        </div>
-    </div>
+
+
+</div>
+
 </body>
 </html>
