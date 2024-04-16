@@ -30,7 +30,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="nav nav-pills">
-                        <li class="nav-link active">Courriel</li>
+                        <li class="nav-link active">Courrier</li>
                         <li class="nav-link">Repertoire</li>
                         <li class="nav-link">Demande</li>
                         <li class="nav-link">Transfert</li>
@@ -38,6 +38,13 @@
                         <li class="nav-link">Outils de gestion</li>
                         <li class="nav-link">Paramètres</li>
                     </ul>
+
+
+                    <form class="d-flex">
+                        <input class="form-control me-3" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Rechecher</button>
+                    </form>
+
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
@@ -81,6 +88,22 @@
         <main class="py-4">
             @yield('content')
         </main>
+        <div class="col-md-4 bg-danger" style="width: 10%;" >
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                      <a class="nav-link active" aria-current="page" href="#">Active</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#">Link</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                    </li>
+                </ul>
+        </div>
     </div>
 </body>
 </html>
