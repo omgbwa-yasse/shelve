@@ -71,6 +71,7 @@ return new class extends Migration
             $table->primary('id');
         });
 
+
         Schema::create('record_supports', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable(false);
@@ -101,6 +102,7 @@ return new class extends Migration
             $table->primary(['id', 'building_id']);
             $table->foreign('building_id')->references('id')->on('buildings')->onDelete('cascade');
         });
+
 
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
@@ -142,6 +144,7 @@ return new class extends Migration
             $table->primary('id');
             $table->unique('name');
         });
+
 
         Schema::create('containers', function (Blueprint $table) {
             $table->id();
@@ -222,6 +225,7 @@ return new class extends Migration
             $table->primary('id');
             $table->foreign('retention_sort_id')->references('id')->on('retention_sorts')->onDelete('cascade');
         });
+
 
         Schema::create('organisation_classification', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
