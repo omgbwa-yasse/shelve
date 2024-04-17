@@ -21,11 +21,11 @@ use App\Http\Controllers\LocalisationController;
 
 Route::get('/', [MailController::class, 'index'])->name('mail');
 
-Route::get('mail', [MailController::class, 'index'])->name('mail');
-Route::get('repository', [RepositoryController::class, 'index'])->name('repository');
-Route::get('communication', [CommunicationController::class, 'index'])->name('communication');
-Route::get('accession', [AccessionController::class, 'index'])->name('accession');
-Route::get('tools', [ToolsController::class, 'index'])->name('tools');
-Route::get('setting', [SettingController::class, 'index'])->name('setting');
-Route::get('localisation', [LocalisationController::class, 'index'])->name('localisation');
+Route::resource('mails', MailController::class);
+Route::resource('repositories', RepositoryController::class);
+Route::resource('communications', CommunicationController::class);
+Route::resource('accessions', AccessionController::class);
+Route::resource('tools', ToolsController::class);
+Route::resource('settings', SettingController::class);
+Route::resource('localisations', LocalisationController::class);
 
