@@ -1,16 +1,18 @@
-namespace App\Models;
+<?php
 
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use App\Models\Container;
 use App\Models\Organisation;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
 use App\Models\Classification;
 use App\Models\User;
-use App\Models\Record;
-use Illuminate\Database\Eloquent\Model;
 
 class Record extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'reference', 'name', 'date_format', 'date_start', 'date_end', 'date_exact', 'description', 'level_id', 'status_id', 'support_id', 'classification_id', 'parent_id', 'container_id', 'transfer_id', 'user_id'
     ];

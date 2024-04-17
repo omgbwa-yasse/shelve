@@ -1,11 +1,16 @@
 <?php
 
-namespace App;
-
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Term;
+use App\Models\TermCategory;
+use App\Models\RelationType;
+
 
 class TermRelation extends Model
 {
+    use HasFactory;
     protected $fillable = ['parent_id', 'child_id', 'category_id', 'relation_type_id'];
 
     public function parent()

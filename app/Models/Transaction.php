@@ -1,11 +1,16 @@
 <?php
 
-namespace App;
-
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Mail;
+use App\Models\Organisation;
+use App\Models\User;
+use App\Models\MailStatus;
 
 class Transaction extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'reference', 'date_creation', 'mail_id', 'user_send', 'organisation_send_id', 'user_receveid', 'organisation_received_id', 'mail_status_id', 'create_at', 'update_at'
     ];

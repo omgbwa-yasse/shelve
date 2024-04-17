@@ -1,11 +1,14 @@
 <?php
 
-namespace App;
-
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Keyword;
+use App\Models\Record;
 
 class RecordKeyword extends Model
 {
+    use HasFactory;
     protected $fillable = ['record_id', 'keyword_id'];
 
     public function record()

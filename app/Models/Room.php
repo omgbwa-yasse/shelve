@@ -1,11 +1,15 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\floor;
+use App\Models\shelf;
+
 
 class Room extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'reference', 'name', 'description', 'floor_id'
     ];

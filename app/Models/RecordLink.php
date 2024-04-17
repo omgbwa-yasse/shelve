@@ -1,11 +1,13 @@
 <?php
 
-namespace App;
-
+namespace App\Models;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Record;
 
 class RecordLink extends Model
 {
+    use HasFactory;
     protected $fillable = ['record_id', 'parent_id'];
 
     public function record()

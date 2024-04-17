@@ -1,14 +1,13 @@
 <?php
 
 namespace App\Models;
-
-use App\Models\ContainerStatus;
-use App\Models\Property;
-use App\Models\Shelf;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+
 
 class Container extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'reference', 'shelve_id', 'status_id', 'property_id'
     ];
