@@ -287,7 +287,7 @@ return new class extends Migration
 
         Schema::create('mail_priorities', function (Blueprint $table) {
             $table->id();
-            $table->string('mail_priority_name', 50)->nullable(false);
+            $table->string('name', 50)->nullable(false);
             $table->primary('id');
             $table->unique('mail_priority_name');
         });
