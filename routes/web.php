@@ -6,9 +6,9 @@ Auth::routes();
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/setting', function () {
-    return view('setting');
-})->name('home');
+Route::get('/settings', function () {
+    return view('settings');
+})->name('setting');
 
 
 use App\Http\Controllers\MailController;
@@ -26,6 +26,6 @@ Route::resource('repositories', RepositoryController::class);
 Route::resource('communications', CommunicationController::class);
 Route::resource('accessions', AccessionController::class);
 Route::resource('tools', ToolsController::class);
-Route::resource('settings', SettingController::class);
+Route::resource('setting', SettingController::class);
 Route::resource('localisations', LocalisationController::class);
 

@@ -85,10 +85,46 @@
             </div>
         </nav>
         <main class="row">
-
             <div class="row">
-              <div class="col-3">@include('navigation')</div>
-              <div class="col"> @yield('content')</div>
+                <div class="col col-md-1">
+                    @switch(Request::segment(1))
+
+                    @case('mails')
+                        @include('submenu.mails')
+                        @break
+
+
+                    @case('repositories')
+                        @include('submenu.repositories')
+                        @break
+
+                    @case('communications')
+                        @include('submenu.communications')
+                        @break
+
+                    @case('accessions')
+                        @include('submenu.accessions')
+                        @break
+
+                    @case('monitorings')
+                        @include('submenu.monitorings')
+                        @break
+
+                    @case('settings')
+                        @include('submenu.settings')
+                        @break
+
+                    @case('tools')
+                        @include('submenu.tools')
+                        @break
+
+                    @default
+                        @include('submenu.mails')
+                    @endswitch
+                    </ul>
+
+                </div>
+                <div class="col"> @yield('content')</div>
             </div>
 
 

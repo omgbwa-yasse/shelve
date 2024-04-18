@@ -1,51 +1,27 @@
 <div class="col-md-2" style="padding-left:10px;">
-    <p class="lead">Recherche</p>
+    <p class="lead">Paramètres</p>
     <ul class="nav flex-column">
         <li class="nav-item">
-          <a class="nav-link" href="#">Reçus</a>
+          <a class="nav-link" href="#">Courriel</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Envoyés</a>
+          <a class="nav-link" href="#">repertoire</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Affaires</a>
+          <a class="nav-link" href="#">Demande</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Typologies</a>
+            <a class="nav-link" href="#">Transfert</a>
           </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Producteurs</a>
+            <a class="nav-link" href="#">Outils de gestion</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Dates</a>
+            <a class="nav-link" href="#">Tableau de bord</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Avancée</a>
+            <a class="nav-link" href="#">Paramètres</a>
         </li>
     </ul>
-    <p class="lead bg-gray-25">Enregistrement</p>
-    <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Courrier reçu</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Courrier envoyé</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Affaire</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Parapheur</a>
-          </li>
 
-    </ul>
-    <p class="lead bg-gray-25">Etat </p>
-    <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Transactions</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Locaux</a>
-        </li>
-    </ul>
 </div>
