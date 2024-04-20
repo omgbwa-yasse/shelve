@@ -37,6 +37,11 @@ class Record extends Model
         return $this->belongsTo(Record::class);
     }
 
+    public function children()
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
     public function container()
     {
         return $this->belongsTo(Container::class);
