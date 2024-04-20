@@ -51,13 +51,54 @@
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <!-- Left Side Of Navbar -->
                         <ul class="nav nav-pills">
-                            <li class="nav-link active">Courrier</li>
-                            <li class="nav-link">Repertoire</li>
-                            <li class="nav-link">Demande</li>
-                            <li class="nav-link">Transfert</li>
-                            <li class="nav-link">Audit</li>
-                            <li class="nav-link">Outils de gestion</li>
-                            <li class="nav-link">Paramètres</li>
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'mails') {{ 'active' }} @endif
+                            ">
+                                <a href="{{ route('mails.index') }}">Courrier</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'records') {{ 'active bg-warning' }} @endif
+                            ">
+                                <a href="#">Repertoire</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'loans') {{ 'active bg-dark' }} @endif
+                            ">
+                                <a href="#">Demande</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'transferts') {{ 'active bg-info' }} @endif
+                            ">
+                                <a href="#">Transferts</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'monitorings') {{ 'active bg-succes' }} @endif
+                            ">
+                                <a href="#">Audits</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif
+                            ">
+                                <a href="#">Outils de gestion</a>
+                            </li>
+
+                            <li
+                                class="nav-link
+                            @if (Request::segment(1) == 'settings') {{ 'active bg-primary' }} @endif
+                            ">
+                                <a href="#">Paramètres</a>
+                            </li>
                         </ul>
 
 
