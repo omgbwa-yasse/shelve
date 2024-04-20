@@ -1,35 +1,48 @@
-<div class="col-md-2" style="padding-left:10px;">
+<div class="container">
+    <div class="row">
+        <!-- Etat -->
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
+            aria-controls="etatMenu">
+            <i class="bi bi-info-circle"></i> Etat
+        </a>
+        <div class="collapse" id="etatMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Courrier</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-folder"></i> repertoire</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-chat-square-text"></i>
+                        Communication</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-box-arrow-in-down"></i> Dépôt</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-cart"></i> Chariots</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-tools"></i> Outils de gestion</a>
+                </li>
+            </ul>
+        </div>
 
-
-<p class="lead">Etat</p>
-<ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Courrier</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">repertoire</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Communication</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Dépôt</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Chariots</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#">Outils de gestion</a>
-          </li>
-</ul>
-
-<p class="lead bg-gray-25">Etat personnalisé</p>
-    <ul class="nav flex-column">
-        <li class="nav-item">
-          <a class="nav-link" href="#">Voir</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Ajouter</a>
-        </li>
-    </ul>
+        <!-- Etat personnalisé -->
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatPersonnaliseMenu"
+            aria-expanded="false" aria-controls="etatPersonnaliseMenu">
+            <i class="bi bi-sliders"></i> Etat personnalisé
+        </a>
+        <div class="collapse" id="etatPersonnaliseMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-eye"></i> Voir</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-plus-square"></i> Ajouter</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 </div>

@@ -29,3 +29,4 @@ Route::resource('tools', ToolsController::class);
 Route::resource('setting', SettingController::class);
 Route::resource('localisations', LocalisationController::class);
 
+?>

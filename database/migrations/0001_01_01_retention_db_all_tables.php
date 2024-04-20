@@ -289,7 +289,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->primary('id');
-            $table->unique('mail_priority_name');
+            $table->string('mail_priority_name');
         });
 
         Schema::create('mail_attachments', function (Blueprint $table) {
