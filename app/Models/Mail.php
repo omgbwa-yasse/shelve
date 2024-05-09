@@ -17,6 +17,9 @@ class Mail extends Model
         'code', 'object', 'description', 'authors', 'create_at', 'update_at', 'document_id', 'mail_priority_id', 'mail_typology_id'
     ];
 
+
+    public $timestamps = false;
+
     public function mailPriority()
     {
         return $this->belongsTo(MailPriority::class);

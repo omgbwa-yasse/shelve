@@ -439,10 +439,10 @@ return new class extends Migration
             $table->string('object', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->string('authors', 100)->nullable(false);
-            $table->timestamps();
             $table->unsignedBigInteger('document_id')->nullable();
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
+            $table->timestamps();
             $table->primary('id');
             $table->foreign('mail_priority_id')->references('mail_priority_id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('document_id')->references('id')->on('mail_attachments')->onDelete('cascade');

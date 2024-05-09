@@ -32,6 +32,8 @@ class MailController extends Controller
 
     public function store(Request $request)
     {
+
+
         $mail = Mail::create($request->all());
 
         if ($request->hasFile('document')) {

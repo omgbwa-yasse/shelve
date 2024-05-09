@@ -4,11 +4,11 @@
 <div class="container">
     <h1>Create Mail</h1>
 
-    <form action="{{ route('mails.store') }}" method="POST">
+    <form action="{{ route('mails.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="form-group">
-            <label for="code">code</label>
+            <label for="code">Code</label>
             <input type="text" name="code" class="form-control" required>
         </div>
 
@@ -28,8 +28,8 @@
         </div>
 
         <div class="form-group">
-            <label for="priority_id">Priority</label>
-            <select name="priority_id" class="form-control" required>
+            <label for="mail_priority_id">Priority</label>
+            <select name="mail_priority_id" class="form-control" required>
                 @foreach($mailPriorities as $priority)
                     <option value="{{ $priority->id }}">{{ $priority->name }}</option>
                 @endforeach
@@ -37,8 +37,8 @@
         </div>
 
         <div class="form-group">
-            <label for="typology_id">Typology</label>
-            <select name="typology_id" class="form-control" required>
+            <label for="mail_typology_id">Typology</label>
+            <select name="mail_typology_id" class="form-control" required>
                 @foreach($mailTypologies as $typology)
                     <option value="{{ $typology->id }}">{{ $typology->name }}</option>
                 @endforeach
@@ -46,7 +46,7 @@
         </div>
 
         <div class="form-group">
-            <label for="document_id">Attachment</label>
+            <label for="document">Attachment</label>
             <input type="file" name="document" class="form-control-file">
         </div>
 
