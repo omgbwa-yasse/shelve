@@ -8,8 +8,8 @@
         @csrf
 
         <div class="form-group">
-            <label for="reference">Reference</label>
-            <input type="text" name="reference" class="form-control" required>
+            <label for="code">code</label>
+            <input type="text" name="code" class="form-control" required>
         </div>
 
         <div class="form-group">
@@ -28,8 +28,8 @@
         </div>
 
         <div class="form-group">
-            <label for="mail_priority_id">Priority</label>
-            <select name="mail_priority_id" class="form-control" required>
+            <label for="priority_id">Priority</label>
+            <select name="priority_id" class="form-control" required>
                 @foreach($mailPriorities as $priority)
                     <option value="{{ $priority->id }}">{{ $priority->name }}</option>
                 @endforeach
@@ -37,10 +37,10 @@
         </div>
 
         <div class="form-group">
-            <label for="mail_typology_id">Typology</label>
-            <select name="mail_typology_id" class="form-control" required>
+            <label for="typology_id">Typology</label>
+            <select name="typology_id" class="form-control" required>
                 @foreach($mailTypologies as $typology)
-                    <option value="{{ $typology->iid }}">{{ $typology->name }}</option>
+                    <option value="{{ $typology->id }}">{{ $typology->name }}</option>
                 @endforeach
             </select>
         </div>
