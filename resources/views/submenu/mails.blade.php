@@ -35,10 +35,10 @@
         <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-inbox"></i> Courrier reçu</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.received') }}"><i class="bi bi-inbox"></i> Courrier reçu</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Courrier envoyé</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.send') }}"><i class="bi bi-envelope"></i> Courrier envoyé</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-briefcase"></i> Affaire</a>

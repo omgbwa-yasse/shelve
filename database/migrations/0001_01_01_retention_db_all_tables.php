@@ -91,7 +91,6 @@ return new class extends Migration
             $table->longText('observation')->nullable();
             $table->string('face', 10)->nullable(false);
             $table->string('ear', 10)->nullable(false);
-            $table->string('bay', 10)->nullable(false);
             $table->string('shelf', 10)->nullable(false);
             $table->float('shelf_length', 15, 6)->nullable(false);
             $table->unsignedBigInteger('room_id')->nullable(false);
@@ -441,12 +440,14 @@ return new class extends Migration
             $table->string('authors', 100)->nullable(false);
             $table->unsignedBigInteger('document_id')->nullable();
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
+            $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
             $table->timestamps();
             $table->primary('id');
-            $table->foreign('mail_priority_id')->references('mail_priority_id')->on('mail_priorities')->onDelete('cascade');
+            $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
+            $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('document_id')->references('id')->on('mail_attachments')->onDelete('cascade');
-            $table->foreign('mail_typology_id')->references('iid')->on('mail_typologies')->onDelete('cascade');
+            $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
         });
 
         Schema::create('container_types', function (Blueprint $table) {
@@ -455,6 +456,14 @@ return new class extends Migration
             $table->string('description', 100)->nullable();
             $table->primary('id');
         });
+
+
+        Schema::create('mail_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->nullable(false);
+            $table->primary('id');
+        });
+
 
         Schema::create('mail_containers', function (Blueprint $table) {
             $table->id();

@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
+use App\Models\MailType;
 use App\Models\MailAttachment;
 use App\Models\MailContainer;
 use App\Models\Transaction;
@@ -14,7 +15,7 @@ class Mail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code', 'object', 'description', 'authors', 'create_at', 'update_at', 'document_id', 'mail_priority_id', 'mail_typology_id'
+        'code', 'object', 'description',  'type_id','authors', 'create_at', 'update_at', 'document_id', 'mail_priority_id', 'mail_typology_id'
     ];
 
 
@@ -43,5 +44,10 @@ class Mail extends Model
     public function mailContainers()
     {
         return $this->belongsToMany(MailContainer::class);
+    }
+
+    public function mailType()
+    {
+        return $this->belongsTo(MailType::class);
     }
 }

@@ -24,7 +24,11 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('/', [MailController::class, 'index'])->name('mail');
 
-    Route::resource('mails', MailController::class);
+
+    Route::resource('mails', MailController::class)->except(['create'])->parameters(['mail' => 'mails']);
+    Route::post('mails/send', [MailController::class, 'send'])->name('mails.send');
+    Route::post('mails/received', [MailController::class, 'received'])->name('mails.received');
+
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
@@ -33,6 +37,4 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('localisations', LocalisationController::class);
 });
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -5,19 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use App\Models\Mail;
+use App\Models\MailType;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailAttachment;
 
-class MailController extends Controller
+class MailSendController extends Controller
 {
 
 
     public function index()
     {
         $mails = Mail::with('mailPriority', 'mailTypology', 'mailAttachment')->get();
-        return view('mails.index', compact('mails'));
+        return view('mails.send.index', compact('mails'));
     }
+
 
 
 
@@ -25,37 +27,63 @@ class MailController extends Controller
     {
         $mailPriorities = MailPriority::all();
         $mailTypologies = MailTypology::all();
-        return view('mails.create', compact('mailPriorities', 'mailTypologies'));
+        $mailTypeId = MailType::where('name', 'send')->value('id');
+
+        if (!$mailTypeId) {
+            abort(404, 'Type de mail "send" introuvable.');
+        }
+
+        return view('mails.send.index', compact('mailPriorities', 'mailTypologies', 'mailTypeId'));
     }
 
 
 
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'code' => 'required|string|max:255|unique:mails,code',
+            'object' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'authors' => 'nullable|string',
+            'document_id' => 'nullable|exists:documents,id',
+            'mail_priority_id' => 'required|exists:mail_priorities,id',
+            'mail_typology_id' => 'required|exists:mail_typologies,id',
+            'type_id' => 'required|exists:mail_types,id',
+            'document' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        ]);
 
-
-        $mail = Mail::create($request->all());
+        $mail = Mail::create($validatedData);
 
         if ($request->hasFile('document')) {
             $document = $request->file('document');
             $path = $document->store('mail_attachments');
+
             $mailAttachment = MailAttachment::create([
                 'path' => $path,
                 'filename' => $document->getClientOriginalName(),
                 'size' => $document->getSize(),
             ]);
+
             $mail->mailAttachment()->associate($mailAttachment);
         }
 
-        return redirect()->route('mails.index')
-                        ->with('success','Mail created successfully');
+
+        if ($request->has('mail_container_ids')) {
+            $mail->mailContainers()->attach($request->input('mail_container_ids'));
+        }
+
+
+        return redirect()->route('mails.send.index')->with('success', 'Mail créé avec succès.');
     }
+
+
+
 
 
 
     public function show(Mail $mail)
     {
-        return view('mails.show', compact('mail'));
+        return view('mails.send.show', compact('mail'));
     }
 
 
@@ -64,7 +92,7 @@ class MailController extends Controller
     {
         $mailPriorities = MailPriority::all();
         $mailTypologies = MailTypology::all();
-        return view('mails.edit', compact('mail', 'mailPriorities', 'mailTypologies'));
+        return view('mails.send.edit', compact('mail', 'mailPriorities', 'mailTypologies'));
     }
 
 
@@ -83,7 +111,7 @@ class MailController extends Controller
             $mail->mailAttachment()->associate($mailAttachment);
         }
 
-        return redirect()->route('mails.index')
+        return redirect()->route('mails.send.index')
                         ->with('success','Mail updated successfully');
     }
 
@@ -91,7 +119,7 @@ class MailController extends Controller
     public function destroy(Mail $mail)
     {
         $mail->delete();
-        return redirect()->route('mails.index')
+        return redirect()->route('mails.send.index')
                         ->with('success','Mail deleted successfully');
     }
 }
