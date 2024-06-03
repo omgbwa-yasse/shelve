@@ -30,6 +30,10 @@ VALUES ('','SG','Secrétaire général','Poste du Secrétaire général','');
 INSERT INTO `mail_subjects`(`id`, `name`) VALUES ('','Yaounde 4e, aménagement de la voirie');
 INSERT INTO `mail_subjects`(`id`, `name`) VALUES ('','Vente des veilles voitures');
 
+
+INSERT INTO `mailbatches`(`id`, `code`, `name`) VALUES ('','DG10','Parapheur directeur général');
+INSERT INTO `mailbatches`(`id`, `code`, `name`) VALUES ('','DG09','Parapheur Secrétaire général');
+
 /*
 
 

@@ -7,13 +7,13 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-inbox"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-briefcase"></i> Affaires</a>
+                    <a class="nav-link text-dark" href="{{ route('subject.index') }}"><i class="bi bi-briefcase"></i> Affaires</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-tags"></i> Typologies</a>
@@ -44,7 +44,7 @@
                     <a class="nav-link text-dark" href="{{ route('subject.create') }}"><i class="bi bi-briefcase"></i> Affaire</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-bookmark-check"></i> Parapheur</a>
+                    <a class="nav-link text-dark" href="{{ route('batch.create') }}"><i class="bi bi-bookmark-check"></i> Parapheur</a>
                 </li>
             </ul>
         </div>

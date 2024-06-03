@@ -436,23 +436,43 @@ return new class extends Migration
             $table->string('code')->nullable(false);
             $table->string('object', 100)->nullable(false);
             $table->text('description')->nullable();
-            $table->string('authors', 100)->nullable(false);
-            $table->unsignedBigInteger('mail_attachement_id')->nullable(); // su
+            $table->date('date')->nullable(false);
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
-            $table->foreign('mail_attachement_id')->references('id')->on('mail_attachments')->onDelete('cascade');
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
         });
 
+
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->id();
+            $table->integer('code')->nullable(false);
+            $table->datetime('date_creation')->nullable(false);
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('user_send')->nullable(false);
+            $table->unsignedBigInteger('organisation_send_id')->nullable(false);
+            $table->unsignedBigInteger('user_received')->nullable();
+            $table->unsignedBigInteger('organisation_received_id')->nullable();
+            $table->integer('mail_status_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('user_send')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('user_received')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
+            $table->foreign('mail_status_id')->references('id')->on('mail_status')->onDelete('cascade');
+        });
+
+
+
         Schema::create('mail_subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable(false);
         });
+
 
         Schema::create('mail_organisation', function (Blueprint $table) {
             $table->unsignedBigInteger('mail_id')->nullable(false);
@@ -527,29 +547,9 @@ return new class extends Migration
             $table->string('description', 100)->nullable();
             $table->primary('id');
             $table->unsignedBigInteger('class_id')->nullable(false);
-            $table->foreign('class_id')->references('iid')->on('classes')->onDelete('cascade');
-
+            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
 
-        Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
-            $table->integer('code')->nullable(false);
-            $table->datetime('date_creation')->nullable(false);
-            $table->unsignedBigInteger('mail_id')->nullable(false);
-            $table->unsignedBigInteger('user_send')->nullable(false);
-            $table->unsignedBigInteger('organisation_send_id')->nullable(false);
-            $table->unsignedBigInteger('user_receveid')->nullable();
-            $table->unsignedBigInteger('organisation_received_id')->nullable();
-            $table->integer('mail_status_id')->nullable(false);
-            $table->timestamps();
-            $table->primary('id');
-            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
-            $table->foreign('user_send')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
-            $table->foreign('user_receveid')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
-            $table->foreign('mail_status_id')->references('id')->on('mail_status')->onDelete('cascade');
-        });
 
         Schema::create('mail_container', function (Blueprint $table) {
             $table->unsignedBigInteger('container_id')->nullable(false);
@@ -560,11 +560,10 @@ return new class extends Migration
         });
 
 
-        Schema::create('mailbatchs', function (Blueprint $table) {
+        Schema::create('mailbatches', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 100)->nullable();
+            $table->string('code', 10)->nullable(false);
             $table->string('name', 100)->nullable(false);
-            $table->unsignedInteger('type_id')->nullable(false);
             $table->primary('id');
         });
 

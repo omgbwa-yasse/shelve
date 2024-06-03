@@ -7,6 +7,7 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
 use App\Models\MailSubject;
+use App\Models\MailBatch;
 use App\Models\MailAttachment;
 use App\Models\MailContainer;
 use App\Models\Transaction;
@@ -16,10 +17,19 @@ class Mail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code', 'object', 'description', 'subject_id', 'type_id','authors', 'create_at', 'update_at', 'document_id', 'mail_priority_id', 'mail_typology_id'
+        'code',
+        'object',
+        'date',
+        'description',
+        'subject_id',
+        'type_id',
+        'authors',
+        'document_id',
+        'mail_priority_id',
+        'mail_typology_id'
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function mailPriority()
     {
@@ -54,6 +64,10 @@ class Mail extends Model
     public function mailSubject()
     {
         return $this->belongsTo(MailSubject::class);
+    }
+    public function mailBatch()
+    {
+        return $this->belongsTo(MailBatch::class);
     }
 
 }

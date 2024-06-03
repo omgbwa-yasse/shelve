@@ -10,9 +10,15 @@ use App\Models\MailStatus;
 
 class Transaction extends Model
 {
-    use HasFactory;
     protected $fillable = [
-        'reference', 'date_creation', 'mail_id', 'user_send', 'organisation_send_id', 'user_receveid', 'organisation_received_id', 'mail_status_id', 'create_at', 'update_at'
+        'code',
+        'date_creation',
+        'mail_id',
+        'user_send',
+        'organisation_send_id',
+        'user_received',
+        'organisation_received_id',
+        'mail_status_id',
     ];
 
     public function mail()
@@ -30,9 +36,9 @@ class Transaction extends Model
         return $this->belongsTo(Organisation::class, 'organisation_send_id');
     }
 
-    public function userReceive()
+    public function userReceived()
     {
-        return $this->belongsTo(User::class, 'user_receveid');
+        return $this->belongsTo(User::class, 'user_received');
     }
 
     public function organisationReceived()
@@ -42,6 +48,7 @@ class Transaction extends Model
 
     public function mailStatus()
     {
-        return $this->belongsTo(MailStatus::class);
+        return $this->belongsTo(MailStatus::class, 'mail_status_id');
     }
 }
+
