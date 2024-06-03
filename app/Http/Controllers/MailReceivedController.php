@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use App\Models\Organisation;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use App\Models\Mail;
 use App\Models\MailType;
 use App\Models\MailPriority;
@@ -28,12 +31,13 @@ class MailReceivedController extends Controller
         $mailPriorities = MailPriority::all();
         $mailTypologies = MailTypology::all();
         $mailTypeId = MailType::where('name', 'received')->value('id');
-
+        $organisations = organisation :: all();
+        $authors = User::where('id', '!=', Auth::id())->get();
         if (!$mailTypeId) {
             abort(404, 'Type de mail "send" introuvable.');
         }
 
-        return view('mails.received.index', compact('mailPriorities', 'mailTypologies', 'mailTypeId'));
+        return view('mails.received.create', compact('mailPriorities', 'mailTypologies', 'mailTypeId','organisations','authors'));
     }
 
 

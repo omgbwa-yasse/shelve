@@ -15,7 +15,6 @@ return new class extends Migration
             User Jobs
 
 
-
         */
 
 
@@ -438,17 +437,32 @@ return new class extends Migration
             $table->string('object', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->string('authors', 100)->nullable(false);
-            $table->unsignedBigInteger('document_id')->nullable();
+            $table->unsignedBigInteger('mail_attachement_id')->nullable(); // su
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
             $table->timestamps();
             $table->primary('id');
+            $table->foreign('mail_attachement_id')->references('id')->on('mail_attachments')->onDelete('cascade');
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
-            $table->foreign('document_id')->references('id')->on('mail_attachments')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
         });
+
+        Schema::create('mail_subjects', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100)->nullable(false);
+        });
+
+        Schema::create('mail_organisation', function (Blueprint $table) {
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('organisation_id')->nullable(false);
+            $table->boolean('is_original')->nullable(false);
+            $table->primary(['mail_id', 'organisation_id']);
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+        });
+
 
         Schema::create('container_types', function (Blueprint $table) {
             $table->id();
@@ -487,7 +501,17 @@ return new class extends Migration
             $table->string('duration');
         });
 
-        Schema::create('mail_attachments', function (Blueprint $table) {
+
+        Schema::create('mail_attachment', function (Blueprint $table) {
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('attachment_id')->nullable(false);
+            $table->primary(['mail_id', 'attachment_id']);
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('attachment_id')->references('id')->on('mail_attachments')->onDelete('cascade');
+        });
+
+
+        Schema::create('attachments', function (Blueprint $table) {
             $table->id();
             $table->string('path', 45)->nullable(false);
             $table->string('name', 45)->nullable(false);
@@ -495,6 +519,7 @@ return new class extends Migration
             $table->string('size', 10)->nullable(false);
             $table->primary('id');
         });
+
 
         Schema::create('mail_typologies', function (Blueprint $table) {
             $table->id();
@@ -672,13 +697,16 @@ return new class extends Migration
         Schema::dropIfExists('retentions');
         Schema::dropIfExists('mail_typologies');
         Schema::dropIfExists('typology_categories');
-        Schema::dropIfExists('mail_attachments');
         Schema::dropIfExists('mail_priorities');
         Schema::dropIfExists('communications');
         Schema::dropIfExists('mail_status');
+        Schema::dropIfExists('mail_subjects');
         Schema::dropIfExists('mail_containers');
         Schema::dropIfExists('container_types');
         Schema::dropIfExists('mails');
+        Schema::dropIfExists('mail_organisation');
+        Schema::dropIfExists('mail_attachment');
+        Schema::dropIfExists('attachments');
         Schema::dropIfExists('dollies');
         Schema::dropIfExists('mail_container');
         Schema::dropIfExists('transactions');

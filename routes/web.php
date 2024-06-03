@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\MailSendController;
+use App\Http\Controllers\MailReceivedController;
+use App\Http\Controllers\MailSubjectController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
@@ -23,12 +26,12 @@ Route::group(['middleware' => 'auth'], function () {
     })->name('setting');
 
     Route::get('/', [MailController::class, 'index'])->name('mail');
-
-
-    Route::resource('mails', MailController::class)->except(['create'])->parameters(['mail' => 'mails']);
-    Route::post('mails/send', [MailController::class, 'send'])->name('mails.send');
-    Route::post('mails/received', [MailController::class, 'received'])->name('mails.received');
-
+    Route::resource('mails', MailController::class);
+    Route::prefix('mails')->group(function () {
+        Route::resource('send', MailSendController::class);
+        Route::resource('received', MailReceivedController::class);
+        Route::resource('subject', MailSubjectController::class);
+    });
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
