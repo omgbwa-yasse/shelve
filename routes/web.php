@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
-use App\Http\Controllers\MailBatchController;
+use App\Http\Controllers\BatchController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailSubjectController;
 use App\Http\Controllers\RepositoryController;
@@ -13,6 +13,7 @@ use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\LocalisationController;
+use App\Models\Transaction;
 
 Auth::routes();
 
@@ -25,12 +26,13 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/settings', function () {
         return view('settings');
     })->name('setting');
-    Route::resource('mails', MailReceivedController::class);
+
+    Route::resource('mails', MailController::class);
     Route::prefix('mails')->group(function () {
         Route::resource('send', MailSendController::class);
         Route::resource('received', MailReceivedController::class);
         Route::resource('subject', MailSubjectController::class);
-        Route::resource('batch', MailBatchController::class);
+        Route::resource('batch', BatchController::class);
     });
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);

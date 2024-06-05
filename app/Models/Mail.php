@@ -70,4 +70,5 @@ class Mail extends Model
         return $this->belongsTo(MailBatch::class);
     }
 
+
 }

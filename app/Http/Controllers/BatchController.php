@@ -5,17 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\MailBatch;
 use Illuminate\Http\Request;
 
-class MailBatchController extends Controller
+class BatchController extends Controller
 {
     public function index()
     {
         $mailbatches = MailBatch::all();
-        return view('mails.batch.index', compact('mailbatches'));
+        return view('batch.index', compact('mailbatches'));
     }
 
     public function create()
     {
-        return view('mails.batch.create');
+        return view('batch.create');
     }
 
     public function store(Request $request)
@@ -35,7 +35,7 @@ class MailBatchController extends Controller
 
     public function show(MailBatch $mailbatch)
     {
-        return view('Mails.batch.show', compact('mailbatch'));
+        return view('batch.show', compact('mailbatch'));
     }
 
 
@@ -43,7 +43,7 @@ class MailBatchController extends Controller
 
     public function edit(MailBatch $mailbatch)
     {
-        return view('mails.batch.edit', compact('mailbatch'));
+        return view('batch.edit', compact('mailbatch'));
     }
 
 
