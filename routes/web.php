@@ -27,15 +27,31 @@ Route::group(['middleware' => 'auth'], function () {
         return view('settings');
     })->name('setting');
 
-    Route::resource('mails', MailController::class);
-    Route::prefix('mails')->group(function () {
+    Route::prefix('mail')->group(function () {
         Route::resource('subject', MailSubjectController::class);
         Route::resource('batch', BatchController::class);
     });
-    Route::prefix('transactions')->group(function () {
-        Route::resource('send', TransactionSendController::class);
-        Route::resource('received', TransactionReceivedController::class);
+
+    Route::prefix('batch')->group(function () {
+        Route::prefix('received')->group(function () {
+            Route::resource('/', BatchReceivedController::class);
+        });
+
+        Route::prefix('send')->group(function () {
+            Route::resource('/', BatchSendController::class);
+        });
     });
+
+    Route::prefix('transaction')->group(function () {
+        Route::prefix('send')->group(function () {
+            Route::resource('/', TransactionSendController::class);
+        });
+
+        Route::prefix('received')->group(function () {
+            Route::resource('/', TransactionReceivedController::class);
+        });
+    });
+
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
