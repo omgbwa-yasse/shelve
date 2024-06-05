@@ -10,12 +10,12 @@ class BatchController extends Controller
     public function index()
     {
         $mailbatches = MailBatch::all();
-        return view('batch.index', compact('mailbatches'));
+        return view('mails.batch.index', compact('mailbatches'));
     }
 
     public function create()
     {
-        return view('batch.create');
+        return view('mails.batch.create');
     }
 
     public function store(Request $request)
@@ -27,7 +27,7 @@ class BatchController extends Controller
 
         MailBatch::create($request->all());
 
-        return redirect()->route('batch.index')
+        return redirect()->route('mails.batch.index')
             ->with('success', 'Mail batch created successfully.');
     }
 
@@ -35,7 +35,7 @@ class BatchController extends Controller
 
     public function show(MailBatch $mailbatch)
     {
-        return view('batch.show', compact('mailbatch'));
+        return view('mails.batch.show', compact('mailbatch'));
     }
 
 
@@ -43,7 +43,7 @@ class BatchController extends Controller
 
     public function edit(MailBatch $mailbatch)
     {
-        return view('batch.edit', compact('mailbatch'));
+        return view('mails.batch.edit', compact('mailbatch'));
     }
 
 

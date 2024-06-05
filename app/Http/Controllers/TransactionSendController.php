@@ -15,21 +15,21 @@ use App\Models\MailTypology;
 use App\Models\MailAttachment;
 
 
-class TransactionController extends Controller
+class TransactionSendController extends Controller
 {
 
     public function index()
     {
         $user = Auth::user();
         $transactions = Transaction::where('user_send', $user->id)->get();
-        return view('transactions.index', compact('transactions'));
+        return view('transactions.send.index', compact('transactions'));
     }
 
 
 
     public function create()
     {
-        return view('transactions.create');
+        return view('transactions.send.create');
     }
 
 
@@ -49,7 +49,7 @@ class TransactionController extends Controller
 
         Transaction::create($request->all());
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.send.index')
             ->with('success', 'Transaction created successfully.');
     }
 
@@ -57,14 +57,14 @@ class TransactionController extends Controller
 
     public function show(Transaction $transaction)
     {
-        return view('transactions.show', compact('transaction'));
+        return view('transactions.send.show', compact('transaction'));
     }
 
 
 
     public function edit(Transaction $transaction)
     {
-        return view('transactions.edit', compact('transaction'));
+        return view('transactions.send.edit', compact('transaction'));
     }
 
 
@@ -84,7 +84,7 @@ class TransactionController extends Controller
 
         $transaction->update($request->all());
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.send.index')
             ->with('success', 'Transaction updated successfully');
     }
 
@@ -94,7 +94,7 @@ class TransactionController extends Controller
     {
         $transaction->delete();
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.send.index')
             ->with('success', 'Transaction deleted successfully');
     }
 }

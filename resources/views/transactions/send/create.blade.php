@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>Create Transaction</h1>
-    <form action="{{ route('received.store') }}" method="POST">
+    <form action="{{ route('send.store') }}" method="POST">
         @csrf
         <div class="container">
             <div class="row justify-content-center">
@@ -12,7 +12,7 @@
                         <div class="card-header">{{ __('Create Transaction') }}</div>
 
                         <div class="card-body">
-                            <form method="POST" action="{{ route('received.store') }}">
+                            <form method="POST" action="{{ route('send.store') }}">
                                 @csrf
 
                                 <div class="form-group row">

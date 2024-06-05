@@ -15,5 +15,6 @@ class MailSubject extends Model
     {
         return $this->hasMany(Mail::class);
     }
+    public $timestamps = true;
 }
 

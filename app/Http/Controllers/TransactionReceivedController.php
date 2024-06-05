@@ -21,14 +21,14 @@ class TransactionReceivedController extends Controller
     {
         $user = Auth::user();
         $transactions = Transaction::where('user_received', $user->id)->get();
-        return view('transactions.index', compact('transactions'));
+        return view('transactions.received.index', compact('transactions'));
     }
 
 
 
     public function create()
     {
-        return view('transactions.create');
+        return view('transactions.received.create');
     }
 
 
@@ -48,7 +48,7 @@ class TransactionReceivedController extends Controller
 
         Transaction::create($request->all());
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.received.index')
             ->with('success', 'Transaction created successfully.');
     }
 
@@ -56,14 +56,14 @@ class TransactionReceivedController extends Controller
 
     public function show(Transaction $transaction)
     {
-        return view('transactions.show', compact('transaction'));
+        return view('transactions.received.show', compact('transaction'));
     }
 
 
 
     public function edit(Transaction $transaction)
     {
-        return view('transactions.edit', compact('transaction'));
+        return view('transactions.received.edit', compact('transaction'));
     }
 
 
@@ -83,7 +83,7 @@ class TransactionReceivedController extends Controller
 
         $transaction->update($request->all());
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.received.index')
             ->with('success', 'Transaction updated successfully');
     }
 
@@ -93,7 +93,7 @@ class TransactionReceivedController extends Controller
     {
         $transaction->delete();
 
-        return redirect()->route('transactions.index')
+        return redirect()->route('transactions.received.index')
             ->with('success', 'Transaction deleted successfully');
     }
 }

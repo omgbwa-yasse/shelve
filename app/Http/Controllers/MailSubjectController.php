@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\MailSubject;
+use App\Models\MailSubject;
 use Illuminate\Http\Request;
 
 class MailSubjectController extends Controller
@@ -17,11 +17,11 @@ class MailSubjectController extends Controller
 
 
 
+
     public function create()
     {
         return view('mails.subject.create');
     }
-
 
 
 
@@ -33,11 +33,9 @@ class MailSubjectController extends Controller
 
         MailSubject::create($request->all());
 
-        return redirect()->route('mail_subjects.index')
+        return redirect()->route('subject.index')
             ->with('success', 'Mail subject created successfully.');
     }
-
-
 
 
     public function show(MailSubject $mailSubject)
@@ -54,6 +52,7 @@ class MailSubjectController extends Controller
 
 
 
+
     public function update(Request $request, MailSubject $mailSubject)
     {
         $request->validate([
@@ -62,7 +61,7 @@ class MailSubjectController extends Controller
 
         $mailSubject->update($request->all());
 
-        return redirect()->route('mail_subjects.index')
+        return redirect()->route('subject.index')
             ->with('success', 'Mail subject updated successfully.');
     }
 

@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
-use App\Http\Controllers\MailSendController;
+use App\Http\Controllers\TransactionSendController;
+use App\Http\Controllers\TransactionReceivedController;
 use App\Http\Controllers\BatchController;
-use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailSubjectController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\CommunicationController;
@@ -29,10 +29,12 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('mails', MailController::class);
     Route::prefix('mails')->group(function () {
-        Route::resource('send', MailSendController::class);
-        Route::resource('received', MailReceivedController::class);
         Route::resource('subject', MailSubjectController::class);
         Route::resource('batch', BatchController::class);
+    });
+    Route::prefix('transactions')->group(function () {
+        Route::resource('send', TransactionSendController::class);
+        Route::resource('received', TransactionReceivedController::class);
     });
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
