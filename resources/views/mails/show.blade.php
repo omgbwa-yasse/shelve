@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Mail Details</h1>
+        <h1>Courrier : fiche</h1>
         <table class="table">
             <tr>
                 <th>ID</th>

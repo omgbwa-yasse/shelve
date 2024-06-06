@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container">
-        <h1>Create Mail</h1>
-        <form action="{{ route('mails.store') }}" method="POST">
+        <h1>Créer un courrier</h1>
+        <form action="{{ route('mail.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>

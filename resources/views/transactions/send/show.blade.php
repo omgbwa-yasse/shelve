@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Transaction Details</h1>
+    <h1>Courrier sortant : fiche</h1>
     <table class="table">
         <tbody>
             <tr>

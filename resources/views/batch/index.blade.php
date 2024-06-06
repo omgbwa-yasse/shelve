@@ -2,7 +2,7 @@
 @section('content')
 
     <div class="container">
-    <h1 class="mt-5">Edit Mail Batch</h1>
+    <h1 class="mt-5">Liste des parapheurs</h1>
     <form action="{{ route('mails.batch.update', $mailbatch->id) }}" method="POST">
         @csrf
         @method('PUT')

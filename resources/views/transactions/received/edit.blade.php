@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container">
-    <h1>Edit Transaction</h1>
-    <form action="{{ route('transactions.update', $transaction->id) }}" method="POST">
+    <h1>Modifier courrier entrant</h1>
+    <form action="{{ route('mail-received.update', $transaction->id) }}" method="POST">
         @csrf
         @method('PUT')
         <div class="mb-3">

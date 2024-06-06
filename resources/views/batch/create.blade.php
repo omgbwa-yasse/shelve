@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="container">
-    <h1 class="mt-5">Create New Mail Batch</h1>
+    <h1 class="mt-5">Créer un parapheur</h1>
     <form action="{{ route('batch.store') }}" method="POST">
         @csrf
         <div class="mb-3">

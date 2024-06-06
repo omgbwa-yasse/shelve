@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container">
-    <h1>Create Transaction</h1>
-    <form action="{{ route('send.store') }}" method="POST">
+    <h1>Créer courrier sortant</h1>
+    <form action="{{ route('mail-send.store') }}" method="POST">
         @csrf
         <div class="container">
             <div class="row justify-content-center">
@@ -12,7 +12,7 @@
                         <div class="card-header">{{ __('Create Transaction') }}</div>
 
                         <div class="card-body">
-                            <form method="POST" action="{{ route('send.store') }}">
+                            <form method="POST" action="{{ route('mail-send.store') }}">
                                 @csrf
 
                                 <div class="form-group row">

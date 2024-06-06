@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Received Transactions</h1>
+    <h1>Liste des courriers entrants</h1>
     <table class="table">
         <thead>
             <tr>
@@ -29,9 +29,9 @@
                 <td>{{ $transaction->organisation_received_id }}</td>
                 <td>{{ $transaction->mail_status_id }}</td>
                 <td>
-                    <a href="{{ route('transactions.show', $transaction->id) }}" class="btn btn-primary">Show</a>
-                    <a href="{{ route('transactions.edit', $transaction->id) }}" class="btn btn-secondary">Edit</a>
-                    <form action="{{ route('transactions.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('mail-received.show', $transaction->id) }}" class="btn btn-primary">Show</a>
+                    <a href="{{ route('mail-received.edit', $transaction->id) }}" class="btn btn-secondary">Edit</a>
+                    <form action="{{ route('mail-received.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Delete</button>

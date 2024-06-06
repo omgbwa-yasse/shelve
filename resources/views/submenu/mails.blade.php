@@ -7,10 +7,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('subject.index') }}"><i class="bi bi-briefcase"></i> Affaires</a>
@@ -37,7 +37,7 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.create') }}"><i class="bi bi-inbox"></i> Courrier</a>
+                    <a class="nav-link text-dark" href="{{ route('mail.create') }}"><i class="bi bi-inbox"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('subject.create') }}"><i class="bi bi-briefcase"></i> Affaire</a>
@@ -55,10 +55,10 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('received.create') }}"><i class="bi bi-inbox"></i>Recevoir</a>
+                <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i>Recevoir</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('send.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
+                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
             </li>
                 </ul>
             </div>
@@ -70,10 +70,10 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('received-batches.create') }}"><i class="bi bi-inbox"></i>Recevoir</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i>Recevoir</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('send-batches.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
                 </li>
                 </ul>
             </div>

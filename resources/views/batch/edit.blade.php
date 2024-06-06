@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
     <div class="container">
-        <h1 class="mt-5">Edit Mail Batch</h1>
+        <h1 class="mt-5">Modifier un parapheur</h1>
         <form action="{{ route('mailbatches.update', $mailbatch->id) }}" method="POST">
             @csrf
             @method('PUT')

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Transaction Details</h1>
+    <h1>Courrier entrant : fiche</h1>
     <table class="table">
         <tbody>
             <tr>
@@ -13,7 +13,7 @@
                 <th>Date Creation</th>
                 <td>{{ $transaction->date_creation }}</td>
             </tr>
-            <!-- Add more fields here -->
+
         </tbody>
     </table>
 </div>

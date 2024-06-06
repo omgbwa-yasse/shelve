@@ -52,8 +52,8 @@
                         <!-- Left Side Of Navbar -->
                         <ul class="nav nav-pills">
                             <li class="nav-item">
-                                <a class="nav-link text-dark @if (Request::segment(1) == 'mails') {{ 'active' }} @endif"
-                                    href="{{ route('mails.index') }}">Courrier</a>
+                                <a class="nav-link text-dark @if (Request::segment(1) == 'mail') {{ 'active' }} @endif"
+                                    href="{{ route('mail.index') }}">Courrier</a>
                             </li>
 
                             <li class="nav-item  text-dark">

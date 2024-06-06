@@ -6,6 +6,8 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\TransactionSendController;
 use App\Http\Controllers\TransactionReceivedController;
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\BatchReceivedController;
+use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\MailSubjectController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\CommunicationController;
@@ -23,10 +25,11 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-    Route::get('/settings', function () {
+    Route::get('/setting', function () {
         return view('settings');
     })->name('setting');
 
+    Route::resource('mail', MailController::class);
     Route::prefix('mail')->group(function () {
         Route::resource('subject', MailSubjectController::class);
         Route::resource('batch', BatchController::class);
@@ -34,30 +37,30 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('batch')->group(function () {
         Route::prefix('received')->group(function () {
-            Route::resource('/', BatchReceivedController::class);
+            Route::resource('/', BatchReceivedController::class)->names('batch-received');;
         });
 
         Route::prefix('send')->group(function () {
-            Route::resource('/', BatchSendController::class);
+            Route::resource('/', BatchSendController::class)->names('batch-send');
         });
     });
 
     Route::prefix('transaction')->group(function () {
         Route::prefix('send')->group(function () {
-            Route::resource('/', TransactionSendController::class);
+            Route::resource('/', TransactionSendController::class)->names('mail-received');
         });
 
         Route::prefix('received')->group(function () {
-            Route::resource('/', TransactionReceivedController::class);
+            Route::resource('/', TransactionReceivedController::class)->names('mail-send');
         });
     });
 
-    Route::resource('repositories', RepositoryController::class);
-    Route::resource('communications', CommunicationController::class);
-    Route::resource('accessions', AccessionController::class);
-    Route::resource('tools', ToolsController::class);
+    Route::resource('repository', RepositoryController::class);
+    Route::resource('communication', CommunicationController::class);
+    Route::resource('accession', AccessionController::class);
+    Route::resource('tool', ToolsController::class);
     Route::resource('setting', SettingController::class);
-    Route::resource('localisations', LocalisationController::class);
+    Route::resource('localisation', LocalisationController::class);
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
