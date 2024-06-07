@@ -37,6 +37,6 @@
                 <td>{{ $mail->typology->name }}</td>
             </tr>
         </table>
-        <a href="{{ route('mails.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('mail.index') }}" class="btn btn-secondary">Back</a>
     </div>
 @endsection

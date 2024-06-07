@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Liste des courriers</h1>
-        <a href="{{ route('mails.create') }}" class="btn btn-primary mb-3">Create Mail</a>
+        <a href="{{ route('mail.create') }}" class="btn btn-primary mb-3">Create Mail</a>
         <table class="table">
             <thead>
                 <tr>

@@ -7,14 +7,18 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('mail.index') }}"><i class="bi bi-inbox"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('subject.index') }}"><i class="bi bi-briefcase"></i> Affaires</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
+                </li>
+
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-tags"></i> Typologies</a>
                 </li>
