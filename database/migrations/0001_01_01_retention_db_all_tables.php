@@ -560,40 +560,58 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
 
+        /*
 
-        Schema::create('mailbatches', function (Blueprint $table) {
+
+            Les parapheurs
+
+
+        */
+
+
+        Schema::create('batches', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
             $table->string('name', 100)->nullable(false);
             $table->primary('id');
         });
 
-        Schema::create('mailbatch_transaction', function (Blueprint $table) {
-            $table->unsignedInteger('mailbatch_id')->nullable(false);
+
+        Schema::create('batch_mail', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('batch_id')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->dateTime('insertion_date')->nullable(false);
+            $table->dateTime('exit_date')->nullable(true);
+            $table->timestamps();
+            $table->primary('id');
+            $table->foreign('batch_id')->references('id')->on('mailbatchs')->onDelete('cascade');
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+        });
+
+
+        Schema::create('batch_transactions', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('batch_id')->nullable(false);
             $table->unsignedBigInteger('organisation_send_id')->nullable(false);
             $table->unsignedBigInteger('organisation_received_id')->nullable(false);
             $table->timestamps();
-            $table->primary(['mailbatch_id', 'mail_id', 'organisation_send_id', 'organisation_received_id']);
-            $table->foreign('mailbatch_id')->references('id')->on('mailbatchs')->onDelete('cascade');
-            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->primary('id');
+            $table->foreign('batch_id')->references('id')->on('batches')->onDelete('cascade');
             $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('cascade');
         });
 
 
-
-
         /*
 
 
-        Les paniers
+
+            Les paniers
 
 
 
         */
-
-
 
         Schema::create('dollies', function(Blueprint $table){
             $table->id();
