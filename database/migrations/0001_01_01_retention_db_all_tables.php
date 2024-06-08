@@ -19,22 +19,6 @@ return new class extends Migration
 
 
 
-        Schema::create('office', function (Blueprint $table) {
-            $table->id();
-            $table->string('poste', 100)->nullable();
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('organisation_id')->nullable(false);
-            $table->primary('id');
-            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
-        });
-
-        Schema::create('user_office', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->unsignedInteger('office_id')->nullable(false);
-            $table->primary(['user_id', 'office_id']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('office_id')->references('id')->on('offices')->onDelete('cascade');
-        });
 
 
 
@@ -386,6 +370,16 @@ return new class extends Migration
         });
 
 
+        Schema::create('user_organisation', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('organisation_id')->nullable(false);
+            $table->primary('id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+        });
+
+
         Schema::create('access_activities', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -690,57 +684,50 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('term_record');
-        Schema::dropIfExists('term_relations');
-        Schema::dropIfExists('relation_types');
-        Schema::dropIfExists('terms');
-        Schema::dropIfExists('floors');
-        Schema::dropIfExists('buildings');
-        Schema::dropIfExists('record_levels');
-        Schema::dropIfExists('record_supports');
-        Schema::dropIfExists('record_status');
-        Schema::dropIfExists('organisations');
-        Schema::dropIfExists('properties');
-        Schema::dropIfExists('container_status');
-        Schema::dropIfExists('shelves');
-        Schema::dropIfExists('rooms');
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('access_activities');
         Schema::dropIfExists('accessions');
         Schema::dropIfExists('accession_status');
+        Schema::dropIfExists('activities');
+        Schema::dropIfExists('attachments');
+        Schema::dropIfExists('buildings');
+        Schema::dropIfExists('container_status');
+        Schema::dropIfExists('container_types');
         Schema::dropIfExists('containers');
+        Schema::dropIfExists('communicabilities');
+        Schema::dropIfExists('dolly_types');
+        Schema::dropIfExists('dollies');
         Schema::dropIfExists('files');
+        Schema::dropIfExists('floors');
+        Schema::dropIfExists('keywords');
+        Schema::dropIfExists('mail_attachment');
+        Schema::dropIfExists('mail_container');
+        Schema::dropIfExists('mail_containers');
+        Schema::dropIfExists('mail_organisation');
+        Schema::dropIfExists('mail_priorities');
+        Schema::dropIfExists('mail_status');
+        Schema::dropIfExists('mail_typologies');
+        Schema::dropIfExists('mails');
+        Schema::dropIfExists('organisation_activity');
+        Schema::dropIfExists('organisations');
+        Schema::dropIfExists('properties');
         Schema::dropIfExists('record_keyword');
         Schema::dropIfExists('record_links');
-        Schema::dropIfExists('retention_activity');
-        Schema::dropIfExists('organisation_activity');
-        Schema::dropIfExists('retentions');
-        Schema::dropIfExists('mail_typologies');
-        Schema::dropIfExists('typology_categories');
-        Schema::dropIfExists('mail_priorities');
-        Schema::dropIfExists('communications');
-        Schema::dropIfExists('mail_status');
-        Schema::dropIfExists('mail_subjects');
-        Schema::dropIfExists('mail_containers');
-        Schema::dropIfExists('container_types');
-        Schema::dropIfExists('mails');
-        Schema::dropIfExists('mail_organisation');
-        Schema::dropIfExists('mail_attachment');
-        Schema::dropIfExists('attachments');
-        Schema::dropIfExists('dollies');
-        Schema::dropIfExists('mail_container');
-        Schema::dropIfExists('transactions');
-        Schema::dropIfExists('term_categories');
-        Schema::dropIfExists('mailbatch_transaction');
-        Schema::dropIfExists('mailbatchs');
-        Schema::dropIfExists('user_office');
-        Schema::dropIfExists('offices');
-        Schema::dropIfExists('sorts');
+        Schema::dropIfExists('record_levels');
+        Schema::dropIfExists('record_status');
         Schema::dropIfExists('records');
+        Schema::dropIfExists('relations');
+        Schema::dropIfExists('relation_types');
+        Schema::dropIfExists('roles');
+        Schema::dropIfExists('rooms');
+        Schema::dropIfExists('sorts');
+        Schema::dropIfExists('term_categories');
+        Schema::dropIfExists('term_record');
+        Schema::dropIfExists('term_relations');
+        Schema::dropIfExists('terms');
+        Schema::dropIfExists('transactions');
+        Schema::dropIfExists('typology_categories');
+        Schema::dropIfExists('user_office');
         Schema::dropIfExists('user_types');
-        Schema::dropIfExists('keywords');
-        Schema::dropIfExists('dolly_types');
-        Schema::dropIfExists('access_activities');
-        Schema::dropIfExists('activities');
-        Schema::dropIfExists('communicabilities');
+        Schema::dropIfExists('user_organisation');
     }
 };
