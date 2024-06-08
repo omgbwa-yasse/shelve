@@ -13,6 +13,7 @@ class MailSubjectController extends Controller
     {
         $mailSubjects = MailSubject::all();
         return view('mails.subject.index', compact('mailSubjects'));
+
     }
 
 
@@ -27,11 +28,11 @@ class MailSubjectController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|max:100',
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255|unique:mail_subjects,name',
         ]);
 
-        MailSubject::create($request->all());
+        $mailSubject = MailSubject::create($validatedData);
 
         return redirect()->route('subject.index')
             ->with('success', 'Mail subject created successfully.');
@@ -70,7 +71,7 @@ class MailSubjectController extends Controller
     {
         $mailSubject->delete();
 
-        return redirect()->route('mail_subjects.index')
+        return redirect()->route('subject.index')
             ->with('success', 'Mail subject deleted successfully.');
     }
 }

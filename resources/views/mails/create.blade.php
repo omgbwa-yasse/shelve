@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Créer un courrier</h1>
-        <form action="{{ route('mail.store') }}" method="POST">
+        <form action="{{ route('mails.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="subject_id" class="form-label">Affaire</label>
