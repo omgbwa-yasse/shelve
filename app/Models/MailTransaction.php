@@ -1,22 +1,21 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Mail;
-use App\Models\Organisation;
-use App\Models\User;
-use App\Models\MailStatus;
 
-class Transaction extends Model
+class MailTransaction extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'code',
         'date_creation',
         'mail_id',
-        'user_send',
+        'user_send_id',
         'organisation_send_id',
-        'user_received',
+        'user_received_id',
         'organisation_received_id',
         'mail_status_id',
     ];
@@ -28,7 +27,7 @@ class Transaction extends Model
 
     public function userSend()
     {
-        return $this->belongsTo(User::class, 'user_send');
+        return $this->belongsTo(User::class, 'user_send_id');
     }
 
     public function organisationSend()
@@ -38,7 +37,7 @@ class Transaction extends Model
 
     public function userReceived()
     {
-        return $this->belongsTo(User::class, 'user_received');
+        return $this->belongsTo(User::class, 'user_received_id');
     }
 
     public function organisationReceived()
@@ -48,7 +47,7 @@ class Transaction extends Model
 
     public function mailStatus()
     {
-        return $this->belongsTo(MailStatus::class, 'mail_status_id');
+        return $this->belongsTo(MailStatus::class);
     }
 }
 

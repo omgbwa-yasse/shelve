@@ -9,9 +9,11 @@ class BatchController extends Controller
 {
     public function index()
     {
-        $mailbatches = MailBatch::all();
-        return view('batch.index', compact('mailbatches'));
+        $mailBatches = MailBatch::all(); // Correction de la casse camelCase
+        return view('batch.index', compact('mailBatches'));
     }
+
+
 
     public function create()
     {
@@ -20,55 +22,54 @@ class BatchController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'code' => 'nullable|max:10',
+        $validatedData = $request->validate([
+            'code' => 'nullable|unique:mail_batches|max:10',
             'name' => 'required|max:100',
         ]);
 
-        MailBatch::create($request->all());
+        MailBatch::create($validatedData);
 
-        return redirect()->route('batch.index')
-            ->with('success', 'Mail batch created successfully.');
-    }
-
-
-
-    public function show(MailBatch $mailbatch)
-    {
-        return view('batch.show', compact('mailbatch'));
+        return redirect()->route('batch.index')->with('success', 'Mail batch created successfully.');
     }
 
 
 
 
-    public function edit(MailBatch $mailbatch)
+    public function show(MailBatch $mailBatch)
     {
-        return view('batch.edit', compact('mailbatch'));
+        return view('batch.show', compact('mailBatch'));
     }
 
 
 
-    public function update(Request $request, MailBatch $mailbatch)
+
+    public function edit(MailBatch $mailBatch)
     {
-        $request->validate([
-            'code' => 'nullable|max:10',
+        return view('batch.edit', compact('mailBatch'));
+    }
+
+
+
+
+    public function update(Request $request, MailBatch $mailBatch)
+    {
+        $validatedData = $request->validate([
+            'code' => 'nullable|unique:mail_batches,code,' . $mailBatch->id . '|max:10',
             'name' => 'required|max:100',
         ]);
 
-        $mailbatch->update($request->all());
+        $mailBatch->update($validatedData);
 
-        return redirect()->route('batch.index')
-            ->with('success', 'Mail batch updated successfully.');
+        return redirect()->route('batch.index')->with('success', 'Mail batch updated successfully.');
     }
 
 
 
 
-    public function destroy(MailBatch $mailbatch)
+    public function destroy(MailBatch $mailBatch)
     {
-        $mailbatch->delete();
+        $mailBatch->delete();
 
-        return redirect()->route('batch.index')
-            ->with('success', 'Mail batch deleted successfully.');
+        return redirect()->route('batch.index')->with('success', 'Mail batch deleted successfully.');
     }
 }

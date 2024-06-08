@@ -433,7 +433,7 @@ return new class extends Migration
 
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->nullable(false);
+            $table->string('code')->nullable(false)->unique();
             $table->string('name', 255)->nullable(false);
             $table->text('author')->nullable(false);
             $table->text('description')->nullable();
@@ -451,7 +451,6 @@ return new class extends Migration
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
-
         });
 
 
@@ -474,12 +473,6 @@ return new class extends Migration
             $table->foreign('mail_status_id')->references('id')->on('mail_status')->onDelete('cascade');
         });
 
-
-        Schema::create('mail_subjects', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 255)->nullable(false)->unique();
-            $table->timestamps();
-        });
 
 
         Schema::create('mail_organisation', function (Blueprint $table) {
@@ -578,9 +571,10 @@ return new class extends Migration
 
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10)->nullable(false);
-            $table->string('name', 100)->nullable(false);
+            $table->string('code', 10)->nullable(false)->unique();
+            $table->string('name', 250)->nullable(false);
             $table->primary('id');
+            $table->timestamps();
         });
 
 

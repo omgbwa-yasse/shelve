@@ -6,7 +6,6 @@ use App\Models\Mail;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
-use App\Models\MailSubject;
 use App\Models\Batch;
 use App\Models\User;
 
@@ -16,7 +15,7 @@ class MailController extends Controller
 
     public function index()
     {
-        $mails = Mail::with(['priority','typology','type','subject','creator','updator'])->paginate(15);
+        $mails = Mail::with(['priority','typology','type','creator','updator'])->paginate(15);
         return view('mails.index', compact('mails'));
     }
 
@@ -27,9 +26,8 @@ class MailController extends Controller
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
         $types = MailType::all();
-        $subjects = MailSubject::all();
         $batches = Batch::all();
-        return view('mails.create', compact('priorities','typologies','types','subjects','batches'));
+        return view('mails.create', compact('priorities','typologies','types','batches'));
 
     }
 
@@ -58,7 +56,6 @@ class MailController extends Controller
             'mail_priority_id' => 'required|exists:mail_priorities,id',
             'mail_typology_id' => 'required|exists:mail_typologies,id',
             'mail_type_id' => 'required|exists:mail_types,id',
-            'subject_id' => 'nullable|exists:mail_subjects,id',
         ]);
 
             $mail = Mail::create($validatedData + [
@@ -74,7 +71,7 @@ class MailController extends Controller
     public function show(Mail $mail)
     {
         $mail->load('priority','typology','attachment','send', 'received',
-                    'type','subject','batch','creator','updator'); //'container'
+                    'type','batch','creator','updator'); //'container'
         return view('mails.show', compact('mail'));
     }
 
@@ -86,10 +83,9 @@ class MailController extends Controller
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
         $types = MailType::all();
-        $subjects = MailSubject::all();
         $batches = Batch::all();
         $authors = user::all();
-        return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types', 'subjects', 'batches'));
+        return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types',  'batches'));
     }
 
 
@@ -103,7 +99,6 @@ class MailController extends Controller
             'author' => 'nullable|max:255',
             'date' => 'required|date',
             'description' => 'nullable',
-            'subject_id' => 'required|exists:mail_subjects,id',
             'type_id' => 'required|exists:mail_types,id',
             'document_id' => 'nullable',
             'mail_priority_id' => 'required|exists:mail_priorities,id',

@@ -19,12 +19,11 @@ class Mail extends Model
     protected $fillable = [
         'code',
         'name',
-        'authors',
+        'author',
         'description',
         'date',
         'create_by',
         'update_by',
-        'subject_id',
         'mail_priority_id',
         'mail_type_id',
         'mail_typology_id',
@@ -64,11 +63,6 @@ class Mail extends Model
     public function type()
     {
         return $this->belongsTo(MailType::class, 'mail_type_id');
-    }
-
-    public function subject()
-    {
-        return $this->belongsTo(MailSubject::class, 'subject_id', 'id');
     }
     public function batch()
     {

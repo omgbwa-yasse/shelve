@@ -42,5 +42,11 @@
             </tr>
         </table>
         <a href="{{ route('mails.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-warning btn-secondary">Edit</a>
+        <form action="{{ route('mails.destroy', $mail->id) }}" method="POST" class="d-inline">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger btn-secondary">Delete</button>
+        </form>
     </div>
 @endsection

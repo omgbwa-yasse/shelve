@@ -10,7 +10,7 @@
                     <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('subject.index') }}"><i class="bi bi-briefcase"></i> Affaires</a>
+                    <a class="nav-link text-dark" href="{{ route('batches.index') }}"><i class="bi bi-inbox"></i> Parapheur</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
@@ -44,10 +44,7 @@
                     <a class="nav-link text-dark" href="{{ route('mails.create') }}"><i class="bi bi-inbox"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('subject.create') }}"><i class="bi bi-briefcase"></i> Affaire</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch.create') }}"><i class="bi bi-bookmark-check"></i> Parapheur</a>
+                    <a class="nav-link text-dark" href="{{ route('batches.create') }}"><i class="bi bi-bookmark-check"></i> Parapheur</a>
                 </li>
             </ul>
         </div>

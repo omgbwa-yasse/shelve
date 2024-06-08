@@ -6,14 +6,6 @@
         <form action="{{ route('mails.store') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="subject_id" class="form-label">Affaire</label>
-                <select class="form-select" id="subject_id" name="subject_id" required>
-                    @foreach ($subjects as $subject)
-                        <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" required>
             </div>

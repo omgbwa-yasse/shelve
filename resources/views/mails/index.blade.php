@@ -7,10 +7,8 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Code</th>
-                    <th>Object</th>
-                    <th>Auteur</th>
+                    <th>Object, Auteur</th>
                     <th>Date</th>
                     <th>Actions</th>
                 </tr>
@@ -18,19 +16,11 @@
             <tbody>
                 @foreach ($mails as $mail)
                     <tr>
-                        <td>{{ $mail->id }}</td>
                         <td>{{ $mail->code }}</td>
-                        <td>{{ $mail->name }}</td>
-                        <td>{{ $mail->author }}</td>
+                        <td>{{ $mail->name }}, {{ $mail->author }}</td>
                         <td>{{ $mail->date }}</td>
                         <td>
                             <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
-                            <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ route('mails.destroy', $mail->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
                         </td>
                     </tr>
                 @endforeach
