@@ -7,16 +7,20 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
 use App\Models\MailSubject;
-use App\Models\MailBatch;
+use App\Models\Batch;
 use App\Models\User;
 
 class MailController extends Controller
 {
+
+
     public function index()
     {
-        $mails = Mail::all();
+        $mails = Mail::with(['priority','typology','type','subject','creator','updator'])->paginate(15);
         return view('mails.index', compact('mails'));
     }
+
+
 
     public function create()
     {
@@ -24,10 +28,13 @@ class MailController extends Controller
         $typologies = MailTypology::all();
         $types = MailType::all();
         $subjects = MailSubject::all();
-        $batches = MailBatch::all();
-        $authors = user::all();
-        return view('mails.create', compact('priorities','authors', 'typologies', 'types', 'subjects', 'batches'));
+        $batches = Batch::all();
+        return view('mails.create', compact('priorities','typologies','types','subjects','batches'));
+
     }
+
+
+
 
 
     public function searchAuthors(Request $request)
@@ -38,30 +45,41 @@ class MailController extends Controller
     }
 
 
+
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'code' => 'required|max:255',
-            'object' => 'required|max:255',
-            'date' => 'required|date',
+            'code' => 'required|unique:mails|max:255',
+            'name' => 'nullable|max:255',
+            'author' => 'nullable|max:255',
             'description' => 'nullable',
-            'subject_id' => 'required|exists:mail_subjects,id',
-            'type_id' => 'required|exists:mail_types,id',
-            'authors' => 'required',
-            'document_id' => 'nullable',
+            'date' => 'required|date',
             'mail_priority_id' => 'required|exists:mail_priorities,id',
             'mail_typology_id' => 'required|exists:mail_typologies,id',
+            'mail_type_id' => 'required|exists:mail_types,id',
+            'subject_id' => 'nullable|exists:mail_subjects,id',
         ]);
 
-        Mail::create($validatedData);
+            $mail = Mail::create($validatedData + [
+                'create_by' => auth()->id(),
+            ]);
 
-        return redirect()->route('mails.index')->with('success', 'Mail created successfully.');
+            return redirect()->route('mails.index')->with('success', 'Mail créé avec succès !');
     }
+
+
+
 
     public function show(Mail $mail)
     {
+        $mail->load('priority','typology','attachment','send', 'received',
+                    'type','subject','batch','creator','updator'); //'container'
         return view('mails.show', compact('mail'));
     }
+
+
+
 
     public function edit(Mail $mail)
     {
@@ -69,21 +87,24 @@ class MailController extends Controller
         $typologies = MailTypology::all();
         $types = MailType::all();
         $subjects = MailSubject::all();
-        $batches = MailBatch::all();
+        $batches = Batch::all();
         $authors = user::all();
         return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types', 'subjects', 'batches'));
     }
+
+
+
 
     public function update(Request $request, Mail $mail)
     {
         $validatedData = $request->validate([
             'code' => 'required|max:255',
-            'object' => 'required|max:255',
+            'name' => 'required|max:255',
+            'author' => 'nullable|max:255',
             'date' => 'required|date',
             'description' => 'nullable',
             'subject_id' => 'required|exists:mail_subjects,id',
             'type_id' => 'required|exists:mail_types,id',
-            'authors' => 'required',
             'document_id' => 'nullable',
             'mail_priority_id' => 'required|exists:mail_priorities,id',
             'mail_typology_id' => 'required|exists:mail_typologies,id',
@@ -94,10 +115,11 @@ class MailController extends Controller
         return redirect()->route('mails.index')->with('success', 'Mail updated successfully.');
     }
 
+
+
     public function destroy(Mail $mail)
     {
         $mail->delete();
-
         return redirect()->route('mails.index')->with('success', 'Mail deleted successfully.');
     }
 }

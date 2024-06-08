@@ -14,6 +14,8 @@ class MailContainer extends Model
         'reference', 'name', 'type_id'
     ];
 
+    protected $table = 'mail_container';
+
     public function containerType()
     {
         return $this->belongsTo(ContainerType::class);

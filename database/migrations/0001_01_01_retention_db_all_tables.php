@@ -434,16 +434,24 @@ return new class extends Migration
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
             $table->string('code')->nullable(false);
-            $table->string('object', 100)->nullable(false);
+            $table->string('name', 255)->nullable(false);
+            $table->text('author')->nullable(false);
             $table->text('description')->nullable();
             $table->date('date')->nullable(false);
+            $table->unsignedBigInteger('subject_id')->nullable(false);
+            $table->unsignedBigInteger('create_by')->nullable(false);
+            $table->unsignedBigInteger('update_by')->nullable(true);
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
             $table->timestamps();
+            $table->foreign('subject_id')->references('id')->on('mail_subjects')->onDelete('cascade');
+            $table->foreign('create_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('update_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
+
         });
 
 

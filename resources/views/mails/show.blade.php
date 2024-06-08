@@ -14,7 +14,11 @@
             </tr>
             <tr>
                 <th>Object</th>
-                <td>{{ $mail->object }}</td>
+                <td>{{ $mail->name }}</td>
+            </tr>
+            <tr>
+                <th>Auteur </th>
+                <td>{{ $mail->author }}</td>
             </tr>
             <tr>
                 <th>Description</th>

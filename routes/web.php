@@ -29,14 +29,14 @@ Route::group(['middleware' => 'auth'], function () {
         return view('settings');
     })->name('setting');
 
-    Route::resource('mail', MailController::class);
-    Route::prefix('mail')->group(function () {
+    Route::resource('mails', MailController::class);
+    Route::prefix('mails')->group(function () {
         Route::resource('subject', MailSubjectController::class);
         Route::resource('batch', BatchController::class);
     });
 
-    Route::resource('batch', BatchController::class);
-    Route::prefix('batch')->group(function () {
+    Route::resource('batches', BatchController::class);
+    Route::prefix('batches')->group(function () {
         Route::prefix('received')->group(function () {
             Route::resource('/', BatchReceivedController::class)->names('batch-received');;
         });
@@ -46,7 +46,7 @@ Route::group(['middleware' => 'auth'], function () {
         });
     });
 
-    Route::prefix('transaction')->group(function () {
+    Route::prefix('transactions')->group(function () {
         Route::prefix('send')->group(function () {
             Route::resource('/', TransactionSendController::class)->names('mail-received');
         });
@@ -56,12 +56,12 @@ Route::group(['middleware' => 'auth'], function () {
         });
     });
 
-    Route::resource('repository', RepositoryController::class);
-    Route::resource('communication', CommunicationController::class);
-    Route::resource('accession', AccessionController::class);
-    Route::resource('tool', ToolsController::class);
-    Route::resource('setting', SettingController::class);
-    Route::resource('localisation', LocalisationController::class);
+    Route::resource('repositories', RepositoryController::class);
+    Route::resource('communications', CommunicationController::class);
+    Route::resource('accessions', AccessionController::class);
+    Route::resource('tools', ToolsController::class);
+    Route::resource('settings', SettingController::class);
+    Route::resource('localisations', LocalisationController::class);
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

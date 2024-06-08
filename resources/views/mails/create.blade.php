@@ -6,12 +6,20 @@
         <form action="{{ route('mail.store') }}" method="POST">
             @csrf
             <div class="mb-3">
+                <label for="subject_id" class="form-label">Affaire</label>
+                <select class="form-select" id="subject_id" name="subject_id" required>
+                    @foreach ($subjects as $subject)
+                        <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" required>
             </div>
             <div class="mb-3">
-                <label for="object" class="form-label">Object</label>
-                <input type="text" class="form-control" id="object" name="object" required>
+                <label for="name" class="form-label">Intitulé du courrier</label>
+                <input type="text" class="form-control" id="name" name="name" required>
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
@@ -22,15 +30,11 @@
                 <input type="date" class="form-control" id="date" name="date" required>
             </div>
             <div class="mb-3">
-                <label for="author_id" class="form-label">Producteurs </label>
-                <select class="form-select" id="author_id" name="author_id[]" required>
-                    @foreach ($authors as $author)
-                        <option value="{{ $author->id }}">{{ $author->name }}</option>
-                    @endforeach
-                </select>
+                <label for="author" class="form-label">Producteurs </label>
+                <input type="text" class="form-control" id="author" name="author" required>
             </div>
             <div class="mb-3">
-                <label for="mail_priority_id" class="form-label">Mail Priority</label>
+                <label for="mail_priority_id" class="form-label">Priorité</label>
                 <select class="form-select" id="mail_priority_id" name="mail_priority_id" required>
                     @foreach ($priorities as $priority)
                         <option value="{{ $priority->id }}">{{ $priority->name }}</option>
@@ -38,7 +42,7 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="mail_type_id" class="form-label">Mail Type</label>
+                <label for="mail_type_id" class="form-label">Type de courrier</label>
                 <select class="form-select" id="mail_type_id" name="mail_type_id" required>
                     @foreach ($types as $type)
                         <option value="{{ $type->id }}">{{ $type->name }}</option>
@@ -46,7 +50,7 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="mail_typology_id" class="form-label">Mail Typology</label>
+                <label for="mail_typology_id" class="form-label">Type de courrier</label>
                 <select class="form-select" id="mail_typology_id" name="mail_typology_id" required>
                     @foreach ($typologies as $typology)
                         <option value="{{ $typology->id }}">{{ $typology->name }}</option>

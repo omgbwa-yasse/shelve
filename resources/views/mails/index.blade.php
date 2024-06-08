@@ -10,6 +10,7 @@
                     <th>ID</th>
                     <th>Code</th>
                     <th>Object</th>
+                    <th>Auteur</th>
                     <th>Date</th>
                     <th>Actions</th>
                 </tr>
@@ -19,12 +20,13 @@
                     <tr>
                         <td>{{ $mail->id }}</td>
                         <td>{{ $mail->code }}</td>
-                        <td>{{ $mail->object }}</td>
+                        <td>{{ $mail->name }}</td>
+                        <td>{{ $mail->author }}</td>
                         <td>{{ $mail->date }}</td>
                         <td>
-                            <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
-                            <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ route('mails.destroy', $mail->id) }}" method="POST" class="d-inline">
+                            <a href="{{ route('mail.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
+                            <a href="{{ route('mail.edit', $mail->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <form action="{{ route('mail.destroy', $mail->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>

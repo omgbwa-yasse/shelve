@@ -18,57 +18,79 @@ class Mail extends Model
 
     protected $fillable = [
         'code',
-        'object',
-        'date',
-        'description',
-        'subject_id',
-        'type_id',
+        'name',
         'authors',
-        'document_id',
+        'description',
+        'date',
+        'create_by',
+        'update_by',
+        'subject_id',
         'mail_priority_id',
-        'mail_typology_id'
+        'mail_type_id',
+        'mail_typology_id',
     ];
-
     public $timestamps = true;
 
-    public function mailPriority()
+    public function priority()
     {
-        return $this->belongsTo(MailPriority::class);
+        return $this->belongsTo(MailPriority::class, 'mail_priority_id');
     }
 
-    public function mailTypology()
+    public function typology()
     {
-        return $this->belongsTo(MailTypology::class);
+        return $this->belongsTo(MailTypology::class, 'mail_typology_id');
     }
 
-    public function mailAttachment()
+    public function attachment()
     {
         return $this->belongsTo(MailAttachment::class);
     }
 
-    public function transactions()
+    public function send()
     {
         return $this->hasMany(Transaction::class);
     }
 
-    public function mailContainers()
+    public function received()
     {
-        return $this->belongsToMany(MailContainer::class);
+        return $this->hasMany(Transaction::class);
     }
 
-    public function mailType()
+    public function container()
     {
-        return $this->belongsTo(MailType::class);
+        return $this->belongsToMany(MailContainer::class, 'mail_type_id',);
     }
 
-    public function mailSubject()
+    public function type()
     {
-        return $this->belongsTo(MailSubject::class);
+        return $this->belongsTo(MailType::class, 'mail_type_id');
     }
-    public function mailBatch()
+
+    public function subject()
     {
-        return $this->belongsTo(MailBatch::class);
+        return $this->belongsTo(MailSubject::class, 'subject_id', 'id');
+    }
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'create_by', 'id');
+    }
+
+    public function updator()
+    {
+        return $this->belongsTo(User::class, 'update_by', 'id');
     }
 
 
 }
+
+
+
+
+
+
+
