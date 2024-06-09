@@ -21,7 +21,7 @@ class MailReceivedController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $transactions = MailTransaction::where('user_received', $user->id)->get();
+        $transactions = MailTransaction::where('user_received_id', $user->id)->get();
         return view('mails.received.index', compact('transactions'));
     }
 

@@ -454,9 +454,9 @@ return new class extends Migration
             $table->integer('code')->nullable(false);
             $table->datetime('date_creation')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
-            $table->unsignedBigInteger('user_send')->nullable(false);
+            $table->unsignedBigInteger('user_send_id')->nullable(false);
             $table->unsignedBigInteger('organisation_send_id')->nullable(false);
-            $table->unsignedBigInteger('user_received')->nullable();
+            $table->unsignedBigInteger('user_received_id')->nullable();
             $table->unsignedBigInteger('organisation_received_id')->nullable();
             $table->integer('mail_status_id')->nullable(false);
             $table->timestamps();

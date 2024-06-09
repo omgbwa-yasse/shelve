@@ -22,7 +22,7 @@ class MailSendController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $transactions = MailTransaction::where('user_send', $user->id)->get();
+        $transactions = MailTransaction::where('user_send_id', $user->id)->get();
         return view('mails.send.index', compact('transactions'));
     }
 
@@ -35,7 +35,7 @@ class MailSendController extends Controller
         $users = user::all();
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
-        return view('mails.received.create', compact('mails','users','organisations','mailStatuses'));
+        return view('mails.send.create', compact('mails','users','organisations','mailStatuses'));
     }
 
 
@@ -46,16 +46,16 @@ class MailSendController extends Controller
             'code' => 'required|integer',
             'date_creation' => 'required|date',
             'mail_id' => 'required|exists:mails,id',
-            'user_send' => 'required|exists:users,id',
+            'user_send_id' => 'required|exists:users,id',
             'organisation_send_id' => 'required|exists:organisations,id',
-            'user_received' => 'nullable|exists:users,id',
+            'user_received_id' => 'nullable|exists:users,id',
             'organisation_received_id' => 'nullable|exists:organisations,id',
             'mail_status_id' => 'required|exists:mail_statuses,id',
         ]);
 
         MailTransaction::create($request->all());
 
-        return redirect()->route('mails.send.index')
+        return redirect()->route('mail-send.index')
             ->with('success', 'MailTransaction created successfully.');
     }
 
