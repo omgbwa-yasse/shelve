@@ -2,71 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MailTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use App\Models\Organisation;
+use App\Models\MailTransaction;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Mail;
+use App\Models\MailType;
+use App\Models\MailStatus;
+use App\Models\MailPriority;
+use App\Models\MailTypology;
+use App\Models\MailAttachment;
 
 class MailReceivedController extends Controller
 {
+
     public function index()
     {
-        $transactions = MailTransaction::all();
+        $user = Auth::user();
+        $transactions = MailTransaction::where('user_received', $user->id)->get();
         return view('mails.received.index', compact('transactions'));
     }
 
+
+
     public function create()
     {
-        return view('mails.received.create');
+        $type = mailType::where('name','=','receveid');
+        $mails = mail::all();
+        $users = user::all();
+        $organisations = organisation ::all();
+        $mailStatuses = MailStatus:: all();
+        return view('mails.received.create', compact('mails','users','organisations','mailStatuses'));
     }
+
+
 
     public function store(Request $request)
     {
         $request->validate([
             'code' => 'required|integer',
-            'date_creation' => 'required|date_format:Y-m-d H:i:s',
-            'mail_id' => 'required|integer',
-            'user_send' => 'required|integer',
-            'organisation_send_id' => 'required|integer',
-            'user_received' => 'nullable|integer',
-            'organisation_received_id' => 'nullable|integer',
-            'mail_status_id' => 'required|integer',
+            'date_creation' => 'required|date',
+            'mail_id' => 'required|exists:mails,id',
+            'user_send' => 'required|exists:users,id',
+            'organisation_send_id' => 'required|exists:organisations,id',
+            'user_received' => 'nullable|exists:users,id',
+            'organisation_received_id' => 'nullable|exists:organisations,id',
+            'mail_status_id' => 'required|exists:mail_statuses,id',
         ]);
 
         MailTransaction::create($request->all());
-        return redirect()->route('transactions.index')->with('success', 'MailTransaction créée avec succès !');
+
+        return redirect()->route('mails.received.index')
+            ->with('success', 'MailTransaction created successfully.');
     }
+
+
 
     public function show(MailTransaction $MailTransaction)
     {
         return view('mails.received.show', compact('MailTransaction'));
     }
 
+
+
     public function edit(MailTransaction $MailTransaction)
     {
         return view('mails.received.edit', compact('MailTransaction'));
     }
 
+
+
     public function update(Request $request, MailTransaction $MailTransaction)
     {
         $request->validate([
             'code' => 'required|integer',
-            'date_creation' => 'required|date_format:Y-m-d H:i:s',
-            'mail_id' => 'required|integer',
-            'user_send' => 'required|integer',
-            'organisation_send_id' => 'required|integer',
-            'user_received' => 'nullable|integer',
-            'organisation_received_id' => 'nullable|integer',
-            'mail_status_id' => 'required|integer',
+            'date_creation' => 'required|date',
+            'mail_id' => 'required|exists:mails,id',
+            'user_send' => 'required|exists:users,id',
+            'organisation_send_id' => 'required|exists:organisations,id',
+            'user_received' => 'nullable|exists:users,id',
+            'organisation_received_id' => 'nullable|exists:organisations,id',
+            'mail_status_id' => 'required|exists:mail_status,id',
         ]);
 
         $MailTransaction->update($request->all());
-        return redirect()->route('transactions.index')->with('success', 'MailTransaction mise à jour avec succès !');
+
+        return redirect()->route('mails.received.index')
+            ->with('success', 'MailTransaction updated successfully');
     }
+
+
 
     public function destroy(MailTransaction $MailTransaction)
     {
         $MailTransaction->delete();
-        return redirect()->route('transactions.index')->with('success', 'MailTransaction supprimée avec succès !');
+
+        return redirect()->route('mails.received.index')
+            ->with('success', 'MailTransaction deleted successfully');
     }
 }
-
 

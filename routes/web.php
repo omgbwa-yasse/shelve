@@ -3,12 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
-use App\Http\Controllers\TransactionSendController;
-use App\Http\Controllers\TransactionReceivedController;
+use App\Http\Controllers\MailSendController;
+use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
-use App\Http\Controllers\MailSubjectController;
 use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
@@ -47,11 +46,11 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('transactions')->group(function () {
         Route::prefix('send')->group(function () {
-            Route::resource('/', TransactionSendController::class)->names('mail-received');
+            Route::resource('/', MailSendController::class)->names('mail-received');
         });
 
         Route::prefix('received')->group(function () {
-            Route::resource('/', TransactionReceivedController::class)->names('mail-send');
+            Route::resource('/', MailReceivedController::class)->names('mail-send');
         });
     });
 
