@@ -430,7 +430,8 @@ return new class extends Migration
             $table->string('code')->nullable(false)->unique();
             $table->string('name', 255)->nullable(false);
             $table->text('author')->nullable(false);
-            $table->text('description')->nullable();
+            $table->text('contacts')->nullable(false);
+            $table->text('description')->nullable(true);
             $table->date('date')->nullable(false);
             $table->unsignedBigInteger('subject_id')->nullable(false);
             $table->unsignedBigInteger('create_by')->nullable(false);
@@ -448,7 +449,7 @@ return new class extends Migration
         });
 
 
-        Schema::create('transactions', function (Blueprint $table) {
+        Schema::create('mail_transactions', function (Blueprint $table) {
             $table->id();
             $table->integer('code')->nullable(false);
             $table->datetime('date_creation')->nullable(false);

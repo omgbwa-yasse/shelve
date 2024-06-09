@@ -21,6 +21,7 @@ class Mail extends Model
         'name',
         'author',
         'description',
+        'contacts',
         'date',
         'create_by',
         'update_by',
@@ -47,12 +48,12 @@ class Mail extends Model
 
     public function send()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(MailTransaction::class);
     }
 
     public function received()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(MailTransaction::class);
     }
 
     public function container()

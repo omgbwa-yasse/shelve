@@ -2,19 +2,25 @@
 
 namespace App\Http\Controllers;
 use App\Models\MailTransaction;
+use App\Models\Mail;
+use App\Models\MailType;
 use Illuminate\Http\Request;
 
 class MailSendController extends Controller
 {
     public function index()
     {
-        $transactions = MailTransaction::all();
+
+        $user = Auth::user();
+        $transactions = Transaction::where('user_send', $user->id)->get();
         return view('mails.send.index', compact('transactions'));
     }
 
     public function create()
     {
-        return view('mails.send.create');
+        $type = MailType::where('name','=','send');
+        $mails = Mail::where('mail_type_id','=',$type);
+        return view('mails.send.create', compact('mails'));
     }
 
     public function store(Request $request)
