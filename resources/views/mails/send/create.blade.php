@@ -28,22 +28,7 @@
                                         @enderror
                                     </div>
                                 </div>
-
-                                <div class="form-group row">
-                                    <label for="date_creation" class="col-md-4 col-form-label text-md-right">{{ __('Date Creation') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="date_creation" type="datetime-local" class="form-control @error('date_creation') is-invalid @enderror" name="date_creation" value="{{ old('date_creation') }}" required autocomplete="date_creation">
-
-                                        @error('date_creation')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
+                            <div class="form-group row">
                                     <label for="mail_id" class="col-md-4 col-form-label text-md-right">{{ __('Mail ID') }}</label>
 
                                     <div class="col-md-6">
@@ -56,40 +41,11 @@
                                         @enderror
                                     </div>
                                 </div>
-
                                 <div class="form-group row">
-                                    <label for="user_send" class="col-md-4 col-form-label text-md-right">{{ __('User Send') }}</label>
+                                    <label for="user_received_id" class="col-md-4 col-form-label text-md-right">{{ __('User Received') }}</label>
 
                                     <div class="col-md-6">
-                                        <input id="user_send" type="number" class="form-control @error('user_send') is-invalid @enderror" name="user_send" value="{{ old('user_send') }}" required autocomplete="user_send">
-
-                                        @error('user_send')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="organisation_send_id" class="col-md-4 col-form-label text-md-right">{{ __('Organisation Send ID') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="organisation_send_id" type="number" class="form-control @error('organisation_send_id') is-invalid @enderror" name="organisation_send_id" value="{{ old('organisation_send_id') }}" required autocomplete="organisation_send_id">
-
-                                        @error('organisation_send_id')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="user_received" class="col-md-4 col-form-label text-md-right">{{ __('User Received') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="user_received" type="number" class="form-control @error('user_received') is-invalid @enderror" name="user_received" value="{{ old('user_received') }}" autocomplete="user_received">
+                                        <input id="user_received_id" type="number" class="form-control @error('user_received') is-invalid @enderror" name="user_received" value="{{ old('user_received') }}" autocomplete="user_received">
 
                                         @error('user_received')
                                             <span class="invalid-feedback" role="alert">
@@ -112,21 +68,6 @@
                                         @enderror
                                     </div>
                                 </div>
-
-                                <div class="form-group row">
-                                    <label for="mail_status_id" class="col-md-4 col-form-label text-md-right">{{ __('Mail Status ID') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="mail_status_id" type="number" class="form-control @error('mail_status_id') is-invalid @enderror" name="mail_status_id" value="{{ old('mail_status_id') }}" required autocomplete="mail_status_id">
-
-                                        @error('mail_status_id')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-
                                 <div class="form-group row mb-0">
                                     <div class="col-md-6 offset-md-4">
                                         <button type="submit" class="btn btn-primary">
@@ -134,14 +75,14 @@
                                         </button>
                                     </div>
                                 </div>
+                                <input id="user_send_id" type="hidden" name="user_received_id" value="{{ auth()->user()->id }}">
+
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <button type="submit" class="btn btn-primary">Create</button>
     </form>
 </div>
 @endsection

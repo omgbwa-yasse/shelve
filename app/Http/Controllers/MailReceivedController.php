@@ -43,20 +43,24 @@ class MailReceivedController extends Controller
     {
         $request->validate([
             'code' => 'required|integer',
-            'date_creation' => 'required|date',
             'mail_id' => 'required|exists:mails,id',
-            'user_send' => 'required|exists:users,id',
+            'user_send_id' => 'required|exists:users,id',
             'organisation_send_id' => 'required|exists:organisations,id',
-            'user_received' => 'nullable|exists:users,id',
-            'organisation_received_id' => 'nullable|exists:organisations,id',
-            'mail_status_id' => 'required|exists:mail_statuses,id',
+            'user_received_id' => 'required|exists:users,id',
         ]);
 
-        MailTransaction::create($request->all());
+        $validatedData = $request->validated();
+        $validatedData['date_creation'] = now();
+        $user = User::find($validatedData['user_send_id']);
+        $validatedData['user_received_id'] = $user->organisation->id; // Ensure that $user->organisation is not null
+        $validatedData['mails_status_id'] = null;
+
+        MailTransaction::create($validatedData);
 
         return redirect()->route('mails.received.index')
             ->with('success', 'MailTransaction created successfully.');
     }
+
 
 
 

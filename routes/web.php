@@ -46,11 +46,11 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('transactions')->group(function () {
         Route::prefix('send')->group(function () {
-            Route::resource('/', MailSendController::class)->names('mail-received');
+            Route::resource('/', MailSendController::class)->names('mail-send');
         });
 
         Route::prefix('received')->group(function () {
-            Route::resource('/', MailReceivedController::class)->names('mail-send');
+            Route::resource('/', MailReceivedController::class)->names('mail-received');
         });
     });
 
