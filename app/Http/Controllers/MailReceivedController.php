@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use App\Models\Organisation;
-use App\Models\MailTransaction;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use App\Models\Mail;
+use App\Models\User;
 use App\Models\MailType;
 use App\Models\MailStatus;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
+use App\Models\Organisation;
+use Illuminate\Http\Request;
 use App\Models\MailAttachment;
+use App\Models\MailTransaction;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class MailReceivedController extends Controller
 {
@@ -41,7 +41,7 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'code' => 'required|integer',
             'mail_id' => 'required|exists:mails,id',
             'user_send_id' => 'required|exists:users,id',
@@ -49,18 +49,21 @@ class MailReceivedController extends Controller
             'user_received_id' => 'required|exists:users,id',
         ]);
 
-        $validatedData = $request->validated();
         $validatedData['date_creation'] = now();
-        $user = User::find($validatedData['user_send_id']);
-        $validatedData['user_received_id'] = $user->organisation->id; // Ensure that $user->organisation is not null
-        $validatedData['mails_status_id'] = null;
+        $user = User::find($validatedData['user_received_id']);
+
+        foreach($user->organisations as $organisation){
+            if($organisation['active'] = 'true'){
+                $validatedData['organisation_received_id'] = $user->organisation->id;
+            }
+        }
+        $validatedData['mails_status_id'] = 'draft';
 
         MailTransaction::create($validatedData);
 
-        return redirect()->route('mails.received.index')
+        return redirect()->route('mail-received.index')
             ->with('success', 'MailTransaction created successfully.');
     }
-
 
 
 
