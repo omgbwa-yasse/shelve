@@ -21,8 +21,28 @@ INSERT INTO `mail_status`(`id`, `name`) VALUES ('','traité');
 
 INSERT INTO `mail_types`(name) VALUES ('send'), ('received');
 
+
+
 INSERT INTO `organisations`(`id`, `code`, `name`, `description`, `parent_id`)
-VALUES ('','DG','Directeur général','Poste du Directeur général','');
+VALUES ('','DG','Directeur général','','');
+
+INSERT INTO `organisations`(`id`, `code`, `name`, `description`, `parent_id`)
+VALUES ('','SG','Secretaire général','','1');
+
+INSERT INTO `organisations`(`id`, `code`, `name`, `description`, `parent_id`)
+VALUES ('','RC','Responsable du courier','','2');
+
+
+
+
+INSERT INTO `user_organisation`(`user_id`, `organisation_id`, `active`)
+VALUES ('1','1','1');
+
+INSERT INTO `user_organisation`(`user_id`, `organisation_id`, `active`)
+VALUES ('1','2','0');
+
+INSERT INTO `user_organisation`(`user_id`, `organisation_id`, `active`)
+VALUES ('1','3','0');
 
 INSERT INTO `organisations`(`id`, `code`, `name`, `description`, `parent_id`)
 VALUES ('','SG','Secrétaire général','Poste du Secrétaire général','');
@@ -33,6 +53,8 @@ INSERT INTO `mail_subjects`(`id`, `name`) VALUES ('','Vente des veilles voitures
 
 INSERT INTO `mailbatches`(`id`, `code`, `name`) VALUES ('','DG10','Parapheur directeur général');
 INSERT INTO `mailbatches`(`id`, `code`, `name`) VALUES ('','DG09','Parapheur Secrétaire général');
+
+
 
 /*
 
