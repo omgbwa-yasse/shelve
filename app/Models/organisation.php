@@ -11,12 +11,15 @@ class Organisation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'code', 'name', 'description', 'parent_id'
+        'code',
+        'name',
+        'description',
+        'parent_id',
     ];
 
     public function parent()
     {
-        return $this->belongsTo(Organisation::class, 'parent_id');
+        return $this->belongsTo(Organisation::class);
     }
 
     public function children()

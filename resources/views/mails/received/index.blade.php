@@ -9,6 +9,7 @@
                 <th>Code</th>
                 <th>Date Creation</th>
                 <th>Mail ID</th>
+                <th>Nom</th>
                 <th>User Send</th>
                 <th>Organisation Send</th>
                 <th>User Received</th>
@@ -23,6 +24,7 @@
                 <td>{{ $transaction->code }}</td>
                 <td>{{ $transaction->date_creation }}</td>
                 <td>{{ $transaction->mail_id }}</td>
+                <td>{{ $transaction->mails->name }}</td>
                 <td>{{ $transaction->user_send }}</td>
                 <td>{{ $transaction->organisation_send_id }}</td>
                 <td>{{ $transaction->user_received }}</td>

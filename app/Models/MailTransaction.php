@@ -18,11 +18,12 @@ class MailTransaction extends Model
         'user_received_id',
         'organisation_received_id',
         'mail_status_id',
+        'document_type_id',
     ];
 
-    public function mail()
+    public function mails()
     {
-        return $this->belongsTo(Mail::class);
+        return $this->belongsTo(Mail::class, 'mail_id');
     }
 
     public function userSend()
@@ -48,6 +49,11 @@ class MailTransaction extends Model
     public function mailStatus()
     {
         return $this->belongsTo(MailStatus::class);
+    }
+
+    public function documentType()
+    {
+        return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
 }
 

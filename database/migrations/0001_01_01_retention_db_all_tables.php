@@ -358,7 +358,6 @@ return new class extends Migration
         });
 
 
-
         Schema::create('organisations', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -439,6 +438,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
+
             $table->timestamps();
             $table->foreign('subject_id')->references('id')->on('mail_subjects')->onDelete('cascade');
             $table->foreign('create_by')->references('id')->on('users')->onDelete('cascade');
@@ -459,7 +459,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_received_id')->nullable();
             $table->unsignedBigInteger('organisation_received_id')->nullable();
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
-            $table->integer('mail_status_id')->nullable(false);
+
             $table->timestamps();
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('user_send')->references('id')->on('users')->onDelete('cascade');
@@ -555,6 +555,26 @@ return new class extends Migration
             $table->foreign('container_id')->references('id')->on('mail_containers')->onDelete('cascade');
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
+
+
+
+        /*
+
+
+            Propritées communes
+
+
+        */
+
+
+        Schema::create('document_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->nullable(false)->unique();
+            $table->longText('description', 50)->nullable(false);
+            $table->timestamps();
+            $table->primary('id');
+        });
+
 
         /*
 

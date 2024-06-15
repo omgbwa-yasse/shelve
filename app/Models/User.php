@@ -6,11 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Organisation;
 
 
 class User extends Authenticatable
 {
     use HasFactory;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -46,12 +48,9 @@ class User extends Authenticatable
         ];
     }
 
-
     public function organisations()
     {
-        return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id');
+        return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withPivot('active');
     }
-
-
 
 }

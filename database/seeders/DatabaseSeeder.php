@@ -12,6 +12,7 @@ use App\Models\UserOrganisation;
 use App\Models\Building;
 use App\Models\Floor;
 use App\Models\Room;
+use App\Models\documentType;
 use App\Models\Shelf;
 use App\Models\MailSubject;
 use App\Models\Mailbatch;
@@ -82,6 +83,22 @@ class DatabaseSeeder extends Seeder
             'shelf' => 6,
             'shelf_length' => 120,
             'room_id' => 1,
+        ]);
+
+        DocumentType::create([
+            'name' => 'Duplicate',
+            'description' => 'A copy of a document that is made for archival purposes.',
+        ]);
+
+        DocumentType::create([
+            'name' => 'Original',
+            'description' => 'The original version of a document.',
+        ]);
+
+
+        DocumentType::create([
+            'name' => 'Copy',
+            'description' => 'A copy of a document that is made for distribution or reference purposes.',
         ]);
     }
 }

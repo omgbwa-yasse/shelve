@@ -9,6 +9,7 @@ use App\Models\MailStatus;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Organisation;
+use App\Models\UserOrganisation;
 use Illuminate\Http\Request;
 use App\Models\MailAttachment;
 use App\Models\MailTransaction;
@@ -22,6 +23,7 @@ class MailReceivedController extends Controller
     {
         $user = Auth::user();
         $transactions = MailTransaction::where('user_received_id', $user->id)->get();
+        $transactions->load('mails');
         return view('mails.received.index', compact('transactions'));
     }
 
@@ -50,20 +52,25 @@ class MailReceivedController extends Controller
         ]);
 
         $validatedData['date_creation'] = now();
-        $user = User::find($validatedData['user_received_id']);
 
-        foreach($user->organisations as $organisation){
-            if($organisation['active'] = 'true'){
-                $validatedData['organisation_received_id'] = $user->organisation->id;
+        $userOrganisations = UserOrganisation::where('user_id', '=', $validatedData['user_received_id'])->get();
+
+        foreach ($userOrganisations as $userOrganisation) {
+            if ($userOrganisation->active) {
+                $validatedData['organisation_received_id'] = $userOrganisation->organisation_id;
+                break;
             }
         }
-        $validatedData['mails_status_id'] = 'draft';
+
+        $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
+
 
         MailTransaction::create($validatedData);
 
         return redirect()->route('mail-received.index')
             ->with('success', 'MailTransaction created successfully.');
     }
+
 
 
 
