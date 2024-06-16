@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AuthorType;
 use Illuminate\Database\Seeder;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
@@ -100,5 +101,17 @@ class DatabaseSeeder extends Seeder
             'name' => 'Copy',
             'description' => 'A copy of a document that is made for distribution or reference purposes.',
         ]);
+
+        AuthorType::insert([
+            ['name' => 'Personne', 'description' => 'Un individu, identifié par son nom propre.'],
+            ['name' => 'Famille', 'description' => 'Un groupe de personnes liées par le sang ou le mariage, identifié par un nom de famille commun.'],
+            ['name' => 'Personne morale', 'description' => 'Une entité dotée de la personnalité juridique, distincte des personnes physiques qui la composent (entreprises, associations, fondations, etc.).'],
+            ['name' => 'Collectivité territoriale', 'description' => 'Une entité administrative d\'une zone géographique déterminée (commune, département, région, etc.).'],
+            ['name' => 'État', 'description' => 'Une entité politique souveraine exerçant le pouvoir sur un territoire et une population.'],
+            ['name' => 'Organisation internationale intergouvernementale', 'description' => 'Une organisation composée d\'États membres (ONU, UNESCO, etc.).'],
+            ['name' => 'Organisation internationale non gouvernementale', 'description' => 'Une organisation à but non lucratif et non étatique, agissant à l\'échelle internationale (Croix-Rouge, Greenpeace, etc.).']
+        ]);
+
+
     }
 }

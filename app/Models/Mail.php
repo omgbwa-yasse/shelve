@@ -9,6 +9,7 @@ use App\Models\MailType;
 use App\Models\MailSubject;
 use App\Models\MailBatch;
 use App\Models\MailAttachment;
+use App\Models\Author;
 use App\Models\documentType;
 use App\Models\MailContainer;
 use App\Models\Transaction;
@@ -85,6 +86,11 @@ class Mail extends Model
     public function documentType()
     {
         return $this->belongsTo(DocumentType::class, 'document_type_id');
+    }
+
+    public function authors()
+    {
+        return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id');
     }
 
 

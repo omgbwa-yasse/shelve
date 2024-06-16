@@ -9,6 +9,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\RepositoryController;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
@@ -30,9 +31,16 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('mails', MailController::class);
 
+
     Route::prefix('mails')->group(function () {
         Route::resource('batches', BatchController::class);
+        Route::resource('authors', AuthorController::class)->names('mail-author');;
+
     });
+
+    Route::resource('authors.contacts', AuthorController::class)->names('author-contacts');
+
+
 
     Route::prefix('batches')->group(function () {
         Route::resource('received', BatchReceivedController::class)->names('batch-received');

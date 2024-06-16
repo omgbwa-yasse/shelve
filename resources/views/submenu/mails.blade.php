@@ -18,7 +18,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-author.index') }}"><i class="bi bi-envelope"></i> Producteurs</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-tags"></i> Typologies</a>
                 </li>
@@ -46,6 +48,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('batches.create') }}"><i class="bi bi-bookmark-check"></i> Parapheur</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-author.create') }}"><i class="bi bi-envelope"></i> Producteur</a>
+                </li>
             </ul>
         </div>
 
@@ -59,7 +64,7 @@
                 <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i>Reçu</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
+                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i>Envoyé</a>
             </li>
                 </ul>
             </div>

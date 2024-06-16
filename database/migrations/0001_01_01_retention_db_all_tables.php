@@ -199,6 +199,13 @@ return new class extends Migration
         });
 
 
+        Schema::create('record_author', function (Blueprint $table) {
+            $table->unsignedBigInteger('author_id');
+            $table->unsignedBigInteger('record_id');
+            $table->primary(['author_id', 'record_id']);
+            $table->foreign('author_id')->references('id')->on('authors')->onDelete('cascade');
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+        });
 
 
 
@@ -559,6 +566,14 @@ return new class extends Migration
         });
 
 
+        Schema::create('mail_author', function (Blueprint $table) {
+            $table->unsignedBigInteger('author_id');
+            $table->unsignedBigInteger('mail_id');
+            $table->primary(['author_id', 'mail_id']);
+            $table->foreign('author_id')->references('id')->on('authors')->onDelete('cascade');
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+        });
+
 
         /*
 
@@ -576,6 +591,63 @@ return new class extends Migration
             $table->timestamps();
             $table->primary('id');
         });
+
+        Schema::create('authors', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('type_id')->nullable(false);
+            $table->string('name', 100)->nullable(false)->unique();
+            $table->string('parallel_name', 100)->nullable(true);
+            $table->string('other_name', 100)->nullable(true);
+            $table->string('lifespan', 100)->nullable(true);
+            $table->string('locations', 100)->nullable(true);
+            $table->unsignedInteger('parent_id')->nullable(true);
+            $table->timestamps();
+            $table->primary('id');
+            $table->foreign('parent_id')->references('id')->on('authors')->onDelete('set null');
+            $table->foreign('type_id')->references('id')->on('author_types')->onDelete('cascade');
+        });
+
+        Schema::create('author_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->nullable(false)->unique();
+            $table->longText('description')->nullable(false);
+            $table->timestamps();
+            $table->primary('id');
+        });
+
+
+
+        Schema::create('author_addresses', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('type_id')->nullable(false);
+            $table->string('name', 100)->nullable(false)->unique();
+            $table->string('parallel_name', 100)->nullable(true);
+            $table->string('other_name', 100)->nullable(true);
+            $table->string('lifespan', 100)->nullable(true);
+            $table->string('locations', 100)->nullable(true);
+            $table->unsignedInteger('parent_id')->nullable(true);
+            $table->timestamps();
+            $table->primary('id');
+            $table->foreign('parent_id')->references('id')->on('authors')->onDelete('set null');
+            $table->foreign('type_id')->references('id')->on('author_types')->onDelete('cascade');
+        });
+
+
+        Schema::create('author_contacts', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedInteger('author_id')->nullable(true);
+            $table->string('phone1')->nullable();
+            $table->string('phone2')->nullable();
+            $table->string('email')->nullable();
+            $table->string('address')->nullable();
+            $table->string('website')->nullable();
+            $table->string('fax')->nullable();
+            $table->text('other')->nullable();
+            $table->string('po_box')->nullable();
+            $table->timestamps();
+            $table->foreign('author_id')->references('id')->on('authors')->onDelete('set null');
+        });
+
 
 
         /*
@@ -730,6 +802,7 @@ return new class extends Migration
         Schema::dropIfExists('mail_priorities');
         Schema::dropIfExists('mail_status');
         Schema::dropIfExists('mail_typologies');
+        Schema::dropIfExists('mail_author');
         Schema::dropIfExists('mails');
         Schema::dropIfExists('organisation_activity');
         Schema::dropIfExists('organisations');
@@ -739,6 +812,7 @@ return new class extends Migration
         Schema::dropIfExists('record_levels');
         Schema::dropIfExists('record_status');
         Schema::dropIfExists('records');
+        Schema::dropIfExists('record_author');
         Schema::dropIfExists('relations');
         Schema::dropIfExists('relation_types');
         Schema::dropIfExists('roles');
@@ -753,5 +827,8 @@ return new class extends Migration
         Schema::dropIfExists('user_office');
         Schema::dropIfExists('user_types');
         Schema::dropIfExists('user_organisation');
+        Schema::dropIfExists('document_types');
+        Schema::dropIfExists('authors');
+        Schema::dropIfExists('authors_types');
     }
 };
