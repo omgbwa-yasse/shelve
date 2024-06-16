@@ -35,23 +35,13 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('batches')->group(function () {
-        Route::prefix('received')->group(function () {
-            Route::resource('/', BatchReceivedController::class)->names('batch-received');;
-        });
-
-        Route::prefix('send')->group(function () {
-            Route::resource('/', BatchSendController::class)->names('batch-send');
-        });
+        Route::resource('received', BatchReceivedController::class)->names('batch-received');
+        Route::resource('send', BatchSendController::class)->names('batch-send');
     });
 
     Route::prefix('transactions')->group(function () {
-        Route::prefix('send')->group(function () {
-            Route::resource('/', MailSendController::class)->names('mail-send');
-        });
-
-        Route::prefix('received')->group(function () {
-            Route::resource('/', MailReceivedController::class)->names('mail-received');
-        });
+        Route::resource('send', MailSendController::class)->names('mail-send');
+        Route::resource('received', MailReceivedController::class)->names('mail-received');
     });
 
     Route::resource('repositories', RepositoryController::class);

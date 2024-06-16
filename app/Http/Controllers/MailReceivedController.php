@@ -24,6 +24,8 @@ class MailReceivedController extends Controller
         $user = Auth::user();
         $transactions = MailTransaction::where('user_received_id', $user->id)->get();
         $transactions->load('mails');
+        $transactions->load('organisationSend');
+        $transactions->load('organisationReceived');
         return view('mails.received.index', compact('transactions'));
     }
 
@@ -31,7 +33,7 @@ class MailReceivedController extends Controller
 
     public function create()
     {
-        $type = mailType::where('name','=','receveid');
+        $type = mailType::where('name','=','received');
         $mails = mail::all();
         $users = user::all();
         $organisations = organisation ::all();
@@ -52,7 +54,6 @@ class MailReceivedController extends Controller
         ]);
 
         $validatedData['date_creation'] = now();
-
         $userOrganisations = UserOrganisation::where('user_id', '=', $validatedData['user_received_id'])->get();
 
         foreach ($userOrganisations as $userOrganisation) {
@@ -64,7 +65,6 @@ class MailReceivedController extends Controller
 
         $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
 
-
         MailTransaction::create($validatedData);
 
         return redirect()->route('mail-received.index')
@@ -74,47 +74,53 @@ class MailReceivedController extends Controller
 
 
 
-    public function show(MailTransaction $MailTransaction)
+    public function show(MailTransaction $mailTransaction)
     {
         return view('mails.received.show', compact('MailTransaction'));
     }
 
 
 
-    public function edit(MailTransaction $MailTransaction)
+    public function edit(MailTransaction $mailTransaction)
     {
-        return view('mails.received.edit', compact('MailTransaction'));
+        return view('mails.received.edit', compact('mailTransaction'));
     }
 
 
 
-    public function update(Request $request, MailTransaction $MailTransaction)
+    public function update(Request $request, MailTransaction $mailTransaction)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'code' => 'required|integer',
             'date_creation' => 'required|date',
             'mail_id' => 'required|exists:mails,id',
-            'user_send' => 'required|exists:users,id',
+            'user_send_id' => 'required|exists:users,id',
             'organisation_send_id' => 'required|exists:organisations,id',
-            'user_received' => 'nullable|exists:users,id',
+            'user_received_id' => 'nullable|exists:users,id',
             'organisation_received_id' => 'nullable|exists:organisations,id',
             'mail_status_id' => 'required|exists:mail_status,id',
         ]);
 
-        $MailTransaction->update($request->all());
+
+        if ($validatedData['user_received_id'] !== null && $mailTransaction->user_received_id === null) {
+            $validatedData['user_received_id'] = Auth::id();
+            $validatedData['organisation_received_id'] = Auth::user()->organisation_id;
+        }
+
+
+        $mailTransaction->update($validatedData);
 
         return redirect()->route('mails.received.index')
-            ->with('success', 'MailTransaction updated successfully');
+            ->with('success', 'Mail Transaction updated successfully');
     }
 
 
 
-    public function destroy(MailTransaction $MailTransaction)
+    public function destroy(MailTransaction $mailTransaction)
     {
-        $MailTransaction->delete();
+        $mailTransaction->delete();
 
-        return redirect()->route('mails.received.index')
-            ->with('success', 'MailTransaction deleted successfully');
+        return redirect()->route('mail-received.index')->with('success', 'MailTransaction deleted successfully');
     }
 }
 

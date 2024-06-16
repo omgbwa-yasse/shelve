@@ -7,11 +7,11 @@
         <tbody>
             <tr>
                 <th>Code</th>
-                <td>{{ $transaction->code }}</td>
+                <td>{{ $MailTransaction->code }}</td>
             </tr>
             <tr>
                 <th>Date Creation</th>
-                <td>{{ $transaction->date_creation }}</td>
+                <td>{{ $MailTransaction->date_creation }}</td>
             </tr>
 
         </tbody>

@@ -6,34 +6,27 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Date Creation</th>
-                <th>Mail ID</th>
+
                 <th>Nom</th>
-                <th>User Send</th>
-                <th>Organisation Send</th>
-                <th>User Received</th>
-                <th>Organisation Received</th>
-                <th>Mail Status</th>
+                <th>De</th>
+                <th>Pour </th>
+                <th>Type</th>
+                <th>Date Creation</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($transactions as $transaction)
             <tr>
-                <td>{{ $transaction->code }}</td>
-                <td>{{ $transaction->date_creation }}</td>
-                <td>{{ $transaction->mail_id }}</td>
                 <td>{{ $transaction->mails->name }}</td>
-                <td>{{ $transaction->user_send }}</td>
-                <td>{{ $transaction->organisation_send_id }}</td>
-                <td>{{ $transaction->user_received }}</td>
-                <td>{{ $transaction->organisation_received_id }}</td>
-                <td>{{ $transaction->mail_status_id }}</td>
+                <td>{{ $transaction->organisationSend->name }}</td>
+                <td>{{ $transaction->organisationReceived->name }}</td>
+                <td>{{ $transaction->document_type_id}}</td>
+                <td> {{ date('Y-m-d', strtotime($transaction->date_creation)) }} </td>
                 <td>
-                    <a href="{{ route('mail-received.show', $transaction->id) }}" class="btn btn-primary">Show</a>
-                    <a href="{{ route('mail-received.edit', $transaction->id) }}" class="btn btn-secondary">Edit</a>
-                    <form action="{{ route('mail-received.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('mail-received.show', $transaction) }}" class="btn btn-primary">Show</a>
+                    <a href="{{ route('mail-received.edit', $transaction) }}" class="btn btn-secondary">Edit</a>
+                    <form action="{{ route('mail-received.destroy', $transaction) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Delete</button>

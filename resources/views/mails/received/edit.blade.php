@@ -3,42 +3,42 @@
 @section('content')
 <div class="container">
     <h1>Modifier courrier entrant</h1>
-    <form action="{{ route('mail-received.update', $transaction->id) }}" method="POST">
+
+    <form action="{{ route('mail-received.update', $mailTransaction) }}" method="POST">
         @csrf
         @method('PUT')
+
         <div class="mb-3">
             <label for="code" class="form-label">Code</label>
-            <input type="number" class="form-control" id="code" name="code" value="{{ $transaction->code }}" required>
+            <input type="number" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $mailTransaction->code) }}" required>
+            @error('code')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
+
         <div class="mb-3">
-            <label for="date_creation" class="form-label">Date Creation</label>
-            <input type="datetime-local" class="form-control" id="date_creation" name="date_creation" value="{{ $transaction->date_creation->format('Y-m-d\TH:i') }}" required>
+            <label for="date_creation" class="form-label">Date de création</label>
+            <input type="datetime-local" class="form-control @error('date_creation') is-invalid @enderror" id="date_creation" name="date_creation" value="{{ old('date_creation', $mailTransaction->date_creation->format('Y-m-d\TH:i')) }}" required>
+            @error('date_creation')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
+
         <div class="mb-3">
-            <label for="mail_id" class="form-label">Mail ID</label>
-            <input type="number" class="form-control" id="mail_id" name="mail_id" value="{{ $transaction->mail_id }}" required>
+            <label for="mail_status_id" class="form-label">Statut du courrier</label>
+            <select class="form-control @error('mail_status_id') is-invalid @enderror" id="mail_status_id" name="mail_status_id" required>
+                @foreach ($mailStatuses as $status)
+                    <option value="{{ $status->id }}" {{ old('mail_status_id', $mailTransaction->mail_status_id) == $status->id ? 'selected' : '' }}>
+                        {{ $status->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('mail_status_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
-        <div class="mb-3">
-            <label for="user_send" class="form-label">User Send</label>
-            <input type="number" class="form-control" id="user_send" name="user_send" value="{{ $transaction->user_send }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="organisation_send_id" class="form-label">Organisation Send ID</label>
-            <input type="number" class="form-control" id="organisation_send_id" name="organisation_send_id" value="{{ $transaction->organisation_send_id }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="user_received" class="form-label">User Received</label>
-            <input type="number" class="form-control" id="user_received" name="user_received" value="{{ $transaction->user_received }}">
-        </div>
-        <div class="mb-3">
-            <label for="organisation_received_id" class="form-label">Organisation Received ID</label>
-            <input type="number" class="form-control" id="organisation_received_id" name="organisation_received_id" value="{{ $transaction->organisation_received_id }}">
-        </div>
-        <div class="mb-3">
-            <label for="mail_status_id" class="form-label">Mail Status ID</label>
-            <input type="number" class="form-control" id="mail_status_id" name="mail_status_id" value="{{ $transaction->mail_status_id }}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Update</button>
+
+        <button type="submit" class="btn btn-primary">Mettre à jour</button>
     </form>
 </div>
 @endsection
