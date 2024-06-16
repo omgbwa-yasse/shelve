@@ -438,7 +438,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('mail_typology_id')->nullable(false);
-
+            $table->unsignedBigInteger('document_type_id')->nullable(false);
             $table->timestamps();
             $table->foreign('subject_id')->references('id')->on('mail_subjects')->onDelete('cascade');
             $table->foreign('create_by')->references('id')->on('users')->onDelete('cascade');
@@ -446,6 +446,7 @@ return new class extends Migration
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
+            $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
         });
 
 
@@ -459,7 +460,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_received_id')->nullable();
             $table->unsignedBigInteger('organisation_received_id')->nullable();
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
-
+            $table->unsignedBigInteger('document_type_id')->nullable(false);
             $table->timestamps();
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('user_send')->references('id')->on('users')->onDelete('cascade');
@@ -467,6 +468,7 @@ return new class extends Migration
             $table->foreign('user_received')->references('id')->on('users')->onDelete('set null');
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
+            $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
         });
 
 
