@@ -18,7 +18,7 @@ class MailController extends Controller
     public function index()
     {
         $mails = Mail::with(['priority','typology','type','creator','updator','lastTransaction'])->paginate(15);
-        return view('mails.index', compact('mails',));
+        return view('mails.index', compact('mails'));
     }
 
 
@@ -74,8 +74,7 @@ class MailController extends Controller
 
     public function show(Mail $mail)
     {
-        $mail->load('priority','typology','attachment','send', 'received',
-                    'type','batch','creator','updator','documentType');
+        $mail->load('priority','typology','attachment','send', 'received','type','batch','creator','updator','documentType');
         return view('mails.show', compact('mail'));
     }
 

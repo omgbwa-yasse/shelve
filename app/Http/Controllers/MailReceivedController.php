@@ -39,7 +39,8 @@ class MailReceivedController extends Controller
         $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
-        return view('mails.received.create', compact('mails','users','organisations','mailStatuses'));
+        $documentTypes = documentType :: all();
+        return view('mails.received.create', compact('mails','users','organisations','mailStatuses','documentTypes'));
     }
 
 
@@ -52,6 +53,7 @@ class MailReceivedController extends Controller
             'user_send_id' => 'required|exists:users,id',
             'organisation_send_id' => 'required|exists:organisations,id',
             'user_received_id' => 'required|exists:users,id',
+            'document_type_id' => 'required|exists:document_types,id',
         ]);
 
         $validatedData['date_creation'] = now();
@@ -75,16 +77,26 @@ class MailReceivedController extends Controller
 
 
 
-    public function show(MailTransaction $mailTransaction)
+    public function show(int $id)
     {
-        return view('mails.received.show', compact('MailTransaction'));
+        $mailTransaction = MailTransaction::with([
+            'mails',
+            'documentType',
+            'mailStatus',
+            'userReceived',
+            'userSend',
+            'organisationReceived',
+            'organisationSend'
+        ])->findOrFail($id);
+
+        return view('mails.received.show', compact('mailTransaction'));
     }
 
 
 
-    public function edit(MailTransaction $mailTransaction)
+    public function edit(MailTransaction $MailTransaction)
     {
-        return view('mails.received.edit', compact('mailTransaction'));
+        return view('mails.received.edit', compact('MailTransaction'));
     }
 
 

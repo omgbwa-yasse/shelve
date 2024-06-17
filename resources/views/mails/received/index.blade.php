@@ -18,11 +18,11 @@
         <tbody>
             @foreach ($transactions as $transaction)
             <tr>
-                <td>{{ $transaction->mails->name }}</td>
-                <td>{{ $transaction->organisationSend->name }}</td>
-                <td>{{ $transaction->organisationReceived->name }}</td>
-                <td>{{ $transaction->document_type_id}}</td>
-                <td> {{ date('Y-m-d', strtotime($transaction->date_creation)) }} </td>
+                <td>{{ $transaction->mails->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->organisationSend->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->organisationReceived->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->document_type_id ?? 'N/A' }}</td>
+                <td>{{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</td>
                 <td>
                     <a href="{{ route('mail-received.show', $transaction) }}" class="btn btn-primary">Show</a>
                     <a href="{{ route('mail-received.edit', $transaction) }}" class="btn btn-secondary">Edit</a>

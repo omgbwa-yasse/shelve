@@ -21,9 +21,9 @@ class MailTransaction extends Model
         'document_type_id',
     ];
 
-    public function mail()
+    public function mails()
     {
-        return $this->belongsTo(Mail::class);
+        return $this->belongsTo(Mail::class,'mail_id' );
     }
 
     public function scopeLatestOfMany($query)

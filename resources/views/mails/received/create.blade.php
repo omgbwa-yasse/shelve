@@ -10,7 +10,7 @@
             <label for="code">Code</label>
             <input type="text" name="code" id="code" class="form-control" value="{{ old('code') }}">
         </div>
-       <div class="form-group">
+<div class="form-group">
     <label for="mailInput">Mail</label>
     <input type="text" id="mailInput" class="form-control" />
     <div id="suggestions" class="list-group"></div>
@@ -36,7 +36,16 @@
                 @endforeach
             </select>
         </div>
-
+        <div class="form-group">
+            <label for="document_type_id">Utilisateur d'envoi</label>
+            <select name="document_type_id" id="document_type_id" class="form-control">
+                @foreach($documentTypes as $documentType)
+                    <option value="{{ $documentType->id }}" {{ old('document_type_id') == $documentType->id ? 'selected' : '' }}>
+                        {{ $documentType->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
         <input name="user_received_id" id="user_received_id" value="{{ auth()->id() }}" hidden>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>
