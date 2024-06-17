@@ -17,7 +17,7 @@ class MailController extends Controller
 
     public function index()
     {
-        $mails = Mail::with(['priority','typology','type','creator','updator','lastTransaction'])->paginate(15);
+        $mails = Mail::with(['priority','author','typology','type','creator','updator','lastTransaction'])->paginate(15);
         return view('mails.index', compact('mails'));
     }
 
@@ -56,6 +56,7 @@ class MailController extends Controller
             'description' => 'nullable',
             'address' => 'nullable',
             'date' => 'required|date',
+            'author_id' => 'required|exists:authors,id',
             'mail_priority_id' => 'required|exists:mail_priorities,id',
             'mail_typology_id' => 'required|exists:mail_typologies,id',
             'mail_type_id' => 'required|exists:mail_types,id',
@@ -74,7 +75,7 @@ class MailController extends Controller
 
     public function show(Mail $mail)
     {
-        $mail->load('priority','typology','attachment','send', 'received','type','batch','creator','updator','documentType');
+        $mail->load('priority','typology','attachment','send', 'received','type','batch','author','updator','documentType');
         return view('mails.show', compact('mail'));
     }
 
@@ -99,10 +100,10 @@ class MailController extends Controller
         $validatedData = $request->validate([
             'code' => 'required|max:255',
             'name' => 'required|max:255',
-            'author' => 'nullable|max:255',
             'address' => 'nullable',
             'date' => 'required|date',
             'description' => 'nullable',
+            'author_id' => 'required|exists:authors,id',
             'type_id' => 'required|exists:mail_types,id',
             'document_id' => 'nullable',
             'mail_priority_id' => 'required|exists:mail_priorities,id',

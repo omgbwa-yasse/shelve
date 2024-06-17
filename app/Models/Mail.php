@@ -21,7 +21,7 @@ class Mail extends Model
     protected $fillable = [
         'code',
         'name',
-        'author',
+        'author_id',
         'description',
         'contacts',
         'date',
@@ -38,6 +38,7 @@ class Mail extends Model
     {
         return $this->belongsTo(MailPriority::class, 'mail_priority_id');
     }
+
 
     public function typology()
     {
@@ -88,7 +89,7 @@ class Mail extends Model
         return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
 
-    public function authors()
+    public function author()
     {
         return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id');
     }
