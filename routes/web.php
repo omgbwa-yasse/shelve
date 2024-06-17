@@ -13,8 +13,10 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
+use App\Http\Controllers\AuthorContactController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\LocalisationController;
+use App\Http\Controllers\TestController;
 use App\Models\Transaction;
 
 Auth::routes();
@@ -29,22 +31,19 @@ Route::group(['middleware' => 'auth'], function () {
         return view('settings');
     })->name('setting');
 
-    Route::resource('mails', MailController::class);
 
+    Route::resource('mails', MailController::class);
 
     Route::prefix('mails')->group(function () {
         Route::resource('batches', BatchController::class);
-        Route::resource('authors', AuthorController::class)->names('mail-author');;
-
+        Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
     });
-
-    Route::resource('authors.contacts', AuthorController::class)->names('author-contacts');
-
 
 
     Route::prefix('batches')->group(function () {
         Route::resource('received', BatchReceivedController::class)->names('batch-received');
         Route::resource('send', BatchSendController::class)->names('batch-send');
+        Route::resource('authors', AuthorController::class)->names('mail-author');
     });
 
     Route::prefix('transactions')->group(function () {

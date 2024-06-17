@@ -29,16 +29,20 @@
                 <td>{{ $mail->date }}</td>
             </tr>
             <tr>
-                <th>Mail Priority</th>
+                <th>Priorité</th>
                 <td>{{ $mail->priority->name }}</td>
             </tr>
             <tr>
-                <th>Mail Type</th>
+                <th>Type de courrier</th>
                 <td>{{ $mail->type->name }}</td>
             </tr>
             <tr>
-                <th>Mail Typology</th>
+                <th>Type d'affaire</th>
                 <td>{{ $mail->typology->name }}</td>
+            </tr>
+            <tr>
+                <th>Nature</th>
+                <td>{{ $mail->documentType->name }}</td>
             </tr>
         </table>
         <a href="{{ route('mails.index') }}" class="btn btn-secondary">Back</a>

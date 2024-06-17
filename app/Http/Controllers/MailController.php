@@ -7,6 +7,8 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
 use App\Models\Batch;
+use App\Models\documentType;
+use App\Models\Author;
 use App\Models\User;
 
 class MailController extends Controller
@@ -15,8 +17,8 @@ class MailController extends Controller
 
     public function index()
     {
-        $mails = Mail::with(['priority','typology','type','creator','updator'])->paginate(15);
-        return view('mails.index', compact('mails'));
+        $mails = Mail::with(['priority','typology','type','creator','updator','lastTransaction'])->paginate(15);
+        return view('mails.index', compact('mails',));
     }
 
 
@@ -27,11 +29,11 @@ class MailController extends Controller
         $typologies = MailTypology::all();
         $types = MailType::all();
         $batches = Batch::all();
-        return view('mails.create', compact('priorities','typologies','types','batches'));
+        $authors = Author::all();
+        $documentTypes = documentType ::all();
+        return view('mails.create', compact('priorities','typologies','types','batches','authors','documentTypes'));
 
     }
-
-
 
 
 
@@ -57,6 +59,7 @@ class MailController extends Controller
             'mail_priority_id' => 'required|exists:mail_priorities,id',
             'mail_typology_id' => 'required|exists:mail_typologies,id',
             'mail_type_id' => 'required|exists:mail_types,id',
+            'document_type_id' => 'required|exists:document_types,id',
         ]);
 
             $mail = Mail::create($validatedData + [
@@ -72,7 +75,7 @@ class MailController extends Controller
     public function show(Mail $mail)
     {
         $mail->load('priority','typology','attachment','send', 'received',
-                    'type','batch','creator','updator'); //'container'
+                    'type','batch','creator','updator','documentType');
         return view('mails.show', compact('mail'));
     }
 

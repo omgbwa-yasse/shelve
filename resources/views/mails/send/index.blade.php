@@ -29,9 +29,9 @@
                 <td>{{ $transaction->organisation_received_id }}</td>
                 <td>{{ $transaction->mail_status_id }}</td>
                 <td>
-                    <a href="{{ route('transactions.show', $transaction->id) }}" class="btn btn-primary">Show</a>
-                    <a href="{{ route('transactions.edit', $transaction->id) }}" class="btn btn-secondary">Edit</a>
-                    <form action="{{ route('transactions.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
+                    <a href="{{ route('mail-send.show', $transaction->id) }}" class="btn btn-primary">Show</a>
+                    <a href="{{ route('mail-send.edit', $transaction->id) }}" class="btn btn-secondary">Edit</a>
+                    <form action="{{ route('mail-send.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Delete</button>

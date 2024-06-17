@@ -23,6 +23,7 @@ class MailSendController extends Controller
     {
         $user = Auth::user();
         $transactions = MailTransaction::where('user_send_id', $user->id)->get();
+        $transactions->load('mails');
         return view('mails.send.index', compact('transactions'));
     }
 
@@ -61,9 +62,9 @@ class MailSendController extends Controller
 
 
 
-    public function show(MailTransaction $MailTransaction)
+    public function show(MailTransaction $transaction)
     {
-        return view('mails.send.show', compact('MailTransaction'));
+        return view('mails.send.show', compact('transaction'));
     }
 
 

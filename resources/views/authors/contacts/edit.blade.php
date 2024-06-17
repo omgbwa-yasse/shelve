@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Edit Contact</h1>
-    <form action="{{ route('author-contacts.update', $authorContact) }}" method="POST">
+    <form action="{{ route('author-contact.update', $authorContact) }}" method="POST">
         @csrf
         @method('PUT')
         <div class="form-group">

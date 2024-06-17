@@ -23,9 +23,48 @@
             @if ($author->parent)
                 <p class="card-text">Parent Author: {{ $author->parent->name }}</p>
             @endif
+
         </div>
     </div>
+<hr>
+
+    <div  class="table-responsive" >
+        @foreach($author->contacts as $contact)
+        <table class="table table-primary">
+            <tbody>
+                <tr class="">
+                    @if ($contact->phone1)
+                        <td>{{ $contact->phone1 }}</td>
+                    @endif
+                    @if ($contact->phone2)
+                        <td>{{ $contact->phone2 }}</td>
+                    @endif
+                    @if ($contact->email)
+                        <td>{{ $contact->email }}</td>
+                    @endif
+                    @if ($contact->address)
+                        <td>{{ $contact->address }}</td>
+                    @endif
+                    @if ($contact->website)
+                        <td>{{ $contact->website }}</td>
+                    @endif
+                    @if ($contact->fax)
+                        <td>{{ $contact->fax }}</td>
+                    @endif
+                    @if ($contact->other)
+                        <td>{{ $contact->other }}</td>
+                    @endif
+                    @if ($contact->po_box)
+                        <td>{{ $contact->po_box }}</td>
+                    @endif
+                </tr>
+            </tbody>
+        </table>
+        @endforeach
+    </div>
+
 
     <a href="{{ route('mail-author.index') }}" class="btn btn-secondary mt-3">Back to Authors</a>
+    <a href="{{ route('author-contact.create', $author) }}" class="btn btn-success mt-3">Ajouter un contact</a>
 </div>
 @endsection

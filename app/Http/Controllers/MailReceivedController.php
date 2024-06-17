@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\documentType;
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\MailType;
@@ -35,7 +36,7 @@ class MailReceivedController extends Controller
     {
         $type = mailType::where('name','=','received');
         $mails = mail::all();
-        $users = user::all();
+        $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
         return view('mails.received.create', compact('mails','users','organisations','mailStatuses'));
@@ -116,10 +117,10 @@ class MailReceivedController extends Controller
 
 
 
-    public function destroy(MailTransaction $mailTransaction)
+    public function destroy($id)
     {
+        $mailTransaction = MailTransaction::findOrFail($id);
         $mailTransaction->delete();
-
         return redirect()->route('mail-received.index')->with('success', 'MailTransaction deleted successfully');
     }
 }

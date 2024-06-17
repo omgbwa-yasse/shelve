@@ -10,6 +10,9 @@
                     <th>Code</th>
                     <th>Object, Auteur</th>
                     <th>Date</th>
+                    <th>Producteur</th>
+                    <th>Localisation</th>
+                    <th>Type</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -19,6 +22,11 @@
                         <td>{{ $mail->code }}</td>
                         <td>{{ $mail->name }}, {{ $mail->author }}</td>
                         <td>{{ $mail->date }}</td>
+                        <td>
+                                {{ $mail->lastTransaction  }}
+                        </td>
+                        <td> </td>
+                        <td></td>
                         <td>
                             <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
                         </td>

@@ -13,7 +13,7 @@
                 <th>Date Creation</th>
                 <td>{{ $transaction->date_creation }}</td>
             </tr>
-            <!-- Add more fields here -->
+
         </tbody>
     </table>
 </div>

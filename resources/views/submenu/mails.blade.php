@@ -25,9 +25,6 @@
                     <a class="nav-link text-dark" href="#"><i class="bi bi-tags"></i> Typologies</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-people"></i> Producteurs</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">

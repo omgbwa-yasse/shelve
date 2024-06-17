@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Contacts for {{ $author->name }}</h1>
-    <a href="{{ route('author-contacts.create', $author) }}" class="btn btn-primary">Add Contact</a>
+    <a href="{{ route('author-contact.create', $author) }}" class="btn btn-primary">Add Contact</a>
     <table class="table">
         <thead>
             <tr>
@@ -29,9 +29,9 @@
                     <td>{{ $contact->other }}</td>
                     <td>{{ $contact->po_box }}</td>
                     <td>
-                        <a href="{{ route('author-contacts.show', [$author, $contact]) }}" class="btn btn-info">View</a>
-                        <a href="{{ route('author-contacts.edit', [$author, $contact]) }}" class="btn btn-warning">Edit</a>
-                        <form action="{{ route('author-contacts.destroy', $contact) }}" method="POST" style="display: inline-block;">
+                        <a href="{{ route('author-contact.show', [$author, $contact]) }}" class="btn btn-info">View</a>
+                        <a href="{{ route('author-contact.edit', [$author, $contact]) }}" class="btn btn-warning">Edit</a>
+                        <form action="{{ route('author-contact.destroy', [$author, $contact]) }}" method="POST" style="display: inline-block;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger">Delete</button>

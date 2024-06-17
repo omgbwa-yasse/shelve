@@ -26,7 +26,7 @@
                 <td>
                     <a href="{{ route('mail-received.show', $transaction) }}" class="btn btn-primary">Show</a>
                     <a href="{{ route('mail-received.edit', $transaction) }}" class="btn btn-secondary">Edit</a>
-                    <form action="{{ route('mail-received.destroy', $transaction) }}" method="POST" style="display: inline-block;">
+                    <form action="{{ route('mail-received.destroy', $transaction->id) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Delete</button>

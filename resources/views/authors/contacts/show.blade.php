@@ -38,5 +38,5 @@
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('author-contacts.index', $author) }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('author-contact.index', $author) }}" class="btn btn-secondary">Back</a>
 @endsection

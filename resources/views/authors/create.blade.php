@@ -47,7 +47,7 @@
             <select id="parent_id" name="parent_id" class="form-control">
                 <option value="">None</option>
                 @foreach ($parents as $parent)
-                    <option value="{{ $parent->id }}">{{ $parent->name }}</option>
+                    <option value="{{ $parent->id }}">{{ $parent->name }} <i>({{ $parent->authorType->name }})</i>  </option>
                 @endforeach
             </select>
         </div>

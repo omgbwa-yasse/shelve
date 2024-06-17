@@ -25,7 +25,7 @@ class AuthorContactController extends Controller
     public function store(Request $request, Author $author)
     {
         AuthorContact::create($request->all());
-        return redirect()->route('author-contacts.index');
+        return redirect()->route('author-contact.index', compact('author'));
     }
 
 
@@ -46,14 +46,14 @@ class AuthorContactController extends Controller
     public function update(Request $request, AuthorContact $authorContact)
     {
         $authorContact->update($request->all());
-        return redirect()->route('author-contacts.index');
+        return redirect()->route('author-contact.index');
     }
 
 
     public function destroy(AuthorContact $authorContact)
     {
         $authorContact->delete();
-        return redirect()->route('author-contacts.index');
+        return redirect()->route('author-contact.index');
     }
 
 }

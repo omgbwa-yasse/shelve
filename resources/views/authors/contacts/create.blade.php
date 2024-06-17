@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Add Contact for {{ $author->name }}</h1>
-    <form action="{{ route('author-contacts.store', $author) }}" method="POST">
+    <form action="{{ route('author-contact.store', $author) }}" method="POST">
         @csrf
         <div class="form-group">
             <label for="phone1">Phone 1</label>

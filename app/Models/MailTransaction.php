@@ -21,11 +21,15 @@ class MailTransaction extends Model
         'document_type_id',
     ];
 
-    public function mails()
+    public function mail()
     {
-        return $this->belongsTo(Mail::class, 'mail_id');
+        return $this->belongsTo(Mail::class);
     }
 
+    public function scopeLatestOfMany($query)
+    {
+        return $query->orderByDesc('created_at')->limit(1);
+    }
     public function userSend()
     {
         return $this->belongsTo(User::class, 'user_send_id');

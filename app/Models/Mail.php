@@ -12,7 +12,7 @@ use App\Models\MailAttachment;
 use App\Models\Author;
 use App\Models\documentType;
 use App\Models\MailContainer;
-use App\Models\Transaction;
+use App\Models\MailTransaction;
 
 class Mail extends Model
 {
@@ -93,7 +93,15 @@ class Mail extends Model
         return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id');
     }
 
+    public function transactions()
+    {
+        return $this->hasMany(MailTransaction::class);
+    }
 
+    public function lastTransaction()
+    {
+        return $this->hasOne(MailTransaction::class)->latestOfMany();
+    }
 }
 
 
