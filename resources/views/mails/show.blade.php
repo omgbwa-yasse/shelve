@@ -18,7 +18,11 @@
             </tr>
             <tr>
                 <th>Auteur </th>
-                <td>{{ $mail->author }}</td>
+                <td>
+                @foreach($mail->authors as $author)
+                    {{ $author->name }}
+                @endforeach
+                </td>
             </tr>
             <tr>
                 <th>Description</th>

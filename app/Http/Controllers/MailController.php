@@ -17,7 +17,7 @@ class MailController extends Controller
 
     public function index()
     {
-        $mails = Mail::with(['priority','author','typology','type','creator','updator','lastTransaction'])->paginate(15);
+        $mails = Mail::with(['priority','authors','typology','type','creator','updator','lastTransaction'])->paginate(15);
         return view('mails.index', compact('mails'));
     }
 
@@ -67,6 +67,8 @@ class MailController extends Controller
                 'create_by' => auth()->id(),
             ]);
 
+            $mail->authors()->attach($validatedData['author_id']);
+
             return redirect()->route('mails.index')->with('success', 'Mail créé avec succès !');
     }
 
@@ -75,7 +77,7 @@ class MailController extends Controller
 
     public function show(Mail $mail)
     {
-        $mail->load('priority','typology','attachment','send', 'received','type','batch','author','updator','documentType');
+        $mail->load('priority','typology','attachment','send', 'received','type','batch','authors','updator','documentType');
         return view('mails.show', compact('mail'));
     }
 

@@ -89,7 +89,7 @@ class Mail extends Model
         return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
 
-    public function author()
+    public function authors()
     {
         return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id');
     }

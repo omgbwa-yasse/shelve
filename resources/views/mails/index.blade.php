@@ -20,7 +20,13 @@
                 @foreach ($mails as $mail)
                     <tr>
                         <td>{{ $mail->code }}</td>
-                        <td>{{ $mail->name }}, {{ $mail->author }}</td>
+                        <td>{{ $mail->name }},
+
+                            @foreach($mail->authors as $author)
+                                {{ $author->name }}
+                            @endforeach
+
+                        </td>
                         <td>{{ $mail->date }}</td>
                         <td> </td>
                         <td></td>
