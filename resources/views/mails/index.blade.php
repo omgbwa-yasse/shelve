@@ -30,34 +30,15 @@
                         <td>{{ $mail->date }}</td>
                         <td> </td>
                         <td></td>
+
                         <td>
                             <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
                         </td>
-                    </tr>
-                    <tr>
-                    <td>
-                        @php
-                            $transaction = json_decode($mail->lastTransaction);
-                        @endphp
 
-                        @if ($transaction)
-                            <table class="table table-bordered">
-                                <tbody>
-                                    @foreach ($transaction as $key => $value)
-                                        <tr>
-                                            <th>{{ ucfirst(str_replace('_', ' ', $key)) }}</th>
-                                            <td>{{ $value }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        @else
-                            Aucune transaction trouvée
-                        @endif
-                    </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
+
 @endsection

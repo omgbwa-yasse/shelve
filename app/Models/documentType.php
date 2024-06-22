@@ -28,4 +28,9 @@ class documentType extends Model
         return $this->hasMany(MailTransaction::class);
     }
 
+    public function mailArchivings()
+    {
+        return $this->hasMany(MailArchiving::class, 'document_type_id');
+    }
+
 }

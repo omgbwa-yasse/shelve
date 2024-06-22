@@ -8,6 +8,7 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailStatus;
 use App\Models\MailType;
+use App\Models\ContainerType;
 use App\Models\Organisation;
 use App\Models\UserOrganisation;
 use App\Models\Building;
@@ -33,11 +34,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        MailPriority::insert([
-            ['name' => 'Normale', 'duration' => 7],
-            ['name' => 'Important', 'duration' => 3],
-            ['name' => 'Urgent', 'duration' => 1],
+        ContainerType::insert([
+            ['name' => 'Boîte', 'description' => 'Un petit conteneur rectangulaire utilisé pour stocker et transporter des articles.'],
+            ['name' => 'Chrono', 'description' => 'Un type de conteneur conçu pour les livraisons sensibles au temps, souvent utilisé pour l\'expédition de documents et de colis qui doivent arriver rapidement.'],
+            ['name' => 'Liasse', 'description' => 'Une collection de documents ou de papiers liés ensemble dans un seul paquet, souvent utilisés à des fins légales ou financières.'],
+            ['name' => 'Carton', 'description' => 'Un grand conteneur robuste en carton ondulé, utilisé pour l\'expédition et le stockage de marchandises.'],
+            ['name' => 'Conteneur d\'archives', 'description' => 'Conteneur d\'archives', 'Un conteneur utilisé pour stocker des documents et des objets à long terme, souvent utilisé dans les bibliothèques, les archives et les entreprises.'],
         ]);
+
 
         MailTypology::insert([
             ['name' => 'Demande', 'description' => '', 'class_id' => 1],

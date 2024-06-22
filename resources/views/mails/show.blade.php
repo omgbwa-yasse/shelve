@@ -57,4 +57,51 @@
             <button type="submit" class="btn btn-danger btn-secondary">Delete</button>
         </form>
     </div>
+
+    <span class="badge bg-primary" >Transactions</span> <br>
+    @if($mail->transactions)
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Code</th>
+                <th scope="col">Date Creation</th>
+                <th scope="col">Structure Emetrice </th>
+                <th scope="col">Emeteur </th>
+                <th scope="col">Structure Réceptrice </th>
+                <th scope="col">Receveur </th>
+                <th scope="col">Créer </th>
+                <th scope="col">Mise à jour </th>
+                <th scope="col">Mail Type</th>
+                <th scope="col">Type de document</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($mail->transactions as $transaction)
+                <tr>
+                    <td>{{ $transaction->code }}</td>
+                    <td>{{ $transaction->date_creation }}</td>
+                    <td>{{ $transaction->organisationSend->name }}</td>
+                    <td>{{ $transaction->userSend->name}}</td>
+                    <td>{{ $transaction->organisationReceived->name }}</td>
+                    <td>{{ $transaction->userReceived->name }}</td>
+                    <td>{{ $transaction->create_at }}</td>
+                    <td>{{ $transaction->update_at }}</td>
+                    <td><!--   $transaction->type->name  --> à completer</td>
+                    <td>{{ $transaction->documentType->name }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    @else
+        Aucune transaction.
+    @endif
+
+
+
+
+
+
+
+
 @endsection

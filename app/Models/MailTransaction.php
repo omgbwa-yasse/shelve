@@ -59,5 +59,10 @@ class MailTransaction extends Model
     {
         return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
+
+    public function type()
+    {
+        return $this->belongsTo(MailType::class, 'mail_type_id');
+    }
 }
 

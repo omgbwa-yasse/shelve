@@ -77,7 +77,7 @@ class MailController extends Controller
 
     public function show(Mail $mail)
     {
-        $mail->load('priority','typology','attachment','send', 'received','type','batch','authors','updator','documentType');
+        $mail->load('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType');
         return view('mails.show', compact('mail'));
     }
 

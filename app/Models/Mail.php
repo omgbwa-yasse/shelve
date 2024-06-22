@@ -103,6 +103,10 @@ class Mail extends Model
     {
         return $this->hasOne(MailTransaction::class)->latestOfMany();
     }
+    public function mailArchivings()
+    {
+        return $this->hasMany(MailArchiving::class, 'mail_id');
+    }
 }
 
 

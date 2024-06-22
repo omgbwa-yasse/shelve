@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
+use App\Http\Controllers\MailArchivingController;
+use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
@@ -31,24 +33,22 @@ Route::group(['middleware' => 'auth'], function () {
         return view('settings');
     })->name('setting');
 
-
-    Route::resource('mails', MailController::class);
-
     Route::prefix('mails')->group(function () {
+        Route::resource('/', MailController::class)->names('mails');
         Route::resource('batches', BatchController::class);
         Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
-    });
-
-
-    Route::prefix('batches')->group(function () {
-        Route::resource('received', BatchReceivedController::class)->names('batch-received');
-        Route::resource('send', BatchSendController::class)->names('batch-send');
+        Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
+        Route::resource('container', MailContainerController::class)->names('mail-container');
+        Route::resource('send', MailSendController::class)->names('mail-send');
+        Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::resource('authors', AuthorController::class)->names('mail-author');
     });
 
-    Route::prefix('transactions')->group(function () {
-        Route::resource('send', MailSendController::class)->names('mail-send');
-        Route::resource('received', MailReceivedController::class)->names('mail-received');
+    Route::prefix('batches')->group(function () {
+        Route::resource('/', BatchController::class)->names('batch');
+        Route::resource('received', BatchReceivedController::class)->names('batch-received');
+        Route::resource('send', BatchSendController::class)->names('batch-send');
+
     });
 
     Route::resource('repositories', RepositoryController::class);

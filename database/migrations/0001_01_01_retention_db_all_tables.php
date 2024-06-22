@@ -490,14 +490,6 @@ return new class extends Migration
         });
 
 
-        Schema::create('container_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 50)->nullable(false);
-            $table->string('description', 100)->nullable();
-            $table->primary('id');
-        });
-
-
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
@@ -505,13 +497,28 @@ return new class extends Migration
         });
 
 
+        Schema::create('mail_archiving', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('container_id')->nullable(false);
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('document_type_id')->nullable(false);
+            $table->primary('id');
+            $table->timestamps();
+            $table->foreign('container_id')->references('id')->on('mail_containers')->onDelete('cascade');
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
+        });
+
+
         Schema::create('mail_containers', function (Blueprint $table) {
             $table->id();
             $table->string('code', 50)->nullable(false);
-            $table->string('name', 50)->nullable();
+            $table->string('name', 100)->nullable();
             $table->unsignedBigInteger('type_id')->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable(false);
             $table->primary('id');
             $table->foreign('type_id')->references('id')->on('container_types')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
         Schema::create('mail_status', function (Blueprint $table) {
@@ -555,16 +562,6 @@ return new class extends Migration
             $table->unsignedBigInteger('class_id')->nullable(false);
             $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
-
-
-        Schema::create('mail_container', function (Blueprint $table) {
-            $table->unsignedBigInteger('container_id')->nullable(false);
-            $table->unsignedBigInteger('mail_id')->nullable(false);
-            $table->primary(['container_id', 'mail_id']);
-            $table->foreign('container_id')->references('id')->on('mail_containers')->onDelete('cascade');
-            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
-        });
-
 
         Schema::create('mail_author', function (Blueprint $table) {
             $table->unsignedBigInteger('author_id');
@@ -612,6 +609,13 @@ return new class extends Migration
             $table->string('name', 50)->nullable(false)->unique();
             $table->longText('description')->nullable(false);
             $table->timestamps();
+            $table->primary('id');
+        });
+
+        Schema::create('container_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->nullable(false);
+            $table->string('description', 100)->nullable();
             $table->primary('id');
         });
 

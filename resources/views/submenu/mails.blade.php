@@ -28,9 +28,9 @@
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-arrow-up-right-square"></i>
-                        Avancée</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> Boîtes d'archives</a>
                 </li>
+
             </ul>
         </div>
 
@@ -46,7 +46,10 @@
                     <a class="nav-link text-dark" href="{{ route('batches.create') }}"><i class="bi bi-bookmark-check"></i> Parapheur</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-author.create') }}"><i class="bi bi-envelope"></i> Producteur</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-author.create') }}"><i class="bi bi-people"></i> Producteur</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-container.create') }}"><i class="bi bi-archive"></i> Boîte & Chrono</a>
                 </li>
             </ul>
         </div>
@@ -58,14 +61,16 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i>Reçu</a>
+                <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i>Envoyé</a>
+                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver</a>
             </li>
                 </ul>
             </div>
-
 
             <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Parapheur</a>
@@ -80,18 +85,7 @@
                 </li>
                 </ul>
             </div>
-
-
-            <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="true"
-                aria-controls="etatMenu" style="padding: 10px;">Etat</a>
-            <div class="collapse show" id="etatMenu">
-                <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-cash-stack"></i>Transactions</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-building"></i> Locaux</a>
-                </li>
+            <div>
             </ul>
         </div>
     </div>
