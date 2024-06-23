@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\MailPriority;
+use App\models\MailPriority;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 

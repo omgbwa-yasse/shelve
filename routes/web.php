@@ -6,6 +6,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailArchivingController;
+use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
@@ -45,7 +46,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batch', BatchController::class);
         Route::resource('batch-received', BatchReceivedController::class);
         Route::resource('batch-send', BatchSendController::class);
-
+        Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
 
     Route::resource('repositories', RepositoryController::class);

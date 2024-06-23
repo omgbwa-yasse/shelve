@@ -1,19 +1,31 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Mail;
 
 class MailAttachment extends Model
 {
+
     use HasFactory;
+
     protected $fillable = [
-        'id'
+        'path',
+        'name',
+        'crypt',
+        'size',
+        'creator_id',
     ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
 
     public function mails()
     {
-        return $this->hasMany(Mail::class);
+        return $this->belongsToMany(Mail::class, 'mail_attachment', 'attachment_id', 'mail_id');
     }
+
 }

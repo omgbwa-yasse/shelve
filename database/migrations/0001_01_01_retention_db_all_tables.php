@@ -490,6 +490,9 @@ return new class extends Migration
         });
 
 
+
+
+
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
@@ -535,23 +538,27 @@ return new class extends Migration
         });
 
 
+        Schema::create('attachments', function (Blueprint $table) {
+            $table->id();
+            $table->string('path', 100)->nullable(false);
+            $table->string('name', 100)->nullable(false);
+            $table->string('crypt', 255)->nullable(false);
+            $table->integer('size', 50)->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->timestamps();
+            $table->primary('id');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
         Schema::create('mail_attachment', function (Blueprint $table) {
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('attachment_id')->nullable(false);
             $table->primary(['mail_id', 'attachment_id']);
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
-            $table->foreign('attachment_id')->references('id')->on('mail_attachments')->onDelete('cascade');
+            $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
 
-
-        Schema::create('attachments', function (Blueprint $table) {
-            $table->id();
-            $table->string('path', 45)->nullable(false);
-            $table->string('name', 45)->nullable(false);
-            $table->string('crypt', 255)->nullable(false);
-            $table->string('size', 10)->nullable(false);
-            $table->primary('id');
-        });
 
 
         Schema::create('mail_typologies', function (Blueprint $table) {

@@ -56,6 +56,7 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger btn-secondary">Delete</button>
         </form>
+        <a href="{{ route('mail-attachment.create', $mail->id) }}" class="btn btn-warning btn-secondary">Ajouter une pièce jointe</a>
     </div>
 
     <span class="badge bg-primary" >Transactions</span> <br>
