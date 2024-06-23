@@ -34,20 +34,17 @@ Route::group(['middleware' => 'auth'], function () {
     })->name('setting');
 
     Route::prefix('mails')->group(function () {
-        Route::resource('/', MailController::class)->names('mails');
-        Route::resource('batches', BatchController::class);
+        Route::resource('file', MailController::class)->names('mails');
+        Route::resource('batches', BatchController::class)->names('batch');
         Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::resource('authors', AuthorController::class)->names('mail-author');
-    });
-
-    Route::prefix('batches')->group(function () {
-        Route::resource('/', BatchController::class)->names('batch');
-        Route::resource('received', BatchReceivedController::class)->names('batch-received');
-        Route::resource('send', BatchSendController::class)->names('batch-send');
+        Route::resource('batch', BatchController::class);
+        Route::resource('batch-received', BatchReceivedController::class);
+        Route::resource('batch-send', BatchSendController::class);
 
     });
 

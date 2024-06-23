@@ -5,19 +5,19 @@
     <table class="table">
         <tbody>
             <tr>
-                <th>ID:</th>
-                <td>{{ $mailbatch->id }}</td>
+                <td>Code : {{  $mailBatch->code  }}</td>
             </tr>
             <tr>
-                <th>Code:</th>
-                <td>{{ $mailbatch->code }}</td>
-            </tr>
-            <tr>
-                <th>Name:</th>
-                <td>{{ $mailbatch->name }}</td>
+                <td>Nom : {{  $mailBatch->name  }}</td>
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('batch.index') }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('batch.index') }}" class="btn btn-secondary mt-3">Back</a>
+    <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning mt-3">Edit</a>
+    <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
+    </form>
 </div>
 @endsection

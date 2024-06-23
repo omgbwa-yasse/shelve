@@ -32,7 +32,7 @@
                         <td></td>
 
                         <td>
-                            <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Show</a>
+                            <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Détails</a>
                         </td>
 
                     </tr>

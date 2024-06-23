@@ -12,7 +12,7 @@
             </div>
             <div class="mb-3">
                 <label for="object" class="form-label">Object</label>
-                <input type="text" class="form-control" id="object" name="object" value="{{ $mail->object }}" required>
+                <input type="text" class="form-control" id="object" name="object" value="{{ $mail->name }}" required>
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
@@ -25,7 +25,7 @@
             <div class="mb-3">
                 <label for="mail_priority_id" class="form-label">Mail Priority</label>
                 <select class="form-select" id="mail_priority_id" name="mail_priority_id" required>
-                    @foreach ($mailPriorities as $priority)
+                    @foreach ($priorities as $priority)
                         <option value="{{ $priority->id }}" {{ $priority->id == $mail->mail_priority_id ? 'selected' : '' }}>
                             {{ $priority->name }}
                         </option>
@@ -35,7 +35,7 @@
             <div class="mb-3">
                 <label for="mail_type_id" class="form-label">Mail Type</label>
                 <select class="form-select" id="mail_type_id" name="mail_type_id" required>
-                    @foreach ($mailTypes as $type)
+                    @foreach ($types as $type)
                         <option value="{{ $type->id }}" {{ $type->id == $mail->mail_type_id ? 'selected' : '' }}>
                             {{ $type->name }}
                         </option>
@@ -45,7 +45,7 @@
             <div class="mb-3">
                 <label for="mail_typology_id" class="form-label">Mail Typology</label>
                 <select class="form-select" id="mail_typology_id" name="mail_typology_id" required>
-                    @foreach ($mailTypologies as $typology)
+                    @foreach ($typologies as $typology)
                         <option value="{{ $typology->id }}" {{ $typology->id == $mail->mail_typology_id ? 'selected' : '' }}>
                             {{ $typology->name }}
                         </option>

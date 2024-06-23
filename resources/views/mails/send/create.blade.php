@@ -2,87 +2,87 @@
 
 @section('content')
 <div class="container">
-    <h1>Créer courrier sortant</h1>
-    <form action="{{ route('mail-send.store') }}" method="POST">
+    <h1>Créer Courrier Sortant</h1>
+
+    <form action="{{ route('mail-received.store') }}" method="POST">
         @csrf
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header">{{ __('Create Transaction') }}</div>
-
-                        <div class="card-body">
-                            <form method="POST" action="{{ route('mail-send.store') }}">
-                                @csrf
-
-                                <div class="form-group row">
-                                    <label for="code" class="col-md-4 col-form-label text-md-right">{{ __('Code') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="code" type="number" class="form-control @error('code') is-invalid @enderror" name="code" value="{{ old('code') }}" required autocomplete="code" autofocus>
-
-                                        @error('code')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-                            <div class="form-group row">
-                                    <label for="mail_id" class="col-md-4 col-form-label text-md-right">{{ __('Mail ID') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="mail_id" type="number" class="form-control @error('mail_id') is-invalid @enderror" name="mail_id" value="{{ old('mail_id') }}" required autocomplete="mail_id">
-
-                                        @error('mail_id')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label for="user_received_id" class="col-md-4 col-form-label text-md-right">{{ __('User Received') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="user_received_id" type="number" class="form-control @error('user_received') is-invalid @enderror" name="user_received" value="{{ old('user_received') }}" autocomplete="user_received">
-
-                                        @error('user_received')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="organisation_received_id" class="col-md-4 col-form-label text-md-right">{{ __('Organisation Received ID') }}</label>
-
-                                    <div class="col-md-6">
-                                        <input id="organisation_received_id" type="number" class="form-control @error('organisation_received_id') is-invalid @enderror" name="organisation_received_id" value="{{ old('organisation_received_id') }}" autocomplete="organisation_received_id">
-
-                                        @error('organisation_received_id')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="form-group row mb-0">
-                                    <div class="col-md-6 offset-md-4">
-                                        <button type="submit" class="btn btn-primary">
-                                            {{ __('Create') }}
-                                        </button>
-                                    </div>
-                                </div>
-                                <input id="user_send_id" type="hidden" name="user_received_id" value="{{ auth()->user()->id }}">
-
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="code">Code</label>
+            <input type="text" name="code" id="code" class="form-control" value="{{ old('code') }}">
         </div>
+<div class="form-group">
+    <label for="mailInput">Mail</label>
+    <input type="text" id="mailInput" class="form-control" />
+    <div id="suggestions" class="list-group"></div>
+    <input type="hidden" name="mail_id" id="selectedMailId">
+</div>
+        <div class="form-group">
+            <label for="organisation_received_id">Organisation de reception</label>
+            <select name="organisation_received_id" id="organisation_received_id" class="form-control">
+                @foreach($organisations as $organisation)
+                    <option value="{{ $organisation->id }}" {{ old('organisation_received_id') == $organisation->id ? 'selected' : '' }}>
+                        {{ $organisation->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="user_received_id">Utilisateur de reception</label>
+            <select name="user_received_id" id="user_received_id" class="form-control">
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('user_received_id') == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="document_type_id">Utilisateur d'envoi</label>
+            <select name="document_type_id" id="document_type_id" class="form-control">
+                @foreach($documentTypes as $documentType)
+                    <option value="{{ $documentType->id }}" {{ old('document_type_id') == $documentType->id ? 'selected' : '' }}>
+                        {{ $documentType->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <input name="user_received_id" id="user_received_id" value="{{ auth()->id() }}" hidden>
+        <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 </div>
+
+<script>
+const mailInput = document.getElementById('mailInput');
+const suggestionsContainer = document.getElementById('suggestions');
+const selectedMailIdInput = document.getElementById('selectedMailId');
+
+
+const mails = @json($mails);
+
+
+mailInput.addEventListener('input', () => {
+    const searchTerm = mailInput.value.toLowerCase();
+    const filteredMails = mails.filter(mail =>
+        mail.code.toLowerCase().includes(searchTerm) ||
+        mail.name.toLowerCase().includes(searchTerm)
+    );
+
+    suggestionsContainer.innerHTML = '';
+
+    filteredMails.forEach(mail => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+        suggestionItem.textContent = `${mail.code} : ${mail.name}`;
+
+        suggestionItem.addEventListener('click', () => {
+            mailInput.value = `${mail.code} : ${mail.name}`;
+            selectedMailIdInput.value = mail.id;
+            suggestionsContainer.innerHTML = '';
+        });
+
+        suggestionsContainer.appendChild(suggestionItem);
+    });
+});
+</script>
+
 @endsection

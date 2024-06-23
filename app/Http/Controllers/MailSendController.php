@@ -14,6 +14,7 @@ use App\Models\MailStatus;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailAttachment;
+use App\Models\documentType;
 
 
 class MailSendController extends Controller
@@ -24,20 +25,23 @@ class MailSendController extends Controller
         $user = Auth::user();
         $transactions = MailTransaction::where('user_send_id', $user->id)->get();
         $transactions->load('mails');
+        $transactions->load('organisationSend');
+        $transactions->load('organisationReceived');
         return view('mails.send.index', compact('transactions'));
     }
-
 
 
     public function create()
     {
         $type = mailType::where('name','=','send');
         $mails = mail::all();
-        $users = user::all();
+        $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
-        return view('mails.send.create', compact('mails','users','organisations','mailStatuses'));
+        $documentTypes = documentType :: all();
+        return view('mails.send.create', compact('mails','users','organisations','mailStatuses','documentTypes'));
     }
+
 
 
 
@@ -62,8 +66,17 @@ class MailSendController extends Controller
 
 
 
-    public function show(MailTransaction $transaction)
+    public function show(INT $id)
     {
+        $transaction = MailTransaction::with([
+            'mails',
+            'documentType',
+            'mailStatus',
+            'userReceived',
+            'userSend',
+            'organisationReceived',
+            'organisationSend'
+        ])->findOrFail($id);
         return view('mails.send.show', compact('transaction'));
     }
 

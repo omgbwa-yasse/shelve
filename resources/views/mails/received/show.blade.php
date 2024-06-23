@@ -58,9 +58,13 @@
                 {{ $mailTransaction->documentType->name ?? 'N/A' }}
             </div>
         </div>
+        <a href="{{ route('mail-received.index') }}" class="btn btn-secondary mt-3">Retour</a>
+        <a href="{{ route('mail-received.edit', $mailTransaction) }}" class="btn btn-secondary mt-3">Edit</a>
+            <form action="{{ route('mail-received.destroy', $mailTransaction->id) }}" method="POST" style="display: inline-block;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger mt-3">Delete</button>
+        </form>
     </div>
-
-
-    <a href="{{ route('mail-received.index') }}" class="btn btn-secondary mt-3">Retour à la liste</a>
 </div>
 @endsection

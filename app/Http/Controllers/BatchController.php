@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MailBatch;
+use App\Models\Batch;
 use Illuminate\Http\Request;
 
 class BatchController extends Controller
 {
     public function index()
     {
-        $mailBatches = MailBatch::all(); // Correction de la casse camelCase
+        $mailBatches = Batch::all(); // Correction de la casse camelCase
         return view('batch.index', compact('mailBatches'));
     }
 
@@ -20,14 +20,15 @@ class BatchController extends Controller
         return view('batch.create');
     }
 
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'code' => 'nullable|unique:mail_batches|max:10',
+            'code' => 'nullable|unique:batches|max:10',
             'name' => 'required|max:100',
         ]);
 
-        MailBatch::create($validatedData);
+        Batch::create($validatedData);
 
         return redirect()->route('batch.index')->with('success', 'Mail batch created successfully.');
     }
@@ -35,38 +36,39 @@ class BatchController extends Controller
 
 
 
-    public function show(MailBatch $mailBatch)
+    public function show(INT $id)
     {
+        $mailBatch = Batch::findOrFail($id);
         return view('batch.show', compact('mailBatch'));
     }
 
 
 
 
-    public function edit(MailBatch $mailBatch)
+    public function edit(INT $id)
     {
+        $mailBatch = Batch::findOrFail($id);
         return view('batch.edit', compact('mailBatch'));
     }
 
 
 
 
-    public function update(Request $request, MailBatch $mailBatch)
+    public function update(Request $request, INT $id)
     {
+        $mailBatch = Batch::findOrFail($id);
         $validatedData = $request->validate([
-            'code' => 'nullable|unique:mail_batches,code,' . $mailBatch->id . '|max:10',
+            'code' => 'nullable|unique:batches,code,' . $mailBatch->id . '|max:10',
             'name' => 'required|max:100',
         ]);
-
         $mailBatch->update($validatedData);
-
         return redirect()->route('batch.index')->with('success', 'Mail batch updated successfully.');
     }
 
 
 
 
-    public function destroy(MailBatch $mailBatch)
+    public function destroy(Batch $mailBatch)
     {
         $mailBatch->delete();
 

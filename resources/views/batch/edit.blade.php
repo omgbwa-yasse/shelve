@@ -1,20 +1,34 @@
 @extends('layouts.app')
+
 @section('content')
     <div class="container">
-        <h1 class="mt-5">Modifier un parapheur</h1>
-        <form action="{{ route('mailbatches.update', $mailbatch->id) }}" method="POST">
+        <h1>Edit Mail Batch</h1>
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('batch.update', $mailBatch) }}" method="POST">
             @csrf
             @method('PUT')
-            <div class="mb-3">
-                <label for="code" class="form-label">Code:</label>
-                <input type="text" class="form-control" id="code" name="code" value="{{ $mailbatch->code }}">
+
+            <div class="form-group">
+                <label for="code">Code</label>
+                <input type="text" name="code" id="code" class="form-control" value="{{ $mailBatch->code }}">
             </div>
-            <div class="mb-3">
-                <label for="name" class="form-label">Name:</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ $mailbatch->name }}" required>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" class="form-control" value="{{ $mailBatch->name }}">
             </div>
-            <button type="submit" class="btn btn-primary">Update</button>
+
+            <button type="submit" class="btn btn-primary">Mettre à jour le parapheur</button>
         </form>
     </div>
-
 @endsection

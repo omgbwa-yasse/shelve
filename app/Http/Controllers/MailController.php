@@ -75,22 +75,23 @@ class MailController extends Controller
 
 
 
-    public function show(Mail $mail)
+    public function show(INT $id)
     {
-        $mail->load('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType');
+        $mail=mail::with('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
         return view('mails.show', compact('mail'));
     }
 
 
 
 
-    public function edit(Mail $mail)
+    public function edit(INT $id)
     {
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
         $types = MailType::all();
         $batches = Batch::all();
         $authors = user::all();
+        $mail=mail::with('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
         return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types',  'batches'));
     }
 
