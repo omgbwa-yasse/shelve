@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Containers</h1>
+        <h1>Tous les contenants d'archives</h1>
         <a href="{{ route('containers.create') }}" class="btn btn-primary mb-3">Create Container</a>
         <table class="table">
             <thead>

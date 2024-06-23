@@ -591,6 +591,7 @@ return new class extends Migration
             $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
 
+
         Schema::create('mail_author', function (Blueprint $table) {
             $table->unsignedBigInteger('author_id');
             $table->unsignedBigInteger('mail_id');

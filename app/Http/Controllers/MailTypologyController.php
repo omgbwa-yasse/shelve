@@ -2,59 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use App\models\MailTypology;
-use App\models\TypologyCategory;
+use App\Models\MailTypology;
+use App\Models\activity;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 
 class MailTypologyController extends Controller
 {
 
     public function index()
     {
-        $mailTypologies = MailTypology::with('typologyCategory')->get();
-        return view('mails.typology.index', compact('mailTypologies'));
+        $mailTypologies = MailTypology::all();
+
+        return view('mails.typologies.index', compact('mailTypologies'));
     }
+
+
+
 
 
     public function create()
     {
-        $typologyCategories = TypologyCategory::all();
-        return view('mails.typology.create', compact('typologyCategories'));
+        $classes = activity::all();
+
+        return view('mails.typologies.create', compact('classes'));
     }
+
+
+
 
     public function store(Request $request)
     {
-        $mailTypology = MailTypology::create($request->all());
-        return redirect()->route('mail_typologies.index')
-                        ->with('success','Mail typology created successfully');
+        $request->validate([
+            'name' => 'required|unique:mail_typologies|max:50',
+            'description' => 'nullable|max:100',
+            'class_id' => 'required|exists:classes,id',
+        ]);
+
+        MailTypology::create($request->all());
+
+        return redirect()->route('mail-typology.index')
+            ->with('success', 'Mail typology created successfully.');
     }
+
+
+
 
 
     public function show(MailTypology $mailTypology)
     {
-        return view('mails.typology.show', compact('mailTypology'));
+        return view('mails.typologies.show', compact('mailTypology'));
     }
+
+
+
+
 
     public function edit(MailTypology $mailTypology)
     {
-        $typologyCategories = TypologyCategory::all();
-        return view('mails.typology.edit', compact('mailTypology', 'typologyCategories'));
+        $classes = activity::all();
+
+        return view('mails.typologies.edit', compact('mailTypology', 'classes'));
     }
+
+
+
 
 
     public function update(Request $request, MailTypology $mailTypology)
     {
+        $request->validate([
+            'name' => 'required|unique:mail_typologies,name,'.$mailTypology->id.'|max:50',
+            'description' => 'nullable|max:100',
+            'class_id' => 'required|exists:classes,id',
+        ]);
+
         $mailTypology->update($request->all());
-        return redirect()->route('mail_typologies.index')
-                        ->with('success','Mail typology updated successfully');
+
+        return redirect()->route('mail-typology.index')
+            ->with('success', 'Mail typology updated successfully.');
     }
+
+
 
 
     public function destroy(MailTypology $mailTypology)
     {
         $mailTypology->delete();
-        return redirect()->route('mail_typologies.index')
-                        ->with('success','Mail typology deleted successfully');
+
+        return redirect()->route('mail-typology.index')
+            ->with('success', 'Mail typology deleted successfully.');
     }
 }

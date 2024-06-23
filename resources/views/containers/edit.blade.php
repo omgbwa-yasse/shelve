@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Edit Container</h1>
+        <h1>Modifier un contenant d'archives</h1>
         <form action="{{ route('containers.update', $container->id) }}" method="POST">
             @csrf
             @method('PUT')

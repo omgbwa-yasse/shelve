@@ -3,7 +3,7 @@
 @section('content')
 
     <div class="container">
-        <h1>Create Container</h1>
+        <h1>Créer un contenant d'archives</h1>
         <form action="{{ route('containers.store') }}" method="POST">
             @csrf
             <div class="mb-3">

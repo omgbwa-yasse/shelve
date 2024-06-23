@@ -8,16 +8,21 @@ use App\Models\Mail;
 
 class MailTypology extends Model
 {
-    use HasFactory;
-    protected $fillable = ['name', 'description', 'typology_category_id'];
 
-    public function typologyCategory()
-    {
-        return $this->belongsTo(TypologyCategory::class);
-    }
 
-    public function mails()
+    protected $table = 'mail_typologies';
+
+
+    protected $fillable = [
+        'name',
+        'description',
+        'class_id',
+    ];
+
+
+    public function class()
     {
-        return $this->hasMany(Mail::class);
+        return $this->belongsTo(activity::class,'class_id');
     }
 }
+
