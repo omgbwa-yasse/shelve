@@ -1,34 +1,65 @@
-<div class="container">
+<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
     <div class="row">
-        <!-- Paramètres -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#parametresMenu" aria-expanded="false"
-            aria-controls="parametresMenu">
-            <i class="bi bi-gear"></i> Paramètres
-        </a>
-        <div class="collapse" id="parametresMenu">
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> Courrier </a>
+
+        <div class="collapse show" id="rechercheMenu">
+
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Courriel</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-tools"></i> Typologie de courrier </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-folder"></i> repertoire</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-question-circle"></i> Demande</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-arrow-right-square"></i> Transfert</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-tools"></i> Outils de gestion</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-gear"></i> Paramètres</a>
-                </li>
+
             </ul>
         </div>
+
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-file-text"></i> Repertoire </a>
+
+        <div class="collapse show" id="rechercheMenu">
+
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('buildings.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('rooms.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+                </li>
+
+            </ul>
+        </div>
+
+
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> Versement </a>
+
+        <div class="collapse show" id="rechercheMenu">
+
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('buildings.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx</a>
+                </li>
+
+            </ul>
+        </div>
+
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-building"></i> Dépôt </a>
+
+    <div class="collapse show" id="rechercheMenu">
+
+        <ul class="list-unstyled pl-3">
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('container-status.index') }}"><i class="bi bi-tools"></i> Status des contenants</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-tools"></i> Propriété de contenant </a>
+            </li>
+
+        </ul>
     </div>
+    <div>
+    </ul>
+</div>
+</div>
 </div>

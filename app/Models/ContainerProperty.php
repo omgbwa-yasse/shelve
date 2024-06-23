@@ -9,6 +9,8 @@ class ContainerProperty extends Model
 {
     use HasFactory;
 
+    protected $table = 'container_properties';
+
     protected $fillable = ['name', 'width', 'length', 'depth', 'creator_id'];
 
     public function containers()

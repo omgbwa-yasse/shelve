@@ -19,3 +19,4 @@ class ContainerStatus extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 }
+

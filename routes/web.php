@@ -23,7 +23,11 @@ use App\Http\Controllers\floorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ShelfController;
 use App\Http\Controllers\ContainerController;
+use App\Http\Controllers\MailTypologyController;
+use App\Http\Controllers\ContainerStatusController;
+use App\Http\Controllers\ContainerPropertyController;
 use App\Http\Controllers\TestController;
+use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
 Auth::routes();
@@ -33,11 +37,6 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-    Route::get('/setting', function () {
-        return view('settings');
-    })->name('setting');
-
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
         Route::resource('batches', BatchController::class)->names('batch');
@@ -57,7 +56,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
     Route::resource('tools', ToolsController::class);
-    Route::resource('settings', SettingController::class);
 
     Route::prefix('deposits')->group(function () {
         Route::resource('buildings', BuildingController::class);
@@ -67,6 +65,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('containers', ContainerController::class);
         Route::resource('trolleys', BuildingController::class);
     });
+
+    Route::prefix('settings')->group(function () {
+        Route::resource('mail-typology', MailTypologyController::class);
+        Route::resource('container-status', ContainerStatusController::class);
+        Route::resource('container-property', ContainerPropertyController::class);
+    });
+
+
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

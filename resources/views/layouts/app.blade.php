@@ -88,7 +88,7 @@
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'settings') {{ 'active bg-primary' }} @endif"
-                                    href="#">Paramètres</a>
+                                    href="{{ route('mail-typology.index') }}">Paramètres</a>
                             </li>
                         </ul>
 

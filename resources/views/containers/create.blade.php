@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <div class="container">
         <h1>Create Container</h1>
         <form action="{{ route('containers.store') }}" method="POST">
