@@ -125,9 +125,9 @@ return new class extends Migration
         });
 
 
-        Schema::create('container_status', function (Blueprint $table) {
+        Schema::create('container_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 30)->nullable(false);
+            $table->string('name', 40)->nullable(false);
             $table->text('description')->nullable();
             $table->primary('id');
             $table->unique('name');

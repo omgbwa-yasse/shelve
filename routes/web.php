@@ -22,6 +22,7 @@ use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\floorController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ShelfController;
+use App\Http\Controllers\ContainerController;
 use App\Http\Controllers\TestController;
 use App\Models\Transaction;
 
@@ -63,7 +64,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('buildings.floors', floorController::class)->names('floors');
         Route::resource('rooms', RoomController::class);
         Route::resource('shelves', ShelfController::class);
-        Route::resource('containers', BuildingController::class);
+        Route::resource('containers', ContainerController::class);
         Route::resource('trolleys', BuildingController::class);
     });
 });
