@@ -77,6 +77,11 @@
                             </li>
 
                             <li class="nav-item  text-dark">
+                                <a class="nav-link @if (Request::segment(1) == 'deposits') {{ 'active bg-success' }} @endif"
+                                    href="{{ route('buildings.index') }}">Dépôts</a>
+                            </li>
+
+                            <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif"
                                     href="#">Outils de gestion</a>
                             </li>
@@ -158,6 +163,10 @@
 
                         @case('settings')
                             @include('submenu.settings')
+                        @break
+
+                        @case('deposits')
+                            @include('submenu.deposits')
                         @break
 
                         @case('tools')

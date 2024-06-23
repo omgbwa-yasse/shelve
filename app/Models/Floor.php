@@ -8,12 +8,20 @@ use App\Models\Building;
 class Floor extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'name', 'description', 'building_id'
-    ];
+    protected $fillable = ['name', 'description', 'building_id', 'creator_id'];
 
     public function building()
     {
         return $this->belongsTo(Building::class);
+    }
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
     }
 }

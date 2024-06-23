@@ -10,9 +10,7 @@ use App\Models\shelf;
 class Room extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'reference', 'name', 'description', 'floor_id'
-    ];
+    protected $fillable = ['code', 'name', 'description', 'floor_id', 'creator_id'];
 
     public function floor()
     {
@@ -22,5 +20,10 @@ class Room extends Model
     public function shelves()
     {
         return $this->hasMany(Shelf::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
     }
 }

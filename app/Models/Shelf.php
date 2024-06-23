@@ -9,12 +9,20 @@ use App\Models\room;
 class Shelf extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'reference', 'observation', 'ear', 'face', 'colonne', 'table', 'room_id'
-    ];
+    protected $fillable = ['code', 'observation', 'face', 'ear', 'shelf', 'shelf_length', 'room_id', 'creator_id'];
 
     public function room()
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function containers()
+    {
+        return $this->hasMany(Container::class, 'shelve_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
     }
 }

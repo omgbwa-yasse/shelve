@@ -4,16 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Floor;
 
-class Building extends Model
+class ContainerProperty extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'creator_id'];
 
-    public function floors()
+    protected $fillable = ['name', 'width', 'length', 'depth', 'creator_id'];
+
+    public function containers()
     {
-        return $this->hasMany(Floor::class);
+        return $this->hasMany(Container::class, 'property_id');
     }
 
     public function creator()

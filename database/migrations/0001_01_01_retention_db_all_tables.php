@@ -39,8 +39,10 @@ return new class extends Migration
             $table->string('name', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->primary('id');
+            $table->timestamps();
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
 
 
 
@@ -49,8 +51,11 @@ return new class extends Migration
             $table->string('name', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->unsignedBigInteger('building_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->primary(['id', 'building_id']);
+            $table->timestamps();
             $table->foreign('building_id')->references('id')->on('buildings')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -62,8 +67,11 @@ return new class extends Migration
             $table->string('name', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->unsignedBigInteger('floor_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->primary(['id', 'floor_id']);
+            $table->timestamps();
             $table->foreign('floor_id')->references('id')->on('floors')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -72,13 +80,16 @@ return new class extends Migration
             $table->id();
             $table->string('code', 30)->nullable(false);
             $table->longText('observation')->nullable();
-            $table->string('face', 10)->nullable(false);
-            $table->string('ear', 10)->nullable(false);
-            $table->string('shelf', 10)->nullable(false);
-            $table->float('shelf_length', 15, 6)->nullable(false);
+            $table->float('face', 10)->nullable(false);
+            $table->float('ear', 10)->nullable(false);
+            $table->float('shelf', 10)->nullable(false);
+            $table->float('shelf_length', 15)->nullable(false);
             $table->unsignedBigInteger('room_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->primary('id');
+            $table->timestamps();
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -86,11 +97,14 @@ return new class extends Migration
         Schema::create('container_properties', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable(false);
-            $table->float('width', 15, 6)->nullable(false);
-            $table->float('length', 15, 6)->nullable(false);
-            $table->float('depth', 15, 6)->nullable(false);
+            $table->float('width', 15)->nullable(false);
+            $table->float('length', 15)->nullable(false);
+            $table->float('depth', 15)->nullable(false);
             $table->primary('id');
             $table->unique('name');
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -105,6 +119,9 @@ return new class extends Migration
             $table->foreign('status_id')->references('id')->on('container_status')->onDelete('cascade');
             $table->foreign('property_id')->references('id')->on('container_properties')->onDelete('cascade');
             $table->unique('code');
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -114,6 +131,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->primary('id');
             $table->unique('name');
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 
@@ -549,6 +569,7 @@ return new class extends Migration
             $table->primary('id');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
+
 
 
         Schema::create('mail_attachment', function (Blueprint $table) {

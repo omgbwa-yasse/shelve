@@ -18,7 +18,10 @@ use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\LocalisationController;
+use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\floorController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ShelfController;
 use App\Http\Controllers\TestController;
 use App\Models\Transaction;
 
@@ -54,7 +57,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('accessions', AccessionController::class);
     Route::resource('tools', ToolsController::class);
     Route::resource('settings', SettingController::class);
-    Route::resource('localisations', LocalisationController::class);
+
+    Route::prefix('deposits')->group(function () {
+        Route::resource('buildings', BuildingController::class);
+        Route::resource('buildings.floors', floorController::class)->names('floors');
+        Route::resource('rooms', RoomController::class);
+        Route::resource('shelves', ShelfController::class);
+        Route::resource('containers', BuildingController::class);
+        Route::resource('trolleys', BuildingController::class);
+    });
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
