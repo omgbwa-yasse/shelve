@@ -2,7 +2,7 @@
 @section('content')
 
 <div class="container">
-    <h1>Create New Mail Typology</h1>
+    <h1>Ajouter une nouvelle typologie de Courrier</h1>
     <form action="{{ route('mail-typology.store') }}" method="POST">
         @csrf
         <div class="mb-3">
