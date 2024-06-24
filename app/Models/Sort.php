@@ -1,21 +1,25 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Sort;
 
-class Retention extends Model
+class Sort extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'code',
-        'duration',
-        'sort_id',
+        'name',
+        'description',
     ];
 
-    public function sort()
+    public function retentions()
     {
-        return $this->belongsTo(Sort::class, 'sort_id');
+        return $this->hasMany(retention::class);
     }
+
 }
+
+

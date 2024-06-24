@@ -26,6 +26,11 @@ use App\Http\Controllers\ContainerController;
 use App\Http\Controllers\MailTypologyController;
 use App\Http\Controllers\ContainerStatusController;
 use App\Http\Controllers\ContainerPropertyController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\SortController;
+use App\Http\Controllers\RetentionController;
+use App\Http\Controllers\CommunicabilityController;
+use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\TestController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -37,6 +42,7 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
         Route::resource('batches', BatchController::class)->names('batch');
@@ -55,7 +61,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
-    Route::resource('tools', ToolsController::class);
+
 
     Route::prefix('deposits')->group(function () {
         Route::resource('buildings', BuildingController::class);
@@ -70,9 +76,17 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);
+        Route::resource('sorts', SortController::class);
     });
 
-
+    Route::prefix('tools')->group(function () {
+        Route::resource('activities', ActivityController::class);
+        Route::resource('retentions', RetentionController::class);
+        Route::resource('communicabilities', CommunicabilityController::class);
+        Route::resource('thesaurus', ContainerStatusController::class);
+        Route::resource('organisations', OrganisationController::class);
+        Route::resource('access', ContainerStatusController::class);
+    });
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

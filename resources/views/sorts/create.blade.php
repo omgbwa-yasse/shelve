@@ -2,8 +2,8 @@
 
 @section('content')
     <div class="container">
-        <h1>Create New Organisation</h1>
-        <form action="{{ route('organisations.store') }}" method="POST">
+        <h1>Create Sort</h1>
+        <form action="{{ route('sorts.store') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="code">Code</label>
@@ -15,16 +15,7 @@
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea name="description" id="description" class="form-control"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="parent_id">Parent Organisation</label>
-                <select name="parent_id" id="parent_id" class="form-control">
-                    <option value="">None</option>
-                    @foreach ($organisations as $organisation)
-                        <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
-                    @endforeach
-                </select>
+                <input type="text" name="description" id="description" class="form-control">
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
         </form>

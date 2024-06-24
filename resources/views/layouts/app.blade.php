@@ -83,7 +83,7 @@
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif"
-                                    href="#">Outils de gestion</a>
+                                    href="{{ route('activities.index') }}">Outils de gestion</a>
                             </li>
 
                             <li class="nav-item  text-dark">

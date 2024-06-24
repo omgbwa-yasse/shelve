@@ -17,7 +17,7 @@ use App\Models\Room;
 use App\Models\documentType;
 use App\Models\Shelf;
 use App\Models\MailSubject;
-use App\Models\Mailbatch;
+use App\Models\batch;
 use App\Models\User;
 
 class DatabaseSeeder extends Seeder
@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
             ['user_id' => 1, 'organisation_id' => 3, 'active' => false],
         ]);
 
-        Mailbatch::insert([
+        batch::insert([
             ['code' => 'DG10', 'name' => 'Parapheur directeur général'],
             ['code' => 'DG09', 'name' => 'Parapheur Secrétaire général'],
         ]);

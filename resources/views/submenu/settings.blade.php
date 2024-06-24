@@ -58,6 +58,25 @@
 
         </ul>
     </div>
+
+
+    <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-tools"></i> Outils de gestion </a>
+
+    <div class="collapse show" id="rechercheMenu">
+
+        <ul class="list-unstyled pl-3">
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-tools"></i> Sorts finaux</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+            </li>
+
+        </ul>
+    </div>
+
+
     <div>
     </ul>
 </div>

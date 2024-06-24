@@ -10,18 +10,19 @@ class Communicability extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'name',
-        'time',
-        'reference',
+        'duration',
+        'decription',
     ];
 
-    protected $casts = [
-        'id' => 'integer',
-        'time' => 'integer',
-    ];
 
-    public function classifications()
+    public function activities()
     {
-        return $this->hasMany(Classification::class, 'communicability_id');
+        return $this->hasMany(activity::class);
     }
+
+
 }
+
+

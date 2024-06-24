@@ -19,7 +19,7 @@ class Organisation extends Model
 
     public function parent()
     {
-        return $this->belongsTo(Organisation::class);
+        return $this->belongsTo(Organisation::class, 'parent_id');
     }
 
     public function children()
@@ -27,5 +27,7 @@ class Organisation extends Model
         return $this->hasMany(Organisation::class, 'parent_id');
     }
 }
+
+
 
 
