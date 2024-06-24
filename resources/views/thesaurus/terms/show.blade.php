@@ -16,6 +16,15 @@
                 <th>Description</th>
                 <td>{{ $term->description }}</td>
             </tr>
+
+            <tr>
+                <th> Parent </th>
+                <td>{{ $term->parent->name ?? 'Debut de la branche' }}</td>
+            </tr>
+            <tr>
+                <th> Type </th>
+                <td>{{ $term->type->name?? '' }}</td>
+            </tr>
             <tr>
                 <th> Domaine </th>
                 <td>{{ $term->category->name?? '' }}</td>
@@ -33,5 +42,6 @@
             <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce terme ?')">Supprimer</button>
         </form>
         <a href="{{ route('term-equivalents.create', $term) }}" class="btn btn-primary">Ajouter une traduction </a>
+        <a href="{{ route('term-relations.create', $term) }}" class="btn btn-primary">Ajouter une une relation </a>
     </div>
 @endsection

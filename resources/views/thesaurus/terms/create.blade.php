@@ -14,6 +14,23 @@
                 <textarea name="description" class="form-control"></textarea>
             </div>
             <div class="form-group">
+                <label for="parent_id"> Parent</label>
+                <select name="parent_id" class="form-control">
+                    @foreach ($parents as $parent)
+                        <option value="{{ $parent->id }}">{{ $parent->code }} - {{ $parent->name }}</option>
+                    @endforeach
+                    <option value=""> Créer une nouvelle branche </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="type_id"> Type </label>
+                <select name="type_id" class="form-control" required>
+                    @foreach ($types as $type)
+                        <option value="{{ $type->id }}">{{ $type->code }} - {{ $type->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="category_id">Category</label>
                 <select name="category_id" class="form-control" required>
                     @foreach ($categories as $category)

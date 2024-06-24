@@ -493,10 +493,12 @@ return new class extends Migration
             $table->unsignedBigInteger('language_id')->nullable(false);
             $table->unsignedBigInteger('category_id')->nullable(false);
             $table->unsignedBigInteger('type_id')->nullable(false);
+            $table->unsignedBigInteger('parent_id')->nullable(false);
             $table->primary('id');
             $table->foreign('language_id')->references('id')->on('languages')->onDelete('set null');
             $table->foreign('category_id')->references('id')->on('term_categories')->onDelete('set null');
             $table->foreign('type_id')->references('id')->on('term_typologies')->onDelete('set null');
+            $table->foreign('parent_id')->references('id')->on('terms')->onDelete('set null');
         });
 
 
@@ -509,38 +511,44 @@ return new class extends Migration
             $table->primary('id');
         });
 
-        Schema::create('term_relation_types', function (Blueprint $table) {
+
+        Schema::create('term_translations', function (Blueprint $table) {
+            $table->unsignedBigInteger('term1_id')->nullable(false);
+            $table->unsignedBigInteger('term1_language_id')->nullable(false);
+            $table->unsignedBigInteger('term2_id')->nullable(false);
+            $table->unsignedBigInteger('term2_language_id')->nullable(false);
+            $table->primary(['term1_id', 'term2_id']);
+            $table->foreign('term1_id')->references('id')->on('terms')->onDelete('cascade');
+            $table->foreign('term1_language_id')->references('id')->on('languages')->onDelete('cascade');
+            $table->foreign('term2_id')->references('id')->on('terms')->onDelete('cascade');
+            $table->foreign('term2_language_id')->references('id')->on('languages')->onDelete('cascade');
+        });
+
+        Schema::create('term_equivalent_types', function (Blueprint $table) {
             $table->id();
             $table->string('code', 5)->nullable(false);
             $table->string('name', 100)->nullable(false);
             $table->text('description')->nullable();
             $table->timestamps();
-            $table->primary('id');
         });
 
-
-
-        Schema::create('term_equivalents', function (Blueprint $table) {
-            $table->unsignedBigInteger('term1_id')->nullable(false);
-            $table->unsignedBigInteger('term2_id')->nullable(false);
-            $table->primary(['term1_id', 'term2_id']);
-            $table->foreign('term1_id')->references('id')->on('terms')->onDelete('cascade');
-            $table->foreign('term2_id')->references('id')->on('terms')->onDelete('cascade');
-        });
-
-
-        Schema::create('term_relations', function (Blueprint $table) {
+        Schema::create('term_equivalent', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('parent_id')->nullable();
-            $table->unsignedInteger('child_id')->nullable(false);
-            $table->unsignedInteger('category_id')->nullable(false);
-            $table->unsignedInteger('relation_type_id')->nullable(false);
-            $table->primary('id');
+            $table->unsignedBigInteger('term_id')->nullable();
+            $table->string('term_used', 100)->nullable(false);
+            $table->unsignedBigInteger('equivalent_type_id')->nullable(false);
             $table->timestamps();
-            $table->foreign('parent_id')->references('id')->on('terms')->onDelete('cascade');
-            $table->foreign('child_id')->references('id')->on('terms')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('term_categories')->onDelete('cascade');
-            $table->foreign('relation_type_id')->references('id')->on('term_relation_types')->onDelete('cascade');
+            $table->foreign('term_id')->references('id')->on('terms')->onDelete('cascade');
+            $table->foreign('equivalent_type_id')->references('id')->on('term_equivalent_types')->onDelete('cascade');
+        });
+
+        Schema::create('term_related', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('term_id')->nullable(false);
+            $table->unsignedBigInteger('term_related_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('term_id')->references('id')->on('terms')->onDelete('cascade');
+            $table->foreign('term_related_id')->references('id')->on('terms')->onDelete('cascade');
         });
 
 
@@ -903,7 +911,6 @@ return new class extends Migration
         Schema::dropIfExists('sorts');
         Schema::dropIfExists('term_categories');
         Schema::dropIfExists('term_record');
-        Schema::dropIfExists('term_relations');
         Schema::dropIfExists('terms');
         Schema::dropIfExists('transactions');
         Schema::dropIfExists('typology_categories');

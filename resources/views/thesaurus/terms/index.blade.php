@@ -9,6 +9,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Nom</th>
+                    <th>Type </th>
+                    <th>Parent </th>
                     <th>Description</th>
                     <th>Langue</th>
                     <th>Actions</th>
@@ -19,6 +21,8 @@
                     <tr>
                         <td>{{ $term->id }}</td>
                         <td>{{ $term->name }}</td>
+                        <td>{{ $term->type->code }} - {{ $term->type->name }}</td>
+                        <td>{{ $term->parent->name ?? 'Debut de la branche' }}</td>
                         <td>{{ $term->description }}</td>
                         <td>{{ $term->language->name }}</td>
                         <td>
