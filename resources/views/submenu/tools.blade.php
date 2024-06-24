@@ -75,10 +75,10 @@
         <div class="collapse show" id="thesaurusMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-tree"></i> voir les branches</a>
+                    <a class="nav-link text-dark" href="{{ route('terms.index') }}"><i class="bi bi-tree"></i> voir les branches</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-plus-square"></i> Ajouter un mot</a>
+                    <a class="nav-link text-dark" href="{{ route('terms.create') }}"><i class="bi bi-plus-square"></i> Ajouter un mot</a>
                 </li>
             </ul>
         </div>

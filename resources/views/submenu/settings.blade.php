@@ -67,12 +67,20 @@
 
         <ul class="list-unstyled pl-3">
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-tools"></i> Sorts finaux</a>
+                <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-tools"></i> Retention : Sorts finaux</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+                <a class="nav-link text-dark" href="{{ route('languages.index') }}"><i class="bi bi-tools"></i> Thesaurus : langues </a>
             </li>
-
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('term-categories.index') }}"><i class="bi bi-tools"></i> Thésaurus : categories </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('term-relations.index') }}"><i class="bi bi-tools"></i> Thésaurus : relations </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('term-types.index') }}"><i class="bi bi-tools"></i> Thésaurus : types </a>
+            </li>
         </ul>
     </div>
 

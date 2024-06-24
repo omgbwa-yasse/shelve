@@ -31,6 +31,11 @@ use App\Http\Controllers\SortController;
 use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
+use App\Http\Controllers\TermCategoryController;
+use App\Http\Controllers\TermRelationController;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\TermController;
+use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TestController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -77,6 +82,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);
         Route::resource('sorts', SortController::class);
+        Route::resource('term-categories', TermCategoryController::class);
+        Route::resource('term-relations', TermRelationController::class);
+        Route::resource('term-types', TermTypeController::class);
+        Route::resource('languages', LanguageController::class);
     });
 
     Route::prefix('tools')->group(function () {
@@ -86,6 +95,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
         Route::resource('access', ContainerStatusController::class);
+        Route::resource('terms', TermController::class);
+
     });
 });
 

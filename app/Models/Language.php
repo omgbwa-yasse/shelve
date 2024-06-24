@@ -1,33 +1,25 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Term;
-use App\Models\TermCategory;
-use App\Models\RelationType;
 
-
-
-class TermRelation extends Model
+class Language extends Model
 {
-
     use HasFactory;
 
-    protected $table = 'term_relations';
+    public $timestamps = false;
 
     protected $fillable = [
         'code',
         'name',
-        'description',
+        'native_name',
     ];
-
 
     public function terms()
     {
-        return $this->hasMany(Term::class);
+        return $this->hasMany(Term::class, 'language_id');
     }
 
-
 }
-
