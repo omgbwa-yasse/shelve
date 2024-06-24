@@ -5,7 +5,7 @@
 <div class="container">
     <h1 class="mt-4">Modifier la relation de terme</h1>
 
-    <form action="{{ route('term-relations.update', $termRelation->id) }}" method="POST" class="mt-4">
+    <form action="{{ route('term-relation-types.update', $termRelation->id) }}" method="POST" class="mt-4">
         @csrf
         @method('PUT')
         <div class="mb-3">
@@ -23,7 +23,7 @@
         <button type="submit" class="btn btn-primary">Mettre à jour</button>
     </form>
 
-    <a href="{{ route('term-relations.index') }}" class="mt-3 d-block">Retour à la liste</a>
+    <a href="{{ route('term-relation-types.index') }}" class="mt-3 d-block">Retour à la liste</a>
 </div>
 
 @endsection

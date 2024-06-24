@@ -5,7 +5,7 @@
 <div class="container">
     <h1 class="mt-4">Relations de termes</h1>
 
-    <a href="{{ route('term-relations.create') }}" class="btn btn-primary mb-3">Créer une nouvelle relation de terme</a>
+    <a href="{{ route('term-relation-types.create') }}" class="btn btn-primary mb-3">Créer une nouvelle relation de terme</a>
 
     <table class="table">
         <thead>
@@ -25,7 +25,7 @@
                     <td>{{ $termRelation->name }}</td>
                     <td>{{ $termRelation->description }}</td>
                     <td>
-                        <a href="{{ route('term-relations.show', $termRelation->id) }}" class="btn btn-secondary">Voir</a>
+                        <a href="{{ route('term-relation-types.show', $termRelation->id) }}" class="btn btn-secondary">Voir</a>
                     </td>
                 </tr>
             @endforeach

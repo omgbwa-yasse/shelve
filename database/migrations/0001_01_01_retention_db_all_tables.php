@@ -509,17 +509,7 @@ return new class extends Migration
             $table->primary('id');
         });
 
-
-
-        Schema::create('term_equivalents', function (Blueprint $table) {
-            $table->unsignedBigInteger('term1_id')->nullable(false);
-            $table->unsignedBigInteger('term1_id')->nullable(false);
-            $table->primary(['term1_id', 'term2_id']);
-            $table->foreign('term1_id')->references('id')->on('terms')->onDelete('cascade');
-            $table->foreign('term2_id')->references('id')->on('terms')->onDelete('cascade');
-        });
-
-        Schema::create('term_relations', function (Blueprint $table) {
+        Schema::create('term_relation_types', function (Blueprint $table) {
             $table->id();
             $table->string('code', 5)->nullable(false);
             $table->string('name', 100)->nullable(false);
@@ -528,18 +518,29 @@ return new class extends Migration
             $table->primary('id');
         });
 
-        Schema::create('term_relation', function (Blueprint $table) {
+
+
+        Schema::create('term_equivalents', function (Blueprint $table) {
+            $table->unsignedBigInteger('term1_id')->nullable(false);
+            $table->unsignedBigInteger('term2_id')->nullable(false);
+            $table->primary(['term1_id', 'term2_id']);
+            $table->foreign('term1_id')->references('id')->on('terms')->onDelete('cascade');
+            $table->foreign('term2_id')->references('id')->on('terms')->onDelete('cascade');
+        });
+
+
+        Schema::create('term_relations', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('parent_id')->nullable();
             $table->unsignedInteger('child_id')->nullable(false);
             $table->unsignedInteger('category_id')->nullable(false);
-            $table->unsignedInteger('relation_id')->nullable(false);
+            $table->unsignedInteger('relation_type_id')->nullable(false);
             $table->primary('id');
             $table->timestamps();
             $table->foreign('parent_id')->references('id')->on('terms')->onDelete('cascade');
             $table->foreign('child_id')->references('id')->on('terms')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('term_categories')->onDelete('cascade');
-            $table->foreign('relation_id')->references('id')->on('relations')->onDelete('cascade');
+            $table->foreign('relation_type_id')->references('id')->on('term_relation_types')->onDelete('cascade');
         });
 
 

@@ -36,5 +36,11 @@ class Term extends Model
         return $this->hasMany(TermRelation::class);
     }
 
+    public function equivalents()
+    {
+        return $this->hasMany(TermEquivalent::class, 'term1_id')
+                    ->orWhere('term2_id', $this->id);
+    }
+
 
 }

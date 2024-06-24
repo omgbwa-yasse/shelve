@@ -10,11 +10,11 @@
 
     <p>{{ $termRelation->description }}</p>
 
-    <a href="{{ route('term-relations.index') }}" class="btn btn-secondary mb-3">Retour à la liste</a>
+    <a href="{{ route('term-relation-types.index') }}" class="btn btn-secondary mb-3">Retour à la liste</a>
 
-    <a href="{{ route('term-relations.edit', $termRelation->id) }}" class="btn btn-primary mb-3">Modifier</a>
+    <a href="{{ route('term-relation-types.edit', $termRelation->id) }}" class="btn btn-primary mb-3">Modifier</a>
 
-    <form action="{{ route('term-relations.destroy', $termRelation->id) }}" method="POST">
+    <form action="{{ route('term-relation-types.destroy', $termRelation->id) }}" method="POST">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn btn-danger">Supprimer</button>

@@ -76,7 +76,7 @@
                 <a class="nav-link text-dark" href="{{ route('term-categories.index') }}"><i class="bi bi-tools"></i> Thésaurus : categories </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('term-relations.index') }}"><i class="bi bi-tools"></i> Thésaurus : relations </a>
+                <a class="nav-link text-dark" href="{{ route('term-relation-types.index') }}"><i class="bi bi-tools"></i> Thésaurus : relations </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-dark" href="{{ route('term-types.index') }}"><i class="bi bi-tools"></i> Thésaurus : types </a>

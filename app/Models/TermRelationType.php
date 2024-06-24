@@ -9,12 +9,12 @@ use App\Models\RelationType;
 
 
 
-class TermRelation extends Model
+class TermRelationType extends Model
 {
 
     use HasFactory;
 
-    protected $table = 'term_relations';
+    protected $table = 'term_relation_types';
 
     protected $fillable = [
         'code',

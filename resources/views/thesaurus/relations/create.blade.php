@@ -5,7 +5,7 @@
 <div class="container">
     <h1 class="mt-4">Créer une nouvelle relation de terme</h1>
 
-    <form action="{{ route('term-relations.store') }}" method="POST" class="mt-4">
+    <form action="{{ route('term-relation-types.store') }}" method="POST" class="mt-4">
         @csrf
         <div class="mb-3">
             <label for="code" class="form-label">Code :</label>
@@ -22,7 +22,7 @@
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 
-    <a href="{{ route('term-relations.index') }}" class="mt-3 d-block">Retour à la liste</a>
+    <a href="{{ route('term-relation-types.index') }}" class="mt-3 d-block">Retour à la liste</a>
 </div>
 
 @endsection

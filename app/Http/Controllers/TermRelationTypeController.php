@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TermRelation;
+use App\Models\TermRelationType;
 use Illuminate\Http\Request;
 
 
-class TermRelationController extends Controller
+class TermRelationTypeController extends Controller
 {
 
 
     public function index()
     {
-        $termRelations = TermRelation::all();
+        $termRelations = TermRelationType::all();
 
         return view('thesaurus.relations.index', compact('termRelations'));
     }
@@ -37,9 +37,9 @@ class TermRelationController extends Controller
             'description' => 'nullable',
         ]);
 
-        TermRelation::create($request->all());
+        TermRelationType::create($request->all());
 
-        return redirect()->route('term-relations.index')
+        return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation created successfully.');
     }
 
@@ -47,7 +47,7 @@ class TermRelationController extends Controller
 
 
 
-    public function show(TermRelation $termRelation)
+    public function show(TermRelationType $termRelation)
     {
         return view('thesaurus.relations.show', compact('termRelation'));
     }
@@ -56,7 +56,7 @@ class TermRelationController extends Controller
 
 
 
-    public function edit(TermRelation $termRelation)
+    public function edit(TermRelationType $termRelation)
     {
         return view('thesaurus.relations.edit', compact('termRelation'));
     }
@@ -64,7 +64,7 @@ class TermRelationController extends Controller
 
 
 
-    public function update(Request $request, TermRelation $termRelation)
+    public function update(Request $request, TermRelationType $termRelation)
     {
         $request->validate([
             'code' => 'required|max:10',
@@ -74,18 +74,18 @@ class TermRelationController extends Controller
 
         $termRelation->update($request->all());
 
-        return redirect()->route('term-relations.index')
+        return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation updated successfully');
     }
 
 
 
 
-    public function destroy(TermRelation $termRelation)
+    public function destroy(TermRelationType $termRelation)
     {
         $termRelation->delete();
 
-        return redirect()->route('term-relations.index')
+        return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation deleted successfully');
     }
 }
