@@ -32,12 +32,13 @@ use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\TermCategoryController;
-use App\Http\Controllers\TermRelationTypeController;
+use App\Http\Controllers\TermEquivalentTypeController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TermEquivalentController;
-use App\Http\Controllers\TermRelationController;
+use App\Http\Controllers\TermRelatedController;
+use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\TestController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -85,7 +86,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('container-property', ContainerPropertyController::class);
         Route::resource('sorts', SortController::class);
         Route::resource('term-categories', TermCategoryController::class);
-        Route::resource('term-relation-types', TermRelationTypeController::class);
+        Route::resource('term-equivalent-types', TermEquivalentTypeController::class);
         Route::resource('term-types', TermTypeController::class);
         Route::resource('languages', LanguageController::class);
     });
@@ -98,8 +99,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('organisations', OrganisationController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
-        Route::resource('terms.term-relations', TermRelationController::class)->names('term-relations');
+        Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
+        Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
 });
 

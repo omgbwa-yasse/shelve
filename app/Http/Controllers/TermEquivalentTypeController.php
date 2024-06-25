@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TermRelationType;
+use App\Models\TermEquivalentType;
 use Illuminate\Http\Request;
 
 
-class TermRelationTypeController extends Controller
+class TermEquivalentTypeController extends Controller
 {
 
 
     public function index()
     {
-        $termRelations = TermRelationType::all();
+        $termEquivalents = TermEquivalentType::all();
 
-        return view('thesaurus.relations.index', compact('termRelations'));
+        return view('thesaurus.equivalents.index', compact('termEquivalents'));
     }
 
 
@@ -22,7 +22,7 @@ class TermRelationTypeController extends Controller
 
     public function create()
     {
-        return view('thesaurus.relations.create');
+        return view('thesaurus.equivalents.create');
     }
 
 
@@ -37,7 +37,7 @@ class TermRelationTypeController extends Controller
             'description' => 'nullable',
         ]);
 
-        TermRelationType::create($request->all());
+        TermEquivalentType::create($request->all());
 
         return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation created successfully.');
@@ -47,24 +47,24 @@ class TermRelationTypeController extends Controller
 
 
 
-    public function show(TermRelationType $termRelation)
+    public function show(TermEquivalentType $termEquivalent)
     {
-        return view('thesaurus.relations.show', compact('termRelation'));
+        return view('thesaurus.equivalents.show', compact('termEquivalent'));
     }
 
 
 
 
 
-    public function edit(TermRelationType $termRelation)
+    public function edit(TermEquivalentType $termEquivalent)
     {
-        return view('thesaurus.relations.edit', compact('termRelation'));
+        return view('thesaurus.equivalents.edit', compact('termEquivalent'));
     }
 
 
 
 
-    public function update(Request $request, TermRelationType $termRelation)
+    public function update(Request $request, TermEquivalentType $termEquivalent)
     {
         $request->validate([
             'code' => 'required|max:10',
@@ -72,7 +72,7 @@ class TermRelationTypeController extends Controller
             'description' => 'nullable',
         ]);
 
-        $termRelation->update($request->all());
+        $termEquivalent->update($request->all());
 
         return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation updated successfully');
@@ -81,9 +81,9 @@ class TermRelationTypeController extends Controller
 
 
 
-    public function destroy(TermRelationType $termRelation)
+    public function destroy(TermEquivalentType $termEquivalent)
     {
-        $termRelation->delete();
+        $termEquivalent->delete();
 
         return redirect()->route('term-relation-types.index')
             ->with('success', 'Term relation deleted successfully');

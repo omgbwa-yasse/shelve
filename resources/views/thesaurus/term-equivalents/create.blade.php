@@ -1,21 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Add Term Equivalent for {{ $term->name }}</h1>
+    <h1>Etablir une equivalent </h1>
+    Terme à associer <button type="button" class="btn btn-danger">{{ $term->name }}</button>
 
     <form action="{{ route('term-equivalents.store', $term) }}" method="POST">
         @csrf
-
         <div class="form-group">
-            <label for="term2_id">Term 2</label>
-            <select name="term2_id" id="term2_id" class="form-control" required>
-                <option value="">Select a term</option>
-                @foreach (\App\Models\Term::all() as $term2)
-                    <option value="{{ $term2->id }}">{{ $term2->name }}</option>
+            <label for="equivalent_type_id">equivalent Type</label>
+            <select name="equivalent_type_id" id="equivalent_type_id" class="form-control">
+                @foreach ($equivalentTypes as $equivalentType)
+                    <option value="{{ $equivalentType->id }}">{{ $equivalentType->name }}</option>
                 @endforeach
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
+        <div class="form-group">
+            <label for="child_id"> terms associés </label>
+            <input type="text" name="child_id" id="child_id" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create</button>
     </form>
 @endsection

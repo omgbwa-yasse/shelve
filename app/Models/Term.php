@@ -45,14 +45,14 @@ class Term extends Model
         return $this->belongsToMany(Record::class, 'record_term', 'term_id', 'record_id');
     }
 
-    public function relationType()
+    public function equivalentType()
     {
-        return $this->belongsTo(TermRelationType::class);
+        return $this->belongsTo(TermEquivalentType::class);
     }
 
-    public function relations()
+    public function equivalents()
     {
-        return $this->hasMany(TermRelation::class, 'term_id');
+        return $this->hasMany(TermEquivalent::class, 'term_id');
     }
 
     public function type()
@@ -60,9 +60,9 @@ class Term extends Model
         return $this->belongsTo(TermType::class, 'type_id');
     }
 
-    public function equivalents()
+    public function translations()
     {
-        return $this->hasMany(TermEquivalent::class, 'term1_id')
+        return $this->hasMany(TermTranslation::class, 'term1_id')
                     ->orWhere('term2_id', $this->id);
     }
 }

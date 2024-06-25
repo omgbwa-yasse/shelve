@@ -62,7 +62,7 @@ class TermController extends Controller
 
     public function show(Term $term)
     {
-        $term->load('category', 'language','equivalents','relations','records','relationType','type','parent','children');
+        $term->load('category', 'language','translations','equivalents','records','equivalentType','type','parent','children');
         return view('thesaurus.terms.show', compact('term'));
     }
 

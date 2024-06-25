@@ -5,24 +5,30 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TermEquivalent extends Model
-{
-    use HasFactory;
-    protected $table = 'term_equivalents';
-    protected $fillable = [
-        'term1_id',
-        'term2_id',
-    ];
 
-    public $timestamps = false;
-    public function term1()
+    class TermEquivalent extends Model
     {
-        return $this->belongsTo(Term::class, 'term1_id');
-    }
+        use HasFactory;
+        protected $table = 'term_equivalent';
 
-    public function term2()
-    {
-        return $this->belongsTo(Term::class, 'term2_id');
-    }
 
+        protected $fillable = [
+            'term_id',
+            'term_used',
+            'equivalent_type_id',
+        ];
+
+
+        public function term()
+        {
+            return $this->belongsTo(Term::class);
+        }
+
+
+        public function equivalentType()
+        {
+            return $this->belongsTo(TermEquivalentType::class, 'equivalent_type_id');
+        }
 }
+
+

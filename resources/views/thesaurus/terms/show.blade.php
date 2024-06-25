@@ -41,7 +41,7 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce terme ?')">Supprimer</button>
         </form>
-        <a href="{{ route('term-equivalents.create', $term) }}" class="btn btn-primary">Ajouter une traduction </a>
-        <a href="{{ route('term-relations.create', $term) }}" class="btn btn-primary">Ajouter une une relation </a>
+        <a href="{{ route('term-translations.create', $term) }}" class="btn btn-primary">Ajouter une traduction </a>
+        <a href="{{ route('term-related.create', $term) }}" class="btn btn-primary">Ajouter une une équivalent </a>
     </div>
 @endsection
