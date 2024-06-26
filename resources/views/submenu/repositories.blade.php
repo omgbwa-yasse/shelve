@@ -2,10 +2,10 @@
     <div class="row">
         <!-- Recherche -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="false"
-            aria-controls="rechercheMenu">
+        style="padding: 10px;" aria-controls="rechercheMenu">
             <i class="bi bi-search"></i> Recherche
         </a>
-        <div class="collapse" id="rechercheMenu">
+        <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-list-check"></i> Tous les
@@ -35,10 +35,10 @@
 
         <!-- Enregistrement -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="false" aria-controls="enregistrementMenu">
+            aria-expanded="false" style="padding: 10px;" aria-controls="enregistrementMenu">
             <i class="bi bi-journal-plus"></i> Enregistrement
         </a>
-        <div class="collapse" id="enregistrementMenu">
+        <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-plus-square"></i> Nouveau</a>
@@ -48,10 +48,10 @@
 
         <!-- Chariot -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#chariotMenu" aria-expanded="false"
-            aria-controls="chariotMenu">
+            aria-controls="chariotMenu" style="padding: 10px;">
             <i class="bi bi-cart"></i> Chariot
         </a>
-        <div class="collapse" id="chariotMenu">
+        <div class="collapse show" id="chariotMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-gear"></i> Gestion</a>

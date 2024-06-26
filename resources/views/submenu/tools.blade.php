@@ -2,7 +2,7 @@
     <div class="row">
         <!-- Plan de classement -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#planClassementMenu"
-            aria-expanded="true" aria-controls="planClassementMenu">
+            aria-expanded="true"  style="padding: 10px;" aria-controls="planClassementMenu">
             <i class="bi bi-grid"></i> Plan de classement
         </a>
         <div class="collapse show" id="planClassementMenu">
@@ -19,7 +19,7 @@
 
         <!-- Référentiel de conservation -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#referentielConservationMenu"
-            aria-expanded="true" aria-controls="referentielConservationMenu">
+            aria-expanded="true" style="padding: 10px;" aria-controls="referentielConservationMenu">
             <i class="bi bi-archive"></i> Référentiel de conservation
         </a>
         <div class="collapse show" id="referentielConservationMenu">
@@ -35,7 +35,7 @@
 
         <!-- Communicabilité -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#communicabiliteMenu"
-            aria-expanded="false" aria-controls="communicabiliteMenu">
+            aria-expanded="false" style="padding: 10px;" aria-controls="communicabiliteMenu">
             <i class="bi bi-chat-square-text"></i> Communicabilité
         </a>
         <div class="collapse show" id="communicabiliteMenu">
@@ -52,7 +52,7 @@
 
         <!-- Organigramme -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#organigrammeMenu"
-            aria-expanded="false" aria-controls="organigrammeMenu">
+            aria-expanded="false" style="padding: 10px;" aria-controls="organigrammeMenu">
             <i class="bi bi-diagram-3"></i> Organigramme
         </a>
         <div class="collapse show" id="organigrammeMenu">
@@ -69,7 +69,7 @@
 
         <!-- Thésaurus -->
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
-            aria-controls="thesaurusMenu">
+            aria-controls="thesaurusMenu" style="padding: 10px;">
             <i class="bi bi-book-half"></i> Thésaurus
         </a>
         <div class="collapse show" id="thesaurusMenu">
