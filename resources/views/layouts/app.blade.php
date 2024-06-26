@@ -57,8 +57,8 @@
                             </li>
 
                             <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'records') {{ 'active bg-warning' }} @endif"
-                                    href="#">Repertoire</a>
+                                <a class="nav-link @if (Request::segment(1) == 'repositories') {{ 'active bg-warning' }} @endif"
+                                    href="{{ route('records.index') }}">Repertoire</a>
                             </li>
 
                             <li class="nav-item  text-dark">

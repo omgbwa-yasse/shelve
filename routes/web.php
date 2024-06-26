@@ -11,7 +11,6 @@ use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
-use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
@@ -39,7 +38,7 @@ use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
-use App\Http\Controllers\TestController;
+use App\Http\Controllers\RecordController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -66,9 +65,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
 
-    Route::resource('repositories', RepositoryController::class);
     Route::resource('communications', CommunicationController::class);
     Route::resource('accessions', AccessionController::class);
+
+    Route::prefix('repositories')->group(function () {
+        Route::resource('records', RecordController::class);
+    });
 
 
     Route::prefix('deposits')->group(function () {

@@ -13,47 +13,86 @@ use App\Models\User;
 class Record extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'reference', 'name', 'date_format', 'date_start', 'date_end', 'date_exact', 'description', 'level_id', 'status_id', 'support_id', 'classification_id', 'parent_id', 'container_id', 'transfer_id', 'user_id'
+        'code',
+        'name',
+        'date_format',
+        'date_start',
+        'date_end',
+        'date_exact',
+        'level_id',
+        'width',
+        'width_description',
+        'biographical_history',
+        'archival_history',
+        'acquisition_source',
+        'content',
+        'appraisal',
+        'accrual',
+        'arrangement',
+        'access_conditions',
+        'reproduction_conditions',
+        'language_material',
+        'characteristic',
+        'finding_aids',
+        'location_original',
+        'location_copy',
+        'related_unit',
+        'publication_note',
+        'note',
+        'archivist_note',
+        'rule_convention',
+        'status_id',
+        'support_id',
+        'activity_id',
+        'parent_id',
+        'container_id',
+        'accession_id',
+        'user_id',
     ];
+
+
 
     public function status()
     {
         return $this->belongsTo(RecordStatus::class);
     }
 
+
     public function support()
     {
         return $this->belongsTo(RecordSupport::class);
     }
 
-    public function classification()
+
+    public function activity()
     {
-        return $this->belongsTo(Classification::class);
+        return $this->belongsTo(Activity::class);
     }
+
 
     public function parent()
     {
-        return $this->belongsTo(Record::class);
+        return $this->belongsTo(Record::class, 'parent_id');
     }
 
-    public function children()
-    {
-        return $this->hasMany(self::class, 'parent_id');
-    }
 
     public function container()
     {
         return $this->belongsTo(Container::class);
     }
 
-    public function transfer()
+
+    public function accession()
     {
-        return $this->belongsTo(Transfer::class);
+        return $this->belongsTo(Accession::class);
     }
+
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
 }

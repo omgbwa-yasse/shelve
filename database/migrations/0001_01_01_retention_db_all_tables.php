@@ -149,7 +149,7 @@ return new class extends Migration
         */
 
 
-        Schema::create('accession_status', function (Blueprint $table) {
+        Schema::create('accession_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 30)->nullable(false);
             $table->text('observation')->nullable();
@@ -193,21 +193,59 @@ return new class extends Migration
 
         Schema::create('records', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 50)->nullable(false);
-            $table->text('name')->nullable(false);
-            $table->string('date_format', 1)->nullable(false);
-            $table->string('date_start', 10)->nullable();
-            $table->string('date_end', 10)->nullable();
-            $table->date('date_exact')->nullable();
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('level_id')->nullable(false);
-            $table->unsignedBigInteger('status_id')->nullable(false);
-            $table->unsignedBigInteger('support_id')->nullable(false);
-            $table->unsignedBigInteger('activity_id')->nullable(false);
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->unsignedBigInteger('container_id')->nullable(false);
-            $table->unsignedBigInteger('accession_id')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable(false);
+            // Zone d'identification
+            $table->string('code', 10)->nullable(false); // Référence
+            $table->text('name')->nullable(false); // intitulé et analyse
+            $table->string('date_format', 1)->nullable(false); // format de date
+            $table->string('date_start', 10)->nullable(true); // date de début
+            $table->string('date_end', 10)->nullable(true); // date de fin
+            $table->date('date_exact')->nullable(true); // date exacte
+            $table->unsignedBigInteger('level_id')->nullable(false); // Niveau de description
+            $table->float('width', 10)->nullable(true); // Epaisseur en cm
+            $table->string('width_description', 100)->nullable(true); // Importance matérielle
+
+            // zone du contexte
+            $table->text('biographical_history')->nullable(true); // histoire administrative
+            $table->text('archival_history')->nullable(true); // Historique de conservation
+            $table->text('acquisition_source')->nullable(true); // Modalités d'entrée
+
+            // zone du contenu et structure
+            $table->text('content')->nullable(true); // Présentation du contenu
+            $table->text('appraisal')->nullable(true); // Evaluation, tri et élimination, sort final
+            $table->text('accrual')->nullable(true); // Accroissements
+            $table->text('arrangement')->nullable(true); // Mode de classement
+
+            // zone du condition d'accès et utilisation
+            $table->string('access_conditions', 50)->nullable(true); // Conditions d'accès
+            $table->string('reproduction_conditions', 50)->nullable(true); // Conditions de reproduction
+            $table->string('language_material', 50)->nullable(true); // Langue et écriture des documents
+            $table->string('characteristic', 100)->nullable(true); // Caractériqtiques matérielles et contraintes techniques
+            $table->string('finding_aids', 100)->nullable(true); // Instrument de recherche
+
+            // zone du source complémentaires
+            $table->string('location_original', 100)->nullable(true); // Existence et lieu de conservation des originaux
+            $table->string('location_copy', 100)->nullable(true); // Existence et leiu de conservation de copies
+            $table->string('related_unit', 100)->nullable(true); //  Sources complémentaires
+            $table->text('publication_note')->nullable(true); // Bibliographie
+
+            // zone de note
+            $table->text('note')->nullable(true); // Notes
+
+
+            // zone de control area
+            $table->text('archivist_note')->nullable(true); // Note de l'archiviste
+            $table->string('rule_convention', 100)->nullable(true); // Règles ou conventions
+            $table->timestamps();
+
+
+            // clés étarnagères
+            $table->unsignedBigInteger('status_id')->nullable(false); // Status de unité de description
+            $table->unsignedBigInteger('support_id')->nullable(false); // Support
+            $table->unsignedBigInteger('activity_id')->nullable(false); // Activité rattachée
+            $table->unsignedBigInteger('parent_id')->nullable(true); // Fiche de description parente
+            $table->unsignedBigInteger('container_id')->nullable(true); // Lieu de consersation
+            $table->unsignedBigInteger('accession_id')->nullable(true); // Versement
+            $table->unsignedBigInteger('user_id')->nullable(false); // créateur
             $table->primary('id');
             $table->foreign('status_id')->references('id')->on('record_status')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
