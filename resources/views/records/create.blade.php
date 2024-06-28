@@ -37,7 +37,6 @@
                         <div class="col-md-3 mb-3">
                             <label for="level_id" class="form-label">Level</label>
                             <select name="level_id" id="level_id" class="form-select" required>
-                                <option value="">Select Level</option>
                                 @foreach ($levels as $level)
                                 <option value="{{ $level->id }}">{{ $level->name }}</option>
                                 @endforeach
@@ -46,7 +45,6 @@
                         <div class="col-md-3 mb-3">
                             <label for="support_id" class="form-label">Support</label>
                             <select name="support_id" id="support_id" class="form-select" required>
-                                <option value="">Select Support</option>
                                 @foreach ($supports as $support)
                                 <option value="{{ $support->id }}">{{ $support->name }}</option>
                                 @endforeach
@@ -92,16 +90,13 @@
         <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
 
                     <div class="mb-3">
-                        <label for="level_id[]" class="form-label">Producteur </label>
-                        <select name="author_id[]" id="level_id[]" class="form-select">
-                            <option value=""></option>
-                            @foreach ($levels as $level)
-                            <option value=""></option>
-                            @endforeach
-                        </select>
-                        <button type="button" class="btn btn-outline-primary" >
-                            Créer un producteur
-                        </button>
+                        <div class="mb-3">
+                            <label for="author" class="form-label">Producteur</label>
+                            <input type="text" class="form-control" id="author" autocomplete="off">
+                            <div id="suggestions" class="list-group mt-2"></div>
+                        </div>
+                        <div id="selected-authors" class="mt-3"></div>
+                        <input type="hidden" name="author_ids[]" id="author-ids">
                     </div>
                     <div class="mb-3">
                         <label for="biographical_history" class="form-label">Biographical History</label>
@@ -193,32 +188,27 @@
             <div class="mb-3">
                 <label for="status_id" class="form-label">Status</label>
                 <select name="status_id" id="status_id" class="form-select" required>
-                    <option value="">Select Status</option>
                     @foreach ($statuses as $status)
                     <option value="{{ $status->id }}">{{ $status->name }}</option>
                     @endforeach
                 </select>
             </div>
         </div>
+
         <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
 
-            <div class="mb-3">
-                <label for="status_id" class="form-label">Thésaurus</label>
-                <select name="status_id" id="status_id" class="form-select" required>
-                    <option value="">Select Status</option>
-                    @foreach ($statuses as $status)
-                    <option value="{{ $status->id }}">{{ $status->name }}</option>
+            <div class="mt-3">
+                <label for="term_id" class="form-label"> Thésaurus </label>
+                <select name="term_id" id="term_id" class="form-select" required>
+                    @foreach ($terms as $term)
+                    <option value="{{ $term->id }}">{{ $term->name }}</option>
                     @endforeach
                 </select>
-                <button type="button" class="btn btn-outline-primary" >
-                    Ajouter un terme
-                </button>
             </div>
 
             <div class="mb-3">
-                <label for="activity_id" class="form-label">Activity</label>
+                <label for="activity_id" class="form-label"> Activités </label>
                 <select name="activity_id" id="activity_id" class="form-select" required>
-                    <option value="">Select Activity</option>
                     @foreach ($activities as $activity)
                     <option value="{{ $activity->id }}">{{ $activity->name }}</option>
                     @endforeach
@@ -230,5 +220,45 @@
 
     <button type="submit" class="btn btn-primary">Create</button>
 </div>
+
+<script>
+    const authors = @json($authors);
+
+    document.getElementById('author').addEventListener('input', function () {
+        let query = this.value.toLowerCase();
+        let suggestions = document.getElementById('suggestions');
+        suggestions.innerHTML = '';
+
+        if (query.length >= 2) {
+            let filteredProducers = authors.filter(author => author.name.toLowerCase().includes(query));
+            filteredProducers.forEach(author => {
+                let item = document.createElement('a');
+                item.classList.add('list-group-item', 'list-group-item-action');
+                item.textContent = author.name;
+                item.onclick = function () {
+                    addProducer(author);
+                };
+                suggestions.appendChild(item);
+            });
+        }
+    });
+
+    function addProducer(author) {
+        let selectedProducers = document.getElementById('selected-authors');
+        let authorItem = document.createElement('div');
+        authorItem.classList.add('list-group-item');
+        authorItem.textContent = author.name;
+        selectedProducers.appendChild(authorItem);
+        document.getElementById('suggestions').innerHTML = '';
+        document.getElementById('author').value = '';
+    }
+
+    function createProducer() {
+        // Logique pour créer un nouveau producteur
+        alert('Créer un nouveau producteur');
+    }
+</script>
+
+
 
 @endsection

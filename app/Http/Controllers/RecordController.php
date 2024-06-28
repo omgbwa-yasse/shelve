@@ -7,7 +7,9 @@ use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\ContainerStatus;
 use App\Models\Activity;
+use App\Models\Term;
 use App\Models\Accession;
+use App\Models\Author;
 use App\Models\RecordLevel;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,7 +39,9 @@ class RecordController extends Controller
         $users = User::all();
         $levels = RecordLevel::all();
         $records = Record::all();
-        return view('records.create', compact('records','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'accessions', 'users'));
+        $authors = Author::all();
+        $terms = Term::all();
+        return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'accessions', 'users'));
     }
 
 
