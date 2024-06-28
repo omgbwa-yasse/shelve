@@ -269,28 +269,29 @@ return new class extends Migration
 
         Schema::create('record_status', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->nullable(false);
-            $table->text('observation', 250)->nullable();
+            $table->string('name', 100)->unique()->nullable(false);
+            $table->text('description')->nullable();
             $table->primary('id');
+            $table->timestamps();
         });
 
 
 
         Schema::create('record_supports', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->nullable(false);
-            $table->text('observation', 250)->nullable();
-            $table->primary('id');
+            $table->string('name', 100)->unique()->nullable(false);
+            $table->text('description')->nullable();
+            $table->timestamps();
         });
-
 
 
         Schema::create('record_levels', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->nullable(false);
+            $table->string('name', 50);
             $table->text('description')->nullable();
-            $table->tinyInteger('child')->nullable(false);
-            $table->primary('id');
+            $table->unsignedBigInteger('child_id')->nullable();
+            $table->foreign('child_id')->references('id')->on('record_levels')->onDelete('cascade');
+            $table->timestamps();
         });
 
 

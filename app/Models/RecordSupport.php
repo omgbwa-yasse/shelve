@@ -8,9 +8,9 @@ use App\Models\Record;
 class RecordSupport extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'name', 'observation'
-    ];
+    protected $table = 'record_supports';
+
+    protected $fillable = ['name', 'description'];
 
     public function records()
     {

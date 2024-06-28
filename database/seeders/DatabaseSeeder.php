@@ -18,6 +18,9 @@ use App\Models\documentType;
 use App\Models\Shelf;
 use App\Models\MailSubject;
 use App\Models\batch;
+use App\Models\RecordLevel;
+use App\Models\RecordStatus;
+use App\Models\RecordSupport;
 use App\Models\User;
 
 class DatabaseSeeder extends Seeder
@@ -42,6 +45,41 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Conteneur d\'archives', 'description' => 'Conteneur d\'archives', 'Un conteneur utilisé pour stocker des documents et des objets à long terme, souvent utilisé dans les bibliothèques, les archives et les entreprises.'],
         ]);
 
+        RecordLevel::insert([
+            ['name' => 'fonds', 'description' => 'Le fonds est l\'ensemble des documents créés ou reçus par une personne ou un organisme au cours de ses activités.', 'child_id' => 2],
+            ['name' => 'sous-fonds', 'description' => 'Le sous-fonds est une division d\'un fonds, correspondant à une subdivision administrative ou fonctionnelle d\'un organisme.', 'child_id' => 3],
+            ['name' => 'série', 'description' => 'La série est un regroupement de documents partageant des caractéristiques communes, souvent par fonction ou type de document.', 'child_id' => 4],
+            ['name' => 'sous-série', 'description' => 'La sous-série est une subdivision d\'une série, permettant une organisation plus fine des documents.', 'child_id' => 5],
+            ['name' => 'dossier', 'description' => 'Le dossier est un ensemble de documents rassemblés parce qu\'ils concernent une même affaire, un même sujet ou une même activité.', 'child_id' => 6],
+            ['name' => 'chemise', 'description' => 'La chemise est une unité de rangement à l\'intérieur d\'un dossier, contenant un ou plusieurs documents.', 'child_id' => 7],
+            ['name' => 'pièce', 'description' => 'La pièce est le plus petit niveau de description, correspondant à un document individuel.', 'child_id' => null],
+        ]);
+
+
+        RecordSupport::insert([
+            ['name' => 'Papier', 'description' => 'Support physique traditionnel pour la documentation'],
+            ['name' => 'Microfilm', 'description' => 'Support pour la conservation à long terme des documents'],
+            ['name' => 'CD-ROM', 'description' => 'Support numérique pour le stockage de données'],
+            ['name' => 'Disque dur externe', 'description' => 'Support portable pour le stockage de données'],
+            ['name' => 'Cartouche magnétique', 'description' => 'Support pour les systèmes d\'archivage informatique'],
+            ['name' => 'Pellicule photographique', 'description' => 'Support pour la photographie analogique'],
+            ['name' => 'Bandes magnétiques', 'description' => 'Support pour l\'archivage de données sur bande'],
+            ['name' => 'Parchemin', 'description' => 'Support traditionnel pour l\'écriture manuscrite'],
+            ['name' => 'Argile', 'description' => 'Support pour l\'écriture cunéiforme dans l\'Antiquité'],
+            ['name' => 'Papyrus', 'description' => 'Support pour l\'écriture dans l\'Égypte antique'],
+        ]);
+
+
+        RecordStatus::insert([
+            ['name' => 'Accessionné', 'description' => 'Les archives ont été reçues et enregistrées dans le système.'],
+            ['name' => 'En cours de traitement', 'description' => 'Les archives sont en cours d\'inventaire, de classement ou de description.'],
+            ['name' => 'Classé', 'description' => 'Les archives ont été classées et sont prêtes à être consultées.'],
+            ['name' => 'En cours de restauration', 'description' => 'Les archives sont en cours de restauration ou de réparation.'],
+            ['name' => 'Communicable', 'description' => 'Les archives peuvent être consultées par les chercheurs.'],
+            ['name' => 'Non communicable', 'description' => 'Les archives sont soumises à des restrictions d\'accès.'],
+            ['name' => 'Eliminé', 'description' => 'Les archives ont été détruites conformément aux règles de conservation.'],
+            ['name' => 'Transféré', 'description' => 'Les archives ont été transférées à un autre service ou établissement.'],
+        ]);
 
         MailTypology::insert([
             ['name' => 'Demande', 'description' => '', 'class_id' => 1],
@@ -52,6 +90,7 @@ class DatabaseSeeder extends Seeder
         MailStatus::insert([
             ['name' => 'Brouillon'],
             ['name' => 'Traité'],
+            ['name' => 'En cours de traitement'],
         ]);
 
         MailType::insert([

@@ -9,12 +9,21 @@ use App\Models\Record;
 class RecordLevel extends Model
 {
     use HasFactory;
+
+    protected $table = 'record_levels';
+
     protected $fillable = [
-        'name', 'description', 'child'
+        'name', 'description', 'child_id'
     ];
 
-    public function records()
+    public function child()
     {
-        return $this->hasMany(Record::class);
+        return $this->belongsTo(RecordLevel::class, 'child_id');
     }
+
+    public function parent()
+    {
+        return $this->hasOne(RecordLevel::class, 'id', 'child_id');
+    }
+
 }

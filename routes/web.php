@@ -39,6 +39,8 @@ use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
+use App\Http\Controllers\RecordSupportController;
+use App\Http\Controllers\RecordStatusController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -91,6 +93,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('term-equivalent-types', TermEquivalentTypeController::class);
         Route::resource('term-types', TermTypeController::class);
         Route::resource('languages', LanguageController::class);
+        Route::resource('record-supports', RecordSupportController::class);
+        Route::resource('record-statuses', RecordStatusController::class);
     });
 
     Route::prefix('tools')->group(function () {

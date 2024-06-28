@@ -20,10 +20,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('buildings.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-tools"></i> Supports de conservations </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('rooms.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx </a>
+                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-tools"></i> Status des archives </a>
                 </li>
 
             </ul>

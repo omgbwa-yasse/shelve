@@ -9,17 +9,15 @@ class RecordStatus extends Model
 {
     use HasFactory;
 
+
     protected $fillable = [
         'name',
-        'observation',
+        'description',
     ];
 
-    protected $casts = [
-        'id' => 'integer',
-    ];
 
     public function records()
     {
-        return $this->hasMany(Record::class); // Assuming you have a Record model that uses this status
+        return $this->hasMany(Record::class);
     }
 }
