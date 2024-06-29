@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Chrono', 'description' => 'Un type de conteneur conçu pour les livraisons sensibles au temps, souvent utilisé pour l\'expédition de documents et de colis qui doivent arriver rapidement.'],
             ['name' => 'Liasse', 'description' => 'Une collection de documents ou de papiers liés ensemble dans un seul paquet, souvent utilisés à des fins légales ou financières.'],
             ['name' => 'Carton', 'description' => 'Un grand conteneur robuste en carton ondulé, utilisé pour l\'expédition et le stockage de marchandises.'],
-            ['name' => 'Conteneur d\'archives', 'description' => 'Conteneur d\'archives', 'Un conteneur utilisé pour stocker des documents et des objets à long terme, souvent utilisé dans les bibliothèques, les archives et les entreprises.'],
+            ['name' => 'Conteneur d\'archives', 'description' => 'Conteneur d\'archives Un conteneur utilisé pour stocker des documents et des objets à long terme, souvent utilisé dans les bibliothèques, les archives et les entreprises.'],
         ]);
 
         RecordLevel::insert([
@@ -114,10 +114,10 @@ class DatabaseSeeder extends Seeder
             ['code' => 'DG09', 'name' => 'Parapheur Secrétaire général'],
         ]);
 
-        Building::create(['name' => 'Archives de la BCGF', 'description' => '']);
-        $floor = Floor::create(['name' => '2e étage', 'description' => '', 'building_id' => 1]);
+        Building::create(['name' => 'Archives de la BCGF', 'description' => '', 'creator_id' =>'1']);
+        $floor = Floor::create(['name' => '2e étage', 'description' => '', 'building_id' => 1, 'creator_id' =>1]);
 
-        Room::create(['code' => 'Porte 201', 'name' => 'Archives financières', 'description' => '', 'floor_id' => $floor->id]);
+        Room::create(['code' => 'Porte 201', 'name' => 'Archives financières', 'description' => '', 'floor_id' => $floor->id, 'creator_id' =>1]);
 
         Shelf::create([
             'code' => 'E201-1',
@@ -127,7 +127,7 @@ class DatabaseSeeder extends Seeder
             'shelf' => 6,
             'shelf_length' => 120,
             'room_id' => 1,
-        ]);
+             'creator_id' =>1]);
 
         DocumentType::create([
             'name' => 'Duplicate',

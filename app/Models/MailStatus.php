@@ -8,6 +8,7 @@ use App\Models\Transaction;
 class MailStatus extends Model
 {
     use HasFactory;
+    protected $table = 'mail_status';
     protected $fillable = [
         'name'
     ];

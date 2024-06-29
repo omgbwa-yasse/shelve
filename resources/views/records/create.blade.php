@@ -198,13 +198,24 @@
         <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
 
             <div class="mt-3">
-                <label for="term_id" class="form-label"> Thésaurus </label>
-                <select name="term_id" id="term_id" class="form-select" required>
+                <label for="term_search" class="form-label">Rechercher un terme</label>
+                <input type="text" id="term_search" class="form-control" placeholder="Taper pour rechercher...">
+            </div>
+
+            <div class="mt-3">
+                <label for="term_id" class="form-label">Thésaurus</label>
+                <select name="term_id" id="term_id" class="form-select" multiple required>
                     @foreach ($terms as $term)
-                    <option value="{{ $term->id }}">{{ $term->name }}</option>
+                        <option value="{{ $term->id }}">{{ $term->name }}</option>
                     @endforeach
                 </select>
             </div>
+
+            <div id="selected-terms" class="mt-3"></div>
+            <button type="button" class="btn btn-secondary mt-3" onclick="clearTerms()">Vider les termes</button>
+            <input type="hidden" name="term_ids[]" id="term-ids">
+
+
 
             <div class="mb-3">
                 <label for="activity_id" class="form-label"> Activités </label>
@@ -223,6 +234,53 @@
 
 <script>
     const authors = @json($authors);
+    document.getElementById('term_id').addEventListener('change', function () {
+        let selectedOptions = Array.from(this.selectedOptions);
+        selectedOptions.forEach(option => {
+            addTerm(option.text, option.value);
+        });
+        this.selectedOptions = [];
+    });
+
+
+    document.getElementById('term_search').addEventListener('input', function () {
+        let searchQuery = this.value.toLowerCase();
+        let termOptions = document.getElementById('term_id').options;
+
+        for (let i = 0; i < termOptions.length; i++) {
+            let option = termOptions[i];
+            option.style.display = option.text.toLowerCase().includes(searchQuery) ? 'block' : 'none';
+        }
+    });
+
+    function addTerm(termName, termId) {
+        let selectedTerms = document.getElementById('selected-terms');
+        let termItem = document.createElement('div');
+        termItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+
+        let termNameSpan = document.createElement('span');
+        termNameSpan.textContent = termName;
+
+        let removeButton = document.createElement('button');
+        removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
+        removeButton.textContent = 'Supprimer';
+        removeButton.onclick = function () {
+            termItem.remove();
+        };
+
+        termItem.appendChild(termNameSpan);
+        termItem.appendChild(removeButton);
+        selectedTerms.appendChild(termItem);
+
+        let termIdsInput = document.getElementById('term-ids');
+        termIdsInput.value += termId + ',';
+    }
+
+    function clearTerms() {
+        document.getElementById('selected-terms').innerHTML = '';
+        document.getElementById('term-ids').value = '';
+    }
+
 
     document.getElementById('author').addEventListener('input', function () {
         let query = this.value.toLowerCase();
@@ -246,12 +304,25 @@
     function addProducer(author) {
         let selectedProducers = document.getElementById('selected-authors');
         let authorItem = document.createElement('div');
-        authorItem.classList.add('list-group-item');
-        authorItem.textContent = author.name;
+        authorItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+
+        let authorName = document.createElement('span');
+        authorName.textContent = author.name;
+
+        let removeButton = document.createElement('button');
+        removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
+        removeButton.textContent = 'Supprimer';
+        removeButton.onclick = function () {
+            authorItem.remove();
+        };
+
+        authorItem.appendChild(authorName);
+        authorItem.appendChild(removeButton);
         selectedProducers.appendChild(authorItem);
         document.getElementById('suggestions').innerHTML = '';
         document.getElementById('author').value = '';
     }
+
 
     function createProducer() {
         // Logique pour créer un nouveau producteur

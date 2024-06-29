@@ -247,7 +247,7 @@ return new class extends Migration
             $table->unsignedBigInteger('accession_id')->nullable(true); // Versement
             $table->unsignedBigInteger('user_id')->nullable(false); // créateur
             $table->primary('id');
-            $table->foreign('status_id')->references('id')->on('record_status')->onDelete('cascade');
+            $table->foreign('status_id')->references('id')->on('record_statuses')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('parent_id')->references('id')->on('records')->onDelete('cascade');
@@ -267,7 +267,7 @@ return new class extends Migration
 
 
 
-        Schema::create('record_status', function (Blueprint $table) {
+        Schema::create('record_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
             $table->text('description')->nullable();
@@ -643,7 +643,7 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('user_send_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
-            $table->foreign('user_received')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('user_received_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
@@ -714,7 +714,7 @@ return new class extends Migration
             $table->string('path', 100)->nullable(false);
             $table->string('name', 100)->nullable(false);
             $table->string('crypt', 255)->nullable(false);
-            $table->integer('size', 50)->nullable(false);
+            $table->integer('size')->nullable(false);
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->primary('id');
