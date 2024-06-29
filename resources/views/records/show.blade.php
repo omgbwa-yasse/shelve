@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-
-    <div class="container"><h1>Record Details</h1>
+    <div class="container">
+        <h1>Record Details</h1>
         <ul>
             <li>
                 <details>
                     <summary>Identification</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Code</th>
@@ -52,7 +52,7 @@
             <li>
                 <details>
                     <summary>Contexte</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Biographical History</th>
@@ -66,6 +66,14 @@
                             <th>Acquisition Source</th>
                             <td>{{ $record->acquisition_source }}</td>
                         </tr>
+                        <tr>
+                            <th>Authors</th>
+                            <td>
+                                @foreach ($record->authors as $author)
+                                    <span class="badge badge-secondary">{{ $author->name }}</span>
+                                @endforeach
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </details>
@@ -73,7 +81,7 @@
             <li>
                 <details>
                     <summary>Contenu</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Content</th>
@@ -98,7 +106,7 @@
             <li>
                 <details>
                     <summary>Condition d'accès</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Access Conditions</th>
@@ -127,7 +135,7 @@
             <li>
                 <details>
                     <summary>Sources complémentaires</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Location Original</th>
@@ -152,7 +160,7 @@
             <li>
                 <details>
                     <summary>Notes</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Note</th>
@@ -169,7 +177,7 @@
             <li>
                 <details>
                     <summary>Contrôle de description</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Rule Convention</th>
@@ -194,7 +202,7 @@
             <li>
                 <details>
                     <summary>Indexation</summary>
-                    <table class="table">
+                    <table class="table table-sm">
                         <tbody>
                         <tr>
                             <th>Parent</th>
@@ -212,10 +220,20 @@
                             <th>User</th>
                             <td>{{ $record->user->name }}</td>
                         </tr>
+
+                        <tr>
+                            <th>Terms</th>
+                            <td>
+                                @foreach ($record->terms as $term)
+                                    <span class="badge badge-secondary">{{ $term->name }}</span>
+                                @endforeach
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </details>
             </li>
         </ul>
-        <a href="{{ route('records.index') }}" class="btn btn-secondary">Back</a></div>
+        <a href="{{ route('records.index') }}" class="btn btn-secondary">Back</a>
+    </div>
 @endsection
