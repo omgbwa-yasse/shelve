@@ -95,4 +95,14 @@ class Record extends Model
         return $this->belongsTo(User::class);
     }
 
+    // Dans votre modèle Record
+    public function authors()
+    {
+        return $this->belongsToMany(Author::class);
+    }
+
+    public function terms()
+    {
+        return $this->belongsToMany(Term::class);
+    }
 }

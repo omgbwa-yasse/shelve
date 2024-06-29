@@ -78,16 +78,30 @@ class RecordController extends Controller
             'rule_convention' => 'nullable|string|max:100',
             'created_at' => 'nullable|date',
             'updated_at' => 'nullable|date',
-            'status_id' => 'required|integer|exists:record_status,id',
+            'status_id' => 'required|integer|exists:record_statuses,id',
             'support_id' => 'required|integer|exists:record_supports,id',
             'activity_id' => 'required|integer|exists:activities,id',
             'parent_id' => 'nullable|integer|exists:records,id',
             'container_id' => 'nullable|integer|exists:containers,id',
             'accession_id' => 'nullable|integer|exists:accessions,id',
             'user_id' => 'required|integer|exists:users,id',
+            'author_ids' => 'required|array',
+            'term_ids' => 'required|array',
         ]);
 
-        Record::create($validatedData);
+        // Supprimez les clés author_ids et term_ids du tableau $validatedData
+        $authorIds = $validatedData['author_ids'];
+        $termIds = $validatedData['term_ids'];
+        unset($validatedData['author_ids'], $validatedData['term_ids']);
+
+        // Créez le record
+        $record = Record::create($validatedData);
+
+        // Attachez les auteurs au record
+        $record->authors()->attach($authorIds);
+
+        // Attachez les termes au record
+        $record->terms()->attach($termIds);
 
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
     }
@@ -116,9 +130,9 @@ class RecordController extends Controller
     public function update(Request $request, Record $record)
     {
         $validatedData = $request->validate([
-            'code' => 'required|string|max:10',
-            'name' => 'required|string',
-            'date_format' => 'required|string|max:1',
+            'code' => 'nullable|string|max:10',
+            'name' => 'nullable|string',
+            'date_format' => 'nullable|string|max:1',
             'date_start' => 'nullable|string|max:10',
             'date_end' => 'nullable|string|max:10',
             'date_exact' => 'nullable|date',

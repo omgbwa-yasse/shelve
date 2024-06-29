@@ -9,7 +9,7 @@ class RecordStatus extends Model
 {
     use HasFactory;
 
-
+    protected $table = 'record_statuses';
     protected $fillable = [
         'name',
         'description',

@@ -3,7 +3,8 @@
 @section('content')
 <div class="container">
     <h1>Description </h1>
-
+    <form action="{{ route('records.store') }}" method="POST">
+        @csrf
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">Identification</a>
@@ -229,7 +230,8 @@
         </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-primary">Create d</button>
+    </form>
 </div>
 
 <script>
@@ -321,7 +323,12 @@
         selectedProducers.appendChild(authorItem);
         document.getElementById('suggestions').innerHTML = '';
         document.getElementById('author').value = '';
+
+        // Ajouter l'ID de l'auteur au champ caché author_ids[]
+        let authorIdsInput = document.getElementById('author-ids');
+        authorIdsInput.value += author.id + ',';
     }
+
 
 
     function createProducer() {
