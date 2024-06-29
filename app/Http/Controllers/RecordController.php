@@ -39,7 +39,7 @@ class RecordController extends Controller
         $users = User::all();
         $levels = RecordLevel::all();
         $records = Record::all();
-        $authors = Author::all();
+        $authors = Author::with('authorType')->get();
         $terms = Term::all();
         return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'accessions', 'users'));
     }
