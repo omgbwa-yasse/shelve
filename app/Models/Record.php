@@ -98,7 +98,7 @@ class Record extends Model
     // Dans votre modèle Record
     public function authors()
     {
-        return $this->belongsToMany(Author::class);
+        return $this->belongsToMany(Author::class, 'record_author', 'record_id', 'author_id');
     }
 
     public function terms()

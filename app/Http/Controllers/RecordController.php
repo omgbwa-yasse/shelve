@@ -47,6 +47,10 @@ class RecordController extends Controller
 
     public function store(Request $request)
     {
+        // Définissez une valeur par défaut pour date_format
+        $request->merge(['date_format' => $request->input('date_format', 'Y')]);
+        $request->merge(['user_id' => Auth::id()]);
+//        dd($request);
         $validatedData = $request->validate([
             'code' => 'required|string|max:10',
             'name' => 'required|string',
@@ -98,9 +102,11 @@ class RecordController extends Controller
         $record = Record::create($validatedData);
 
         // Attachez les auteurs au record
+        $authorIds = array_map('intval', $authorIds);
         $record->authors()->attach($authorIds);
 
         // Attachez les termes au record
+        $termIds = array_map('intval', $termIds);
         $record->terms()->attach($termIds);
 
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
