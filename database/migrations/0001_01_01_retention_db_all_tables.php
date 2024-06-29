@@ -641,7 +641,7 @@ return new class extends Migration
             $table->unsignedBigInteger('document_type_id')->nullable(false);
             $table->timestamps();
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
-            $table->foreign('user_send')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_send_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('user_received')->references('id')->on('users')->onDelete('set null');
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
