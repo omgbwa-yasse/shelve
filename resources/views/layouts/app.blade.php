@@ -92,7 +92,7 @@
                             </li>
                         </ul>
 
-                        <form class="d-flex">
+                        <form class="d-flex" action="{{ route('records.search') }}">
                             <input class="form-control me-3" type="search" placeholder="Search" aria-label="Search">
                             <button class="btn btn-outline-success" type="submit">Rechecher</button>
                         </form>
