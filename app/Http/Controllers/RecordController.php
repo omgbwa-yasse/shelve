@@ -99,15 +99,19 @@ class RecordController extends Controller
         // Supprimez les clés author_ids et term_ids du tableau $validatedData
         $term_ids = $request->input('term_ids');
         $author_ids = $request->input('author_ids');
+        $term_ids = explode(',', $term_ids[0]);
 
+        $author_ids = explode(',', $author_ids[0]);
 // Supprimez les valeurs vides du tableau
-        $term_ids = array_filter($term_ids);
-        $author_ids = array_filter($author_ids);
+//        $term_ids = array_filter($term_ids);
+//        $author_ids = array_filter($author_ids);
 
 // Convertissez les valeurs en entiers
         $term_ids = array_map('intval', $term_ids);
         $author_ids = array_map('intval', $author_ids);
-        // Attachez les auteurs au record
+//        // Attachez les auteurs au record
+//        dd($author_ids,$term_ids);
+
         foreach ($author_ids as $author_id) {
             $record->authors()->attach($author_id);
         }
