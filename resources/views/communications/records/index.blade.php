@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Communications</h1>
-        <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">Create New Communication</a>
+        <a href="{{ route('communication-transactions.create') }}" class="btn btn-primary mb-3">Create New Communication</a>
         <table class="table">
             <thead>
                 <tr>
@@ -32,7 +32,13 @@
                         <td>{{ $communication->return_effective }}</td>
                         <td>{{ $communication->status->name }}</td>
                         <td>
-                            <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-info">Show</a>
+                            <a href="{{ route('communication-transactions.show', $communication->id) }}" class="btn btn-info">Show</a>
+                            <a href="{{ route('communication-transactions.edit', $communication->id) }}" class="btn btn-warning">Edit</a>
+                            <form action="{{ route('communication-transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this communication?')">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach

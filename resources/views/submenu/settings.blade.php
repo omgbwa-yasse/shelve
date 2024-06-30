@@ -43,6 +43,19 @@
             </ul>
         </div>
 
+        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#communicationMenu" aria-expanded="true"
+            aria-controls="communicationMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> Communication </a>
+
+        <div class="collapse show" id="communicationMenu">
+
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-tools"></i> Ajouter un status</a>
+                </li>
+
+            </ul>
+        </div>
+
         <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
         aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-building"></i> Dépôt </a>
 

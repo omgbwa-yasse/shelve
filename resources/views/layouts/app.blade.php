@@ -62,8 +62,8 @@
                             </li>
 
                             <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'loans') {{ 'active bg-dark' }} @endif"
-                                    href="#">Demande</a>
+                                <a class="nav-link @if (Request::segment(1) == 'communications') {{ 'active bg-dark' }} @endif"
+                                    href="{{ route('transactions.index') }}">Demande</a>
                             </li>
 
                             <li class="nav-item  text-dark">

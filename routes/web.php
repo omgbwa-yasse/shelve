@@ -13,7 +13,6 @@ use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\RecordAuthorController;
-use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
@@ -41,6 +40,9 @@ use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\RecordSupportController;
+use App\Http\Controllers\CommunicationStatusController;
+use App\Http\Controllers\CommunicationController;
+use App\Http\Controllers\CommunicationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -68,8 +70,15 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
 
-    Route::resource('communications', CommunicationController::class);
+
     Route::resource('accessions', AccessionController::class);
+
+
+    Route::prefix('communications')->group(function () {
+        Route::resource('transactions', CommunicationController::class);
+        Route::resource('transactions.records', CommunicationRecordController::class);
+    });
+
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
@@ -97,6 +106,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('term-types', TermTypeController::class);
         Route::resource('languages', LanguageController::class);
         Route::resource('record-supports', RecordSupportController::class);
+        Route::resource('communication-status', CommunicationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
     });
 

@@ -352,23 +352,71 @@ return new class extends Migration
 
         */
 
-
-
-
-
         Schema::create('communications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('record_id')->nullable(false);
-            $table->unsignedBigInteger('operator')->nullable(false);
-            $table->unsignedBigInteger('user')->nullable(false);
+            $table->string('code', 10)->unique()->nullable(false);
+            $table->unsignedBigInteger('operator_id')->nullable(false);
+            $table->unsignedBigInteger('operator_organisation_id')->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('user_organisation_id')->nullable(false);
+            $table->date('return_date')->nullable(false);
+            $table->date('return_effective')->nullable();
+            $table->unsignedBigInteger('status_id')->nullable(false);
             $table->timestamps();
-            $table->datetime('return')->nullable(false);
-            $table->datetime('return_effective')->nullable();
             $table->primary('id');
-            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
-            $table->foreign('operator')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('user')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('status_id')->references('id')->on('communication_statuses')->onDelete('cascade');
+            $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('operator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
+
+        Schema::create('communication_record', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->unsignedBigInteger('operator_id')->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->boolean('is_original')->default(false)->nullable(false);
+            $table->datet('return_date')->nullable(false);
+            $table->date('return_effective')->nullable();
+            $table->primary('id');
+            $table->timestamps();
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
+        Schema::create('communication_statuses', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->unique()->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->timestamps();
+            $table->primary('id');
+        });
+
+        Schema::create('reservations', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->dateTime('start_time')->nullable(false);
+            $table->dateTime('end_time')->nullable(false);
+            $table->text('notes')->nullable(true);
+            $table->unsignedBigInteger('status_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('status_id')->references('id')->on('reservation_statuses')->onDelete('cascade');
+        });
+
+        Schema::create('reservation_statuses', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->unique()->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->timestamps();
+        });
+
+
 
 
 

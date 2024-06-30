@@ -10,20 +10,40 @@ use App\Models\User;
 class Communication extends Model
 {
     use HasFactory;
-    protected $fillable = ['record_id', 'operator', 'user', 'date_creation', 'return', 'return_effective'];
-
-    public function record()
-    {
-        return $this->belongsTo(Record::class);
-    }
+    protected $fillable = [
+        'code',
+        'operator_id',
+        'operator_organisation_id',
+        'user_id',
+        'user_organisation_id',
+        'return_date',
+        'return_effective',
+        'status_id',
+    ];
 
     public function operator()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'operator_id');
+    }
+
+
+    public function operatorOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'operator_organisation_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function userOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'user_organisation_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(CommunicationStatus::class, 'status_id');
     }
 }
