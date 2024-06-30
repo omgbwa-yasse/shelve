@@ -20,13 +20,7 @@
                 <td>{{ $record->code }}</td>
                 <td>{{ $record->name }}</td>
                 <td>
-                    <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-info">View</a>
-                    <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-warning">Edit</a>
-                    <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>
-                    </form>
+                    <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-info">Voir la fiche</a>
                 </td>
             </tr>
             @endforeach

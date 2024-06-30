@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Container;
 use App\Models\Organisation;
 use App\Models\RecordStatus;
+use App\Models\RecordLevel;
 use App\Models\RecordSupport;
 use App\Models\Classification;
 use App\Models\User;
@@ -63,6 +64,11 @@ class Record extends Model
     public function support()
     {
         return $this->belongsTo(RecordSupport::class);
+    }
+
+    public function level()
+    {
+        return $this->belongsTo(RecordLevel::class, 'level_id');
     }
 
 

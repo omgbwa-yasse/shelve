@@ -222,7 +222,7 @@
                 <label for="activity_id" class="form-label"> Activités </label>
                 <select name="activity_id" id="activity_id" class="form-select" required>
                     @foreach ($activities as $activity)
-                    <option value="{{ $activity->id }}">{{ $activity->name }}</option>
+                    <option value="{{ $activity->id }}">{{ $activity->code }} - {{ $activity->name }}</option>
                     @endforeach
                 </select>
             </div>

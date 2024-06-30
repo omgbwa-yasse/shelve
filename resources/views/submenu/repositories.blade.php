@@ -12,7 +12,7 @@
                         enregistrements</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-person"></i> Detenteurs</a>
+                    <a class="nav-link text-dark" href="{{ route('record-author.index') }}"><i class="bi bi-person"></i> Detenteurs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
@@ -42,6 +42,9 @@
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('records.create') }}"><i class="bi bi-plus-square"></i> Nouveau</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('record-author.create') }}"><i class="bi bi-plus-square"></i> Producteur</a>
                 </li>
             </ul>
         </div>

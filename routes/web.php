@@ -12,6 +12,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
@@ -73,6 +74,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
+        Route::resource('authors', RecordAuthorController::class)->names('record-author');
     });
 
 

@@ -67,7 +67,10 @@
                 <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver</a>
+                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Remplir parapheur**</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver </a>
             </li>
                 </ul>
             </div>
@@ -77,11 +80,12 @@
 
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
+
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i>Recevoir</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i>Recevoir**</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-envelope"></i> Envoyer**</a>
                 </li>
                 </ul>
             </div>
