@@ -7,6 +7,9 @@ use App\Models\Container;
 class ContainerStatus extends Model
 {
     use HasFactory;
+
+    protected $table = 'container_statuses';
+
     protected $fillable = ['name', 'description', 'creator_id'];
 
     public function containers()

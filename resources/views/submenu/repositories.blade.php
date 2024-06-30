@@ -8,7 +8,7 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-list-check"></i> Tous les
+                    <a class="nav-link text-dark" href="{{ route('records.index') }}"><i class="bi bi-list-check"></i> Tous les
                         enregistrements</a>
                 </li>
                 <li class="nav-item">
@@ -41,7 +41,7 @@
         <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-plus-square"></i> Nouveau</a>
+                    <a class="nav-link text-dark" href="{{ route('records.create') }}"><i class="bi bi-plus-square"></i> Nouveau</a>
                 </li>
             </ul>
         </div>

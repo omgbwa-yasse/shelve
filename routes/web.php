@@ -72,6 +72,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
+        Route::get('search', [RecordController::class, 'search'])->name('records.search');
     });
 
 

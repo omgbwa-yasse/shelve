@@ -19,6 +19,40 @@ use Monolog\Level;
 
 class RecordController extends Controller
 {
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        $records = Record::where('name', 'LIKE', "%$query%")
+                        ->orWhere('code', 'LIKE', "%$query%")
+                        ->orWhere('date_start', 'LIKE', "%$query%")
+                        ->orWhere('date_end', 'LIKE', "%$query%")
+                        ->orWhere('date_exact', 'LIKE', "%$query%")
+                        ->orWhere('biographical_history', 'LIKE', "%$query%")
+                        ->orWhere('archival_history', 'LIKE', "%$query%")
+                        ->orWhere('acquisition_source', 'LIKE', "%$query%")
+                        ->orWhere('content', 'LIKE', "%$query%")
+                        ->orWhere('appraisal', 'LIKE', "%$query%")
+                        ->orWhere('accrual', 'LIKE', "%$query%")
+                        ->orWhere('arrangement', 'LIKE', "%$query%")
+                        ->orWhere('access_conditions', 'LIKE', "%$query%")
+                        ->orWhere('reproduction_conditions', 'LIKE', "%$query%")
+                        ->orWhere('language_material', 'LIKE', "%$query%")
+                        ->orWhere('characteristic', 'LIKE', "%$query%")
+                        ->orWhere('finding_aids', 'LIKE', "%$query%")
+                        ->orWhere('location_original', 'LIKE', "%$query%")
+                        ->orWhere('location_copy', 'LIKE', "%$query%")
+                        ->orWhere('related_unit', 'LIKE', "%$query%")
+                        ->orWhere('publication_note', 'LIKE', "%$query%")
+                        ->orWhere('note', 'LIKE', "%$query%")
+                        ->orWhere('archivist_note', 'LIKE', "%$query%")
+                        ->orWhere('rule_convention', 'LIKE', "%$query%")
+                        ->get();
+        dd($records);
+        return view('records.index', compact('records'));
+    }
+
+
 
     public function index()
     {

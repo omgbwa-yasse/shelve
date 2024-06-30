@@ -29,7 +29,7 @@ class ContainerController extends Controller
         $request->validate([
             'code' => 'required|max:20|unique:containers,code',
             'shelve_id' => 'required|exists:shelves,id',
-            'status_id' => 'required|exists:container_status,id',
+            'status_id' => 'required|exists:container_statuses,id',
             'property_id' => 'required|exists:container_properties,id',
         ]);
 
