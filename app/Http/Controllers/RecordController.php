@@ -50,7 +50,7 @@ class RecordController extends Controller
         // Définissez une valeur par défaut pour date_format
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
-//        dd($request);
+         dd($request);
         $validatedData = $request->validate([
             'code' => 'required|string|max:10',
             'name' => 'required|string',
@@ -93,25 +93,32 @@ class RecordController extends Controller
             'term_ids' => 'required|array',
         ]);
 
-        // Supprimez les clés author_ids et term_ids du tableau $validatedData
-        $authorIds = $validatedData['author_ids'];
-        $termIds = $validatedData['term_ids'];
-        unset($validatedData['author_ids'], $validatedData['term_ids']);
-
         // Créez le record
         $record = Record::create($validatedData);
 
+        // Supprimez les clés author_ids et term_ids du tableau $validatedData
+        $term_ids = $request->input('term_ids');
+        $author_ids = $request->input('author_ids');
+
+// Supprimez les valeurs vides du tableau
+        $term_ids = array_filter($term_ids);
+        $author_ids = array_filter($author_ids);
+
+// Convertissez les valeurs en entiers
+        $term_ids = array_map('intval', $term_ids);
+        $author_ids = array_map('intval', $author_ids);
         // Attachez les auteurs au record
-        $authorIds = array_map('intval', $authorIds);
-        $record->authors()->attach($authorIds);
+        foreach ($author_ids as $author_id) {
+            $record->authors()->attach($author_id);
+        }
 
         // Attachez les termes au record
-        $termIds = array_map('intval', $termIds);
-        $record->terms()->attach($termIds);
+        foreach ($term_ids as $term_id) {
+            $record->terms()->attach($term_id);
+        }
 
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
     }
-
 
     public function show(Record $record)
     {
