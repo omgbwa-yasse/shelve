@@ -2,114 +2,90 @@
 
 namespace App\Http\Controllers;
 
-
-
 use App\Models\CommunicationRecord;
 use App\Models\Communication;
+use App\Models\CommunicationStatus;
+use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class CommunicationRecordController extends Controller
 {
-
-    public function index()
+    public function index(INT $id)
     {
-        $communicationRecords = CommunicationRecord::with('record', 'operator', 'user')->get();
-        return view('communications.records.index', compact('communicationRecords'));
+        $communication = communication ::findOrFail($id);
+        $communicationRecords = CommunicationRecord::where('communication_id', $communication->id)->get();
+        $communicationRecords->load('communication', 'record');
+
+        return view('communications.records.index', compact('communicationRecords','communication'));
     }
 
+    public function create(INT $id)
+    {
+        $communication = Communication::findOrFail($id);
+        $records = Record::all();
+        $users = User::all();
+        return view('communications.records.create', compact('communication', 'records', 'users'));
+    }
 
+    public function show(INT $id, INT $idRecord)
+    {
+        $communicationRecord = communicationRecord::findOrFail($idRecord);
+        $communicationRecord->load('record','communication');
+        $communication = communication::findOrFail($id);
+        return view('communications.records.show', compact('communicationRecord', 'communication'));
+    }
 
-    public function create()
+    public function edit(Communication $communication, CommunicationRecord $communicationRecord)
     {
         $records = Record::all();
         $users = User::all();
-        return view('communications.records.create', compact('records', 'users'));
+        return view('communications.records.edit', compact('communicationRecord', 'communication', 'records', 'users'));
     }
 
-
-    public function show(CommunicationRecord $communicationRecord)
-    {
-        $communicationRecord->load('record', 'operator', 'user');
-        return view('communications.records.show', compact('communicationRecord'));
-    }
-
-
-
-    public function edit(CommunicationRecord $communicationRecord)
-    {
-        $records = Record::all();
-        $users = User::all();
-        return view('communications.records.edit', compact('communicationRecord', 'records', 'users'));
-    }
-
-
-
-    public function store(Request $request, communication $communication)
+    public function store(Request $request, INT $id)
     {
         $request->validate([
-            'code' => 'required|unique:communications,code',
-            'operator_id' => 'required|exists:users,id',
-            'operator_organisation_id' => 'required|exists:organisations,id',
-            'user_id' => 'required|exists:users,id',
-            'user_organisation_id' => 'required|exists:organisations,id',
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|boolean',
             'return_date' => 'required|date',
             'return_effective' => 'nullable|date',
-            'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
-        $communication = Communication::create([
-            'code' => $request->code,
-            'operator_id' => $request->operator_id,
-            'operator_organisation_id' => $request->operator_organisation_id,
-            'user_id' => $request->user_id,
-            'user_organisation_id' => $request->user_organisation_id,
+        $communication = communication::findOrFail($id);
+
+        $communicationRecord = CommunicationRecord::create([
+            'communication_id' => $communication->id,
+            'record_id' => $request->record_id,
+            'is_original' => $request->is_original,
             'return_date' => $request->return_date,
             'return_effective' => $request->return_effective,
-            'status_id' => $request->status_id,
         ]);
 
-        return redirect()->route('communication-transactions.index')->with('success', 'Communication created successfully.');
+        return redirect()->route('transactions.records.index', $communication )->with('success', 'Communication created successfully.');
     }
 
-
-
-
-    public function update(Request $request, Communication $communication)
+    public function update(Request $request, CommunicationRecord $communicationRecord)
     {
         $request->validate([
-            'code' => 'required|unique:communications,code,' . $communication->id,
-            'operator_id' => 'required|exists:users,id',
-            'operator_organisation_id' => 'required|exists:organisations,id',
-            'user_id' => 'required|exists:users,id',
-            'user_organisation_id' => 'required|exists:organisations,id',
+            'record_id' => 'required|exists:records,id',
+            'is_original' => 'required|boolean',
             'return_date' => 'required|date',
             'return_effective' => 'nullable|date',
-            'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
-        $communication->update([
-            'code' => $request->code,
-            'operator_id' => $request->operator_id,
-            'operator_organisation_id' => $request->operator_organisation_id,
-            'user_id' => $request->user_id,
-            'user_organisation_id' => $request->user_organisation_id,
-            'return_date' => $request->return_date,
-            'return_effective' => $request->return_effective,
-            'status_id' => $request->status_id,
-        ]);
+        $communicationRecord->update($request->all());
 
         return redirect()->route('communication-transactions.index')->with('success', 'Communication updated successfully.');
     }
 
-
-
-    public function destroy(CommunicationRecord $communicationRecord)
+    public function destroy(INT $id, CommunicationRecord $communicationRecord)
     {
         $communicationRecord->delete();
-        return redirect()->route('communications.records.index')->with('success', 'Communication record deleted successfully.');
+        return redirect()->route('transactions.records.index', $id)->with('success', 'Communication record deleted successfully.');
     }
 }
+
 
 

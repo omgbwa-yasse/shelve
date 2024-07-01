@@ -9,27 +9,24 @@ class communicationRecord extends Model
 {
     use HasFactory;
 
+    protected $table = 'communication_record';
     protected $fillable = [
+        'communication_id',
         'record_id',
-        'operator_id',
-        'user_id',
         'is_original',
         'return_date',
         'return_effective',
     ];
 
+    public function communication()
+    {
+        return $this->belongsTo(Communication::class);
+    }
+
     public function record()
     {
-        return $this->belongsTo(Record::class, 'record_id');
+        return $this->belongsTo(Record::class);
     }
 
-    public function operator()
-    {
-        return $this->belongsTo(User::class, 'operator_id');
-    }
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 }

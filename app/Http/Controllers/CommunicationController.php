@@ -16,7 +16,7 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->get();
+        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->get();
         return view('communications.index', compact('communications'));
     }
 

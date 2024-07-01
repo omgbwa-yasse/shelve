@@ -24,5 +24,21 @@
                 <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-warning">Ajouter des documents</a>
             </div>
         </div>
+
+        @foreach($communication->records as $record)
+            <ul class="list-group list-group-numbered">
+                <li class="list-group-item">
+                    {{ $record->record->name }} / {{ $record->is_original }} : {{ $record->return_date }} ; date effective : {{ $record->return_effective }}
+                    <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-secondary">Voir</a>
+                </li>
+            </ul>
+
+
+
+
+        @endforeach
+
+
+
     </div>
 @endsection

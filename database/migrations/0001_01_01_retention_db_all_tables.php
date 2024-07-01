@@ -373,14 +373,14 @@ return new class extends Migration
 
         Schema::create('communication_record', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('communication_id')->nullable(false);
             $table->unsignedBigInteger('record_id')->nullable(false);
-            $table->unsignedBigInteger('operator_id')->nullable(false);
-            $table->unsignedBigInteger('user_id')->nullable(false);
             $table->boolean('is_original')->default(false)->nullable(false);
             $table->datet('return_date')->nullable(false);
             $table->date('return_effective')->nullable();
             $table->primary('id');
             $table->timestamps();
+            $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

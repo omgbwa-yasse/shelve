@@ -1,20 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1>Communication Details</h1>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ $communication->code }}</h5>
-                <p class="card-text">Operator: {{ $communication->operator->name }}</p>
-                <p class="card-text">Operator Organisation: {{ $communication->operatorOrganisation->name }}</p>
-                <p class="card-text">User: {{ $communication->user->name }}</p>
-                <p class="card-text">User Organisation: {{ $communication->userOrganisation->name }}</p>
-                <p class="card-text">Return Date: {{ $communication->return_date }}</p>
-                <p class="card-text">Return Effective: {{ $communication->return_effective }}</p>
-                <p class="card-text">Status: {{ $communication->status->name }}</p>
-                <a href="{{ route('communication-transactions.index') }}" class="btn btn-secondary">Back</a>
-            </div>
-        </div>
-    </div>
+    <h1>Communication Record Details</h1>
+    <table class="table">
+        <tr>
+            <th>ID</th>
+            <td>{{ $communicationRecord->id }}</td>
+        </tr>
+        <tr>
+            <th>Communication</th>
+            <td>{{ $communicationRecord->communication->code ?? '' }}</td>
+        </tr>
+        <tr>
+            <th>Record</th>
+            <td>{{ $communicationRecord->record->name ?? ''}}</td>
+        </tr>
+        <tr>
+            <th>Is Original</th>
+            <td>{{ $communicationRecord->is_original ? 'Yes' : 'No' }}</td>
+        </tr>
+        <tr>
+            <th>Return Date</th>
+            <td>{{ $communicationRecord->return_date }}</td>
+        </tr>
+        <tr>
+            <th>Return Effective</th>
+            <td>{{ $communicationRecord->return_effective }}</td>
+        </tr>
+    </table>
+    <a href="{{ route('transactions.index', $communication) }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('transactions.records.edit', [$communication , $communicationRecord]) }}" class="btn btn-warning">Edit</a>
+    <form action="{{ route('transactions.records.destroy', [$communication , $communicationRecord]) }}" method="POST" style="display: inline-block;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>
+    </form>
 @endsection

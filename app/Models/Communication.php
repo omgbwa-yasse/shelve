@@ -27,6 +27,11 @@ class Communication extends Model
     }
 
 
+    public function records()
+    {
+        return $this->hasMany(communicationRecord::class);
+    }
+
     public function operatorOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'operator_organisation_id');

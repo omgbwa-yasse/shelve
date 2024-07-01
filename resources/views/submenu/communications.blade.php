@@ -8,6 +8,9 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('transactions.index')}}"><i class="bi bi-inbox"></i> Liste de sortie</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-inbox"></i> Par Demandeur</a>
                 </li>
                 <li class="nav-item">
@@ -27,7 +30,7 @@
         <div class="collapse show" id="CommunicationMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-inbox"></i> Transaction</a>
+                    <a class="nav-link text-dark" href="{{ route('transactions.create')}}"><i class="bi bi-inbox"></i> Transaction</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Réservation</a>
