@@ -298,7 +298,7 @@
                                 <th>Vedettes</th>
                                 <td>
                                     @foreach ($record->terms as $term)
-                                            {{ $term->name }} <span class="badge badge-secondary"> {{ $term->category->name }} </span>
+                                      <span class="badge badge-secondary"> {{ $term->name ?? '' }} </span>
                                     @endforeach
                                 </td>
                             </tr>

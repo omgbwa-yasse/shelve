@@ -82,6 +82,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
+
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
     });
@@ -122,6 +123,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
+
+    Route::get('/records/search', [RecordController::class, 'search'])->name('records.search');
+    Route::get('/mails/search', [MailController::class, 'search'])->name('mails.search');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
