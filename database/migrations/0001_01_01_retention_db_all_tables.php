@@ -199,14 +199,15 @@ return new class extends Migration
 
         Schema::create('transferring_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 30)->nullable(false);
-            $table->text('observation')->nullable();
+            $table->string('name', 50)->nullable(false);
+            $table->text('description')->nullable();
+            $table->timestamps();
             $table->primary('id');
         });
 
 
 
-        Schema::create('transferring', function (Blueprint $table) {
+        Schema::create('transferrings', function (Blueprint $table) {
             $table->id();
             $table->string('code', 20)->nullable(false);
             $table->string('name', 200)->nullable(false);
@@ -218,6 +219,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(true);
             $table->unsignedBigInteger('transferring_status_id')->nullable(false);
+            $table->timestamps();
             $table->primary('id');
             $table->foreign('officer_organisation__id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
@@ -243,6 +245,7 @@ return new class extends Migration
             $table->unsignedBigInteger('support_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(true);
             $table->unsignedBigInteger('container_id')->nullable(true);
+            $table->timestamps();
             $table->primary('id');
             $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');

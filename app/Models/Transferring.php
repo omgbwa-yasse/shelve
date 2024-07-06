@@ -4,9 +4,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Organisation;
-use App\Models\TransferStatus;
+use App\Models\TransferringStatus;
 
-class Transfer extends Model
+class Transferring extends Model
 {
     use HasFactory;
     protected $fillable = [
@@ -20,6 +20,6 @@ class Transfer extends Model
 
     public function status()
     {
-        return $this->belongsTo(TransferStatus::class);
+        return $this->belongsTo(TransferringStatus::class);
     }
 }

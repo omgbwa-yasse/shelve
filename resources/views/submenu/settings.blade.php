@@ -37,7 +37,7 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('buildings.index') }}"><i class="bi bi-tools"></i> xxxxxxxxxx</a>
+                    <a class="nav-link text-dark" href="{{ route('transferring-status.index') }}"><i class="bi bi-tools"></i> Status</a>
                 </li>
 
             </ul>

@@ -47,6 +47,8 @@ use App\Http\Controllers\ReservationStatusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
+use App\Http\Controllers\TransferringStatusController;
+
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -115,6 +117,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('communication-status', CommunicationStatusController::class);
         Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
+        Route::resource('transferring-status', TransferringStatusController::class);
     });
 
     Route::prefix('tools')->group(function () {
