@@ -47,7 +47,10 @@ use App\Http\Controllers\ReservationStatusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
-use App\Http\Controllers\TransferringStatusController;
+use App\Http\Controllers\SlipStatusController;
+use App\Http\Controllers\SlipRecordController;
+use App\Http\Controllers\SlipController;
+
 
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -75,10 +78,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
 
-
-    Route::resource('accessions', AccessionController::class);
-
-
     Route::prefix('communications')->group(function () {
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
@@ -89,11 +88,15 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
-
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
     });
 
+
+    Route::prefix('transferrings')->group(function () {
+        Route::resource('slips', SlipController::class);
+        Route::resource('slips.records', SlipRecordController::class);
+    });
 
     Route::prefix('deposits')->group(function () {
         Route::resource('buildings', BuildingController::class);
@@ -117,7 +120,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('communication-status', CommunicationStatusController::class);
         Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
-        Route::resource('transferring-status', TransferringStatusController::class);
+        Route::resource('transferring-status', SlipStatusController::class);
     });
 
     Route::prefix('tools')->group(function () {

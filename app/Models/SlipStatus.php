@@ -4,23 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Transferring;
+use App\Models\Slip;
 
-class TransferringStatus extends Model
+class SlipStatus extends Model
 {
     use HasFactory;
-
-    protected $table = 'transferring_statuses';
-
 
     protected $fillable = [
         'name',
         'description',
     ];
 
-    public function transferrings()
+    public function Slips()
     {
-        return $this->hasMany(Transferring::class);
+        return $this->hasMany(Slip::class);
     }
 
 }

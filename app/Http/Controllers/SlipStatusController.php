@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 
 use Illuminate\Http\Request;
-use App\Models\TransferringStatus;
+use App\Models\SlipStatus;
 
 
-class TransferringStatusController extends Controller
+class SlipStatusController extends Controller
 {
 
 
     public function index()
     {
-        $statuses = TransferringStatus::all();
+        $statuses = SlipStatus::all();
         return view('transferrings.statuses.index', compact('statuses'));
     }
 
@@ -29,11 +29,11 @@ class TransferringStatusController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:50|unique:transferring_statuses,name',
+            'name' => 'required|max:50|unique:slip_statuses,name',
             'description' => 'nullable',
         ]);
 
-        TransferringStatus::create($request->all());
+        SlipStatus::create($request->all());
 
         return redirect()->route('transferring-status.index')
             ->with('success', 'Transferring status created successfully.');
@@ -41,24 +41,24 @@ class TransferringStatusController extends Controller
 
 
 
-    public function show(TransferringStatus $transferringStatus)
+    public function show(SlipStatus $transferringStatus)
     {
         return view('transferrings.statuses.show', compact('transferringStatus'));
     }
 
 
 
-    public function edit(TransferringStatus $transferringStatus)
+    public function edit(SlipStatus $transferringStatus)
     {
         return view('transferrings.statuses.edit', compact('transferringStatus'));
     }
 
 
 
-    public function update(Request $request, TransferringStatus $transferringStatus)
+    public function update(Request $request, SlipStatus $transferringStatus)
     {
         $request->validate([
-            'name' => 'required|max:50|unique:transferring_statuses,name',
+            'name' => 'required|max:50|unique:slip_statuses,name',
             'description' => 'nullable',
         ]);
 
@@ -69,7 +69,7 @@ class TransferringStatusController extends Controller
     }
 
 
-    public function destroy(TransferringStatus $transferringStatus)
+    public function destroy(SlipStatus $transferringStatus)
     {
         $transferringStatus->load('transferrings');
 

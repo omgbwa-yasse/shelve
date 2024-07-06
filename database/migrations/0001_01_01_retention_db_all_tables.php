@@ -190,14 +190,14 @@ return new class extends Migration
         /*
 
 
-            Les courriers
+            Transferring archives
 
 
 
         */
 
 
-        Schema::create('transferring_statuses', function (Blueprint $table) {
+        Schema::create('slip_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->text('description')->nullable();
@@ -207,31 +207,33 @@ return new class extends Migration
 
 
 
-        Schema::create('transferrings', function (Blueprint $table) {
+        Schema::create('slips', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 20)->nullable(false);
+            $table->string('code', 20)->unique(true)->nullable(false);
             $table->string('name', 200)->nullable(false);
-            $table->datetime('date_creation')->nullable(false);
-            $table->datetime('date_authorize')->nullable();
             $table->text('description')->nullable();
             $table->unsignedBigInteger('officer_organisation_id')->nullable(false);
             $table->unsignedBigInteger('officer_id')->nullable(false);
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(true);
-            $table->unsignedBigInteger('transferring_status_id')->nullable(false);
+            $table->unsignedBigInteger('slip_status_id')->nullable(false);
+            $table->boolean('is_received')->nullable(true);
+            $table->datetime('received_date')->nullable();
+            $table->boolean('is_approved')->nullable(true);
+            $table->datetime('approved_date')->nullable(true);
             $table->timestamps();
             $table->primary('id');
-            $table->foreign('officer_organisation__id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('officer_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('transferring_status_id')->references('id')->on('transferring_statuses')->onDelete('cascade');
+            $table->foreign('slip_status_id')->references('id')->on('slip_statuses')->onDelete('cascade');
         });
 
 
-        Schema::create('transferring_records', function (Blueprint $table) {
+        Schema::create('slip_records', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('transferring_id')->nullable(false);
+            $table->unsignedBigInteger('slip_id')->nullable(false);
             $table->string('code', 10)->nullable(false);
             $table->text('name')->nullable(false);
             $table->string('date_format', 1)->nullable(false);
@@ -243,11 +245,11 @@ return new class extends Migration
             $table->float('width', 10)->nullable(true);
             $table->string('width_description', 100)->nullable(true);
             $table->unsignedBigInteger('support_id')->nullable(false);
-            $table->unsignedBigInteger('activity_id')->nullable(true);
+            $table->unsignedBigInteger('activity_id')->nullable(false);
             $table->unsignedBigInteger('container_id')->nullable(true);
             $table->timestamps();
             $table->primary('id');
-            $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
+            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');

@@ -67,8 +67,8 @@
                             </li>
 
                             <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'transferts') {{ 'active bg-info' }} @endif"
-                                    href="#">Transferts</a>
+                                <a class="nav-link @if (Request::segment(1) == 'transferrings') {{ 'active bg-info' }} @endif"
+                                    href="{{ route('slips.index') }}">Transferts</a>
                             </li>
 
                             <li class="nav-item  text-dark">
@@ -171,6 +171,10 @@
 
                         @case('tools')
                             @include('submenu.tools')
+                        @break
+
+                        @case('transferrings')
+                            @include('submenu.transferrings')
                         @break
 
                         @default
