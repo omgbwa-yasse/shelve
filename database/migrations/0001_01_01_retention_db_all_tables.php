@@ -18,7 +18,55 @@ return new class extends Migration
         */
 
 
+        Schema::create('user_roles', function (Blueprint $table) {
+            $table->id();
+            $table->string('code', 10)->nullable(false);
+            $table->string('name', 200)->nullable(false);
+            $table->text('description')->nullable();
+            $table->boolean('is_manager')->nullable(false);
+            $table->boolean('is_archivist')->nullable(false);
+            $table->boolean('is_mail_entrant')->nullable(false);
+            $table->boolean('is_mail_sortant')->nullable(false);
+            $table->primary('id');
+            $table->timestamps();
+        });
 
+        Schema::create('user_access_module', function (Blueprint $table) {
+            $table->boolean('mail_user')->nullable(false);
+            $table->boolean('mail_admin')->nullable(false);
+            $table->boolean('repository_user')->nullable(false);
+            $table->boolean('repository_admin')->nullable(false);
+            $table->boolean('communication_user')->nullable(false);
+            $table->boolean('communication_admin')->nullable(false);
+            $table->boolean('transferring_user')->nullable(false);
+            $table->boolean('transferring_admin')->nullable(false);
+            $table->boolean('deposit_user')->nullable(false);
+            $table->boolean('deposit_admin')->nullable(false);
+            $table->boolean('audit_user')->nullable(false);
+            $table->boolean('audit_admin')->nullable(false);
+            $table->boolean('tools_user')->nullable(false);
+            $table->boolean('tools_admin')->nullable(false);
+            $table->boolean('setting_user')->nullable(false);
+            $table->boolean('setting_admin')->nullable(false);
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('organisation_id');
+            $table->unsignedBigInteger('role_id');
+            $table->primary(['user_id', 'organisation_id','role_id']);
+            $table->timestamps();
+        });
+
+
+
+        Schema::create('user_organisation', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('organisation_id');
+            $table->unsignedBigInteger('role_id');
+            $table->boolean('active')->default(false);
+            $table->primary(['user_id', 'organisation_id','role_id']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('role_id')->references('id')->on('user_roles')->onDelete('cascade');
+        });
 
 
 
@@ -165,14 +213,19 @@ return new class extends Migration
             $table->datetime('date_creation')->nullable(false);
             $table->datetime('date_authorize')->nullable();
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('transferring_office_id')->nullable(false);
-            $table->unsignedBigInteger('organisation_id')->nullable(false);
+            $table->unsignedBigInteger('officer_organisation_id')->nullable(false);
+            $table->unsignedBigInteger('officer_id')->nullable(false);
+            $table->unsignedBigInteger('user_organisation_id')->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable(true);
             $table->unsignedBigInteger('transferring_status_id')->nullable(false);
             $table->primary('id');
-            $table->foreign('transferring_office_id')->references('id')->on('transferring_offices')->onDelete('cascade');
-            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('officer_organisation__id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('transferring_status_id')->references('id')->on('transferring_statuses')->onDelete('cascade');
         });
+
 
         Schema::create('transferring_records', function (Blueprint $table) {
             $table->id();
@@ -190,39 +243,13 @@ return new class extends Migration
             $table->unsignedBigInteger('support_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(true);
             $table->unsignedBigInteger('container_id')->nullable(true);
-            $table->unsignedBigInteger('user_id')->nullable(true);
             $table->primary('id');
             $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-
-
-        Schema::create('transferring_officers', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 20)->nullable(false);
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->primary('id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-
-
-        Schema::create('transferring_offices', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 20)->nullable(false);
-            $table->text('description')->nullable();
-            $table->primary('id');
-        }); // Communication office
-
-
-
-
-
 
 
 
@@ -565,37 +592,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
-        Schema::create('user_organisation', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('organisation_id');
-            $table->boolean('active')->default(false);
-            $table->primary(['user_id', 'organisation_id']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
-        });
-
-
-        Schema::create('access_right_activity', function (Blueprint $table) {
-            $table->unsignedBigInteger('access_right_id')->nullable(false);
-            $table->unsignedBigInteger('activity_id')->nullable(false);
-            $table->primary(['access_right_id', 'activity_id']);
-            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
-            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
-            $table->timestamps();
-        });
-
-
-        Schema::create('access_rights', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 10)->nullable(false);
-            $table->string('name', 100)->nullable(false);
-            $table->text('description')->nullable(false);
-            $table->primary('id');
-            $table->timestamps();
-        });
-
-
         Schema::create('organisation_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
@@ -614,7 +610,7 @@ return new class extends Migration
 
 
 
-                 /*
+        /*
 
 
         Thésaurus
