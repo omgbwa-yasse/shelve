@@ -43,6 +43,9 @@ use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationStatusController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
+use App\Http\Controllers\ReservationStatusController;
+use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -77,6 +80,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('communications')->group(function () {
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
+        Route::resource('reservations', ReservationController::class);
+        Route::resource('reservations.records', ReservationRecordController::class);
     });
 
 
@@ -108,6 +113,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('languages', LanguageController::class);
         Route::resource('record-supports', RecordSupportController::class);
         Route::resource('communication-status', CommunicationStatusController::class);
+        Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
     });
 

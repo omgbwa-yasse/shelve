@@ -50,7 +50,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-tools"></i> Ajouter un status</a>
+                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-tools"></i> Status de communication </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('reservation-status.index') }}"><i class="bi bi-tools"></i> Status de reservation</a>
                 </li>
 
             </ul>

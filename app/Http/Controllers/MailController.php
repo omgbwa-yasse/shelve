@@ -73,7 +73,7 @@ class MailController extends Controller
         $types = MailType::all();
         $typologies = MailTypology::all();
         $authors = Author::all();
-        $mails = Mail::with(['priority','authors','typology','type','creator','updator','lastTransaction'])->paginate(15);
+        $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])->paginate(15);
         return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
 
     }

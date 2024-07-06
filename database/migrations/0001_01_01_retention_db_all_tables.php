@@ -149,7 +149,7 @@ return new class extends Migration
         */
 
 
-        Schema::create('accession_statuses', function (Blueprint $table) {
+        Schema::create('transferring_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 30)->nullable(false);
             $table->text('observation')->nullable();
@@ -158,19 +158,68 @@ return new class extends Migration
 
 
 
-        Schema::create('accessions', function (Blueprint $table) {
+        Schema::create('transferring', function (Blueprint $table) {
             $table->id();
             $table->string('code', 20)->nullable(false);
             $table->string('name', 200)->nullable(false);
             $table->datetime('date_creation')->nullable(false);
             $table->datetime('date_authorize')->nullable();
-            $table->text('observation')->nullable();
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('transferring_office_id')->nullable(false);
             $table->unsignedBigInteger('organisation_id')->nullable(false);
-            $table->unsignedBigInteger('accession_status_id')->nullable(false);
+            $table->unsignedBigInteger('transferring_status_id')->nullable(false);
             $table->primary('id');
+            $table->foreign('transferring_office_id')->references('id')->on('transferring_offices')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
-            $table->foreign('accession_status_id')->references('id')->on('accession_status')->onDelete('cascade');
+            $table->foreign('transferring_status_id')->references('id')->on('transferring_statuses')->onDelete('cascade');
         });
+
+        Schema::create('transferring_records', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('transferring_id')->nullable(false);
+            $table->string('code', 10)->nullable(false);
+            $table->text('name')->nullable(false);
+            $table->string('date_format', 1)->nullable(false);
+            $table->string('date_start', 10)->nullable(true);
+            $table->string('date_end', 10)->nullable(true);
+            $table->date('date_exact')->nullable(true);
+            $table->text('content')->nullable(true);
+            $table->unsignedBigInteger('level_id')->nullable(false);
+            $table->float('width', 10)->nullable(true);
+            $table->string('width_description', 100)->nullable(true);
+            $table->unsignedBigInteger('support_id')->nullable(false);
+            $table->unsignedBigInteger('activity_id')->nullable(true);
+            $table->unsignedBigInteger('container_id')->nullable(true);
+            $table->unsignedBigInteger('user_id')->nullable(true);
+            $table->primary('id');
+            $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
+            $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
+            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
+            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
+
+        Schema::create('transferring_officers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 20)->nullable(false);
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->primary('id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
+
+        Schema::create('transferring_offices', function (Blueprint $table) {
+            $table->id();
+            $table->string('code', 20)->nullable(false);
+            $table->text('description')->nullable();
+            $table->primary('id');
+        }); // Communication office
+
+
 
 
 
@@ -395,19 +444,42 @@ return new class extends Migration
             $table->primary('id');
         });
 
+
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
+            $table->string('code', 10)->unique()->nullable(false);
+            $table->unsignedBigInteger('operator_id')->nullable(false);
+            $table->unsignedBigInteger('operator_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->unsignedBigInteger('record_id')->nullable(false);
-            $table->dateTime('start_time')->nullable(false);
-            $table->dateTime('end_time')->nullable(false);
-            $table->text('notes')->nullable(true);
+            $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->unsignedBigInteger('status_id')->nullable(false);
             $table->timestamps();
+            $table->primary('id');
+            $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('reservation_statuses')->onDelete('cascade');
+            $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('operator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
+
+
+        Schema::create('reservation_record', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('reservation_id')->nullable(false);
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->boolean('is_original')->default(false)->nullable(false);
+            $table->datet('reservation_date')->nullable(false);
+            $table->unsignedBigInteger('operator_id')->nullable(false);
+            $table->date('communication_id')->nullable();
+            $table->primary('id');
+            $table->timestamps();
+            $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
+            $table->foreign('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
 
         Schema::create('reservation_statuses', function (Blueprint $table) {
             $table->id();

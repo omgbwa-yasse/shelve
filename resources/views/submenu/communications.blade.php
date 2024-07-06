@@ -8,16 +8,10 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transactions.index')}}"><i class="bi bi-inbox"></i> Liste de sortie</a>
+                    <a class="nav-link text-dark" href="{{ route('transactions.index')}}"><i class="bi bi-inbox"></i> Communications </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-inbox"></i> Par Demandeur</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Par Organisation</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Par Date</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations.index')}}"><i class="bi bi-inbox"></i> Réservations </a>
                 </li>
             </ul>
         </div>
@@ -33,7 +27,7 @@
                     <a class="nav-link text-dark" href="{{ route('transactions.create')}}"><i class="bi bi-inbox"></i> Transaction</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-envelope"></i> Réservation</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations.create')}}"><i class="bi bi-envelope"></i> Réservation</a>
                 </li>
 
             </ul>
