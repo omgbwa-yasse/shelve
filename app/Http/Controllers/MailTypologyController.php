@@ -13,11 +13,10 @@ class MailTypologyController extends Controller
     {
         $mailTypologies = MailTypology::all();
 
+        $mailTypologies->load(['class','mails']);
+
         return view('mails.typologies.index', compact('mailTypologies'));
     }
-
-
-
 
 
     public function create()
@@ -35,7 +34,7 @@ class MailTypologyController extends Controller
         $request->validate([
             'name' => 'required|unique:mail_typologies|max:50',
             'description' => 'nullable|max:100',
-            'class_id' => 'required|exists:classes,id',
+            'activity_id' => 'required|exists:activities,id',
         ]);
 
         MailTypology::create($request->all());
@@ -73,7 +72,7 @@ class MailTypologyController extends Controller
         $request->validate([
             'name' => 'required|unique:mail_typologies,name,'.$mailTypology->id.'|max:50',
             'description' => 'nullable|max:100',
-            'class_id' => 'required|exists:classes,id',
+            'activity_id' => 'required|exists:activities,id',
         ]);
 
         $mailTypology->update($request->all());

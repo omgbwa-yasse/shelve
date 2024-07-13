@@ -22,7 +22,7 @@
                     <a class="nav-link text-dark" href="{{ route('mail-author.index') }}"><i class="bi bi-envelope"></i> Producteurs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-tags"></i> Typologies</a>
+                    <a class="nav-link text-dark" href=""><i class="bi bi-tags"></i> Typologies</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>

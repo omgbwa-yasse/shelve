@@ -17,7 +17,8 @@
                 <tr>
                     <td>{{ $mailTypology->name }}</td>
                     <td>{{ $mailTypology->description }}</td>
-                    <td>{{ $mailTypology->activity->name ?? 'NAN' }}</td>
+                    <td>{{ $mailTypology->class->name ?? 'NAN' }}</td>
+                    <td>{{ $mailTypology->mails->count() ?? 'NAN' }}</td>
                     <td>
                         <a href="{{ route('mail-typology.show', $mailTypology->id) }}" class="btn btn-info btn-sm">View</a>
                     </td>

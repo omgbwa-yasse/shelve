@@ -14,8 +14,8 @@
             <textarea class="form-control" id="description" name="description"></textarea>
         </div>
         <div class="mb-3">
-            <label for="class_id" class="form-label">Class</label>
-            <select class="form-select" id="class_id" name="class_id" required>
+            <label for="activity_id" class="form-label">Class</label>
+            <select class="form-select" id="activity_id" name="activity_id" required>
                 @foreach ($classes as $class)
                     <option value="{{ $class->id }}">{{ $class->name }}</option>
                 @endforeach

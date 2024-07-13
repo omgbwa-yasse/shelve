@@ -16,13 +16,20 @@ class MailTypology extends Model
     protected $fillable = [
         'name',
         'description',
-        'class_id',
+        'activity_id', // activity_id
     ];
 
 
+    public $timestamps = false;
+
     public function class()
     {
-        return $this->belongsTo(activity::class,'class_id');
+        return $this->belongsTo(activity::class);
+    }
+
+    public function mails()
+    {
+        return $this->hasMany(mail::class);
     }
 }
 

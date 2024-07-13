@@ -47,6 +47,7 @@ use App\Http\Controllers\ReservationStatusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
+use App\Http\Controllers\MailSearchController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
@@ -74,6 +75,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('authors', AuthorController::class)->names('mail-author');
         Route::resource('batch', BatchController::class);
         Route::resource('batch-received', BatchReceivedController::class);
+        Route::resource('typologies', MailTypologyController::class);
         Route::resource('batch-send', BatchSendController::class);
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
