@@ -28,6 +28,9 @@
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.archived') }}"><i class="bi bi-inbox"></i> Courrier archivé</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> Boîtes d'archives</a>
                 </li>
 

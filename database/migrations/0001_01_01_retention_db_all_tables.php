@@ -731,6 +731,7 @@ return new class extends Migration
             $table->text('contacts')->nullable(false);
             $table->text('description')->nullable(true);
             $table->date('date')->nullable(false);
+            $table->boolean('is_archived')->nullable(false);
             $table->unsignedBigInteger('subject_id')->nullable(false);
             $table->unsignedBigInteger('create_by')->nullable(false);
             $table->unsignedBigInteger('update_by')->nullable(true);

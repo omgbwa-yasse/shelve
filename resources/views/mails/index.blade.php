@@ -104,7 +104,9 @@
                     </td>
                     <td>{{ $mail->date }}</td>
                     <td>{{ $mail->creator->name ?? '' }}</td>
-                    <td>{{ $mail->container->name ?? '' }}</td>
+                    <td>
+                             {{ $mail->container }}
+                    </td>
                     <td>{{ $mail->type->name ?? '' }}</td>
                     <td>
                         <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-info btn-sm">Détails</a>

@@ -66,6 +66,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
+        Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
         Route::resource('batches', BatchController::class)->names('batch');
         Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');

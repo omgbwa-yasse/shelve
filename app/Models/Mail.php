@@ -62,7 +62,7 @@ class Mail extends Model
 
     public function container()
     {
-        return $this->belongsTo(MailContainer::class);
+        return $this->belongsToMany(Container::class, 'mail_archiving', 'mail_id', 'container_id');
     }
 
     public function type()

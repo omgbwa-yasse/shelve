@@ -19,7 +19,6 @@ class mailArchivingController extends Controller
         return view('mails.archiving.index', compact('mailArchivings'));
     }
 
-
     public function show(INT $id)
     {
         $mailArchiving = MailArchiving::with('container')->findOrFail('id');
@@ -31,7 +30,9 @@ class mailArchivingController extends Controller
     public function create()
 {
     $mailContainers = MailContainer::all();
-    $mails = Mail::where('create_by', Auth::id())->get();
+    $mails = Mail::where('create_by', Auth::id())
+             ->where('is_archived', false)
+             ->get();
     $documentTypes = DocumentType::all();
 
     return view('mails.archiving.create', compact('mailContainers', 'mails', 'documentTypes'));
