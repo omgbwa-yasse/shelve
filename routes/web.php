@@ -48,6 +48,8 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\MailSearchController;
+use App\Http\Controllers\MailInitialedController;
+use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
@@ -75,9 +77,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::resource('authors', AuthorController::class)->names('mail-author');
         Route::resource('batch', BatchController::class);
-        Route::resource('batch-received', BatchReceivedController::class);
+        Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
+        Route::resource('batch.received', BatchReceivedController::class);
         Route::resource('typologies', MailTypologyController::class);
-        Route::resource('batch-send', BatchSendController::class);
+        Route::resource('batch.send', BatchSendController::class);
+        Route::get('batches_received', [BatchReceivedController::class, 'batches_received'])->name('batches_received');
+        Route::get('batches_send', [BatchSendController::class, 'batches_send'])->name('batches_send');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
     });
 

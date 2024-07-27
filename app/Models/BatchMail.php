@@ -9,21 +9,27 @@ class BatchMail extends Model
 {
     use HasFactory;
 
+    protected $table = 'batch_mail';
+
     protected $fillable = [
         'batch_id',
         'mail_id',
-        'insertion_date',
-        'exit_date'
+        'insert_date',
+        'remove_date',
+    ];
+
+    protected $dates = [
+        'insert_date',
+        'remove_date',
     ];
 
     public function batch()
     {
-        return $this->belongsTo(MailBatch::class);
+        return $this->belongsTo(Batch::class);
     }
 
     public function mail()
     {
         return $this->belongsTo(Mail::class);
     }
-
 }

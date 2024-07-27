@@ -2,75 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Batch;
 use App\Models\BatchMail;
 use App\Models\Mail;
+use Illuminate\Http\Request;
 
 class BatchMailController extends Controller
 {
-
-    public function index()
+    public function index(Batch $batch)
     {
-        $batchMails = BatchMail::with(['batch', 'mail'])->get();
-        return view('batch_mails.index', compact('batchMails'));
+        $batchMails = $batch->batchMails;
+        return view('batch.mail.index', compact('batchMails', 'batch'));
     }
 
 
 
-    public function create()
+
+    public function create(Batch $batch)
     {
-        $batches = BatchMail::all();
         $mails = Mail::all();
-        return view('batch_mails.create', compact('batches', 'mails'));
+        return view('batch.mail.create', compact('batch', 'mails'));
     }
 
 
 
-    public function store(Request $request)
+    public function store(Request $request, Batch $batch)
     {
         $validatedData = $request->validate([
-            'batch_id' => 'required|integer',
-            'mail_id' => 'required|integer',
-            'insertion_date' => 'required|date',
-            'exit_date' => 'nullable|date'
+            'mail_id' => 'required|exists:mails,id'
         ]);
 
-        BatchMail::create($validatedData);
+        $validatedData['insert_date'] = now();
 
-        return redirect()->route('batch_mails.index')->with('success', 'Batch mail created successfully.');
+        $batchMail = new BatchMail($validatedData);
+        $batch->batchMails()->save($batchMail);
+        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail created successfully.');
     }
 
 
 
-    public function edit(BatchMail $batchMail)
+
+    public function edit(Batch $batch, BatchMail $batchMail)
     {
-        $batches = BatchMail::all();
         $mails = Mail::all();
-        return view('batch_mails.edit', compact('batchMail', 'batches', 'mails'));
+        return view('batch.mail.edit', compact('batch', 'batchMail', 'mails'));
     }
 
 
 
-    public function update(Request $request, BatchMail $batchMail)
+
+    public function update(Request $request, Batch $batch, BatchMail $batchMail)
     {
         $validatedData = $request->validate([
-            'batch_id' => 'required|integer',
-            'mail_id' => 'required|integer',
-            'insertion_date' => 'required|date',
-            'exit_date' => 'nullable|date'
+            'mail_id' => 'required|exists:mails,id'
         ]);
 
+        $validatedData['insert_date'] = now();
         $batchMail->update($validatedData);
 
-        return redirect()->route('batch_mails.index')->with('success', 'Batch mail updated successfully.');
+        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail updated successfully.');
     }
 
 
 
-    public function destroy(BatchMail $batchMail)
+    public function destroy(Batch $batch, BatchMail $batchMail)
     {
         $batchMail->delete();
 
-        return redirect()->route('batch_mails.index')->with('success', 'Batch mail deleted successfully.');
+        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail deleted successfully.');
     }
+
+
 }

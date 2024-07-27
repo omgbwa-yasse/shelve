@@ -976,13 +976,13 @@ return new class extends Migration
 
         Schema::create('batch_mail', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('batch_id')->nullable(false);
-            $table->unsignedBigInteger('mail_id')->nullable(false);
-            $table->dateTime('insertion_date')->nullable(false);
-            $table->dateTime('exit_date')->nullable(true);
+            $table->unsignedInteger('batch_id')->nullable(true);
+            $table->unsignedBigInteger('mail_id')->nullable(true);
+            $table->dateTime('insert_date')->nullable(true);
+            $table->dateTime('remove_date')->nullable(true);
             $table->timestamps();
             $table->primary('id');
-            $table->foreign('batch_id')->references('id')->on('mailbatchs')->onDelete('cascade');
+            $table->foreign('batch_id')->references('id')->on('batches')->onDelete('cascade');
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
 

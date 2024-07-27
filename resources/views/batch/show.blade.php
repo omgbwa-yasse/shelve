@@ -19,5 +19,6 @@
         @method('DELETE')
         <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
     </form>
+    <a href="{{ route('batch.mail.create', $mailBatch) }}" class="btn btn-warning mt-3">Ajouter des courrier</a>
 </div>
 @endsection

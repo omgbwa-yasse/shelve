@@ -22,7 +22,7 @@
                     <a class="nav-link text-dark" href="{{ route('mail-author.index') }}"><i class="bi bi-envelope"></i> Producteurs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-tags"></i> Typologies</a>
+                    <a class="nav-link text-dark" href="{{ route('typologies.index') }}"><i class="bi bi-tags"></i> Typologies</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
@@ -70,9 +70,6 @@
                 <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Remplir parapheur**</a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver </a>
             </li>
                 </ul>
@@ -85,10 +82,10 @@
             <ul class="list-unstyled pl-3">
 
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i>Recevoir**</a>
+                    <a class="nav-link text-dark" href="{{ route('batches_received') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-envelope"></i> Envoyer**</a>
+                    <a class="nav-link text-dark" href="{{ route('batches_send') }}"><i class="bi bi-inbox"></i> Envoyés</a>
                 </li>
                 </ul>
             </div>

@@ -26,6 +26,21 @@ class MailController extends Controller
 
     }
 
+
+    public function typologies()
+    {
+        $priorities = MailPriority::all();
+        $types = MailType::all();
+        $typologies = MailTypology::all();
+        $authors = Author::all();
+        $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
+            ->where('is_archived', true)
+            ->paginate(15);
+        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
+    }
+
+
+
     public function archived()
     {
         $priorities = MailPriority::all();

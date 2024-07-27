@@ -12,14 +12,21 @@ class BatchSendController extends Controller
     public function index()
     {
         $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
-        return view('batch_transactions.index', compact('batchTransactions'));
+        return view('batch.send.index', compact('batchTransactions'));
+    }
+
+
+    public function batches_send()
+    {
+        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
+        return view('batch.send.send', compact('batchTransactions'));
     }
 
     public function create()
     {
         $batches = Batch::all();
         $organisations = Organisation::all();
-        return view('batch_transactions.create', compact('batches', 'organisations'));
+        return view('batch.send.create', compact('batches', 'organisations'));
     }
 
     public function store(Request $request)
@@ -32,14 +39,14 @@ class BatchSendController extends Controller
 
         BatchTransaction::create($validatedData);
 
-        return redirect()->route('batch_transactions.index')->with('success', 'Batch transaction created successfully.');
+        return redirect()->route('batch.send.index')->with('success', 'Batch transaction created successfully.');
     }
 
     public function edit(BatchTransaction $batchTransaction)
     {
         $batches = Batch::all();
         $organisations = Organisation::all();
-        return view('batch_transactions.edit', compact('batchTransaction', 'batches', 'organisations'));
+        return view('batch.send.edit', compact('batchTransaction', 'batches', 'organisations'));
     }
 
     public function update(Request $request, BatchTransaction $batchTransaction)
@@ -52,13 +59,13 @@ class BatchSendController extends Controller
 
         $batchTransaction->update($validatedData);
 
-        return redirect()->route('batch_transactions.index')->with('success', 'Batch transaction updated successfully.');
+        return redirect()->route('batch.send.index')->with('success', 'Batch transaction updated successfully.');
     }
 
     public function destroy(BatchTransaction $batchTransaction)
     {
         $batchTransaction->delete();
 
-        return redirect()->route('batch_transactions.index')->with('success', 'Batch transaction deleted successfully.');
+        return redirect()->route('batch.send.index')->with('success', 'Batch transaction deleted successfully.');
     }
 }
