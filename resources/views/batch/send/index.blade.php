@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Batch Transactions</h1>
-    <a href="{{ route('batch.received.create') }}" class="btn btn-primary mb-3">Create Batch Transaction</a>
+    <a href="{{ route('batch_received.create') }}" class="btn btn-primary mb-3">Create Batch Transaction</a>
     <table class="table">
         <thead>
             <tr>

@@ -80,12 +80,11 @@
 
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
-
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batches_received') }}"><i class="bi bi-inbox"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('batch_received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batches_send') }}"><i class="bi bi-inbox"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('batch_send.index') }}"><i class="bi bi-inbox"></i> Envoyés</a>
                 </li>
                 </ul>
             </div>

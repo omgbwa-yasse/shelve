@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Edit Batch Transaction</h1>
-    <form action="{{ route('batch.received.update', $batchTransaction) }}" method="POST">
+    <form action="{{ route('batch_received.update', $batchTransaction) }}" method="POST">
         @csrf
         @method('PUT')
         <div class="mb-3">

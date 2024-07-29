@@ -68,22 +68,22 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
-        Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
-        Route::resource('batches', BatchController::class)->names('batch');
         Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::resource('authors', AuthorController::class)->names('mail-author');
+        Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
+        Route::resource('typologies', MailTypologyController::class);
+        Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
+
+        // Les parapheurs
         Route::resource('batch', BatchController::class);
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
-        Route::resource('batch.received', BatchReceivedController::class);
-        Route::resource('typologies', MailTypologyController::class);
-        Route::resource('batch.send', BatchSendController::class);
-        Route::get('batches_received', [BatchReceivedController::class, 'batches_received'])->name('batches_received');
-        Route::get('batches_send', [BatchSendController::class, 'batches_send'])->name('batches_send');
-        Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
+        Route::resource('batches', BatchController::class)->names('batch');
+        Route::resource('batch_received', BatchSendController::class);
+        Route::resource('batch_send', BatchSendController::class);
     });
 
     Route::prefix('communications')->group(function () {
