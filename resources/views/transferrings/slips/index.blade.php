@@ -15,7 +15,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($slip as $slip)
+                @foreach ($slips as $slip)
                     <tr>
                         <td>{{ $slip->id }}</td>
                         <td>{{ $slip->code }}</td>

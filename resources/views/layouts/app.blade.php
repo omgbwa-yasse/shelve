@@ -30,12 +30,6 @@
 
 <body>
     <div id="app">
-
-
-
-
-
-
         <div class="container-fluid">
             <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
                 <div class="container">
@@ -68,7 +62,7 @@
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'transferrings') {{ 'active bg-info' }} @endif"
-                                    href="{{ route('slips.index') }}">Transferts</a>
+                                    href="{{ route('slips.index') }}">Transfert</a>
                             </li>
 
                             <li class="nav-item  text-dark">
@@ -78,23 +72,31 @@
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'deposits') {{ 'active bg-success' }} @endif"
-                                    href="{{ route('buildings.index') }}">Dépôts</a>
+                                    href="{{ route('buildings.index') }}">Dépôt</a>
                             </li>
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif"
-                                    href="{{ route('activities.index') }}">Outils de gestion</a>
+                                    href="{{ route('activities.index') }}">Outil</a>
                             </li>
 
                             <li class="nav-item  text-dark">
                                 <a class="nav-link @if (Request::segment(1) == 'settings') {{ 'active bg-primary' }} @endif"
-                                    href="{{ route('mail-typology.index') }}">Paramètres</a>
+                                    href="{{ route('mail-typology.index') }}">Paramètre</a>
                             </li>
                         </ul>
 
                         <form class="d-flex" action="{{ route('records.search') }}">
-                            <input class="form-control me-3" type="search" placeholder="Search" aria-label="Search">
-                            <button class="btn btn-outline-success" type="submit">Rechecher</button>
+                            <input type="text" name="advanced" value="false" hidden>
+                            <input class="form-control me-2" name="query" type="text" placeholder="Rechercher" aria-label="Search">
+                            <select class="form-select me-2" name="search_type">
+                                <option value="">Par tout</option>
+                                <option value="mail">Courriel</option>
+                                <option value="record">Archives</option>
+                                <option value="transferring_record">Archives versées</option>
+                                <option value="transferring">Versement</option>
+                            </select>
+                            <button class="btn btn-outline-success" type="submit">Rechercher</button>
                         </form>
 
 

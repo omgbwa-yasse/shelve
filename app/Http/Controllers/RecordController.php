@@ -5,7 +5,6 @@ use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
-use App\Models\ContainerStatus;
 use App\Models\Activity;
 use App\Models\Term;
 use App\Models\Accession;
@@ -14,98 +13,11 @@ use App\Models\RecordLevel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Monolog\Level;
+
 
 
 class RecordController extends Controller
 {
-//    public function search(Request $request)
-//    {
-//        $query = $request->input('query');
-//
-//        $records = Record::where('name', 'LIKE', "%$query%")
-//                        ->orWhere('code', 'LIKE', "%$query%")
-//                        ->orWhere('date_start', 'LIKE', "%$query%")
-//                        ->orWhere('date_end', 'LIKE', "%$query%")
-//                        ->orWhere('date_exact', 'LIKE', "%$query%")
-//                        ->orWhere('biographical_history', 'LIKE', "%$query%")
-//                        ->orWhere('archival_history', 'LIKE', "%$query%")
-//                        ->orWhere('acquisition_source', 'LIKE', "%$query%")
-//                        ->orWhere('content', 'LIKE', "%$query%")
-//                        ->orWhere('appraisal', 'LIKE', "%$query%")
-//                        ->orWhere('accrual', 'LIKE', "%$query%")
-//                        ->orWhere('arrangement', 'LIKE', "%$query%")
-//                        ->orWhere('access_conditions', 'LIKE', "%$query%")
-//                        ->orWhere('reproduction_conditions', 'LIKE', "%$query%")
-//                        ->orWhere('language_material', 'LIKE', "%$query%")
-//                        ->orWhere('characteristic', 'LIKE', "%$query%")
-//                        ->orWhere('finding_aids', 'LIKE', "%$query%")
-//                        ->orWhere('location_original', 'LIKE', "%$query%")
-//                        ->orWhere('location_copy', 'LIKE', "%$query%")
-//                        ->orWhere('related_unit', 'LIKE', "%$query%")
-//                        ->orWhere('publication_note', 'LIKE', "%$query%")
-//                        ->orWhere('note', 'LIKE', "%$query%")
-//                        ->orWhere('archivist_note', 'LIKE', "%$query%")
-//                        ->orWhere('rule_convention', 'LIKE', "%$query%")
-//                        ->get();
-//        dd($records);
-//        return view('records.index', compact('records'));
-//    }
-    public function search(Request $request)
-    {
-        $query = Record::query();
-
-        if ($request->filled('code')) {
-            $query->where('code', 'LIKE', '%' . $request->code . '%');
-        }
-
-        if ($request->filled('name')) {
-            $query->where('name', 'LIKE', '%' . $request->name . '%');
-        }
-
-        if ($request->filled('date_start')) {
-            $query->where('date_start', '>=', $request->date_start);
-        }
-
-        if ($request->filled('date_end')) {
-            $query->where('date_end', '<=', $request->date_end);
-        }
-
-        if ($request->filled('description')) {
-            $query->where(function($q) use ($request) {
-                $q->where('biographical_history', 'LIKE', '%' . $request->description . '%')
-                    ->orWhere('content', 'LIKE', '%' . $request->description . '%')
-                    ->orWhere('note', 'LIKE', '%' . $request->description . '%');
-            });
-        }
-
-        if ($request->filled('language')) {
-            $query->where('language_material', 'LIKE', '%' . $request->language . '%');
-        }
-
-        if ($request->filled('author')) {
-            $query->whereHas('authors', function($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->author . '%');
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status_id', $request->status);
-        }
-
-        if ($request->filled('terms')) {
-            $query->whereHas('terms', function($q) use ($request) {
-                $q->whereIn('id', $request->terms);
-            });
-        }
-
-        $records = $query->get();
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        return view('records.index', compact('records', 'statuses', 'terms'));
-    }
-
-
     public function index()
     {
         $records = Record::all();

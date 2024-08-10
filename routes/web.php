@@ -47,14 +47,12 @@ use App\Http\Controllers\ReservationStatusController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
-use App\Http\Controllers\MailSearchController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\MailInitialedController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
-
-
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -144,8 +142,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
 
-    Route::get('/records/search', [RecordController::class, 'search'])->name('records.search');
-    Route::get('/mails/search', [MailController::class, 'search'])->name('mails.search');
+    Route::get('/records/search', [SearchController::class, 'index'])->name('records.search');
+    Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
+    Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
