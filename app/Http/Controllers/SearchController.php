@@ -61,6 +61,7 @@ class SearchController extends Controller
             $query = $request->input('query');
             $records = Record::where('name', 'LIKE', "%$query%")
                     ->orWhere('code', 'LIKE', "%$query%")
+                    ->orWhere('content', 'LIKE', "%$query%")
                     ->get();
         }
 
@@ -139,19 +140,23 @@ class SearchController extends Controller
     }
 
 
+
+
+
     public function transferringRecord(Request $request)
     {
-
-        if($request->input('advanced') == false){
+        if($request->input('advanced') == true){
             $query = $request->input('query');
             $records = SlipRecord::where('name', 'LIKE', "%$query%")
                         ->orWhere('code', 'LIKE', "%$query%")
-                        ->orWhere('date_format', 'LIKE', "%$query%")
                         ->orWhere('date_start', 'LIKE', "%$query%")
                         ->orWhere('date_end', 'LIKE', "%$query%")
                         ->orWhere('date_exact', 'LIKE', "%$query%")
                         ->orWhere('content', 'LIKE', "%$query%")
                         ->orWhereHas('level', function ($q) use ($query) {
+                            $q->where('name', 'LIKE', "%$query%");
+                        })
+                        ->orWhereHas('slip', function ($q) use ($query) {
                             $q->where('name', 'LIKE', "%$query%");
                         })
                         ->orWhereHas('support', function ($q) use ($query) {
@@ -169,11 +174,15 @@ class SearchController extends Controller
                 $query = $request->input('query');
                 $records = SlipRecord::where('name', 'LIKE', "%$query%")
                             ->orWhere('code', 'LIKE', "%$query%")
+                            ->orWhere('content', 'LIKE', "%$query%")
                             ->get();
         }
         $records->load('slip');
         return view('search.transferring.record', compact('records'));
     }
+
+
+
 
     public function default(Request $request)
     {

@@ -26,4 +26,9 @@ class RecordLevel extends Model
         return $this->hasOne(RecordLevel::class, 'id', 'child_id');
     }
 
+    public function slipRecord()
+    {
+        return $this->belongsTo(SlipRecord::class, 'level_id');
+    }
+
 }

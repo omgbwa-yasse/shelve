@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Monolog\Level;
 
 class SlipRecord extends Model
 {
@@ -35,14 +36,15 @@ class SlipRecord extends Model
         return $this->belongsTo(Slip::class);
     }
 
-
+    public function level()
+    {
+        return $this->belongsTo(RecordLevel::class, 'level_id');
+    }
 
     public function support()
     {
         return $this->belongsTo(RecordSupport::class);
     }
-
-
 
     public function activity()
     {
