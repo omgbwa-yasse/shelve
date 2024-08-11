@@ -186,10 +186,32 @@ class SearchController extends Controller
 
     public function default(Request $request)
     {
-        $records = Record::latest()->take(5)->get();
-        $mails = Mail::latest()->take(5)->get();
-        $transferrings = Slip::latest()->take(5)->get();
-        return view('search.index', compact('records', 'mails', 'transferrings'));
+        $query = $request->input('query');
+        $records = record::where('name', 'LIKE', "%$query%")
+                    ->orWhere('code', 'LIKE', "%$query%")
+                    ->orWhere('content', 'LIKE', "%$query%")
+                    ->latest()->take(4)
+                    ->get();
+
+        $mails = Mail::where('name', 'LIKE', "%$query%")
+                    ->orWhere('code', 'LIKE', "%$query%")
+                    ->orWhere('description', 'LIKE', "%$query%")
+                    ->latest()->take(4)
+                    ->get();
+
+        $transferrings = Slip::where('name', 'LIKE', "%$query%")
+                    ->orWhere('code', 'LIKE', "%$query%")
+                    ->orWhere('description', 'LIKE', "%$query%")
+                    ->latest()->take(4)
+                    ->get();
+
+        $transferringRecords = SlipRecord::where('name', 'LIKE', "%$query%")
+                    ->orWhere('code', 'LIKE', "%$query%")
+                    ->orWhere('content', 'LIKE', "%$query%")
+                    ->latest()->take(4)
+                    ->get();
+
+        return view('search.index', compact('records', 'mails', 'transferrings','transferringRecords'));
     }
 
 }

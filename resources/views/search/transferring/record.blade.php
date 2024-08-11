@@ -13,7 +13,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($records as $record)
+                @foreach ($transferrings as $record)
                     <tr>
                         <td>{{ $record->id }}</td>
                         <td>{{ $record->code }}</td>
