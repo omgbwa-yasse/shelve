@@ -22,6 +22,7 @@ use App\Models\RecordLevel;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
 use App\Models\User;
+use App\Models\DollyType;
 
 class DatabaseSeeder extends Seeder
 {
@@ -36,6 +37,22 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+
+        DollyType::factory()->create([
+            ['name' => 'mail', 'description' => 'dolly to manage mail'],
+            ['name' => 'record', 'description' => 'dolly to manage record'],
+            ['name' => 'communication', 'description' => 'dolly to manage communication'],
+            ['name' => 'slip', 'description' => 'dolly to manage slip'],
+            ['name' => 'slipRecord', 'description' => 'dolly to manage slip\'s record'],
+            ['name' => 'building', 'description' => 'dolly to manage building'],
+            ['name' => 'room', 'description' => 'dolly to manage room'],
+            ['name' => 'shelf', 'description' => 'dolly to manage shelf'],
+            ['name' => 'container', 'description' => 'dolly to manage box container'],
+        ]);
+
+
+
 
         ContainerType::insert([
             ['name' => 'Boîte', 'description' => 'Un petit conteneur rectangulaire utilisé pour stocker et transporter des articles.'],
