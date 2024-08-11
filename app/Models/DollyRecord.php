@@ -10,6 +10,8 @@ class DollyRecord extends Model
     use HasFactory;
 
 
+    protected $table = 'dolly_records';
+
     protected $fillable = [
         'record_id',
         'dolly_id',

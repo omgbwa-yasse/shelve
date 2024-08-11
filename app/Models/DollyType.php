@@ -9,6 +9,8 @@ class DollyType extends Model
 {
     use HasFactory;
 
+    protected $table = 'dolly_types';
+
     protected $fillable = [
         'name',
         'description',

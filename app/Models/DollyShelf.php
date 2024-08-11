@@ -9,6 +9,8 @@ class DollyShelf extends Model
 {
     use HasFactory;
 
+    protected $table = 'dolly_shelves';
+
     protected $fillable = [
         'shelf_id',
         'dolly_id',

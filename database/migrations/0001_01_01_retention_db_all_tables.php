@@ -1102,6 +1102,14 @@ return new class extends Migration
     {
         Schema::dropIfExists('dolly_types');
         Schema::dropIfExists('dollies');
+        Schema::dropIfExists('dolly_mails');
+        Schema::dropIfExists('dolly_records');
+        Schema::dropIfExists('dolly_transferrings');
+        Schema::dropIfExists('dolly_deposits');
+        Schema::dropIfExists('dolly_shelves');
+        Schema::dropIfExists('dolly_containers');
+        Schema::dropIfExists('dolly_communications');
+        Schema::dropIfExists('dolly_rooms');
         Schema::dropIfExists('batch_transactions');
         Schema::dropIfExists('batch_mail');
         Schema::dropIfExists('batches');

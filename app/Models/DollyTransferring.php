@@ -9,6 +9,8 @@ class DollyTransferring extends Model
 {
     use HasFactory;
 
+    protected $table = 'dolly_transferrings';
+
     protected $fillable = [
         'transferring_id',
         'dolly_id',

@@ -9,6 +9,9 @@ class DollyBuilding extends Model
 {
     use HasFactory;
 
+
+    protected $table = 'dolly_buildings';
+
     protected $fillable = [
         'building_id',
         'dolly_id',

@@ -9,6 +9,8 @@ class DollyCommunication extends Model
 {
     use HasFactory;
 
+    protected $table = 'dolly_communications';
+
     protected $fillable = [
         'communication_id',
         'dolly_id',
