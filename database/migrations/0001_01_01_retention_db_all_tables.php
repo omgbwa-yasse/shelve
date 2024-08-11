@@ -86,7 +86,6 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->nullable(false);
             $table->text('description')->nullable();
-            $table->primary('id');
             $table->timestamps();
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
@@ -134,7 +133,7 @@ return new class extends Migration
             $table->float('shelf_length', 15)->nullable(false);
             $table->unsignedBigInteger('room_id')->nullable(false);
             $table->unsignedBigInteger('creator_id')->nullable(false);
-            $table->primary('id');
+            $table->primary(['id', 'room_id']);
             $table->timestamps();
             $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
@@ -148,7 +147,6 @@ return new class extends Migration
             $table->float('width', 15)->nullable(false);
             $table->float('length', 15)->nullable(false);
             $table->float('depth', 15)->nullable(false);
-            $table->primary('id');
             $table->unique('name');
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
@@ -162,7 +160,6 @@ return new class extends Migration
             $table->unsignedBigInteger('shelve_id')->nullable(false);
             $table->unsignedBigInteger('status_id')->nullable(false);
             $table->unsignedBigInteger('property_id')->nullable(false);
-            $table->primary('id');
             $table->foreign('shelve_id')->references('id')->on('shelves')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('container_status')->onDelete('cascade');
             $table->foreign('property_id')->references('id')->on('container_properties')->onDelete('cascade');
@@ -177,7 +174,6 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->text('description')->nullable();
-            $table->primary('id');
             $table->unique('name');
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
