@@ -882,7 +882,7 @@ return new class extends Migration
         Schema::create('document_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false)->unique();
-            $table->longText('description', 50)->nullable(false);
+            $table->longText('description')->nullable(false);
             $table->timestamps();
             $table->primary('id');
         });
