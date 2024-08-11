@@ -918,7 +918,6 @@ return new class extends Migration
         });
 
 
-
         Schema::create('author_addresses', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('type_id')->nullable(false);
@@ -1000,7 +999,7 @@ return new class extends Migration
 
 
 
-            Les paniers
+            Les chariots
 
 
 
