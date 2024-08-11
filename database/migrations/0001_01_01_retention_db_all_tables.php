@@ -1010,6 +1010,74 @@ return new class extends Migration
 
         */
 
+        Schema::create('dolly_mails', function(Blueprint $table){
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('dolly_records', function(Blueprint $table){
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('dolly_transferrings', function(Blueprint $table){
+            $table->unsignedBigInteger('transferring_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
+        Schema::create('dolly_deposits', function(Blueprint $table){
+            $table->unsignedBigInteger('deposit_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('deposit_id')->references('id')->on('deposits')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('dolly_shelves', function(Blueprint $table){
+            $table->unsignedBigInteger('shelf_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('shelf_id')->references('id')->on('shelves')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
+        Schema::create('dolly_containers', function(Blueprint $table){
+            $table->unsignedBigInteger('container_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
+        Schema::create('dolly_communications', function(Blueprint $table){
+            $table->unsignedBigInteger('communication_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('dolly_rooms', function(Blueprint $table){
+            $table->unsignedBigInteger('room_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
         Schema::create('dollies', function(Blueprint $table){
             $table->id();
             $table->string('name', 50)->nullable(false);
@@ -1019,9 +1087,11 @@ return new class extends Migration
             $table->foreign('type_id')->references('id')->on('dolly_types')->onDelete('cascade');
         });
 
+
         Schema::create('dolly_types', function(Blueprint $table){
             $table->id();
             $table->string('name', 50)->nullable(false);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
 
