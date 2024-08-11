@@ -92,14 +92,31 @@
     <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
         <div class="container">
             <div class="navbar-nav w-100 justify-content-between">
-                <a class="nav-link @if(Request::segment(1) == 'mails') active fw-bold text-primary @endif" href="{{ route('mails.index') }}">Courrier</a>
-                <a class="nav-link @if(Request::segment(1) == 'repositories') active fw-bold text-primary @endif" href="{{ route('records.index') }}">Repertoire</a>
-                <a class="nav-link @if(Request::segment(1) == 'communications') active fw-bold text-primary @endif" href="{{ route('transactions.index') }}">Demande</a>
-                <a class="nav-link @if(Request::segment(1) == 'transferrings') active fw-bold text-primary @endif" href="{{ route('slips.index') }}">Transfert</a>
-                <a class="nav-link @if(Request::segment(1) == 'monitorings') active fw-bold text-primary @endif" href="#">Audits</a>
-                <a class="nav-link @if(Request::segment(1) == 'deposits') active fw-bold text-primary @endif" href="{{ route('buildings.index') }}">Dépôt</a>
-                <a class="nav-link @if(Request::segment(1) == 'tools') active fw-bold text-primary @endif" href="{{ route('activities.index') }}">Outil</a>
-                <a class="nav-link @if(Request::segment(1) == 'settings') active fw-bold text-primary @endif" href="{{ route('mail-typology.index') }}">Paramètre</a>
+                <a class="nav-link @if(Request::segment(1) == 'mails') active fw-bold text-primary @endif" href="{{ route('mails.index') }}">
+                    <i class="bi bi-envelope"></i> Courrier
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'repositories') active fw-bold text-primary @endif" href="{{ route('records.index') }}">
+                    <i class="bi bi-folder"></i> Repertoire
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'communications') active fw-bold text-primary @endif" href="{{ route('transactions.index') }}">
+                    <i class="bi bi-chat-dots"></i> Demande
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'transferrings') active fw-bold text-primary @endif" href="{{ route('slips.index') }}">
+                    <i class="bi bi-arrow-left-right"></i> Transfert
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'monitorings') active fw-bold text-primary @endif" href="#">
+                    <i class="bi bi-clipboard-check"></i> Audits
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'deposits') active fw-bold text-primary @endif" href="{{ route('buildings.index') }}">
+                    <i class="bi bi-building"></i> Dépôt
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'tools') active fw-bold text-primary @endif" href="{{ route('activities.index') }}">
+                    <i class="bi bi-tools"></i> Outil
+                </a>
+                <a class="nav-link @if(Request::segment(1) == 'settings') active fw-bold text-primary @endif" href="{{ route('mail-typology.index') }}">
+                    <i class="bi bi-gear"></i> Paramètre
+                </a>
+
             </div>
         </div>
     </nav>
