@@ -29,6 +29,8 @@
 </head>
 
 <body>
+
+
     <div id="app">
         <div class="container-fluid">
             <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
@@ -44,51 +46,13 @@
 
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <!-- Left Side Of Navbar -->
-                        <ul class="nav nav-pills">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark @if (Request::segment(1) == 'mails') {{ 'active' }} @endif"
-                                    href="{{ route('mails.index') }}">Courrier</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'repositories') {{ 'active bg-warning' }} @endif"
-                                    href="{{ route('records.index') }}">Repertoire</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'communications') {{ 'active bg-dark' }} @endif"
-                                    href="{{ route('transactions.index') }}">Demande</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'transferrings') {{ 'active bg-info' }} @endif"
-                                    href="{{ route('slips.index') }}">Transfert</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'monitorings') {{ 'active bg-success' }} @endif"
-                                    href="#">Audits</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'deposits') {{ 'active bg-success' }} @endif"
-                                    href="{{ route('buildings.index') }}">Dépôt</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif"
-                                    href="{{ route('activities.index') }}">Outil</a>
-                            </li>
-
-                            <li class="nav-item  text-dark">
-                                <a class="nav-link @if (Request::segment(1) == 'settings') {{ 'active bg-primary' }} @endif"
-                                    href="{{ route('mail-typology.index') }}">Paramètre</a>
-                            </li>
-                        </ul>
 
                         <form class="d-flex" action="{{ route('records.search') }}">
                             <input type="text" name="advanced" value="false" hidden>
-                            <input class="form-control me-2" name="query" type="text" placeholder="Rechercher" aria-label="Search">
+                            <div class="col-6">
+                                <input class="form-control me-2" name="query" type="text" placeholder="Rechercher" aria-label="Search">
+                            </div>
+                            <div class="col-3">
                             <select class="form-select me-2" name="search_type">
                                 <option value="">Par tout</option>
                                 <option value="mail">Courriel</option>
@@ -96,6 +60,7 @@
                                 <option value="transferring_record">Archives versées</option>
                                 <option value="transferring">Versement</option>
                             </select>
+                            </div>
                             <button class="btn btn-outline-success" type="submit">Rechercher</button>
                         </form>
 
@@ -140,6 +105,47 @@
                     </div>
                 </div>
             </nav>
+
+
+
+            <nav class="navbar navbar-dark bg-primary">
+                <div class="nav navbar-nav">
+                    <a class="nav-link text-dark @if (Request::segment(1) == 'mails') {{ 'active' }} @endif"
+                     href="{{ route('mails.index') }}">Courrier</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'repositories') {{ 'active bg-warning' }} @endif"
+                     href="{{ route('records.index') }}">Repertoire</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'communications') {{ 'active bg-dark' }} @endif"
+                     href="{{ route('transactions.index') }}">Demande</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'transferrings') {{ 'active bg-info' }} @endif"
+                    href="{{ route('slips.index') }}">Transfert</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'monitorings') {{ 'active bg-success' }} @endif"
+                     href="#">Audits</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'deposits') {{ 'active bg-success' }} @endif"
+                    href="{{ route('buildings.index') }}">Dépôt</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'tools') {{ 'active bg-secondary' }} @endif"
+                     href="{{ route('activities.index') }}">Outil</a>
+                </div>
+                <div class="nav navbar-nav">
+                    <a class="nav-link @if (Request::segment(1) == 'settings') {{ 'active bg-primary' }} @endif"
+                        href="{{ route('mail-typology.index') }}">Paramètre</a>
+                </div>
+            </nav>
+
+
+
+
             <div class="row">
                 <div class="col-2">
                     @switch(Request::segment(1))

@@ -14,8 +14,8 @@ class SlipController extends Controller
 
     public function index()
     {
-        $slip = Slip::all();
-        return view('transferrings.slips.index', compact('slip'));
+        $slips = Slip::all();
+        return view('transferrings.slips.index', compact('slips'));
     }
 
 
