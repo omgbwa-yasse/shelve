@@ -21,6 +21,47 @@
         input,textarea,select {
             box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+        /* Style pour le conteneur principal */
+        #container {
+            margin-top: 1.5rem;
+            border: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        /* Style pour l'en-tête */
+        #container h1, #container h2 {
+            background-color: #007bff;
+            color: #fff;
+            padding: 1rem;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            margin-top: 0;
+        }
+
+        /* Style pour les boutons */
+        #container .btn {
+            margin-bottom: 1rem;
+        }
+
+        /* Style pour la table */
+        #container .table {
+            border: 1px solid #dee2e6;
+        }
+
+        #container .table th, #container .table td {
+            border: 1px solid #dee2e6;
+        }
+
+        #container .table th {
+            background-color: #f8f9fa;
+        }
+
+        #container .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
     </style>
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -175,7 +216,7 @@
                     </div>
                 </div>
                 <div class="col-md-9">
-                    <div class="card p-4">
+                    <div id="container" class="card p-4">
                     @yield('content')
                     </div>
                 </div>
