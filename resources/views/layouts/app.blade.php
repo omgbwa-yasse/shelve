@@ -10,7 +10,7 @@
 
     <!-- Votre CSS personnalisé -->
     <link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">
-
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/custom.scss') }}">
     <!-- Votre JS jquery -->
     <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
     <!-- CSRF Token -->
