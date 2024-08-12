@@ -74,7 +74,7 @@
 <body class="bg-light">
 <div id="app">
     <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="{{ url('/') }}">
                 {{ config('app.name', 'Shelve') }}
             </a>
@@ -135,7 +135,7 @@
     </nav>
 
     <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
-        <div class="container">
+        <div class="container-fluid">
             <div class="navbar-nav w-100 justify-content-between">
                 <a class="nav-link @if(Request::segment(1) == 'mails') active fw-bold text-primary @endif" href="{{ route('mails.index') }}">
                     <i class="bi bi-envelope"></i> Courrier
@@ -172,7 +172,7 @@
     </nav>
 
     <main class="py-4">
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
                 <div class="col-md-3">
                     <div class="card">
@@ -226,7 +226,7 @@
                 </div>
                 <div class="col-md-9">
                     <div id="container" class="card p-4">
-                    @yield('content')
+                        @yield('content')
                     </div>
                 </div>
             </div>
