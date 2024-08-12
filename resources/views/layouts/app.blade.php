@@ -158,6 +158,11 @@
                 <a class="nav-link @if(Request::segment(1) == 'tools') active fw-bold text-primary @endif" href="{{ route('activities.index') }}">
                     <i class="bi bi-tools"></i> Outil
                 </a>
+
+                <a class="nav-link @if(Request::segment(1) == 'dollies') active fw-bold text-primary @endif" href="{{ route('dolly.index') }}">
+                    <i class="bi bi-cart3"></i> Chariots
+                </a>
+
                 <a class="nav-link @if(Request::segment(1) == 'settings') active fw-bold text-primary @endif" href="{{ route('mail-typology.index') }}">
                     <i class="bi bi-gear"></i> Paramètre
                 </a>
@@ -207,6 +212,10 @@
 
                                 @case('transferrings')
                                     @include('submenu.transferrings')
+                                    @break
+
+                                @case('dollies')
+                                    @include('submenu.dollies')
                                     @break
 
                                 @default

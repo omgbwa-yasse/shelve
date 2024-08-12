@@ -50,6 +50,7 @@ use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\MailInitialedController;
 use App\Http\Controllers\BatchMailController;
+use App\Http\Controllers\DollyController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
@@ -127,6 +128,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
         Route::resource('transferring-status', SlipStatusController::class);
+    });
+
+
+    Route::prefix('dollies')->group(function () {
+        Route::resource('dolly', DollyController::class)->names('dolly');
+        Route::resource('mail', ContainerStatusController::class)->names('dolly-mail');
+        Route::resource('communication', ContainerStatusController::class)->names('dolly-communication');
+        Route::resource('slip', ContainerStatusController::class)->names('dolly-slip');
+        Route::resource('slipRecord', ContainerStatusController::class)->names('dolly-slip-record');
+        Route::resource('building', ContainerStatusController::class)->names('dolly-building');
+        Route::resource('room', ContainerStatusController::class)->names('dolly-room');
+        Route::resource('shelf', ContainerStatusController::class)->names('dolly-shelf');
+        Route::resource('container', ContainerStatusController::class)->names('dolly-container');
     });
 
     Route::prefix('tools')->group(function () {
