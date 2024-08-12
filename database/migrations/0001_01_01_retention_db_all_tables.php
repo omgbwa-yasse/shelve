@@ -1041,7 +1041,7 @@ return new class extends Migration
         });
 
 
-        Schema::create('dolly_building', function(Blueprint $table){
+        Schema::create('dolly_buildings', function(Blueprint $table){
             $table->unsignedBigInteger('building_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
             $table->foreign('building_id')->references('id')->on('buildings')->onDelete('cascade');
