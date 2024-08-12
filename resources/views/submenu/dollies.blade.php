@@ -7,6 +7,9 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('dolly.index') }}"><i class="bi bi-cart3"></i> Tous les chariots</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-dark" href=""><i class="bi bi-cart3"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
