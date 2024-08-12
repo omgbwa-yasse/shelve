@@ -1041,10 +1041,10 @@ return new class extends Migration
         });
 
 
-        Schema::create('dolly_deposits', function(Blueprint $table){
-            $table->unsignedBigInteger('deposit_id')->nullable(false);
+        Schema::create('dolly_building', function(Blueprint $table){
+            $table->unsignedBigInteger('building_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
-            $table->foreign('deposit_id')->references('id')->on('deposits')->onDelete('cascade');
+            $table->foreign('building_id')->references('id')->on('buildings')->onDelete('cascade');
             $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
             $table->timestamps();
         });
