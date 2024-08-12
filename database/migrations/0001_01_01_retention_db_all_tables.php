@@ -1086,7 +1086,7 @@ return new class extends Migration
 
         Schema::create('dollies', function(Blueprint $table){
             $table->id();
-            $table->string('name', 50)->nullable(false);
+            $table->string('name', 70)->unique(true)->nullable(false);
             $table->string('description', 100)->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('type_id')->nullable(false);
