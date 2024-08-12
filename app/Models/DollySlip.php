@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DollyTransferring extends Model
+class DollySlip extends Model
 {
     use HasFactory;
 
-    protected $table = 'dolly_transferrings';
+    protected $table = 'dolly_slips';
 
     protected $fillable = [
-        'transferring_id',
+        'slip_id',
         'dolly_id',
     ];
 
-    public function transferring()
+    public function slip()
     {
         return $this->belongsTo(slip::class);
     }

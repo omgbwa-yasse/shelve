@@ -1021,11 +1021,22 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('dolly_transferrings', function(Blueprint $table){
-            $table->unsignedBigInteger('transferring_id')->nullable(false);
+
+        Schema::create('dolly_slips', function(Blueprint $table){
+            $table->unsignedBigInteger('slip_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
-            $table->foreign('transferring_id')->references('id')->on('transferrings')->onDelete('cascade');
+            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('dolly_slip_records', function(Blueprint $table){
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->unsignedBigInteger('slip_id')->nullable(false);
+            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->timestamps();
         });
 
