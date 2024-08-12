@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
         <!-- Recherche -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;">
             <i class="bi bi-search"></i> Recherche
         </a>
@@ -17,7 +17,7 @@
         </div>
 
         <!-- Communication -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#CommunicationMenu"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#CommunicationMenu"
             aria-expanded="true" aria-controls="CommunicationMenu" style="padding: 10px;">
             <i class="bi bi-journal-plus"></i> Ajouter
         </a>
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Etat -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="true"
             aria-controls="etatMenu">
             <i class="bi bi-info-circle" style="padding: 10px;"></i> Panier
         </a>

@@ -1,6 +1,6 @@
 <div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
     <div class="row">
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> Courrier </a>
 
         <div class="collapse show" id="rechercheMenu">
@@ -13,7 +13,7 @@
             </ul>
         </div>
 
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-file-text"></i> Repertoire </a>
 
         <div class="collapse show" id="rechercheMenu">
@@ -30,7 +30,7 @@
         </div>
 
 
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> Versement </a>
 
         <div class="collapse show" id="rechercheMenu">
@@ -43,7 +43,7 @@
             </ul>
         </div>
 
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#communicationMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#communicationMenu" aria-expanded="true"
             aria-controls="communicationMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> Communication </a>
 
         <div class="collapse show" id="communicationMenu">
@@ -59,7 +59,7 @@
             </ul>
         </div>
 
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
         aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-building"></i> Dépôt </a>
 
     <div class="collapse show" id="rechercheMenu">
@@ -76,7 +76,7 @@
     </div>
 
 
-    <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+    <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
         aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-tools"></i> Outils de gestion </a>
 
     <div class="collapse show" id="rechercheMenu">

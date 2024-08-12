@@ -17,7 +17,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Shelve') }}</title>
-
+    <style>
+        input,textarea,select {
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
@@ -180,7 +184,9 @@
                     </div>
                 </div>
                 <div class="col-md-9">
+                    <div class="card p-4">
                     @yield('content')
+                    </div>
                 </div>
             </div>
         </div>

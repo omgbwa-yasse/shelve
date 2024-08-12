@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
         <!-- Etat -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
             aria-controls="etatMenu">
             <i class="bi bi-info-circle"></i> Etat
         </a>
@@ -30,7 +30,7 @@
         </div>
 
         <!-- Etat personnalisé -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatPersonnaliseMenu"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatPersonnaliseMenu"
             aria-expanded="false" aria-controls="etatPersonnaliseMenu">
             <i class="bi bi-sliders"></i> Etat personnalisé
         </a>
