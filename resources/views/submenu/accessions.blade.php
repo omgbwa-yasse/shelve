@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
         <!-- Recherche -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="false"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="false"
             aria-controls="rechercheMenu">
             <i class="bi bi-search"></i> Recherche
         </a>
@@ -32,7 +32,7 @@
         </div>
 
         <!-- Enregistrement -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#enregistrementMenu"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="false" aria-controls="enregistrementMenu">
             <i class="bi bi-journal-plus"></i> Enregistrement
         </a>
@@ -54,7 +54,7 @@
         </div>
 
         <!-- Etat -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
             aria-controls="etatMenu">
             <i class="bi bi-info-circle"></i> Etat
         </a>

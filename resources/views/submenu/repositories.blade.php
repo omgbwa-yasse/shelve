@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
         <!-- Recherche -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="false"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="false"
         style="padding: 10px;" aria-controls="rechercheMenu">
             <i class="bi bi-search"></i> Recherche
         </a>
@@ -34,7 +34,7 @@
         </div>
 
         <!-- Enregistrement -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#enregistrementMenu"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="false" style="padding: 10px;" aria-controls="enregistrementMenu">
             <i class="bi bi-journal-plus"></i> Enregistrement
         </a>
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Chariot -->
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#chariotMenu" aria-expanded="false"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#chariotMenu" aria-expanded="false"
             aria-controls="chariotMenu" style="padding: 10px;">
             <i class="bi bi-cart"></i> Chariot
         </a>

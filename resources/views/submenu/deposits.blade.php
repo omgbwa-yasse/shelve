@@ -1,6 +1,6 @@
 <div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
     <div class="row">
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>Recherche</a>
 
         <div class="collapse show" id="rechercheMenu">
@@ -21,7 +21,7 @@
             </ul>
         </div>
 
-        <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#enregistrementMenu"
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
 
             <div class="collapse show" id="enregistrementMenu">
@@ -41,7 +41,7 @@
             </ul>
         </div>
 
-            <a class="nav-link active bg-dark text-white" data-toggle="collapse" href="#chariotMenu"
+            <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#chariotMenu"
             aria-expanded="true" aria-controls="chariotMenu" style="padding: 10px;">Mes chariots</a>
 
             <div class="collapse show" id="chariotMenu">
