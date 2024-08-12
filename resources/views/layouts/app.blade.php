@@ -32,7 +32,7 @@
 
         /* Style pour l'en-tête */
         #container h1, #container h2 {
-            background-color: #007bff;
+            background-color: #0178d4;
             color: #fff;
             padding: 1rem;
             border-top-left-radius: 0.5rem;
