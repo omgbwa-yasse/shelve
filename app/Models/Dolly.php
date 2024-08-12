@@ -17,7 +17,7 @@ class Dolly extends Model
 
     public function type()
     {
-        return $this->belongsTo(DollyType::class);
+        return $this->belongsTo(DollyType::class,'type_id');
     }
 
     public function mail()
@@ -46,19 +46,19 @@ class Dolly extends Model
     }
 
 
-    public function dollyBuilding()
+    public function building()
     {
         return $this->hasMany(DollyBuilding::class);
     }
 
     public function room()
     {
-        return $this->hasMany(room::class);
+        return $this->hasMany(DollyRoom::class);
     }
 
     public function shelf()
     {
-        return $this->hasMany(shelf::class);
+        return $this->hasMany(DollyShelf::class);
     }
 
 
