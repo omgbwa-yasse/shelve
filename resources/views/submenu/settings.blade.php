@@ -7,7 +7,7 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-tools"></i> Typologie de courrier </a>
+                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-gear"></i> Typologie de courrier </a>
                 </li>
 
             </ul>
@@ -20,10 +20,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-tools"></i> Supports de conservations </a>
+                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-gear"></i> Supports de conservations </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-tools"></i> Status des archives </a>
+                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-gear"></i> Status des archives </a>
                 </li>
 
             </ul>
@@ -37,7 +37,7 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transferring-status.index') }}"><i class="bi bi-tools"></i> Status</a>
+                    <a class="nav-link text-dark" href="{{ route('transferring-status.index') }}"><i class="bi bi-gear"></i> Status</a>
                 </li>
 
             </ul>
@@ -50,10 +50,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-tools"></i> Status de communication </a>
+                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-gear"></i> Status de communication </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservation-status.index') }}"><i class="bi bi-tools"></i> Status de reservation</a>
+                    <a class="nav-link text-dark" href="{{ route('reservation-status.index') }}"><i class="bi bi-gear"></i> Status de reservation</a>
                 </li>
 
             </ul>
@@ -66,10 +66,10 @@
 
         <ul class="list-unstyled pl-3">
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('container-status.index') }}"><i class="bi bi-tools"></i> Status des contenants</a>
+                <a class="nav-link text-dark" href="{{ route('container-status.index') }}"><i class="bi bi-gear"></i> Status des contenants</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-tools"></i> Propriété de contenant </a>
+                <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-gear"></i> Propriété de contenant </a>
             </li>
 
         </ul>
@@ -77,25 +77,25 @@
 
 
     <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-tools"></i> Outils de gestion </a>
+        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-gear"></i> Outils de gestion </a>
 
     <div class="collapse show" id="rechercheMenu">
 
         <ul class="list-unstyled pl-3">
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-tools"></i> Retention : Sorts finaux</a>
+                <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-gear"></i> Retention : Sorts finaux</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('languages.index') }}"><i class="bi bi-tools"></i> Thesaurus : langues </a>
+                <a class="nav-link text-dark" href="{{ route('languages.index') }}"><i class="bi bi-gear"></i> Thesaurus : langues </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('term-categories.index') }}"><i class="bi bi-tools"></i> Thésaurus : categories </a>
+                <a class="nav-link text-dark" href="{{ route('term-categories.index') }}"><i class="bi bi-gear"></i> Thésaurus : categories </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('term-equivalent-types.index') }}"><i class="bi bi-tools"></i> Thésaurus : équivalents </a>
+                <a class="nav-link text-dark" href="{{ route('term-equivalent-types.index') }}"><i class="bi bi-gear"></i> Thésaurus : équivalents </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('term-types.index') }}"><i class="bi bi-tools"></i> Thésaurus : types </a>
+                <a class="nav-link text-dark" href="{{ route('term-types.index') }}"><i class="bi bi-gear"></i> Thésaurus : types </a>
             </li>
         </ul>
     </div>
