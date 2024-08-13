@@ -47,6 +47,7 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
+
         $validatedData = $request->validate([
             'code' => 'required|integer',
             'mail_id' => 'required|exists:mails,id',
@@ -57,6 +58,7 @@ class MailReceivedController extends Controller
             'action_id' => 'required|exists:mail_actions,id',
             'description' => 'nullable',
         ]);
+
 
         $validatedData['date_creation'] = now();
         $userOrganisations = UserOrganisation::where('user_id', '=', $validatedData['user_received_id'])->get();
@@ -69,6 +71,7 @@ class MailReceivedController extends Controller
         }
 
         $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
+
 
         MailTransaction::create($validatedData);
 

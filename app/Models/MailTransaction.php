@@ -11,16 +11,16 @@ class MailTransaction extends Model
 
     protected $fillable = [
         'code',
-        'date_creation',
         'mail_id',
         'user_send_id',
         'organisation_send_id',
         'user_received_id',
-        'organisation_received_id',
-        'mail_status_id',
+        'document_type_id',
         'action_id',
         'description',
-        'document_type_id',
+        'organisation_received_id',
+        'mail_status_id',
+        'date_creation',
     ];
 
     public function mails()
@@ -65,8 +65,6 @@ class MailTransaction extends Model
     {
         return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
-
-
     public function type()
     {
         return $this->belongsTo(MailType::class, 'mail_type_id');
