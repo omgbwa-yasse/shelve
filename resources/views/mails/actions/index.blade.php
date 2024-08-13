@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container">
-    <h1>Mail Actions</h1>
-    <a href="{{ route('mail-action.create') }}" class="btn btn-primary mb-3">Create Mail Action</a>
+    <h1>Les actions</h1>
+    <a href="{{ route('mail-action.create') }}" class="btn btn-primary mb-3">Ajouter une action</a>
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th>Intitulé </th>
                 <th>Duration (en heures)</th>
-                <th>To Return</th>
+                <th>A retourner</th>
                 <th>Description </th>
                 <th>Actions</th>
             </tr>
