@@ -18,6 +18,8 @@ class MailTransaction extends Model
         'user_received_id',
         'organisation_received_id',
         'mail_status_id',
+        'action_id',
+        'description',
         'document_type_id',
     ];
 
@@ -33,6 +35,10 @@ class MailTransaction extends Model
     public function userSend()
     {
         return $this->belongsTo(User::class, 'user_send_id');
+    }
+    public function action()
+    {
+        return $this->belongsTo(MailAction::class, 'action_id');
     }
 
     public function organisationSend()
@@ -59,6 +65,7 @@ class MailTransaction extends Model
     {
         return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
+
 
     public function type()
     {

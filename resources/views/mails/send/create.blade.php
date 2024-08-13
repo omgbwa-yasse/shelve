@@ -46,6 +46,24 @@
                 @endforeach
             </select>
         </div>
+
+        <div class="form-group">
+            <label for="action_id">Action</label>
+            <select name="action_id" id="action_id" class="form-control">
+                @foreach($mailActions as $action)
+                    <option value="{{ $action->id }}" {{ old('action_id') == $action->id ? 'selected' : '' }}>
+                        {{ $action->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
+        </div>
+
+
         <input name="user_received_id" id="user_received_id" value="{{ auth()->id() }}" hidden>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>

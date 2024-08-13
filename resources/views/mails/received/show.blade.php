@@ -58,6 +58,26 @@
                 {{ $mailTransaction->documentType->name ?? 'N/A' }}
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Action :</strong>
+            </div>
+            <div class="col-md-9">
+                {{ $mailTransaction->action->name ?? 'N/A' }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <strong> Description :</strong>
+            </div>
+            <div class="col-md-9">
+                {{ $mailTransaction->description ?? 'N/A' }}
+            </div>
+        </div>
+
+
         <a href="{{ route('mail-received.index') }}" class="btn btn-secondary mt-3">Retour</a>
         <a href="{{ route('mail-received.edit', $mailTransaction) }}" class="btn btn-secondary mt-3">Edit</a>
             <form action="{{ route('mail-received.destroy', $mailTransaction->id) }}" method="POST" style="display: inline-block;">

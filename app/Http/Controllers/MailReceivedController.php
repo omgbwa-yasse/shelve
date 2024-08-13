@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\documentType;
+use App\Models\MailAction;
 use App\Models\Mail;
 use App\Models\User;
 use App\Models\MailType;
@@ -24,9 +25,7 @@ class MailReceivedController extends Controller
     {
         $user = Auth::user();
         $transactions = MailTransaction::where('user_received_id', $user->id)->get();
-        $transactions->load('mails');
-        $transactions->load('organisationSend');
-        $transactions->load('organisationReceived');
+        $transactions->load(['mails','action','organisationSend','organisationReceived']);
         return view('mails.received.index', compact('transactions'));
     }
 
@@ -40,7 +39,8 @@ class MailReceivedController extends Controller
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
         $documentTypes = documentType :: all();
-        return view('mails.received.create', compact('mails','users','organisations','mailStatuses','documentTypes'));
+        $mailActions = MailAction :: all();
+        return view('mails.received.create', compact('mails','users','organisations','mailStatuses','documentTypes','mailActions'));
     }
 
 
@@ -54,6 +54,8 @@ class MailReceivedController extends Controller
             'organisation_send_id' => 'required|exists:organisations,id',
             'user_received_id' => 'required|exists:users,id',
             'document_type_id' => 'required|exists:document_types,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'description' => 'nullable',
         ]);
 
         $validatedData['date_creation'] = now();
@@ -112,6 +114,8 @@ class MailReceivedController extends Controller
             'user_received_id' => 'nullable|exists:users,id',
             'organisation_received_id' => 'nullable|exists:organisations,id',
             'mail_status_id' => 'required|exists:mail_status,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'description' => 'nullable',
         ]);
 
 

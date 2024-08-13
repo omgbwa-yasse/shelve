@@ -12,7 +12,10 @@
                 <th>Pour </th>
                 <th>Type</th>
                 <th>Date Creation</th>
+                <th>Description</th>
+                <th>Paramètre</th>
                 <th>Actions</th>
+
             </tr>
         </thead>
         <tbody>
@@ -23,6 +26,8 @@
                 <td>{{ $transaction->organisationReceived->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->document_type_id ?? 'N/A' }}</td>
                 <td>{{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</td>
+                <td>{{ $transaction->action->name }}</td>
+                <td>{{ $transaction->description }}</td>
                 <td>
                     <a href="{{ route('mail-send.show', $transaction) }}" class="btn btn-primary">Détails</a>
                 </td>

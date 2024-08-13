@@ -15,7 +15,7 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailAttachment;
 use App\Models\documentType;
-
+use App\Models\MailAction;
 
 class MailSendController extends Controller
 {
@@ -24,9 +24,7 @@ class MailSendController extends Controller
     {
         $user = Auth::user();
         $transactions = MailTransaction::where('user_send_id', $user->id)->get();
-        $transactions->load('mails');
-        $transactions->load('organisationSend');
-        $transactions->load('organisationReceived');
+        $transactions->load(['mails','action','organisationSend','organisationReceived']);
         return view('mails.send.index', compact('transactions'));
     }
 
@@ -39,7 +37,8 @@ class MailSendController extends Controller
         $organisations = organisation ::all();
         $mailStatuses = MailStatus:: all();
         $documentTypes = documentType :: all();
-        return view('mails.send.create', compact('mails','users','organisations','mailStatuses','documentTypes'));
+        $mailActions = MailAction :: all();
+        return view('mails.send.create', compact('mails','users','organisations','mailStatuses','documentTypes','mailActions'));
     }
 
 
@@ -56,6 +55,8 @@ class MailSendController extends Controller
             'user_received_id' => 'nullable|exists:users,id',
             'organisation_received_id' => 'nullable|exists:organisations,id',
             'mail_status_id' => 'required|exists:mail_statuses,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'description' => 'nullable',
         ]);
 
         MailTransaction::create($request->all());
@@ -70,6 +71,7 @@ class MailSendController extends Controller
     {
         $transaction = MailTransaction::with([
             'mails',
+            'action',
             'documentType',
             'mailStatus',
             'userReceived',
@@ -100,6 +102,8 @@ class MailSendController extends Controller
             'user_received' => 'nullable|exists:users,id',
             'organisation_received_id' => 'nullable|exists:organisations,id',
             'mail_status_id' => 'required|exists:mail_status,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'description' => 'nullable',
         ]);
 
         $MailTransaction->update($request->all());

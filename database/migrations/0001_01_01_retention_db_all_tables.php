@@ -746,7 +746,7 @@ return new class extends Migration
         });
 
 
-        Schema::create('actions', function (Blueprint $table) {
+        Schema::create('mail_actions', function (Blueprint $table) {
             $table->id();
             $table->string('name',100)->unique(true)->nullable(false);
             $table->text('description')->nullable(false);
@@ -776,7 +776,7 @@ return new class extends Migration
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('set null');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
-            $table->foreign('action_id')->references('id')->on('actions')->onDelete('cascade');
+            $table->foreign('action_id')->references('id')->on('mail_actions')->onDelete('cascade');
         });
 
 
