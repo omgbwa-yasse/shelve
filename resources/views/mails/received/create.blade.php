@@ -37,11 +37,22 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="document_type_id">Utilisateur d'envoi</label>
+            <label for="document_type_id">Nature de la copie</label>
             <select name="document_type_id" id="document_type_id" class="form-control">
                 @foreach($documentTypes as $documentType)
                     <option value="{{ $documentType->id }}" {{ old('document_type_id') == $documentType->id ? 'selected' : '' }}>
                         {{ $documentType->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="organisation_received_id">Reçu par</label>
+            <select name="organisation_received_id" id="organisation_received_id" class="form-control">
+                @foreach($receivedOrganisations as $organisation)
+                    <option value="{{ $organisation->id }}" {{ old('organisation_received_id') == $organisation->id ? 'selected' : '' }}>
+                        {{ $organisation->name }}
                     </option>
                 @endforeach
             </select>
@@ -62,8 +73,6 @@
             <label for="description">Description</label>
             <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
         </div>
-
-        <input name="user_received_id" id="user_received_id" value="{{ auth()->id() }}" hidden>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 </div>

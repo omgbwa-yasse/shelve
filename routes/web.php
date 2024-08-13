@@ -54,6 +54,7 @@ use App\Http\Controllers\DollyController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
+use App\Http\Controllers\MailActionController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -128,6 +129,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
         Route::resource('transferring-status', SlipStatusController::class);
+        Route::resource('mail-action', MailActionController::class);
     });
 
 

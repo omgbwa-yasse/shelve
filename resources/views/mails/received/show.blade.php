@@ -10,25 +10,25 @@
                 <strong>Nom du Mail :</strong>
             </div>
             <div class="col-md-9">
-                {{ $mailTransaction->mails->name ?? 'N/A' }}
+                {{ $mailTransaction->mail->name ?? 'N/A' }}
             </div>
             <div class="col-md-3">
                 <strong>Expédier par :</strong>
             </div>
             <div class="col-md-9">
-                {{ $mailTransaction->mails->author ?? 'N/A' }}
+                {{ $mailTransaction->userSend->name ?? 'N/A' }}
             </div>
             <div class="col-md-3">
                 <strong>le :</strong>
             </div>
             <div class="col-md-9">
-                {{ $mailTransaction->mails->date ?? 'N/A' }}
+                {{ $mailTransaction->mail->date ?? 'N/A' }}
             </div>
             <div class="col-md-3">
                 <strong>Affaire :</strong>
             </div>
             <div class="col-md-9">
-                {{ $mailTransaction->mails->typology->name ?? 'N/A' }}
+                {{ $mailTransaction->mail->typology->name ?? 'N/A' }}
             </div>
         </div>
 
@@ -79,7 +79,7 @@
 
 
         <a href="{{ route('mail-received.index') }}" class="btn btn-secondary mt-3">Retour</a>
-        <a href="{{ route('mail-received.edit', $mailTransaction) }}" class="btn btn-secondary mt-3">Edit</a>
+        <a href="{{ route('mail-received.edit', $mailTransaction->id) }}" class="btn btn-secondary mt-3">Edit</a>
             <form action="{{ route('mail-received.destroy', $mailTransaction->id) }}" method="POST" style="display: inline-block;">
                 @csrf
                 @method('DELETE')

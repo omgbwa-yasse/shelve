@@ -15,8 +15,13 @@ class MailAction extends Model
     protected $fillable = [
         'name',
         'description',
+        'to_return',
+        'description',
     ];
 
+    protected $casts = [
+        'to_return' => 'boolean',
+    ];
 
     public function transaction()
     {

@@ -2,43 +2,108 @@
 
 @section('content')
 <div class="container">
-    <h1>Modifier courrier entrant</h1>
-
-    <form action="{{ route('mail-received.update', $mailTransaction) }}" method="POST">
+    <h1>Modifier Courrier entrant</h1>
+    <form action="{{ route('mail-received.update', $mailTransaction->id) }}" method="POST">
         @csrf
         @method('PUT')
-
-        <div class="mb-3">
-            <label for="code" class="form-label">Code</label>
-            <input type="number" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $mailTransaction->code) }}" required>
-            @error('code')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+        <div class="form-group">
+            <label for="code">Code</label>
+            <input type="text" name="code" id="code" class="form-control" value="{{ old('code', $mailTransaction->code) }}">
         </div>
-
-        <div class="mb-3">
-            <label for="date_creation" class="form-label">Date de création</label>
-            <input type="datetime-local" class="form-control @error('date_creation') is-invalid @enderror" id="date_creation" name="date_creation" value="{{ old('date_creation', $mailTransaction->date_creation->format('Y-m-d\TH:i')) }}" required>
-            @error('date_creation')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+        <div class="form-group">
+            <label for="mailInput">Mail</label>
+            <input type="text" id="mailInput" class="form-control" value="{{ old('mail_id', $mailTransaction->mail->code . ' : ' . $mailTransaction->mail->name) }}" />
+            <div id="suggestions" class="list-group"></div>
+            <input type="hidden" name="mail_id" id="selectedMailId" value="{{ old('mail_id', $mailTransaction->mail_id) }}">
         </div>
-
-        <div class="mb-3">
-            <label for="mail_status_id" class="form-label">Statut du courrier</label>
-            <select class="form-control @error('mail_status_id') is-invalid @enderror" id="mail_status_id" name="mail_status_id" required>
-                @foreach ($mailStatuses as $status)
-                    <option value="{{ $status->id }}" {{ old('mail_status_id', $mailTransaction->mail_status_id) == $status->id ? 'selected' : '' }}>
-                        {{ $status->name }}
+        <div class="form-group">
+            <label for="organisation_send_id">Organisation d'envoi</label>
+            <select name="organisation_send_id" id="organisation_send_id" class="form-control">
+                @foreach($organisations as $organisation)
+                    <option value="{{ $organisation->id }}" {{ old('organisation_send_id', $mailTransaction->organisation_send_id) == $organisation->id ? 'selected' : '' }}>
+                        {{ $organisation->name }}
                     </option>
                 @endforeach
             </select>
-            @error('mail_status_id')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
         </div>
-
-        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+        <div class="form-group">
+            <label for="user_send_id">Utilisateur d'envoi</label>
+            <select name="user_send_id" id="user_send_id" class="form-control">
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ old('user_send_id', $mailTransaction->user_send_id) == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="document_type_id">Nature de la copie</label>
+            <select name="document_type_id" id="document_type_id" class="form-control">
+                @foreach($documentTypes as $documentType)
+                    <option value="{{ $documentType->id }}" {{ old('document_type_id', $mailTransaction->document_type_id) == $documentType->id ? 'selected' : '' }}>
+                        {{ $documentType->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="organisation_received_id">Reçu par</label>
+            <select name="organisation_received_id" id="organisation_received_id" class="form-control">
+                @foreach($receivedOrganisations as $organisation)
+                    <option value="{{ $organisation->id }}" {{ old('organisation_received_id', $mailTransaction->organisation_received_id) == $organisation->id ? 'selected' : '' }}>
+                        {{ $organisation->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="action_id">Action</label>
+            <select name="action_id" id="action_id" class="form-control">
+                @foreach($mailActions as $action)
+                    <option value="{{ $action->id }}" {{ old('action_id', $mailTransaction->action_id) == $action->id ? 'selected' : '' }}>
+                        {{ $action->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" name="description" id="description" class="form-control" value="{{ old('description', $mailTransaction->description) }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Modifier</button>
     </form>
 </div>
+
+<script>
+    const mailInput = document.getElementById('mailInput');
+    const suggestionsContainer = document.getElementById('suggestions');
+    const selectedMailIdInput = document.getElementById('selectedMailId');
+
+    const mails = @json($mails);
+
+    mailInput.addEventListener('input', () => {
+        const searchTerm = mailInput.value.toLowerCase();
+        const filteredMails = mails.filter(mail =>
+            mail.code.toLowerCase().includes(searchTerm) ||
+            mail.name.toLowerCase().includes(searchTerm)
+        );
+
+        suggestionsContainer.innerHTML = '';
+
+        filteredMails.forEach(mail => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.classList.add('list-group-item', 'list-group-item-action');
+            suggestionItem.textContent = `${mail.code} : ${mail.name}`;
+
+            suggestionItem.addEventListener('click', () => {
+                mailInput.value = `${mail.code} : ${mail.name}`;
+                selectedMailIdInput.value = mail.id;
+                suggestionsContainer.innerHTML = '';
+            });
+
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+    });
+</script>
+
 @endsection

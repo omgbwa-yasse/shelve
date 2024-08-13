@@ -748,16 +748,17 @@ return new class extends Migration
 
         Schema::create('mail_actions', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100)->unique(true)->nullable(false);
+            $table->string('name', 100)->unique()->nullable(false);
+            $table->integer('duration', 10)->nullable(false);
+            $table->boolean('to_return')->nullable(true);
             $table->text('description')->nullable(false);
             $table->timestamps();
         });
 
 
-
         Schema::create('mail_transactions', function (Blueprint $table) {
             $table->id();
-            $table->integer('code')->nullable(false);
+            $table->string('code')->nullable(false)->unique();
             $table->datetime('date_creation')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('user_send_id')->nullable(false);
@@ -766,8 +767,8 @@ return new class extends Migration
             $table->unsignedBigInteger('organisation_received_id')->nullable();
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('document_type_id')->nullable(false);
-            $table->unsignedBigInteger('action_id')->nullable(false); // non pris en charge
-            $table->text('description')->nullable(false); // non pris en charge
+            $table->unsignedBigInteger('action_id')->nullable(false);
+            $table->text('description')->nullable(false);
             $table->timestamps();
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('user_send_id')->references('id')->on('users')->onDelete('cascade');
@@ -789,9 +790,6 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
-
-
-
 
 
         Schema::create('mail_types', function (Blueprint $table) {

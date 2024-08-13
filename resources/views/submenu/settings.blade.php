@@ -7,7 +7,11 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-gear"></i> Typologie de courrier </a>
+                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-gear"></i> Typologies </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-action.index') }}"><i class="bi bi-gear"></i> Actions </a>
                 </li>
 
             </ul>
@@ -20,10 +24,10 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-gear"></i> Supports de conservations </a>
+                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-gear"></i> Supports  </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-gear"></i> Status des archives </a>
+                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-gear"></i> Status  </a>
                 </li>
 
             </ul>

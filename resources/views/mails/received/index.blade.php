@@ -6,7 +6,7 @@
     <table class="table">
         <thead>
             <tr>
-
+                <th>Référence</th>
                 <th>Nom</th>
                 <th>De</th>
                 <th>Pour </th>
@@ -20,10 +20,11 @@
         <tbody>
             @foreach ($transactions as $transaction)
             <tr>
-                <td>{{ $transaction->mails->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->code ?? 'N/A' }}</td>
+                <td>{{ $transaction->mail->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->organisationSend->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->organisationReceived->name ?? 'N/A' }}</td>
-                <td>{{ $transaction->document_type_id ?? 'N/A' }}</td>
+                <td>{{ $transaction->documentType->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</td>
                 <td>{{ $transaction->action->name }}</td>
                 <td>{{ $transaction->description }}</td>
