@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="container">
-    <h1>Créer Courrier Sortant</h1>
+    <h1>Créer Courrier sortant</h1>
 
-    <form action="{{ route('mail-received.store') }}" method="POST">
+    <form action="{{ route('mail-send.store') }}" method="POST">
         @csrf
         <div class="form-group">
             <label for="code">Code</label>
@@ -27,7 +27,7 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="user_received_id">Utilisateur de reception</label>
+            <label for="user_received_id">Utilisateur recepteur</label>
             <select name="user_received_id" id="user_received_id" class="form-control">
                 @foreach($users as $user)
                     <option value="{{ $user->id }}" {{ old('user_received_id') == $user->id ? 'selected' : '' }}>
@@ -37,11 +37,22 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="document_type_id">Utilisateur d'envoi</label>
+            <label for="document_type_id">Nature de la copie</label>
             <select name="document_type_id" id="document_type_id" class="form-control">
                 @foreach($documentTypes as $documentType)
                     <option value="{{ $documentType->id }}" {{ old('document_type_id') == $documentType->id ? 'selected' : '' }}>
                         {{ $documentType->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="organisation_send_id">Envoyé par</label>
+            <select name="organisation_received_id" id="organisation_send_id" class="form-control">
+                @foreach($sendOrganisations as $organisation)
+                    <option value="{{ $organisation->id }}" {{ old('organisation_send_id') == $organisation->id ? 'selected' : '' }}>
+                        {{ $organisation->name }}
                     </option>
                 @endforeach
             </select>
@@ -62,9 +73,6 @@
             <label for="description">Description</label>
             <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
         </div>
-
-
-        <input name="user_received_id" id="user_received_id" value="{{ auth()->id() }}" hidden>
         <button type="submit" class="btn btn-primary">Créer</button>
     </form>
 </div>

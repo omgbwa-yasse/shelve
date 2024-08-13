@@ -2,29 +2,29 @@
 
 @section('content')
 <div class="container">
-    <h1>Liste des courriers sortants</h1>
+    <h1>Liste des courriers Sortants</h1>
     <table class="table">
         <thead>
             <tr>
-
+                <th>Référence</th>
                 <th>Nom</th>
-                <th>De</th>
                 <th>Pour </th>
+                <th>de </th>
                 <th>Type</th>
                 <th>Date Creation</th>
+                <th>Actions</th>
                 <th>Description</th>
                 <th>Paramètre</th>
-                <th>Actions</th>
-
             </tr>
         </thead>
         <tbody>
             @foreach ($transactions as $transaction)
             <tr>
-                <td>{{ $transaction->mails->name ?? 'N/A' }}</td>
-                <td>{{ $transaction->organisationSend->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->code ?? 'N/A' }}</td>
+                <td>{{ $transaction->mail->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->organisationReceived->name ?? 'N/A' }}</td>
-                <td>{{ $transaction->document_type_id ?? 'N/A' }}</td>
+                <td>{{ $transaction->organisationSend->name ?? 'N/A' }}</td>
+                <td>{{ $transaction->documentType->name ?? 'N/A' }}</td>
                 <td>{{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</td>
                 <td>{{ $transaction->action->name }}</td>
                 <td>{{ $transaction->description }}</td>
