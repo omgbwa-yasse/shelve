@@ -13,6 +13,14 @@
                 <th>Date Creation</th>
                 <td>{{ $transaction->date_creation }}</td>
             </tr>
+            <tr>
+                <th>Action</th>
+                <td>{{ $transaction->action->name }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ $transaction->description }}</td>
+            </tr>
 
         </tbody>
     </table>
