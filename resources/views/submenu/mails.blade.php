@@ -25,7 +25,7 @@
                     <a class="nav-link text-dark" href="{{ route('typologies.index') }}"><i class="bi bi-tags"></i> Typologies</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-select-date')}}"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mails.archived') }}"><i class="bi bi-inbox"></i> Courrier archivé</a>

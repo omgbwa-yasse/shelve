@@ -32,6 +32,7 @@
                         </td>
                         <td>
                             <a href="{{ route('mail-container.show', $mailContainer->id) }}" class="btn btn-info">Paramètre</a>
+                            <a href="{{ route('mails.sort') }}?categ=container&id={{ $mailContainer->id }}" class="btn btn-success">Voir le contenu</a>
                         </td>
                     </tr>
                 @endforeach

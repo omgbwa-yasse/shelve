@@ -13,7 +13,7 @@ use App\Models\Author;
 use App\Models\User;
 
 
-class SearchController extends Controller
+class MailSearchController extends Controller
 {
     public function all(Request $request)
     {

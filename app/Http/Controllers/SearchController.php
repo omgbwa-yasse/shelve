@@ -80,6 +80,35 @@ class SearchController extends Controller
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('description', 'LIKE', "%$query%")
                 ->get();
+        }elseif($request->input('categ')){
+
+            switch($request->input('categ')){
+                case "dates":
+                return $mails = mail::whereYear('date', $request->input('date'))
+                    ->get();
+                    break;
+
+                case "typology":
+                    return $mails = mail::where('typology_id', $request->input('id'))
+                        ->get();
+                    break;
+
+                case "author":
+                    return $mails = mail::where('author_id', $request->input('id'))
+                        ->get();
+                    break;
+
+                case "container":
+                    return $mails = mail::where('container_id', $request->input('id'))
+                        ->get();
+                    break;
+
+                default:
+                    return $mails = mail::all()->take(5);
+                    break;
+            }
+
+
         } else {
             $mails = Mail::where('name', 'LIKE', "%$query%")
                 ->orWhere('code', 'LIKE', "%$query%")
@@ -102,6 +131,8 @@ class SearchController extends Controller
                 })
                 ->get();
         }
+
+
 
         $priorities = MailPriority::all();
         $types = MailType::all();

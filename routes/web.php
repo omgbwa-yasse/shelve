@@ -16,6 +16,8 @@ use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
+use App\Http\Controllers\MailAuthorController;
+use App\Http\Controllers\MailAuthorContactController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\floorController;
@@ -48,6 +50,7 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SearchMailController;
 use App\Http\Controllers\MailInitialedController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
@@ -68,12 +71,12 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
-        Route::resource('authors.contacts', AuthorContactController::class)->names('author-contact');
+        Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::resource('received', MailReceivedController::class)->names('mail-received');
-        Route::resource('authors', AuthorController::class)->names('mail-author');
+        Route::resource('authors', MailAuthorController::class)->names('mail-author');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::resource('typologies', MailTypologyController::class);
         Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
@@ -160,6 +163,8 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('/records/search', [SearchController::class, 'index'])->name('records.search');
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
+    Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
+    Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
 
