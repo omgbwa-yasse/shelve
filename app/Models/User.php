@@ -53,4 +53,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withPivot('active');
     }
 
+
+    protected function active_organisation()
+    {
+        return $this->belongsTo(Organisation::class, 'active_organisation', 'user_id', 'organisation_id')->withPivot('active');
+    }
+
 }

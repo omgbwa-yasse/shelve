@@ -593,6 +593,19 @@ return new class extends Migration
             $table->timestamps();
         });
 
+
+        Schema::create('organisation_active', function (Blueprint $table) {
+            $table->unsignedBigInteger('organisation_id');
+            $table->unsignedBigInteger('user_id');
+            $table->primary(['organisation_id', 'user_id']);
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
+
+
         Schema::create('organisation_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);

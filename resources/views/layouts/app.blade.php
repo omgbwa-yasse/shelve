@@ -97,6 +97,24 @@
                     <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
                 </form>
 
+                <form id="organisationForm">
+                    <select class="form-select form-select-lg" name="organisation" id="active_organisation">
+                        @php
+                            $active_organisations = auth()->user()->organisations;
+                            $selectedOrganisationId = session('selected_organisation_id', null); // Récupérer la valeur de la session
+                        @endphp
+                        @foreach ($active_organisations as $organisation)
+                            <option value="{{ $organisation->id }}"
+                                @if($selectedOrganisationId == $organisation->id)
+                                    selected
+                                @endif
+                            >{{ $organisation->name }}</option>
+                        @endforeach
+                    </select>
+                </form>
+
+
+
                 <!-- Right Side Of Navbar -->
                 <ul class="navbar-nav ms-auto">
                     <!-- Authentication Links -->
@@ -237,6 +255,7 @@
 <!-- Scripts de Bootstrap -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 
 </html>
