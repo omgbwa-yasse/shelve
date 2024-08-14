@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Monolog\Level;
@@ -9,6 +10,7 @@ use Monolog\Level;
 class SlipRecord extends Model
 {
     use HasFactory;
+    use Searchable;
 
     protected $fillable = [
         'slip_id',

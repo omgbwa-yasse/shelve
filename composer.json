@@ -7,8 +7,10 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^11.0",
+        "laravel/scout": "^10.11",
         "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.5"
+        "laravel/ui": "^4.5",
+        "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

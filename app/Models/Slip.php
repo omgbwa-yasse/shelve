@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Organisation;
@@ -10,6 +10,7 @@ use App\Models\SlipStatus;
 class Slip extends Model
 {
     use HasFactory;
+    use Searchable;
 
     protected $fillable = [
         'code',
