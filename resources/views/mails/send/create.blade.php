@@ -49,7 +49,7 @@
 
         <div class="form-group">
             <label for="organisation_send_id">Envoyé par</label>
-            <select name="organisation_received_id" id="organisation_send_id" class="form-control">
+            <select name="organisation_send_id" id="organisation_send_id" class="form-control">
                 @foreach($sendOrganisations as $organisation)
                     <option value="{{ $organisation->id }}" {{ old('organisation_send_id') == $organisation->id ? 'selected' : '' }}>
                         {{ $organisation->name }}
