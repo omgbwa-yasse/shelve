@@ -200,19 +200,61 @@ return [
     ],
 
 
-    'tntsearch' => [
-    'storage'  => storage_path('tntsearch'), // Emplacement des fichiers d'index
-    'fuzziness' => env('TNTSEARCH_FUZZINESS', false), // Recherche floue
+'tntsearch' => [
+    'storage'  => storage_path('app/tntsearch'), // Absolute path to the index files directory
+    'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
     'fuzzy' => [
         'prefix_length' => 2,
         'max_expansions' => 50,
-        'distance' => 2
+        'distance' => 2,
     ],
-    'asYouType' => false, // Option de recherche "as you type"
-    'searchBoolean' => env('TNTSEARCH_BOOLEAN', false), // Recherche booléenne
+    'asYouType' => false,
+    'boolean' => env('TNTSEARCH_BOOLEAN', false),
+    'mappings' => [
+
+        'App\Models\Record' => [
+            'index' => 'records',
+            'type' => 'record',
+            'searchable_attributes' => [
+                'name',
+                'code',
+                'content',
+            ],
+        ],
+
+        'App\Models\Mail' => [
+            'index' => 'mails',
+            'type' => 'mail',
+            'searchable_attributes' => [
+                'name',
+                'code',
+                'description',
+            ],
+        ],
+
+        'App\Models\SlipRecord' => [
+            'index' => 'slip_records',
+            'type' => 'transferringRecord',
+            'searchable_attributes' => [
+                'name',
+                'code',
+                'content',
+            ],
+        ],
+
+        'App\Models\Slip' => [
+            'index' => 'slips',
+            'type' => 'transferring',
+            'searchable_attributes' => [
+                'name',
+                'code',
+                'content',
+            ],
+        ],
+
+    ],
 ],
 
+
 ];
-
-
 
