@@ -9,6 +9,7 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
 use App\Models\Author;
+use App\Models\communicationRecord;
 use App\Models\RecordStatus;
 use App\Models\Term;
 use App\Models\Slip;
@@ -21,6 +22,8 @@ class SearchController extends Controller
         switch($request['search_type']){
             case 'record' : return $this->record($request);
             case 'mail' : return $this->mail($request);
+            case 'communication' : return $this->communication($request);
+            case 'communication_record' : return $this->communicationRecord($request);
             case 'transferring' : return $this->transferring($request);
             case 'transferring_record' : return $this->transferringRecord($request);
             default: return $this->default($request) ;
@@ -75,6 +78,29 @@ class SearchController extends Controller
 
 
 
+
+
+    public function communication(Request $request)
+    {
+        $query = $request->input('query');
+        $records = Record::query();
+        $records = $records->search($query);
+        $records = $records->get();
+        return view('search.communication.slip', compact('communications'));
+    }
+
+
+    public function communicationRecord(Request $request)
+    {
+        $query = $request->input('query');
+        $records = communicationRecord::query();
+        $records = $records->search($query);
+        $records = $records->get();
+        return view('search.communication.record', compact('communicationRecords'));
+    }
+
+
+
     public function mail(Request $request)
     {
         $query = $request->input('query');
@@ -104,8 +130,11 @@ class SearchController extends Controller
                     break;
             }
         } else {
-            $mails = Mail::search($query)->get();
-        }
+            $mails = Mail::where('code', 'LIKE', "%$query%")
+                ->orWhere('name', 'LIKE', "%$query%")
+                ->orWhere('description', 'LIKE', "%$query%")
+                ->get();
+            }
 
         $priorities = MailPriority::all();
         $types = MailType::all();
@@ -119,25 +148,19 @@ class SearchController extends Controller
 
     public function transferring(Request $request)
     {
-        if($request->input('advanced') == false){
-            $query = $request->input('query');
-            $slips = Slip::where('name', 'LIKE', "%$query%")
-            ->orWhere('code', 'LIKE', "%$query%")
-            ->orWhere('description', 'LIKE', "%$query%")
-            ->get();
+        $query = $request->input('query');
 
-        } else{
-            $query = $request->input('query');
+        if ($request->input('advanced') == true) {
+            $slips = Slip::where('name', 'LIKE', "%$query%")->get();
+        } else {
             $slips = Slip::where('name', 'LIKE', "%$query%")
-                    ->orWhere('code', 'LIKE', "%$query%")
-                    ->orWhere('description', 'LIKE', "%$query%")
-                    ->orWhereHas('officer', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
-                    })
-                    ->orWhereHas('user', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
-                    })
-                    ->get();
+                ->orWhereHas('officer', function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%$query%");
+                })
+                ->orWhereHas('user', function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%$query%");
+                })
+                ->get();
         }
 
         return view('transferrings.slips.index', compact('slips'));
@@ -147,40 +170,38 @@ class SearchController extends Controller
 
 
 
+
+
+
     public function transferringRecord(Request $request)
     {
-        if($request->input('advanced') == true){
-            $query = $request->input('query');
-            $records = SlipRecord::where('name', 'LIKE', "%$query%")
-                        ->orWhere('code', 'LIKE', "%$query%")
-                        ->orWhere('date_start', 'LIKE', "%$query%")
-                        ->orWhere('date_end', 'LIKE', "%$query%")
-                        ->orWhere('date_exact', 'LIKE', "%$query%")
-                        ->orWhere('content', 'LIKE', "%$query%")
-                        ->orWhereHas('level', function ($q) use ($query) {
-                            $q->where('name', 'LIKE', "%$query%");
-                        })
-                        ->orWhereHas('slip', function ($q) use ($query) {
-                            $q->where('name', 'LIKE', "%$query%");
-                        })
-                        ->orWhereHas('support', function ($q) use ($query) {
-                            $q->where('name', 'LIKE', "%$query%");
-                        })
-                        ->orWhereHas('activity', function ($q) use ($query) {
-                            $q->where('name', 'LIKE', "%$query%");
-                        })
-                        ->orWhereHas('container', function ($q) use ($query) {
-                            $q->where('name', 'LIKE', "%$query%");
-                        })
-                        ->get();
+        $query = $request->input('query');
 
+        if ($request->input('advanced') == true) {
+            $records = SlipRecord::search($query)->query(function ($queryBuilder) use ($query) {
+                $queryBuilder->orWhere('date_start', 'LIKE', "%$query%")
+                    ->orWhere('date_end', 'LIKE', "%$query%")
+                    ->orWhere('date_exact', 'LIKE', "%$query%")
+                    ->orWhereHas('level', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%$query%");
+                    })
+                    ->orWhereHas('slip', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%$query%");
+                    })
+                    ->orWhereHas('support', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%$query%");
+                    })
+                    ->orWhereHas('activity', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%$query%");
+                    })
+                    ->orWhereHas('container', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%$query%");
+                    });
+            })->get();
         } else {
-                $query = $request->input('query');
-                $records = SlipRecord::where('name', 'LIKE', "%$query%")
-                            ->orWhere('code', 'LIKE', "%$query%")
-                            ->orWhere('content', 'LIKE', "%$query%")
-                            ->get();
+            $records = SlipRecord::search($query)->get();
         }
+
         $records->load('slip');
 
         return view('search.transferring.record', compact('records'));
