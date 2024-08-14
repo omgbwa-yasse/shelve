@@ -31,7 +31,7 @@ class SearchController extends Controller
    {
        if($request->input('advanced') == true){
             $query = $request->input('query');
-            $records = Record::where('name', 'LIKE', "%$query%")
+            $records = Record::search('name', 'LIKE', "%$query%")
             ->orWhere('code', 'LIKE', "%$query%")
             ->orWhere('date_start', 'LIKE', "%$query%")
             ->orWhere('date_end', 'LIKE', "%$query%")
@@ -59,7 +59,7 @@ class SearchController extends Controller
 
         }else{
             $query = $request->input('query');
-            $records = Record::where('name', 'LIKE', "%$query%")
+            $records = Record::search('name', 'LIKE', "%$query%")
                     ->orWhere('code', 'LIKE', "%$query%")
                     ->orWhere('content', 'LIKE', "%$query%")
                     ->get();
@@ -76,7 +76,7 @@ class SearchController extends Controller
         $query = $request->input('query');
 
         if ($request->input('advanced') == false) {
-            $mails = Mail::where('name', 'LIKE', "%$query%")
+            $mails = Mail::search('name', 'LIKE', "%$query%")
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('description', 'LIKE', "%$query%")
                 ->get();
@@ -84,27 +84,27 @@ class SearchController extends Controller
 
             switch($request->input('categ')){
                 case "dates":
-                return $mails = mail::whereYear('date', $request->input('date'))
+                return $mails = mail::search('date', $request->input('date'))
                     ->get();
                     break;
 
                 case "typology":
-                    return $mails = mail::where('typology_id', $request->input('id'))
+                    return $mails = mail::search('typology_id', $request->input('id'))
                         ->get();
                     break;
 
                 case "author":
-                    return $mails = mail::where('author_id', $request->input('id'))
+                    return $mails = mail::search('author_id', $request->input('id'))
                         ->get();
                     break;
 
                 case "container":
-                    return $mails = mail::where('container_id', $request->input('id'))
+                    return $mails = mail::search('container_id', $request->input('id'))
                         ->get();
                     break;
 
                 default:
-                    return $mails = mail::all()->take(5);
+                    return $mails = mail::search()->take(5);
                     break;
             }
 
