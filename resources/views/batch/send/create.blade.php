@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Create Batch Transaction</h1>
-    <form action="{{ route('batch-received.store') }}" method="POST">
+    <form action="{{ route('batch-send.store') }}" method="POST">
         @csrf
         <div class="mb-3">
             <label for="batch_id" class="form-label">Batch</label>

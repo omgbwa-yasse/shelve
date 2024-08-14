@@ -48,7 +48,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function organisations()
+    protected function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withPivot('active');
     }
