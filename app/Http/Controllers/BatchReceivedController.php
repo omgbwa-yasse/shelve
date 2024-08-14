@@ -19,7 +19,7 @@ class BatchReceivedController extends Controller
     public function batches_received()
     {
         $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
-        return view('batch.received.received', compact('batchTransactions'));
+        return view('batch.received.index', compact('batchTransactions'));
     }
 
 

@@ -3,7 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Mailbatch;
+use App\Models\batchMail;
 use App\Models\Organisation;
 
 class MailbatchTransaction extends Model
@@ -13,7 +13,7 @@ class MailbatchTransaction extends Model
 
     public function mailbatch()
     {
-        return $this->belongsTo(Mailbatch::class);
+        return $this->belongsTo(batchMail::class);
     }
 
     public function mail()

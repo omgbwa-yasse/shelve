@@ -14,7 +14,7 @@
             </div>
         @endif
 
-        <form action="{{ route('batch.update', $mailBatch) }}" method="POST">
+        <form action="{{ route('batch-send.update', $mailBatch) }}" method="POST">
             @csrf
             @method('PUT')
 

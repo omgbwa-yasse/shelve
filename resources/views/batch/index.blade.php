@@ -24,7 +24,7 @@
                         <td>{{ $mailBatch->code }}</td>
                         <td>{{ $mailBatch->name }}</td>
                         <td>
-                            <a href="{{ route('batch.show', $mailBatch) }}" class="btn btn-info btn-sm">View</a>
+                            <a href="{{ route('batch-send.show', $mailBatch) }}" class="btn btn-info btn-sm">View</a>
                             <a href="{{ route('mails.sort') }}?categ=batch&id={{$mailBatch->id}}" class="btn btn-info btn-sm">Voir le contenu</a>
 
                         </td>

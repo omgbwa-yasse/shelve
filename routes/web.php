@@ -85,8 +85,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batch', BatchController::class);
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
         Route::resource('batches', BatchController::class)->names('batch');
-        Route::resource('batch_received', BatchSendController::class);
-        Route::resource('batch_send', BatchSendController::class);
+        Route::resource('batch-received', BatchReceivedController::class);
+        Route::resource('batch-send', BatchSendController::class);
     });
 
     Route::prefix('communications')->group(function () {

@@ -3,7 +3,7 @@
 
 <div class="container">
     <h1 class="mt-5">Créer un parapheur</h1>
-    <form action="{{ route('batch.store') }}" method="POST">
+    <form action="{{ route('batch-send.store') }}" method="POST">
         @csrf
         <div class="mb-3">
             <label for="code" class="form-label">Code:</label>
