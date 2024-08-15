@@ -32,9 +32,7 @@ class UserOrganisationController extends Controller{
             'organisation_id' => 'required|exists:organisations,id',
             'active' => 'required|boolean',
         ]);
-
         UserOrganisation::create($request->all());
-
         return redirect()->route('user-organisation.index')
             ->with('success', 'User Organisation created successfully.');
     }
@@ -42,16 +40,18 @@ class UserOrganisationController extends Controller{
 
 
 
-    public function show(UserOrganisation $userOrganisation)
+    public function show(INT $organisation_id)
     {
+        UserOrganisation::where('organisation_id', $organisation_id)->get();
         return view('organisations.user.show', compact('userOrganisation'));
     }
 
 
 
 
-    public function edit(UserOrganisation $userOrganisation)
+    public function edit(INT $organisation_id)
     {
+        UserOrganisation::where('organisation_id', $organisation_id)->get();
         return view('organisations.user.edit', compact('userOrganisation'));
     }
 
@@ -59,8 +59,9 @@ class UserOrganisationController extends Controller{
 
 
 
-    public function update(Request $request, UserOrganisation $userOrganisation)
+    public function update(Request $request, INT $organisation_id)
     {
+        $userOrganisation = UserOrganisation::where('organisation_id', $organisation_id)->get();
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'organisation_id' => 'required|exists:organisations,id',
@@ -76,10 +77,10 @@ class UserOrganisationController extends Controller{
 
 
 
-    public function destroy(UserOrganisation $userOrganisation)
+    public function destroy(INT $organisation_id)
     {
+        $userOrganisation = UserOrganisation::where('organisation_id', $organisation_id)->get();
         $userOrganisation->delete();
-
         return redirect()->route('user-organisation.index')
             ->with('success', 'User Organisation deleted successfully');
     }

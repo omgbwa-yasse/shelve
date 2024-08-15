@@ -22,7 +22,7 @@
                     <td>{{ $userOrganisation->organisation->name }}</td>
                     <td>{{ $userOrganisation->active ? 'Yes' : 'No' }}</td>
                     <td>
-                        <a href="{{ route('user-organisation.show', $userOrganisation->id) }}" class="btn btn-info">Show</a>
+                        <a href="{{ route('user-organisation.show', $userOrganisation->id) }}">View</a>
                         <a href="{{ route('user-organisation.edit', $userOrganisation->id) }}" class="btn btn-primary">Edit</a>
                         <form action="{{ route('user-organisation.destroy', $userOrganisation->id) }}" method="POST" style="display: inline-block;">
                             @csrf
