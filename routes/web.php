@@ -32,6 +32,7 @@ use App\Http\Controllers\SortController;
 use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
+use App\Http\Controllers\OrganisationActiveController;
 use App\Http\Controllers\TermCategoryController;
 use App\Http\Controllers\TermEquivalentTypeController;
 use App\Http\Controllers\LanguageController;
@@ -119,6 +120,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('settings')->group(function () {
+        Route::resource('organisation-active', OrganisationActiveController::class);
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);

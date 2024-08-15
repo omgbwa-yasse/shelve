@@ -97,22 +97,19 @@
                     <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
                 </form>
 
-                <form id="organisationForm">
-                    <select class="form-select form-select-lg" name="organisation" id="active_organisation">
-                        @php
-                            $active_organisations = auth()->user()->organisations;
-                            $selectedOrganisationId = session('selected_organisation_id', null); // Récupérer la valeur de la session
-                        @endphp
-                        @foreach ($active_organisations as $organisation)
-                            <option value="{{ $organisation->id }}"
-                                @if($selectedOrganisationId == $organisation->id)
-                                    selected
-                                @endif
-                            >{{ $organisation->name }}</option>
-                        @endforeach
-                    </select>
-                </form>
+                <div class="d-grid gap-2">
 
+                        <button type="button" name=""  id="" class="btn btn-primary" >
+                            @if( empty(Auth::user()->organisationActive->organisation->name) )
+                                {{"Vous n'avez pas de poste" }}
+                            @else
+                                <a href="{{ route('organisation-active.index')}}">
+                                    {{ Auth::user()->organisationActive->organisation->name }}
+                                </a>
+                            @endif
+                        </button>
+
+                </div>
 
 
                 <!-- Right Side Of Navbar -->

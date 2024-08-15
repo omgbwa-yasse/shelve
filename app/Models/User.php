@@ -54,9 +54,9 @@ class User extends Authenticatable
     }
 
 
-    protected function active_organisation()
+    protected function organisationActive()
     {
-        return $this->belongsTo(Organisation::class, 'active_organisation', 'user_id', 'organisation_id')->withPivot('active');
+        return $this->belongsTo(Organisation::class, 'organisation_active', 'user_id', 'organisation_id');
     }
 
 }

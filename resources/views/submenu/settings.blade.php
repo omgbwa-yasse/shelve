@@ -1,6 +1,23 @@
 <div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
     <div class="row">
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Mon compte </a>
+
+        <div class="collapse show" id="rechercheMenu">
+
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('organisation-active.index') }}"><i class="bi bi-gear"></i> Mes postes </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('organisation-active.create') }}"><i class="bi bi-gear"></i> Ajouter un poste </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> Courrier </a>
 
         <div class="collapse show" id="rechercheMenu">

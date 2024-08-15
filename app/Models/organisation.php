@@ -26,6 +26,11 @@ class Organisation extends Model
     {
         return $this->hasMany(Organisation::class, 'parent_id');
     }
+
+    public function actives()
+    {
+        return $this->hasMany(OrganisationActive::class, 'organisation_id');
+    }
 }
 
 
