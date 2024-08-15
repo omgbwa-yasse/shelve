@@ -12,7 +12,6 @@
                         <thead>
                             <tr>
                                 <th>Organisation</th>
-                                <th>User</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -20,7 +19,6 @@
                             @foreach ($organisationActives as $organisationActive)
                             <tr>
                                 <td>{{ $organisationActive->organisation->name }}</td>
-                                <td>{{ $organisationActive->user->name }}</td>
                                 <td>
                                     <a href="{{ route('organisation-active.show', $organisationActive) }}" class="btn btn-sm btn-primary">Show</a>
                                     <a href="{{ route('organisation-active.edit', $organisationActive) }}" class="btn btn-sm btn-secondary">Edit</a>

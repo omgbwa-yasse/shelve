@@ -8,13 +8,13 @@
                 <div class="card-header">Create User Organisation</div>
 
                 <div class="card-body">
-                    <form action="{{ route('user-organisations.store') }}" method="POST">
+                    <form action="{{ route('user-organisation.store') }}" method="POST">
                         @csrf
 
                         <div class="form-group">
                             <label for="user_id">User</label>
                             <select name="user_id" id="user_id" class="form-select">
-                                @foreach (App\Models\User::all() as $user)
+                                @foreach ($users as $user)
                                     <option value="{{ $user->id }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
@@ -23,7 +23,7 @@
                         <div class="form-group">
                             <label for="organisation_id">Organisation</label>
                             <select name="organisation_id" id="organisation_id" class="form-select">
-                                @foreach (App\Models\Organisation::all() as $organisation)
+                                @foreach ($organisations as $organisation)
                                     <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
                                 @endforeach
                             </select>

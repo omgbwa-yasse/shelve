@@ -59,6 +59,7 @@ use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\MailActionController;
+use App\Http\Controllers\UserOrganisationController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -121,6 +122,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('settings')->group(function () {
         Route::resource('organisation-active', OrganisationActiveController::class);
+        Route::resource('user-organisation', UserOrganisationController::class);
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);

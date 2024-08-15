@@ -11,7 +11,11 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('organisation-active.create') }}"><i class="bi bi-gear"></i> Ajouter un poste </a>
+                    <a class="nav-link text-dark" href="{{ route('user-organisation.create') }}"><i class="bi bi-gear"></i> Affecter un poste </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('user-organisation.index') }}"><i class="bi bi-gear"></i> Liste des postes </a>
                 </li>
 
             </ul>

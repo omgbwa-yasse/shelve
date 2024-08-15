@@ -1,11 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\models\OrganisationActive;
 use App\models\UserOrganisation;
 use App\models\Organisation;
+use Illuminate\Support\Facades\Auth;
 
 class OrganisationActiveController extends Controller
 {
@@ -23,9 +23,13 @@ class OrganisationActiveController extends Controller
 
         public function create()
         {
-            return view('organisations.active.create');
+            $user_organisations = [];
+            foreach(Auth::user()->organisations as $organisation){
+                $user_organisations[] = $organisation->id;
+            }
+            $organisations = Organisation::whereNotIn('id', $user_organisations)->get();
+            return view('organisations.active.create', compact('organisations'));
         }
-
 
 
 
