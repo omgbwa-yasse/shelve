@@ -10,16 +10,38 @@
                     <a class="nav-link text-dark" href="{{ route('organisation-active.index') }}"><i class="bi bi-gear"></i> Mes postes </a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('user-organisation.create') }}"><i class="bi bi-gear"></i> Affecter un poste </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('user-organisation.index') }}"><i class="bi bi-gear"></i> Liste des postes </a>
-                </li>
 
             </ul>
         </div>
+
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Comptes utilisateurs </a>
+
+    <div class="collapse show" id="rechercheMenu">
+
+        <ul class="list-unstyled pl-3">
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('users.index') }}"><i class="bi bi-gear"></i> Utilisateurs </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('user-organisation.index') }}"><i class="bi bi-gear"></i> Postes affecter </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('roles.index') }}"><i class="bi bi-gear"></i> Rôles </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('user_roles.index') }}"><i class="bi bi-gear"></i> Rôles affectés </a>
+            </li>
+
+
+        </ul>
+    </div>
+
+
 
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> Courrier </a>

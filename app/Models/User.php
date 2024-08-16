@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'surname' ,
+        'birthday',
     ];
 
     /**
@@ -57,6 +59,12 @@ class User extends Authenticatable
     protected function organisationActive()
     {
         return $this->belongsTo(Organisation::class, 'organisation_active', 'user_id', 'organisation_id');
+    }
+
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id');
     }
 
 }
