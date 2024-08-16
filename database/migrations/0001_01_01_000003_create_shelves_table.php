@@ -17,55 +17,57 @@ return new class extends Migration
 
         */
 
-
-        Schema::create('user_roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 10)->nullable(false);
-            $table->string('name', 200)->nullable(false);
-            $table->text('description')->nullable();
-            $table->boolean('is_manager')->nullable(false);
-            $table->boolean('is_archivist')->nullable(false);
-            $table->boolean('is_mail_entrant')->nullable(false);
-            $table->boolean('is_mail_sortant')->nullable(false);
-            $table->primary('id');
+        Schema::create('user_role', function (Blueprint $table) {
+            $table->bigInteger('role_id')->unsigned()->notNull();
+            $table->bigInteger('user_id')->unsigned()->notNull();
             $table->timestamps();
-        });
-
-        Schema::create('user_access_module', function (Blueprint $table) {
-            $table->boolean('mail_user')->nullable(false);
-            $table->boolean('mail_admin')->nullable(false);
-            $table->boolean('repository_user')->nullable(false);
-            $table->boolean('repository_admin')->nullable(false);
-            $table->boolean('communication_user')->nullable(false);
-            $table->boolean('communication_admin')->nullable(false);
-            $table->boolean('transferring_user')->nullable(false);
-            $table->boolean('transferring_admin')->nullable(false);
-            $table->boolean('deposit_user')->nullable(false);
-            $table->boolean('deposit_admin')->nullable(false);
-            $table->boolean('audit_user')->nullable(false);
-            $table->boolean('audit_admin')->nullable(false);
-            $table->boolean('tools_user')->nullable(false);
-            $table->boolean('tools_admin')->nullable(false);
-            $table->boolean('setting_user')->nullable(false);
-            $table->boolean('setting_admin')->nullable(false);
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('organisation_id');
-            $table->unsignedBigInteger('role_id');
-            $table->primary(['user_id', 'organisation_id','role_id']);
-            $table->timestamps();
-        });
-
-
-
-        Schema::create('user_organisation', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('organisation_id');
-            $table->unsignedBigInteger('role_id');
-            $table->boolean('active')->default(false);
-            $table->primary(['user_id', 'organisation_id','role_id']);
+            $table->primary(['role_id', 'user_id']);
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
-            $table->foreign('role_id')->references('id')->on('user_roles')->onDelete('cascade');
+        });
+
+        Schema::create('roles', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->unique()->notNull();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('role_permissions', function (Blueprint $table) {
+            $table->bigInteger('role_id')->unsigned()->notNull();
+            $table->bigInteger('permission_id')->unsigned()->notNull();
+            $table->primary(['role_id', 'permission_id']);
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
+        });
+
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->unique()->notNull();
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+
+
+        /*
+
+
+            Suivi des transactions du system
+
+
+
+        */
+
+
+        Schema::create('user_logs', function (Blueprint $table) {
+            $table->id();
+            $table->bigInteger('user_id')->unsigned()->nullable();
+            $table->text('crypt')->notNull(); // crypt = crypt  + crypt(precedent) en MD5
+            $table->string('action')->notNull();
+            $table->text('description')->nullable();
+            $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
 
@@ -78,8 +80,6 @@ return new class extends Migration
 
 
         */
-
-
 
 
         Schema::create('buildings', function (Blueprint $table) {
@@ -198,7 +198,6 @@ return new class extends Migration
             $table->string('name', 50)->nullable(false);
             $table->text('description')->nullable();
             $table->timestamps();
-            $table->primary('id');
         });
 
 
@@ -218,7 +217,6 @@ return new class extends Migration
             $table->boolean('is_approved')->nullable(true);
             $table->datetime('approved_date')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('officer_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
@@ -244,7 +242,6 @@ return new class extends Migration
             $table->unsignedBigInteger('activity_id')->nullable(false);
             $table->unsignedBigInteger('container_id')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
@@ -323,7 +320,6 @@ return new class extends Migration
             $table->unsignedBigInteger('container_id')->nullable(true); // Lieu de consersation
             $table->unsignedBigInteger('accession_id')->nullable(true); // Versement
             $table->unsignedBigInteger('user_id')->nullable(false); // créateur
-            $table->primary('id');
             $table->foreign('status_id')->references('id')->on('record_statuses')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
@@ -348,7 +344,6 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
             $table->text('description')->nullable();
-            $table->primary('id');
             $table->timestamps();
         });
 
@@ -393,7 +388,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('record_id')->nullable(false);
             $table->unsignedBigInteger('parent_id')->nullable(false);
-            $table->primary('id');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('parent_id')->references('id')->on('records')->onDelete('cascade');
         });
@@ -407,7 +401,6 @@ return new class extends Migration
             $table->string('size', 45)->nullable();
             $table->string('extension', 10)->nullable(false);
             $table->unsignedBigInteger('record_id')->nullable(false);
-            $table->primary('id');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
         });
 
@@ -440,7 +433,6 @@ return new class extends Migration
             $table->date('return_effective')->nullable();
             $table->unsignedBigInteger('status_id')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('communication_statuses')->onDelete('cascade');
@@ -455,7 +447,6 @@ return new class extends Migration
             $table->boolean('is_original')->default(false)->nullable(false);
             $table->datet('return_date')->nullable(false);
             $table->date('return_effective')->nullable();
-            $table->primary('id');
             $table->timestamps();
             $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
@@ -469,7 +460,6 @@ return new class extends Migration
             $table->string('name', 50)->unique()->nullable(false);
             $table->text('description')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
         });
 
 
@@ -482,7 +472,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->unsignedBigInteger('status_id')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('reservation_statuses')->onDelete('cascade');
@@ -499,7 +488,6 @@ return new class extends Migration
             $table->datet('reservation_date')->nullable(false);
             $table->unsignedBigInteger('operator_id')->nullable(false);
             $table->date('communication_id')->nullable();
-            $table->primary('id');
             $table->timestamps();
             $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
@@ -566,7 +554,6 @@ return new class extends Migration
             $table->string('code', 10)->nullable(false);
             $table->integer('duration')->nullable(false);
             $table->unsignedBigInteger('sort_id')->nullable(false);
-            $table->primary('id');
             $table->timestamps();
             $table->foreign('sort_id')->references('id')->on('sorts')->onDelete('cascade');
         });
@@ -577,7 +564,6 @@ return new class extends Migration
             $table->string('code', 10)->nullable(false);
             $table->string('name', 45)->nullable(false);
             $table->string('description', 100)->nullable();
-            $table->primary('id');
             $table->timestamps();
         });
 
@@ -588,7 +574,6 @@ return new class extends Migration
             $table->string('name', 200)->nullable(false);
             $table->text('description')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
-            $table->primary('id');
             $table->foreign('parent_id')->references('id')->on('organisations')->onDelete('set null');
             $table->timestamps();
         });
@@ -651,7 +636,6 @@ return new class extends Migration
             $table->string('name', 50);
             $table->string('native_name', 50)->nullable();
             $table->text('description')->nullable();
-            $table->primary('id');
         });
 
 
@@ -663,7 +647,6 @@ return new class extends Migration
             $table->unsignedBigInteger('category_id')->nullable(false);
             $table->unsignedBigInteger('type_id')->nullable(false);
             $table->unsignedBigInteger('parent_id')->nullable(false);
-            $table->primary('id');
             $table->foreign('language_id')->references('id')->on('languages')->onDelete('set null');
             $table->foreign('category_id')->references('id')->on('term_categories')->onDelete('set null');
             $table->foreign('type_id')->references('id')->on('term_typologies')->onDelete('set null');
@@ -677,7 +660,6 @@ return new class extends Migration
             $table->string('name', 100);
             $table->text('description')->nullable();
             $table->timestamps();
-            $table->primary('id');
         });
 
 
@@ -808,7 +790,6 @@ return new class extends Migration
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
-            $table->primary('id');
         });
 
 
@@ -817,7 +798,6 @@ return new class extends Migration
             $table->unsignedBigInteger('container_id')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('document_type_id')->nullable(false);
-            $table->primary('id');
             $table->timestamps();
             $table->foreign('container_id')->references('id')->on('mail_containers')->onDelete('cascade');
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
@@ -831,7 +811,6 @@ return new class extends Migration
             $table->string('name', 100)->nullable();
             $table->unsignedBigInteger('type_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->primary('id');
             $table->foreign('type_id')->references('id')->on('container_types')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -839,13 +818,11 @@ return new class extends Migration
         Schema::create('mail_status', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable();
-            $table->primary('id');
         });
 
         Schema::create('mail_priorities', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
-            $table->primary('id');
             $table->string('duration');
         });
 
@@ -858,7 +835,6 @@ return new class extends Migration
             $table->integer('size')->nullable(false);
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -878,7 +854,6 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->string('description', 100)->nullable();
-            $table->primary('id');
             $table->unsignedBigInteger('class_id')->nullable(false);
             $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
@@ -907,7 +882,6 @@ return new class extends Migration
             $table->string('name', 50)->nullable(false)->unique();
             $table->longText('description')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
         });
 
         Schema::create('authors', function (Blueprint $table) {
@@ -920,7 +894,6 @@ return new class extends Migration
             $table->string('locations', 100)->nullable(true);
             $table->unsignedInteger('parent_id')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('parent_id')->references('id')->on('authors')->onDelete('set null');
             $table->foreign('type_id')->references('id')->on('author_types')->onDelete('cascade');
         });
@@ -930,14 +903,12 @@ return new class extends Migration
             $table->string('name', 50)->nullable(false)->unique();
             $table->longText('description')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
         });
 
         Schema::create('container_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->string('description', 100)->nullable();
-            $table->primary('id');
         });
 
 
@@ -951,7 +922,6 @@ return new class extends Migration
             $table->string('locations', 100)->nullable(true);
             $table->unsignedInteger('parent_id')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('parent_id')->references('id')->on('authors')->onDelete('set null');
             $table->foreign('type_id')->references('id')->on('author_types')->onDelete('cascade');
         });
@@ -987,7 +957,6 @@ return new class extends Migration
             $table->id();
             $table->string('code', 10)->nullable(false)->unique();
             $table->string('name', 250)->nullable(false);
-            $table->primary('id');
             $table->timestamps();
         });
 
@@ -999,7 +968,6 @@ return new class extends Migration
             $table->dateTime('insert_date')->nullable(true);
             $table->dateTime('remove_date')->nullable(true);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('batch_id')->references('id')->on('batches')->onDelete('cascade');
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
@@ -1011,7 +979,6 @@ return new class extends Migration
             $table->unsignedBigInteger('organisation_send_id')->nullable(false);
             $table->unsignedBigInteger('organisation_received_id')->nullable(false);
             $table->timestamps();
-            $table->primary('id');
             $table->foreign('batch_id')->references('id')->on('batches')->onDelete('cascade');
             $table->foreign('organisation_send_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('cascade');
