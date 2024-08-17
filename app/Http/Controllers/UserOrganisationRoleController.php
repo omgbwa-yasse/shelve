@@ -13,14 +13,14 @@ class UserOrganisationRoleController extends Controller{
     public function index()
     {
         $UserOrganisationRoles = UserOrganisationRole::with('user', 'organisation','role')->get();
-        return view('organisations.user.index', compact('UserOrganisationRoles'));
+        return view('user_organisation_role.index', compact('UserOrganisationRoles'));
     }
 
 
 
     public function create()
     {
-        return view('organisations.user.create');
+        return view('user_organisation_role.create');
     }
 
 
@@ -34,7 +34,7 @@ class UserOrganisationRoleController extends Controller{
             'active' => 'required|boolean',
         ]);
         UserOrganisationRole::create($request->all());
-        return redirect()->route('user-organisation.index')
+        return redirect()->route('user-organisation-role.index')
             ->with('success', 'User Organisation created successfully.');
     }
 
@@ -44,7 +44,7 @@ class UserOrganisationRoleController extends Controller{
     public function show(INT $organisation_id)
     {
         UserOrganisationRole::where('organisation_id', $organisation_id)->get();
-        return view('organisations.user.show', compact('UserOrganisationRole'));
+        return view('user_organisation_role.show', compact('UserOrganisationRole'));
     }
 
 
@@ -53,7 +53,7 @@ class UserOrganisationRoleController extends Controller{
     public function edit(INT $organisation_id)
     {
         UserOrganisationRole::where('organisation_id', $organisation_id)->get();
-        return view('organisations.user.edit', compact('UserOrganisationRole'));
+        return view('user_organisation_role.edit', compact('UserOrganisationRole'));
     }
 
 
@@ -72,7 +72,7 @@ class UserOrganisationRoleController extends Controller{
 
         $UserOrganisationRole->update($request->all());
 
-        return redirect()->route('user-organisation.index')
+        return redirect()->route('user-organisation-role.index')
             ->with('success', 'User Organisation updated successfully');
     }
 
@@ -83,7 +83,7 @@ class UserOrganisationRoleController extends Controller{
     {
         $UserOrganisationRole = UserOrganisationRole::where('organisation_id', $organisation_id)->get();
         $UserOrganisationRole->delete();
-        return redirect()->route('user-organisation.index')
+        return redirect()->route('user-organisation-role.index')
             ->with('success', 'User Organisation deleted successfully');
     }
 }

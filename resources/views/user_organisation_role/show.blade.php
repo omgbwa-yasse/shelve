@@ -7,22 +7,22 @@
         <tbody>
             <tr>
                 <th>ID</th>
-                <td>{{ $userOrganisation->id }}</td>
+                <td>{{ $userOrganisationRole->id }}</td>
             </tr>
             <tr>
                 <th>User</th>
-                <td>{{ $userOrganisation->user->name }}</td>
+                <td>{{ $userOrganisationRole->user->name }}</td>
             </tr>
             <tr>
                 <th>Organisation</th>
-                <td>{{ $userOrganisation->organisation->name }}</td>
+                <td>{{ $userOrganisationRole->organisation->name }}</td>
             </tr>
             <tr>
                 <th>Active</th>
-                <td>{{ $userOrganisation->active ? 'Yes' : 'No' }}</td>
+                <td>{{ $userOrganisationRole->active ? 'Yes' : 'No' }}</td>
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('user-organisation.index') }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('user-organisation-role.index') }}" class="btn btn-secondary">Back</a>
 </div>
 @endsection

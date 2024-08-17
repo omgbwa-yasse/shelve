@@ -10,7 +10,7 @@ class UserOrganisationRole extends Model
 
     use HasFactory;
 
-    protected $table = 'user_organisations';
+    protected $table = 'user_organisation_role';
 
     protected $fillable = [
         'user_id',

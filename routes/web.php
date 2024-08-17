@@ -63,7 +63,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RolePermissionController;
-use App\Http\Controllers\UserOrganisationController;
+use App\Http\Controllers\UserOrganisationRoleController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -125,13 +125,10 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('settings')->group(function () {
-        Route::resource('organisation-active', OrganisationActiveController::class);
-        Route::resource('user-organisation', UserOrganisationController::class);
+        Route::resource('user-organisation-role', UserOrganisationRoleController::class);
         Route::resource('roles', RoleController::class);
-        Route::resource('user_roles', UserRoleController::class);
         Route::resource('users', UserController::class);
         Route::resource('role_permissions', RolePermissionController::class);
-        Route::get('/role-permissions/{role}/{permission}', 'RolePermissionController@show')->name('role_permissions.show');
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);
