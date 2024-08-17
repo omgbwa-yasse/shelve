@@ -14,36 +14,47 @@
         </div>
 
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Comptes utilisateurs </a>
+        aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Habilitations et postes </a>
 
     <div class="collapse show" id="rechercheMenu">
 
         <ul class="list-unstyled pl-3">
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-roles.index') }}"><i class="bi bi-gear"></i> Utilisateurs et habilités </a>
+                <a class="nav-link text-dark" href="{{ route('users.index') }}"><i class="bi bi-gear"></i> Utilisateurs </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('users.index') }}"><i class="bi bi-gear"></i> Utilisateurs </a>
+                <a class="nav-link text-dark" href="{{ route('user-roles.index') }}"><i class="bi bi-gear"></i> Utilisateurs et habilités </a>
             </li>
 
             <li class="nav-item">
                 <a class="nav-link text-dark" href="{{ route('user-organisations.index') }}"><i class="bi bi-gear"></i> Postes affectés </a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('roles.index') }}"><i class="bi bi-gear"></i> Rôles </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('role_permissions.index') }}"><i class="bi bi-gear"></i> Affecter des permissions </a>
-            </li>
-
-
         </ul>
     </div>
 
+
+
+    <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+    aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Droits et permissions </a>
+
+<div class="collapse show" id="rechercheMenu">
+
+    <ul class="list-unstyled pl-3">
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="{{ route('roles.index') }}"><i class="bi bi-gear"></i> Rôles </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="{{ route('role_permissions.index') }}"><i class="bi bi-gear"></i> Affecter des permissions </a>
+        </li>
+
+
+    </ul>
+</div>
 
 
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
