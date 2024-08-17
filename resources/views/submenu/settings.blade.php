@@ -26,7 +26,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-organisation.index') }}"><i class="bi bi-gear"></i> Postes affecter </a>
+                <a class="nav-link text-dark" href="{{ route('user-organisation.index') }}"><i class="bi bi-gear"></i> Postes affectés </a>
             </li>
 
             <li class="nav-item">
@@ -35,6 +35,10 @@
 
             <li class="nav-item">
                 <a class="nav-link text-dark" href="{{ route('user_roles.index') }}"><i class="bi bi-gear"></i> Rôles affectés </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('role_permissions.index') }}"><i class="bi bi-gear"></i> Affecter des permissions </a>
             </li>
 
 
