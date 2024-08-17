@@ -17,15 +17,23 @@ return new class extends Migration
 
         */
 
-        Schema::create('user_organisation_role', function (Blueprint $table) {
-            $table->bigInteger('role_id')->unsigned()->notNull();
+        Schema::create('user_organisation', function (Blueprint $table) {
             $table->bigInteger('user_id')->unsigned()->notNull();
             $table->bigInteger('organisation_id')->unsigned()->notNull();
             $table->timestamps();
-            $table->primary(['role_id', 'user_id', 'organisation_id']);
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->primary(['user_id', 'organisation_id']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+        });
+
+
+        Schema::create('user_role', function (Blueprint $table) {
+            $table->bigInteger('role_id')->unsigned()->notNull();
+            $table->bigInteger('user_id')->unsigned()->notNull();
+            $table->timestamps();
+            $table->primary(['role_id', 'user_id']);
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
         Schema::create('roles', function (Blueprint $table) {

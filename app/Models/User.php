@@ -50,21 +50,14 @@ class User extends Authenticatable
         ];
     }
 
-    protected function organisations()
+    public function organisations()
     {
-        return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withPivot('active');
+        return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withTimestamps();
     }
-
-
-    protected function organisationActive()
-    {
-        return $this->belongsTo(Organisation::class, 'organisation_active', 'user_id', 'organisation_id');
-    }
-
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id');
+        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')->withTimestamps();
     }
 
 }

@@ -7,12 +7,8 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('user-organisation-role.index') }}"><i class="bi bi-gear"></i> Mes postes </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('users.show', auth()->user()->id) }}"><i class="bi bi-gear"></i> Mon compte </a>
                 </li>
-
 
             </ul>
         </div>
@@ -25,11 +21,15 @@
         <ul class="list-unstyled pl-3">
 
             <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('user-roles.index') }}"><i class="bi bi-gear"></i> Utilisateurs et habilités </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link text-dark" href="{{ route('users.index') }}"><i class="bi bi-gear"></i> Utilisateurs </a>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-organisation-role.index') }}"><i class="bi bi-gear"></i> Postes affectés </a>
+                <a class="nav-link text-dark" href="{{ route('user-organisations.index') }}"><i class="bi bi-gear"></i> Postes affectés </a>
             </li>
 
             <li class="nav-item">

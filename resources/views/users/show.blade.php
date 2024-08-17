@@ -28,7 +28,7 @@
                         <input type="email" class="form-control" id="email" value="{{ $user->email }}" readonly>
                     </div>
 
-                    <a href="{{ route('users.index') }}" class="btn btn-secondary">Back</a>
+                    <a href="{{ route('users.edit', $user->id ) }}" class="btn btn-secondary">Modifier</a>
                 </div>
             </div>
         </div>

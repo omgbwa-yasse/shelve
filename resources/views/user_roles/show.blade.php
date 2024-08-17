@@ -1,27 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('User Role Details') }}</div>
-
-                <div class="card-body">
-                    <div class="form-group">
-                        <label for="user_id">User</label>
-                        <input type="text" class="form-control" id="user_id" value="{{ $userRole->user->name }}" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="role_id">Role</label>
-                        <input type="text" class="form-control" id="role_id" value="{{ $userRole->role->name }}" readonly>
-                    </div>
-
-                    <a href="{{ route('user_roles.index') }}" class="btn btn-secondary">Back</a>
-                </div>
-            </div>
-        </div>
+    <div class="container">
+        <h1>User Role Details</h1>
+        <table class="table">
+            <tr>
+                <th>Role ID</th>
+                <td>{{ $userRole->role_id }}</td>
+            </tr>
+            <tr>
+                <th>User ID</th>
+                <td>{{ $userRole->user_id }}</td>
+            </tr>
+            <tr>
+                <th>Created At</th>
+                <td>{{ $userRole->created_at }}</td>
+            </tr>
+            <tr>
+                <th>Updated At</th>
+                <td>{{ $userRole->updated_at }}</td>
+            </tr>
+        </table>
+        <a href="{{ route('user-roles.update', $userRole->user_id) }}" class="btn btn-secondary"> Modifier mon profil</a>
     </div>
-</div>
 @endsection

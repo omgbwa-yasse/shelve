@@ -100,13 +100,9 @@
                 <div class="d-grid gap-2">
 
                         <button type="button" name=""  id="" class="btn btn-primary" >
-                            @if( empty(Auth::user()->organisationActive->organisation->name) )
-                                {{"Vous n'avez pas de poste" }}
-                            @else
-                                <a href="{{ route('organisation-active.index')}}">
-                                    {{ Auth::user()->organisationActive->organisation->name }}
-                                </a>
-                            @endif
+                            @php
+
+                            @endphp
                         </button>
 
                 </div>

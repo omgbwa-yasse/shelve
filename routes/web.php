@@ -60,10 +60,10 @@ use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RolePermissionController;
-use App\Http\Controllers\UserOrganisationRoleController;
+use App\Http\Controllers\UserOrganisationController;
+use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
@@ -125,7 +125,8 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('settings')->group(function () {
-        Route::resource('user-organisation-role', UserOrganisationRoleController::class);
+        Route::resource('user-organisations', UserOrganisationController::class);
+        Route::resource('user-roles', UserRoleController::class);
         Route::resource('roles', RoleController::class);
         Route::resource('users', UserController::class);
         Route::resource('role_permissions', RolePermissionController::class);

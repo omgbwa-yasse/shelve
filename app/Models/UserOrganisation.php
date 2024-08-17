@@ -5,18 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class UserOrganisationRole extends Model
+class UserOrganisation extends Model
 {
-
     use HasFactory;
 
-    protected $table = 'user_organisation_role';
+    protected $table = 'user_organisation';
 
     protected $fillable = [
         'user_id',
         'organisation_id',
-        'role_id',
-        'active',
     ];
 
     public function user()
@@ -28,13 +25,6 @@ class UserOrganisationRole extends Model
     {
         return $this->belongsTo(Organisation::class);
     }
-
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-
 
 
 }
