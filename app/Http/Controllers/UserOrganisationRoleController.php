@@ -2,18 +2,18 @@
 
 
 namespace App\Http\Controllers;
-use App\Models\UserOrganisation;
+use App\Models\UserOrganisationRole;
 use Illuminate\Http\Request;
 
 
 
-class UserOrganisationController extends Controller{
+class UserOrganisationRoleController extends Controller{
 
 
     public function index()
     {
-        $userOrganisations = UserOrganisation::with('user', 'organisation')->get();
-        return view('organisations.user.index', compact('userOrganisations'));
+        $UserOrganisationRoles = UserOrganisationRole::with('user', 'organisation','role')->get();
+        return view('organisations.user.index', compact('UserOrganisationRoles'));
     }
 
 
@@ -30,9 +30,10 @@ class UserOrganisationController extends Controller{
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'organisation_id' => 'required|exists:organisations,id',
+            'role_id' => 'required|exists:roles,id',
             'active' => 'required|boolean',
         ]);
-        UserOrganisation::create($request->all());
+        UserOrganisationRole::create($request->all());
         return redirect()->route('user-organisation.index')
             ->with('success', 'User Organisation created successfully.');
     }
@@ -42,8 +43,8 @@ class UserOrganisationController extends Controller{
 
     public function show(INT $organisation_id)
     {
-        UserOrganisation::where('organisation_id', $organisation_id)->get();
-        return view('organisations.user.show', compact('userOrganisation'));
+        UserOrganisationRole::where('organisation_id', $organisation_id)->get();
+        return view('organisations.user.show', compact('UserOrganisationRole'));
     }
 
 
@@ -51,8 +52,8 @@ class UserOrganisationController extends Controller{
 
     public function edit(INT $organisation_id)
     {
-        UserOrganisation::where('organisation_id', $organisation_id)->get();
-        return view('organisations.user.edit', compact('userOrganisation'));
+        UserOrganisationRole::where('organisation_id', $organisation_id)->get();
+        return view('organisations.user.edit', compact('UserOrganisationRole'));
     }
 
 
@@ -61,14 +62,15 @@ class UserOrganisationController extends Controller{
 
     public function update(Request $request, INT $organisation_id)
     {
-        $userOrganisation = UserOrganisation::where('organisation_id', $organisation_id)->get();
+        $UserOrganisationRole = UserOrganisationRole::where('organisation_id', $organisation_id)->get();
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'organisation_id' => 'required|exists:organisations,id',
+            'role_id' => 'required|exists:roles,id',
             'active' => 'required|boolean',
         ]);
 
-        $userOrganisation->update($request->all());
+        $UserOrganisationRole->update($request->all());
 
         return redirect()->route('user-organisation.index')
             ->with('success', 'User Organisation updated successfully');
@@ -79,8 +81,8 @@ class UserOrganisationController extends Controller{
 
     public function destroy(INT $organisation_id)
     {
-        $userOrganisation = UserOrganisation::where('organisation_id', $organisation_id)->get();
-        $userOrganisation->delete();
+        $UserOrganisationRole = UserOrganisationRole::where('organisation_id', $organisation_id)->get();
+        $UserOrganisationRole->delete();
         return redirect()->route('user-organisation.index')
             ->with('success', 'User Organisation deleted successfully');
     }
