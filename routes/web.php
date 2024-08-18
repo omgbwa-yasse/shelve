@@ -61,6 +61,7 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DollyActionController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\UserOrganisationController;
 use App\Http\Controllers\UserRoleController;
@@ -149,14 +150,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('dollies')->group(function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
-        Route::resource('mail', ContainerStatusController::class)->names('dolly-mail');
-        Route::resource('communication', ContainerStatusController::class)->names('dolly-communication');
-        Route::resource('slip', ContainerStatusController::class)->names('dolly-slip');
-        Route::resource('slipRecord', ContainerStatusController::class)->names('dolly-slip-record');
-        Route::resource('building', ContainerStatusController::class)->names('dolly-building');
-        Route::resource('room', ContainerStatusController::class)->names('dolly-room');
-        Route::resource('shelf', ContainerStatusController::class)->names('dolly-shelf');
-        Route::resource('container', ContainerStatusController::class)->names('dolly-container');
+        Route::get('/action', [DollyActionController::class, 'index'])->name('dollies.action');
     });
 
     Route::prefix('tools')->group(function () {

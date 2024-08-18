@@ -17,6 +17,7 @@ return new class extends Migration
 
         */
 
+
         Schema::create('user_organisation', function (Blueprint $table) {
             $table->bigInteger('user_id')->unsigned()->notNull();
             $table->bigInteger('organisation_id')->unsigned()->notNull();

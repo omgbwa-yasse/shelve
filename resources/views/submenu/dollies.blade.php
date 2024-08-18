@@ -10,7 +10,7 @@
                     <a class="nav-link text-dark" href="{{ route('dolly.index') }}"><i class="bi bi-cart3"></i> Tous les chariots</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-cart3"></i> Courrier</a>
+                    <a class="nav-link text-dark" href="{{ route('dollies.action') }}?categ=record&sub=Date&id=14"><i class="bi bi-cart3"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href=""><i class="bi bi-cart3"></i> Archives</a>
