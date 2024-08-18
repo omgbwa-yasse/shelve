@@ -622,7 +622,7 @@ return new class extends Migration
         Schema::create('mail_actions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
-            $table->integer('duration', 10)->nullable(false);
+            $table->integer('duration')->nullable(false);
             $table->boolean('to_return')->nullable(true);
             $table->text('description')->nullable(false);
             $table->timestamps();
