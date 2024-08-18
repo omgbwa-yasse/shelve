@@ -6,17 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(){
-
-
-          /*
-
-
+    public function up()
+    {
+        /*
             User Jobs
-
-
         */
-
 
         Schema::create('user_organisation', function (Blueprint $table) {
             $table->bigInteger('user_id')->unsigned()->notNull();
@@ -26,7 +20,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
-
 
         Schema::create('user_role', function (Blueprint $table) {
             $table->bigInteger('role_id')->unsigned()->notNull();
@@ -53,7 +46,6 @@ return new class extends Migration
             $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
         });
 
-
         Schema::create('permissions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->unique()->notNull();
@@ -61,16 +53,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         /*
-
-
             Suivi des transactions du system
-
-
-
         */
-
 
         Schema::create('user_logs', function (Blueprint $table) {
             $table->id();
@@ -82,17 +67,9 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
         });
 
-
-
         /*
-
-
             Les localisations des archives
-
-
-
         */
-
 
         Schema::create('buildings', function (Blueprint $table) {
             $table->id();
@@ -102,8 +79,6 @@ return new class extends Migration
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-
 
         Schema::create('floors', function (Blueprint $table) {
             $table->id();
@@ -117,9 +92,6 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
-
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -132,8 +104,6 @@ return new class extends Migration
             $table->foreign('floor_id')->references('id')->on('floors')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-
 
         Schema::create('shelves', function (Blueprint $table) {
             $table->id();
@@ -151,8 +121,6 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
         Schema::create('container_properties', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable(false);
@@ -164,7 +132,6 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
 
         Schema::create('containers', function (Blueprint $table) {
             $table->id();
@@ -181,7 +148,6 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
         Schema::create('container_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
@@ -192,18 +158,9 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
-
         /*
-
-
             Transferring archives
-
-
-
         */
-
 
         Schema::create('slip_statuses', function (Blueprint $table) {
             $table->id();
@@ -211,8 +168,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
         });
-
-
 
         Schema::create('slips', function (Blueprint $table) {
             $table->id();
@@ -225,9 +180,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable(true);
             $table->unsignedBigInteger('slip_status_id')->nullable(false);
             $table->boolean('is_received')->nullable(true);
-            $table->datetime('received_date')->nullable();
+            $table->dateTime('received_date')->nullable();
             $table->boolean('is_approved')->nullable(true);
-            $table->datetime('approved_date')->nullable(true);
+            $table->dateTime('approved_date')->nullable(true);
             $table->timestamps();
             $table->foreign('officer_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
@@ -235,7 +190,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('slip_status_id')->references('id')->on('slip_statuses')->onDelete('cascade');
         });
-
 
         Schema::create('slip_records', function (Blueprint $table) {
             $table->id();
@@ -253,6 +207,7 @@ return new class extends Migration
             $table->unsignedBigInteger('support_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
             $table->unsignedBigInteger('container_id')->nullable(true);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
@@ -261,21 +216,9 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
-
-
         /*
-
-
             Les enregistrements
-
-
-
         */
-
-
-
 
         Schema::create('records', function (Blueprint $table) {
             $table->id();
@@ -317,12 +260,10 @@ return new class extends Migration
             // zone de note
             $table->text('note')->nullable(true); // Notes
 
-
             // zone de control area
             $table->text('archivist_note')->nullable(true); // Note de l'archiviste
             $table->string('rule_convention', 100)->nullable(true); // Règles ou conventions
             $table->timestamps();
-
 
             // clés étarnagères
             $table->unsignedBigInteger('status_id')->nullable(false); // Status de unité de description
@@ -341,7 +282,6 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
         Schema::create('record_author', function (Blueprint $table) {
             $table->unsignedBigInteger('author_id');
             $table->unsignedBigInteger('record_id');
@@ -350,8 +290,6 @@ return new class extends Migration
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
         });
 
-
-
         Schema::create('record_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
@@ -359,15 +297,12 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
-
         Schema::create('record_supports', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
             $table->text('description')->nullable();
             $table->timestamps();
         });
-
 
         Schema::create('record_levels', function (Blueprint $table) {
             $table->id();
@@ -377,7 +312,6 @@ return new class extends Migration
             $table->foreign('child_id')->references('id')->on('record_levels')->onDelete('cascade');
             $table->timestamps();
         });
-
 
         Schema::create('record_keyword', function (Blueprint $table) {
             $table->unsignedBigInteger('record_id')->nullable(false);
@@ -404,8 +338,6 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('records')->onDelete('cascade');
         });
 
-
-
         Schema::create('files', function (Blueprint $table) {
             $table->id();
             $table->string('path', 250)->nullable(false);
@@ -416,22 +348,14 @@ return new class extends Migration
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
         });
 
-
         Schema::create('keywords', function (Blueprint $table) {
             $table->id();
             $table->string('name', 250)->nullable(false)->unique();
             $table->timestamps();
         });
 
-
-
         /*
-
-
             Communication
-
-
-
         */
 
         Schema::create('communications', function (Blueprint $table) {
@@ -457,15 +381,14 @@ return new class extends Migration
             $table->unsignedBigInteger('communication_id')->nullable(false);
             $table->unsignedBigInteger('record_id')->nullable(false);
             $table->boolean('is_original')->default(false)->nullable(false);
-            $table->datet('return_date')->nullable(false);
+            $table->date('return_date')->nullable(false);
             $table->date('return_effective')->nullable();
+            $table->unsignedBigInteger('operator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-
 
         Schema::create('communication_statuses', function (Blueprint $table) {
             $table->id();
@@ -473,7 +396,6 @@ return new class extends Migration
             $table->text('description')->nullable(true);
             $table->timestamps();
         });
-
 
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
@@ -491,13 +413,12 @@ return new class extends Migration
             $table->foreign('operator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
 
-
         Schema::create('reservation_record', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('reservation_id')->nullable(false);
             $table->unsignedBigInteger('record_id')->nullable(false);
             $table->boolean('is_original')->default(false)->nullable(false);
-            $table->datet('reservation_date')->nullable(false);
+            $table->date('reservation_date')->nullable(false);
             $table->unsignedBigInteger('operator_id')->nullable(false);
             $table->date('communication_id')->nullable();
             $table->timestamps();
@@ -505,9 +426,7 @@ return new class extends Migration
             $table->foreign('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-
 
         Schema::create('reservation_statuses', function (Blueprint $table) {
             $table->id();
@@ -516,29 +435,16 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
-
-
-
-
-
-
         /*
-
-
             Les Outils de gestions
-
-
-
         */
-
 
         Schema::create('communicabilities', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false)->unique(true);
             $table->string('name', 100)->nullable(false);
             $table->integer('duration')->nullable(false);
-            $table->text('decription')->nullable(true);
+            $table->text('description')->nullable(true);
             $table->timestamps();
         });
 
@@ -560,7 +466,6 @@ return new class extends Migration
             $table->foreign('communicability_id')->references('id')->on('communicabilities')->onDelete('cascade');
         });
 
-
         Schema::create('retentions', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -570,7 +475,6 @@ return new class extends Migration
             $table->foreign('sort_id')->references('id')->on('sorts')->onDelete('cascade');
         });
 
-
         Schema::create('sorts', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -578,7 +482,6 @@ return new class extends Migration
             $table->string('description', 100)->nullable();
             $table->timestamps();
         });
-
 
         Schema::create('organisations', function (Blueprint $table) {
             $table->id();
@@ -589,7 +492,6 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('organisations')->onDelete('set null');
             $table->timestamps();
         });
-
 
         Schema::create('organisation_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
@@ -607,20 +509,9 @@ return new class extends Migration
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
         });
 
-
-
         /*
-
-
-        Thésaurus
-
-
-
+            Thésaurus
         */
-
-
-
-
 
         Schema::create('term_categories', function (Blueprint $table) {
             $table->id();
@@ -629,7 +520,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('languages', function (Blueprint $table) {
             $table->id();
             $table->string('code', 2)->unique();
@@ -637,7 +527,6 @@ return new class extends Migration
             $table->string('native_name', 50)->nullable();
             $table->text('description')->nullable();
         });
-
 
         Schema::create('terms', function (Blueprint $table) {
             $table->id();
@@ -653,15 +542,13 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('terms')->onDelete('set null');
         });
 
-
         Schema::create('term_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code',3)->unique();
+            $table->string('code', 3)->unique();
             $table->string('name', 100);
             $table->text('description')->nullable();
             $table->timestamps();
         });
-
 
         Schema::create('term_translations', function (Blueprint $table) {
             $table->unsignedBigInteger('term1_id')->nullable(false);
@@ -702,17 +589,9 @@ return new class extends Migration
             $table->foreign('term_related_id')->references('id')->on('terms')->onDelete('cascade');
         });
 
-
         /*
-
-
             Les courriers
-
-
-
         */
-
-
 
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
@@ -740,7 +619,6 @@ return new class extends Migration
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
         });
 
-
         Schema::create('mail_actions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->unique()->nullable(false);
@@ -750,11 +628,10 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('mail_transactions', function (Blueprint $table) {
             $table->id();
             $table->string('code')->nullable(false)->unique();
-            $table->datetime('date_creation')->nullable(false);
+            $table->dateTime('date_creation')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('user_send_id')->nullable(false);
             $table->unsignedBigInteger('organisation_send_id')->nullable(false);
@@ -775,8 +652,6 @@ return new class extends Migration
             $table->foreign('action_id')->references('id')->on('mail_actions')->onDelete('cascade');
         });
 
-
-
         Schema::create('mail_organisation', function (Blueprint $table) {
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('organisation_id')->nullable(false);
@@ -786,12 +661,10 @@ return new class extends Migration
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
 
-
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->nullable(false);
         });
-
 
         Schema::create('mail_archiving', function (Blueprint $table) {
             $table->id();
@@ -803,7 +676,6 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
         });
-
 
         Schema::create('mail_containers', function (Blueprint $table) {
             $table->id();
@@ -826,7 +698,6 @@ return new class extends Migration
             $table->string('duration');
         });
 
-
         Schema::create('attachments', function (Blueprint $table) {
             $table->id();
             $table->string('path', 100)->nullable(false);
@@ -838,8 +709,6 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
         Schema::create('mail_attachment', function (Blueprint $table) {
             $table->unsignedBigInteger('mail_id')->nullable(false);
             $table->unsignedBigInteger('attachment_id')->nullable(false);
@@ -847,8 +716,6 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
-
-
 
         Schema::create('mail_typologies', function (Blueprint $table) {
             $table->id();
@@ -858,7 +725,6 @@ return new class extends Migration
             $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
         });
 
-
         Schema::create('mail_author', function (Blueprint $table) {
             $table->unsignedBigInteger('author_id');
             $table->unsignedBigInteger('mail_id');
@@ -867,15 +733,9 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
 
-
         /*
-
-
             Propritées communes
-
-
         */
-
 
         Schema::create('document_types', function (Blueprint $table) {
             $table->id();
@@ -911,7 +771,6 @@ return new class extends Migration
             $table->string('description', 100)->nullable();
         });
 
-
         Schema::create('author_addresses', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('type_id')->nullable(false);
@@ -925,7 +784,6 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('authors')->onDelete('set null');
             $table->foreign('type_id')->references('id')->on('author_types')->onDelete('cascade');
         });
-
 
         Schema::create('author_contacts', function (Blueprint $table) {
             $table->id();
@@ -942,16 +800,9 @@ return new class extends Migration
             $table->foreign('author_id')->references('id')->on('authors')->onDelete('set null');
         });
 
-
-
         /*
-
-
             Les parapheurs
-
-
         */
-
 
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
@@ -959,7 +810,6 @@ return new class extends Migration
             $table->string('name', 250)->nullable(false);
             $table->timestamps();
         });
-
 
         Schema::create('batch_mail', function (Blueprint $table) {
             $table->id();
@@ -972,7 +822,6 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
 
-
         Schema::create('batch_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('batch_id')->nullable(false);
@@ -984,15 +833,8 @@ return new class extends Migration
             $table->foreign('organisation_received_id')->references('id')->on('organisations')->onDelete('cascade');
         });
 
-
         /*
-
-
-
             Les chariots
-
-
-
         */
 
         Schema::create('dolly_mails', function(Blueprint $table){
@@ -1010,7 +852,6 @@ return new class extends Migration
             $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
             $table->timestamps();
         });
-
 
         Schema::create('dolly_slips', function(Blueprint $table){
             $table->unsignedBigInteger('slip_id')->nullable(false);
@@ -1030,7 +871,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('dolly_buildings', function(Blueprint $table){
             $table->unsignedBigInteger('building_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
@@ -1047,7 +887,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('dolly_containers', function(Blueprint $table){
             $table->unsignedBigInteger('container_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
@@ -1055,7 +894,6 @@ return new class extends Migration
             $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
             $table->timestamps();
         });
-
 
         Schema::create('dolly_communications', function(Blueprint $table){
             $table->unsignedBigInteger('communication_id')->nullable(false);
@@ -1073,7 +911,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
         Schema::create('dollies', function(Blueprint $table){
             $table->id();
             $table->string('name', 70)->unique(true)->nullable(false);
@@ -1083,15 +920,12 @@ return new class extends Migration
             $table->foreign('type_id')->references('id')->on('dolly_types')->onDelete('cascade');
         });
 
-
         Schema::create('dolly_types', function(Blueprint $table){
             $table->id();
             $table->string('name', 50)->nullable(false);
             $table->text('description')->nullable();
             $table->timestamps();
         });
-
-
     }
 
     public function down()
@@ -1100,8 +934,9 @@ return new class extends Migration
         Schema::dropIfExists('dollies');
         Schema::dropIfExists('dolly_mails');
         Schema::dropIfExists('dolly_records');
-        Schema::dropIfExists('dolly_transferrings');
-        Schema::dropIfExists('dolly_deposits');
+        Schema::dropIfExists('dolly_slips');
+        Schema::dropIfExists('dolly_slip_records');
+        Schema::dropIfExists('dolly_buildings');
         Schema::dropIfExists('dolly_shelves');
         Schema::dropIfExists('dolly_containers');
         Schema::dropIfExists('dolly_communications');
@@ -1137,9 +972,6 @@ return new class extends Migration
         Schema::dropIfExists('term_categories');
         Schema::dropIfExists('retention_activity');
         Schema::dropIfExists('organisation_activity');
-        Schema::dropIfExists('access_rights');
-        Schema::dropIfExists('access_right_activity');
-        Schema::dropIfExists('user_organisation');
         Schema::dropIfExists('organisations');
         Schema::dropIfExists('sorts');
         Schema::dropIfExists('retentions');
@@ -1165,6 +997,5 @@ return new class extends Migration
         Schema::dropIfExists('rooms');
         Schema::dropIfExists('floors');
         Schema::dropIfExists('buildings');
-
     }
 };
