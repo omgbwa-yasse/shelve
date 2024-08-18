@@ -11,5 +11,6 @@
         @method('DELETE')
         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this dolly?')">Delete</button>
     </form>
+
 </div>
 @endsection
