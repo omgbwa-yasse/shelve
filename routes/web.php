@@ -174,5 +174,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
+Route::get('attachments/{id}/download', [MailAttachmentController::class, 'download'])->name('attachments.download');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

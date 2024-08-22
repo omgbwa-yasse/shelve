@@ -1,4 +1,8 @@
 @extends('layouts.app')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+</script>
 
 @section('content')
     <div class="container">
@@ -10,7 +14,7 @@
                 <td>{{ $attachment->name }}</td>
             </tr>
             <tr>
-                <th>Path</th>{{ asset('app/public/' . $attachment->path) }}
+                <th>Path</th>
                 <td>{{ $attachment->path }}</td>
             </tr>
             <tr>
@@ -37,22 +41,28 @@
         <div class="mt-3">
             <button id="prev-page" class="btn btn-secondary">Previous</button>
             <button id="next-page" class="btn btn-secondary">Next</button>
-            <a href="{{ asset('app/public/' . $attachment->path) }}" class="btn btn-primary" download>Download</a>
+            <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-primary">Download</a>
         </div>
         <a href="{{ route('mail-attachment.index', $mail) }}" class="btn btn-secondary">Back</a>
     </div>
 
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const url = '{{ asset('storage/' . $attachment->path) }}';
+            const url = '{{ Storage::url($attachment->path) }}';
+
+            console.log('PDF URL:', url);
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
             const loadingTask = pdfjsLib.getDocument(url);
             let pdf = null;
             let currentPage = 1;
 
             loadingTask.promise.then(function(pdfDoc) {
                 pdf = pdfDoc;
+                console.log('PDF loaded');
                 renderPage(currentPage);
+            }).catch(function(error) {
+                console.error('Error loading PDF:', error);
             });
 
             function renderPage(pageNum) {
@@ -68,6 +78,8 @@
                         viewport: viewport
                     };
                     page.render(renderContext);
+                }).catch(function(error) {
+                    console.error('Error rendering page:', error);
                 });
             }
 
@@ -85,5 +97,6 @@
                 }
             });
         });
+
     </script>
 @endsection

@@ -60,4 +60,22 @@ class MailAttachmentController extends Controller
 
         return redirect()->route('mail-attachment.index', $mail)->with('success', 'MailAttachment deleted successfully.');
     }
+    public function download($id)
+    {
+        $attachment = MailAttachment::findOrFail($id);
+        $filePath = storage_path('app/' . $attachment->path);
+
+        if (file_exists($filePath)) {
+            // Obtenez l'extension du fichier à partir du chemin
+            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $fileName = $attachment->name . '.' . $fileExtension;
+//dd( $fileExtension,$filePath);
+            return response()->download($filePath, $fileName);
+        }
+
+        return abort(404);
+    }
+
+
+
 }
