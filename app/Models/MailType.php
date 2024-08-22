@@ -19,6 +19,11 @@ class MailType extends Model
     public $timestamps = false;
 
 
+    public function Mails()
+    {
+        return $this->hasMany(Mail::class);
+    }
+
     public function emails()
     {
         return $this->hasMany(Mail::class);

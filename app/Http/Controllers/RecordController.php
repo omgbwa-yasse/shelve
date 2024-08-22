@@ -20,7 +20,8 @@ class RecordController extends Controller
 {
     public function index()
     {
-        $records = Record::all();
+        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
+            ->paginate(10);
         $statuses = RecordStatus::all();
         $terms = Term::all();
 
@@ -35,13 +36,13 @@ class RecordController extends Controller
         $activities = Activity::all();
         $parents = Record::all();
         $containers = Container::all();
-        $accessions = Accession::all();
+//        $accessions = Accession::all();
         $users = User::all();
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('authorType')->get();
         $terms = Term::all();
-        return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'accessions', 'users'));
+        return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
 

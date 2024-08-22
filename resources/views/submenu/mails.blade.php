@@ -1,10 +1,10 @@
-<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
+<div class="container" style="background-color: #f1f1f1;">
     <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i> Recherche</a>
+        <!-- Recherche -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+           aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i> Recherche</a>
 
         <div class="collapse show" id="rechercheMenu">
-
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> Courrier</a>
@@ -33,14 +33,14 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> Boîtes d'archives</a>
                 </li>
-
             </ul>
         </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
+        <!-- Créer -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
+           aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
 
-            <div class="collapse show" id="enregistrementMenu">
+        <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mails.create') }}"><i class="bi bi-inbox"></i> Courrier</a>
@@ -57,28 +57,29 @@
             </ul>
         </div>
 
+        <!-- Courrier -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#courrierMenu" aria-expanded="true"
+           aria-controls="courrierMenu" style="padding: 10px;">Courrier</a>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-        aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Courrier</a>
-
-            <div class="collapse show" id="enregistrementMenu">
+        <div class="collapse show" id="courrierMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver </a>
-            </li>
-                </ul>
-            </div>
+                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver </a>
+                </li>
+            </ul>
+        </div>
 
-            <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Parapheur</a>
+        <!-- Parapheur -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"
+           aria-controls="parapheurMenu" style="padding: 10px;">Parapheur</a>
 
-            <div class="collapse show" id="enregistrementMenu">
+        <div class="collapse show" id="parapheurMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
@@ -86,9 +87,6 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> Envoyés</a>
                 </li>
-                </ul>
-            </div>
-            <div>
             </ul>
         </div>
     </div>
