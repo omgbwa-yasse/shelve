@@ -38,6 +38,27 @@
         </div>
 
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
+            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Suivi des affaires</a>
+
+            <div class="collapse show" id="enregistrementMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Retour attendus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-bookmark-check"></i> Retour dépassés</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-people"></i> Autres</a>
+                </li>
+
+            </ul>
+        </div>
+
+
+
+
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
 
             <div class="collapse show" id="enregistrementMenu">

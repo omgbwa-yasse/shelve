@@ -64,6 +64,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DollyActionController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\UserOrganisationController;
+use App\Http\Controllers\SearchMailFeedbackController;
 use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
@@ -169,6 +170,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/records/search', [SearchController::class, 'index'])->name('records.search');
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
     Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
+    Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
