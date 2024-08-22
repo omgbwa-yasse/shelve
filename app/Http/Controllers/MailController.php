@@ -22,6 +22,7 @@ class MailController extends Controller
         $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
             ->where('is_archived', false)
             ->paginate(15);
+//        dd($mails);
         return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
 
     }
@@ -111,7 +112,7 @@ class MailController extends Controller
 
     public function show(INT $id)
     {
-        $mail=mail::with('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
+        $mail=mail::with('priority','typology','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
         return view('mails.show', compact('mail'));
     }
 
@@ -125,7 +126,7 @@ class MailController extends Controller
         $types = MailType::all();
         $batches = Batch::all();
         $authors = user::all();
-        $mail=mail::with('priority','typology','attachment','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
+        $mail=mail::with('priority','typology','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
         return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types',  'batches'));
     }
 

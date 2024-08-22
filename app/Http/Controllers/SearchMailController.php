@@ -49,7 +49,8 @@ class SearchMailController extends Controller
                 break;
 
             case "author":
-                $mails = mail::where('author_id', $request->input('id'))
+                $mails = Mail::join('mail_author', 'mails.id', '=', 'mail_author.mail_id')
+                    ->where('mail_author.author_id', $request->input('id'))
                     ->get();
                 break;
 

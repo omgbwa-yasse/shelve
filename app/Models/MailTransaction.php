@@ -26,7 +26,10 @@ class MailTransaction extends Model
     {
         return $this->belongsTo(Mail::class);
     }
-
+    public function type()
+    {
+        return $this->belongsTo(MailType::class, 'mail_type_id');
+    }
     public function userSend()
     {
         return $this->belongsTo(User::class, 'user_send_id');

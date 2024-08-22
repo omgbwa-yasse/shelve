@@ -76,6 +76,8 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+//    Route::post('mails/file/{file}/attachment', [MailAttachmentController::class, 'store'])->name('mail-attachment.store');
+//    Route::get('mails/file/{file}/attachment/create', [MailAttachmentController::class, 'create'])->name('mail-attachment.create');
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
@@ -174,5 +176,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
+Route::get('attachments/{id}/download', [MailAttachmentController::class, 'download'])->name('attachments.download');
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

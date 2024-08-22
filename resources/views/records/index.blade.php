@@ -1,78 +1,101 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1>Records</h1>
-        <a href="{{ route('records.create') }}" class="btn btn-primary mb-3">Create Record</a>
-        <table class="table">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
+    <div class="container-fluid mt-4">
+        <!-- Main Heading -->
+        <h1 class="mb-4">Liste des enregistrements</h1>
+
+        <!-- Action and Search Bar -->
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <a href="{{ route('records.create') }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Nouveau enregistrement
+                </a>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un enregistrement...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Records List -->
+        <div id="recordList">
             @foreach ($records as $record)
-                <tr>
-                    <td>{{ $record->id }}</td>
-                    <td>{{ $record->code }}</td>
-                    <td>{{ $record->name }}</td>
-                    <td>
-                        <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-info">Voir la fiche</a>
-                    </td>
-                </tr>
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-9">
+                                <!-- Card Title -->
+                                <h5 class="card-title mb-2">
+                                    <b>{{ $record->code }} </b> - {{ $record->name }}
+                                    <span class="badge bg-{{ $record->level->color ?? 'secondary' }}">
+                                        {{ $record->level->name ?? 'N/A' }}
+                                    </span>
+                                </h5>
+                                <!-- Card Content -->
+                                <p class="card-text">
+                                    <strong>Content:</strong> {{ $record->content }}<br>
+                                    <strong>| Level:</strong> {{ $record->level->name ?? 'N/A' }}
+                                    <strong>| Status:</strong> {{ $record->status->name ?? 'N/A' }}
+                                    <strong>| Support:</strong> {{ $record->support->name ?? 'N/A' }}
+                                    <strong>| Activity:</strong> {{ $record->activity->name ?? 'N/A' }}
+                                    <strong>| Dates:</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}
+                                    <strong>| Location:</strong> {{ $record->location_original ?? 'N/A' }}
+                                    <strong>| Authors:</strong> {{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}
+                                </p>
+                            </div>
+                            <div class="col-md-3 text-md-end text-center">
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-md-end justify-content-center align-items-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             @endforeach
-            </tbody>
-        </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-center">
+            {{ $records->links() }}
+        </div>
     </div>
 
-    <script>
-        document.getElementById('term_id').addEventListener('change', function () {
-            let selectedOptions = Array.from(this.selectedOptions);
-            selectedOptions.forEach(option => {
-                addTerm(option.text, option.value);
+    @push('scripts')
+        <script>
+            document.getElementById('searchInput').addEventListener('keyup', function() {
+                var input, filter, cards, card, i, txtValue;
+                input = document.getElementById('searchInput');
+                filter = input.value.toUpperCase();
+                cards = document.getElementById('recordList').getElementsByClassName('card');
+
+                for (i = 0; i < cards.length; i++) {
+                    card = cards[i];
+                    txtValue = card.textContent || card.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        card.style.display = "";
+                    } else {
+                        card.style.display = "none";
+                    }
+                }
             });
-            this.selectedOptions = [];
-        });
-
-        document.getElementById('term_search').addEventListener('input', function () {
-            let searchQuery = this.value.toLowerCase();
-            let termOptions = document.getElementById('term_id').options;
-
-            for (let i = 0; i < termOptions.length; i++) {
-                let option = termOptions[i];
-                option.style.display = option.text.toLowerCase().includes(searchQuery) ? 'block' : 'none';
-            }
-        });
-
-        function addTerm(termName, termId) {
-            let selectedTerms = document.getElementById('selected-terms');
-            let termItem = document.createElement('div');
-            termItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            let termNameSpan = document.createElement('span');
-            termNameSpan.textContent = termName;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                termItem.remove();
-                updateTermIds();
-            };
-
-            termItem.appendChild(termNameSpan);
-            termItem.appendChild(removeButton);
-            selectedTerms.appendChild(termItem);
-
-            updateTermIds();
-        }
-
-        function updateTermIds() {
-            let termIds = Array.from(document.getElementById('selected-terms').children).map(item => item.getAttribute('data-id'));
-            document.getElementById('term-ids').value = termIds.join(',');
-        }
-    </script>
+        </script>
+    @endpush
 @endsection

@@ -1,54 +1,57 @@
 <?php
-
 namespace App\Http\Controllers;
+
 use App\Models\Mail;
 use App\Models\MailAttachment;
 use Illuminate\Http\Request;
 
 class MailAttachmentController extends Controller
 {
-
-    public function index(Mail $mail)
+    public function index($id)
     {
+        $mail = Mail::findOrFail($id);
         $attachments = $mail->attachments;
         return view('mails.attachments.index', compact('mail', 'attachments'));
     }
 
-
-
-    public function create(Mail $mail)
+    public function create($id)
     {
+        $mail = Mail::findOrFail($id);
         return view('mails.attachments.create', compact('mail'));
     }
 
-
-
-    public function store(Request $request, Mail $mail)
+    public function store(Request $request, $file)
     {
+        $mail = Mail::findOrFail($file);
+
         $validatedData = $request->validate([
-            'path' => 'required|max:100',
             'name' => 'required|max:100',
-            'crypt' => 'required|max:255',
-            'size' => 'required|integer',
+            'file' => 'required|file|mimes:pdf',
         ]);
 
-        $attachment = MailAttachment::create($validatedData + [
+        // Traitement du fichier téléchargé
+        $filePath = $request->file('file')->store('attachments');
+        $fileSize = $request->file('file')->getSize();
+        $fileCrypt = md5_file($request->file('file')->getRealPath());
+
+        $attachment = MailAttachment::create([
+            'path' => $filePath,
+            'name' => $validatedData['name'],
+            'crypt' => $fileCrypt,
+            'size' => $fileSize,
             'creator_id' => auth()->id(),
         ]);
 
         $mail->attachments()->attach($attachment->id);
 
-        return redirect()->route('mail-attachment.index', $mail)->with('success', 'MailAttachment created successfully.');
+        return redirect()->route('mail-attachment.index', $mail->id)->with('success', 'MailAttachment created successfully.');
     }
 
-
-
-    public function show(Mail $mail, MailAttachment $attachment)
+    public function show($id, MailAttachment $attachment)
     {
+        $mail = Mail::findOrFail($id);
         return view('mails.attachments.show', compact('mail', 'attachment'));
     }
-
-
 
     public function destroy(Mail $mail, MailAttachment $attachment)
     {
@@ -57,7 +60,21 @@ class MailAttachmentController extends Controller
 
         return redirect()->route('mail-attachment.index', $mail)->with('success', 'MailAttachment deleted successfully.');
     }
+    public function download($id)
+    {
+        $attachment = MailAttachment::findOrFail($id);
+        $filePath = storage_path('app/' . $attachment->path);
 
+        if (file_exists($filePath)) {
+            // Obtenez l'extension du fichier à partir du chemin
+            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $fileName = $attachment->name . '.' . $fileExtension;
+//dd( $fileExtension,$filePath);
+            return response()->download($filePath, $fileName);
+        }
+
+        return abort(404);
+    }
 
 
 

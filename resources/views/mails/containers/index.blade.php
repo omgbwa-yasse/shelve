@@ -25,7 +25,7 @@
                             @if($mailContainer->mailArchivings->isEmpty())
                                 Aucun contenu archivé
                             @else
-                                <a href="{{ route('mail-archiving.show', $mailContainer->id) }}" class="btn btn-success">
+                                <a href="{{ route('mail-archiving.index', $mailContainer->id) }}" class="btn btn-success">
                                    {{ $mailContainer->mailArchivings->count() }} courrier archivé(s)
                                 </a>
                             @endif

@@ -48,10 +48,11 @@ class Mail extends Model
         return $this->belongsTo(MailTypology::class, 'mail_typology_id');
     }
 
-    public function attachment()
+    public function attachments()
     {
-        return $this->belongsTo(MailAttachment::class);
+        return $this->belongsToMany(MailAttachment::class, 'mail_attachment', 'mail_id', 'attachment_id');
     }
+
 
     public function send()
     {
