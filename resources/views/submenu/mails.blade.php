@@ -36,7 +36,6 @@
             </ul>
         </div>
 
-<<<<<<< HEAD
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Suivi des affaires</a>
 
@@ -60,11 +59,9 @@
 
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
-=======
         <!-- Créer -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
            aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
->>>>>>> 15aeb1f8d366c4bd917fc6099f0a6a069ed2e052
 
         <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
@@ -100,7 +97,6 @@
                 </li>
             </ul>
         </div>
-
         <!-- Parapheur -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"
            aria-controls="parapheurMenu" style="padding: 10px;">Parapheur</a>
