@@ -1,326 +1,176 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Fiche descriptive</h1>
-    <h2> {{ $record->code }} :  {{ $record->name }} ({{ $record->level->name }})</h2>
+    <div class="container-fluid py-4">
+        <div class="row mb-4 align-items-center">
+            <div class="col">
+                <h1 class="h2 mb-0"><i class="bi bi-file-earmark-text me-2"></i>Fiche descriptive</h1>
+            </div>
+        </div>
 
-    <div class="accordion" id="recordDetailsAccordion">
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="identificationHeading">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#identificationCollapse" aria-expanded="true" aria-controls="identificationCollapse">
-                    Identification
-                </button>
-            </h2>
-            <div id="identificationCollapse" class="accordion-collapse collapse show" aria-labelledby="identificationHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <table class="table table-sm">
-                                <tbody>
-                                    <tr>
-                                        <th>cote</th>
-                                        <td>{{ $record->code }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Intitulé</th>
-                                        <td>{{ $record->name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Date Format</th>
-                                        <td>{{ $record->date_format }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Date de début</th>
-                                        <td>{{ $record->date_start }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Date fin</th>
-                                        <td>{{ $record->date_end }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Date Exact</th>
-                                        <td>{{ $record->date_exact }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Niveau de description </th>
-                                        <td>{{ $record->level->name }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Epaisseur </th>
-                                        <td>{{ $record->width }} cm </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Description importance matériel </th>
-                                        <td>{{ $record->width_description }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </tbody>
-                    </table>
+        <div class="card mb-4 shadow">
+            <div class="card-body">
+                <h3 class="card-title h3 mb-3 text-primary"><i class="bi bi-bookmark-star me-2"></i>{{ $record->code }} : {{ $record->name }}</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="card-text mb-2"><i class="bi bi-layers me-2"></i><strong>Niveau :</strong> {{ $record->level->name ?? 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="card-text mb-2"><i class="bi bi-calendar-range me-2"></i><strong>Date :</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="card-text mb-2"><i class="bi bi-rulers me-2"></i><strong>Epaisseur :</strong> {{ $record->width ? $record->width . ' cm' : 'N/A' }}</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="contextHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contextCollapse" aria-expanded="false" aria-controls="contextCollapse">
-                    Contexte
-                </button>
-            </h2>
-            <div id="contextCollapse" class="accordion-collapse collapse" aria-labelledby="contextHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Biographical History</th>
-                                <td>{{ $record->biographical_history }}</td>
-                            </tr>
-                            <tr>
-                                <th>Archival History</th>
-                                <td>{{ $record->archival_history }}</td>
-                            </tr>
-                            <tr>
-                                <th>Acquisition Source</th>
-                                <td>{{ $record->acquisition_source }}</td>
-                            </tr>
-                            <tr>
-                                <th>Authors</th>
-                                <td>
-                                    @foreach ($record->authors as $author)
-                                        <span class="badge badge-secondary">{{ $author->name }}</span>
-                                    @endforeach
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="accordion shadow" id="recordDetailsAccordion">
+                    @php
+                        $sectionIcons = [
+                            'Identification' => 'bi-fingerprint',
+                            'Contexte' => 'bi-diagram-3',
+                            'Contenu' => 'bi-journal-text',
+                            'Condition d\'accès' => 'bi-lock',
+                            'Sources complémentaires' => 'bi-link-45deg',
+                            'Notes' => 'bi-pencil-square',
+                            'Contrôle de description' => 'bi-list-check',
+                            'Indexation' => 'bi-tags',
+                        ];
+                        // Your existing $sections array
+                    @endphp
+                    @php
+                        $sections = [
+                            'Identification' => [
+                                'cote' => $record->code,
+                                'Intitulé' => $record->name,
+                                'Date Format' => $record->date_format ?? 'N/A',
+                                'Date de début' => $record->date_start ?? 'N/A',
+                                'Date fin' => $record->date_end ?? 'N/A',
+                                'Date Exact' => $record->date_exact ?? 'N/A',
+                                'Niveau de description' => $record->level->name ?? 'N/A',
+                                'Epaisseur' => $record->width ? $record->width . ' cm' : 'N/A',
+                                'Description importance matériel' => $record->width_description ?? 'N/A',
+                            ],
+                            'Contexte' => [
+                                'Biographical History' => $record->biographical_history ?? 'N/A',
+                                'Archival History' => $record->archival_history ?? 'N/A',
+                                'Acquisition Source' => $record->acquisition_source ?? 'N/A',
+                                'Authors' => $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "<span class='badge bg-secondary'>{$author->name}</span>")->implode(' '),
+                            ],
+                            'Contenu' => [
+                                'Content' => $record->content ?? 'N/A',
+                                'Appraisal' => $record->appraisal ?? 'N/A',
+                                'Accrual' => $record->accrual ?? 'N/A',
+                                'Arrangement' => $record->arrangement ?? 'N/A',
+                            ],
+                            'Condition d\'accès' => [
+                                'Access Conditions' => $record->access_conditions ?? 'N/A',
+                                'Reproduction Conditions' => $record->reproduction_conditions ?? 'N/A',
+                                'Language Material' => $record->language_material ?? 'N/A',
+                                'Characteristic' => $record->characteristic ?? 'N/A',
+                                'Finding Aids' => $record->finding_aids ?? 'N/A',
+                            ],
+                            'Sources complémentaires' => [
+                                'Location Original' => $record->location_original ?? 'N/A',
+                                'Location Copy' => $record->location_copy ?? 'N/A',
+                                'Related Unit' => $record->related_unit ?? 'N/A',
+                                'Publication Note' => $record->publication_note ?? 'N/A',
+                            ],
+                            'Notes' => [
+                                'Note' => $record->note ?? 'N/A',
+                                'Archivist Note' => $record->archivist_note ?? 'N/A',
+                            ],
+                            'Contrôle de description' => [
+                                'Règle et convention' => $record->rule_convention ?? 'N/A',
+                                'Status' => $record->status->name ?? 'N/A',
+                                'Support' => $record->support->name ?? 'N/A',
+                                'Classe' => $record->activity->name ?? 'N/A',
+                            ],
+                            'Indexation' => [
+                                'Fiche parent' => $record->parent->name ?? 'N/A',
+                                'Boite de conservation' => $record->container->name ?? 'N/A',
+        //                        'Versement de provenance' => $record->accession->name ?? 'N/A',
+                                'Créé par' => $record->user->name ?? 'N/A',
+                                'Vedettes' => $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "<span class='badge bg-secondary'>{$term->name}</span>")->implode(' '),
+                            ],
+                        ];
+                    @endphp
+                    @foreach($sections as $section => $details)
+                        <div class="accordion-item">
+                            <h3 class="accordion-header" id="{{ Str::slug($section) }}Heading">
+                                <button class="accordion-button @if(!$loop->first) collapsed @endif" type="button" data-bs-toggle="collapse" data-bs-target="#{{ Str::slug($section) }}Collapse" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ Str::slug($section) }}Collapse">
+                                    <i class="bi {{ $sectionIcons[$section] ?? 'bi-info-circle' }} me-2"></i> {{ $section }}
+                                </button>
+                            </h3>
+                            <div id="{{ Str::slug($section) }}Collapse" class="accordion-collapse collapse @if($loop->first) show @endif" aria-labelledby="{{ Str::slug($section) }}Heading" data-bs-parent="#recordDetailsAccordion">
+                                <div class="accordion-body">
+                                    <dl class="row mb-0">
+                                        @foreach($details as $label => $value)
+                                            <dt class="col-sm-4 mb-2"><i class="bi bi-arrow-right-short me-1"></i>{{ $label }}</dt>
+                                            <dd class="col-sm-8 mb-2">{!! $value !!}</dd>
+                                        @endforeach
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-        </div>
-
-
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="contentHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contentCollapse" aria-expanded="false" aria-controls="contentCollapse">
-                    Contenu
-                </button>
-            </h2>
-            <div id="contentCollapse" class="accordion-collapse collapse" aria-labelledby="contentHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Content</th>
-                                <td>{{ $record->content }}</td>
-                            </tr>
-                            <tr>
-                                <th>Appraisal</th>
-                                <td>{{ $record->appraisal }}</td>
-                            </tr>
-                            <tr>
-                                <th>Accrual</th>
-                                <td>{{ $record->accrual }}</td>
-                            </tr>
-                            <tr>
-                                <th>Arrangement</th>
-                                <td>{{ $record->arrangement }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
+                        <div class="d-grid gap-2">
+                            <a href="{{ route('records.edit', $record) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil me-2"></i> Modifier
+                            </a>
+                            <a href="{{ route('records.index') }}" class="btn btn-primary">
+                                <i class="bi bi-box me-2"></i> Insérer dans une boîte
+                            </a>
+                            <a href="{{ route('records.index') }}" class="btn btn-success">
+                                <i class="bi bi-plus-circle me-2"></i> Ajouter une notice fille
+                            </a>
+                            <form action="{{ route('records.destroy', $record) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?')">
+                                    <i class="bi bi-trash me-2"></i> Supprimer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+                <a href="{{ route('records.index') }}" class="btn btn-outline-secondary mt-3 w-100">
+                    <i class="bi bi-arrow-left me-2"></i> Retour à la liste
+                </a>
             </div>
         </div>
+    </div>
 
-
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="accessConditionsHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accessConditionsCollapse" aria-expanded="false" aria-controls="accessConditionsCollapse">
-                    Condition d'accès
-                </button>
-            </h2>
-            <div id="accessConditionsCollapse" class="accordion-collapse collapse" aria-labelledby="accessConditionsHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Access Conditions</th>
-                                <td>{{ $record->access_conditions }}</td>
-                            </tr>
-                            <tr>
-                                <th>Reproduction Conditions</th>
-                                <td>{{ $record->reproduction_conditions }}</td>
-                            </tr>
-                            <tr>
-                                <th>Language Material</th>
-                                <td>{{ $record->language_material }}</td>
-                            </tr>
-                            <tr>
-                                <th>Characteristic</th>
-                                <td>{{ $record->characteristic }}</td>
-                            </tr>
-                            <tr>
-                                <th>Finding Aids</th>
-                                <td>{{ $record->finding_aids }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="additionalSourcesHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#additionalSourcesCollapse" aria-expanded="false" aria-controls="additionalSourcesCollapse">
-                    Sources complémentaires
-                </button>
-            </h2>
-            <div id="additionalSourcesCollapse" class="accordion-collapse collapse" aria-labelledby="additionalSourcesHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Location Original</th>
-                                <td>{{ $record->location_original }}</td>
-                            </tr>
-                            <tr>
-                                <th>Location Copy</th>
-                                <td>{{ $record->location_copy }}</td>
-                            </tr>
-                            <tr>
-                                <th>Related Unit</th>
-                                <td>{{ $record->related_unit }}</td>
-                            </tr>
-                            <tr>
-                                <th>Publication Note</th>
-                                <td>{{ $record->publication_note }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="notesHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#notesCollapse" aria-expanded="false" aria-controls="notesCollapse">
-                    Notes
-                </button>
-            </h2>
-            <div id="notesCollapse" class="accordion-collapse collapse" aria-labelledby="notesHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Note</th>
-                                <td>{{ $record->note }}</td>
-                            </tr>
-                            <tr>
-                                <th>Archivist Note</th>
-                                <td>{{ $record->archivist_note }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="descriptionControlHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#descriptionControlCollapse" aria-expanded="false" aria-controls="descriptionControlCollapse">
-                    Contrôle de description
-                </button>
-            </h2>
-            <div id="descriptionControlCollapse" class="accordion-collapse collapse" aria-labelledby="descriptionControlHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Règle et convention</th>
-                                <td>{{ $record->rule_convention }}</td>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <td>{{ $record->status->name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Support</th>
-                                <td>{{ $record->support->name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Classe</th>
-                                <td>{{ $record->activity->name }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-
-
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="indexingHeading">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#indexingCollapse" aria-expanded="false" aria-controls="indexingCollapse">
-                    Indexation
-                </button>
-            </h2>
-            <div id="indexingCollapse" class="accordion-collapse collapse" aria-labelledby="indexingHeading" data-bs-parent="#recordDetailsAccordion">
-                <div class="accordion-body">
-                    <table class="table table-sm">
-                        <tbody>
-                            <tr>
-                                <th>Fiche parent</th>
-                                <td>{{ $record->parent ? $record->parent->name : '' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Boite de conservation</th>
-                                <td>{{ $record->container ? $record->container->name : '' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Versement de provenance</th>
-                                <td>{{ $record->accession ? $record->accession->name : '' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Créer par </th>
-                                <td>{{ $record->user->name }}</td>
-                            </tr>
-                            <tr>
-                                <th>Vedettes</th>
-                                <td>
-                                    @foreach ($record->terms as $term)
-                                      <span class="badge badge-secondary"> {{ $term->name ?? '' }} </span>
-                                    @endforeach
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-
-
-        </div>
-
-    <a href="{{ route('records.index') }}" class="btn btn-secondary btn-sm">Back</a>
-    <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-warning">Edit</a>
-    <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>
-    </form>
-    <hr>
-    <a href="{{ route('records.index') }}" class="btn btn-secondary btn-sm">inserer dans une boite</a>
-    <a href="{{ route('records.index') }}" class="btn btn-secondary btn-sm">Ajouter un notice fille </a>
-</div>
+    <style>
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            color: #0178d4;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+        .card-title {
+            border-bottom: 2px solid #0178d4;
+            padding-bottom: 0.5rem;
+        }
+        .btn i {
+            font-size: 1.1em;
+        }
+        dt {
+            font-weight: 600;
+            color: #495057;
+        }
+        dd {
+            color: #212529;
+        }
+    </style>
 @endsection

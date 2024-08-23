@@ -158,13 +158,16 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('tools')->group(function () {
-        Route::resource('activities', ActivityController::class);
+        Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+        Route::get('tools/activities/organigram', [ActivityController::class, 'organigram'])->name('activities.organigram');
+
         Route::resource('retentions', RetentionController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
+
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');

@@ -3,7 +3,7 @@
 @section('content')
     <div class="container-fluid mt-4">
         <!-- Main Heading -->
-        <h1 class="mb-4">Liste des enregistrements</h1>
+        <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Liste des enregistrements</h1>
 
         <!-- Action and Search Bar -->
         <div class="row mb-3">
@@ -29,21 +29,22 @@
                             <div class="col-md-9">
                                 <!-- Card Title -->
                                 <h5 class="card-title mb-2">
-                                    <b>{{ $record->code }} </b> - {{ $record->name }}
+{{--                                    <i class="bi bi-file-earmark-text me-2"></i>--}}
+                                    <b>{{ $record->code }}  - {{ $record->name }}</b>
                                     <span class="badge bg-{{ $record->level->color ?? 'secondary' }}">
                                         {{ $record->level->name ?? 'N/A' }}
                                     </span>
                                 </h5>
                                 <!-- Card Content -->
                                 <p class="card-text">
-                                    <strong>Content:</strong> {{ $record->content }}<br>
-                                    <strong>| Level:</strong> {{ $record->level->name ?? 'N/A' }}
-                                    <strong>| Status:</strong> {{ $record->status->name ?? 'N/A' }}
-                                    <strong>| Support:</strong> {{ $record->support->name ?? 'N/A' }}
-                                    <strong>| Activity:</strong> {{ $record->activity->name ?? 'N/A' }}
-                                    <strong>| Dates:</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}
-                                    <strong>| Location:</strong> {{ $record->location_original ?? 'N/A' }}
-                                    <strong>| Authors:</strong> {{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}
+                                    <i class="bi bi-card-text me-2"></i><strong>Content:</strong> {{ $record->content }}<br>
+                                    <i class="bi bi-bar-chart-fill me-2"></i><strong>Level:</strong> {{ $record->level->name ?? 'N/A' }}
+                                    <i class="bi bi-flag-fill me-2"></i><strong>Status:</strong> {{ $record->status->name ?? 'N/A' }}
+                                    <i class="bi bi-hdd-fill me-2"></i><strong>Support:</strong> {{ $record->support->name ?? 'N/A' }}
+                                    <i class="bi bi-activity me-2"></i><strong>Activity:</strong> {{ $record->activity->name ?? 'N/A' }}
+                                    <i class="bi bi-calendar-event me-2"></i><strong>Dates:</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}
+                                    <i class="bi bi-geo-alt-fill me-2"></i><strong>Location:</strong> {{ $record->location_original ?? 'N/A' }}
+                                    <i class="bi bi-people-fill me-2"></i><strong>Authors:</strong> {{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">

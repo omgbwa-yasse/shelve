@@ -52,6 +52,12 @@
         </div>
 
 
+<<<<<<< HEAD
+=======
+
+
+        <!-- Créer -->
+>>>>>>> fb662b7822edf62bbb2fd4f7cb3dd4b07023095b
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
            aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
 
@@ -89,7 +95,6 @@
                 </li>
             </ul>
         </div>
-
         <!-- Parapheur -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"
            aria-controls="parapheurMenu" style="padding: 10px;">Parapheur</a>

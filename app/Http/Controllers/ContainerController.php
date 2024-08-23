@@ -13,6 +13,7 @@ class ContainerController extends Controller
     public function index()
     {
         $containers = Container::with('shelf', 'status', 'property')->get();
+//        dd($containers);
         return view('containers.index', compact('containers'));
     }
 
