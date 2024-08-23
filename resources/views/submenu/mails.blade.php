@@ -57,8 +57,6 @@
 
 
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
         <!-- Créer -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
            aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>

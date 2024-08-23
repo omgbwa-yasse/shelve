@@ -3,40 +3,43 @@
 @section('content')
     <div class="container">
         <h1>Communications</h1>
-        <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">Create New Communication</a>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Code</th>
-                    <th>Operator</th>
-                    <th>Operator Organisation</th>
-                    <th>User</th>
-                    <th>User Organisation</th>
-                    <th>Return Date</th>
-                    <th>Return Effective</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($communications as $communication)
-                    <tr>
-                        <td>{{ $communication->id }}</td>
-                        <td>{{ $communication->code }}</td>
-                        <td>{{ $communication->operator->name }}</td>
-                        <td>{{ $communication->operatorOrganisation->name }}</td>
-                        <td>{{ $communication->user->name }}</td>
-                        <td>{{ $communication->userOrganisation->name }}</td>
-                        <td>{{ $communication->return_date }}</td>
-                        <td>{{ $communication->return_effective }}</td>
-                        <td>{{ $communication->status->name }}</td>
-                        <td>
-                            <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-info">Show</a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Create New Communication
+        </a>
+
+        <div class="row">
+            @foreach ($communications as $communication)
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="card-title">
+                                        <i class="bi bi-person-badge"></i> ID: {{ $communication->id ?? 'N/A' }}
+                                    </h5>
+                                    <p class="card-text">
+                                        <i class="bi bi-upc"></i> <strong>Code:</strong> {{ $communication->code ?? 'N/A' }}<br>
+                                        <i class="bi bi-person"></i> <strong>Operator:</strong> {{ $communication->operator->name ?? 'N/A' }}<br>
+                                        <i class="bi bi-people"></i> <strong>User:</strong> {{ $communication->user->name ?? 'N/A' }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="card-text">
+                                        <i class="bi bi-building"></i> <strong>Operator Organisation:</strong> {{ $communication->operatorOrganisation->name ?? 'N/A' }}<br>
+                                        <i class="bi bi-building"></i> <strong>User Organisation:</strong> {{ $communication->userOrganisation->name ?? 'N/A' }}<br>
+                                        <i class="bi bi-calendar"></i> <strong>Return Date:</strong> {{ $communication->return_date ?? 'N/A' }}<br>
+                                        <i class="bi bi-calendar-check"></i> <strong>Return Effective:</strong> {{ $communication->return_effective ?? 'N/A' }}<br>
+                                        <i class="bi bi-flag"></i> <strong>Status:</strong> {{ $communication->status->name ?? 'N/A' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-info mt-3">
+                                <i class="bi bi-eye"></i> Show
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 @endsection

@@ -13,6 +13,13 @@ class ActivityController extends Controller
         $activities = Activity::with('parent')->orderBy('code', 'asc')->get();
         return view('activities.index', compact('activities'));
     }
+    public function organigram()
+    {
+
+        $activities = Activity::with('parent')->orderBy('code', 'asc')->get();
+//        dd( $activities);
+        return view('activities.organigram', compact('activities'));
+    }
 
     public function create()
     {
