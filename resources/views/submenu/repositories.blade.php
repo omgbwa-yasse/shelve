@@ -15,19 +15,19 @@
                     <a class="nav-link text-dark" href="{{ route('record-author.index') }}"><i class="bi bi-person"></i> Detenteurs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> Dates</a>
+                    <a class="nav-link text-dark" href="{{ route('record-select-date')}}"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-key"></i> Mots-clés</a>
+                    <a class="nav-link text-dark" href="{{ route('record-select-word')}}"><i class="bi bi-key"></i> Mots-clés</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-briefcase"></i> Activités</a>
+                    <a class="nav-link text-dark" href="{{ route('record-select-activity')}}"><i class="bi bi-briefcase"></i> Activités</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-building"></i> Locaux</a>
+                    <a class="nav-link text-dark" href="{{ route('record-select-building')}}"><i class="bi bi-building"></i> Locaux</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-clock-history"></i> Derniers
+                    <a class="nav-link text-dark" href="{{ route('record-select-last')}}"><i class="bi bi-clock-history"></i> Derniers
                         enregistrements</a>
                 </li>
             </ul>

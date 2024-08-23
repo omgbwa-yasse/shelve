@@ -30,7 +30,7 @@ class SearchMailFeedbackController extends Controller
     {
         $type = $request->input('type');
 
-        if ($type == true) {
+        if ($type == 'true') {
             $transactions = MailTransaction::whereHas('action', function ($query) {
                 $query->where('to_return', true);
             })->get();
@@ -39,9 +39,11 @@ class SearchMailFeedbackController extends Controller
                 $query->where('to_return', false);
             })->get();
         }
+
         $transactions->load('mail', 'action', 'organisationReceived', 'organisationSend');
         return view('mails.send.index', compact('transactions'));
     }
+
 
 
 

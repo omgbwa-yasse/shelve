@@ -52,6 +52,7 @@ use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchMailController;
+use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\MailInitialedController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
@@ -76,8 +77,6 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-//    Route::post('mails/file/{file}/attachment', [MailAttachmentController::class, 'store'])->name('mail-attachment.store');
-//    Route::get('mails/file/{file}/attachment/create', [MailAttachmentController::class, 'create'])->name('mail-attachment.create');
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
@@ -173,11 +172,21 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
 
-    Route::get('/records/search', [SearchController::class, 'index'])->name('records.search');
+
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
     Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
-    Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
+
+    Route::get('/repositories/search', [SearchController::class, 'index'])->name('records.search');
+    Route::get('/repositories/sort', [SearchRecordController::class, 'index'])->name('records.sort');
+    Route::get('/repositories/select', [SearchRecordController::class, 'date'])->name('record-select-date');
+    Route::get('/repositories/word', [SearchRecordController::class, 'selectWord'])->name('record-select-word');
+    Route::get('/repositories/activity', [SearchRecordController::class, 'selectActivity'])->name('record-select-activity');
+    Route::get('/repositories/building', [SearchRecordController::class, 'selectBuilding'])->name('record-select-building');
+    Route::get('/repositories/last', [SearchRecordController::class, 'selectLast'])->name('record-select-last');
+
+
+    Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });
 Route::get('attachments/{id}/download', [MailAttachmentController::class, 'download'])->name('attachments.download');

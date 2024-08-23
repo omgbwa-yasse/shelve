@@ -89,6 +89,7 @@
                 </li>
             </ul>
         </div>
+
         <!-- Parapheur -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"
            aria-controls="parapheurMenu" style="padding: 10px;">Parapheur</a>
