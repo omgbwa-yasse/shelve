@@ -22,26 +22,27 @@ use App\Models\UserOrganisation;
 use App\Models\MailAttachment;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Http\Request;
-
-
 
 class SearchMailFeedbackController extends Controller
 {
-    public function index(request $request){
+    public function index(Request $request)
+    {
         $type = $request->input('type');
-        $transactions = '';
-        if($type == true){
-            $transactions = MailTransaction::where('to_return', true)->get(); // To actions (relation) to_return :: True
-        }else{
-            $transactions = MailTransaction::where('to_return', false)->get();
-        }
-        $user = Auth::user();
-        $transactions->load(['mail','action','organisationReceived','organisationSend']);
-        return view('mails.send.index', compact('transactions'));
 
+        if ($type == true) {
+            $transactions = MailTransaction::whereHas('action', function ($query) {
+                $query->where('to_return', true);
+            })->get();
+        } else {
+            $transactions = MailTransaction::whereHas('action', function ($query) {
+                $query->where('to_return', false);
+            })->get();
+        }
+        $transactions->load('mail', 'action', 'organisationReceived', 'organisationSend');
+        return view('mails.send.index', compact('transactions'));
     }
+
 
 
 }
