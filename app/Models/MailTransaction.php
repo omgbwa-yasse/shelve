@@ -19,6 +19,7 @@ class MailTransaction extends Model
         'mail_type_id',
         'document_type_id',
         'action_id',
+        'to_return',
         'description',
     ];
 

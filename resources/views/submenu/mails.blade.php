@@ -36,35 +36,24 @@
             </ul>
         </div>
 
-<<<<<<< HEAD
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
             aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Suivi des affaires</a>
 
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Retour attendus</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true"><i class="bi bi-inbox"></i> Retour attendus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-bookmark-check"></i> Retour dépassés</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-people"></i> Autres</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=false"><i class="bi bi-bookmark-check"></i> Retour dépassés</a>
                 </li>
 
             </ul>
         </div>
 
 
-
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
-=======
-        <!-- Créer -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
            aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
->>>>>>> 15aeb1f8d366c4bd917fc6099f0a6a069ed2e052
 
         <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">

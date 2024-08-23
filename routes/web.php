@@ -85,6 +85,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
+        Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
