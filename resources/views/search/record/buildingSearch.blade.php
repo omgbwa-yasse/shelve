@@ -22,19 +22,9 @@
                             <div class="col-md-3 text-md-end text-center">
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('buildings.show', $building->id) }}" class="btn btn-sm btn-outline-secondary" title="View">
+                                        <a href="{{ route('record-select-floor')}}?categ=floor&id={{ $building->id }}" class="btn btn-sm btn-outline-secondary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('buildings.edit', $building->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('buildings.destroy', $building->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce bâtiment?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </div>

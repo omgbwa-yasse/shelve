@@ -26,19 +26,9 @@
                             <div class="col-md-3 text-md-end text-center">
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('shelves.show', $shelf->id) }}" class="btn btn-sm btn-outline-secondary" title="View">
+                                        <a href="{{ route('record-select-container') }}?categ=container&id={{ $shelf->id}}" class="btn btn-sm btn-outline-secondary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('shelves.edit', $shelf->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <form action="{{ route('shelves.destroy', $shelf->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete" onclick="return confirm('Are you sure you want to delete this shelf?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
                                     </div>
                                 </div>
                             </div>

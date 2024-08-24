@@ -187,6 +187,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/repositories/activity', [SearchRecordController::class, 'selectActivity'])->name('record-select-activity');
     Route::get('/repositories/building', [SearchRecordController::class, 'selectBuilding'])->name('record-select-building');
     Route::get('/repositories/last', [SearchRecordController::class, 'selectLast'])->name('record-select-last');
+    Route::get('/repositories/floor', [SearchRecordController::class, 'selectFloor'])->name('record-select-floor');
+    Route::get('/repositories/container', [SearchRecordController::class, 'selectContainer'])->name('record-select-container');
     Route::get('/repositories/room', [SearchRecordController::class, 'selectRoom'])->name('record-select-room');
     Route::get('/repositories/shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
 

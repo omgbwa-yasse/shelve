@@ -13,6 +13,7 @@ use App\Models\Batchrecord;
 use App\Models\Building;
 use App\Models\Room;
 use App\Models\Shelf;
+use App\Models\floor;
 use App\Models\Container;
 use App\Models\recordArchiving;
 use App\Models\recordContainer;
@@ -35,13 +36,13 @@ class SearchRecordController extends Controller
                 $query = record::query();
 
                 if ($exactDate) {
-                    $query->whereDate('date', $exactDate);
+                    $query->whereDate('date_exact', $exactDate);
                 }
 
                 if ($startDate && $endDate) {
                     $query->orWhere(function ($query) use ($startDate, $endDate) {
-                        $query->whereDate('date', '>=', $startDate)
-                            ->whereDate('date', '<=', $endDate);
+                        $query->whereDate('date_start', '>=', $startDate)
+                            ->whereDate('date_end', '<=', $endDate);
                     });
                 }
 
@@ -107,31 +108,36 @@ class SearchRecordController extends Controller
         return view('search.record.activitySearch', compact('activities'));
     }
 
-
-
     public function selectBuilding()
     {
         $buildings = Building::all();
         return view('search.record.buildingSearch', compact('buildings'));
     }
 
-
-    public function selectRoom(INT $id)
+    public function selectRoom(Request $request)
     {
+        $id = $request->input('id');
         $rooms = Room::where('floor_id', $id)->get();
         return view('search.record.roomSearch', compact('rooms'));
     }
 
-
-    public function selectShelve(INT $id)
+    public function selectFloor(Request $request)
     {
+        $id = $request->input('id');
+        $floors = Floor::where('building_id', $id)->get();
+        return view('search.record.floorSearch', compact('floors'));
+    }
+
+    public function selectShelve(Request $request)
+    {
+        $id = $request->input('id');
         $shelves = shelf::where('room_id', $id)->get();
         return view('search.record.shelveSearch', compact('shelves'));
     }
 
-
-    public function selectContainer(INT $id)
+    public function selectContainer(Request $request)
     {
+        $id = $request->input('id');
         $containers = container::where('shelve_id', $id)->get();
         return view('search.record.containerSearch', compact('containers'));
     }
