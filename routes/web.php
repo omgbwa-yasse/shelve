@@ -193,6 +193,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/repositories/shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
 
 
+
+    Route::get('/transferrings/sort', [SlipController::class, 'sort'])->name('slips.sort');
+
+
     Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });

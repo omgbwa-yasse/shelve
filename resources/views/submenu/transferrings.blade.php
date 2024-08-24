@@ -31,13 +31,13 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-folder"></i> Projets</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=project"><i class="bi bi-folder"></i> Projets</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-envelope-check"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=received"><i class="bi bi-envelope-check"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-check-circle"></i> Approuvés</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=approved"><i class="bi bi-check-circle"></i> Approuvés</a>
                 </li>
             </ul>
         </div>

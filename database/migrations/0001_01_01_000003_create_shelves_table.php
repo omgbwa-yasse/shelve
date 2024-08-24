@@ -179,9 +179,9 @@ return new class extends Migration
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(true);
             $table->unsignedBigInteger('slip_status_id')->nullable(false);
-            $table->boolean('is_received')->nullable(true);
+            $table->boolean('is_received')->nullable(true)->default(false);
             $table->dateTime('received_date')->nullable();
-            $table->boolean('is_approved')->nullable(true);
+            $table->boolean('is_approved')->nullable(true)->default(false);
             $table->dateTime('approved_date')->nullable(true);
             $table->timestamps();
             $table->foreign('officer_organisation_id')->references('id')->on('organisations')->onDelete('cascade');

@@ -37,7 +37,6 @@ class SlipController extends Controller
             'name' => 'required|max:200',
             'description' => 'nullable',
             'officer_organisation_id' => 'required|exists:organisations,id',
-            'officer_id' => 'required|exists:users,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'required|exists:slip_statuses,id',
@@ -47,11 +46,17 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
+
+        $request->merge(['officer_id' => auth()->user()->id]);
+
+
         Slip::create($request->all());
 
         return redirect()->route('slips.index')
             ->with('success', 'Slip created successfully.');
     }
+
+
 
 
 
@@ -80,7 +85,6 @@ class SlipController extends Controller
             'name' => 'required|max:200',
             'description' => 'nullable',
             'officer_organisation_id' => 'required|exists:organisations,id',
-            'officer_id' => 'required|exists:users,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'required|exists:slip_statuses,id',
@@ -89,6 +93,8 @@ class SlipController extends Controller
             'is_approved' => 'nullable|boolean',
             'approved_date' => 'nullable|date',
         ]);
+
+        $request->merge(['officer_id' => auth()->user()->id]);
 
         $slip->update($request->all());
 
@@ -105,6 +111,39 @@ class SlipController extends Controller
         return redirect()->route('slip.index')
             ->with('success', 'Slip deleted successfully.');
     }
+
+
+    public function sort(Request $request)
+    {
+        $type = $request->input('categ');
+        $slips = [];
+
+        switch ($type) {
+            case 'project':
+                $slips = Slip::where('is_received', '=', false)
+                            ->where('is_approved', '=', false)
+                            ->get();
+                break;
+
+            case 'received':
+                $slips = Slip::where('is_received', '=', true)
+                            ->whereNull('is_approved')
+                            ->get();
+                break;
+
+            case 'approved':
+                $slips = Slip::where('is_approved', '=', true)
+                            ->get();
+                break;
+        }
+
+        $slips->load('officer', 'officerOrganisation', 'userOrganisation', 'user','slipStatus','records');
+        return view('transferrings.slips.index', compact('slips'));
+    }
+
+
+
+
 }
 
 

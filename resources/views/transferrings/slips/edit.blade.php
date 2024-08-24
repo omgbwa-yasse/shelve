@@ -27,14 +27,6 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label for="officer_id" class="form-label">Officer</label>
-                <select class="form-select" id="officer_id" name="officer_id" required>
-                    @foreach ($users as $user)
-                        <option value="{{ $user->id }}" {{ $user->id == $slip->officer_id ? 'selected' : '' }}>{{ $user->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
                 <label for="user_organisation_id" class="form-label">User Organisation</label>
                 <select class="form-select" id="user_organisation_id" name="user_organisation_id" required>
                     @foreach ($organisations as $organisation)

@@ -36,15 +36,6 @@
                         @endforeach
                     </select>
                 </div>
-
-                <div class="flex-grow-1">
-                    <label for="officer_id" class="form-label">Officer</label>
-                    <select class="form-select" id="officer_id" name="officer_id" required>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
             </div>
 
             <div class="d-flex mb-3">
