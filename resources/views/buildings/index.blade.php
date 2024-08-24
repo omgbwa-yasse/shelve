@@ -26,9 +26,10 @@
                             <div class="col-md-3 text-md-end text-center">
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('record-select-building') }}?" class="btn btn-sm btn-outline-secondary" title="View">
+                                        <a href="{{ route('floors.index', $building->id)}}" class="btn btn-sm btn-outline-secondary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
+
                                     </div>
                                 </div>
                             </div>
