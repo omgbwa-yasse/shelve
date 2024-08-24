@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Transferring slip Details</h1>
+        <h1>Détails du bordereau du versement</h1>
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">{{ $slip->code }} - {{ $slip->name }}</h5>

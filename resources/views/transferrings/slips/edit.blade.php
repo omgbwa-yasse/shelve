@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Edit Transferring Slip</h1>
+        <h1>Modifier un versement</h1>
         <form action="{{ route('slips.update', $slip->id) }}" method="POST">
             @csrf
             @method('PUT')

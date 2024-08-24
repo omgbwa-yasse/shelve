@@ -46,9 +46,7 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
-
         $request->merge(['officer_id' => auth()->user()->id]);
-
 
         Slip::create($request->all());
 
@@ -101,6 +99,7 @@ class SlipController extends Controller
         return redirect()->route('slips.index')
             ->with('success', 'Slip updated successfully.');
     }
+
 
 
 

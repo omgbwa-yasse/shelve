@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Create New Transferring Slip</h1>
+        <h1>Ajouter un versement</h1>
         <form action="{{ route('slips.store') }}" method="POST">
             @csrf
             <div class="d-flex mb-3">

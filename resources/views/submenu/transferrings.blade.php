@@ -12,13 +12,13 @@
                     <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i> Tous mes bordereauX</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-list"></i> Brouillons</a>
+                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Dates (*)</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-list"></i> En traitement</a>
+                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Services versants (*)</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-archive"></i> Approuvée</a>
+                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Services d'archives (*)</a>
                 </li>
             </ul>
         </div>
