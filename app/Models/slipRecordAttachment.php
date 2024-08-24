@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class slipRecordAttachment extends Model
 {
     use HasFactory;
-    protected $table = 'slip_record_attachments';
+    protected $table = 'slip_record_attachment';
 
     protected $fillable = [
         'slip_record_id',

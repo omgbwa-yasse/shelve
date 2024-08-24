@@ -160,7 +160,7 @@
                     <i class="bi bi-arrow-left-right"></i> Transfert
                 </a>
                 <a class="nav-link @if(Request::segment(1) == 'monitorings') active fw-bold text-primary @endif" href="#">
-                    <i class="bi bi-clipboard-check"></i> Audits
+                    <i class="bi bi-clipboard-check"></i> Rapports
                 </a>
                 <a class="nav-link @if(Request::segment(1) == 'deposits') active fw-bold text-primary @endif" href="{{ route('buildings.index') }}">
                     <i class="bi bi-building"></i> Dépôt

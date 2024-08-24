@@ -67,6 +67,7 @@
             </ul>
         </div>
 
+
         <!-- Thésaurus -->
         <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
            aria-controls="thesaurusMenu" style="padding: 10px;">

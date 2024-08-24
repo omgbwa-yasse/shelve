@@ -9,7 +9,7 @@ class slipAttachment extends Model
 {
     use HasFactory;
 
-    protected $table = 'slip_attachments';
+    protected $table = 'slip_attachment';
 
     protected $fillable = [
         'slip_id',

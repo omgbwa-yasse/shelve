@@ -217,7 +217,7 @@ return new class extends Migration
         });
 
         // A ajouter
-        Schema::create('slip_record_attachments', function (Blueprint $table) {
+        Schema::create('slip_record_attachment', function (Blueprint $table) {
             $table->unsignedBigInteger('slip_record_id')->nullable(false);
             $table->unsignedBigInteger('attachment_id')->nullable(false);
             $table->timestamps();
@@ -226,7 +226,7 @@ return new class extends Migration
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
 
-        Schema::create('slip_attachments', function (Blueprint $table) {
+        Schema::create('slip_attachment', function (Blueprint $table) {
             $table->unsignedBigInteger('slip_id')->nullable(false);
             $table->unsignedBigInteger('attachment_id')->nullable(false);
             $table->timestamps();
@@ -234,7 +234,6 @@ return new class extends Migration
             $table->foreign('slip_record_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
-
 
 
         /*
