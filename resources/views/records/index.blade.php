@@ -2,40 +2,23 @@
 
 @section('content')
     <div class="container-fluid mt-4">
-        <!-- Main Heading -->
+
         <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Liste des enregistrements</h1>
 
-        <!-- Action and Search Bar -->
-        <div class="row mb-3">
-            <div class="col-md-8">
-                <a href="{{ route('records.create') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-plus-circle"></i> Nouveau enregistrement
-                </a>
-            </div>
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un enregistrement...">
-                </div>
-            </div>
-        </div>
-
-        <!-- Records List -->
         <div id="recordList">
             @foreach ($records as $record)
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-9">
-                                <!-- Card Title -->
+
                                 <h5 class="card-title mb-2">
-{{--                                    <i class="bi bi-file-earmark-text me-2"></i>--}}
                                     <b>{{ $record->code }}  - {{ $record->name }}</b>
                                     <span class="badge bg-{{ $record->level->color ?? 'secondary' }}">
                                         {{ $record->level->name ?? 'N/A' }}
                                     </span>
                                 </h5>
-                                <!-- Card Content -->
+
                                 <p class="card-text">
                                     <i class="bi bi-card-text me-2"></i><strong>Content:</strong> {{ $record->content }}<br>
                                     <i class="bi bi-bar-chart-fill me-2"></i><strong>Level:</strong> {{ $record->level->name ?? 'N/A' }}
@@ -48,7 +31,7 @@
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">
-                                <!-- Action Buttons -->
+
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
