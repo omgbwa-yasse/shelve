@@ -40,7 +40,6 @@ class MailReceivedController extends Controller
         $documentTypes = documentType :: all();
         $mailActions = MailAction :: all();
         $receivedOrganisations = Organisation::whereIn('id', UserOrganisation::where('user_id', auth()->id())
-            ->where('active',true)
             ->pluck('organisation_id'))
             ->get();
         return view('mails.received.create', compact('mails','users','organisations','receivedOrganisations','documentTypes','mailActions'));
