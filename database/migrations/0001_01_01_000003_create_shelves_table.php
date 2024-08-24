@@ -216,6 +216,27 @@ return new class extends Migration
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+        // A ajouter
+        Schema::create('slip_record_attachments', function (Blueprint $table) {
+            $table->unsignedBigInteger('slip_record_id')->nullable(false);
+            $table->unsignedBigInteger('attachment_id')->nullable(false);
+            $table->timestamps();
+            $table->primary(['slip_record_id', 'attachment_id']);
+            $table->foreign('slip_record_id')->references('id')->on('slip_records')->onDelete('cascade');
+            $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
+        });
+
+        Schema::create('slip_attachments', function (Blueprint $table) {
+            $table->unsignedBigInteger('slip_id')->nullable(false);
+            $table->unsignedBigInteger('attachment_id')->nullable(false);
+            $table->timestamps();
+            $table->primary(['slip_id', 'attachment_id']);
+            $table->foreign('slip_record_id')->references('id')->on('slips')->onDelete('cascade');
+            $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
+        });
+
+
+
         /*
             Les enregistrements
         */

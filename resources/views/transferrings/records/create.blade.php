@@ -2,9 +2,13 @@
 
 @section('content')
     <div class="container">
-        <h1>Create New Slip Record for Slip {{ $slip->name }}</h1>
+
+        <h1> Ajouter un document </h1>
         <form action="{{ route('slips.records.store', $slip->id) }}" method="POST">
             @csrf
+            <div class="mb-3">
+                Versement : <h3>{{ $slip->code }} - {{ $slip->name }}</h3>
+            </div>
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" required maxlength="10">

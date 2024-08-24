@@ -2,9 +2,9 @@
 
 @section('content')
     <div class="container">
-        <h1>Transferring Slips</h1>
+        <h1>Bordereau de versement </h1>
         <a href="{{ route('slips.create') }}" class="btn btn-primary mb-3">
-            <i class="bi bi-plus-circle"></i> Create New Slip
+            <i class="bi bi-plus-circle"></i> Nouveau bordereau
         </a>
 
         <div id="slipList">
