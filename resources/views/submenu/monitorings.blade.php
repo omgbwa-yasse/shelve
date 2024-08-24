@@ -3,7 +3,7 @@
         <!-- Etat -->
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="false"
             aria-controls="etatMenu">
-            <i class="bi bi-info-circle"></i> Etat
+            <i class="bi bi-info-circle"></i> Créé
         </a>
         <div class="collapse" id="etatMenu">
             <ul class="list-unstyled pl-3">
