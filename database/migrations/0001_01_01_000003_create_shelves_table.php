@@ -338,6 +338,15 @@ return new class extends Migration
             $table->foreign('parent_id')->references('id')->on('records')->onDelete('cascade');
         });
 
+        Schema::create('record_attachment', function (Blueprint $table) {
+            $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->unsignedBigInteger('attachment_id')->nullable(false);
+            $table->timestamps();
+            $table->primary(['record_id', 'attachment_id']);
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
+        });
+
         Schema::create('files', function (Blueprint $table) {
             $table->id();
             $table->string('path', 250)->nullable(false);

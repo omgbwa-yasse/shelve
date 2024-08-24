@@ -73,10 +73,6 @@
             @endforeach
         </div>
 
-        <!-- Pagination -->
-        <div class="d-flex justify-content-center">
-            {{ $records->links() }}
-        </div>
     </div>
 
     @push('scripts')

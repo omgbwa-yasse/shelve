@@ -20,7 +20,7 @@ class RecordController extends Controller
 {
     public function index()
     {
-        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
+        $records = Record::with(['level','attachments','status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
             ->paginate(10);
         $statuses = RecordStatus::all();
         $terms = Term::all();
@@ -94,30 +94,23 @@ class RecordController extends Controller
             'term_ids' => 'required|array',
         ]);
 
-        // Créez le record
         $record = Record::create($validatedData);
 
-        // Supprimez les clés author_ids et term_ids du tableau $validatedData
+
         $term_ids = $request->input('term_ids');
         $author_ids = $request->input('author_ids');
         $term_ids = explode(',', $term_ids[0]);
 
         $author_ids = explode(',', $author_ids[0]);
-// Supprimez les valeurs vides du tableau
-//        $term_ids = array_filter($term_ids);
-//        $author_ids = array_filter($author_ids);
 
-// Convertissez les valeurs en entiers
         $term_ids = array_map('intval', $term_ids);
         $author_ids = array_map('intval', $author_ids);
-//        // Attachez les auteurs au record
-//        dd($author_ids,$term_ids);
+
 
         foreach ($author_ids as $author_id) {
             $record->authors()->attach($author_id);
         }
 
-        // Attachez les termes au record
         foreach ($term_ids as $term_id) {
             $record->terms()->attach($term_id);
         }
@@ -144,7 +137,7 @@ class RecordController extends Controller
         $levels = RecordLevel::all();
         $terms = Term::all();
 
-        // Récupérez les ID des auteurs et des termes associés à l'enregistrement
+
         $author_ids = $record->authors->pluck('id')->toArray();
         $term_ids = $record->terms->pluck('id')->toArray();
 
@@ -153,7 +146,7 @@ class RecordController extends Controller
 
     public function update(Request $request, Record $record)
     {
-        // Définissez une valeur par défaut pour date_format
+
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
         $validatedData = $request->validate([

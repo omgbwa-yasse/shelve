@@ -13,7 +13,9 @@ use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\RecordAuthorController;
+use App\Http\Controllers\RecordAttachmentController;
 use App\Http\Controllers\AccessionController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
 use App\Http\Controllers\MailAuthorController;
@@ -109,6 +111,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
+        Route::resource('records.attachments', recordAttachmentController::class)->shallow();
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
     });
@@ -184,6 +187,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/repositories/activity', [SearchRecordController::class, 'selectActivity'])->name('record-select-activity');
     Route::get('/repositories/building', [SearchRecordController::class, 'selectBuilding'])->name('record-select-building');
     Route::get('/repositories/last', [SearchRecordController::class, 'selectLast'])->name('record-select-last');
+    Route::get('/repositories/room', [SearchRecordController::class, 'selectRoom'])->name('record-select-room');
+    Route::get('/repositories/shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
 
 
     Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');

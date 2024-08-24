@@ -124,6 +124,7 @@
                     <div class="card-body">
                         <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
                         <div class="d-grid gap-2">
+
                             <a href="{{ route('records.edit', $record) }}" class="btn btn-warning">
                                 <i class="bi bi-pencil me-2"></i> Modifier
                             </a>
@@ -146,6 +147,11 @@
                 <a href="{{ route('records.index') }}" class="btn btn-outline-secondary mt-3 w-100">
                     <i class="bi bi-arrow-left me-2"></i> Retour à la liste
                 </a>
+                <ul>
+                    @foreach($record->attachments as $attachment)
+                        <li>{{ $attachment->file_path }} - {{ $attachment->description }}</li>
+                    @endforeach
+                </ul>
             </div>
         </div>
     </div>

@@ -11,6 +11,9 @@ use App\Models\recordType;
 use App\Models\Author;
 use App\Models\Batchrecord;
 use App\Models\Building;
+use App\Models\Room;
+use App\Models\Shelf;
+use App\Models\Container;
 use App\Models\recordArchiving;
 use App\Models\recordContainer;
 use App\Models\RecordStatus;
@@ -27,6 +30,7 @@ class SearchRecordController extends Controller
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
+
 
                 $query = record::query();
 
@@ -49,11 +53,24 @@ class SearchRecordController extends Controller
                     ->get();
                 break;
 
+            case "term":
+                $id = $request->input('id');
+                $records = Record::whereHas('terms', function ($query) use ($id) {
+                    $query->where('id', $id);
+                })->get();
+                break;
+
             case "author":
                 $records = Record::join('record_author', 'records.id', '=', 'record_author.record_id')
                     ->where('record_author.author_id', $request->input('id'))
                     ->get();
                 break;
+
+            case "activity":
+                $records = record::where('activity_id', $request->input('id'))
+                    ->get();
+                break;
+
 
             case "container":
                 $records = Record::where('container_id',  $request->input('id'))->get();
@@ -64,10 +81,9 @@ class SearchRecordController extends Controller
                 break;
         }
 
-
-        $authors = Author::all();
-
-        return view('records.index', compact('records', 'priorities', 'types', 'typologies', 'authors'));
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        return view('records.index', compact('records','terms', 'statuses'));
     }
 
 
@@ -100,18 +116,38 @@ class SearchRecordController extends Controller
     }
 
 
+    public function selectRoom(INT $id)
+    {
+        $rooms = Room::where('floor_id', $id)->get();
+        return view('search.record.roomSearch', compact('rooms'));
+    }
+
+
+    public function selectShelve(INT $id)
+    {
+        $shelves = shelf::where('room_id', $id)->get();
+        return view('search.record.shelveSearch', compact('shelves'));
+    }
+
+
+    public function selectContainer(INT $id)
+    {
+        $containers = container::where('shelve_id', $id)->get();
+        return view('search.record.containerSearch', compact('containers'));
+    }
+
 
     public function selectLast()
-{
-    $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
-        ->latest()
-        ->paginate(10);
+    {
+        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
+            ->latest()
+            ->paginate(10);
 
-    $statuses = RecordStatus::all();
-    $terms = Term::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
 
-    return view('search.record.lastSearch', compact('records', 'statuses', 'terms'));
-}
+        return view('search.record.lastSearch', compact('records', 'statuses', 'terms'));
+    }
 
 
 

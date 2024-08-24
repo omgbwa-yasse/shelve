@@ -18,7 +18,11 @@
             @foreach ($terms as $term)
                 <tr>
                     <td>{{ $term->id }}</td>
-                    <td>{{ $term->name }}</td>
+                    <td>
+                        <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id }}">
+                            {{ $term->name }}
+                        </a>
+                    </td>
                     <td>{{ $term->type->code }} - {{ $term->type->name }}</td>
                     <td>{{ $term->parent->name ?? 'Debut de la branche' }}</td>
                     <td>{{ $term->description }}</td>

@@ -3,9 +3,6 @@
 @section('content')
     <div class="container-fluid py-4">
         <div class="row mb-4 align-items-center">
-            <div class="col">
-                <h1 class="h2 mb-0"><b>Plan de classement</b></h1>
-            </div>
             <div class="col-auto">
             </div>
         </div>
@@ -38,8 +35,8 @@
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ route('activities.show', $activity->id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-gear me-1"></i>Paramètres
+                                    <a href="{{ route('records.sort')}}?categ=activity&id={{ $activity->id }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-gear me-1"></i>Voir les archives
                                     </a>
                                 </td>
                             </tr>

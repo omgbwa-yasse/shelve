@@ -15,7 +15,7 @@
             @forelse ($authors as $author)
             <li class="list-group-item d-flex align-items-center">
                 {{ $author->name }} ({{ $author->authorType->name }})
-                <a href="" style="margin-left: auto;">
+                <a href="{{ route('records.sort') }}?categ=author&id={{ $author->id}}" style="margin-left: auto;">
                     <button type="button" class="btn btn-success">Voir les archives</button>
                 </a>
             </li>
