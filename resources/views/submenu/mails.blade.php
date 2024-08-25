@@ -16,6 +16,9 @@
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> A recevoir (*) received_status* & received_date*</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
                 <li class="nav-item">
