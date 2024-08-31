@@ -33,16 +33,12 @@ class MailSendController extends Controller
 
     public function create()
     {
-        $type = mailType::where('name','=','send');
         $mails = mail::all();
         $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $documentTypes = documentType :: all();
         $mailActions = MailAction :: all();
-        $sendOrganisations = Organisation::whereIn('id', UserOrganisation::where('user_id', auth()->id())
-            ->where('active',true)
-            ->pluck('organisation_id'))
-            ->get();
+        $sendOrganisations = Organisation::all(); // à reveoir
         return view('mails.send.create', compact('mails','users','organisations','sendOrganisations','documentTypes','mailActions'));
     }
 
@@ -56,16 +52,16 @@ class MailSendController extends Controller
             'mail_id' => 'required|exists:mails,id',
             'user_received_id' => 'required|exists:users,id',
             'organisation_received_id' => 'required|exists:organisations,id',
-            'organisation_send_id' => 'required|exists:organisations,id',
             'document_type_id' => 'required|exists:document_types,id',
             'action_id' => 'required|exists:mail_actions,id',
             'description' => 'nullable',
         ]);
 
-
+        $validatedData['organisation_send_id'] = auth()->user()->organisation->id ;
         $validatedData['user_send_id'] =  auth()->id();
+
         $validatedData['date_creation'] = now();
-        $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
+        $validatedData['mail_type_id'] = 3; // 1 Recevoir, 2 Emettre 3 en cours (in progress)
 
 
 
@@ -119,23 +115,22 @@ class MailSendController extends Controller
             'mail_id' => 'required|exists:mails,id',
             'user_received_id' => 'required|exists:users,id',
             'organisation_received_id' => 'required|exists:organisations,id',
-            'organisation_send_id' => 'required|exists:organisations,id',
             'document_type_id' => 'required|exists:document_types,id',
             'action_id' => 'required|exists:mail_actions,id',
             'description' => 'nullable',
         ]);
 
+        $validatedData['organisation_send_id'] = auth()->user()->organisation->id ;
         $validatedData['user_send_id'] =  auth()->id();
+
         $validatedData['date_creation'] = now();
-        $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
+        $validatedData['mail_type_id'] = 3; // 1 Recevoir, 2 Emettre 3 en cours (in progress)
 
         $mailTransaction->update($validatedData);
 
         return redirect()->route('mail-send.index')
             ->with('success', 'Mail Transaction updated successfully');
     }
-
-
 
     public function destroy($id)
     {

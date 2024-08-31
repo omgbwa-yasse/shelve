@@ -825,7 +825,8 @@ return new class extends Migration
 
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->nullable(false);
+            $table->enum('name', ['send', 'received','InProgress'])->nullable(false);
+            $table->timestamps();
         });
 
         Schema::create('mail_archiving', function (Blueprint $table) {

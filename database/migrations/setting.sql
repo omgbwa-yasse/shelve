@@ -19,9 +19,7 @@ INSERT INTO `mail_typologies`(`id`, `name`, `description`, `class_id`) VALUES ('
 INSERT INTO `mail_status`(`id`, `name`) VALUES ('','brouillon');
 INSERT INTO `mail_status`(`id`, `name`) VALUES ('','traité');
 
-INSERT INTO `mail_types`(name) VALUES ('send'), ('received');
-
-
+INSERT INTO `mail_types`(name) VALUES ('send'), ('received'), ('InProgress'), ('draft');
 
 INSERT INTO `organisations`(`id`, `code`, `name`, `description`, `parent_id`)
 VALUES ('','DG','Directeur général','','');

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'password',
         'surname' ,
         'birthday',
+        'current_organisation_id',
     ];
 
     /**
@@ -50,9 +51,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function organisations()
+    public function organisation()
     {
-        return $this->belongsToMany(Organisation::class, 'user_organisation', 'user_id', 'organisation_id')->withTimestamps();
+        return $this->belongsTo(Organisation::class, 'current_organisation_id');
     }
 
     public function roles()

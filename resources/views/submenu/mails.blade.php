@@ -16,9 +16,6 @@
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> A recevoir (*) received_status* & received_date*</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
                 <li class="nav-item">
@@ -81,6 +78,9 @@
 
         <div class="collapse show" id="courrierMenu">
             <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-inbox"></i> A recevoir</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
                 </li>
