@@ -11,7 +11,7 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['name', 'description', 'duration', 'task_type_id', 'task_status_id'];
+    protected $fillable = ['name', 'description', 'duration', 'task_status_id', 'task_type_id'];
 
     public function taskType()
     {
@@ -33,23 +33,33 @@ class Task extends Model
         return $this->belongsToMany(User::class, 'task_users', 'task_id', 'user_id');
     }
 
-    public function mails()
-    {
-        return $this->belongsToMany(Mail::class, 'task_mail', 'task_id', 'mail_id');
-    }
-
-    public function containers()
-    {
-        return $this->belongsToMany(Container::class, 'task_container', 'task_id', 'container_id');
-    }
-
-    public function records()
-    {
-        return $this->belongsToMany(Record::class, 'task_record', 'task_id', 'record_id');
-    }
-
     public function attachments()
     {
         return $this->belongsToMany(Attachment::class, 'task_attachment', 'task_id', 'attachment_id');
+    }
+
+    public function taskRemembers()
+    {
+        return $this->hasMany(TaskRemember::class);
+    }
+
+    public function taskRecords()
+    {
+        return $this->hasMany(TaskRecord::class);
+    }
+
+    public function taskSupervisions()
+    {
+        return $this->hasMany(TaskSupervision::class);
+    }
+
+    public function taskMails()
+    {
+        return $this->hasMany(TaskMail::class);
+    }
+
+    public function taskContainers()
+    {
+        return $this->hasMany(TaskContainer::class);
     }
 }

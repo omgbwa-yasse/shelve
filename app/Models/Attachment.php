@@ -28,6 +28,9 @@ class Attachment extends Model
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
-
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_attachment', 'attachment_id', 'task_id');
+    }
 
 }

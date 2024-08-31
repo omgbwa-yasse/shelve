@@ -195,6 +195,8 @@ Route::group(['middleware' => 'auth'], function () {
     });
     Route::resource('tasks', TaskController::class);
     Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.remove-attachment');
+    Route::post('/tasks/{task}/download/{attachment}', [TaskController::class, 'downloadAttachment'])->name('tasks.download');
+
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
     Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
