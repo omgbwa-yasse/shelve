@@ -15,6 +15,13 @@ class Batch extends Model
     protected $fillable = [
         'code',
         'name',
+        'organisation_holder_id',
     ];
+
+    public function organisation()
+    {
+        return $this->belongsTo(Organisation::class, 'organisation_holder_id');
+    }
+
 }
 

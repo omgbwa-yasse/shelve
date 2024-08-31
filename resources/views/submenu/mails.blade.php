@@ -16,9 +16,6 @@
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> A recevoir (*) received_status* & received_date*</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
                 </li>
                 <li class="nav-item">
@@ -45,10 +42,10 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true"><i class="bi bi-inbox"></i> Retour attendus</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&?deadline=available"><i class="bi bi-inbox"></i> Retour attendus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=false"><i class="bi bi-bookmark-check"></i> Retour dépassés</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&deadline=exceeded"><i class="bi bi-bookmark-check"></i>Retour dépassés</a>
                 </li>
 
             </ul>
@@ -81,6 +78,9 @@
 
         <div class="collapse show" id="courrierMenu">
             <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-inbox"></i> A recevoir</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
                 </li>

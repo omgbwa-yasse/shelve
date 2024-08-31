@@ -47,16 +47,6 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="organisation_send_id">Envoyer par</label>
-            <select name="organisation_send_id" id="organisation_send_id" class="form-control">
-                @foreach($sendOrganisations as $organisation)
-                    <option value="{{ $organisation->id }}" {{ old('organisation_send_id', $mailTransaction->organisation_send_id) == $organisation->id ? 'selected' : '' }}>
-                        {{ $organisation->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="form-group">
             <label for="action_id">Action</label>
             <select name="action_id" id="action_id" class="form-control">
                 @foreach($mailActions as $action)

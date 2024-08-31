@@ -825,7 +825,8 @@ return new class extends Migration
 
         Schema::create('mail_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->nullable(false);
+            $table->enum('name', ['send', 'received','InProgress'])->nullable(false);
+            $table->timestamps();
         });
 
         Schema::create('mail_archiving', function (Blueprint $table) {
@@ -970,6 +971,8 @@ return new class extends Migration
             $table->id();
             $table->string('code', 10)->nullable(false)->unique();
             $table->string('name', 250)->nullable(false);
+            $table->unsignedInteger('organisation_holder_id')->nullable(false);
+            $table->foreign('organisation_holder_id')->references('id')->on('batches')->onDelete('cascade');
             $table->timestamps();
         });
 

@@ -216,8 +216,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::get('/transferrings/sort', [SlipController::class, 'sort'])->name('slips.sort');
-
-
+    Route::get('/mails/InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
+    Route::get('/mails/approve', [MailReceivedController::class, 'approve'])->name('mails.approve');
     Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
     Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
 });

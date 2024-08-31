@@ -13,8 +13,8 @@ class BatchSendController extends Controller
     public function index()
     {
         $organisation = User::with('organisations');
-        $batchTransactions = Batchtransaction::whereIn('organisation_send_id',
-            auth()->user()->organisations->pluck('id'))->get();
+        $batchTransactions = Batchtransaction::where('organisation_send_id',
+            auth()->user()->organisation->id);
         return view('batch.send.index', compact('batchTransactions'));
     }
 
@@ -47,8 +47,8 @@ class BatchSendController extends Controller
     {
         $batches = Batch::all();
         $organisations = Organisation::all();
-        $batchTransaction = Batchtransaction::whereIn('organisation_send_id',
-            auth()->user()->organisations->pluck('id'))->get();
+        $batchTransaction = Batchtransaction::where('organisation_send_id',
+            auth()->user()->organisation->id);
         return view('batch.send.edit', compact('batchTransaction', 'batches', 'organisations'));
     }
 

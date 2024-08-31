@@ -34,6 +34,11 @@
                             <a href="{{ route('mail-received.show', $transaction) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-eye"></i> Détails
                             </a>
+                            @if($transaction->type->name == 'inProgress')
+                            <a href="{{ route('mails.approve') }}?id={{ $transaction->id}}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-check-all"></i> Recevoir
+                            </a>
+                            @endIf
                         </td>
                     </tr>
                 @endforeach
