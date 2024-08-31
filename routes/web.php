@@ -72,6 +72,7 @@ use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Models\Transaction;
 
+use App\Http\Controllers\ReportController;
 Auth::routes();
 
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
@@ -79,6 +80,23 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+    Route::prefix('report')->group(function () {
+    Route::get('/my-tasks', [ReportController::class, 'myTasks'])->name('report.my-tasks');
+    Route::get('/all-tasks', [ReportController::class, 'allTasks'])->name('report.all-tasks');
+    Route::get('/create-task', [ReportController::class, 'createTask'])->name('report.create-task');
+
+    Route::get('/statistics/mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
+    Route::get('/statistics/repositories', [ReportController::class, 'statisticsRepositories'])->name('report.statistics.repositories');
+    Route::get('/statistics/communications', [ReportController::class, 'statisticsCommunications'])->name('report.statistics.communications');
+    Route::get('/statistics/transferrings', [ReportController::class, 'statisticsTransferrings'])->name('report.statistics.transferrings');
+    Route::get('/statistics/deposits', [ReportController::class, 'statisticsDeposits'])->name('report.statistics.deposits');
+    Route::get('/statistics/tools', [ReportController::class, 'statisticsTools'])->name('report.statistics.tools');
+    Route::get('/statistics/dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
+
+    Route::get('/dashboard', [ReportController::class, 'dashboard'])->name('report.dashboard');
+    });
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');

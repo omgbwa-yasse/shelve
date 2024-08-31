@@ -1,4 +1,5 @@
 @extends('layouts.app')
+
 <style>
     .timeline {
         position: relative;
@@ -37,89 +38,98 @@
     .timeline-item:nth-child(even) .timeline-content {
         float: right;
     }
+    .mail-details {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+
+        margin-bottom: 30px;
+    }
+    .mail-actions {
+        margin-top: 20px;
+        margin-bottom: 30px;
+    }
+    .section-title {
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
 </style>
+
 @section('content')
-    <div class="container mt-5">
-        <div class="">
-            <div class="">
-                <h1 class="">{{ $mail->name }}</h1>
-            </div>
-            <div class="">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Details</h5>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <strong>ID:</strong> {{ $mail->id }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Code:</strong> {{ $mail->code }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Author(s):</strong>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-11 ">
+                <h1 class="mb-4 text-center">{{ $mail->name }}</h1>
+
+                <div class="mail-details">
+                    <h5 class="section-title">Mail Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>ID:</strong> {{ $mail->id }}</p>
+                            <p><strong>Code:</strong> {{ $mail->code }}</p>
+                            <p><strong>Author(s):</strong>
                                 @foreach($mail->authors as $author)
                                     {{ $author->name }}@if(!$loop->last), @endif
                                 @endforeach
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Description:</strong> {{ $mail->description }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Date:</strong> {{ $mail->date }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Priority:</strong> {{ $mail->priority ? $mail->priority->name : 'N/A' }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Mail Type:</strong> {{ $mail->type ? $mail->type->name : 'N/A' }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Business Type:</strong> {{ $mail->typology ? $mail->typology->name : 'N/A' }}
-                            </li>
-                            <li class="list-group-item">
-                                <strong>Nature:</strong> {{ $mail->documentType ? $mail->documentType->name : 'N/A' }}
-                            </li>
-                        </ul>
+                            </p>
+                            <p><strong>Date:</strong> {{ $mail->date }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Priority:</strong> {{ $mail->priority ? $mail->priority->name : 'N/A' }}</p>
+                            <p><strong>Mail Type:</strong> {{ $mail->type ? $mail->type->name : 'N/A' }}</p>
+                            <p><strong>Business Type:</strong> {{ $mail->typology ? $mail->typology->name : 'N/A' }}</p>
+                            <p><strong>Nature:</strong> {{ $mail->documentType ? $mail->documentType->name : 'N/A' }}</p>
+                        </div>
                     </div>
+                    <p><strong>Description:</strong> {{ $mail->description }}</p>
                 </div>
-                <div class=" justify-content-start">
-                    <a href="{{ route('mails.index') }}" class="btn btn-secondary mr-2">Back</a>
-                    <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-warning mr-2">Edit</a>
+
+                <div class="mail-actions">
+                    <a href="{{ route('mails.index') }}" class="btn btn-secondary mr-2">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                    <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-warning mr-2">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
                     <form action="{{ route('mails.destroy', $mail->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <button type="submit" class="btn btn-danger mr-2">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
                     </form>
-                    <a href="{{ route('mail-attachment.create', ['file' => $mail]) }}" class="btn btn-warning btn-secondary">Ajouter une pièce jointe</a>                </div>
-                <hr>
-                <h3>Transactions</h3>
-                @if($mail->transactions)
+                    <a href="{{ route('mail-attachment.create', ['file' => $mail]) }}" class="btn btn-info">
+                        <i class="bi bi-paperclip"></i> Add Attachment
+                    </a>
+                </div>
+
+                <h3 class="section-title">Transactions</h3>
+                @if($mail->transactions->isNotEmpty())
                     <div class="timeline">
                         @foreach($mail->transactions as $transaction)
                             <div class="timeline-item">
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-content">
-                                    <h6>{{ $transaction->code }}</h6>
+                                    <h6 class="mb-3">{{ $transaction->code }}</h6>
                                     <p>
                                         <strong>Created:</strong> {{ $transaction->date_creation }}<br>
                                         <strong>Sender:</strong> {{ $transaction->organisationSend ? $transaction->organisationSend->name : 'N/A' }} ({{ $transaction->userSend ? $transaction->userSend->name : 'N/A' }})<br>
                                         <strong>Recipient:</strong> {{ $transaction->organisationReceived ? $transaction->organisationReceived->name : 'N/A' }} ({{ $transaction->userReceived ? $transaction->userReceived->name : 'N/A' }})<br>
-                                        <strong>Created:</strong> {{ $transaction->created_at }}<br>
-                                        <strong>Updated:</strong> {{ $transaction->updated_at }}<br>
                                         <strong>Mail Type:</strong> {{ $transaction->type ? $transaction->type->name : 'N/A' }}<br>
                                         <strong>Document Type:</strong> {{ $transaction->documentType ? $transaction->documentType->name : 'N/A' }}
                                     </p>
+                                    <small class="text-muted">
+                                        Created: {{ $transaction->created_at->format('M d, Y H:i') }}<br>
+                                        Updated: {{ $transaction->updated_at->format('M d, Y H:i') }}
+                                    </small>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div class="alert alert-info">No transactions.</div>
+                    <div class="alert alert-info">No transactions found.</div>
                 @endif
             </div>
-
         </div>
     </div>
-
-
 @endsection
