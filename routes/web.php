@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
@@ -192,8 +193,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
-
-
+    Route::resource('tasks', TaskController::class);
+    Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.remove-attachment');
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
     Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
     Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');
