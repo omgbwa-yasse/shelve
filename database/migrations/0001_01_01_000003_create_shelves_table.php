@@ -335,7 +335,9 @@ return new class extends Migration
             $table->integer('frequence_value')->unsigned()->nullable(false);
             $table->enum('frequence_unit', ['year', 'month', 'day', 'hour'])->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('task_id')->nullable(false);
             $table->timestamps();
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
