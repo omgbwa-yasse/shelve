@@ -29,16 +29,29 @@ class SearchMailFeedbackController extends Controller
     public function index(Request $request)
     {
         $type = $request->input('type');
+        $deadline = $request->input('deadline');
 
-        if ($type == 'true') {
+        if ($type == 'true' && $deadline == 'available' ) {
+
             $transactions = MailTransaction::whereHas('action', function ($query) {
                 $query->where('to_return', true);
             })->get();
-        } else {
+
+        }
+        elseif($type == 'true' && $deadline == 'exceeded'){
+
+            $transactions = MailTransaction::whereHas('action', function ($query) {
+                $query->whereRaw('DATE_ADD(mail_transactions.date_creation, INTERVAL mail_actions.duration SECOND) > NOW()');
+            })->get();
+
+        }else{
+
             $transactions = MailTransaction::whereHas('action', function ($query) {
                 $query->where('to_return', false);
             })->get();
         }
+
+
 
         $transactions->load('mail', 'action', 'organisationReceived', 'organisationSend');
         return view('mails.send.index', compact('transactions'));

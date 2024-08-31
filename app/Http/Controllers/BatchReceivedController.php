@@ -13,8 +13,7 @@ class BatchReceivedController extends Controller
     public function index()
     {
         $organisation = User::with('organisations');
-        $batchTransactions = Batchtransaction::whereIn('organisation_received_id',
-            auth()->user()->organisations->pluck('id'))->get();
+        $batchTransactions = Batchtransaction::where('organisation_received_id', auth()->user()->organisation->id);
         return view('batch.received.index', compact('batchTransactions'));
     }
 
