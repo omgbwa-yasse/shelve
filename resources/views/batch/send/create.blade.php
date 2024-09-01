@@ -8,7 +8,7 @@
             <label for="batch_id" class="form-label">Parapheur </label>
             <select name="batch_id" id="batch_id" class="form-select" required>
                 @foreach ($batches as $batch)
-                    <option value="{{ $batch->id }}">{{ $batch->name }}</option>
+                    <option value="{{ $batch->id }}">{{ $batch->code }} - {{ $batch->name }}</option>
                 @endforeach
             </select>
         </div>
