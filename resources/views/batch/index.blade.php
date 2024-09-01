@@ -13,25 +13,20 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>code</th>
-                    <th>Intitulé </th>
-                    <th>Organisation de départ</th>
-                    <th>Organisation d'arrivée</th>
-                    <th>Date</th>
-                    <th>Actions</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($mailBatches as $transaction)
+                @foreach($mailBatches as $batch)
                     <tr>
-                        <td>Code</td>
-                        <td>Name {{ $transaction->batch }}</td>
-                        <td>{{ $transaction->organisationSend->name }}</td>
-                        <td>{{ $transaction->organisationReceived->name }}</td>
-                        <td>{{ $transaction->created_at }}</td>
+                        <td>{{ $batch->code }}</td>
+                        <td>{{ $batch->name }}</td>
+
                         <td>
-                            <a href="{{ route('mails.sort') }}?categ=batch&id={{$transaction->id}}" class="btn btn-info btn-sm">Voir le contenu</a>
-                            <a href="{{ route('batch.show', $transaction) }}" class="btn btn-warning btn-sm">Paramètre</a>
+                            <a href="{{ route('mails.sort') }}?categ=batch&id={{$batch->id}}" class="btn btn-info btn-sm">Voir le contenu</a>
+                            <a href="{{ route('batch.show', $batch) }}" class="btn btn-warning btn-sm">Paramètre</a>
                         </td>
                     </tr>
                 @endforeach
