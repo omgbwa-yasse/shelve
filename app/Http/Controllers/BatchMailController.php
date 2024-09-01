@@ -13,8 +13,8 @@ class BatchMailController extends Controller
     public function index(Batch $batch)
     {
         $batchMails = BatchMail::where('batch_id', $batch->id)->get();
-        $batchMails->load('mails');
-        dd($batchMails);
+        $batchMails->load('mail');
+
         return view('batch.mail.index', compact('batchMails', 'batch'));
     }
 
@@ -31,12 +31,17 @@ class BatchMailController extends Controller
 
     public function store(Request $request, Batch $batch)
     {
-        $batchMail = new BatchMail([
-            'mail_id' => $request->mail_id,
-            'insert_date' => now(),
+        $validatedData = $request->validate([
+            'mail_id' => 'required|exists:mails,id'
         ]);
 
-        $batch->batchMails()->save($batchMail);
+        $batchMail = new BatchMail([
+            'mail_id' => $validatedData['mail_id'],
+            'insert_date' => now(),
+            'batch_id' => $batch->id,
+        ]);
+
+        $batchMail->save();
 
         return redirect()->route('batch.mail.index', $batch)
             ->with('success', 'Courriel de lot créé avec succès.');
@@ -65,11 +70,10 @@ class BatchMailController extends Controller
     }
 
 
-
-    public function destroy(Batch $batch, BatchMail $batchMail)
+    public function destroy(Batch $batch, INT $id)
     {
+        $batchMail = BatchMail::findOrFail($id);
         $batchMail->delete();
-
         return redirect()->route('batch.mail.index', $batch)->with('success', 'Batch mail deleted successfully.');
     }
 

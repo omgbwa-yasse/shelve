@@ -1,8 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Batch Mails for {{ $batch->name }}</h1>
-    <a href="{{ route('batch.mail.create', $batch) }}" class="btn btn-primary mb-3">Create Batch Mail</a>
+    <h1>Courrier du parapheur : {{ $batch->name }}</h1>
+    <a href="{{ route('batch.mail.create', $batch) }}" class="btn btn-primary mb-3">Ajouter un courrier</a>
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
     <table class="table">
         <thead>
             <tr>
@@ -16,13 +21,11 @@
         <tbody>
             @foreach ($batchMails as $batchMail)
                 <tr>
-                    <td></td>
-                    <td></td>
+                    <td>{{ $batchMail->mail->code }}</td>
+                    <td>{{ $batchMail->mail->name }}</td>
                     <td>{{ $batchMail->insert_date }}</td>
-                    <td>{{ $batchMail->remove_date }}</td>
+                    <td>{{ $batchMail->id }}</td>
                     <td>
-                        <a href="{{ route('batch.mail.show', [$batch, $batchMail]) }}" class="btn btn-sm btn-info">Show</a>
-                        <a href="{{ route('batch.mail.edit', [$batch, $batchMail]) }}" class="btn btn-sm btn-primary">Edit</a>
                         <form action="{{ route('batch.mail.destroy', [$batch, $batchMail]) }}" method="POST" style="display: inline-block;">
                             @csrf
                             @method('DELETE')

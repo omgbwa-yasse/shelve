@@ -28,7 +28,7 @@ class BatchMail extends Model
         return $this->belongsTo(Batch::class);
     }
 
-    public function mails()
+    public function mail()
     {
         return $this->belongsTo(Mail::class, 'mail_id');
     }
