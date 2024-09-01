@@ -250,21 +250,13 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
-//
-//    public function destroy(Task $task)
-//    {
-//        $task->delete();
-//        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
-//    }
+
     public function destroy(Task $task)
     {
-        try {
-            $task->delete();
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false], 500);
-        }
+        $task->delete();
+        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
     }
+
     public function removeAttachment(Task $task, $attachmentId)
     {
         $attachment = $task->attachments()->findOrFail($attachmentId);

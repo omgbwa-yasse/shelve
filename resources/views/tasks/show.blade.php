@@ -244,7 +244,7 @@
                         <form action="{{ route('tasks.destroy', $task) }}" method="POST" id="deleteTaskForm">
                             @csrf
                             @method('DELETE')
-                            <button type="button" class="btn btn-danger btn-lg w-100" id="deleteTaskBtn">
+                            <button type="submit" class="btn btn-danger btn-lg w-100" id="deleteTaskBtn">
                                 <i class="bi bi-trash me-2"></i>
                                 Delete Task
                             </button>
@@ -256,28 +256,3 @@
     </div>
 
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteTaskBtn = document.getElementById('deleteTaskBtn');
-            const deleteTaskForm = document.getElementById('deleteTaskForm');
-
-            deleteTaskBtn.addEventListener('click', function() {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, delete it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        deleteTaskForm.submit();
-                    }
-                });
-            });
-        });
-    </script>
-@endpush
