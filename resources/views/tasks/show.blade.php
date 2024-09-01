@@ -1,18 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container py-5">
-        <div class="card shadow-lg">
+    <div class="container">
+        <div class="">
             <div class="card-header bg-primary text-white d-flex align-items-center">
                 <i class="bi bi-card-text me-2"></i>
                 <h1 class="h3 mb-0">Task Details: {{ $task->name }}</h1>
             </div>
             <div class="card-body">
                 <div class="mb-4">
-                    <h2 class="h4">
+                    <h3 class="h4">
                         <i class="bi bi-file-earmark-text me-2"></i>
                         {{ $task->name }}
-                    </h2>
+                    </h3>
                     <span class="badge bg-secondary">
                         <i class="bi bi-flag me-1"></i>
                         Status: {{ $task->taskStatus->name }}
@@ -94,14 +94,29 @@
 
                 <div class="mb-4">
                     <h3 class="h5">
-                        <i class="bi bi-alarm me-2"></i>
-                        Task Remembers
+                        <i class="bi bi-envelope me-2"></i>
+                        Task Mails
                     </h3>
                     <ul class="list-group">
-                        @foreach($task->taskRemembers as $remember)
+                        @foreach($task->taskMails as $mail)
                             <li class="list-group-item">
-                                <i class="bi bi-alarm me-2"></i>
-                                {{ $remember->description }}
+                                <i class="bi bi-envelope me-2"></i>
+                                {{ $mail->name }}
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="h5">
+                        <i class="bi bi-box me-2"></i>
+                        Task Containers
+                    </h3>
+                    <ul class="list-group">
+                        @foreach($task->taskContainers as $container)
+                            <li class="list-group-item">
+                                <i class="bi bi-box me-2"></i>
+                                {{ $container->name }}
                             </li>
                         @endforeach
                     </ul>
@@ -116,7 +131,22 @@
                         @foreach($task->taskRecords as $record)
                             <li class="list-group-item">
                                 <i class="bi bi-file-earmark-text me-2"></i>
-                                {{ $record->description }}
+                                {{ $record->name }}
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <h3 class="h5">
+                        <i class="bi bi-alarm me-2"></i>
+                        Task Remembers
+                    </h3>
+                    <ul class="list-group">
+                        @foreach($task->taskRemembers as $remember)
+                            <li class="list-group-item">
+                                <i class="bi bi-alarm me-2"></i>
+                                {{ $remember->description }}
                             </li>
                         @endforeach
                     </ul>
@@ -136,32 +166,16 @@
                         @endforeach
                     </ul>
                 </div>
-
                 <div class="mb-4">
                     <h3 class="h5">
-                        <i class="bi bi-envelope me-2"></i>
-                        Task Mails
+                        <i class="bi bi-alarm me-2"></i>
+                        Task Remembers
                     </h3>
                     <ul class="list-group">
-                        @foreach($task->taskMails as $mail)
+                        @foreach($task->taskRemembers as $remember)
                             <li class="list-group-item">
-                                <i class="bi bi-envelope me-2"></i>
-                                {{ $mail->description }}
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-
-                <div class="mb-4">
-                    <h3 class="h5">
-                        <i class="bi bi-box me-2"></i>
-                        Task Containers
-                    </h3>
-                    <ul class="list-group">
-                        @foreach($task->taskContainers as $container)
-                            <li class="list-group-item">
-                                <i class="bi bi-box me-2"></i>
-                                {{ $container->description }}
+                                <i class="bi bi-alarm me-2"></i>
+                                {{ $remember->description }}
                             </li>
                         @endforeach
                     </ul>

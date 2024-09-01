@@ -38,7 +38,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('tasks.index') }}"><i class="bi bi-bookmark-check"></i> Tâches terminées</a>
                 </li>
-                <!-- Ajoutez d'autres liens de suivi ici -->
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('tasks.my_tasks') }}"><i class="bi bi-bookmark-check"></i> Mes Tâches </a>
+                </li>
             </ul>
         </div>
     </div>

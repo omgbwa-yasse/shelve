@@ -193,9 +193,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
+
+
     Route::resource('tasks', TaskController::class);
     Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, 'removeAttachment'])->name('tasks.remove-attachment');
     Route::post('/tasks/{task}/download/{attachment}', [TaskController::class, 'downloadAttachment'])->name('tasks.download');
+    Route::get('/tasks/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my_tasks');
+
 
     Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
     Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');

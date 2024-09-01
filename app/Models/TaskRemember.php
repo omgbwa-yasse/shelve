@@ -11,7 +11,7 @@ class TaskRemember extends Model
 
     protected $table = 'task_remember';
 
-    protected $fillable = ['date_fix', 'periode', 'date_trigger', 'limit_number', 'limit_date', 'frequence_value', 'frequence_unit', 'user_id'];
+    protected $fillable = ['task_id','date_fix', 'periode', 'date_trigger', 'limit_number', 'limit_date', 'frequence_value', 'frequence_unit', 'user_id'];
 
     public function user()
     {

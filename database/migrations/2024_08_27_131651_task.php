@@ -104,6 +104,7 @@ return new class extends Migration
         // Rappels
 
         Schema::create('task_remember', function (Blueprint $table) {
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->date('date_fix')->nullable();
             $table->enum('periode', ['before', 'after'])->nullable();
             $table->enum('date_trigger', ['start', 'end'])->nullable();
@@ -128,6 +129,7 @@ return new class extends Migration
             $table->boolean('task_child_update')->nullable();
             $table->boolean('task_close')->nullable();
             $table->timestamps();
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 

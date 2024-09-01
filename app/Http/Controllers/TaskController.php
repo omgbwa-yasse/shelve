@@ -8,17 +8,26 @@ use App\Models\TaskStatus;
 use App\Models\User;
 use App\Models\Organisation;
 use App\Models\Attachment;
+use App\Models\Mail;
+use App\Models\Container;
+use App\Models\Record;
 use App\Models\TaskRemember;
-use App\Models\TaskRecord;
 use App\Models\TaskSupervision;
-use App\Models\TaskMail;
-use App\Models\TaskContainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
+    public function myTasks()
+    {
+        $tasks = Task::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->with(['taskType', 'taskStatus', 'users', 'organisations'])->paginate(10);
+        dd($tasks);
+        return view('tasks.my_tasks', compact('tasks'));
+    }
+
     public function index(Request $request)
     {
         $query = Task::with(['taskType', 'taskStatus', 'users', 'organisations']);
@@ -44,13 +53,11 @@ class TaskController extends Controller
         $taskStatuses = TaskStatus::all();
         $users = User::all();
         $organisations = Organisation::all();
-        $taskRemembers = TaskRemember::all();
-        $taskRecords = TaskRecord::all();
-        $taskSupervisions = TaskSupervision::all();
-        $taskMails = TaskMail::all();
-        $taskContainers = TaskContainer::all();
+        $mails = Mail::all();
+        $containers = Container::all();
+        $records = Record::all();
 
-        return view('tasks.create', compact('taskTypes', 'taskStatuses', 'users', 'organisations', 'taskRemembers', 'taskRecords', 'taskSupervisions', 'taskMails', 'taskContainers'));
+        return view('tasks.create', compact('taskTypes', 'taskStatuses', 'users', 'organisations', 'mails', 'containers', 'records'));
     }
 
     public function store(Request $request)
@@ -65,11 +72,17 @@ class TaskController extends Controller
             'organisation_ids' => 'required|array',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-            'task_remember_ids' => 'nullable|array',
-            'task_record_ids' => 'nullable|array',
-            'task_supervision_ids' => 'nullable|array',
-            'task_mail_ids' => 'nullable|array',
-            'task_container_ids' => 'nullable|array',
+            'mail_ids' => 'nullable|array',
+            'container_ids' => 'nullable|array',
+            'record_ids' => 'nullable|array',
+            'remember_date_fix' => 'nullable|date',
+            'remember_periode' => 'nullable|in:before,after',
+            'remember_date_trigger' => 'nullable|in:start,end',
+            'remember_limit_number' => 'nullable|integer',
+            'remember_limit_date' => 'nullable|date',
+            'remember_frequence_value' => 'required|integer',
+            'remember_frequence_unit' => 'required|in:year,month,day,hour',
+            'remember_user_id' => 'required|exists:users,id',
         ]);
 
         DB::transaction(function () use ($validatedData, $request) {
@@ -99,38 +112,40 @@ class TaskController extends Controller
                 }
             }
 
-            // Handle task remembers
-            if (isset($validatedData['task_remember_ids'])) {
-                $task->taskRemembers()->sync($validatedData['task_remember_ids']);
-            }
-
-            // Handle task records
-            if (isset($validatedData['task_record_ids'])) {
-                $task->taskRecords()->sync($validatedData['task_record_ids']);
-            }
-
-            // Handle task supervisions
-            if (isset($validatedData['task_supervision_ids'])) {
-                $task->taskSupervisions()->sync($validatedData['task_supervision_ids']);
-            }
-
             // Handle task mails
-            if (isset($validatedData['task_mail_ids'])) {
-                $task->taskMails()->sync($validatedData['task_mail_ids']);
+            if (isset($validatedData['mail_ids'])) {
+                $task->taskMails()->sync($validatedData['mail_ids']);
             }
 
             // Handle task containers
-            if (isset($validatedData['task_container_ids'])) {
-                $task->taskContainers()->sync($validatedData['task_container_ids']);
+            if (isset($validatedData['container_ids'])) {
+                $task->taskContainers()->sync($validatedData['container_ids']);
             }
+
+            // Handle task records
+            if (isset($validatedData['record_ids'])) {
+                $task->taskRecords()->sync($validatedData['record_ids']);
+            }
+
+            // Handle task remembers
+            TaskRemember::create([
+                'task_id' => $task->id,
+                'date_fix' => $validatedData['remember_date_fix'],
+                'periode' => $validatedData['remember_periode'],
+                'date_trigger' => $validatedData['remember_date_trigger'],
+                'limit_number' => $validatedData['remember_limit_number'],
+                'limit_date' => $validatedData['remember_limit_date'],
+                'frequence_value' => $validatedData['remember_frequence_value'],
+                'frequence_unit' => $validatedData['remember_frequence_unit'],
+                'user_id' => $validatedData['remember_user_id'],
+            ]);
         });
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
-
     public function show(Task $task)
     {
-        $task->load(['taskType', 'taskStatus', 'users', 'organisations', 'attachments', 'taskRemembers', 'taskRecords', 'taskSupervisions', 'taskMails', 'taskContainers']);
+        $task->load(['taskType', 'taskStatus', 'users', 'organisations', 'attachments', 'taskMails', 'taskContainers', 'taskRecords', 'taskRemembers', 'taskSupervisions']);
         return view('tasks.show', compact('task'));
     }
 
@@ -140,15 +155,13 @@ class TaskController extends Controller
         $taskStatuses = TaskStatus::all();
         $users = User::all();
         $organisations = Organisation::all();
-        $taskRemembers = TaskRemember::all();
-        $taskRecords = TaskRecord::all();
-        $taskSupervisions = TaskSupervision::all();
-        $taskMails = TaskMail::all();
-        $taskContainers = TaskContainer::all();
+        $mails = Mail::all();
+        $containers = Container::all();
+        $records = Record::all();
 
-        $task->load(['taskType', 'users', 'organisations', 'taskRemembers', 'taskRecords', 'taskSupervisions', 'taskMails', 'taskContainers']);
+        $task->load(['taskType', 'users', 'organisations', 'taskMails', 'taskContainers', 'taskRecords', 'taskRemembers', 'taskSupervisions']);
 
-        return view('tasks.edit', compact('task', 'taskTypes', 'taskStatuses', 'users', 'organisations', 'taskRemembers', 'taskRecords', 'taskSupervisions', 'taskMails', 'taskContainers'));
+        return view('tasks.edit', compact('task', 'taskTypes', 'taskStatuses', 'users', 'organisations', 'mails', 'containers', 'records'));
     }
 
     public function update(Request $request, Task $task)
@@ -163,11 +176,9 @@ class TaskController extends Controller
             'organisation_ids' => 'required|array',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-            'task_remember_ids' => 'nullable|array',
-            'task_record_ids' => 'nullable|array',
-            'task_supervision_ids' => 'nullable|array',
-            'task_mail_ids' => 'nullable|array',
-            'task_container_ids' => 'nullable|array',
+            'mail_ids' => 'nullable|array',
+            'container_ids' => 'nullable|array',
+            'record_ids' => 'nullable|array',
         ]);
 
         DB::transaction(function () use ($task, $validatedData, $request) {
@@ -197,29 +208,19 @@ class TaskController extends Controller
                 }
             }
 
-            // Handle task remembers
-            if (isset($validatedData['task_remember_ids'])) {
-                $task->taskRemembers()->sync($validatedData['task_remember_ids']);
-            }
-
-            // Handle task records
-            if (isset($validatedData['task_record_ids'])) {
-                $task->taskRecords()->sync($validatedData['task_record_ids']);
-            }
-
-            // Handle task supervisions
-            if (isset($validatedData['task_supervision_ids'])) {
-                $task->taskSupervisions()->sync($validatedData['task_supervision_ids']);
-            }
-
             // Handle task mails
-            if (isset($validatedData['task_mail_ids'])) {
-                $task->taskMails()->sync($validatedData['task_mail_ids']);
+            if (isset($validatedData['mail_ids'])) {
+                $task->taskMails()->sync($validatedData['mail_ids']);
             }
 
             // Handle task containers
-            if (isset($validatedData['task_container_ids'])) {
-                $task->taskContainers()->sync($validatedData['task_container_ids']);
+            if (isset($validatedData['container_ids'])) {
+                $task->taskContainers()->sync($validatedData['container_ids']);
+            }
+
+            // Handle task records
+            if (isset($validatedData['record_ids'])) {
+                $task->taskRecords()->sync($validatedData['record_ids']);
             }
         });
 
