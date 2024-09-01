@@ -8,7 +8,9 @@
                 <h1 class="h3 mb-0">My Tasks</h1>
             </div>
             <div class="card-body">
-                <table class="table table-striped">
+                <div id="gantt_chart"></div> <!-- Gantt chart container -->
+
+                <table class="table table-striped mt-4">
                     <thead>
                     <tr>
                         <th>Name</th>
@@ -27,12 +29,6 @@
                             <td>{{ $task->taskStatus->name }}</td>
                             <td>
                                 <a href="{{ route('tasks.show', $task) }}" class="btn btn-primary btn-sm">View</a>
-                                <a href="{{ route('tasks.edit', $task) }}" class="btn btn-secondary btn-sm">Edit</a>
-                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this task?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                                </form>
                             </td>
                         </tr>
                     @endforeach
@@ -43,3 +39,4 @@
         </div>
     </div>
 @endsection
+
