@@ -39,8 +39,9 @@
                     <a class="nav-link text-dark" href="{{ route('tasks.index') }}"><i class="bi bi-bookmark-check"></i> Tâches terminées</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('tasks.my_tasks') }}"><i class="bi bi-bookmark-check"></i> Mes Tâches </a>
-                </li>
+{{--                    <a class="nav-link text-dark" href="{{ route('tasks.mytasks') }}"><i class="bi bi-bookmark-check"></i> Mes Tâches </a>--}}
+                </li><a href="{{ route('tasks.myTasks') }}">My Tasks</a>
+
             </ul>
         </div>
     </div>
