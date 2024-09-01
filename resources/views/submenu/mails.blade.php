@@ -69,6 +69,7 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-container.create') }}"><i class="bi bi-archive"></i> Boîte & Chrono</a>
                 </li>
+
             </ul>
         </div>
 

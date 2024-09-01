@@ -1061,6 +1061,8 @@ return new class extends Migration
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
         });
 
+
+
         Schema::create('batch_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('batch_id')->nullable(false);

@@ -5,21 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Batch;
 use App\Models\BatchMail;
 use App\Models\Mail;
+use App\Models\MailbatchTransaction;
 use Illuminate\Http\Request;
 
 class BatchMailController extends Controller
 {
     public function index(Batch $batch)
     {
-        $batchMails = $batch->batchMails;
+        $batchMails = BatchMail::where('batch_id', $batch->id)->get();
+        $batchMails->load('mails');
+        dd($batchMails);
         return view('batch.mail.index', compact('batchMails', 'batch'));
     }
 
 
 
-
     public function create(Batch $batch)
     {
+
         $mails = Mail::all();
         return view('batch.mail.create', compact('batch', 'mails'));
     }
@@ -28,18 +31,16 @@ class BatchMailController extends Controller
 
     public function store(Request $request, Batch $batch)
     {
-        $validatedData = $request->validate([
-            'mail_id' => 'required|exists:mails,id'
+        $batchMail = new BatchMail([
+            'mail_id' => $request->mail_id,
+            'insert_date' => now(),
         ]);
 
-        $validatedData['insert_date'] = now();
-
-        $batchMail = new BatchMail($validatedData);
         $batch->batchMails()->save($batchMail);
-        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail created successfully.');
+
+        return redirect()->route('batch.mail.index', $batch)
+            ->with('success', 'Courriel de lot créé avec succès.');
     }
-
-
 
 
     public function edit(Batch $batch, BatchMail $batchMail)
@@ -60,7 +61,7 @@ class BatchMailController extends Controller
         $validatedData['insert_date'] = now();
         $batchMail->update($validatedData);
 
-        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail updated successfully.');
+        return redirect()->route('batch.mail.index', $batch)->with('success', 'Batch mail updated successfully.');
     }
 
 
@@ -69,7 +70,7 @@ class BatchMailController extends Controller
     {
         $batchMail->delete();
 
-        return redirect()->route('batch_mail.index', $batch)->with('success', 'Batch mail deleted successfully.');
+        return redirect()->route('batch.mail.index', $batch)->with('success', 'Batch mail deleted successfully.');
     }
 
 

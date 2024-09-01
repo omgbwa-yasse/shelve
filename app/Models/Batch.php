@@ -23,5 +23,11 @@ class Batch extends Model
         return $this->belongsTo(Organisation::class, 'organisation_holder_id');
     }
 
+    public function batchMails()
+    {
+        return $this->belongsToMany(BatchMail::class, 'batch_mail', 'mail_id', 'batch_id');
+    }
+
+
 }
 

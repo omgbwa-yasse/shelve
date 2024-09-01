@@ -6,7 +6,8 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Mail ID</th>
+                <th>Code</th>
+                <th>Courrier</th>
                 <th>Insert Date</th>
                 <th>Remove Date</th>
                 <th>Actions</th>
@@ -15,7 +16,8 @@
         <tbody>
             @foreach ($batchMails as $batchMail)
                 <tr>
-                    <td>{{ $batchMail->mail_id }}</td>
+                    <td></td>
+                    <td></td>
                     <td>{{ $batchMail->insert_date }}</td>
                     <td>{{ $batchMail->remove_date }}</td>
                     <td>

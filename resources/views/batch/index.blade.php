@@ -15,17 +15,18 @@
                 <tr>
                     <th>Code</th>
                     <th>Name</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($mailBatches as $mailBatch)
+                @foreach($mailBatches as $batch)
                     <tr>
-                        <td>{{ $mailBatch->code }}</td>
-                        <td>{{ $mailBatch->name }}</td>
-                        <td>
-                            <a href="{{ route('mails.sort') }}?categ=batch&id={{$mailBatch->id}}" class="btn btn-info btn-sm">Voir le contenu</a>
+                        <td>{{ $batch->code }}</td>
+                        <td>{{ $batch->name }}</td>
 
+                        <td>
+                            <a href="{{ route('mails.sort') }}?categ=batch&id={{$batch->id}}" class="btn btn-info btn-sm">Voir le contenu</a>
+                            <a href="{{ route('batch.show', $batch) }}" class="btn btn-warning btn-sm">Paramètre</a>
                         </td>
                     </tr>
                 @endforeach

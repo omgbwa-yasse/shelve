@@ -2,21 +2,7 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Liste des courriers</h1>
-
-        <div class="row mb-3">
-            <div class="col-md-8">
-                <a href="{{ route('mails.create') }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-plus-circle"></i> Nouveau courrier
-                </a>
-            </div>
-            <div class="col-md-4">
-                <div class="input-group">
-                    <span class="input-group-text bg-primary text-white"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" id="searchInput" placeholder="Rechercher un courrier...">
-                </div>
-            </div>
-        </div>
+        <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Courriers</h1>
 
         <div id="mailList">
             @foreach ($mails as $mail)
@@ -26,7 +12,7 @@
                             <div class="col-md-9">
                                 <h5 class="card-title mb-2">
                                     <i class="bi bi-envelope me-2"></i>
-                                    <b>{{ $mail->code }}{{ $mail->name }}</b>
+                                    <b>{{ $mail->code }} - {{ $mail->name }}</b>
                                     <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }}">
                                         {{ $mail->priority->name ?? '' }}
                                     </span>

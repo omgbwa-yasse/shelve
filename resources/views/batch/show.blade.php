@@ -12,9 +12,9 @@
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('batch-send.index') }}" class="btn btn-secondary mt-3">Back</a>
-    <a href="{{ route('batch-send.edit', $mailBatch->id) }}" class="btn btn-warning mt-3">Edit</a>
-    <form action="{{ route('batch-send.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
+    <a href="{{ route('batch.index') }}" class="btn btn-secondary mt-3">Back</a>
+    <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning mt-3">Edit</a>
+    <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>

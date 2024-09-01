@@ -60,10 +60,9 @@ class SearchMailController extends Controller
                 break;
 
             case "batch":
-                $mails = Mail::whereIn('id', BatchMail::where('mail_id', $request->input('id'))->pluck('mail_id'))
+                $mails = Mail::whereIn('id', BatchMail::where('batch_id', $request->input('id'))->pluck('mail_id'))
                     ->get();
                 break;
-
 
             default:
                 $mails = mail::take(5)->get();
