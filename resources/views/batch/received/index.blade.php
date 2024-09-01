@@ -1,23 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Batch Transactions</h1>
-    <a href="{{ route('batch-received.create') }}" class="btn btn-primary mb-3">Create Batch Transaction</a>
+    <h1>Parapheurs reçus</h1>
     <table class="table">
         <thead>
             <tr>
-                <th>Batch ID</th>
-                <th>Organisation Send</th>
-                <th>Organisation Received</th>
+                <th>code</th>
+                <th>Intitulé </th>
+                <th>Organisation de départ</th>
+                <th>Organisation d'arrivée</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($batchTransactions as $batchTransaction)
                 <tr>
-                    <td>{{ $batchTransaction->batch_id }}</td>
+                    <td>{{ $batchTransaction->batch->code }}</td>
+                    <td>{{ $batchTransaction->batch->name }}</td>
                     <td>{{ $batchTransaction->organisationSend->name }}</td>
                     <td>{{ $batchTransaction->organisationReceived->name }}</td>
+                    <td>{{ $batchTransaction->created_at }}</td>
                     <td>
                         <a href="{{ route('batch-received.show', $batchTransaction) }}" class="btn btn-sm btn-info">Show</a>
                         <a href="{{ route('batch-received.edit', $batchTransaction) }}" class="btn btn-sm btn-primary">Edit</a>

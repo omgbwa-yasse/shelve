@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Edit Batch Transaction</h1>
+    <h1>Mise à jour de la envoie du parapheur</h1>
     <form action="{{ route('batch-send.update', $batchTransaction) }}" method="POST">
         @csrf
         @method('PUT')
@@ -10,14 +10,6 @@
             <select name="batch_id" id="batch_id" class="form-select" required>
                 @foreach ($batches as $batch)
                     <option value="{{ $batch->id }}" {{ $batch->id == $batchTransaction->batch_id ? 'selected' : '' }}>{{ $batch->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="organisation_send_id" class="form-label">Organisation Send</label>
-            <select name="organisation_send_id" id="organisation_send_id" class="form-select" required>
-                @foreach ($organisations as $organisation)
-                    <option value="{{ $organisation->id }}" {{ $organisation->id == $batchTransaction->organisation_send_id ? 'selected' : '' }}>{{ $organisation->name }}</option>
                 @endforeach
             </select>
         </div>

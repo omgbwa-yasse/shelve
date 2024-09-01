@@ -13,7 +13,9 @@ class BatchReceivedController extends Controller
     public function index()
     {
         $organisation = User::with('organisations');
-        $batchTransactions = Batchtransaction::where('organisation_received_id', auth()->user()->organisation->id);
+        $batchTransactions = Batchtransaction::where('organisation_received_id',
+            auth()->user()->organisation->id)
+            ->latest();
         return view('batch.received.index', compact('batchTransactions'));
     }
 
@@ -41,16 +43,14 @@ class BatchReceivedController extends Controller
         return view('batch.received.show', compact('batchTransaction', 'organisations'));
     }
 
-
-
-
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'batch_id' => 'required|integer',
             'organisation_send_id' => 'required|integer',
-            'organisation_received_id' => 'required|integer',
         ]);
+
+        $validatedData['organisation_received_id'] = auth()->user()->orgqnisqtion->id;
 
         BatchTransaction::create($validatedData);
         return redirect()->route('batch-received.index')->with('success', 'Batch transaction created successfully.');
@@ -69,8 +69,9 @@ class BatchReceivedController extends Controller
         $validatedData = $request->validate([
             'batch_id' => 'required|integer',
             'organisation_send_id' => 'required|integer',
-            'organisation_received_id' => 'required|integer',
         ]);
+
+        $validatedData['organisation_received_id'] = auth()->user()->orgqnisqtion->id;
 
         $batchTransaction->update($validatedData);
 

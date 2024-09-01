@@ -7,11 +7,12 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> Courrier</a>
+                    <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> Mes courriers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch.index') }}"><i class="bi bi-inbox"></i> Parapheur</a>
+                    <a class="nav-link text-dark" href="{{ route('batch.index') }}"><i class="bi bi-inbox"></i> Mes parapheurs</a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
                 </li>
@@ -52,10 +53,10 @@
         </div>
 
         <!-- Créer -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true"
-           aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#creerMenu" aria-expanded="true"
+           aria-controls="creerMenu" style="padding: 10px;">Créer</a>
 
-        <div class="collapse show" id="enregistrementMenu">
+        <div class="collapse show" id="creerMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mails.create') }}"><i class="bi bi-inbox"></i> Courrier</a>
@@ -100,11 +101,29 @@
 
         <div class="collapse show" id="parapheurMenu">
             <ul class="list-unstyled pl-3">
+
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-inbox"></i> Recevoir</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i> Envoyer</a>
+                </li>
+
+            </ul>
+        </div>
+
+
+        <!-- Parapheur -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurSuiviMenu" aria-expanded="true"
+           aria-controls="parapheurMenu" style="padding: 10px;">Suivi des parapheurs</a>
+
+        <div class="collapse show" id="parapheurSuiviMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Parapheurs reçus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> Parapheurs envoyés</a>
                 </li>
             </ul>
         </div>

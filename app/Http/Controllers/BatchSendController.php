@@ -14,7 +14,8 @@ class BatchSendController extends Controller
     {
         $organisation = User::with('organisations');
         $batchTransactions = Batchtransaction::where('organisation_send_id',
-            auth()->user()->organisation->id);
+            auth()->user()->organisation->id)
+            ->latest();
         return view('batch.send.index', compact('batchTransactions'));
     }
 
@@ -36,9 +37,11 @@ class BatchSendController extends Controller
     {
         $validatedData = $request->validate([
             'batch_id' => 'required|integer',
-            'organisation_send_id' => 'required|integer',
             'organisation_received_id' => 'required|integer',
         ]);
+
+        $validatedData['organisation_send_id'] = auth()->user()->orgqnisqtion->id;
+
         BatchTransaction::create($validatedData);
         return redirect()->route('batch-send.index')->with('success', 'Batch transaction created successfully.');
     }
@@ -56,9 +59,10 @@ class BatchSendController extends Controller
     {
         $validatedData = $request->validate([
             'batch_id' => 'required|integer',
-            'organisation_send_id' => 'required|integer',
             'organisation_received_id' => 'required|integer',
         ]);
+
+        $validatedData['organisation_send_id'] = auth()->user()->orgqnisqtion->id;
 
         $batchTransaction->update($validatedData);
         return redirect()->route('batch-send.index')->with('success', 'Batch transaction updated successfully.');

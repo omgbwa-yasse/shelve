@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Edit Mail Batch</h1>
+        <h1>Modifier le parapheur</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
