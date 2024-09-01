@@ -325,11 +325,9 @@ return new class extends Migration
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
 
-
         // Rappels
 
-        Schema::create('task_remember', function (Blueprint $table) {
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
+         Schema::create('task_remember', function (Blueprint $table) {
             $table->date('date_fix')->nullable();
             $table->enum('periode', ['before', 'after'])->nullable();
             $table->enum('date_trigger', ['start', 'end'])->nullable();
@@ -338,9 +336,12 @@ return new class extends Migration
             $table->integer('frequence_value')->unsigned()->nullable(false);
             $table->enum('frequence_unit', ['year', 'month', 'day', 'hour'])->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('task_id')->nullable(false);
             $table->timestamps();
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
+
 
 
 
@@ -357,6 +358,7 @@ return new class extends Migration
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
+
 
 
         // Association des taches aux ressources
@@ -397,38 +399,6 @@ return new class extends Migration
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
 
-
-        // Rappels
-
-        Schema::create('task_remember', function (Blueprint $table) {
-            $table->date('date_fix')->nullable();
-            $table->enum('periode', ['before', 'after'])->nullable();
-            $table->enum('date_trigger', ['start', 'end'])->nullable();
-            $table->integer('limit_number')->nullable();
-            $table->date('limit_date')->nullable();
-            $table->integer('frequence_value')->unsigned()->nullable(false);
-            $table->enum('frequence_unit', ['year', 'month', 'day', 'hour'])->nullable(false);
-            $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->unsignedBigInteger('task_id')->nullable(false);
-            $table->timestamps();
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-
-
-        // Supervision des activités
-
-        Schema::create('task_supervision', function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id')->nullable(false);
-            $table->boolean('task_assignation')->nullable();
-            $table->boolean('task_update')->nullable();
-            $table->boolean('task_parent_update')->nullable();
-            $table->boolean('task_child_update')->nullable();
-            $table->boolean('task_close')->nullable();
-            $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
 
 
 

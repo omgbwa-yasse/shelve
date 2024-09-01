@@ -57,6 +57,27 @@
 </div>
 
 
+
+<a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i> Tâches </a>
+
+<div class="collapse show" id="rechercheMenu">
+
+<ul class="list-unstyled pl-3">
+
+    <li class="nav-item">
+        <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> Type de tâches </a>
+    </li>
+
+    <li class="nav-item">
+        <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> Statut de tâches </a>
+    </li>
+
+
+</ul>
+</div>
+
+
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
             aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> Courrier </a>
 
