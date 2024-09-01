@@ -36,16 +36,22 @@ class TaskController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        if ($request->has('status')) {
+        if ($request->has('status') && $request->status != '') {
             $query->where('task_status_id', $request->status);
+        }
+
+        if ($request->has('type') && $request->type != '') {
+            $query->where('task_type_id', $request->type);
         }
 
         $tasks = $query->paginate(10);
 
         $statuses = TaskStatus::all();
+        $types = TaskType::all();
 
-        return view('tasks.index', compact('tasks', 'statuses'));
+        return view('tasks.index', compact('tasks', 'statuses', 'types'));
     }
+
 
     public function create()
     {
@@ -83,6 +89,12 @@ class TaskController extends Controller
             'remember_frequence_value' => 'required|integer',
             'remember_frequence_unit' => 'required|in:year,month,day,hour',
             'remember_user_id' => 'required|exists:users,id',
+            'supervision_user_id' => 'required|exists:users,id',
+            'task_assignation' => 'required|boolean',
+            'task_update' => 'required|boolean',
+            'task_parent_update' => 'required|boolean',
+            'task_child_update' => 'required|boolean',
+            'task_close' => 'required|boolean',
         ]);
 
         DB::transaction(function () use ($validatedData, $request) {
@@ -139,10 +151,22 @@ class TaskController extends Controller
                 'frequence_unit' => $validatedData['remember_frequence_unit'],
                 'user_id' => $validatedData['remember_user_id'],
             ]);
+
+            // Handle task supervision
+            TaskSupervision::create([
+                'task_id' => $task->id,
+                'user_id' => $validatedData['supervision_user_id'],
+                'task_assignation' => $validatedData['task_assignation'],
+                'task_update' => $validatedData['task_update'],
+                'task_parent_update' => $validatedData['task_parent_update'],
+                'task_child_update' => $validatedData['task_child_update'],
+                'task_close' => $validatedData['task_close'],
+            ]);
         });
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
+
     public function show(Task $task)
     {
         $task->load(['taskType', 'taskStatus', 'users', 'organisations', 'attachments', 'taskMails', 'taskContainers', 'taskRecords', 'taskRemembers', 'taskSupervisions']);
@@ -226,13 +250,21 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
-
+//
+//    public function destroy(Task $task)
+//    {
+//        $task->delete();
+//        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
+//    }
     public function destroy(Task $task)
     {
-        $task->delete();
-        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
+        try {
+            $task->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false], 500);
+        }
     }
-
     public function removeAttachment(Task $task, $attachmentId)
     {
         $attachment = $task->attachments()->findOrFail($attachmentId);

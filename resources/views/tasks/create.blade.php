@@ -1,4 +1,5 @@
 @extends('layouts.app')
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('taskForm');
@@ -68,7 +69,7 @@
         });
 
         // Initialize Select2 for multiple select inputs
-        $('.form-select[multiple]').select2({
+    $('.form-select[multiple]').select2({
             theme: 'bootstrap-5',
             width: '100%'
         });
@@ -82,8 +83,18 @@
         showTab(currentTab);
     });
 </script>
+
 @section('content')
     <div class="container">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <div class="row justify-content-center">
             <div class="">
                 <div class="">
@@ -108,6 +119,9 @@
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link" id="reminders-tab" data-bs-toggle="tab" data-bs-target="#reminders" type="button" role="tab" aria-controls="reminders" aria-selected="false">Reminders</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="supervision-tab" data-bs-toggle="tab" data-bs-target="#supervision" type="button" role="tab" aria-controls="supervision" aria-selected="false">Supervision</button>
                                 </li>
                             </ul>
                             <div class="tab-content" id="taskTabsContent">
@@ -307,11 +321,74 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="tab-pane fade" id="supervision" role="tabpanel" aria-labelledby="supervision-tab">
+                                    <div class="mb-3">
+                                        <label for="supervision_user_id" class="form-label">Supervision User</label>
+                                        <select class="form-select @error('supervision_user_id') is-invalid @enderror" id="supervision_user_id" name="supervision_user_id" required>
+                                            @foreach($users as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('supervision_user_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="task_assignation" class="form-label">Task Assignation</label>
+                                        <select class="form-select @error('task_assignation') is-invalid @enderror" id="task_assignation" name="task_assignation" required>
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                        @error('task_assignation')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="task_update" class="form-label">Task Update</label>
+                                        <select class="form-select @error('task_update') is-invalid @enderror" id="task_update" name="task_update" required>
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                        @error('task_update')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="task_parent_update" class="form-label">Task Parent Update</label>
+                                        <select class="form-select @error('task_parent_update') is-invalid @enderror" id="task_parent_update" name="task_parent_update" required>
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                        @error('task_parent_update')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="task_child_update" class="form-label">Task Child Update</label>
+                                        <select class="form-select @error('task_child_update') is-invalid @enderror" id="task_child_update" name="task_child_update" required>
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                        @error('task_child_update')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="task_close" class="form-label">Task Close</label>
+                                        <select class="form-select @error('task_close') is-invalid @enderror" id="task_close" name="task_close" required>
+                                            <option value="1">Yes</option>
+                                            <option value="0">No</option>
+                                        </select>
+                                        @error('task_close')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                             <div class="text-end mt-4">
                                 <button type="button" class="btn btn-secondary me-2" id="prevBtn">Previous</button>
                                 <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
-                                <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">Create Task</button>
+                                <button type="submit" class="btn btn-success">Create Task</button>
                             </div>
                         </form>
                     </div>
@@ -329,7 +406,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Instructions sur comment remplir le formulaire des taches </p>
+                    <p>Instructions sur comment remplir le formulaire des tâches</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -341,5 +418,6 @@
 @endsection
 
 @push('scripts')
+    <!-- Include Select2 and Flatpickr scripts here if not already included -->
 
 @endpush
