@@ -188,6 +188,7 @@ Route::delete('tasks/{task}/attachments/{attachment}', [TaskController::class, '
 Route::post('/tasks/{task}/download/{attachment}', [TaskController::class, 'downloadAttachment'])->name('tasks.download');
 Route::get('/tasks/mytasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
 
+
 Route::get('/mails/search', [SearchController::class, 'index'])->name('mails.search');
 Route::get('/mails/sort', [SearchMailController::class, 'index'])->name('mails.sort');
 Route::get('/mails/select', [SearchMailController::class, 'date'])->name('mail-select-date');

@@ -58,20 +58,17 @@ class BatchController extends Controller
 
 
 
-    public function update(Request $request, INT $id)
+    public function update(Request $request, int $id)
     {
         $mailBatch = Batch::findOrFail($id);
         $validatedData = $request->validate([
             'code' => 'nullable|unique:batches,code,' . $mailBatch->id . '|max:10',
             'name' => 'required|max:100',
         ]);
-
-        $validatedData = ['organisation_holder_id' => auth()->user()->organisation->id];
-
+        $validatedData['organisation_holder_id'] = auth()->user()->organisation->id;
         $mailBatch->update($validatedData);
         return redirect()->route('batch.index')->with('success', 'Mail batch updated successfully.');
     }
-
 
 
 

@@ -17,9 +17,8 @@ class BatchTransaction extends Model
 
     public function batch()
     {
-        return $this->belongsTo(Batch::class);
+        return $this->belongsTo(Batch::class, 'batch_id');
     }
-
     public function organisationSend()
     {
         return $this->belongsTo(Organisation::class, 'organisation_send_id');
@@ -28,6 +27,11 @@ class BatchTransaction extends Model
     public function organisationReceived()
     {
         return $this->belongsTo(Organisation::class, 'organisation_received_id');
+    }
+
+    public function mails()
+    {
+        return $this->belongsToMany(Mail::class, 'batch_mail', 'mail_id', 'batch_id');
     }
 
 }

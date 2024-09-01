@@ -4,18 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Batch;
-use App\Models\User;
-use App\Models\BatchTransaction;
 use App\Models\Organisation;
+use App\Models\BatchTransaction;
+
 
 class BatchReceivedController extends Controller
 {
     public function index()
     {
-        $organisation = User::with('organisations');
         $batchTransactions = Batchtransaction::where('organisation_received_id',
             auth()->user()->organisation->id)
-            ->latest();
+            ->latest()
+            ->paginate(10);
         return view('batch.received.index', compact('batchTransactions'));
     }
 
@@ -50,7 +50,7 @@ class BatchReceivedController extends Controller
             'organisation_send_id' => 'required|integer',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->orgqnisqtion->id;
+        $validatedData['organisation_received_id'] = auth()->user()->organisation->id;
 
         BatchTransaction::create($validatedData);
         return redirect()->route('batch-received.index')->with('success', 'Batch transaction created successfully.');

@@ -84,10 +84,10 @@
                     <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-inbox"></i> A recevoir</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Reçu</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> Recevoir</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyé</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> Envoyer</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> Archiver </a>
@@ -103,10 +103,10 @@
             <ul class="list-unstyled pl-3">
 
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-inbox"></i> Recevoir</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-inbox"></i> Envoyer</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i> Envoyer</a>
+                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i> Recevoir</a>
                 </li>
 
             </ul>
