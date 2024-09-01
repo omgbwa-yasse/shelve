@@ -39,9 +39,11 @@
                     <a class="nav-link text-dark" href="{{ route('tasks.index') }}"><i class="bi bi-bookmark-check"></i> Tâches terminées</a>
                 </li>
                 <li class="nav-item">
-{{--                    <a class="nav-link text-dark" href="{{ route('tasks.mytasks') }}"><i class="bi bi-bookmark-check"></i> Mes Tâches </a>--}}
-                </li><a href="{{ route('tasks.myTasks') }}">My Tasks</a>
-
+                    <a class="nav-link text-dark" href="{{ route('tasks.myTasks') }}"><i class="bi bi-bookmark-check"></i> Mes Tâches </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('tasks.supervision') }}"><i class="bi bi-bookmark-check"></i>  Supervision  </a>
+                </li>
             </ul>
         </div>
     </div>

@@ -11,7 +11,7 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['name', 'description', 'duration', 'task_status_id', 'task_type_id'];
+    protected $fillable = ['name', 'description', 'duration', 'task_status_id', 'task_type_id', 'start_date', 'parent_task_id'];
 
     public function taskType()
     {
@@ -62,4 +62,15 @@ class Task extends Model
     {
         return $this->hasMany(TaskSupervision::class);
     }
+
+    public function parentTask()
+    {
+        return $this->belongsTo(Task::class, 'parent_task_id');
+    }
+
+    public function childTasks()
+    {
+        return $this->hasMany(Task::class, 'parent_task_id');
+    }
 }
+

@@ -1,89 +1,5 @@
 @extends('layouts.app')
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('taskForm');
-        const tabs = document.querySelectorAll('.nav-link');
-        const tabContents = document.querySelectorAll('.tab-pane');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const helpBtn = document.getElementById('helpBtn');
-        const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
-
-        let currentTab = 0;
-
-        function showTab(index) {
-            tabs[currentTab].classList.remove('active');
-            tabs[index].classList.add('active');
-            tabContents[currentTab].classList.remove('show', 'active');
-            tabContents[index].classList.add('show', 'active');
-            currentTab = index;
-
-            prevBtn.style.display = currentTab === 0 ? 'none' : 'inline-block';
-            if (currentTab === tabs.length - 1) {
-                nextBtn.style.display = 'none';
-                submitBtn.style.display = 'inline-block';
-            } else {
-                nextBtn.style.display = 'inline-block';
-                submitBtn.style.display = 'none';
-            }
-        }
-
-        function validateTab(index) {
-            const inputs = tabContents[index].querySelectorAll('input, select, textarea');
-            let isValid = true;
-            inputs.forEach(input => {
-                if (input.required && !input.value) {
-                    isValid = false;
-                    input.classList.add('is-invalid');
-                } else {
-                    input.classList.remove('is-invalid');
-                }
-            });
-            return isValid;
-        }
-
-        prevBtn.addEventListener('click', () => {
-            if (currentTab > 0) {
-                showTab(currentTab - 1);
-            }
-        });
-
-        nextBtn.addEventListener('click', () => {
-            if (validateTab(currentTab) && currentTab < tabs.length - 1) {
-                showTab(currentTab + 1);
-            }
-        });
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (validateTab(currentTab)) {
-                // You can add additional validation or API calls here before submitting
-                form.submit();
-            }
-        });
-
-        helpBtn.addEventListener('click', () => {
-            helpModal.show();
-        });
-
-        // Initialize Select2 for multiple select inputs
-    $('.form-select[multiple]').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
-        });
-
-        // Initialize flatpickr for date inputs
-        flatpickr('input[type="date"]', {
-            dateFormat: 'Y-m-d',
-            allowInput: true
-        });
-
-        showTab(currentTab);
-    });
-</script>
-
 @section('content')
     <div class="container">
         @if ($errors->any())
@@ -172,6 +88,25 @@
                                             <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="start_date" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control @error('start_date') is-invalid @enderror" id="start_date" name="start_date" required>
+                                        @error('start_date')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="parent_task_id" class="form-label">Parent Task</label>
+                                        <select class="form-select @error('parent_task_id') is-invalid @enderror" id="parent_task_id" name="parent_task_id">
+                                            <option value="">None</option>
+                                            @foreach($tasks as $task)
+                                                <option value="{{ $task->id }}">{{ $task->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('parent_task_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="tab-pane fade" id="details" role="tabpanel" aria-labelledby="details-tab">
@@ -419,5 +354,77 @@
 
 @push('scripts')
     <!-- Include Select2 and Flatpickr scripts here if not already included -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('taskForm');
+            const tabs = document.querySelectorAll('.nav-link');
+            const tabContents = document.querySelectorAll('.tab-pane');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
 
+            let currentTab = 0;
+
+            function showTab(index) {
+                tabs[currentTab].classList.remove('active');
+                tabs[index].classList.add('active');
+                tabContents[currentTab].classList.remove('show', 'active');
+                tabContents[index].classList.add('show', 'active');
+                currentTab = index;
+
+                prevBtn.style.display = currentTab === 0 ? 'none' : 'inline-block';
+                if (currentTab === tabs.length - 1) {
+                    nextBtn.style.display = 'none';
+                    submitBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'inline-block';
+                    submitBtn.style.display = 'none';
+                }
+            }
+
+            function validateTab(index) {
+                const inputs = tabContents[index].querySelectorAll('input, select, textarea');
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (input.required && !input.value) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                return isValid;
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentTab > 0) {
+                    showTab(currentTab - 1);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (validateTab(currentTab) && currentTab < tabs.length - 1) {
+                    showTab(currentTab + 1);
+                }
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (validateTab(currentTab)) {
+                    // You can add additional validation or API calls here before submitting
+                    form.submit();
+                }
+            });
+
+            helpBtn.addEventListener('click', () => {
+                helpModal.show();
+            });
+
+            showTab(currentTab);
+        });
+    </script>
 @endpush

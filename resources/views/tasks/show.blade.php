@@ -11,8 +11,8 @@
                             Task Details: {{ $task->name }}
                         </h1>
                         <span class="badge bg-light text-primary">
-                        Status: {{ $task->taskStatus->name }}
-                    </span>
+                            Status: {{ $task->taskStatus->name }}
+                        </span>
                     </div>
                     <div class="card-body">
                         <div class="mb-4">
@@ -32,6 +32,10 @@
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item"><strong>Duration:</strong> {{ $task->duration }} hours</li>
                                     <li class="list-group-item"><strong>Task Type:</strong> {{ $task->taskType->name }}</li>
+                                    <li class="list-group-item"><strong>Start Date:</strong> {{ $task->start_date }}</li>
+                                    @if($task->parentTask)
+                                        <li class="list-group-item"><strong>Parent Task:</strong> {{ $task->parentTask->name }}</li>
+                                    @endif
                                 </ul>
                             </div>
 
@@ -134,7 +138,7 @@
                                             @foreach($task->taskMails as $mail)
                                                 <li class="list-group-item">
                                                     <i class="bi bi-envelope me-2"></i>
-                                                    {{ $mail->name }}
+                                                    <a href="{{ route('mails.show', $mail->id) }}" class="text-primary">{{ $mail->name }}</a>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -155,7 +159,7 @@
                                             @foreach($task->taskContainers as $container)
                                                 <li class="list-group-item">
                                                     <i class="bi bi-box me-2"></i>
-                                                    {{ $container->code }}
+                                                    <a href="{{ route('containers.show', $container->id) }}" class="text-primary">{{ $container->name }}</a>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -176,7 +180,7 @@
                                             @foreach($task->taskRecords as $record)
                                                 <li class="list-group-item">
                                                     <i class="bi bi-file-earmark-text me-2"></i>
-                                                    {{ $record->name }}
+                                                    <a href="{{ route('records.show', $record->id) }}" class="text-primary">{{ $record->name }}</a>
                                                 </li>
                                             @endforeach
                                         </ul>
@@ -197,7 +201,14 @@
                                             @foreach($task->taskRemembers as $remember)
                                                 <li class="list-group-item">
                                                     <i class="bi bi-alarm me-2"></i>
-                                                    {{ $remember->periode }}
+                                                    <strong>Date Fix:</strong> {{ $remember->date_fix }}<br>
+                                                    <strong>Period:</strong> {{ $remember->periode }}<br>
+                                                    <strong>Date Trigger:</strong> {{ $remember->date_trigger }}<br>
+                                                    <strong>Limit Number:</strong> {{ $remember->limit_number }}<br>
+                                                    <strong>Limit Date:</strong> {{ $remember->limit_date }}<br>
+                                                    <strong>Frequency Value:</strong> {{ $remember->frequence_value }}<br>
+                                                    <strong>Frequency Unit:</strong> {{ $remember->frequence_unit }}<br>
+                                                    <strong>User:</strong> {{ $remember->user->name }}
                                                 </li>
                                             @endforeach
                                         </ul>

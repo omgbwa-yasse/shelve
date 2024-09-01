@@ -21,7 +21,7 @@ class TaskController extends Controller
 {
     public function myTasks()
     {
-        dd('myTasks method called');
+
         $tasks = Task::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->with(['taskType', 'taskStatus', 'users', 'organisations'])->paginate(10);
@@ -64,7 +64,9 @@ class TaskController extends Controller
         $containers = Container::all();
         $records = Record::all();
 
-        return view('tasks.create', compact('taskTypes', 'taskStatuses', 'users', 'organisations', 'mails', 'containers', 'records'));
+        $tasks = Task::all(); // Ajoutez cette ligne pour obtenir toutes les tâches
+
+        return view('tasks.create', compact('taskTypes', 'taskStatuses', 'users', 'organisations', 'mails', 'containers', 'records', 'tasks'));
     }
 
     public function store(Request $request)
@@ -96,6 +98,8 @@ class TaskController extends Controller
             'task_parent_update' => 'required|boolean',
             'task_child_update' => 'required|boolean',
             'task_close' => 'required|boolean',
+            'start_date' => 'required|date', // Ajoutez cette ligne pour la date de début
+            'parent_task_id' => 'nullable|exists:tasks,id', // Ajoutez cette ligne pour la tâche parente
         ]);
 
         DB::transaction(function () use ($validatedData, $request) {
@@ -105,6 +109,8 @@ class TaskController extends Controller
                 'duration' => $validatedData['duration'],
                 'task_type_id' => $validatedData['task_type_id'],
                 'task_status_id' => $validatedData['task_status_id'],
+                'start_date' => $validatedData['start_date'], // Ajoutez cette ligne pour la date de début
+                'parent_task_id' => $validatedData['parent_task_id'], // Ajoutez cette ligne pour la tâche parente
             ]);
 
             $task->users()->sync($validatedData['user_ids']);
@@ -272,4 +278,32 @@ class TaskController extends Controller
         $attachment = $task->attachments()->findOrFail($attachmentId);
         return Storage::download($attachment->path);
     }
+    public function supervision(Request $request)
+    {
+        $user = auth()->user();
+        $query = Task::with(['taskType', 'taskStatus', 'users', 'organisations'])
+            ->whereHas('taskSupervisions', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('task_status_id', $request->status);
+        }
+
+        if ($request->has('type') && $request->type !== '') {
+            $query->where('task_type_id', $request->type);
+        }
+
+        $tasks = $query->paginate(10);
+
+        $statuses = TaskStatus::all();
+        $types = TaskType::all();
+
+        return view('tasks.supervision.index', compact('tasks', 'statuses', 'types'));
+    }
+
 }

@@ -22,6 +22,9 @@ return new class extends Migration
             $table->integer('duration')->nullable(false);
             $table->unsignedBigInteger('task_type_id')->nullable(false);
             $table->unsignedBigInteger('task_status_id')->nullable(false);
+            $table->date('start_date')->nullable();
+            $table->unsignedBigInteger('parent_task_id')->nullable();
+            $table->foreign('parent_task_id')->references('id')->on('tasks')->onDelete('set null');
             $table->timestamps();
         });
 
