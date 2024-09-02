@@ -125,6 +125,7 @@ return new class extends Migration
         // Supervision des activités
 
         Schema::create('task_supervision', function (Blueprint $table) {
+            $table->unsignedBigInteger('task_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
             $table->boolean('task_assignation')->nullable();
             $table->boolean('task_update')->nullable();

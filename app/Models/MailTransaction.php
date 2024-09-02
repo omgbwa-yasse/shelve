@@ -21,6 +21,7 @@ class MailTransaction extends Model
         'action_id',
         'to_return',
         'description',
+        'batch_id',
     ];
 
     public function mail()
@@ -53,17 +54,22 @@ class MailTransaction extends Model
 
     public function mailType()
     {
-        return $this->belongsTo(MailType::class);
+        return $this->belongsTo(MailType::class, 'mail_type_id');
     }
 
     public function documentType()
     {
-        return $this->belongsTo(DocumentType::class);
+        return $this->belongsTo(DocumentType::class, 'document_type_id');
     }
 
     public function action()
     {
-        return $this->belongsTo(MailAction::class);
+        return $this->belongsTo(MailAction::class, 'action_id');
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(batch::class, 'batch_id');
     }
 }
 
