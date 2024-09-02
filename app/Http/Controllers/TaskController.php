@@ -21,11 +21,12 @@ class TaskController extends Controller
 {
     public function myTasks()
     {
-
         $tasks = Task::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->with(['taskType', 'taskStatus', 'users', 'organisations'])->paginate(10);
-//        dd($tasks);
+        })->with(['taskType', 'taskStatus', 'users', 'organisations'])
+            ->select('id', 'name', 'description', 'duration', 'start_date', 'task_status_id')
+            ->paginate(10);
+
         return view('tasks.my_tasks', compact('tasks'));
     }
 

@@ -79,12 +79,12 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-info text-dark">
-                                        {{ $task->taskType->name }}
+                                        {{ $task->taskType->name ?? "N/A" }}
                                     </span>
                                 </td>
                                 <td>
                                     <span class="badge bg-{{ $task->taskStatus->color ?? 'secondary' }}">
-                                        {{ $task->taskStatus->name }}
+                                        {{ $task->taskStatus->name ?? "N/A"}}
                                     </span>
                                 </td>
                                 <td>
