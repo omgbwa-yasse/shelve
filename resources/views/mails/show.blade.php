@@ -210,6 +210,13 @@
             }
         }
 
+        function previewAttachment(attachmentId) {
+            const previewUrl = `{{ route('mail-attachment.show', [$mail->id, ':attachmentId']) }}`.replace(':attachmentId', attachmentId);
+            document.getElementById('attachmentPreviewFrame').src = previewUrl;
+            const previewModal = new bootstrap.Modal(document.getElementById('attachmentPreviewModal'));
+            previewModal.show();
+        }
+        
         $(document).ready(function() {
             // Initialize Bootstrap tabs
             $('#mailTabs a').on('click', function (e) {
