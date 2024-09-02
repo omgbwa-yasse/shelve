@@ -16,10 +16,10 @@
         <tbody>
             @foreach ($batchTransactions as $batchTransaction)
                 <tr>
-                    <td>{{ $batchTransaction->batch->code }}</td>
-                    <td>{{ $batchTransaction->batch->name }}</td>
-                    <td>{{ $batchTransaction->organisationSend->name }}</td>
-                    <td>{{ $batchTransaction->organisationReceived->name }}</td>
+                    <td>{{ $batchTransaction->batch->code  ?? "N/A" }}</td>
+                    <td>{{ $batchTransaction->batch->name ?? "N/A" }}</td>
+                    <td>{{ $batchTransaction->organisationSend->name ?? "N/A" }}</td>
+                    <td>{{ $batchTransaction->organisationReceived->name ?? "N/A" }}</td>
                     <td>{{ $batchTransaction->created_at }}</td>
                     <td>
                         <a href="{{ route('batch-received.show', $batchTransaction) }}" class="btn btn-sm btn-info">Show</a>
