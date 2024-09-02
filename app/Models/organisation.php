@@ -31,6 +31,16 @@ class Organisation extends Model
     {
         return $this->hasMany(OrganisationActive::class, 'organisation_id');
     }
+
+    public function userSlips()
+    {
+        return $this->hasMany(Slip::class, 'user_organisation_id');
+    }
+
+    public function officerSlips()
+    {
+        return $this->hasMany(Slip::class, 'officer_organisation_id');
+    }
 }
 
 

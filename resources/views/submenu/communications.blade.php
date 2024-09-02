@@ -11,13 +11,13 @@
                     <a class="nav-link text-dark" href="{{ route('transactions.index')}}"><i class="bi bi-inbox"></i> Tout voir </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Returnés (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=return-effective"><i class="bi bi-inbox"></i> Returnés</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Sans retour (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=unreturn"><i class="bi bi-inbox"></i> Sans retour</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Non returnés (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=not-return"><i class="bi bi-inbox"></i> Non returnés</a>
                 </li>
                 </ul>
         </div>
@@ -35,10 +35,10 @@
                     <a class="nav-link text-dark" href="{{ route('reservations.index')}}"><i class="bi bi-inbox"></i> Tout voir </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Résevés (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=InProgess"><i class="bi bi-inbox"></i> En examen</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-inbox"></i> Validés (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=approved"><i class="bi bi-inbox"></i> Approuvée</a>
                 </li>
 
             </ul>

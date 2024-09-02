@@ -12,14 +12,20 @@
                     <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i> Tous mes bordereauX</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Dates (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-select-date') }}"><i class="bi bi-list"></i> Dates</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Services versants (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-select-organisation') }}?categ=organisation"><i class="bi bi-list"></i> Organisations</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=" "><i class="bi bi-list"></i> Services d'archives (*)</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=draft"><i class="bi bi-list"></i> En cours</a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-list"></i> Approvés</a>
+                </li>
+
             </ul>
         </div>
 

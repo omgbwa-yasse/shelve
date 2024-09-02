@@ -48,6 +48,7 @@ use App\Http\Controllers\RecordController;
 use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationStatusController;
 use App\Http\Controllers\CommunicationController;
+use App\Http\Controllers\SearchCommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
 use App\Http\Controllers\ReservationStatusController;
 use App\Http\Controllers\ReservationController;
@@ -55,8 +56,8 @@ use App\Http\Controllers\ReservationRecordController;
 use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchMailController;
+use App\Http\Controllers\SearchReservationController;
 use App\Http\Controllers\SearchRecordController;
-//use App\Http\Controllers\MailInitialedController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
 use App\Http\Controllers\SlipStatusController;
@@ -69,6 +70,7 @@ use App\Http\Controllers\DollyActionController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\UserOrganisationController;
 use App\Http\Controllers\SearchMailFeedbackController;
+use App\Http\Controllers\SearchSlipController;
 use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Http\Controllers\ReportController;
@@ -120,6 +122,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);
         Route::resource('reservations.records', ReservationRecordController::class);
+        Route::get('sort', [SearchCommunicationController::class, 'index'])->name('communications-sort');
+        Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
+        Route::get('reservations.sort', [SearchReservationController::class, 'index'])->name('reservations-sort');
+        Route::get('reservations.select', [SearchReservationController::class, 'date'])->name('reservations-select-date');
     });
 
     Route::prefix('repositories')->group(function () {
@@ -132,6 +138,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('transferrings')->group(function () {
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
+        Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');
+        Route::get('slip.select', [SearchSlipController::class, 'date'])->name('slips-select-date');
+        Route::get('organisation-select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
     });
 
     Route::prefix('deposits')->group(function () {
@@ -180,7 +189,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('organisations', OrganisationController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
-
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
