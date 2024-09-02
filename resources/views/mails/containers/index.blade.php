@@ -22,17 +22,8 @@
                         <td>{{ $mailContainer->creator->name }}</td>
                         <td>{{ $mailContainer->containerType->name }}</td>
                         <td>
-                            @if($mailContainer->mailArchivings->isEmpty())
-                                Aucun contenu archivé
-                            @else
-                                <a href="{{ route('mail-archiving.index', $mailContainer->id) }}" class="btn btn-success">
-                                   {{ $mailContainer->mailArchivings->count() }} courrier archivé(s)
-                                </a>
-                            @endif
-                        </td>
-                        <td>
                             <a href="{{ route('mail-container.show', $mailContainer->id) }}" class="btn btn-info">Paramètre</a>
-                            <a href="{{ route('mails.sort') }}?categ=container&id={{ $mailContainer->id }}" class="btn btn-success">Voir le contenu</a>
+                            <a href="{{ route('mails.sort') }}?categ=container&id={{ $mailContainer->id }}" class="btn btn-success"> {{ $mailContainer->mailArchivings->count() }} courriers archivés</a>
                         </td>
                     </tr>
                 @endforeach
