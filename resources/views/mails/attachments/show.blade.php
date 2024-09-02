@@ -7,6 +7,9 @@
 @section('content')
     <div class="container">
         <h1>Attachment Details</h1>
+{{--        {{ Storage::url($attachment->path) }}--}}
+{{--        {{storage_path('app/' . $attachment->path)}}--}}
+{{--        {{ storage_path('app/' . $attachment->path) }}--}}
         <table class="table">
             <tbody>
             <tr>
@@ -49,7 +52,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const url = '{{ Storage::url($attachment->path) }}';
+            {{--const url = '{{ asset("storage/attachments/" . basename($attachment->path)) }}';--}}
+            const url = '{{ storage_path('app/' . $attachment->path) }}';
+
+
 
             console.log('PDF URL:', url);
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';

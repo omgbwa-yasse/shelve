@@ -162,9 +162,9 @@
                                                     <small class="text-muted ms-2">({{ number_format($attachment->size / 1024, 2) }} KB)</small>
                                                 </div>
                                                 <div>
-                                                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="previewAttachment({{ $attachment->id }})">
-                                                        <i class="bi bi-eye"></i> Preview
-                                                    </button>
+{{--                                                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="previewAttachment({{ $attachment->id }})">--}}
+{{--                                                        <i class="bi bi-eye"></i> Preview--}}
+{{--                                                    </button>--}}
                                                     <a href="{{ route('mail-attachment.show', [$mail->id, $attachment->id]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
                                                         <i class="bi bi-download"></i>
                                                     </a>
@@ -182,19 +182,19 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="attachmentPreviewModal" tabindex="-1" aria-labelledby="attachmentPreviewModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="attachmentPreviewModalLabel">Attachment Preview</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <iframe id="attachmentPreviewFrame" src="" style="width: 100%; height: 500px; border: none;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
+{{--    <div class="modal fade" id="attachmentPreviewModal" tabindex="-1" aria-labelledby="attachmentPreviewModalLabel" aria-hidden="true">--}}
+{{--        <div class="modal-dialog modal-lg">--}}
+{{--            <div class="modal-content">--}}
+{{--                <div class="modal-header">--}}
+{{--                    <h5 class="modal-title" id="attachmentPreviewModalLabel">Attachment Preview</h5>--}}
+{{--                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>--}}
+{{--                </div>--}}
+{{--                <div class="modal-body">--}}
+{{--                    <iframe id="attachmentPreviewFrame" src="" style="width: 100%; height: 500px; border: none;"></iframe>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    </div>--}}
 
 @endsection
 
@@ -210,13 +210,13 @@
             }
         }
 
-        function previewAttachment(attachmentId) {
-            const previewUrl = `{{ route('mail-attachment.show', [$mail->id, ':attachmentId']) }}`.replace(':attachmentId', attachmentId);
-            document.getElementById('attachmentPreviewFrame').src = previewUrl;
-            const previewModal = new bootstrap.Modal(document.getElementById('attachmentPreviewModal'));
-            previewModal.show();
-        }
-        
+        {{--function previewAttachment(attachmentId) {--}}
+        {{--    const previewUrl = `{{ route('mail-attachment.show', [$mail->id, ':attachmentId']) }}`.replace(':attachmentId', attachmentId);--}}
+        {{--    document.getElementById('attachmentPreviewFrame').src = previewUrl;--}}
+        {{--    const previewModal = new bootstrap.Modal(document.getElementById('attachmentPreviewModal'));--}}
+        {{--    previewModal.show();--}}
+        {{--}--}}
+
         $(document).ready(function() {
             // Initialize Bootstrap tabs
             $('#mailTabs a').on('click', function (e) {
