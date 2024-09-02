@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Batch;
 use App\Models\Organisation;
 use App\Models\BatchTransaction;
+use App\Models\MailTransaction;
 
 
 class BatchReceivedController extends Controller
@@ -27,12 +28,19 @@ class BatchReceivedController extends Controller
     }
 
 
+
+
+
     public function create()
     {
         $batches = Batch::all();
         $organisations = Organisation::all();
         return view('batch.received.create', compact('batches', 'organisations'));
     }
+
+
+
+
 
 
 
@@ -43,6 +51,11 @@ class BatchReceivedController extends Controller
         return view('batch.received.show', compact('batchTransaction', 'organisations'));
     }
 
+
+
+
+
+
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -52,9 +65,34 @@ class BatchReceivedController extends Controller
 
         $validatedData['organisation_received_id'] = auth()->user()->organisation->id;
 
-        BatchTransaction::create($validatedData);
+
+        $batch = BatchTransaction::create($validatedData);
+        $i = 1;
+        foreach($batch->mails as $data){
+            $mail = [];
+            $mail['code'] = $batch->code . $i;
+            $mail['date_creation'] = now();
+            $mail['mail_id'] = $data->id;
+            $mail['user_send_id'] = auth()->user()->id;
+            $mail['organisation_send_id'] = auth()->user()->organisation->id;
+            $mail['user_received_id'] = $validatedData['user_received_id'];
+            $mail['organisation_received_id'] = $validatedData['organisation_received_id'];
+            $mail['document_type_id'] = $data->document_type_id;
+            $mail['action_id'] = NULL;
+            $mail['to_return'] = $data->to_return;
+            $mail['description'] = $data->to_return;
+            $mail['batch_id'] = $batch->id;
+            $i++;
+            MailTransaction::create($mail);
+        }
+
         return redirect()->route('batch-received.index')->with('success', 'Batch transaction created successfully.');
     }
+
+
+
+
+
 
     public function edit(INT $id)
     {
