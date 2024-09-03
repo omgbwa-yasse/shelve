@@ -75,6 +75,17 @@ class MailAttachmentController extends Controller
 
         return abort(404);
     }
+    public function preview($id)
+    {
+        $attachment = MailAttachment::findOrFail($id);
+        $filePath = storage_path('app/' . $attachment->path);
+
+        if (file_exists($filePath)) {
+            return response()->file($filePath);
+        }
+
+        return abort(404);
+    }
 
 
 

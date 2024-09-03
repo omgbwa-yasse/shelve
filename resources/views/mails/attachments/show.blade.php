@@ -1,108 +1,65 @@
 @extends('layouts.app')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-</script>
 
 @section('content')
-    <div class="container">
-        <h1>Attachment Details</h1>
-{{--        {{ Storage::url($attachment->path) }}--}}
-{{--        {{storage_path('app/' . $attachment->path)}}--}}
-{{--        {{ storage_path('app/' . $attachment->path) }}--}}
-        <table class="table">
-            <tbody>
-            <tr>
-                <th>Name</th>
-                <td>{{ $attachment->name }}</td>
-            </tr>
-            <tr>
-                <th>Path</th>
-                <td>{{ $attachment->path }}</td>
-            </tr>
-            <tr>
-                <th>Crypt</th>
-                <td>{{ $attachment->crypt }}</td>
-            </tr>
-            <tr>
-                <th>Size</th>
-                <td>{{ $attachment->size }}</td>
-            </tr>
-            <tr>
-                <th>Created At</th>
-                <td>{{ $attachment->created_at }}</td>
-            </tr>
-            <tr>
-                <th>Updated At</th>
-                <td>{{ $attachment->updated_at }}</td>
-            </tr>
-            </tbody>
-        </table>
-        <div id="pdf-container" style="width: 100%; height: 600px; border: 1px solid #ccc;">
-            <canvas id="pdf-canvas"></canvas>
-        </div>
-        <div class="mt-3">
-            <button id="prev-page" class="btn btn-secondary">Previous</button>
-            <button id="next-page" class="btn btn-secondary">Next</button>
-            <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-primary">Download</a>
-        </div>
-        <a href="{{ route('mail-attachment.index', $mail) }}" class="btn btn-secondary">Back</a>
-    </div>
+    <div class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title mb-4">{{ $attachment->name }}</h1>
+                <div class="mb-3">
+                    <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-primary me-2">
+                        <i class="bi bi-download"></i> Download File
+                    </a>
+                    <a href="{{ route('mail-attachment.edit', [$mail, $attachment]) }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <form action="{{ route('mail-attachment.destroy', [$mail, $attachment]) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </form>
+                </div>
 
+                <div id="pdf-controls" class="mb-3 d-flex align-items-center" style="display: none;">
+                    <button id="prev-page" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </button>
+                    <div class="input-group" style="width: auto;">
+                        <span class="input-group-text">Page</span>
+                        <input type="number" id="page-number" class="form-control" min="1" style="width: 70px;">
+                        <span class="input-group-text">of <span id="total-pages"></span></span>
+                    </div>
+                    <button id="next-page" class="btn btn-outline-primary ms-2">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div id="pdf-container" class="border rounded" style="height: 600px; overflow: auto; display: none;">
+                    <iframe id="pdf-iframe" src="{{ route('mail-attachment.preview', $attachment->id) }}" style="width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+                <div id="preview-unavailable" class="alert alert-warning" role="alert" style="display: none;">
+                    Aperçu non disponible
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            {{--const url = '{{ asset("storage/attachments/" . basename($attachment->path)) }}';--}}
-            const url = '{{ storage_path('app/' . $attachment->path) }}';
+            const filePath = '{{ $attachment->path }}';
+            const fileExtension = filePath.split('.').pop().toLowerCase();
 
-
-
-            console.log('PDF URL:', url);
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            const loadingTask = pdfjsLib.getDocument(url);
-            let pdf = null;
-            let currentPage = 1;
-
-            loadingTask.promise.then(function(pdfDoc) {
-                pdf = pdfDoc;
-                console.log('PDF loaded');
-                renderPage(currentPage);
-            }).catch(function(error) {
-                console.error('Error loading PDF:', error);
-            });
-
-            function renderPage(pageNum) {
-                pdf.getPage(pageNum).then(function(page) {
-                    const scale = 1.5;
-                    const viewport = page.getViewport({scale: scale});
-                    const canvas = document.getElementById('pdf-canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    const renderContext = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    page.render(renderContext);
-                }).catch(function(error) {
-                    console.error('Error rendering page:', error);
-                });
+            if (fileExtension !== 'pdf') {
+                document.getElementById('preview-unavailable').style.display = 'block';
+                return;
             }
 
-            document.getElementById('prev-page').addEventListener('click', function() {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderPage(currentPage);
-                }
-            });
+            const container = document.getElementById('pdf-container');
+            const pdfControls = document.getElementById('pdf-controls');
 
-            document.getElementById('next-page').addEventListener('click', function() {
-                if (currentPage < pdf.numPages) {
-                    currentPage++;
-                    renderPage(currentPage);
-                }
-            });
+            container.style.display = 'block';
+            pdfControls.style.display = 'flex';
         });
-
     </script>
 @endsection

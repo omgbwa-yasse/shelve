@@ -84,7 +84,7 @@ Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLog
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('/tasks/myTasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
 Route::get('/tasks/supervision', [TaskController::class, 'supervision'])->name('tasks.supervision');
-
+Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
