@@ -29,7 +29,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-organisations.index') }}"><i class="bi bi-gear"></i> Postes affectés </a>
+                <a class="nav-link text-dark" href="{{ route('user-organisations.index') }}"><i class="bi bi-gear"></i> Postes affectés ***</a>
             </li>
 
         </ul>
@@ -66,11 +66,11 @@ aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i
 <ul class="list-unstyled pl-3">
 
     <li class="nav-item">
-        <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> Type de tâches </a>
+        <a class="nav-link text-dark" href="{{ route('taskstatus.index') }}"><i class="bi bi-gear"></i> Type de tâches** </a>
     </li>
 
     <li class="nav-item">
-        <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> Statut de tâches </a>
+        <a class="nav-link text-dark" href="{{ route('tasktype.index') }}"><i class="bi bi-gear"></i> Statut de tâches **</a>
     </li>
 
 

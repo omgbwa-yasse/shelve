@@ -3,9 +3,9 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Create Role') }}</div>
+        <div class="">
+            <div class="">
+                <h1 class="">{{ __('Create Role') }}</h1>
 
                 <div class="card-body">
                     <form action="{{ route('roles.store') }}" method="POST" id="roleForm">

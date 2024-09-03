@@ -15,15 +15,15 @@
         let currentTab = 0;
 
         function showTab(index) {
-            tabs[currentTab].classList.remove('active');
+            tabs.forEach(tab => tab.classList.remove('active'));
             tabs[index].classList.add('active');
-            tabContents[currentTab].classList.remove('show', 'active');
+            tabContents.forEach(content => content.classList.remove('show', 'active'));
             tabContents[index].classList.add('show', 'active');
             currentTab = index;
 
             prevBtn.style.display = currentTab === 0 ? 'none' : 'inline-block';
-            nextBtn.style.display = currentTab === tabs.length - 1 ? 'none' : 'inline-block';
-            submitBtn.style.display = currentTab === tabs.length - 1 ? 'inline-block' : 'none';
+            nextBtn.style.display = currentTab === 3 ? 'none' : 'inline-block';
+            submitBtn.style.display = currentTab === 3 ? 'inline-block' : 'inline-block';
         }
 
         function validateTab(index) {
@@ -40,9 +40,23 @@
             return isValid;
         }
 
-        prevBtn.addEventListener('click', () => currentTab > 0 && showTab(currentTab - 1));
-        nextBtn.addEventListener('click', () => validateTab(currentTab) && currentTab < tabs.length - 1 && showTab(currentTab + 1));
+        prevBtn.addEventListener('click', () => {
+            if (currentTab > 0) {
+                showTab(currentTab - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (validateTab(currentTab) && currentTab < tabs.length - 1) {
+                showTab(currentTab + 1);
+            }
+        });
+
         helpBtn.addEventListener('click', () => helpModal.show());
+
+        // Ajout d'un gestionnaire d'événements pour le bouton de fermeture du modal
+        document.querySelector('#helpModal .btn-close').addEventListener('click', () => helpModal.hide());
+        document.querySelector('#helpModal .modal-footer .btn-secondary').addEventListener('click', () => helpModal.hide());
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -51,10 +65,21 @@
             }
         });
 
+        // Initialiser l'affichage du premier onglet
         showTab(currentTab);
-
         // Search functionality for select inputs
-        function addSearchFunctionality(searchId, selectId) {
+        const searchInputs = [
+            { searchId: 'userSearch', selectId: 'user_ids' },
+            { searchId: 'mailSearch', selectId: 'mail_ids' },
+            { searchId: 'containerSearch', selectId: 'container_ids' },
+            { searchId: 'recordSearch', selectId: 'record_ids' },
+            { searchId: 'rememberUserSearch', selectId: 'remember_user_id' },
+            { searchId: 'parentTaskSearch', selectId: 'parent_task_id' },
+            { searchId: 'supervisionUserSearch', selectId: 'supervision_user_id' },
+            { searchId: 'organizationSearch', selectId: 'organisation_ids' }
+        ];
+
+        searchInputs.forEach(({ searchId, selectId }) => {
             const searchInput = document.getElementById(searchId);
             const select = document.getElementById(selectId);
             const options = Array.from(select.options);
@@ -66,27 +91,25 @@
                     option.style.display = isVisible ? '' : 'none';
                 });
             });
-        }
-
-        addSearchFunctionality('userSearch', 'user_ids');
-        addSearchFunctionality('mailSearch', 'mail_ids');
-        addSearchFunctionality('containerSearch', 'container_ids');
-        addSearchFunctionality('recordSearch', 'record_ids');
-        addSearchFunctionality('rememberUserSearch', 'remember_user_id');
-        addSearchFunctionality('parentTaskSearch', 'parent_task_id');
-        addSearchFunctionality('supervisionUserSearch', 'supervision_user_id');
-        addSearchFunctionality('organizationSearch', 'organisation_ids');
+        });
 
         // Initialize Select2 for multiple select inputs
-        $('#user_ids, #mail_ids, #container_ids, #record_ids, #remember_user_id, #parent_task_id, #supervision_user_id, #organisation_ids').select2({
+        $('.select2-multiple').select2({
             theme: 'bootstrap-5',
             width: '100%'
         });
 
-        // Initialize Flatpickr for date inputs
+        // Initialize Flatpickr for all date inputs
         flatpickr("input[type=date]", {
             dateFormat: "Y-m-d",
             allowInput: true
+        });
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                showTab(index);
+            });
         });
     });
 </script>

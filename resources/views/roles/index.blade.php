@@ -3,9 +3,9 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Roles') }}</div>
+        <div class="">
+            <div class="">
+                <h1 class="">{{ __('Roles') }}</h1>
 
                 <div class="card-body">
                     <a href="{{ route('roles.create') }}" class="btn btn-primary mb-3">Create New Role</a>

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskStatusController;
+use App\Http\Controllers\TaskTypeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
@@ -172,6 +174,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('record-statuses', RecordStatusController::class);
         Route::resource('transferring-status', SlipStatusController::class);
         Route::resource('mail-action', MailActionController::class);
+        Route::resource('taskstatus', TaskStatusController::class);
+        Route::resource('tasktype', TaskTypeController::class);
     });
 
     Route::prefix('dollies')->group(function () {

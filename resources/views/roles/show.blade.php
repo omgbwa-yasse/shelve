@@ -4,8 +4,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Show Role') }}</div>
+            <div class="">
+                <h1 class="">{{ __('Show Role') }}</h1>
 
                 <div class="card-body">
                     <div class="form-group">
