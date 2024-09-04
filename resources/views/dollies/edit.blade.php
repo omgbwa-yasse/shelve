@@ -18,7 +18,27 @@
             <label for="type_id" class="form-label">Type</label>
             <select name="type_id" id="type_id" class="form-select" required>
                 @foreach (\App\Models\DollyType::all() as $type)
-                <option value="{{ $type->id }}" {{ $type->id == $dolly->type_id ? 'selected' : '' }}>{{ $type->name }}</option>
+                <option value="{{ $type->id }}" {{ $type->id == $dolly->type_id ? 'selected' : '' }}>
+                    @if($type->name == 'record')
+                        Description des archives
+                    @elseif($type->name == 'mail')
+                        Courrier
+                    @elseif($type->name == 'communication')
+                        Communication des archives
+                    @elseif($type->name == 'room')
+                        Salle d'archives
+                    @elseif($type->name == 'building')
+                        Bâtiments d'archives
+                    @elseif($type->name == 'container')
+                        Boites d'archives et chronos
+                    @elseif($type->name == 'shelve')
+                        Etagère
+                    @elseif($type->name == 'slip')
+                        Versement
+                    @elseif($type->name == 'slip_record')
+                        Description de versement
+                    @endif
+                </option>
                 @endforeach
             </select>
         </div>

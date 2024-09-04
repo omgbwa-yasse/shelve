@@ -95,12 +95,7 @@ class DollyActionController extends Controller
                 }
             }
 
-            if($_GET['categ'] == "room"){
-                switch($_GET['sub']){
-                    case 'floor' : return $this->RoomFloor($this->id);
-                    case 'new_floor' : return $this->RoomFloorChange($this->id, $this->value);
-                }
-            }
+
         }
 
 }
