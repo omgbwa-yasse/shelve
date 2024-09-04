@@ -25,11 +25,11 @@
 
         /* Style pour le conteneur principal */
         #container {
-            margin-top: 1.5rem;
+            margin-top: 0.5rem;
             border: 0;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 0.5rem;
-            padding: 1.5rem;
+            padding: 0.5rem;
         }
 
         /* Style pour l'en-tête */
@@ -37,15 +37,16 @@
         #container h2 {
             background-color: #0178d4;
             color: #fff;
-            padding: 1rem;
-            border-top-left-radius: 0.5rem;
-            border-top-right-radius: 0.5rem;
+            font-weight: lighter;
+            padding: 0.3rem;
+            border-top-left-radius: 0.3rem;
+            border-top-right-radius: 0.3rem;
             margin-top: 0;
         }
 
         /* Style pour les boutons */
         #container .btn {
-            margin-bottom: 1rem;
+            margin-bottom: 0rem;
         }
 
         /* Style pour la table */
@@ -199,10 +200,10 @@
         </div>
     </nav>
 
-    <main class="py-4">
+    <main class="">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="card">
                         <div class="card-body">
                             @switch(Request::segment(1))
@@ -256,8 +257,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-9">
-                    <div id="container" class="card p-4">
+                <div class="col-md-10">
+                    <div id="container" class="card">
                         @yield('content')
                     </div>
                 </div>
