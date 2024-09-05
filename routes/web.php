@@ -59,6 +59,7 @@ use App\Http\Controllers\RecordStatusController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SearchMailController;
 use App\Http\Controllers\SearchReservationController;
+use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
@@ -181,6 +182,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('dollies')->group(function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('/action', [DollyActionController::class, 'index'])->name('dollies.action');
+        Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
     });
 
     Route::prefix('tools')->group(function () {
