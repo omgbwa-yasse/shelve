@@ -136,6 +136,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('records.attachments', RecordAttachmentController::class)->shallow();
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
+        Route::resource('records.child', RecordController::class)->names('record-child');
     });
 
     Route::prefix('transferrings')->group(function () {

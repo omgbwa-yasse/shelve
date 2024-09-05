@@ -131,7 +131,7 @@
                             <a href="{{ route('records.index') }}" class="btn btn-primary">
                                 <i class="bi bi-box me-2"></i> Insérer dans une boîte
                             </a>
-                            <a href="{{ route('records.index') }}" class="btn btn-success">
+                            <a href="{{ route('record-child') }}" class="btn btn-success">
                                 <i class="bi bi-plus-circle me-2"></i> Ajouter une notice fille
                             </a>
                             <form action="{{ route('records.destroy', $record) }}" method="POST">
