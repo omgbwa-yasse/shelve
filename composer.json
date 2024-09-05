@@ -6,7 +6,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "carbondate/carbon": "^1.17",
         "laravel/framework": "^11.0",
         "laravel/scout": "^10.11",
         "laravel/tinker": "^2.9",

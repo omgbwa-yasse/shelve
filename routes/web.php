@@ -47,6 +47,7 @@ use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
+use App\Http\Controllers\RecordChildController;
 use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationStatusController;
 use App\Http\Controllers\CommunicationController;
@@ -136,7 +137,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('records.attachments', RecordAttachmentController::class)->shallow();
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
-        Route::resource('records.child', RecordController::class)->names('record-child');
+        Route::resource('records.child', RecordChildController::class)->names('record-child');
     });
 
     Route::prefix('transferrings')->group(function () {
