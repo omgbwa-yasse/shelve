@@ -153,7 +153,8 @@
             </div>
         </div>
     </nav>
-
+    @guest
+    @else
     <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
         <div class="container-fluid">
             <div class="navbar-nav w-100 justify-content-between">
@@ -257,7 +258,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-10">
+
+                <div class="col-md-10">@endguest
                     <div id="container" class="card">
                         @yield('content')
                     </div>
