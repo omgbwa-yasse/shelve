@@ -2,98 +2,130 @@
 
 namespace App\Http\Controllers;
 use App\Models\Dolly;
+use App\Models\Container;
+use App\Models\Activity;
+use App\Models\MailArchiving;
+use App\Models\floor;
+use App\Models\shelf;
+use App\Models\Room;
+use App\Models\MailPriority;
+use App\Models\MailType;
+use App\Models\RecordStatus;
+use App\Models\RecordLevel;
 use Illuminate\Http\Request;
 
 class DollyActionController extends Controller
 {
-    public $id;
-    public $value;
-
-    public function __construct()
-    {
-        $this->id = isset($_GET['dolly_id']) ? $_GET['dolly_id'] : null;
-        $this->value = isset($_GET['value']) ? $_GET['value'] : null;
-    }
 
 
-    public function index(){
-        if(isset($_GET['categ']) && !empty($_GET['categ'])){
 
-                if ($_GET['categ'] == "mail") {
-                    switch ($_GET['sub']) {
-                        case 'date':
-                            return $this->MailDate($this->id);
-                        case 'priority':
-                            return $this->MailPriority($this->id);
-                        case 'type':
-                            return $this->MailType($this->id);
-                        case 'archived':
-                            return $this->MailArchived($this->id);
+    public function index(Request $request){
+        if(isset($request->categ) && !empty($request->categ)){
+
+                if ($request->categ == "mail") {
+                    switch ($request->action) {
+                        case 'dates':
+                            return $this->MailDate($request->id);
                         case 'new_date':
-                            return $this->MailDateChange($this->id, $this->value);
+                            return $this->MailDateChange($request->id, $request->value);
+
+
+                        case 'priority':
+                            return $this->MailPriority($request->id);
                         case 'new_priority':
-                            return $this->MailPriorityChange($this->id, $this->value);
+                            return $this->MailPriorityChange($request->id, $request->value);
+
+
+                        case 'type':
+                            return $this->MailType($request->id);
                         case 'new_type':
-                            return $this->MailTypeChange($this->id, $this->value);
+                            return $this->MailTypeChange($request->id, $request->value);
+
+
+                        case 'archived':
+                            return $this->MailArchived($request->id);
                         case 'new_archived':
-                            return $this->MailArchivedChange($this->id, $this->value);
+                            return $this->MailArchivedChange($request->id, $request->value);
                     }
              }
 
-            if($_GET['categ'] == "record"){
-                switch($_GET['sub']){
-                    case 'date' : return $this->RecordDate($this->id);
-                    case 'level' : return $this->RecordLevel($this->id);
-                    case 'status' : return $this->RecordStatus($this->id);
-                    case 'container' : return $this->RecordContainer($this->id);
-                    case 'activity' : return $this->RecordActivity($this->id);
-                    case 'new_date' : return $this->RecordDateChange($this->id, $this->value);
-                    case 'new_level' : return $this->RecordLevelChange($this->id, $this->value);
-                    case 'new_status' : return $this->RecordStatusChange($this->id, $this->value);
-                    case 'new_container' : return $this->RecordContainerChange($this->id, $this->value);
-                    case 'new_activity' : return $this->RecordActivityChange($this->id, $this->value);
+            if($request->categ == "record"){
+                switch($request->action){
+                    case 'dates' : return $this->RecordDate($request->id);
+                    case 'new_date' : return $this->RecordDateChange($request->id, $request->value);
+
+                    case 'level' : return $this->RecordLevel($request->id);
+                    case 'new_level' : return $this->RecordLevelChange($request->id, $request->value);
+
+
+                    case 'status' : return $this->RecordStatus($request->id);
+                    case 'new_status' : return $this->RecordStatusChange($request->id, $request->value);
+
+                    case 'container' : return $this->RecordContainer($request->id);
+                    case 'new_container' : return $this->RecordContainerChange($request->id, $request->value);
+
+                    case 'activity' : return $this->RecordActivity($request->id);
+                    case 'new_activity' : return $this->RecordActivityChange($request->id, $request->value);
                 }
             }
 
-            if($_GET['categ'] == "communication"){
-                switch($_GET['sub']){
-                    case 'date_return' : return  $this->CommunicationReturn($this->id);
-                    case 'return_effective' : return $this->CommunicationReturEffective($this->id);
-                    case 'status' : return $this->CommunicationStatus($this->id);
-                    case 'new_date_return' : return  $this->CommunicationReturnchange($this->id, $this->value);
-                    case 'new_return_effective' : return $this->CommunicationReturEffectivechange($this->id, $this->value);
-                    case 'new_status' : return $this->CommunicationStatuschange($this->id, $this->value);
+            if($request->categ == "communication"){
+                switch($request->action){
+                    case 'date_return' : return  $this->CommunicationReturn($request->id);
+                    case 'new_date_return' : return  $this->CommunicationReturnchange($request->id, $request->value);
+
+                    case 'return_effective' : return $this->CommunicationReturEffective($request->id);
+                    case 'new_return_effective' : return $this->CommunicationReturEffectivechange($request->id, $request->value);
+
+                    case 'status' : return $this->CommunicationStatus($request->id);
+                    case 'new_status' : return $this->CommunicationStatuschange($request->id, $request->value);
                 }
             }
 
-            if($_GET['categ'] == "slipRecord"){
-                switch($_GET['sub']){
-                    case 'container' : return $this->slipRecordContainer($this->id);
-                    case 'activity' : return $this->slipRecordActivity($this->id);
-                    case 'support' : return $this->slipRecordSupport($this->id);
-                    case 'level' : return $this->slipRecordLevel($this->id);
-                    case 'dates' : return $this->slipRecordDate($this->id);
-                    case 'new_container' : return $this->slipRecordContainerchange($this->id, $this->value);
-                    case 'new_activity' : return $this->slipRecordActivitychange($this->id, $this->value);
-                    case 'new_support' : return $this->slipRecordSupportchange($this->id, $this->value);
-                    case 'new_level' : return $this->slipRecordLevelchange($this->id, $this->value);
-                    case 'new_dates' : return $this->slipRecordDatechange($this->id, $this->value);
+            if($request->categ == "slipRecord"){
+                switch($request->action){
+                    case 'container' : return $this->slipRecordContainer($request->id);
+                    case 'new_container' : return $this->slipRecordContainerchange($request->id, $request->value);
+
+
+                    case 'activity' : return $this->slipRecordActivity($request->id);
+                    case 'new_activity' : return $this->slipRecordActivitychange($request->id, $request->value);
+
+
+                    case 'support' : return $this->slipRecordSupport($request->id);
+                    case 'new_support' : return $this->slipRecordSupportchange($request->id, $request->value);
+
+
+                    case 'level' : return $this->slipRecordLevel($request->id);
+                    case 'new_level' : return $this->slipRecordLevelchange($request->id, $request->value);
+
+
+                    case 'dates' : return $this->slipRecordDate($request->id);
+                    case 'new_dates' : return $this->slipRecordDatechange($request->id, $request->value);
                 }
             }
 
-            if($_GET['categ'] == "shelf"){
-                switch($_GET['sub']){
-                    case 'room' : return $this->shlefRoomc($this->id);
-                    case 'new_room' : return $this->shlefRoomchange($this->id, $this->value);
+            if($request->categ == "shelve"){
+                switch($request->action){
+                    case 'room' : return $this->shelfRoom($request->id);
+                    case 'new_room' : return $this->shlefRoomchange($request->id, $request->value);
                 }
             }
 
-            if($_GET['categ'] == "container"){
-                switch($_GET['sub']){
-                    case 'shelf' : return $this->ContainerShelf($this->id);
-                    case 'new_shelf' : return $this->ContainerShelfchange($this->id, $this->value);
+            if($request->categ == "container"){
+                switch($request->action){
+                    case 'shelf' : return $this->ContainerShelf($request->id);
+                    case 'new_shelf' : return $this->ContainerShelfchange($request->id, $request->value);
                 }
             }
+
+            if($request->categ == "room"){
+                switch($request->action){
+                    case 'floor' : return $this->RoomFloor($request->id);
+                    case 'new_floor' : return $this->ContainerFloorchange($request->id, $request->value);
+                }
+            }
+
 
 
         }
@@ -102,14 +134,16 @@ class DollyActionController extends Controller
 
 
 
-    public function MailDate(INT $dolly_id){
-        return view('dollies.actions.mailDateForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    public function MailDate(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $levels = RecordLevel::all();
+        return view('dollies.actions.mailDateForm', compact('dolly','levels'))->with('success', 'Dolly created successfully.');
     }
 
 
-    public function MailDateChange(int $dolly_id, $value)
+    public function MailDateChange(int $id, int $value)
     {
-        $dolly = Dolly::findOrFail($dolly_id);
+        $dolly = Dolly::findOrFail($id);
         $mails = $dolly->mails;
 
         foreach ($mails as $mail) {
@@ -123,8 +157,10 @@ class DollyActionController extends Controller
 
 
 
-    public function MailPriority(INT $dolly_id){
-        return view('dollies.actions.mailPriorityForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    public function MailPriority(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $priorities = MailPriority::all();
+        return view('dollies.actions.mailPriorityForm', compact('dolly','priorities'))->with('success', 'Dolly created successfully.');
     }
     public function MailPriorityChange(INT $dolly_id, STRING $value){
 
@@ -133,8 +169,10 @@ class DollyActionController extends Controller
 
 
 
-    public function MailType(INT $dolly_id){
-        return view('dollies.actions.mailTypeForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    public function MailType(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $types = MailType::all();
+        return view('dollies.actions.mailTypeForm', compact('dolly','types'))->with('success', 'Dolly created successfully.');
     }
 
     public function MailTypeChange(INT $dolly_id, STRING $value){
@@ -144,7 +182,8 @@ class DollyActionController extends Controller
 
 
 
-    public function MailArchived(INT $dolly_id){
+    public function MailArchived(INT $id){
+        $dolly = dolly::findOrFail($id);
         return view('dollies.actions.mailArchivedForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
     }
 
@@ -159,31 +198,25 @@ class DollyActionController extends Controller
      */
 
 
-     public function RecordDate(INT $dolly_id){
-        return view('dollies.actions.recordDateForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     public function RecordLevel(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $levels = RecordLevel::all();
+        return view('dollies.actions.recordLevelForm', compact('dolly','levels'))->with('success', 'Dolly created successfully.');
     }
 
-    public function RecordDateChange(INT $dolly_id, STRING $value){
-        echo "Date";
-    }
-
-
-
-
-    public function RecordLevel(INT $dolly_id){
-        return view('dollies.actions.recordLevelForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
-    }
 
     public function RecordLevelChange(INT $dolly_id, STRING $value){
 
     }
 
 
-
-
-    public function RecordStatus(INT $dolly_id){
-        return view('dollies.actions.recordStatusForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    public function RecordStatus(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $statuses = RecordStatus::all();
+        return view('dollies.actions.recordStatusForm', compact('dolly','statuses'))->with('success', 'Dolly created successfully.');
     }
+
+
 
     public function RecordStatusChange(INT $dolly_id, STRING $value){
 
@@ -192,10 +225,36 @@ class DollyActionController extends Controller
 
 
 
-
-    public function RecordContainer(INT $dolly_id){
-        return view('dollies.actions.recordContainerForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     public function RecordDate(INT $id){
+        $dolly = dolly::findOrFail($id);
+        return view('dollies.actions.recordDateForm', compact('dolly'))->with('success', 'Dolly created successfully.');
     }
+
+
+    public function RecordDateChange(INT $dolly_id, STRING $value){
+        echo "Date";
+    }
+
+
+    public function RecordActivity(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $activities = activity::all();
+        return view('dollies.actions.recordActivityForm', compact('dolly','activities'))->with('success', 'Dolly created successfully.');
+    }
+
+
+    public function RecordActivityChange(INT $dolly_id, STRING $value){
+
+    }
+
+
+    public function RecordContainer(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $containers = container::all();
+        return view('dollies.actions.recordContainerForm', compact('dolly','containers'))->with('success', 'Dolly created successfully.');
+    }
+
+
 
     public function RecordContainerChange(INT $dolly_id, STRING $value){
 
@@ -204,12 +263,17 @@ class DollyActionController extends Controller
 
 
 
-    public function RecordActivity(INT $dolly_id){
-        return view('dollies.actions.recordActivityForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
-    }
-    public function RecordActivityChange(INT $dolly_id, STRING $value){
 
-    }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -227,8 +291,6 @@ class DollyActionController extends Controller
      }
 
 
-
-
      Public function CommunicationReturEffective(INT $dolly_id){
         return view('dollies.actions.CommunicationReturnEffectiveForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
      }
@@ -236,9 +298,6 @@ class DollyActionController extends Controller
      Public function CommunicationReturEffectivechange(INT $dolly_id, STRING $value){
 
      }
-
-
-
 
 
      Public function CommunicationStatus(INT $dolly_id){
@@ -317,19 +376,25 @@ class DollyActionController extends Controller
 
 
 
-     Public function shelfRoom(INT $dolly_id){
-        return view('dollies.actions.shelfRoomForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function shelfRoom(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $rooms = Room::all();
+        $rooms->load('floor');
+        return view('dollies.actions.shelfRoomForm', compact('dolly','rooms'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function shlefRoomchange(INT $dolly_id, STRING $value){
+     Public function shelfRoomchange(INT $dolly_id, STRING $value){
 
      }
 
 
 
 
-    Public function ContainerShelf(INT $dolly_id){
-        return view('dollies.actions.ContainerShelfForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    Public function ContainerShelf(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $shelves = Shelf::all();
+        $shelves->load('room');
+        return view('dollies.actions.ContainerShelfForm', compact('dolly','shelves'))->with('success', 'Dolly created successfully.');
     }
 
     Public function ContainerShelfchange(INT $dolly_id, STRING $value){
@@ -339,8 +404,11 @@ class DollyActionController extends Controller
 
 
 
-    Public function RoomFloor(INT $dolly_id){
-        return view('dollies.actions.RoomFloorForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+    Public function RoomFloor(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $floors = Floor::all();
+        $floors->load('building');
+        return view('dollies.actions.RoomFloorForm', compact('floors','dolly'))->with('success', 'Dolly created successfully.');
     }
 
     Public function RoomFloorChange(INT $dolly_id, STRING $value){

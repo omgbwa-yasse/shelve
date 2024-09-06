@@ -44,46 +44,57 @@
                 <i class="bi bi-layers" style="margin-right: 10px;"></i>
                 Changer le niveau de description
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-level&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=level&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-shield-check" style="margin-right: 10px;"></i>
                 Changer le status des descriptions
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-status&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-archive" style="margin-right: 10px;"></i>
                 Changer les boites/chronos d'archives
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-boxes&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=container&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-diagram-3" style="margin-right: 10px;"></i>
                 Changer la classe d'activité
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-class&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=activity&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-calendar" style="margin-right: 10px;"></i>
                 Changer de dates
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-dates&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=dates&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-file-earmark-arrow-down" style="margin-right: 10px;"></i>
@@ -93,6 +104,8 @@
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-printer" style="margin-right: 10px;"></i>
@@ -102,6 +115,9 @@
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
+
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-trash" style="margin-right: 10px;"></i>
@@ -111,6 +127,8 @@
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
+
+
     </ul>
 
 
@@ -126,7 +144,7 @@
                 <i class="bi bi-calendar" style="margin-right: 10px;"></i>
                 Changer les dates des courriers
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-dates&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=dates&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
@@ -135,7 +153,7 @@
                 <i class="bi bi-exclamation-circle" style="margin-right: 10px;"></i>
                 Changer la priorité des courriers
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-priority&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=priority&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
@@ -185,7 +203,7 @@
                     <i class="bi bi-house-door" style="margin-right: 10px;"></i>
                     Changer de salle d'archives
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-room&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=room&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -199,7 +217,7 @@
                     <i class="bi bi-layout-text-sidebar-reverse" style="margin-right: 10px;"></i>
                     Changer d'étagère
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-shelf&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=shelf&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -213,7 +231,7 @@
                     <i class="bi bi-building" style="margin-right: 10px;"></i>
                     Changer le bâtiment du local d'archives
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-building&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=building&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -227,7 +245,7 @@
                     <i class="bi bi-calendar-date" style="margin-right: 10px;"></i>
                     Changer la date de retour
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-return-date&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=return-date&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -236,7 +254,7 @@
                     <i class="bi bi-calendar-check" style="margin-right: 10px;"></i>
                     Changer la date effective de retour
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-effective-return-date&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=effective-return-date&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -245,7 +263,7 @@
                     <i class="bi bi-shuffle" style="margin-right: 10px;"></i>
                     Changer le status de communication
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=change-status&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>
@@ -268,7 +286,7 @@
                 <i class="bi bi-building" style="margin-right: 10px;"></i>
                 Changer de bâtiment de la salle d'archives
             </div>
-            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=floor&id={{ $dolly->id }}">
                 <button class="btn btn-primary">Appliquer</button>
             </a>
         </li>
@@ -281,7 +299,7 @@
                     <i class="bi bi-archive" style="margin-right: 10px;"></i>
                     Changer de salle d'archives
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=room&id={{ $dolly->id }}">
                     <button class="btn btn-primary">Appliquer</button>
                 </a>
             </li>

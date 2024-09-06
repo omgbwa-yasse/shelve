@@ -29,7 +29,7 @@
                     @elseif($type->name == 'building')
                         Bâtiments d'archives
                     @elseif($type->name == 'container')
-                        Boites d'archives et chronos
+                        Boites et chronos
                     @elseif($type->name == 'shelve')
                         Etagère
                     @elseif($type->name == 'slip')
