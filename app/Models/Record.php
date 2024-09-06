@@ -120,4 +120,8 @@ class Record extends Model
     {
         return $this->belongsToMany(Attachment::class, 'record_attachment', 'record_id', 'attachment_id');
     }
+    public function children()
+    {
+        return $this->hasMany(Record::class, 'parent_id');
+    }
 }

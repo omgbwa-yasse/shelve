@@ -2,80 +2,116 @@
 
 @section('content')
     <div class="container-fluid py-4">
-        <div class="row mb-4 align-items-center">
-            <div class="col">
-                <h1 class="h2 mb-0"><i class="bi bi-file-earmark-text me-2"></i>Fiche descriptive</h1>
-            </div>
-        </div>
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('records.index') }}">Records</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $record->code }}</li>
+            </ol>
+        </nav>
 
-        <div class="card mb-4 shadow">
-            <div class="card-body">
-                <h3 class="card-title h3 mb-3 text-primary"><i class="bi bi-bookmark-star me-2"></i>{{ $record->code }} : {{ $record->name }}</h3>
-                <div class="row">
-                    <div class="col-md-4">
-                        <p class="card-text mb-2"><i class="bi bi-layers me-2"></i><strong>Niveau :</strong> {{ $record->level->name ?? 'N/A' }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="card-text mb-2"><i class="bi bi-calendar-range me-2"></i><strong>Date :</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="card-text mb-2"><i class="bi bi-rulers me-2"></i><strong>Epaisseur :</strong> {{ $record->width ? $record->width . ' cm' : 'N/A' }}</p>
-                    </div>
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="h2 mb-0 d-flex align-items-center">
+                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                    {{ $record->code }}: {{ $record->name }}
+                </h1>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="btn-group" role="group">
+                    <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
                 </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-8">
-                <div class="accordion shadow" id="recordDetailsAccordion">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title h4 mb-3">Quick Information</h3>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-layers fs-4 text-muted me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Level</small>
+                                        <strong>{{ $record->level->name ?? 'N/A' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar-range fs-4 text-muted me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Date Range</small>
+                                        <strong>{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-rulers fs-4 text-muted me-2"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Width</small>
+                                        <strong>{{ $record->width ? $record->width . ' cm' : 'N/A' }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion shadow-sm" id="recordDetailsAccordion">
                     @php
                         $sectionIcons = [
                             'Identification' => 'bi-fingerprint',
-                            'Contexte' => 'bi-diagram-3',
-                            'Contenu' => 'bi-journal-text',
-                            'Condition d\'accès' => 'bi-lock',
-                            'Sources complémentaires' => 'bi-link-45deg',
+                            'Context' => 'bi-diagram-3',
+                            'Content' => 'bi-journal-text',
+                            'Access Conditions' => 'bi-lock',
+                            'Related Sources' => 'bi-link-45deg',
                             'Notes' => 'bi-pencil-square',
-                            'Contrôle de description' => 'bi-list-check',
-                            'Indexation' => 'bi-tags',
+                            'Description Control' => 'bi-list-check',
+                            'Indexing' => 'bi-tags',
                         ];
-                        // Your existing $sections array
-                    @endphp
-                    @php
+
                         $sections = [
                             'Identification' => [
-                                'cote' => $record->code,
-                                'Intitulé' => $record->name,
+                                'Code' => $record->code,
+                                'Title' => $record->name,
                                 'Date Format' => $record->date_format ?? 'N/A',
-                                'Date de début' => $record->date_start ?? 'N/A',
-                                'Date fin' => $record->date_end ?? 'N/A',
-                                'Date Exact' => $record->date_exact ?? 'N/A',
-                                'Niveau de description' => $record->level->name ?? 'N/A',
-                                'Epaisseur' => $record->width ? $record->width . ' cm' : 'N/A',
-                                'Description importance matériel' => $record->width_description ?? 'N/A',
+                                'Start Date' => $record->date_start ?? 'N/A',
+                                'End Date' => $record->date_end ?? 'N/A',
+                                'Exact Date' => $record->date_exact ?? 'N/A',
+                                'Description Level' => $record->level->name ?? 'N/A',
+                                'Width' => $record->width ? $record->width . ' cm' : 'N/A',
+                                'Material Importance Description' => $record->width_description ?? 'N/A',
                             ],
-                            'Contexte' => [
+                            'Context' => [
                                 'Biographical History' => $record->biographical_history ?? 'N/A',
                                 'Archival History' => $record->archival_history ?? 'N/A',
                                 'Acquisition Source' => $record->acquisition_source ?? 'N/A',
                                 'Authors' => $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "<span class='badge bg-secondary'>{$author->name}</span>")->implode(' '),
                             ],
-                            'Contenu' => [
+                            'Content' => [
                                 'Content' => $record->content ?? 'N/A',
                                 'Appraisal' => $record->appraisal ?? 'N/A',
                                 'Accrual' => $record->accrual ?? 'N/A',
                                 'Arrangement' => $record->arrangement ?? 'N/A',
                             ],
-                            'Condition d\'accès' => [
+                            'Access Conditions' => [
                                 'Access Conditions' => $record->access_conditions ?? 'N/A',
                                 'Reproduction Conditions' => $record->reproduction_conditions ?? 'N/A',
                                 'Language Material' => $record->language_material ?? 'N/A',
                                 'Characteristic' => $record->characteristic ?? 'N/A',
                                 'Finding Aids' => $record->finding_aids ?? 'N/A',
                             ],
-                            'Sources complémentaires' => [
-                                'Location Original' => $record->location_original ?? 'N/A',
-                                'Location Copy' => $record->location_copy ?? 'N/A',
+                            'Related Sources' => [
+                                'Original Location' => $record->location_original ?? 'N/A',
+                                'Copy Location' => $record->location_copy ?? 'N/A',
                                 'Related Unit' => $record->related_unit ?? 'N/A',
                                 'Publication Note' => $record->publication_note ?? 'N/A',
                             ],
@@ -83,18 +119,17 @@
                                 'Note' => $record->note ?? 'N/A',
                                 'Archivist Note' => $record->archivist_note ?? 'N/A',
                             ],
-                            'Contrôle de description' => [
-                                'Règle et convention' => $record->rule_convention ?? 'N/A',
+                            'Description Control' => [
+                                'Rules and Conventions' => $record->rule_convention ?? 'N/A',
                                 'Status' => $record->status->name ?? 'N/A',
                                 'Support' => $record->support->name ?? 'N/A',
-                                'Classe' => $record->activity->name ?? 'N/A',
+                                'Class' => $record->activity->name ?? 'N/A',
                             ],
-                            'Indexation' => [
-                                'Fiche parent' => $record->parent->name ?? 'N/A',
-                                'Boite de conservation' => $record->container->name ?? 'N/A',
-        //                        'Versement de provenance' => $record->accession->name ?? 'N/A',
-                                'Créé par' => $record->user->name ?? 'N/A',
-                                'Vedettes' => $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "<span class='badge bg-secondary'>{$term->name}</span>")->implode(' '),
+                            'Indexing' => [
+                                'Parent Record' => $record->parent->name ?? 'N/A',
+                                'Conservation Box' => $record->container->name ?? 'N/A',
+                                'Created By' => $record->user->name ?? 'N/A',
+                                'Terms' => $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "<span class='badge bg-secondary'>{$term->name}</span>")->implode(' '),
                             ],
                         ];
                     @endphp
@@ -109,7 +144,7 @@
                                 <div class="accordion-body">
                                     <dl class="row mb-0">
                                         @foreach($details as $label => $value)
-                                            <dt class="col-sm-4 mb-2"><i class="bi bi-arrow-right-short me-1"></i>{{ $label }}</dt>
+                                            <dt class="col-sm-4 mb-2">{{ $label }}</dt>
                                             <dd class="col-sm-8 mb-2">{!! $value !!}</dd>
                                         @endforeach
                                     </dl>
@@ -119,53 +154,114 @@
                     @endforeach
                 </div>
             </div>
+
             <div class="col-md-4">
-                <div class="card shadow">
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">
+                            <i class="bi bi-diagram-3 me-2"></i>Child Records
+                        </h4>
+                        @if($record->children->isNotEmpty())
+                            <div class="list-group">
+                                @foreach($record->children as $child)
+                                    <a href="{{ route('records.show', $child) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                        {{ $child->code }}: {{ $child->name }}
+                                        <span class="badge bg-primary rounded-pill">{{ $child->level->name ?? 'N/A' }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-muted">No child records found.</p>
+                        @endif
+                    </div>
+                </div>
+                <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
                         <div class="d-grid gap-2">
-
-                            <a href="{{ route('records.edit', $record) }}" class="btn btn-warning">
-                                <i class="bi bi-pencil me-2"></i> Modifier
+                            <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-2"></i> Modify
                             </a>
-                            <a href="{{ route('records.index') }}" class="btn btn-primary">
-                                <i class="bi bi-box me-2"></i> Insérer dans une boîte
+                            <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-box me-2"></i> Insert into a box
                             </a>
-                            <a href="{{ route('record-child.create', $record) }}" class="btn btn-success">
-                                <i class="bi bi-plus-circle me-2"></i> Ajouter une notice fille
+                            <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
+                                <i class="bi bi-plus-circle me-2"></i> Add a child record
                             </a>
-                            <form action="{{ route('records.destroy', $record) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette fiche ?')">
-                                    <i class="bi bi-trash me-2"></i> Supprimer
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
-                <a href="{{ route('records.index') }}" class="btn btn-outline-secondary mt-3 w-100">
-                    <i class="bi bi-arrow-left me-2"></i> Retour à la liste
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">
+                            <i class="bi bi-paperclip me-2"></i>Attachments
+                        </h4>
+                        <ul class="list-group list-group-flush mb-3" id="attachmentsList">
+                            @forelse($record->attachments as $attachment)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ $attachment->name }}</span>
+                                    <a href="{{ route('records.attachments.show', [$record, $attachment]) }}" class="btn btn-sm btn-outline-primary" >
+                                        <i class="bi bi-download"></i>
+                                    </a>
+
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted">No attachments found.</li>
+                            @endforelse
+                        </ul>
+                        <div class="d-grid">
+                            <a href="{{ route('records.attachments.create', $record) }}" class="btn btn-outline-success">
+                                <i class="bi bi-plus-circle me-2"></i>Add New Attachment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ route('records.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-left me-2"></i> Back to list
                 </a>
-                <ul>
-                    @foreach($record->attachments as $attachment)
-                        <li>{{ $attachment->file_path }} - {{ $attachment->description }}</li>
-                    @endforeach
-                </ul>
             </div>
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this record?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{{ route('records.destroy', $record) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+
+@push('styles')
     <style>
         .accordion-button:not(.collapsed) {
             background-color: #f8f9fa;
-            color: #0178d4;
+            color: #0d6efd;
         }
         .accordion-button:focus {
             box-shadow: none;
+            border-color: rgba(0,0,0,.125);
         }
         .card-title {
-            border-bottom: 2px solid #0178d4;
+            border-bottom: 2px solid #0d6efd;
             padding-bottom: 0.5rem;
         }
         .btn i {
@@ -179,4 +275,39 @@
             color: #212529;
         }
     </style>
-@endsection
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Add animation to the attachments list
+            const attachmentsList = document.getElementById('attachmentsList');
+            if (attachmentsList) {
+                attachmentsList.addEventListener('click', function(e) {
+                    if (e.target.tagName === 'A') {
+                        e.target.classList.add('btn-primary');
+                        e.target.classList.remove('btn-outline-primary');
+                        setTimeout(() => {
+                            e.target.classList.remove('btn-primary');
+                            e.target.classList.add('btn-outline-primary');
+                        }, 300);
+                    }
+                });
+            }
+
+            // Smooth scrolling for accordion
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    setTimeout(() => {
+                        this.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 350);
+                });
+            });
+        });
+    </script>
+@endpush

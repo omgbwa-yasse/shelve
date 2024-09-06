@@ -118,6 +118,7 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
+        $record->load('children');  // Charge les enregistrements enfants
         return view('records.show', compact('record'));
     }
 
@@ -130,7 +131,6 @@ class RecordController extends Controller
         $activities = Activity::all();
         $parents = Record::all();
         $containers = Container::all();
-        $accessions = Accession::all();
         $users = User::all();
         $levels = RecordLevel::all();
         $terms = Term::all();
@@ -139,7 +139,7 @@ class RecordController extends Controller
         $author_ids = $record->authors->pluck('id')->toArray();
         $term_ids = $record->terms->pluck('id')->toArray();
 
-        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'accessions', 'users', 'authors', 'author_ids', 'terms', 'term_ids'));
+        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'terms', 'term_ids'));
     }
 
     public function update(Request $request, Record $record)

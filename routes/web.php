@@ -134,7 +134,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::resource('records', RecordController::class);
-        Route::resource('records.attachments', RecordAttachmentController::class)->shallow();
+        Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::resource('records.child', RecordChildController::class)->names('record-child');
