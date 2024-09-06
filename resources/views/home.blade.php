@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid px-4 bg-light">
+    <div class="container-fluid  bg-light">
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <header class="text-center mb-5">
