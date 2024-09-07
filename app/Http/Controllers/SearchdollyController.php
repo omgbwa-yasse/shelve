@@ -28,7 +28,7 @@ class SearchdollyController extends Controller
             case "communication":
             case "transferring":
             case "building":
-            case "shelve":
+            case "shelf":
             case "slip":
             case "mail":
             case "room":

@@ -19,19 +19,16 @@
                     <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=communication"><i class="bi bi-cart3"></i> Communication </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip"><i class="bi bi-cart3"></i> Versement </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=building"><i class="bi bi-cart3"></i> Bâtiments </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=room"><i class="bi bi-cart3"></i> Salle </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=shelve"><i class="bi bi-cart3"></i> Etagère </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=shelf"><i class="bi bi-cart3"></i> Etagère </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=container"><i class="bi bi-cart3"></i> Boites d'archives </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip_record"><i class="bi bi-cart3"></i> Archives (versement) </a>
                 </li>
             </ul>
         </div>

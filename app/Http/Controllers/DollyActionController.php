@@ -8,9 +8,11 @@ use App\Models\MailArchiving;
 use App\Models\floor;
 use App\Models\shelf;
 use App\Models\Room;
+use App\Models\CommunicationStatus;
 use App\Models\MailPriority;
 use App\Models\MailType;
 use App\Models\RecordStatus;
+use App\Models\RecordSupport;
 use App\Models\RecordLevel;
 use Illuminate\Http\Request;
 
@@ -71,18 +73,18 @@ class DollyActionController extends Controller
 
             if($request->categ == "communication"){
                 switch($request->action){
-                    case 'date_return' : return  $this->CommunicationReturn($request->id);
-                    case 'new_date_return' : return  $this->CommunicationReturnchange($request->id, $request->value);
+                    case 'return_date' : return  $this->CommunicationReturn($request->id);
+                    case 'new_return_date' : return  $this->CommunicationReturnchange($request->id, $request->value);
 
-                    case 'return_effective' : return $this->CommunicationReturEffective($request->id);
-                    case 'new_return_effective' : return $this->CommunicationReturEffectivechange($request->id, $request->value);
+                    case 'return_date_effective' : return $this->CommunicationReturnEffective($request->id);
+                    case 'new_return_date_effective' : return $this->CommunicationReturnEffectivechange($request->id, $request->value);
 
                     case 'status' : return $this->CommunicationStatus($request->id);
                     case 'new_status' : return $this->CommunicationStatuschange($request->id, $request->value);
                 }
             }
 
-            if($request->categ == "slipRecord"){
+            if($request->categ == "slip_record"){
                 switch($request->action){
                     case 'container' : return $this->slipRecordContainer($request->id);
                     case 'new_container' : return $this->slipRecordContainerchange($request->id, $request->value);
@@ -217,6 +219,15 @@ class DollyActionController extends Controller
     }
 
 
+    public function RecordSupport(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $supports = RecordSupport::all();
+        return view('dollies.actions.recordSupportForm', compact('dolly','supports'))->with('success', 'Dolly created successfully.');
+    }
+
+
+
+
 
     public function RecordStatusChange(INT $dolly_id, STRING $value){
 
@@ -282,8 +293,9 @@ class DollyActionController extends Controller
      * @return void
      */
 
-     Public function CommunicationReturn(INT $dolly_id){
-        return view('dollies.actions.recordActivityForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function CommunicationReturn(INT $id){
+        $dolly = dolly::findOrFail($id);
+        return view('dollies.actions.CommunicationReturnForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
      Public function CommunicationReturnchange(INT $dolly_id, STRING $value){
@@ -291,8 +303,9 @@ class DollyActionController extends Controller
      }
 
 
-     Public function CommunicationReturEffective(INT $dolly_id){
-        return view('dollies.actions.CommunicationReturnEffectiveForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function CommunicationReturnEffective(INT $id){
+        $dolly = dolly::findOrFail($id);
+        return view('dollies.actions.CommunicationReturnEffectiveForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
      Public function CommunicationReturEffectivechange(INT $dolly_id, STRING $value){
@@ -300,8 +313,10 @@ class DollyActionController extends Controller
      }
 
 
-     Public function CommunicationStatus(INT $dolly_id){
-        return view('dollies.actions.CommunicationStatusForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function CommunicationStatus(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $statuses = CommunicationStatus::all();
+        return view('dollies.actions.CommunicationStatusForm', compact('dolly','statuses'))->with('success', 'Dolly created successfully.');
      }
 
      Public function CommunicationStatuschange(INT $dolly_id, STRING $value){
@@ -318,8 +333,10 @@ class DollyActionController extends Controller
 
 
 
-     Public function slipRecordContainer(INT $dolly_id){
-        return view('dollies.actions.slipRecordContainerForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function slipRecordContainer(INT $id){
+        $dolly = dolly::findOrFail($id);
+        $containers = container::all();
+        return view('dollies.actions.slipRecordContainerForm', compact('dolly','containers'))->with('success', 'Dolly created successfully.');
      }
 
      Public function slipRecordContainerchange(INT $dolly_id, STRING $value){
@@ -329,8 +346,10 @@ class DollyActionController extends Controller
 
 
 
-     Public function slipRecordActivity(INT $dolly_id){
-        return view('dollies.actions.slipRecordActivityForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function slipRecordActivity(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $activities = Activity::all();
+        return view('dollies.actions.slipRecordActivityForm', compact('dolly','activities'))->with('success', 'Dolly created successfully.');
      }
 
      Public function slipRecordActivitychange(INT $dolly_id, STRING $value){
@@ -340,8 +359,10 @@ class DollyActionController extends Controller
 
 
 
-     Public function slipRecordSupport(INT $dolly_id){
-        return view('dollies.actions.slipRecordSupportForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function slipRecordSupport(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $supports = RecordSupport::all();
+        return view('dollies.actions.slipRecordSupportForm', compact('dolly','supports'))->with('success', 'Dolly created successfully.');
      }
 
      Public function slipRecordSupportchange(INT $dolly_id, STRING $value){
@@ -350,17 +371,19 @@ class DollyActionController extends Controller
 
 
 
-     Public function slipRecordLevel(INT $dolly_id){
-        return view('dollies.actions.slipRecordLevelForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function slipRecordLevel(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        $levels = RecordLevel::all();
+        return view('dollies.actions.slipRecordLevelForm', compact('dolly','levels'))->with('success', 'Dolly created successfully.');
      }
-
      Public function slipRecordLevelchange(INT $dolly_id, STRING $value){
 
      }
 
 
-     Public function slipRecordDate(INT $dolly_id){
-        return view('dollies.actions.slipRecordDateForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
+     Public function slipRecordDate(INT $id){
+        $dolly = Dolly::findOrFail($id);
+        return view('dollies.actions.slipRecordDateForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
      Public function slipRecordDatechange(INT $dolly_id, STRING $value){

@@ -7,21 +7,19 @@
 
         <p>  Type : <strong>
             @if($dolly->type->name == 'record')
-                Description des archives
+                Archives
             @elseif($dolly->type->name == 'mail')
                 Courrier
             @elseif($dolly->type->name == 'communication')
                 Communication des archives
             @elseif($dolly->type->name == 'room')
                 Salle d'archives
-            @elseif($dolly->type->name == 'building')
-                Bâtiments d'archives
             @elseif($dolly->type->name == 'container')
                 Boites d'archives et chronos
             @elseif($dolly->type->name == 'shelve')
                 Etagère
             @elseif($dolly->type->name == 'slip_record')
-                Description de versement
+                Archives (versement)
             @endif
             </strong>
         </p>
@@ -45,7 +43,7 @@
                 Changer le niveau de description
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=level&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -56,7 +54,7 @@
                 Changer le status des descriptions
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -67,7 +65,7 @@
                 Changer les boites/chronos d'archives
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=container&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -78,7 +76,7 @@
                 Changer la classe d'activité
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=activity&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -90,7 +88,7 @@
                 Changer de dates
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=dates&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -101,7 +99,7 @@
                 Exporter l'instrument de recherche
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=export&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -112,7 +110,7 @@
                 Imprimer l'instrument de recherche
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=print&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -124,7 +122,7 @@
                 Supprimer de la base
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
 
@@ -145,7 +143,7 @@
                 Changer les dates des courriers
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=dates&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -154,7 +152,7 @@
                 Changer la priorité des courriers
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=priority&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -163,7 +161,7 @@
                 Archiver les courriers
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=archive&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -172,7 +170,7 @@
                 Exporter la liste du courrier
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=export&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -181,7 +179,7 @@
                 Imprimer la liste de courrier
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=print&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -190,13 +188,13 @@
                 Supprimer de la base
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
     </ul>
 
 
-    @elseif($dolly->type->name == 'shelve')
+    @elseif($dolly->type->name == 'shelf')
         <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
@@ -204,7 +202,7 @@
                     Changer de salle d'archives
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=room&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
         </ul>
@@ -218,25 +216,10 @@
                     Changer d'étagère
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=shelf&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
         </ul>
-
-
-    @elseif($dolly->type->name == 'building')
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
-                <div class="d-flex align-items-left">
-                    <i class="bi bi-building" style="margin-right: 10px;"></i>
-                    Changer le bâtiment du local d'archives
-                </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=building&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
-                </a>
-            </li>
-        </ul>
-
 
     @elseif($dolly->type->name == 'communication')
         <ul class="list-group">
@@ -245,8 +228,8 @@
                     <i class="bi bi-calendar-date" style="margin-right: 10px;"></i>
                     Changer la date de retour
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=return-date&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=return_date&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -254,8 +237,8 @@
                     <i class="bi bi-calendar-check" style="margin-right: 10px;"></i>
                     Changer la date effective de retour
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=effective-return-date&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=return_date_effective&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -264,7 +247,7 @@
                     Changer le status de communication
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -273,7 +256,7 @@
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
         </ul>
@@ -287,12 +270,12 @@
                 Changer de bâtiment de la salle d'archives
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=floor&id={{ $dolly->id }}">
-                <button class="btn btn-primary">Appliquer</button>
+                <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
     </ul>
 
-    @elseif($dolly->type->name == 'shelve')
+    @elseif($dolly->type->name == 'shelf')
         <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
@@ -300,23 +283,11 @@
                     Changer de salle d'archives
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=room&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
         </ul>
 
-    @elseif($dolly->type->name == 'slip')
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
-                <div class="d-flex align-items-left">
-                    <i class="bi bi-calendar-date" style="margin-right: 10px;"></i>
-                    Changer la date de versement
-                </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
-                </a>
-            </li>
-        </ul>
 
     @elseif($dolly->type->name == 'slip_record')
         <ul class="list-group">
@@ -325,8 +296,8 @@
                     <i class="bi bi-box-seam" style="margin-right: 10px;"></i>
                     Changer les boîtes d'archives
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=container&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -334,8 +305,8 @@
                     <i class="bi bi-list-task" style="margin-right: 10px;"></i>
                     Changer les classes d'activité
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=activity&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -343,8 +314,8 @@
                     <i class="bi bi-textarea-t" style="margin-right: 10px;"></i>
                     Changer le niveau de description
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=level&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -352,8 +323,17 @@
                     <i class="bi bi-calendar-event" style="margin-right: 10px;"></i>
                     Changer les dates
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=dates&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-calendar-event" style="margin-right: 10px;"></i>
+                    Changer de support
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=support&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -361,8 +341,8 @@
                     <i class="bi bi-trash" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=xxxx&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Appliquer</button>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
         </ul>
