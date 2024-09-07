@@ -49,15 +49,24 @@
             </ul>
         </div>
 
-        <!-- Chariot -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#chariotMenu" aria-expanded="false"
-            aria-controls="chariotMenu" style="padding: 10px;">
-            <i class="bi bi-cart"></i> Chariot
+        <!-- lifeCycle -->
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#lifeCycleMenu" aria-expanded="false"
+            aria-controls="lifeCycleMenu" style="padding: 10px;">
+            <i class="bi bi-cart"></i> Circle de vie
         </a>
-        <div class="collapse show" id="chariotMenu">
+        <div class="collapse show" id="lifeCycleMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-gear"></i> Gestion</a>
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> A transférer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> A conserver</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> A éliminer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-calendar"></i> A trier</a>
                 </li>
             </ul>
         </div>
