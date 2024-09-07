@@ -30,7 +30,7 @@
                         Bâtiments d'archives
                     @elseif($type->name == 'container')
                         Boites et chronos
-                    @elseif($type->name == 'shelve')
+                    @elseif($type->name == 'shelf')
                         Etagère
                     @elseif($type->name == 'slip')
                         Versement

@@ -14,10 +14,9 @@ class Dolly extends Model
         'description',
         'type_id',
     ];
-
     public function type()
     {
-        return $this->belongsTo(DollyType::class,'type_id');
+        return $this->belongsTo(DollyType::class, 'type_id');
     }
 
     public function mail()

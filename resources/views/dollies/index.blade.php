@@ -31,13 +31,14 @@
                         Bâtiments d'archives
                     @elseif($dolly->type->name == 'container')
                         Boites d'archives et chronos
-                    @elseif($dolly->type->name == 'shelve')
+                    @elseif($dolly->type->name == 'shelf')
                         Etagère
                     @elseif($dolly->type->name == 'slip')
                         Versement
                     @elseif($dolly->type->name == 'slip_record')
                         Description de versement
                     @endif
+
                 </td>
                 <td>
                     <a href="{{ route('dolly.show', $dolly) }}" class="btn btn-info">View</a>

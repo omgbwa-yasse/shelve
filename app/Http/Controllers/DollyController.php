@@ -34,6 +34,8 @@ class DollyController extends Controller
 
     public function show(Dolly $dolly)
     {
+        $dolly->load('type');
+        dd($dolly);
         return view('dollies.show', compact('dolly'));
     }
 
