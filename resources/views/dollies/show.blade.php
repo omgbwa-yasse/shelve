@@ -46,7 +46,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-layers" style="margin-right: 10px;"></i>
@@ -56,8 +55,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-shield-check" style="margin-right: 10px;"></i>
@@ -67,8 +64,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-archive" style="margin-right: 10px;"></i>
@@ -78,8 +73,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-diagram-3" style="margin-right: 10px;"></i>
@@ -89,10 +82,7 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
-
-        <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+       <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-calendar" style="margin-right: 10px;"></i>
                 Changer de dates
@@ -101,8 +91,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-file-earmark-arrow-down" style="margin-right: 10px;"></i>
@@ -112,8 +100,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-printer" style="margin-right: 10px;"></i>
@@ -123,9 +109,6 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
-
-
-
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
                 <i class="bi bi-trash" style="margin-right: 10px;"></i>
@@ -213,6 +196,11 @@
     </ul>
 
 
+
+
+
+
+
     @elseif($dolly->type->name == 'shelf')
         <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -233,7 +221,22 @@
                     <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Supprimer de la base
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
         </ul>
+
+
+
+
+
+
 
 
     @elseif($dolly->type->name == 'container')
@@ -256,7 +259,21 @@
                     <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Supprimer de la base
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
         </ul>
+
+
+
+
+
 
     @elseif($dolly->type->name == 'communication')
         <ul class="list-group">
@@ -309,6 +326,9 @@
         </ul>
 
 
+
+
+
     @elseif($dolly->type->name == 'room')
     <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
@@ -329,7 +349,19 @@
                 <button class="btn btn-primary">Exécuter</button>
             </a>
         </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+            <div class="d-flex align-items-left">
+                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                Supprimer de la base
+            </div>
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                <button class="btn btn-primary">Exécuter</button>
+            </a>
+        </li>
     </ul>
+
+
+
 
     @elseif($dolly->type->name == 'shelf')
         <ul class="list-group">
@@ -351,7 +383,56 @@
                     <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Supprimer de la base
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
         </ul>
+
+
+
+
+
+
+@elseif($dolly->type->name == 'slip')
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Changer le status des bordereaux
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Supprimer de la base
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+        </ul>
+
+
+
+
 
 
     @elseif($dolly->type->name == 'slip_record')

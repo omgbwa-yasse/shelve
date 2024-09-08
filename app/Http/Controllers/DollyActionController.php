@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Models\MailArchiving;
 use App\Models\floor;
 use App\Models\shelf;
+use App\Models\SlipStatus;
 use App\Models\Room;
 use App\Models\CommunicationStatus;
 use App\Models\MailPriority;
@@ -24,33 +25,26 @@ class DollyActionController extends Controller
     public function index(Request $request){
         if(isset($request->categ) && !empty($request->categ)){
 
-                if ($request->categ == "mail") {
-                    switch ($request->action) {
-                        case 'dates':
-                            return $this->MailDate($request->id);
-                        case 'new_date':
-                            return $this->MailDateChange($request->id, $request->value);
+            if ($request->categ == "mail") {
+                switch ($request->action) {
+                    case 'dates':  return $this->MailDate($request->id);
+                    case 'new_date':  return $this->MailDateChange($request->id, $request->value);
 
 
-                        case 'priority':
-                            return $this->MailPriority($request->id);
-                        case 'new_priority':
-                            return $this->MailPriorityChange($request->id, $request->value);
+                    case 'priority': return $this->MailPriority($request->id);
+                    case 'new_priority': return $this->MailPriorityChange($request->id, $request->value);
 
 
-                        case 'type':
-                            return $this->MailType($request->id);
-                        case 'new_type':
-                            return $this->MailTypeChange($request->id, $request->value);
+                    case 'type':  return $this->MailType($request->id);
+                    case 'new_type':  return $this->MailTypeChange($request->id, $request->value);
 
 
-                        case 'archived':
-                            return $this->MailArchived($request->id);
-                        case 'new_archived':
-                            return $this->MailArchivedChange($request->id, $request->value);
+                    case 'archived': return $this->MailArchived($request->id);
+                    case 'new_archived': return $this->MailArchivedChange($request->id, $request->value);
 
-                        case 'detach': return $this->mailDetach($request->id);
-                    }
+                    case 'clean' : return $this->mailDetach($request->id);
+                    case 'delete' : return $this->mailDelete($request->id);
+                }
              }
 
             if($request->categ == "record"){
@@ -71,7 +65,8 @@ class DollyActionController extends Controller
                     case 'activity' : return $this->RecordActivity($request->id);
                     case 'new_activity' : return $this->RecordActivityChange($request->id, $request->value);
 
-                    case 'detach': return $this->recordDetach($request->id);
+                    case 'clean' : return $this->recordDetach($request->id);
+                    case 'delete' : return $this->recordDelete($request->id);
 
 
                 }
@@ -88,7 +83,8 @@ class DollyActionController extends Controller
                     case 'status' : return $this->CommunicationStatus($request->id);
                     case 'new_status' : return $this->CommunicationStatuschange($request->id, $request->value);
 
-                    case 'detach': return $this->communicationDetach($request->id);
+                    case 'clean' : return $this->communicationDetach($request->id);
+                    case 'delete' : return $this->communicationDelete($request->id);
 
                 }
             }
@@ -114,7 +110,21 @@ class DollyActionController extends Controller
                     case 'dates' : return $this->slipRecordDate($request->id);
                     case 'new_dates' : return $this->slipRecordDatechange($request->id, $request->value);
 
-                    case 'detach': return $this->slipRecordDetach($request->id);
+                    case 'clean' : return $this->slipRecordDetach($request->id);
+
+                    case 'delete' : return $this->slipRecordDelete($request->id);
+
+
+                }
+            }
+
+            if($request->categ == "slip"){
+                switch($request->action){
+                    case 'status' : return $this->slipStatus($request->id);
+                    case 'new_status' : return $this->slipStatuschange($request->id, $request->value);
+
+                    case 'clean' : return $this->slipDetach($request->id);
+                    case 'delete' : return $this->slipDelete($request->id);
 
                 }
             }
@@ -122,8 +132,9 @@ class DollyActionController extends Controller
             if($request->categ == "shelve"){
                 switch($request->action){
                     case 'room' : return $this->shelfRoom($request->id);
-                    case 'new_room' : return $this->shlefRoomchange($request->id, $request->value);
-                    case 'detach': return $this->shelfDetach($request->id);
+                    case 'new_room' : return $this->shelfRoomchange($request->id, $request->value);
+                    case 'clean' : return $this->shelfDetach($request->id);
+                    case 'delete' : return $this->shelfDelete($request->id);
 
                 }
             }
@@ -132,7 +143,8 @@ class DollyActionController extends Controller
                 switch($request->action){
                     case 'shelf' : return $this->ContainerShelf($request->id);
                     case 'new_shelf' : return $this->ContainerShelfchange($request->id, $request->value);
-                    case 'detach':  return $this->containerDetach($request->id);
+                    case 'clean' :  return $this->containerDetach($request->id);
+                    case 'delete' : return $this->containerDelete($request->id);
                 }
             }
 
@@ -140,7 +152,8 @@ class DollyActionController extends Controller
                 switch($request->action){
                     case 'floor' : return $this->RoomFloor($request->id);
                     case 'new_floor' : return $this->ContainerFloorchange($request->id, $request->value);
-                    case 'detach':  return $this->roomDetach($request->id);
+                    case 'clean' :  return $this->roomDetach($request->id);
+                    case 'delete' : return $this->roomDelete($request->id);
                 }
             }
 
@@ -151,6 +164,157 @@ class DollyActionController extends Controller
 }
 
 
+    // Suppression des chariots
+
+    public function mailDelete(int $id) {
+        $this->mailDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('mails');
+        foreach ($dolly->mails as $mail) {
+            $mail->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+
+    public function recordDelete(int $id) {
+        $this->recordDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+        foreach ($dolly->records as $record) {
+            $record->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+    public function communicationDelete(int $id) {
+        $this->communicationDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('communications');
+        foreach ($dolly->communications as $communication) {
+            $communication->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+
+    public function slipDelete(int $id) {
+        $this->slipDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slips');
+        foreach ($dolly->slips as $slip) {
+            $slip->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+
+    public function containerDelete(int $id) {
+        $this->containerDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('containers');
+        foreach ($dolly->containers as $container) {
+            $container->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+    public function roomDelete(int $id) {
+        $this->roomDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('rooms');
+        foreach ($dolly->rooms as $room) {
+            $room->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+    public function shelfDelete(int $id) {
+        $this->shelfDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('shelves');
+        foreach ($dolly->shelves as $shelf) {
+            $shelf->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+
+
+
+    // Vider les chariot
+
+    public function mailDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->mails as $mail){
+            $dolly->mails()->detach($mail->id);
+        }
+    }
+
+
+    public function recordDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->records as $record){
+            $dolly->records()->detach($record->id);
+        }
+    }
+
+    public function communicationDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->communications as $communication){
+            $dolly->communications()->detach($communication->id);
+        }
+    }
+
+
+    public function containerDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->containers as $container){
+            $dolly->containers()->detach($container->id);
+        }
+    }
+
+
+    public function shelfDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->shelve as $shelf){
+            $dolly->shelve()->detach($shelf->id);
+        }
+    }
+
+    public function slipRecordDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->slipRecords as $record){
+            $dolly->slipRecords()->detach($record->id);
+        }
+    }
+
+    public function slipDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->slips as $slip){
+            $dolly->slips()->detach($slip->id);
+        }
+    }
+
+
+    public function roomDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->rooms as $room){
+            $dolly->rooms()->detach($room->id);
+        }
+    }
+
+
+
+
+    // Mail
 
     public function MailDate(INT $id){
         $dolly = dolly::findOrFail($id);
@@ -213,12 +377,7 @@ class DollyActionController extends Controller
     }
 
 
-    public function mailDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->mails as $mail){
-            $dolly->mails()->detach($mail->id);
-        }
-    }
+
 
 
 
@@ -327,13 +486,6 @@ class DollyActionController extends Controller
         }
     }
 
-    public function recordDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->records as $record){
-            $dolly->records()->detach($record->id);
-        }
-    }
-
 
 
 
@@ -395,12 +547,23 @@ class DollyActionController extends Controller
         }
      }
 
-     public function communicationDetach(int $id) {
+
+    // SLIP
+
+
+    Public function slipStatus(INT $id){
         $dolly = Dolly::findOrFail($id);
-        foreach($dolly->communications as $communication){
-            $dolly->communications()->detach($communication->id);
+        $statuses = SlipStatus::all();
+        return view('dollies.actions.slipStatusForm', compact('dolly','statuses'))->with('success', 'Dolly created successfully.');
+     }
+
+     Public function slipStatuschange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slips');
+        foreach ($dolly->slips as $slip) {
+            $slip->update(['slip_status_id' => $value]);
         }
-    }
+     }
 
 
 
@@ -408,11 +571,7 @@ class DollyActionController extends Controller
 
 
 
-
-     /**
-     * Summary of xxxx
-     * @return void
-     */
+     // SLIP RECORD
 
 
 
@@ -431,12 +590,6 @@ class DollyActionController extends Controller
      }
 
 
-     public function slipDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->slips as $slip){
-            $dolly->slips()->detach($slip->id);
-        }
-    }
 
 
      Public function slipRecordActivity(INT $id){
@@ -503,12 +656,7 @@ class DollyActionController extends Controller
     }
 
 
-    public function slipRecordDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->slipRecords as $record){
-            $dolly->slipRecords()->detach($record->id);
-        }
-    }
+
 
 
 
@@ -546,12 +694,7 @@ class DollyActionController extends Controller
      }
 
 
-     public function shelfDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->shelve as $shelf){
-            $dolly->shelve()->detach($shelf->id);
-        }
-    }
+
 
 
 
@@ -577,12 +720,7 @@ class DollyActionController extends Controller
         }
     }
 
-    public function containerDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->containers as $container){
-            $dolly->containers()->detach($container->id);
-        }
-    }
+
 
 
 
@@ -602,13 +740,6 @@ class DollyActionController extends Controller
         $dolly->load('rooms');
         foreach ($dolly->rooms as $room) {
             $room->update(['floor_id' => $value]);
-        }
-    }
-
-    public function roomDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->rooms as $room){
-            $dolly->rooms()->detach($room->id);
         }
     }
 
