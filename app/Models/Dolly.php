@@ -19,47 +19,52 @@ class Dolly extends Model
         return $this->belongsTo(DollyType::class, 'type_id');
     }
 
-    public function mail()
+    public function mails()
     {
-        return $this->hasMany(DollyMail::class);
+        return $this->belongsToMany(mail::class, 'dolly_mails', 'dolly_id', 'mail_id');
     }
 
-    public function record()
+    public function records()
     {
-        return $this->hasMany(DollyRecord::class);
+        return $this->belongsToMany(record::class, 'dolly_records', 'dolly_id', 'record_id');
     }
 
-    public function communication()
+    public function communications()
     {
-        return $this->hasMany(DollyCommunication::class);
+        return $this->belongsToMany(communication::class, 'dolly_communications', 'dolly_id', 'communication_id');
     }
 
-    public function slip()
+    public function slips()
     {
-        return $this->hasMany(DollySlip::class);
+        return $this->belongsToMany(Slip::class, 'dolly_slips', 'dolly_id', 'slip_id');
     }
 
-    public function slipRecord()
+    public function slipRecords()
     {
-        return $this->hasMany(DollySlipRecord::class);
+        return $this->belongsToMany(Record::class, 'dolly_slip_records', 'dolly_id', 'record_id');
     }
 
 
-    public function building()
+
+    public function buildings()
     {
-        return $this->hasMany(DollyBuilding::class);
+        return $this->belongsToMany(Building::class, 'dolly_buildings', 'dolly_id', 'building_id');
     }
 
-    public function room()
+    public function rooms()
     {
-        return $this->hasMany(DollyRoom::class);
+        return $this->belongsToMany(Room::class, 'dolly_rooms', 'dolly_id', 'room_id');
     }
 
-    public function shelf()
+    public function shelve()
     {
-        return $this->hasMany(DollyShelf::class);
+        return $this->belongsToMany(Shelf::class, 'dolly_shelves', 'dolly_id', 'shelf_id');
     }
 
+    public function containers()
+    {
+        return $this->belongsToMany(Shelf::class, 'dolly_containers', 'dolly_id', 'container_id');
+    }
 
 
 }

@@ -30,6 +30,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip_record"><i class="bi bi-cart3"></i> Archives (versement) </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip"><i class="bi bi-cart3"></i> Versement </a>
+                </li>
             </ul>
         </div>
 

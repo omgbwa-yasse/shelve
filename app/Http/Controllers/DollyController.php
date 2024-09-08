@@ -10,7 +10,7 @@ class DollyController extends Controller
 {
     public function index()
     {
-        $dollies = Dolly::with('type', 'mail', 'record', 'communication', 'slip', 'slipRecord', 'building', 'room', 'shelf')->get();
+        $dollies = Dolly::with('type', 'mails', 'records', 'communications', 'slips', 'slipRecords', 'containers', 'rooms', 'shelve')->get();
         return view('dollies.index', compact('dollies'));
     }
 

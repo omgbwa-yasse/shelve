@@ -48,6 +48,8 @@ class DollyActionController extends Controller
                             return $this->MailArchived($request->id);
                         case 'new_archived':
                             return $this->MailArchivedChange($request->id, $request->value);
+
+                        case 'detach': return $this->mailDetach($request->id);
                     }
              }
 
@@ -68,6 +70,10 @@ class DollyActionController extends Controller
 
                     case 'activity' : return $this->RecordActivity($request->id);
                     case 'new_activity' : return $this->RecordActivityChange($request->id, $request->value);
+
+                    case 'detach': return $this->recordDetach($request->id);
+
+
                 }
             }
 
@@ -81,6 +87,9 @@ class DollyActionController extends Controller
 
                     case 'status' : return $this->CommunicationStatus($request->id);
                     case 'new_status' : return $this->CommunicationStatuschange($request->id, $request->value);
+
+                    case 'detach': return $this->communicationDetach($request->id);
+
                 }
             }
 
@@ -104,6 +113,9 @@ class DollyActionController extends Controller
 
                     case 'dates' : return $this->slipRecordDate($request->id);
                     case 'new_dates' : return $this->slipRecordDatechange($request->id, $request->value);
+
+                    case 'detach': return $this->slipRecordDetach($request->id);
+
                 }
             }
 
@@ -111,6 +123,8 @@ class DollyActionController extends Controller
                 switch($request->action){
                     case 'room' : return $this->shelfRoom($request->id);
                     case 'new_room' : return $this->shlefRoomchange($request->id, $request->value);
+                    case 'detach': return $this->shelfDetach($request->id);
+
                 }
             }
 
@@ -118,6 +132,7 @@ class DollyActionController extends Controller
                 switch($request->action){
                     case 'shelf' : return $this->ContainerShelf($request->id);
                     case 'new_shelf' : return $this->ContainerShelfchange($request->id, $request->value);
+                    case 'detach':  return $this->containerDetach($request->id);
                 }
             }
 
@@ -125,6 +140,7 @@ class DollyActionController extends Controller
                 switch($request->action){
                     case 'floor' : return $this->RoomFloor($request->id);
                     case 'new_floor' : return $this->ContainerFloorchange($request->id, $request->value);
+                    case 'detach':  return $this->roomDetach($request->id);
                 }
             }
 
@@ -146,17 +162,11 @@ class DollyActionController extends Controller
     public function MailDateChange(int $id, int $value)
     {
         $dolly = Dolly::findOrFail($id);
-        $mails = $dolly->mails;
-
-        foreach ($mails as $mail) {
+        foreach ($dolly->mails as $mail) {
             $mail->update(['date_exact' => $value]);
         }
-
         return view('dollies.show', ['dolly' => $dolly]);
     }
-
-
-
 
 
     public function MailPriority(INT $id){
@@ -164,11 +174,13 @@ class DollyActionController extends Controller
         $priorities = MailPriority::all();
         return view('dollies.actions.mailPriorityForm', compact('dolly','priorities'))->with('success', 'Dolly created successfully.');
     }
-    public function MailPriorityChange(INT $dolly_id, STRING $value){
-
+    public function MailPriorityChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('mails');
+        foreach ($dolly->mails as $mail) {
+            $mail->update(['priority_id' => $value]);
+        }
     }
-
-
 
 
     public function MailType(INT $id){
@@ -177,10 +189,13 @@ class DollyActionController extends Controller
         return view('dollies.actions.mailTypeForm', compact('dolly','types'))->with('success', 'Dolly created successfully.');
     }
 
-    public function MailTypeChange(INT $dolly_id, STRING $value){
-
+    public function MailTypeChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('mails');
+        foreach ($dolly->mails as $mail) {
+            $mail->update(['type_id' => $value]);
+        }
     }
-
 
 
 
@@ -189,9 +204,22 @@ class DollyActionController extends Controller
         return view('dollies.actions.mailArchivedForm', compact('dolly_id'))->with('success', 'Dolly created successfully.');
     }
 
-    public function MailArchivedChange(INT $dolly_id, STRING $value){
-
+    public function MailArchivedChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('mails');
+        foreach ($dolly->mails as $mail) {
+            $mail->update(['is_achived' => $value]);
+        }
     }
+
+
+    public function mailDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->mails as $mail){
+            $dolly->mails()->detach($mail->id);
+        }
+    }
+
 
 
     /**
@@ -207,8 +235,12 @@ class DollyActionController extends Controller
     }
 
 
-    public function RecordLevelChange(INT $dolly_id, STRING $value){
-
+    public function RecordLevelChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+        foreach ($dolly->records as $record) {
+            $record->update(['level_id' => $value]);
+        }
     }
 
 
@@ -229,8 +261,12 @@ class DollyActionController extends Controller
 
 
 
-    public function RecordStatusChange(INT $dolly_id, STRING $value){
-
+    public function RecordStatusChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+        foreach ($dolly->records as $record) {
+            $record->update(['status_id' => $value]);
+        }
     }
 
 
@@ -242,8 +278,20 @@ class DollyActionController extends Controller
     }
 
 
-    public function RecordDateChange(INT $dolly_id, STRING $value){
-        echo "Date";
+    public function recordDateChange(int $id, array $value) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+
+        foreach ($dolly->records as $record) {
+            if (!isset($value['date_exact']) || !isset($value['date_start'])) {
+                $record->update(['date_exact' => $value['date_exact']]);
+            } else {
+                $record->update([
+                    'date_start' => $value['date_start'],
+                    'date_end' => $value['date_end'],
+                ]);
+            }
+        }
     }
 
 
@@ -254,8 +302,12 @@ class DollyActionController extends Controller
     }
 
 
-    public function RecordActivityChange(INT $dolly_id, STRING $value){
-
+    public function RecordActivityChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+        foreach ($dolly->records as $record) {
+            $record->update(['activity_id' => $value]);
+        }
     }
 
 
@@ -267,12 +319,20 @@ class DollyActionController extends Controller
 
 
 
-    public function RecordContainerChange(INT $dolly_id, STRING $value){
-
+    public function RecordContainerChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('records');
+        foreach ($dolly->records as $record) {
+            $record->update(['container_id' => $value]);
+        }
     }
 
-
-
+    public function recordDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->records as $record){
+            $dolly->records()->detach($record->id);
+        }
+    }
 
 
 
@@ -298,8 +358,12 @@ class DollyActionController extends Controller
         return view('dollies.actions.CommunicationReturnForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function CommunicationReturnchange(INT $dolly_id, STRING $value){
-
+     Public function CommunicationReturnchange(INT $id, STRING $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('communications');
+        foreach ($dolly->communications as $communication) {
+            $communication->update(['return_date' => $value]);
+        }
      }
 
 
@@ -308,8 +372,12 @@ class DollyActionController extends Controller
         return view('dollies.actions.CommunicationReturnEffectiveForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function CommunicationReturEffectivechange(INT $dolly_id, STRING $value){
-
+     Public function CommunicationReturEffectivechange(INT $id, STRING $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('communications');
+        foreach ($dolly->communications as $communication) {
+            $communication->update(['return_effective' => $value]);
+        }
      }
 
 
@@ -319,9 +387,24 @@ class DollyActionController extends Controller
         return view('dollies.actions.CommunicationStatusForm', compact('dolly','statuses'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function CommunicationStatuschange(INT $dolly_id, STRING $value){
-
+     Public function CommunicationStatuschange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('communications');
+        foreach ($dolly->communications as $communication) {
+            $communication->update(['status_id' => $value]);
+        }
      }
+
+     public function communicationDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->communications as $communication){
+            $dolly->communications()->detach($communication->id);
+        }
+    }
+
+
+
+
 
 
 
@@ -339,11 +422,21 @@ class DollyActionController extends Controller
         return view('dollies.actions.slipRecordContainerForm', compact('dolly','containers'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function slipRecordContainerchange(INT $dolly_id, STRING $value){
-
+     Public function slipRecordContainerchange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slipRecords');
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['container_id' => $value]);
+        }
      }
 
 
+     public function slipDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->slips as $slip){
+            $dolly->slips()->detach($slip->id);
+        }
+    }
 
 
      Public function slipRecordActivity(INT $id){
@@ -352,8 +445,13 @@ class DollyActionController extends Controller
         return view('dollies.actions.slipRecordActivityForm', compact('dolly','activities'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function slipRecordActivitychange(INT $dolly_id, STRING $value){
 
+     Public function slipRecordActivitychange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slipRecords');
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['activity_id' => $value]);
+        }
      }
 
 
@@ -365,8 +463,12 @@ class DollyActionController extends Controller
         return view('dollies.actions.slipRecordSupportForm', compact('dolly','supports'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function slipRecordSupportchange(INT $dolly_id, STRING $value){
-
+     Public function slipRecordSupportchange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slipRecords');
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['support_id' => $value]);
+        }
      }
 
 
@@ -376,8 +478,13 @@ class DollyActionController extends Controller
         $levels = RecordLevel::all();
         return view('dollies.actions.slipRecordLevelForm', compact('dolly','levels'))->with('success', 'Dolly created successfully.');
      }
-     Public function slipRecordLevelchange(INT $dolly_id, STRING $value){
 
+     Public function slipRecordLevelchange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slipRecords');
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['level_id' => $value]);
+        }
      }
 
 
@@ -386,9 +493,33 @@ class DollyActionController extends Controller
         return view('dollies.actions.slipRecordDateForm', compact('dolly'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function slipRecordDatechange(INT $dolly_id, STRING $value){
+     public function slipRecordDateChange(int $id, string $value) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('slipRecords');
 
-     }
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['date_exact' => $value]);
+        }
+    }
+
+
+    public function slipRecordDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->slipRecords as $record){
+            $dolly->slipRecords()->detach($record->id);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -406,11 +537,29 @@ class DollyActionController extends Controller
         return view('dollies.actions.shelfRoomForm', compact('dolly','rooms'))->with('success', 'Dolly created successfully.');
      }
 
-     Public function shelfRoomchange(INT $dolly_id, STRING $value){
-
+     Public function shelfRoomchange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('shelve');
+        foreach ($dolly->shelve as $shelf) {
+            $shelf->update(['room_id' => $value]);
+        }
      }
 
 
+     public function shelfDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->shelve as $shelf){
+            $dolly->shelve()->detach($shelf->id);
+        }
+    }
+
+
+
+
+
+
+
+    // Container
 
 
     Public function ContainerShelf(INT $id){
@@ -420,9 +569,23 @@ class DollyActionController extends Controller
         return view('dollies.actions.ContainerShelfForm', compact('dolly','shelves'))->with('success', 'Dolly created successfully.');
     }
 
-    Public function ContainerShelfchange(INT $dolly_id, STRING $value){
-
+    Public function ContainerShelfchange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('containers');
+        foreach ($dolly->slipRecords as $record) {
+            $record->update(['shelve_id' => $value]);
+        }
     }
+
+    public function containerDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->containers as $container){
+            $dolly->containers()->detach($container->id);
+        }
+    }
+
+
+
 
 
 
@@ -434,8 +597,19 @@ class DollyActionController extends Controller
         return view('dollies.actions.RoomFloorForm', compact('floors','dolly'))->with('success', 'Dolly created successfully.');
     }
 
-    Public function RoomFloorChange(INT $dolly_id, STRING $value){
+    Public function RoomFloorChange(INT $id, INT $value){
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('rooms');
+        foreach ($dolly->rooms as $room) {
+            $room->update(['floor_id' => $value]);
+        }
+    }
 
+    public function roomDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->rooms as $room){
+            $dolly->rooms()->detach($room->id);
+        }
     }
 
 
