@@ -57,20 +57,21 @@
         <div class="collapse show" id="lifeCycleMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('records.toretain')}}"><i class="bi bi-calendar"></i> Dossiers actifs</a>
+                    <a class="nav-link text-dark" href="{{ route('records.toretain')}}"><i class="bi bi-folder-check"></i> Dossiers actifs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('records.totransfer')}}"><i class="bi bi-calendar"></i> A transférer</a>
+                    <a class="nav-link text-dark" href="{{ route('records.totransfer')}}"><i class="bi bi-arrow-right-square"></i> A transférer</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('records.toeliminate')}}"><i class="bi bi-calendar"></i> A éliminer</a>
+                    <a class="nav-link text-dark" href="{{ route('records.toeliminate')}}"><i class="bi bi-trash"></i> A éliminer</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('records.tokeep')}}"><i class="bi bi-calendar"></i> A conserver</a>
+                    <a class="nav-link text-dark" href="{{ route('records.tokeep')}}"><i class="bi bi-archive"></i> A conserver</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('records.tosort')}}"><i class="bi bi-calendar"></i> A trier</a>
+                    <a class="nav-link text-dark" href="{{ route('records.tosort')}}"><i class="bi bi-sort-down"></i> A trier</a>
                 </li>
+
             </ul>
         </div>
     </div>
