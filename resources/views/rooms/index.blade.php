@@ -18,8 +18,14 @@
                                 </h5>
                                 <p class="card-text mb-1">
                                     <i class="bi bi-file-earmark-text"></i> <strong>Description:</strong> {{ $room->description ?? 'N/A' }}<br>
-                                    <i class="bi bi-building"></i> <strong>Floor:</strong> {{ $room->floor->name ?? 'N/A' }}<br>
-                                    <i class="bi bi-map"></i> <strong>Building:</strong> {{ $room->floor->building->name ?? 'N/A' }}
+                                    <i class="bi bi-building"></i> <strong> Niveau:</strong> {{ $room->floor->name ?? 'N/A' }}<br>
+                                    <i class="bi bi-map"></i> <strong> Bâtiment:</strong> {{ $room->floor->building->name ?? 'N/A' }} <br>
+                                    <i class="bi bi-map"></i> <strong>Type de local :</strong>
+                                    @if( $room->type->name == "archives")
+                                        Salle d'archives
+                                    @elseif($room->type->name == "producer")
+                                        Local tampon (service producteur)
+                                    @endif
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">

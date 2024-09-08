@@ -39,6 +39,16 @@
     <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
+                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                Vider le chariot
+            </div>
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                <button class="btn btn-primary">Exécuter</button>
+            </a>
+        </li>
+
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+            <div class="d-flex align-items-left">
                 <i class="bi bi-layers" style="margin-right: 10px;"></i>
                 Changer le niveau de description
             </div>
@@ -139,6 +149,15 @@
     <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
+                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                Vider le chariot
+            </div>
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                <button class="btn btn-primary">Exécuter</button>
+            </a>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+            <div class="d-flex align-items-left">
                 <i class="bi bi-calendar" style="margin-right: 10px;"></i>
                 Changer les dates des courriers
             </div>
@@ -198,6 +217,15 @@
         <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
                     <i class="bi bi-house-door" style="margin-right: 10px;"></i>
                     Changer de salle d'archives
                 </div>
@@ -212,6 +240,15 @@
         <ul class="list-group">
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
                     <i class="bi bi-layout-text-sidebar-reverse" style="margin-right: 10px;"></i>
                     Changer d'étagère
                 </div>
@@ -223,6 +260,15 @@
 
     @elseif($dolly->type->name == 'communication')
         <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
                     <i class="bi bi-calendar-date" style="margin-right: 10px;"></i>
@@ -250,6 +296,7 @@
                     <button class="btn btn-primary">Exécuter</button>
                 </a>
             </li>
+
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
                     <i class="bi bi-trash" style="margin-right: 10px;"></i>
@@ -266,6 +313,15 @@
     <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
+                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                Vider le chariot
+            </div>
+            <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                <button class="btn btn-primary">Exécuter</button>
+            </a>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+            <div class="d-flex align-items-left">
                 <i class="bi bi-building" style="margin-right: 10px;"></i>
                 Changer de bâtiment de la salle d'archives
             </div>
@@ -277,6 +333,15 @@
 
     @elseif($dolly->type->name == 'shelf')
         <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
                     <i class="bi bi-archive" style="margin-right: 10px;"></i>
@@ -291,6 +356,15 @@
 
     @elseif($dolly->type->name == 'slip_record')
         <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+                <div class="d-flex align-items-left">
+                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    Vider le chariot
+                </div>
+                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+                    <button class="btn btn-primary">Exécuter</button>
+                </a>
+            </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
                     <i class="bi bi-box-seam" style="margin-right: 10px;"></i>
@@ -347,7 +421,5 @@
             </li>
         </ul>
     @endif
-
-
 </div>
 @endsection

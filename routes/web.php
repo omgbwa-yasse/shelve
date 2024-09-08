@@ -37,6 +37,7 @@ use App\Http\Controllers\SortController;
 use App\Http\Controllers\RetentionController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
+use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActiveController;
 use App\Http\Controllers\TermCategoryController;
 use App\Http\Controllers\TermEquivalentTypeController;
@@ -47,6 +48,7 @@ use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
+use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
 use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationStatusController;
@@ -138,6 +140,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::resource('records.child', RecordChildController::class)->names('record-child');
+        Route::get('totransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
+        Route::get('tosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');
+        Route::get('toeliminate', [lifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
+        Route::get('tokeep', [lifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
+        Route::get('toretain', [lifeCycleController::class, 'recordToRetain'])->name('records.toretain');
+
     });
 
     Route::prefix('transferrings')->group(function () {
@@ -190,11 +198,11 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('tools')->group(function () {
         Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
         Route::get('tools/activities/organigram', [ActivityController::class, 'organigram'])->name('activities.organigram');
-
         Route::resource('retentions', RetentionController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
+        Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');

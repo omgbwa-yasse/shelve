@@ -71,6 +71,18 @@ return new class extends Migration
             Les localisations des archives
         */
 
+
+        Schema::create('organisation_room', function (Blueprint $table) {
+            $table->bigInteger('room_id')->unsigned()->notNull();
+            $table->bigInteger('organisation_id')->unsigned()->notNull();
+            $table->primary(['room_id', 'organisation_id']);
+            $table->timestamps();
+            $table->foreign('room_id')->references('id')->on('rooms')->onDelete('cascade');
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+        });
+
+
+
         Schema::create('buildings', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->nullable(false);
@@ -79,6 +91,8 @@ return new class extends Migration
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
+
+
 
         Schema::create('floors', function (Blueprint $table) {
             $table->id();
@@ -94,16 +108,25 @@ return new class extends Migration
 
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10)->nullable(false);
-            $table->string('name', 100)->nullable(false);
+            $table->string('code', 10);
+            $table->string('name', 100);
             $table->text('description')->nullable();
-            $table->unsignedBigInteger('floor_id')->nullable(false);
-            $table->unsignedBigInteger('creator_id')->nullable(false);
-            $table->primary(['id', 'floor_id']);
+            $table->unsignedBigInteger('floor_id');
+            $table->unsignedBigInteger('creator_id');
+            $table->unsignedBigInteger('type_id');
             $table->timestamps();
             $table->foreign('floor_id')->references('id')->on('floors')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('type_id')->references('id')->on('types')->onDelete('cascade');
         });
+
+        Schema::create('room_types', function (Blueprint $table) {
+            $table->id();
+            $table->enum('name', ['archives', 'producer']);
+            $table->text('description')->nullable();
+            $table->timestamps();
+        });
+
 
         Schema::create('shelves', function (Blueprint $table) {
             $table->id();
@@ -157,6 +180,10 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
+
+
+
+
 
         /*
             Transferring archives

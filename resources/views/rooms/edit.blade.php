@@ -28,6 +28,21 @@
                     @endforeach
                 </select>
             </div>
+
+            <div class="mb-3">
+                <label for="type_id" class="form-label">type</label>
+                <select class="form-select" id="type_id" name="type_id" required>
+                    @foreach ($types as $type)
+                        <option value="{{ $type->id }}" {{ $type->id == $room->type_id ? 'selected' : '' }}>
+                            @if( $type->name == "archives")
+                                Salle d'archives
+                            @elseif($type->name == "producer")
+                                Local tampon (service producteur)
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </div>

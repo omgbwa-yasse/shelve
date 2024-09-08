@@ -13,5 +13,25 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this organisation?')">Delete</button>
         </form>
+        <a href="{{ route('organisations.rooms.create', $organisation) }}" class="btn btn-secondary">Associer un local</a>
+        <ul class="list-group">
+            @if($organisation->rooms == NULL)
+                Cette unité n'a aucun local d'archives
+            @else
+                @foreach($organisation->rooms as $room )
+                    <li class="list-group-item d-flex justify-content-between align-items-center" >
+                        {{ $room->name }}
+                        <span class="badge bg-secondary badge-pill">
+                            <form action="{{ route('organisations.rooms.destroy', [$organisation, $room]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                Supprimer
+                            </form>
+                        </span>
+                    </li>
+                @endforeach
+            @endif
+        </ul>
+
     </div>
 @endsection

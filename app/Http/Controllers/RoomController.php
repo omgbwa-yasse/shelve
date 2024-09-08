@@ -5,20 +5,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Floor;
 use App\Models\Room;
+use App\Models\RoomType;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
     public function index()
     {
-        $rooms = Room::with('floor')->get();
+        $rooms = Room::with('floor','type')->get();
         return view('rooms.index', compact('rooms'));
     }
 
     public function create()
     {
         $floors = Floor::all();
-        return view('rooms.create', compact('floors'));
+        $types = RoomType::all();
+        return view('rooms.create', compact('floors','types'));
     }
 
     public function store(Request $request)
@@ -28,6 +30,7 @@ class RoomController extends Controller
             'name' => 'required|max:100',
             'description' => 'nullable',
             'floor_id' => 'required|exists:floors,id',
+            'type_id' => 'required|exists:room_types,id',
         ]);
 
         Room::create([
@@ -36,6 +39,7 @@ class RoomController extends Controller
             'description' => $request->description,
             'floor_id' => $request->floor_id,
             'creator_id' => auth()->id(),
+            'type_id' => $request->type_id,
         ]);
 
         return redirect()->route('rooms.index')->with('success', 'Room created successfully.');
@@ -43,14 +47,15 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
-        $room->load('floor');
+        $room->load('floor','type');
         return view('rooms.show', compact('room'));
     }
 
     public function edit(Room $room)
     {
         $floors = Floor::all();
-        return view('rooms.edit', compact('room', 'floors'));
+        $types = RoomType::all();
+        return view('rooms.edit', compact('room', 'floors','types'));
     }
 
     public function update(Request $request, Room $room)
@@ -60,6 +65,7 @@ class RoomController extends Controller
             'name' => 'required|max:100',
             'description' => 'nullable',
             'floor_id' => 'required|exists:floors,id',
+            'type_id' => 'required|exists:room_types,id',
         ]);
 
         $room->update([
@@ -67,6 +73,8 @@ class RoomController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'floor_id' => $request->floor_id,
+            'creator_id' => auth()->id(),
+            'type_id' => $request->type_id,
         ]);
 
         return redirect()->route('rooms.index')->with('success', 'Room updated successfully.');

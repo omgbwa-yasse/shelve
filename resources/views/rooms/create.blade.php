@@ -22,17 +22,29 @@
                         <textarea class="form-control" id="description" name="description"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="floor_id" class="form-label">Floor</label>
+                        <label for="floor_id" class="form-label">Choisir le niveau</label>
                         <div class="select-with-search">
-                            <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search floor or building...">
-                            </div>
-                            <select class="form-select" id="floor_id" name="floor_id" required>
-                                <option value="">Select a floor</option>
+                        <select class="form-select" id="floor_id" name="floor_id" required>
                                 @foreach ($floors as $floor)
                                     <option value="{{ $floor->id }}" data-building="{{ $floor->building->name }}">
                                         {{ $floor->name }} ({{ $floor->building->name }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="type_id" class="form-label">Type de local</label>
+                        <div class="select-with-search">
+                            <select class="form-select" id="type_id" name="type_id" required>
+                                @foreach ($types as $type)
+                                    <option value="{{ $type->id }}">
+                                        @if( $type->name == "archives")
+                                            Salle d'archives
+                                        @elseif($type->name == "producer")
+                                            Local tampon (service producteur)
+                                        @endif
                                     </option>
                                 @endforeach
                             </select>

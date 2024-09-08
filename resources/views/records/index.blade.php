@@ -3,7 +3,7 @@
 @section('content')
     <div class="container-fluid mt-4">
 
-        <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Liste des enregistrements</h1>
+        <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Inventaire des archives {{ $title ?? ''}}</h1>
 
         <div id="recordList">
             @foreach ($records as $record)
