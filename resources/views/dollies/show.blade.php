@@ -111,7 +111,7 @@
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
-                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                 Supprimer de la base
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -186,7 +186,7 @@
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
-                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                 Supprimer de la base
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -223,7 +223,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -261,7 +261,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -316,7 +316,7 @@
 
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -351,7 +351,7 @@
         </li>
         <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
             <div class="d-flex align-items-left">
-                <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                 Supprimer de la base
             </div>
             <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -385,7 +385,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
@@ -400,35 +400,36 @@
 
 
 @elseif($dolly->type->name == 'slip')
-        <ul class="list-group">
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
-                <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
-                    Vider le chariot
-                </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Exécuter</button>
-                </a>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
-                <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
-                    Changer le status des bordereaux
-                </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Exécuter</button>
-                </a>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
-                <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
-                    Supprimer de la base
-                </div>
-                <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
-                    <button class="btn btn-primary">Exécuter</button>
-                </a>
-            </li>
-        </ul>
+<ul class="list-group">
+    <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+        <div class="d-flex align-items-left">
+            <i class="bi bi-trash" style="margin-right: 10px;"></i>
+            Vider le chariot
+        </div>
+        <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=clean&id={{ $dolly->id }}">
+            <button class="btn btn-primary">Exécuter</button>
+        </a>
+    </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+        <div class="d-flex align-items-left">
+            <i class="bi bi-pencil-square" style="margin-right: 10px;"></i>
+            Changer le status des bordereaux
+        </div>
+        <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=status&id={{ $dolly->id }}">
+            <button class="btn btn-primary">Exécuter</button>
+        </a>
+    </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
+        <div class="d-flex align-items-left">
+            <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
+            Supprimer de la base
+        </div>
+        <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
+            <button class="btn btn-primary">Exécuter</button>
+        </a>
+    </li>
+</ul>
+
 
 
 
@@ -493,7 +494,7 @@
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center" style="margin-left: 10px;">
                 <div class="d-flex align-items-left">
-                    <i class="bi bi-trash" style="margin-right: 10px;"></i>
+                    <i class="bi bi-x-circle" style="margin-right: 10px;"></i>
                     Supprimer de la base
                 </div>
                 <a href="{{ route('dollies.action')}}?categ={{ $dolly->type->name }}&action=delete&id={{ $dolly->id }}">
