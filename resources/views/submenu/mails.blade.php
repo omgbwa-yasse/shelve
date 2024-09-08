@@ -10,14 +10,13 @@
                     <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> Mes courriers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch.index') }}"><i class="bi bi-inbox"></i> Mes parapheurs</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> Courriers reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Envoyés</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> Courriers envoyés</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.archived') }}"><i class="bi bi-inbox"></i> Courriers archivés</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-author.index') }}"><i class="bi bi-envelope"></i> Producteurs</a>
@@ -29,10 +28,16 @@
                     <a class="nav-link text-dark" href="{{ route('mail-select-date')}}"><i class="bi bi-calendar"></i> Dates</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.archived') }}"><i class="bi bi-inbox"></i> Courrier archivé</a>
+                    <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> Boîtes d'archives</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> Boîtes d'archives</a>
+                    <a class="nav-link text-dark" href="{{ route('batch.index') }}"><i class="bi bi-inbox"></i> Mes parapheurs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Parapheurs reçus</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> Parapheurs envoyés</a>
                 </li>
             </ul>
         </div>
@@ -109,22 +114,6 @@
                     <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i> Recevoir</a>
                 </li>
 
-            </ul>
-        </div>
-
-
-        <!-- Parapheur -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurSuiviMenu" aria-expanded="true"
-           aria-controls="parapheurMenu" style="padding: 10px;">Suivi des parapheurs</a>
-
-        <div class="collapse show" id="parapheurSuiviMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> Parapheurs reçus</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> Parapheurs envoyés</a>
-                </li>
             </ul>
         </div>
     </div>

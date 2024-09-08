@@ -61,8 +61,23 @@
         </div>
 
 
-            <div>
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#lifeCycleMenu" aria-expanded="false"
+            aria-controls="lifeCycleMenu" style="padding: 10px;">
+            <i class="bi bi-cart"></i> Import / Export (EAD, Excel, SEDA)
+        </a>
+        <div class="collapse show" id="lifeCycleMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Import</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Export</a>
+                </li>
             </ul>
+        </div>
+
+        <div>
+        </ul>
         </div>
     </div>
 </div>
