@@ -83,7 +83,7 @@ use App\Http\Controllers\ReportController;
 
 
 Auth::routes();
-
+Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('/tasks/myTasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
@@ -152,6 +152,9 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('transferrings')->group(function () {
+        Route::get('/slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
+        Route::get('/slips/export/{format}', [SlipController::class, 'export'])->name('slips.export');
+//        Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
         Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');

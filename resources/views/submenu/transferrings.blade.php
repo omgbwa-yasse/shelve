@@ -68,10 +68,12 @@
         <div class="collapse show" id="lifeCycleMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Import</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.import.form') }}"><i class="bi bi-folder-check"></i> Import</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Export</a>
+                    <a href="{{ route('slips.export', 'excel') }}" class="nav-link text-dark">Export Excel</a>
+                    <a href="{{ route('slips.export', 'ead') }}" class="nav-link text-dark">Export EAD</a>
+                    <a href="{{ route('slips.export', 'seda') }}" class="nav-link text-dark">Export SEDA</a>
                 </li>
             </ul>
         </div>

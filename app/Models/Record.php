@@ -92,7 +92,7 @@ class Record extends Model
         return $this->belongsTo(Container::class);
     }
 
-    
+
 
 
     public function user()
