@@ -53,7 +53,6 @@ class Record extends Model
         'activity_id',
         'parent_id',
         'container_id',
-        'accession_id',
         'user_id',
     ];
 
@@ -93,11 +92,7 @@ class Record extends Model
         return $this->belongsTo(Container::class);
     }
 
-
-    public function accession()
-    {
-        return $this->belongsTo(Accession::class);
-    }
+    
 
 
     public function user()

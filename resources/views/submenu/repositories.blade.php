@@ -84,11 +84,13 @@
         <div class="collapse show" id="lifeCycleMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Import</a>
+                    <a class="nav-link text-dark" href="{{ route('records.import.form') }}"><i class="bi bi-folder-check"></i> Import</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-folder-check"></i> Export</a>
-                </li>
+                        <a class="dropdown-item" href="{{ route('records.export', 'excel') }}">Excel</a>
+                        <a class="dropdown-item" href="{{ route('records.export', 'ead') }}">EAD</a>
+                       <a class="dropdown-item" href="{{ route('records.export', 'seda') }}">SEDA</a>
+
             </ul>
         </div>
 

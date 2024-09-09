@@ -77,6 +77,8 @@
 
 <body class="bg-light">
 <div id="app">
+    @guest
+    @else
     <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url('/') }}">
@@ -153,8 +155,7 @@
             </div>
         </div>
     </nav>
-    @guest
-    @else
+
     <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
         <div class="container-fluid">
             <div class="navbar-nav w-100 justify-content-between">

@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Exports\RecordsExport;
+use App\Imports\RecordsImport;
+
 use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
@@ -13,6 +16,8 @@ use App\Models\RecordLevel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 
 class RecordController extends Controller
@@ -220,5 +225,155 @@ class RecordController extends Controller
         $record->delete();
 
         return redirect()->route('records.index')->with('success', 'Record deleted successfully.');
+    }
+
+
+    // ici c'est pour l'import export
+    public function export($format)
+    {
+        switch ($format) {
+            case 'excel':
+                return Excel::download(new RecordsExport, 'records.xlsx');
+            case 'ead':
+                $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])->get();
+                $xml = $this->generateEAD($records);
+                return response($xml)
+                    ->header('Content-Type', 'application/xml')
+                    ->header('Content-Disposition', 'attachment; filename="records.xml"');
+            case 'seda':
+                $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])->get();
+                $xml = $this->generateSEDA($records);
+                return response($xml)
+                    ->header('Content-Type', 'application/xml')
+                    ->header('Content-Disposition', 'attachment; filename="records_seda.xml"');
+            default:
+                return redirect()->back()->with('error', 'Invalid export format');
+        }
+    }
+
+    public function importForm()
+    {
+        return view('records.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xml',
+            'format' => 'required|in:excel,ead,seda',
+        ]);
+
+        $file = $request->file('file');
+        $format = $request->input('format');
+
+        try {
+            switch ($format) {
+                case 'excel':
+                    Excel::import(new RecordsImport, $file);
+                    break;
+                case 'ead':
+                    $this->importEAD($file);
+                    break;
+                case 'seda':
+                    $this->importSEDA($file);
+                    break;
+            }
+            return redirect()->route('records.index')->with('success', 'Records imported successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error importing records: ' . $e->getMessage());
+        }
+    }
+
+    private function generateEAD($records)
+    {
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead></ead>');
+/*        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9 http://www.loc.gov/ead/ead.xsd"></ead>');*/
+
+        $eadheader = $xml->addChild('eadheader');
+        $eadheader->addChild('eadid', 'YOUR_UNIQUE_ID');
+        $filedesc = $eadheader->addChild('filedesc');
+        $filedesc->addChild('titlestmt')->addChild('titleproper', 'Your Archive Title');
+
+        $archdesc = $xml->addChild('archdesc', '')->addAttribute('level', 'collection');
+        $did = $archdesc->addChild('did');
+        $did->addChild('unittitle', 'Your Collection Title');
+
+        foreach ($records as $record) {
+            $c = $archdesc->addChild('c')->addAttribute('level', $record->level->name ?? 'item');
+            $c_did = $c->addChild('did');
+            $c_did->addChild('unittitle', $record->name);
+            $c_did->addChild('unitdate', $record->date_start)->addAttribute('normal', $record->date_start);
+            $c_did->addChild('physdesc')->addChild('extent', $record->width_description);
+
+            if ($record->content) {
+                $c->addChild('scopecontent')->addChild('p', $record->content);
+            }
+        }
+
+        return $xml->asXML();
+    }
+
+    private function generateSEDA($records)
+    {
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
+
+        $xml->addChild('Comment', 'Archive Transfer');
+        $xml->addChild('Date', date('Y-m-d'));
+
+        $archive = $xml->addChild('Archive');
+
+        foreach ($records as $record) {
+            $archiveObject = $archive->addChild('ArchiveObject');
+            $archiveObject->addChild('Name', $record->name);
+            $archiveObject->addChild('Description', $record->content);
+
+            $document = $archiveObject->addChild('Document');
+            $document->addChild('Identification', $record->code);
+            $document->addChild('Type', $record->level->name ?? 'item');
+
+            $attachment = $document->addChild('Attachment');
+            $attachment->addChild('FileName', $record->name);
+            $attachment->addChild('Size', $record->width);
+        }
+
+        return $xml->asXML();
+    }
+
+    private function importEAD($file)
+    {
+        $xml = simplexml_load_file($file);
+        $xml->registerXPathNamespace('ead', 'urn:isbn:1-931666-22-9');
+
+        $records = $xml->xpath('//ead:c');
+
+        foreach ($records as $record) {
+            $data = [
+                'name' => (string)$record->did->unittitle,
+                'date_start' => (string)$record->did->unitdate,
+                'content' => (string)$record->scopecontent->p,
+                // Map other fields as needed
+            ];
+
+            Record::create($data);
+        }
+    }
+
+    private function importSEDA($file)
+    {
+        $xml = simplexml_load_file($file);
+        $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
+
+        $records = $xml->xpath('//seda:ArchiveObject');
+
+        foreach ($records as $record) {
+            $data = [
+                'name' => (string)$record->Name,
+                'content' => (string)$record->Description,
+                'code' => (string)$record->Document->Identification,
+                // Map other fields as needed
+            ];
+
+            Record::create($data);
+        }
     }
 }

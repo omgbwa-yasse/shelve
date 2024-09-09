@@ -135,6 +135,9 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('repositories')->group(function () {
+        Route::get('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+        Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
+        Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
