@@ -313,6 +313,7 @@ class RecordController extends Controller
 
     private function exportSEDA()
     {
+
         $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms', 'attachments'])->get();
 
         $xml = $this->generateSEDA($records);
@@ -324,14 +325,13 @@ class RecordController extends Controller
             // Add XML file to the zip
             $zip->addFromString('records.xml', $xml);
 
-            // Add PDF attachments to the zip
+            // Add attachments to the zip
             foreach ($records as $record) {
+//                dd($record->attachments);
                 foreach ($record->attachments as $attachment) {
-                    if ($attachment->mime_type === 'application/pdf') {
-                        $filePath = storage_path('app/public/' . $attachment->path);
-                        if (file_exists($filePath)) {
-                            $zip->addFile($filePath, 'attachments/' . $attachment->filename);
-                        }
+                    $filePath = storage_path('app/' . $attachment->path);
+                    if (file_exists($filePath)) {
+                        $zip->addFile($filePath, 'attachments/' . $attachment->name . '.pdf');
                     }
                 }
             }
@@ -361,12 +361,11 @@ class RecordController extends Controller
             $document->addChild('Type', $record->level->name ?? 'item');
 
             foreach ($record->attachments as $attachment) {
-                if ($attachment->mime_type === 'application/pdf') {
-                    $attachmentNode = $document->addChild('Attachment');
-                    $attachmentNode->addChild('FileName', $attachment->filename);
-                    $attachmentNode->addChild('Size', $attachment->size);
-                    $attachmentNode->addChild('Path', 'attachments/' . $attachment->filename);
-                }
+                $attachmentNode = $document->addChild('Attachment');
+                $attachmentNode->addChild('FileName', $attachment->name . '.pdf');  // Added .pdf extension
+                $attachmentNode->addChild('Size', $attachment->size);
+                $attachmentNode->addChild('Path', 'attachments/' . $attachment->name . '.pdf');  // Added .pdf extension
+                $attachmentNode->addChild('Crypt', $attachment->crypt);
             }
         }
 
@@ -424,10 +423,12 @@ class RecordController extends Controller
                     $filePath = $extractPath . '/attachments/' . $fileName;
 
                     if (file_exists($filePath)) {
-                        $newAttachment = new Attachment([
-                            'filename' => $fileName,
-                            'mime_type' => 'application/pdf',
-                            'size' => filesize($filePath),
+                        $newAttachment = new RecordAttachment([
+                            'name' => $fileName,
+                            'path' => 'attachments/' . $fileName,
+                            'size' => (int)$attachment->Size,
+                            'crypt' => (string)$attachment->Crypt,
+                            'creator_id' => auth()->id(), // Assuming the current user is the creator
                         ]);
 
                         $newRecord->attachments()->save($newAttachment);

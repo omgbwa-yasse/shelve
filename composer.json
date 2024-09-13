@@ -11,7 +11,8 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "maatwebsite/excel": "^3.1",
-        "teamtnt/laravel-scout-tntsearch-driver": "^14.0"
+        "teamtnt/laravel-scout-tntsearch-driver": "^14.0",
+        "ext-zip": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
