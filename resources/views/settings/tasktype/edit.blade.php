@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Edit Task Type</h1>
-        <form action="{{ route('tasktype.update', $taskType->id) }}" method="POST">
+        <form action="{{ route('tasktype.update', $taskType) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="form-group">
