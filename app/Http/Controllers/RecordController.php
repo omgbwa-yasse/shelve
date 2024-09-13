@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 
+use App\Models\Attachment;
 use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
@@ -16,8 +17,9 @@ use App\Models\RecordLevel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-
+use ZipArchive;
 
 
 class RecordController extends Controller
@@ -241,11 +243,7 @@ class RecordController extends Controller
                     ->header('Content-Type', 'application/xml')
                     ->header('Content-Disposition', 'attachment; filename="records.xml"');
             case 'seda':
-                $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])->get();
-                $xml = $this->generateSEDA($records);
-                return response($xml)
-                    ->header('Content-Type', 'application/xml')
-                    ->header('Content-Disposition', 'attachment; filename="records_seda.xml"');
+                return $this->exportSEDA();
             default:
                 return redirect()->back()->with('error', 'Invalid export format');
         }
@@ -313,6 +311,37 @@ class RecordController extends Controller
         return $xml->asXML();
     }
 
+    private function exportSEDA()
+    {
+        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms', 'attachments'])->get();
+
+        $xml = $this->generateSEDA($records);
+
+        $zipFileName = 'records_seda_export_' . time() . '.zip';
+        $zip = new ZipArchive();
+
+        if ($zip->open(storage_path('app/public/' . $zipFileName), ZipArchive::CREATE) === TRUE) {
+            // Add XML file to the zip
+            $zip->addFromString('records.xml', $xml);
+
+            // Add PDF attachments to the zip
+            foreach ($records as $record) {
+                foreach ($record->attachments as $attachment) {
+                    if ($attachment->mime_type === 'application/pdf') {
+                        $filePath = storage_path('app/public/' . $attachment->path);
+                        if (file_exists($filePath)) {
+                            $zip->addFile($filePath, 'attachments/' . $attachment->filename);
+                        }
+                    }
+                }
+            }
+
+            $zip->close();
+        }
+
+        return response()->download(storage_path('app/public/' . $zipFileName))->deleteFileAfterSend(true);
+    }
+
     private function generateSEDA($records)
     {
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
@@ -331,9 +360,14 @@ class RecordController extends Controller
             $document->addChild('Identification', $record->code);
             $document->addChild('Type', $record->level->name ?? 'item');
 
-            $attachment = $document->addChild('Attachment');
-            $attachment->addChild('FileName', $record->name);
-            $attachment->addChild('Size', $record->width);
+            foreach ($record->attachments as $attachment) {
+                if ($attachment->mime_type === 'application/pdf') {
+                    $attachmentNode = $document->addChild('Attachment');
+                    $attachmentNode->addChild('FileName', $attachment->filename);
+                    $attachmentNode->addChild('Size', $attachment->size);
+                    $attachmentNode->addChild('Path', 'attachments/' . $attachment->filename);
+                }
+            }
         }
 
         return $xml->asXML();
@@ -360,20 +394,52 @@ class RecordController extends Controller
 
     private function importSEDA($file)
     {
-        $xml = simplexml_load_file($file);
-        $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
+        $zip = new ZipArchive;
+        $extractPath = storage_path('app/temp_import');
 
-        $records = $xml->xpath('//seda:ArchiveObject');
+        if ($zip->open($file) === TRUE) {
+            $zip->extractTo($extractPath);
+            $zip->close();
 
-        foreach ($records as $record) {
-            $data = [
-                'name' => (string)$record->Name,
-                'content' => (string)$record->Description,
-                'code' => (string)$record->Document->Identification,
-                // Map other fields as needed
-            ];
+            $xmlFile = $extractPath . '/records.xml';
+            $xml = simplexml_load_file($xmlFile);
+            $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
 
-            Record::create($data);
+            $records = $xml->xpath('//seda:ArchiveObject');
+
+            foreach ($records as $record) {
+                $data = [
+                    'name' => (string)$record->Name,
+                    'content' => (string)$record->Description,
+                    'code' => (string)$record->Document->Identification,
+                    // Map other fields as needed
+                ];
+
+                $newRecord = Record::create($data);
+
+                // Import attachments
+                $attachments = $record->xpath('Document/Attachment');
+                foreach ($attachments as $attachment) {
+                    $fileName = (string)$attachment->FileName;
+                    $filePath = $extractPath . '/attachments/' . $fileName;
+
+                    if (file_exists($filePath)) {
+                        $newAttachment = new Attachment([
+                            'filename' => $fileName,
+                            'mime_type' => 'application/pdf',
+                            'size' => filesize($filePath),
+                        ]);
+
+                        $newRecord->attachments()->save($newAttachment);
+
+                        // Move file to the correct storage location
+                        Storage::putFileAs('public/attachments', $filePath, $fileName);
+                    }
+                }
+            }
+
+            // Clean up temporary files
+            Storage::deleteDirectory('temp_import');
         }
     }
 }
