@@ -83,7 +83,7 @@ use App\Http\Controllers\ReportController;
 
 
 Auth::routes();
-Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
+//Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('/tasks/myTasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
@@ -135,7 +135,9 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('repositories')->group(function () {
-        Route::get('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+        Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
+        Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
+//        Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
@@ -152,9 +154,12 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('transferrings')->group(function () {
+        Route::get('/slips/export', [SlipController::class, 'exportForm'])->name('slips.export.form');
+        Route::post('/slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('/slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
-        Route::get('/slips/export/{format}', [SlipController::class, 'export'])->name('slips.export');
-//        Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+        Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+
+
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
         Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');

@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\Container;
+use App\Models\Dolly;
 use App\Models\Record;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
@@ -17,6 +18,15 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 
 class RecordsImport implements ToModel, WithHeadingRow, WithValidation
 {
+    protected $dolly;
+    public function __construct()
+    {
+        $this->dolly = Dolly::create([
+            'name' => 'Import_' . now()->format('Y-m-d_H-i-s'),
+            'description' => 'Automatically created during import',
+            'type_id' => 1, // Assuming 1 is the ID for the import type, adjust as needed
+        ]);
+    }
     public function model(array $row)
     {
         $record = Record::create([
@@ -55,6 +65,9 @@ class RecordsImport implements ToModel, WithHeadingRow, WithValidation
             'container_id' => Container::firstOrCreate(['name' => $row['container']])->id,
             'user_id' => User::firstOrCreate(['name' => $row['user']])->id,
         ]);
+
+        // Attach the record to the newly created Dolly
+        $this->dolly->records()->attach($record->id);
 
         // Handle authors
         if (isset($row['authors'])) {
