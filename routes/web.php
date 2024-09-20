@@ -204,6 +204,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('/action', [DollyActionController::class, 'index'])->name('dollies.action');
         Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
+
+        Route::delete('/dolly/{dolly}/remove-record/{record}', [DollyController::class, 'removeRecord'])->name('dolly.remove-record');
+        Route::delete('/dolly/{dolly}/remove-mail/{mail}', [DollyController::class, 'removeMail'])->name('dolly.remove-mail');
+        Route::post('/dolly/{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');
+        Route::post('/dolly/{dolly}/add-mail', [DollyController::class, 'addMail'])->name('dolly.add-mail');
+        Route::post('/dolly/{dolly}/add-communication', [DollyController::class, 'addCommunication'])->name('dolly.add-communication');
+        Route::post('/dolly/{dolly}/add-room', [DollyController::class, 'addRoom'])->name('dolly.add-room');
+        Route::post('/dolly/{dolly}/add-container', [DollyController::class, 'addContainer'])->name('dolly.add-container');
+        Route::post('/dolly/{dolly}/add-shelve', [DollyController::class, 'addShelve'])->name('dolly.add-shelve');
+        Route::post('/dolly/{dolly}/add-slip-record', [DollyController::class, 'addSlipRecord'])->name('dolly.add-slip-record');
     });
 
     Route::prefix('tools')->group(function () {
