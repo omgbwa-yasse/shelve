@@ -70,8 +70,8 @@
         @if($dolly->type->name === 'record' && $dolly->records->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                    <tr>
+                    <thead class="table-white">
+                    <tr >
                         <th>ID</th>
                         <th>Titre</th>
                         <th>Dates</th>
@@ -103,7 +103,7 @@
         @elseif($dolly->type->name === 'mail' && $dolly->mails->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
-                    <thead class="table-dark">
+                    <thead class="table-white bg-dark">
                     <tr>
                         <th>ID</th>
                         <th>Titre</th>
