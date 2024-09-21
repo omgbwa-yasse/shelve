@@ -2,26 +2,26 @@
 
 @section('content')
     <div class="container-fluid py-4">
-        <nav aria-label="breadcrumb" class="mb-4">
+        <nav aria-label="breadcrumb" class="mb-2">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('records.index') }}">Records</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ $record->code }}</li>
             </ol>
         </nav>
 
-        <div class="row mb-4">
+        <div class="row mb-1">
             <div class="col-md-8">
                 <h1 class="h2 mb-0 d-flex align-items-center">
-                    {{ $record->code }}: {{ $record->name }}
+                    Fiche descriptive
                 </h1>
             </div>
             <div class="col-md-4 text-md-end">
                 <div class="btn-group" role="group">
                     <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil"></i> Edit
+                        <i class="bi bi-pencil"></i> Modifier la fiche
                     </a>
                     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                        <i class="bi bi-trash"></i> Delete
+                        <i class="bi bi-trash"></i> Supprimer la fiche
                     </button>
                 </div>
             </div>
@@ -29,68 +29,116 @@
 
         <div class="row">
             <div class="col-md-8">
-
                 <div class="card text-start">
                     <div class="card-body">
-
                         <h4 class="card-title">
-                            {{ $record->code ?? '' }} - {{ $record->name ?? '' }}
-                            ({{ $record->level->name ?? '' }}) de {{ $record->parent->name ?? '' }}
+                           <strong>{{ $record->name }}</strong>
                         </h4>
-                        <p class="card-text">
-                            {{ $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "{$author->name}")->implode(' ') }}
-                        </p>
+                        <div class="container mt-1">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex flex-column">
+                                        <div class="p-2">
+                                            Cote : {{ $record->code }}
+                                        </div>
+                                        <div class="p-2">
+                                            Intitulé / analyse : {{ $record->name }}
+                                        </div>
+                                        <div class="p-2"> Dates :
+                                            @if($record->date_exact == NULL)
+                                                @if($record->date_end == NULL)
+                                                    {{ $record->date_start ?? 'N/A' }}
+                                                @else
+                                                    {{ $record->date_start ?? 'N/A' }} à {{ $record->date_end ?? 'N/A' }}
+                                                @endif
+                                            @else
+                                                {{ $record->date_exact ?? 'N/A' }}
+                                            @endif
+                                        </div>
+                                        <div class="p-2">
+                                            Producteurs :
+                                            <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('')}}">
+                                                 {{ $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "{$author->name}")->implode(' ') }}
+                                            </a>
+                                        </div>
+                                        <div class="p-2 mt-0">
+                                            Content : {{ $record->content ?? 'N/A' }}
+                                        </div>
 
-                        <p class="card-text">
-                            {{ $record->date_format ?? '' }} - {{ $record->date_start ?? '' }} - {{ $record->date_end ?? '' }} -  {{ $record->date_exact ?? '' }} <br>
-                            {{ $record->width ? $record->width . ' cm' : 'N/A' }}
-                        </p>
-                        <p class="card-text">
-                            {{ $record->width_description ?? 'N/A' }}
-                            {{ $record->status->name ?? '' }}
-                            {{ $record->content ?? 'N/A' }}
-                            {{ $record->archivist_note ?? 'N/A' }}
-                        </p>
-                        <p class="card-text">
-                            {{ $record->support->name ?? '' }}
-                            {{ $record->container->name ?? '' }}
-
-                            {{ $record->user->name ?? '' }}
-                            {{ $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "{$term->name}")->implode(' ') ?? '' }}
-                            {{ $record->activity->name ?? '' }}
-                            {{ $record->note ?? '' }}
-                        </p>
+                                        <div class="d-flex mt-0">
+                                            <div class="p-2">
+                                                Support : {{ $record->support->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="p-2">
+                                                Status : {{ $record->status->name ?? 'N/A' }}
+                                            </div>
+                                            <div class="p-2">
+                                                Container : <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? 'Non conditionné' }}</a>
+                                            </div>
+                                            <div class="p-2">
+                                                Created By : {{ $record->user->name ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex">
+                                            <div class="p-2">
+                                                Width : {{ $record->width ? $record->width . ' cm' : 'N/A' }}
+                                            </div>
+                                            <div class="p-2">
+                                                Width Description :{{ $record->width_description ?? 'N/A' }}
+                                            </div>
+                                        </div>
+                                        <div class="p-2">
+                                            Terms :
+                                            @foreach($record->terms as $index => $term)
+                                                <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}"> {{ $term->name ?? 'N/A' }} </a>
+                                                @if(!$loop->last)
+                                                    {{ " ; " }}
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                        <div class="p-2">
+                                            Activity : <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
+                                        </div>
+                                        <div class="p-2">
+                                            Note : {{ $record->note ?? 'N/A' }}
+                                        </div>
+                                        <div class="p-2">
+                                            Archivist Note : {{ $record->archivist_note ?? 'N/A' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                    <div>
-                        @if($record->children->isNotEmpty())
-                            <div class="list-group">
-                                @foreach($record->children as $child)
-                                    <a href="{{ route('records.show', $child) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                        {{ $child->code }}: {{ $child->name }}
-                                        <span class="badge bg-primary rounded-pill">{{ $child->level->name ?? 'N/A' }}</span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        @else
-                            <p class="text-muted">No child records found.</p>
-                        @endif
-                    </div>
+                <div class="mt-4">
+                    @if($record->children->isNotEmpty())
+                        <div class="list-group">
+                            @foreach($record->children as $child)
+                                <a href="{{ route('records.show', $child) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    {{ $child->code }}: {{ $child->name }}
+                                    <span class="badge bg-primary rounded-pill">{{ $child->level->name ?? 'N/A' }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-muted">No child records found.</p>
+                    @endif
+                </div>
 
-                    <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
-                        <div class="d-grid gap-2">
-                        <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
-                            <i class="bi bi-pencil me-2"></i> Modify
-                        </a>
-                        <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-box me-2"></i> Insert into a box
-                        </a>
-                        <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
-                            <i class="bi bi-plus-circle me-2"></i> Add a child record
-                        </a>
-                    </div>
-
+                <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-2"></i> Modifier
+                    </a>
+                    <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-box me-2"></i> Inserer dans une boîte
+                    </a>
+                    <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
+                        <i class="bi bi-plus-circle me-2"></i> Ajouter un fiche fille
+                    </a>
+                </div>
 
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
@@ -101,10 +149,9 @@
                             @forelse($record->attachments as $attachment)
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>{{ $attachment->name }}</span>
-                                    <a href="{{ route('records.attachments.show', [$record, $attachment]) }}" class="btn btn-sm btn-outline-primary" >
-                                        <i class="bi bi-download"></i>
+                                    <a href="{{ route('records.attachments.show', [$record, $attachment]) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download"></i> Voir le fichier
                                     </a>
-
                                 </li>
                             @empty
                                 <li class="list-group-item text-muted">No attachments found.</li>
@@ -112,14 +159,14 @@
                         </ul>
                         <div class="d-grid">
                             <a href="{{ route('records.attachments.create', $record) }}" class="btn btn-outline-success">
-                                <i class="bi bi-plus-circle me-2"></i>Add New Attachment
+                                <i class="bi bi-plus-circle me-2"></i> Ajouter un fichier
                             </a>
                         </div>
                     </div>
                 </div>
 
                 <a href="{{ route('records.index') }}" class="btn btn-outline-secondary w-100">
-                    <i class="bi bi-arrow-left me-2"></i> Back to list
+                    <i class="bi bi-arrow-left me-2"></i> Retour à l'accueil
                 </a>
             </div>
         </div>

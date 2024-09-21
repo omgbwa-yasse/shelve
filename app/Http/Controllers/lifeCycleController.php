@@ -23,6 +23,12 @@ class lifeCycleController extends Controller
     public function recordToRetain(){
         $records = Record::all();
         $title = "actifs";
+
+        $filteredRecords = $records->activity->retention()
+            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) > NOW()')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('records.index', compact('records','title'));
     }
 

@@ -55,10 +55,10 @@ class RecordController extends Controller
 
     public function store(Request $request)
     {
-        // Définissez une valeur par défaut pour date_format
+
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
-//         dd($request);
+
         $validatedData = $request->validate([
             'code' => 'required|string|max:10',
             'name' => 'required|string',

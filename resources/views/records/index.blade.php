@@ -10,14 +10,13 @@
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-9">
+                            <div class="col-md-12">
 
+                            <a href="{{ route('records.show', $record) }}">
                                 <h5 class="card-title mb-2">
-                                    <b>{{ $record->code }}  - {{ $record->name }}</b>
-                                    <span class="badge bg-{{ $record->level->color ?? 'secondary' }}">
-                                        {{ $record->level->name ?? 'N/A' }}
-                                    </span>
+                                        {{ $record->code }}  - {{ $record->name }}
                                 </h5>
+                            </a>
 
                                 <p class="card-text">
                                     <i class="bi bi-card-text me-2"></i> Content : {{ $record->content }}<br>
@@ -40,16 +39,7 @@
                                 </p>
 
                             </div>
-                            <div class="col-md-3 text-md-end text-center">
 
-                                <div class="d-flex justify-content-md-end justify-content-center align-items-center">
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
-                                            <i class="bi bi-eye"></i> Afficher
-                                        </a>
-                                   </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
