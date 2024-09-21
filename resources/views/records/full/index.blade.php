@@ -20,34 +20,34 @@
                                 </h5>
 
                                 <p class="card-text">
-                                    <i class="bi bi-card-text me-2"></i> Content : {{ $record->content }}<br>
-                                    <i class="bi bi-bar-chart-fill me-2"></i>Niveau de description :  <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id}}">{{ $record->level->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-flag-fill me-2"></i>Statut : <a href=" {{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-hdd-fill me-2"></i>Support : <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-activity me-2"></i>Activité : <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-calendar-event me-2"></i>Dates : <a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
-                                    <i class="bi bi-geo-alt-fill me-2"></i>Contenant : <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? 'Non conditionné' }}</a>
-                                    <i class="bi bi-people-fill me-2"></i>Producteur : <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
+                                    <i class="bi bi-card-text me-2"></i><strong>Content:</strong> {{ $record->content }}<br>
+                                    <i class="bi bi-bar-chart-fill me-2"></i><strong>Level:</strong> {{ $record->level->name ?? 'N/A' }}
+                                    <i class="bi bi-flag-fill me-2"></i><strong>Status:</strong> {{ $record->status->name ?? 'N/A' }}
+                                    <i class="bi bi-hdd-fill me-2"></i><strong>Support:</strong> {{ $record->support->name ?? 'N/A' }}
+                                    <i class="bi bi-activity me-2"></i><strong>Activity:</strong> {{ $record->activity->name ?? 'N/A' }}
+                                    <i class="bi bi-calendar-event me-2"></i><strong>Dates:</strong> {{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}
+                                    <i class="bi bi-geo-alt-fill me-2"></i><strong>Location:</strong> {{ $record->location_original ?? 'N/A' }}
+                                    <i class="bi bi-people-fill me-2"></i><strong>Authors:</strong> {{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}
                                 </p>
-                                <strong>Vedettes : </strong>
-                                <p class="card-text">
-                                    @foreach($record->terms as $index => $term)
-                                        <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}"> {{ $term->name ?? 'N/A' }} </a>
-                                        @if(!$loop->last)
-                                            {{ " ; " }}
-                                        @endif
-                                    @endforeach
-                                </p>
-
                             </div>
                             <div class="col-md-3 text-md-end text-center">
 
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
                                         <a href="{{ route('records.show', $record) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
-                                            <i class="bi bi-eye"></i> Afficher
+                                            <i class="bi bi-eye"></i>
                                         </a>
-                                   </div>
+                                        <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

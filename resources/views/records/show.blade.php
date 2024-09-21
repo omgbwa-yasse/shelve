@@ -12,7 +12,6 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h1 class="h2 mb-0 d-flex align-items-center">
-                    <i class="bi bi-file-earmark-text me-2 text-primary"></i>
                     {{ $record->code }}: {{ $record->name }}
                 </h1>
             </div>
@@ -30,137 +29,41 @@
 
         <div class="row">
             <div class="col-md-8">
-                <div class="card shadow-sm mb-4">
+
+                <div class="card text-start">
                     <div class="card-body">
-                        <h3 class="card-title h4 mb-3">Quick Information</h3>
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-layers fs-4 text-muted me-2"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Level</small>
-                                        <strong>{{ $record->level->name ?? 'N/A' }}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-calendar-range fs-4 text-muted me-2"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Date Range</small>
-                                        <strong>{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-rulers fs-4 text-muted me-2"></i>
-                                    <div>
-                                        <small class="text-muted d-block">Width</small>
-                                        <strong>{{ $record->width ? $record->width . ' cm' : 'N/A' }}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+                        <h4 class="card-title">
+                            {{ $record->code ?? '' }} - {{ $record->name ?? '' }}
+                            ({{ $record->level->name ?? '' }}) de {{ $record->parent->name ?? '' }}
+                        </h4>
+                        <p class="card-text">
+                            {{ $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "{$author->name}")->implode(' ') }}
+                        </p>
+
+                        <p class="card-text">
+                            {{ $record->date_format ?? '' }} - {{ $record->date_start ?? '' }} - {{ $record->date_end ?? '' }} -  {{ $record->date_exact ?? '' }} <br>
+                            {{ $record->width ? $record->width . ' cm' : 'N/A' }}
+                        </p>
+                        <p class="card-text">
+                            {{ $record->width_description ?? 'N/A' }}
+                            {{ $record->status->name ?? '' }}
+                            {{ $record->content ?? 'N/A' }}
+                            {{ $record->archivist_note ?? 'N/A' }}
+                        </p>
+                        <p class="card-text">
+                            {{ $record->support->name ?? '' }}
+                            {{ $record->container->name ?? '' }}
+
+                            {{ $record->user->name ?? '' }}
+                            {{ $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "{$term->name}")->implode(' ') ?? '' }}
+                            {{ $record->activity->name ?? '' }}
+                            {{ $record->note ?? '' }}
+                        </p>
                     </div>
                 </div>
 
-                <div class="accordion shadow-sm" id="recordDetailsAccordion">
-                    @php
-                        $sectionIcons = [
-                            'Identification' => 'bi-fingerprint',
-                            'Context' => 'bi-diagram-3',
-                            'Content' => 'bi-journal-text',
-                            'Access Conditions' => 'bi-lock',
-                            'Related Sources' => 'bi-link-45deg',
-                            'Notes' => 'bi-pencil-square',
-                            'Description Control' => 'bi-list-check',
-                            'Indexing' => 'bi-tags',
-                        ];
-
-                        $sections = [
-                            'Identification' => [
-                                'Code' => $record->code,
-                                'Title' => $record->name,
-                                'Date Format' => $record->date_format ?? 'N/A',
-                                'Start Date' => $record->date_start ?? 'N/A',
-                                'End Date' => $record->date_end ?? 'N/A',
-                                'Exact Date' => $record->date_exact ?? 'N/A',
-                                'Description Level' => $record->level->name ?? 'N/A',
-                                'Width' => $record->width ? $record->width . ' cm' : 'N/A',
-                                'Material Importance Description' => $record->width_description ?? 'N/A',
-                            ],
-                            'Context' => [
-                                'Biographical History' => $record->biographical_history ?? 'N/A',
-                                'Archival History' => $record->archival_history ?? 'N/A',
-                                'Acquisition Source' => $record->acquisition_source ?? 'N/A',
-                                'Authors' => $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "<span class='badge bg-secondary'>{$author->name}</span>")->implode(' '),
-                            ],
-                            'Content' => [
-                                'Content' => $record->content ?? 'N/A',
-                                'Appraisal' => $record->appraisal ?? 'N/A',
-                                'Accrual' => $record->accrual ?? 'N/A',
-                                'Arrangement' => $record->arrangement ?? 'N/A',
-                            ],
-                            'Access Conditions' => [
-                                'Access Conditions' => $record->access_conditions ?? 'N/A',
-                                'Reproduction Conditions' => $record->reproduction_conditions ?? 'N/A',
-                                'Language Material' => $record->language_material ?? 'N/A',
-                                'Characteristic' => $record->characteristic ?? 'N/A',
-                                'Finding Aids' => $record->finding_aids ?? 'N/A',
-                            ],
-                            'Related Sources' => [
-                                'Original Location' => $record->location_original ?? 'N/A',
-                                'Copy Location' => $record->location_copy ?? 'N/A',
-                                'Related Unit' => $record->related_unit ?? 'N/A',
-                                'Publication Note' => $record->publication_note ?? 'N/A',
-                            ],
-                            'Notes' => [
-                                'Note' => $record->note ?? 'N/A',
-                                'Archivist Note' => $record->archivist_note ?? 'N/A',
-                            ],
-                            'Description Control' => [
-                                'Rules and Conventions' => $record->rule_convention ?? 'N/A',
-                                'Status' => $record->status->name ?? 'N/A',
-                                'Support' => $record->support->name ?? 'N/A',
-                                'Class' => $record->activity->name ?? 'N/A',
-                            ],
-                            'Indexing' => [
-                                'Parent Record' => $record->parent->name ?? 'N/A',
-                                'Conservation Box' => $record->container->name ?? 'N/A',
-                                'Created By' => $record->user->name ?? 'N/A',
-                                'Terms' => $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "<span class='badge bg-secondary'>{$term->name}</span>")->implode(' '),
-                            ],
-                        ];
-                    @endphp
-                    @foreach($sections as $section => $details)
-                        <div class="accordion-item">
-                            <h3 class="accordion-header" id="{{ Str::slug($section) }}Heading">
-                                <button class="accordion-button @if(!$loop->first) collapsed @endif" type="button" data-bs-toggle="collapse" data-bs-target="#{{ Str::slug($section) }}Collapse" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ Str::slug($section) }}Collapse">
-                                    <i class="bi {{ $sectionIcons[$section] ?? 'bi-info-circle' }} me-2"></i> {{ $section }}
-                                </button>
-                            </h3>
-                            <div id="{{ Str::slug($section) }}Collapse" class="accordion-collapse collapse @if($loop->first) show @endif" aria-labelledby="{{ Str::slug($section) }}Heading" data-bs-parent="#recordDetailsAccordion">
-                                <div class="accordion-body">
-                                    <dl class="row mb-0">
-                                        @foreach($details as $label => $value)
-                                            <dt class="col-sm-4 mb-2">{{ $label }}</dt>
-                                            <dd class="col-sm-8 mb-2">{!! $value !!}</dd>
-                                        @endforeach
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card shadow-sm mt-4">
-                    <div class="card-body">
-                        <h4 class="card-title mb-3">
-                            <i class="bi bi-diagram-3 me-2"></i>Child Records
-                        </h4>
+                    <div>
                         @if($record->children->isNotEmpty())
                             <div class="list-group">
                                 @foreach($record->children as $child)
@@ -174,23 +77,20 @@
                             <p class="text-muted">No child records found.</p>
                         @endif
                     </div>
-                </div>
-                <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
+
+                    <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
                         <div class="d-grid gap-2">
-                            <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil me-2"></i> Modify
-                            </a>
-                            <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-box me-2"></i> Insert into a box
-                            </a>
-                            <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
-                                <i class="bi bi-plus-circle me-2"></i> Add a child record
-                            </a>
-                        </div>
+                        <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-2"></i> Modify
+                        </a>
+                        <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-box me-2"></i> Insert into a box
+                        </a>
+                        <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle me-2"></i> Add a child record
+                        </a>
                     </div>
-                </div>
+
 
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
