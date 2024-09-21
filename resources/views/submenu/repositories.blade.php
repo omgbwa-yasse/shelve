@@ -87,9 +87,10 @@
                     <a class="nav-link text-dark" href="{{ route('records.import.form') }}"><i class="bi bi-folder-check"></i> Import</a>
                 </li>
                 <li class="nav-item">
-                        <a class="dropdown-item" href="{{ route('records.export', 'excel') }}">Excel</a>
-                        <a class="dropdown-item" href="{{ route('records.export', 'ead') }}">EAD</a>
-                       <a class="dropdown-item" href="{{ route('records.export', 'seda') }}">SEDA</a>
+
+                    <a class="nav-link text-dark" href="{{ route('records.export.form') }}"><i class="bi bi-folder-check"></i> export</a>
+
+
 
             </ul>
         </div>

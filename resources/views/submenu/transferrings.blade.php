@@ -71,9 +71,7 @@
                     <a class="nav-link text-dark" href="{{ route('slips.import.form') }}"><i class="bi bi-folder-check"></i> Import</a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('slips.export', 'excel') }}" class="nav-link text-dark">Export Excel</a>
-                    <a href="{{ route('slips.export', 'ead') }}" class="nav-link text-dark">Export EAD</a>
-                    <a href="{{ route('slips.export', 'seda') }}" class="nav-link text-dark">Export SEDA</a>
+                    <a href="{{ route('slips.export.form') }}" class="nav-link text-dark"><i class="bi bi-folder-check"></i> Export </a>
                 </li>
             </ul>
         </div>

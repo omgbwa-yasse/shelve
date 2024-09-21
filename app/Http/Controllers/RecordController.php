@@ -5,11 +5,13 @@ use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 
 use App\Models\Attachment;
+use App\Models\Dolly;
 use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\Activity;
+use App\Models\Slip;
 use App\Models\Term;
 use App\Models\Accession;
 use App\Models\Author;
@@ -231,19 +233,30 @@ class RecordController extends Controller
 
 
     // ici c'est pour l'import export
-    public function export($format)
+    public function export(Request $request)
     {
+        $dollyId = $request->input('dolly_id');
+        $format = $request->input('format');
+
+        if ($dollyId) {
+            $dolly = Dolly::findOrFail($dollyId);
+            $records = $dolly->records;
+            $slips = $dolly->slips;
+        } else {
+            $records = Record::all();
+            $slips = Slip::all();
+        }
+
         switch ($format) {
             case 'excel':
-                return Excel::download(new RecordsExport, 'records.xlsx');
+                return Excel::download(new RecordsExport($records), 'records.xlsx');
             case 'ead':
-                $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])->get();
                 $xml = $this->generateEAD($records);
                 return response($xml)
                     ->header('Content-Type', 'application/xml')
                     ->header('Content-Disposition', 'attachment; filename="records.xml"');
             case 'seda':
-                return $this->exportSEDA();
+                return $this->exportSEDA($records, $slips);
             default:
                 return redirect()->back()->with('error', 'Invalid export format');
         }
@@ -252,6 +265,11 @@ class RecordController extends Controller
     public function importForm()
     {
         return view('records.import');
+    }
+    public function exportForm()
+    {
+        $dollies = Dolly::all();
+        return view('records.export', compact('dollies'));
     }
 
     public function import(Request $request)
@@ -264,19 +282,26 @@ class RecordController extends Controller
         $file = $request->file('file');
         $format = $request->input('format');
 
+        // Créer un nouveau Dolly
+        $dolly = Dolly::create([
+            'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'Imported data',
+            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+        ]);
+
         try {
             switch ($format) {
                 case 'excel':
-                    Excel::import(new RecordsImport, $file);
+                    Excel::import(new RecordsImport($dolly), $file);
                     break;
                 case 'ead':
-                    $this->importEAD($file);
+                    $this->importEAD($file, $dolly);
                     break;
                 case 'seda':
-                    $this->importSEDA($file);
+                    $this->importSEDA($file, $dolly);
                     break;
             }
-            return redirect()->route('records.index')->with('success', 'Records imported successfully.');
+            return redirect()->route('records.index')->with('success', 'Records imported successfully and attached to new Dolly.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error importing records: ' . $e->getMessage());
         }
@@ -284,20 +309,23 @@ class RecordController extends Controller
 
     private function generateEAD($records)
     {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead></ead>');
-/*        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9 http://www.loc.gov/ead/ead.xsd"></ead>');*/
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>
+<ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9">
+</ead>');
 
         $eadheader = $xml->addChild('eadheader');
         $eadheader->addChild('eadid', 'YOUR_UNIQUE_ID');
         $filedesc = $eadheader->addChild('filedesc');
         $filedesc->addChild('titlestmt')->addChild('titleproper', 'Your Archive Title');
 
-        $archdesc = $xml->addChild('archdesc', '')->addAttribute('level', 'collection');
+        $archdesc = $xml->addChild('archdesc');
+        $archdesc->addAttribute('level', 'collection');
         $did = $archdesc->addChild('did');
         $did->addChild('unittitle', 'Your Collection Title');
 
         foreach ($records as $record) {
-            $c = $archdesc->addChild('c')->addAttribute('level', $record->level->name ?? 'item');
+            $c = $archdesc->addChild('c');
+            $c->addAttribute('level', $record->level->name ?? 'item');
             $c_did = $c->addChild('did');
             $c_did->addChild('unittitle', $record->name);
             $c_did->addChild('unitdate', $record->date_start)->addAttribute('normal', $record->date_start);
@@ -308,26 +336,59 @@ class RecordController extends Controller
             }
         }
 
-        return $xml->asXML();
+        // Format the XML with indentation
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml->asXML());
+
+        return $dom->saveXML();
     }
 
-    private function exportSEDA()
+    private function exportSEDA($records, $slips)
     {
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>
+<ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1">
+</ArchiveTransfer>');
 
-        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms', 'attachments'])->get();
+        $xml->addChild('Comment', 'Archive Transfer');
+        $xml->addChild('Date', date('Y-m-d'));
 
-        $xml = $this->generateSEDA($records);
+        $archive = $xml->addChild('Archive');
+
+        foreach ($records as $record) {
+            $archiveObject = $archive->addChild('ArchiveObject');
+            $archiveObject->addChild('Name', $record->name);
+            $archiveObject->addChild('Description', $record->content);
+
+            $document = $archiveObject->addChild('Document');
+            $document->addChild('Identification', $record->code);
+            $document->addChild('Type', $record->level->name ?? 'item');
+
+            foreach ($record->attachments as $attachment) {
+                $attachmentNode = $document->addChild('Attachment');
+                $attachmentNode->addChild('FileName', $attachment->name . '.pdf');
+                $attachmentNode->addChild('Size', $attachment->size);
+                $attachmentNode->addChild('Path', 'attachments/' . $attachment->name . '.pdf');
+                $attachmentNode->addChild('Crypt', $attachment->crypt);
+            }
+        }
+
+        // Format the XML with indentation
+        $dom = new \DOMDocument('1.0');
+        $dom->preserveWhiteSpace = false;
+        $dom->formatOutput = true;
+        $dom->loadXML($xml->asXML());
+
+        $formattedXml = $dom->saveXML();
 
         $zipFileName = 'records_seda_export_' . time() . '.zip';
         $zip = new ZipArchive();
 
         if ($zip->open(storage_path('app/public/' . $zipFileName), ZipArchive::CREATE) === TRUE) {
-            // Add XML file to the zip
-            $zip->addFromString('records.xml', $xml);
+            $zip->addFromString('records.xml', $formattedXml);
 
-            // Add attachments to the zip
             foreach ($records as $record) {
-//                dd($record->attachments);
                 foreach ($record->attachments as $attachment) {
                     $filePath = storage_path('app/' . $attachment->path);
                     if (file_exists($filePath)) {
@@ -372,7 +433,7 @@ class RecordController extends Controller
         return $xml->asXML();
     }
 
-    private function importEAD($file)
+    private function importEAD($file, $dolly)
     {
         $xml = simplexml_load_file($file);
         $xml->registerXPathNamespace('ead', 'urn:isbn:1-931666-22-9');
@@ -387,11 +448,12 @@ class RecordController extends Controller
                 // Map other fields as needed
             ];
 
-            Record::create($data);
+            $newRecord = Record::create($data);
+            $dolly->records()->attach($newRecord->id);
         }
     }
 
-    private function importSEDA($file)
+    private function importSEDA($file, $dolly)
     {
         $zip = new ZipArchive;
         $extractPath = storage_path('app/temp_import');
@@ -415,7 +477,7 @@ class RecordController extends Controller
                 ];
 
                 $newRecord = Record::create($data);
-
+                $dolly->records()->attach($newRecord->id);
                 // Import attachments
                 $attachments = $record->xpath('Document/Attachment');
                 foreach ($attachments as $attachment) {

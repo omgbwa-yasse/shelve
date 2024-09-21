@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Communication;
+use App\Models\Container;
+use App\Models\Mail;
+use App\Models\Record;
+use App\Models\Room;
+use App\Models\Shelf;
+use App\Models\SlipRecord;
 use Illuminate\Http\Request;
 use App\Models\Dolly;
 
@@ -34,10 +41,16 @@ class DollyController extends Controller
 
     public function show(Dolly $dolly)
     {
+        $records = Record::all();
+        $mails = Mail::all();
+        $communications = Communication::all();
+        $rooms = Room::all();
+        $containers = Container::all();
+        $shelves = Shelf::all();
+        $slip_records = SlipRecord::all();
         $dolly->load('type');
-        return view('dollies.show', compact('dolly'));
+        return view('dollies.show', compact('dolly', 'records', 'mails', 'communications', 'rooms', 'containers', 'shelves', 'slip_records'));
     }
-
 
     public function edit(Dolly $dolly)
     {
@@ -68,6 +81,65 @@ class DollyController extends Controller
         }
         $dolly->delete();
         return redirect()->route('dolly.index')->with('success', 'Dolly deleted successfully.');
+    }
+
+
+
+
+
+
+    public function addRecord(Request $request, Dolly $dolly)
+    {
+        $dolly->records()->attach($request->record_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addMail(Request $request, Dolly $dolly)
+    {
+        $dolly->mails()->attach($request->mail_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addCommunication(Request $request, Dolly $dolly)
+    {
+        $dolly->communications()->attach($request->communication_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addRoom(Request $request, Dolly $dolly)
+    {
+        $dolly->rooms()->attach($request->room_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addContainer(Request $request, Dolly $dolly)
+    {
+        $dolly->containers()->attach($request->container_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addShelve(Request $request, Dolly $dolly)
+    {
+        $dolly->shelves()->attach($request->shelve_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function addSlipRecord(Request $request, Dolly $dolly)
+    {
+        $dolly->slipRecords()->attach($request->slip_record_id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function removeRecord(Dolly $dolly, Record $record)
+    {
+        $dolly->records()->detach($record->id);
+        return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function removeMail(Dolly $dolly, Mail $mail)
+    {
+        $dolly->mails()->detach($mail->id);
+        return redirect()->route('dolly.show', $dolly);
     }
 }
 

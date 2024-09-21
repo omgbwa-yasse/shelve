@@ -83,7 +83,7 @@ use App\Http\Controllers\ReportController;
 
 
 Auth::routes();
-Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
+//Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('/tasks/myTasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
@@ -135,7 +135,9 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('repositories')->group(function () {
-        Route::get('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+        Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
+        Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
+//        Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
@@ -152,9 +154,12 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('transferrings')->group(function () {
+        Route::get('/slips/export', [SlipController::class, 'exportForm'])->name('slips.export.form');
+        Route::post('/slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('/slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
-        Route::get('/slips/export/{format}', [SlipController::class, 'export'])->name('slips.export');
-//        Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+        Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+
+
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
         Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');
@@ -199,6 +204,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('/action', [DollyActionController::class, 'index'])->name('dollies.action');
         Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
+
+        Route::delete('/dolly/{dolly}/remove-record/{record}', [DollyController::class, 'removeRecord'])->name('dolly.remove-record');
+        Route::delete('/dolly/{dolly}/remove-mail/{mail}', [DollyController::class, 'removeMail'])->name('dolly.remove-mail');
+        Route::post('/dolly/{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');
+        Route::post('/dolly/{dolly}/add-mail', [DollyController::class, 'addMail'])->name('dolly.add-mail');
+        Route::post('/dolly/{dolly}/add-communication', [DollyController::class, 'addCommunication'])->name('dolly.add-communication');
+        Route::post('/dolly/{dolly}/add-room', [DollyController::class, 'addRoom'])->name('dolly.add-room');
+        Route::post('/dolly/{dolly}/add-container', [DollyController::class, 'addContainer'])->name('dolly.add-container');
+        Route::post('/dolly/{dolly}/add-shelve', [DollyController::class, 'addShelve'])->name('dolly.add-shelve');
+        Route::post('/dolly/{dolly}/add-slip-record', [DollyController::class, 'addSlipRecord'])->name('dolly.add-slip-record');
     });
 
     Route::prefix('tools')->group(function () {
