@@ -152,7 +152,7 @@ class SearchRecordController extends Controller
         $statuses = RecordStatus::all();
         $terms = Term::all();
 
-        return view('search.record.lastSearch', compact('records', 'statuses', 'terms'));
+        return view('records.index', compact('records', 'statuses', 'terms'));
     }
 
 
