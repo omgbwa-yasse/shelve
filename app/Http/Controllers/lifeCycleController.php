@@ -22,12 +22,13 @@ class lifeCycleController extends Controller
 
     public function recordToRetain(){
         $records = Record::all();
-        $title = "actifs";
 
-        $filteredRecords = $records->activity->retention()
-            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) > NOW()')
+        $records = $records->activity->retention()
+            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) < NOW()')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $title = "actifs";
 
         return view('records.index', compact('records','title'));
     }
@@ -36,15 +37,29 @@ class lifeCycleController extends Controller
     public function recordToTransfer(){
         $records = Record::all();
         $title = "à transferer";
+
+        $records = $records->activity->retention()
+            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) > NOW()')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('records.index', compact('records','title'));
     }
 
 
-    public function recordToSort(){
+    public function recordToSort()
+    {
         $records = Record::all();
+
+        $records = $records->filter(function ($record) {
+            return $record->activity->retention->sort() == 'T';
+        })->sortByDesc('created_at');
+
         $title = "à trier";
-        return view('records.index', compact('records','title'));
+
+        return view('records.index', compact('records', 'title'));
     }
+
 
 
 

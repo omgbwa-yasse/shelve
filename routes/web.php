@@ -137,7 +137,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('repositories')->group(function () {
         Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
-//        Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+//      Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
