@@ -68,9 +68,8 @@
         #container .table tbody tr:hover {
             background-color: #f1f1f1;
         }
-        #container a, .content a {
-            text-decoration: none !important;
-            color: #0178d4 !important;
+        #container a {
+            text-decoration: none ;
         }
     </style>
     <!-- Fonts -->
