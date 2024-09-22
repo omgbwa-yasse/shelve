@@ -8,9 +8,6 @@
         <div class="collapse show" id="planClassementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.organigram') }}"><i class="bi bi-list-check me-2"></i> Oganigram</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.index') }}"><i class="bi bi-list-check me-2"></i> Toutes les classes</a>
                 </li>
                 <li class="nav-item">

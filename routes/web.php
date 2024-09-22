@@ -35,6 +35,7 @@ use App\Http\Controllers\ContainerPropertyController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\SortController;
 use App\Http\Controllers\RetentionController;
+use App\Http\Controllers\retentionActivityController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
@@ -137,7 +138,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('repositories')->group(function () {
         Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
-//      Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+        //Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
@@ -218,7 +219,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('tools')->group(function () {
         Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        Route::get('tools/activities/organigram', [ActivityController::class, 'organigram'])->name('activities.organigram');
+        Route::resource('activities.retentions', retentionActivityController::class);
         Route::resource('retentions', RetentionController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
         Route::resource('thesaurus', ContainerStatusController::class);

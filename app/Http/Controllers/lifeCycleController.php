@@ -20,60 +20,87 @@ use Illuminate\Support\Facades\Auth;
 class lifeCycleController extends Controller
 {
 
-    public function recordToRetain(){
-        $records = Record::all();
-
-        $records = $records->activity->retention()
-            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) < NOW()')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
+    public function recordToRetain()
+    {
         $title = "actifs";
 
-        return view('records.index', compact('records','title'));
-    }
-
-
-    public function recordToTransfer(){
-        $records = Record::all();
-        $title = "à transferer";
-
-        $records = $records->activity->retention()
-            ->whereRaw('DATE_ADD(created_at, INTERVAL duration SECOND) > NOW()')
+        $records = Record::with('activity.retentions')
+            ->whereHas('activity.retentions', function ($query) {
+                $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) < NOW()');
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('records.index', compact('records','title'));
+        return view('records.index', compact('records', 'title'));
     }
 
 
-    public function recordToSort()
+    public function recordToTransfer()
     {
-        $records = Record::all();
-
-        $records = $records->filter(function ($record) {
-            return $record->activity->retention->sort() == 'T';
-        })->sortByDesc('created_at');
-
-        $title = "à trier";
+        $title = "à transférer";
+        $records = Record::with('activity')->get();
+        $records = Record::whereHas('activity.retentions', function ($query) {
+            $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()');
+        })
+        ->orderBy('created_at', 'desc')
+        ->get();
 
         return view('records.index', compact('records', 'title'));
     }
 
 
 
+    public function recordToSort()
+    {
+        $title = "à trier";
+        $records = Record::with('activity.retentions.sort')
+            ->whereHas('activity.retentions', function ($query) {
+                $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()')
+                    ->whereHas('sort', function ($query) {
+                        $query->where('code', 'T');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    public function recordToKeep(){
-        $records = Record::all();
-        $title = "à conserver";
-        return view('records.index', compact('records','title'));
+        return view('records.index', compact('records', 'title'));
     }
 
 
-    public function recordToEliminate(){
-        $records = Record::all();
+    public function recordToKeep()
+    {
+        $title = "à conserver";
+
+        $records = Record::with('activity.retentions.sort')
+            ->whereHas('activity.retentions', function ($query) {
+                $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()')
+                    ->whereHas('sort', function ($query) {
+                        $query->where('code', 'C');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('records.index', compact('records', 'title'));
+    }
+
+
+
+    public function recordToEliminate()
+    {
         $title = "à éliminer";
-        return view('records.index', compact('records','title'));
+
+        $records = Record::with('activity.retentions.sort')
+            ->whereHas('activity.retentions', function ($query) {
+                $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()')
+                    ->whereHas('sort', function ($query) {
+                        $query->where('code', 'D');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('records.index', compact('records', 'title'));
     }
 
 

@@ -534,6 +534,19 @@ return new class extends Migration
             $table->foreign('sort_id')->references('id')->on('sorts')->onDelete('cascade');
         });
 
+        Schema::create('retention_activity', function (Blueprint $table) {
+            $table->unsignedBigInteger('retention_id')->nullable(false);
+            $table->unsignedBigInteger('activity_id')->nullable(false);
+            $table->primary(['retention_id', 'activity_id']);
+            $table->foreign('retention_id')->references('id')->on('retentions')->onDelete('cascade');
+            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
+        });
+
+
+
+
+
+
         Schema::create('sorts', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
@@ -560,13 +573,7 @@ return new class extends Migration
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
         });
 
-        Schema::create('retention_activity', function (Blueprint $table) {
-            $table->unsignedBigInteger('retention_id')->nullable(false);
-            $table->unsignedBigInteger('activity_id')->nullable(false);
-            $table->primary(['retention_id', 'activity_id']);
-            $table->foreign('retention_id')->references('id')->on('retentions')->onDelete('cascade');
-            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
-        });
+
 
         /*
             Thésaurus

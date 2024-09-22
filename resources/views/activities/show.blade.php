@@ -32,5 +32,9 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this activity?')">Delete</button>
         </form>
+    <hr>
+    <div class="-ml-3">
+            <a href="{{ route('activities.retentions.create',$activity ) }}" class="btn btn-secondary">Ajouter un règle de conservation</a>
+    </div>
     </div>
 @endsection

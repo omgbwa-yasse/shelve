@@ -65,9 +65,7 @@
                                 <strong>{{ $mailTypology->name }}</strong>
                                 <small class="text-muted d-block">{{ $mailTypology->class->name ?? 'NAN' }}</small>
                             </div>
-                            <span class="badge badge-primary badge-pill">
-                                {{ $mailTypology->mails->count() ?? 'NAN' }}
-                            </span>
+
                         </button>
                     </div>
 

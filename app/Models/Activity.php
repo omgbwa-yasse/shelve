@@ -25,7 +25,7 @@ class Activity extends Model
         return $this->hasMany(Activity::class, 'parent_id');
     }
 
-    public function retention()
+    public function retentions()
     {
         return $this->belongsToMany(Retention::class, 'retention_activity', 'retention_id', 'activity_id');
     }

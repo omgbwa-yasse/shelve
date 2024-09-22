@@ -7,18 +7,21 @@ use App\Models\Retention;
 use App\Models\classification;
 
 
-class RetentionClassification extends Model
+class RetentionActivity extends Model
 {
     use HasFactory;
-    protected $fillable = ['retention_id', 'classification_id'];
+
+    protected $table = 'retention_activity';
+
+    protected $fillable = ['retention_id', 'activity_id'];
 
     public function retention()
     {
-        return $this->belongsTo(Retention::class);
+        return $this->belongsTo(Retention::class, 'retention_id' );
     }
 
     public function classification()
     {
-        return $this->belongsTo(Classification::class);
+        return $this->belongsTo(activity::class, 'activity_id');
     }
 }
