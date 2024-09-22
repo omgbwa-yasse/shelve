@@ -17,6 +17,11 @@
 
     <title>{{ config('app.name', 'Shelve') }}</title>
     <style>
+
+        a {
+            text-decoration: none;
+            color: #0178d4;
+        }
         input,
         textarea,
         select {
@@ -65,6 +70,10 @@
 
         #container .table tbody tr:hover {
             background-color: #f1f1f1;
+        }
+        body a, .container a, .content a {
+            text-decoration: none !important;
+            color: #0178d4 !important;
         }
     </style>
     <!-- Fonts -->

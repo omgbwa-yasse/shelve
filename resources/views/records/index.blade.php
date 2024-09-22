@@ -1,5 +1,10 @@
 @extends('layouts.app')
-
+<style>
+    a {
+        text-decoration: none;
+        color: #0178d4;
+    }
+</style>
 @section('content')
     <div class="container-fluid mt-4">
 
@@ -20,7 +25,7 @@
 
                                 <p class="card-text">
                                     <i class="bi bi-card-text me-2"></i> Content : {{ $record->content }}<br>
-                                    <i class="bi bi-bar-chart-fill me-2"></i>Niveau de description :  <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id}}">{{ $record->level->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-bar-chart-fill me-2"></i>Niveau de description :  <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id ?? ''}}">{{ $record->level->name ?? 'N/A' }}</a>
                                     <i class="bi bi-flag-fill me-2"></i>Statut : <a href=" {{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
                                     <i class="bi bi-hdd-fill me-2"></i>Support : <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
                                     <i class="bi bi-activity me-2"></i>Activité : <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
