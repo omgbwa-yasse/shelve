@@ -46,39 +46,38 @@ class SearchRecordController extends Controller
                     });
                 }
 
-                $records = $query->get();
+                $records = $query->paginate(10);
                 break;
 
             case "typology":
                 $records = record::where('record_typology_id', $request->input('id'))
-                    ->get();
+                ->paginate(10);
                 break;
 
             case "term":
                 $id = $request->input('id');
                 $records = Record::whereHas('terms', function ($query) use ($id) {
                     $query->where('id', $id);
-                })->get();
+                })->paginate(10);
                 break;
 
             case "author":
                 $records = Record::join('record_author', 'records.id', '=', 'record_author.record_id')
                     ->where('record_author.author_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
             case "activity":
-                $records = record::where('activity_id', $request->input('id'))
-                    ->get();
+                $records = record::where('activity_id', $request->input('id'))->paginate(10);
                 break;
 
 
             case "container":
-                $records = Record::where('container_id',  $request->input('id'))->get();
+                $records = Record::where('container_id',  $request->input('id'))->paginate(10);
                 break;
 
             default:
-                $records = record::take(5)->get();
+                $records = record::take(5)->paginate(10);
                 break;
         }
 

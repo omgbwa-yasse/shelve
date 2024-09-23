@@ -29,7 +29,7 @@ class lifeCycleController extends Controller
                 $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) < NOW()');
             })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
@@ -43,7 +43,7 @@ class lifeCycleController extends Controller
             $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()');
         })
         ->orderBy('created_at', 'desc')
-        ->get();
+        ->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
@@ -61,7 +61,7 @@ class lifeCycleController extends Controller
                     });
             })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
@@ -72,7 +72,7 @@ class lifeCycleController extends Controller
         $title = "à transférer au dépôt d'archives";
         $records = Record::whereHas('activity.communicability', function ($query) {
                 $query->whereRaw('DATE_ADD(records.created_at, INTERVAL communicabilities.duration YEAR) > NOW()');
-            })->get();
+            })->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
@@ -89,7 +89,7 @@ class lifeCycleController extends Controller
                     });
             })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
@@ -108,7 +108,7 @@ class lifeCycleController extends Controller
                     });
             })
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('records.index', compact('records', 'title'));
     }
