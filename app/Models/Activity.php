@@ -13,6 +13,7 @@ class Activity extends Model
         'name',
         'observation',
         'parent_id',
+        'communicability_id',
     ];
 
     public function parent()
@@ -28,6 +29,11 @@ class Activity extends Model
     public function retentions()
     {
         return $this->belongsToMany(Retention::class, 'retention_activity', 'retention_id', 'activity_id');
+    }
+
+    public function communicability()
+    {
+        return $this->belongsTo(Communicability::class, 'communicability_id');
     }
 
 }

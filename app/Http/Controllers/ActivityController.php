@@ -10,7 +10,7 @@ class ActivityController extends Controller
 {
     public function index()
     {
-        $activities = Activity::with('parent')->orderBy('code', 'asc')->get();
+        $activities = Activity::with('parent','communicability')->orderBy('code', 'asc')->get();
         return view('activities.index', compact('activities'));
     }
 
@@ -38,6 +38,7 @@ class ActivityController extends Controller
 
     public function show(Activity $activity)
     {
+        $activity->load('communicability');
         return view('activities.show', compact('activity'));
     }
 

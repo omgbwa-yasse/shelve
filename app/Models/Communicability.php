@@ -17,11 +17,11 @@ class Communicability extends Model
     ];
 
 
+
     public function activities()
     {
-        return $this->hasMany(activity::class);
+        return $this->hasMany(Activity::class, 'communicability_id');
     }
-
 
 }
 

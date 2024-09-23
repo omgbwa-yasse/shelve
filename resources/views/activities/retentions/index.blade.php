@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Retentions for Activity: {{ $activity->name }}</h1>
-
-    <a href="{{ route('activities.retentions.create', $activity->id) }}" class="btn btn-primary mb-3">Add Retention</a>
-
+    <h1>Règles de conservation associer à l'activité : </h1>
+    Activité : <strong>{{ $activity->name }}</strong>
+    Description : {{ $activity->description ?? 'SD' }}
+    <hr>
+    <p><a href="{{ route('activities.retentions.create', $activity->id) }}" class="btn btn-primary">Ajouter une règle</a></p>
     <table class="table">
         <thead>
             <tr>
@@ -13,12 +14,12 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($retentions as $retentionActivity)
+            @foreach($activity->retentions as $retention)
                 <tr>
-                    <td>{{ $retentionActivity->retention->name }}</td>
+                    <td>{{ $retention->code }} - {{ $retention->duration }} ans, {{ $retention->description?? 'sans description' }} </td>
                     <td>
-                        <a href="{{ route('activities.retentions.edit', [$activity->id, $retentionActivity->id]) }}" class="btn btn-primary btn-sm">Edit</a>
-                        <form action="{{ route('activities.retentions.destroy', [$activity->id, $retentionActivity->id]) }}" method="POST" style="display:inline;">
+                        <a href="{{ route('activities.retentions.edit', [$activity->id, $retention->id]) }}" class="btn btn-primary btn-sm">Edit</a>
+                        <form action="{{ route('activities.retentions.destroy', [$activity->id, $retention->id]) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>

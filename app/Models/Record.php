@@ -93,8 +93,6 @@ class Record extends Model
     }
 
 
-
-
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -119,4 +117,5 @@ class Record extends Model
     {
         return $this->hasMany(Record::class, 'parent_id');
     }
+
 }

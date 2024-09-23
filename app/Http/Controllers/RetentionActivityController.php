@@ -10,9 +10,8 @@ class RetentionActivityController extends Controller
 {
     public function index($activityId)
     {
-        $activity = Activity::findOrFail($activityId);
-        $retentions = $activity::with('retention')->get();
-        return view('activities.retentions.index', compact('activity', 'retentions'));
+        $activity = Activity::with('retentions')->findOrFail($activityId);
+        return view('activities.retentions.index', compact('activity'));
     }
 
 
@@ -34,12 +33,7 @@ class RetentionActivityController extends Controller
         ]);
 
         $activity = Activity::findOrFail($activityId);
-        $retentionActivity = new RetentionActivity([
-            'retention_id' => $request->input('retention_id'),
-            'activity_id' => $activity->id,
-        ]);
-
-        $retentionActivity->save();
+        $activity->retentions()->attach($request->input('retention_id'));
 
         return redirect()->route('activities.retentions.index', $activityId)->with('success', 'Retention added successfully.');
     }

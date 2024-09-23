@@ -18,6 +18,7 @@ use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
 use App\Http\Controllers\AccessionController;
+use App\Http\Controllers\activityCommunicabilityController;
 //use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
@@ -146,12 +147,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::resource('records.child', RecordChildController::class)->names('record-child');
-        Route::get('totransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
-        Route::get('tosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');
-        Route::get('toeliminate', [lifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
-        Route::get('tokeep', [lifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
-        Route::get('toretain', [lifeCycleController::class, 'recordToRetain'])->name('records.toretain');
-
+        Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
+        Route::get('recordtosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');
+        Route::get('recordtoeliminate', [lifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
+        Route::get('recordtokeep', [lifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
+        Route::get('recordtoretain', [lifeCycleController::class, 'recordToRetain'])->name('records.toretain');
+        Route::get('recordtostore', [lifeCycleController::class, 'recordToStore'])->name('records.tostore');
     });
 
     Route::prefix('transferrings')->group(function () {
@@ -201,11 +202,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('tasktype', TaskTypeController::class);
     });
 
+
+
     Route::prefix('dollies')->group(function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('/action', [DollyActionController::class, 'index'])->name('dollies.action');
         Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
-
         Route::delete('/dolly/{dolly}/remove-record/{record}', [DollyController::class, 'removeRecord'])->name('dolly.remove-record');
         Route::delete('/dolly/{dolly}/remove-mail/{mail}', [DollyController::class, 'removeMail'])->name('dolly.remove-mail');
         Route::post('/dolly/{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');
@@ -217,11 +219,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/dolly/{dolly}/add-slip-record', [DollyController::class, 'addSlipRecord'])->name('dolly.add-slip-record');
     });
 
+
+
     Route::prefix('tools')->group(function () {
         Route::resource('activities', ActivityController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
         Route::resource('activities.retentions', retentionActivityController::class);
         Route::resource('retentions', RetentionController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
+        Route::resource('activities.communicabilities', activityCommunicabilityController::class);
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
         Route::resource('organisations.rooms', OrganisationRoomController::class);

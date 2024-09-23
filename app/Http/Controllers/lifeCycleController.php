@@ -37,7 +37,7 @@ class lifeCycleController extends Controller
 
     public function recordToTransfer()
     {
-        $title = "à transférer";
+        $title = "à transférer aux archives historiques";
         $records = Record::with('activity')->get();
         $records = Record::whereHas('activity.retentions', function ($query) {
             $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()');
@@ -52,7 +52,7 @@ class lifeCycleController extends Controller
 
     public function recordToSort()
     {
-        $title = "à trier";
+        $title = "à trier après durée légale";
         $records = Record::with('activity.retentions.sort')
             ->whereHas('activity.retentions', function ($query) {
                 $query->whereRaw('DATE_ADD(created_at, INTERVAL duration YEAR) > NOW()')
@@ -67,9 +67,19 @@ class lifeCycleController extends Controller
     }
 
 
+    public function recordToStore()
+    {
+        $title = "à transférer au dépôt d'archives";
+        $records = Record::whereHas('activity.communicability', function ($query) {
+                $query->whereRaw('DATE_ADD(records.created_at, INTERVAL communicabilities.duration YEAR) > NOW()');
+            })->get();
+
+        return view('records.index', compact('records', 'title'));
+    }
+
     public function recordToKeep()
     {
-        $title = "à conserver";
+        $title = "à conserver après durée légale";
 
         $records = Record::with('activity.retentions.sort')
             ->whereHas('activity.retentions', function ($query) {
@@ -88,7 +98,7 @@ class lifeCycleController extends Controller
 
     public function recordToEliminate()
     {
-        $title = "à éliminer";
+        $title = "à éliminer après durée légale";
 
         $records = Record::with('activity.retentions.sort')
             ->whereHas('activity.retentions', function ($query) {

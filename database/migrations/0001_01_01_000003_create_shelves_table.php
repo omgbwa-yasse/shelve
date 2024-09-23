@@ -513,16 +513,10 @@ return new class extends Migration
             $table->string('name', 100)->nullable(false);
             $table->text('observation')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
+            $table->unsignedBigInteger('communicability_id')->nullable();
             $table->foreign('parent_id')->references('id')->on('activities')->onDelete('set null');
-            $table->timestamps();
-        });
-
-        Schema::create('activity_communicability', function (Blueprint $table) {
-            $table->unsignedBigInteger('activity_id')->nullable(false);
-            $table->unsignedBigInteger('communicability_id')->nullable(false);
-            $table->timestamps();
-            $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('communicability_id')->references('id')->on('communicabilities')->onDelete('cascade');
+            $table->timestamps();
         });
 
         Schema::create('retentions', function (Blueprint $table) {
