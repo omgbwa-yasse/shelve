@@ -7,7 +7,7 @@
         <div class="col-md-4 col-sm-6">
             <div class="card action-card h-100">
                 <div class="card-body text-center">
-                    <i class="bi {{ $item['icon'] }} action-icon text-{{ $item['color'] }}"></i>
+                    <i class="bi {{ $item['icon'] }} action-icon text-primary"></i>
                     <h5 class="card-title">{{ $item['text'] }}</h5>
                 </div>
                 <a href="{{ route('dollies.action', ['categ' => $dolly->type->name, 'action' => $item['action'], 'id' => $dolly->id]) }}" class="btn btn-{{ $item['color'] }} btn-action">Exécuter</a>

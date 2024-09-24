@@ -21,9 +21,9 @@
                                     <i class="bi bi-building"></i> <strong> Niveau:</strong> {{ $room->floor->name ?? 'N/A' }}<br>
                                     <i class="bi bi-map"></i> <strong> Bâtiment:</strong> {{ $room->floor->building->name ?? 'N/A' }} <br>
                                     <i class="bi bi-map"></i> <strong>Type de local :</strong>
-                                    @if( $room->type->name == "archives")
+                                    @if( $room->type->name ?? 'N/A' == "archives")
                                         Salle d'archives
-                                    @elseif($room->type->name == "producer")
+                                    @elseif($room->type->name ?? 'N/A' == "producer")
                                         Local tampon (service producteur)
                                     @endif
                                 </p>

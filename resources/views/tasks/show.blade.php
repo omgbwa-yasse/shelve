@@ -11,7 +11,7 @@
                             Task Details: {{ $task->name }}
                         </h1>
                         <span class="badge bg-light text-primary">
-                            Status: {{ $task->taskStatus->name }}
+                            Status: {{ $task->taskStatus->name?? 'N/A' }}
                         </span>
                     </div>
                     <div class="card-body">
@@ -31,7 +31,7 @@
                                 </h3>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item"><strong>Duration:</strong> {{ $task->duration }} hours</li>
-                                    <li class="list-group-item"><strong>Task Type:</strong> {{ $task->taskType->name }}</li>
+                                    <li class="list-group-item"><strong>Task Type:</strong> {{ $task->taskType->name?? 'N/A' }}</li>
                                     <li class="list-group-item"><strong>Start Date:</strong> {{ $task->start_date }}</li>
                                     @if($task->parentTask)
                                         <li class="list-group-item"><strong>Parent Task:</strong> {{ $task->parentTask->name }}</li>

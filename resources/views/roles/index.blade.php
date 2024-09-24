@@ -5,7 +5,9 @@
     <div class="row justify-content-center">
         <div class="">
             <div class="">
-                <h1 class="">{{ __('Roles') }}</h1>
+                <h1 class="">
+                    {{ __('Roles') }}
+                </h1>
 
                 <div class="card-body">
                     <a href="{{ route('roles.create') }}" class="btn btn-primary mb-3">Create New Role</a>
@@ -23,8 +25,8 @@
                             @foreach ($roles as $role)
                             <tr>
                                 <td>{{ $role->id }}</td>
-                                <td>{{ $role->name }}</td>
-                                <td>{{ $role->description }}</td>
+                                <td>{{ $role->name  ?? 'N/A'}}</td>
+                                <td>{{ $role->description ?? 'N/A' }}</td>
                                 <td>
                                     <a href="{{ route('roles.show', $role->id) }}" class="btn btn-info">Show</a>
                                     <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-primary">Edit</a>
