@@ -80,11 +80,13 @@ class CommunicationRecordController extends Controller
         return redirect()->route('communication-transactions.index')->with('success', 'Communication updated successfully.');
     }
 
-    public function destroy(INT $id, CommunicationRecord $communicationRecord)
+    public function destroy(INT $communication_id, INT $record_id)
     {
-        $communicationRecord->delete();
-        return redirect()->route('transactions.records.index', $id)->with('success', 'Communication record deleted successfully.');
+        $communication = Communication::findOrFail($communication_id);
+        $communication->records()->where('id', $record_id)->delete();
+        return redirect()->route('transactions.show',$communication_id)->with('success', 'Communication record deleted successfully.');
     }
+
 }
 
 

@@ -10,23 +10,13 @@
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" value="{{ $communication->code }}" required>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="operator_id" class="form-label">Operator</label>
-                    <select class="form-select" id="operator_id" name="operator_id" required>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" {{ $communication->operator_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="operato_organisation_id" class="form-label">Operator organisation</label>
-                    <select class="form-select" id="operato_organisation_id" name="operato_organisation_id" required>
-                        @foreach ($organisations as $organisation)
-                            <option value="{{ $organisation->id }}" {{ $communication->operator_organisation_id == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Objet  </label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ $communication->name }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label"> Description  </label>
+                <input type="text" class="form-control" id="content" name="content" value="{{ $communication->content }}" required>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">

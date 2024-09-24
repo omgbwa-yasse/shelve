@@ -16,7 +16,7 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->get();
+        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
         return view('communications.index', compact('communications'));
     }
 
@@ -38,21 +38,23 @@ class CommunicationController extends Controller
     {
         $request->validate([
             'code' => 'required|unique:communications,code',
-            'operator_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'operator_organisation_id' => 'required|exists:organisations,id',
             'return_effective' => 'nullable|date',
             'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
         Communication::create([
             'code' => $request->code,
-            'operator_id' => $request->operator_id,
+            'name' => $request->name,
+            'content' => $request->input('content'),
+            'operator_id' => Auth()->user()->id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
-            'operator_organisation_id' => $request->operator_organisation_id,
+            'operator_organisation_id' => Auth()->user()->organisation->id,
             'return_date' => $request->return_date,
             'return_effective' => $request->return_effective,
             'status_id' => $request->status_id,
@@ -60,7 +62,6 @@ class CommunicationController extends Controller
 
         return redirect()->route('transactions.index')->with('success', 'Communication created successfully.');
     }
-
 
 
 
@@ -87,7 +88,8 @@ class CommunicationController extends Controller
     {
         $request->validate([
             'code' => 'required|unique:communications,code,' . $communication->id,
-            'operator_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'return_effective' => 'nullable|date',
@@ -96,8 +98,12 @@ class CommunicationController extends Controller
 
         $communication->update([
             'code' => $request->code,
-            'operator_id' => $request->operator_id,
+            'name' => $request->name,
+            'content' => $request->input('content'),
+            'operator_id' => Auth()->user()->id,
+            'operator_organisation_id' => Auth()->user()->organisation->id,
             'user_id' => $request->user_id,
+            'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
             'return_effective' => $request->return_effective,
             'status_id' => $request->status_id,

@@ -2,55 +2,29 @@
 
 @section('content')
     <div class="container">
-        <h1>Create Communication</h1>
+        <h1>Fiche de communication</h1>
         <form action="{{ route('transactions.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" required>
             </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Objet</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Description</label>
+                <textarea class="form-control" id="content" name="content"></textarea>
+            </div>
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="operator_id" class="form-label">Operator</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search operator...">
-                        </div>
-                        <select class="form-select" id="operator_id" name="operator_id" required>
-                            <option value="" disabled selected>Enter the operator</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="operator_organisation_id" class="form-label">Operator organisation</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search operator organisation...">
-                        </div>
-                        <select class="form-select" id="operator_organisation_id" name="operator_organisation_id" required>
-                            <option value="" disabled selected>Enter the operator organisation</option>
-                            @foreach ($organisations as $organisation)
-                                <option value="{{ $organisation->id }}" {{ $organisation->user_id == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="user_id" class="form-label">User</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user...">
-                        </div>
                         <select class="form-select" id="user_id" name="user_id" required>
-                            <option value="" disabled selected>Enter the user</option>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                             @endforeach
@@ -60,12 +34,7 @@
                 <div class="col-md-6 mb-3">
                     <label for="user_organisation_id" class="form-label">User organisation</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user organisation...">
-                        </div>
                         <select class="form-select" id="user_organisation_id" name="user_organisation_id" required>
-                            <option value="" disabled selected>Enter the user organisation</option>
                             @foreach ($organisations as $organisation)
                                 <option value="{{ $organisation->id }}" {{ $organisation->user_id == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
                             @endforeach
@@ -85,12 +54,7 @@
                 <div class="col-md-4 mb-3">
                     <label for="status_id" class="form-label">Status</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search status...">
-                        </div>
                         <select class="form-select" id="status_id" name="status_id" required>
-                            <option value="" disabled selected>Enter the status</option>
                             @foreach ($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                             @endforeach

@@ -420,8 +420,8 @@ return new class extends Migration
         Schema::create('communications', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->unique()->nullable(false);
-            $table->string('name', 200)->nullable(true); // Nouvellement ajoutée
-            $table->text('content')->nullable(false); // Nouvellement ajoutée
+            $table->string('name', 200)->nullable(false); // Nouvellement ajoutée
+            $table->text('content')->nullable(true); // Nouvellement ajoutée
             $table->unsignedBigInteger('operator_id')->nullable(false);
             $table->unsignedBigInteger('operator_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
@@ -462,7 +462,7 @@ return new class extends Migration
             $table->id();
             $table->string('code', 10)->unique()->nullable(false);
             $table->string('name', 200)->nullable(false); // Nouvellement ajoutée
-            $table->text('content')->nullable(false); // Nouvellement ajoutée
+            $table->text('content')->nullable(true); // Nouvellement ajoutée
             $table->unsignedBigInteger('operator_id')->nullable(false);
             $table->unsignedBigInteger('operator_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);

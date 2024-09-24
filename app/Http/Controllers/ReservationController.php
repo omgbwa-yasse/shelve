@@ -37,6 +37,8 @@ class ReservationController extends Controller
     {
         $request->validate([
             'code' => 'required|unique:reservations|max:10',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|text',
             'operator_id' => 'required|exists:users,id',
             'operator_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'required|exists:users,id',
@@ -65,6 +67,8 @@ class ReservationController extends Controller
         $reservation = reservation::findOrFail($id);
         $request->validate([
             'code' => 'required|unique:reservations,code,'.$reservation->id.'|max:10',
+            'name' => 'required|string|max:200',
+            'content' => 'nullable|text',
             'operator_id' => 'required|exists:users,id',
             'operator_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'required|exists:users,id',

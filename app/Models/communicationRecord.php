@@ -20,12 +20,12 @@ class communicationRecord extends Model
 
     public function communication()
     {
-        return $this->belongsTo(Communication::class);
+        return $this->belongsTo(Communication::class, 'communication_id');
     }
 
     public function record()
     {
-        return $this->belongsTo(Record::class);
+        return $this->belongsTo(Record::class, 'record_id');
     }
 
 

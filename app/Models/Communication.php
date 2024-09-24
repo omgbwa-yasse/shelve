@@ -12,6 +12,8 @@ class Communication extends Model
     use HasFactory;
     protected $fillable = [
         'code',
+        'name',
+        'content',
         'operator_id',
         'operator_organisation_id',
         'user_id',

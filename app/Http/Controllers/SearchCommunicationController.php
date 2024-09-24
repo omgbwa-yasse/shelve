@@ -40,68 +40,68 @@ class SearchCommunicationController extends Controller
                     });
                 }
 
-                $communications = $query->get();
+                $communications = $query->paginate(10);
                 break;
 
 
 
             case "code":
                 $communications = communication::where('code', $request->input('value'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "operator":
                 $communications = communication::where('operator_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "operator-organisation":
                 $communications = communication::where('operator_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user":
                 $communications = communication::where('user_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user-organisation":
                 $communications = communication::where('user_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "return-available":
                 $communications = communication::where('return_date','>=', now()->format('Y-m-d'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "not-return":
                     $communications = communication::where('return_date','<=', now()->format('Y-m-d'))
-                        ->get();
+                    ->paginate(10);
                     break;
 
             case "unreturn":
                 $communications = communication::where('return_date', NULL)
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "return-effective":
                 $communications = communication::where('return_effective', '<=', now()->format('Y-m-d'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             default:
-                $communications = communication::take(5)->get();
+                $communications = communication::take(5)->paginate(10);
                 break;
         }
 

@@ -3,16 +3,51 @@
 @section('content')
     <div class="container">
         <h1>Communication Details</h1>
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ $communication->code }}</h5>
-                <p class="card-text">Operator: {{ $communication->operator->name }}</p>
-                <p class="card-text">Operator Organisation: {{ $communication->operatorOrganisation->name }}</p>
-                <p class="card-text">User: {{ $communication->user->name }}</p>
-                <p class="card-text">User Organisation: {{ $communication->userOrganisation->name }}</p>
-                <p class="card-text">Return Date: {{ $communication->return_date }}</p>
-                <p class="card-text">Return Effective: {{ $communication->return_effective }}</p>
-                <p class="card-text">Status: {{ $communication->status->name }}</p>
+                <div class="col-13 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="card-title">
+                                       <strong>{{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
+                                    </h5>
+                                    <p class="card-text">
+                                        <strong>Contenu :</strong> {{ $communication->content ?? 'N/A' }}<br>
+                                    </p>
+                                </div>
+                                <div class="card-text d-flex flex-wrap">
+                                    <div class="mr-3">
+                                        <strong>Demandeur :</strong>
+                                        <span>{{ $communication->user->name ?? 'N/A' }} ({{ $communication->userOrganisation->name ?? 'N/A' }})</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-text d-flex flex-wrap">
+                                    <div class="mr-3">
+                                        <strong>Opérateur :</strong>
+                                        <span>{{ $communication->operator->name ?? 'N/A' }} ({{ $communication->operatorOrganisation->name ?? 'N/A' }})</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-text d-flex flex-wrap">
+                                    <div class="mr-3">
+                                        <strong>Date de retour :</strong> {{ $communication->return_date ?? 'N/A' }}
+                                    </div>
+                                    <div class="mr-3">
+                                        <strong>Date de retour effectif :</strong> {{ $communication->return_effective ?? 'N/A' }}
+                                    </div>
+                                    <div>
+                                        <strong>Statut :</strong> {{ $communication->status->name ?? 'N/A' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
                 <a href="{{ route('transactions.index') }}" class="btn btn-secondary">Back</a>
                 <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning">Edit</a>
                 <form action="{{ route('transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
