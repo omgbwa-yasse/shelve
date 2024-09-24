@@ -519,14 +519,48 @@ return new class extends Migration
             $table->timestamps();
         });
 
+
+
         Schema::create('retentions', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false);
+            $table->string('name', 200)->nullable(false);
             $table->integer('duration')->nullable(false);
             $table->unsignedBigInteger('sort_id')->nullable(false);
             $table->timestamps();
             $table->foreign('sort_id')->references('id')->on('sorts')->onDelete('cascade');
         });
+
+
+        Schema::create('laws', function (Blueprint $table) {
+            $table->id();
+            $table->string('code', 10)->nullable(false);
+            $table->string('name', 200)->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->date('publish_date')->nullable(false);
+            $table->timestamps();
+        });
+
+        Schema::create('law_articles', function (Blueprint $table) {
+            $table->id();
+            $table->string('code', 10)->nullable(false);
+            $table->string('name', 200)->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->unsignedBigInteger('law_id')->nullable(false);;
+            $table->timestamps();
+            $table->foreign('law_id')->references('id')->on('laws')->onDelete('cascade');
+        });
+
+
+        Schema::create('retention_law_articles', function (Blueprint $table) {
+            $table->unsignedBigInteger('retention_id')->nullable(false);
+            $table->unsignedBigInteger('law_article_id')->nullable(false);
+            $table->primary(['retention_id', 'law_article_id']);
+            $table->timestamps();
+            $table->foreign('retention_id')->references('id')->on('retentions')->onDelete('cascade');
+            $table->foreign('law_article_id')->references('id')->on('law_articles')->onDelete('cascade');
+        });
+
 
         Schema::create('retention_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('retention_id')->nullable(false);
@@ -535,10 +569,6 @@ return new class extends Migration
             $table->foreign('retention_id')->references('id')->on('retentions')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
         });
-
-
-
-
 
 
         Schema::create('sorts', function (Blueprint $table) {
