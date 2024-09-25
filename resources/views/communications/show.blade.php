@@ -95,9 +95,11 @@
                         <strong>Contenu :</strong> {{ $record->content ?? 'N/A' }}<br>
                     </p>
                     <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-secondary">Voir</a>
-                    @if($record->return_effective == NULL)
+
+
+                    @if($record->return_effective == NULL & $record->is_orginal == false)
                         <a href="{{ route('record-return-effective') }}?id={{  $record->id }}" class="btn btn-success"> Returner </a>
-                    @else
+                    @elseif($record->return_effective != NULL &  $record->is_orginal == True )
                     <a href="{{ route('record-return-cancel') }}?id={{  $record->id }}" class="btn btn-danger"> Annuler le retour </a>
                     @endif
 

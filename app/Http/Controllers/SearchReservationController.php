@@ -40,82 +40,82 @@ class SearchReservationController extends Controller
                     });
                 }
 
-                $reservations = $query->get();
+                $reservations = $query->paginate(10);
                 break;
 
 
 
             case "code":
                 $reservations = reservation::where('code', $request->input('value'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "operator":
                 $reservations = reservation::where('operator_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "operator-organisation":
                 $reservations = reservation::where('operator_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user":
                 $reservations = reservation::where('user_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user-organisation":
                 $reservations = reservation::where('user_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "return-available":
                 $reservations = reservation::where('return_date','>=', now()->format('Y-m-d'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "not-return":
                     $reservations = reservation::where('return_date','<=', now()->format('Y-m-d'))
-                        ->get();
+                        ->paginate(10);
                     break;
 
             case "unreturn":
                 $reservations = reservation::where('return_date', NULL)
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "return-effective":
                 $reservations = reservation::where('return_effective', '<=', now()->format('Y-m-d'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "approved":
                 $reservations = reservation::whereHas('status', function ($query) {
                     $query->where('name', 'approuvée');
-                })->get();
+                })->paginate(10);
                 break;
 
 
             case "InProgress":
                 $reservations = reservation::whereHas('status', function ($query) {
                     $query->where('name', 'En examen');
-                })->get();
+                })->paginate(10);
                 break;
 
 
             default:
-                $reservations = reservation::take(5)->get();
+                $reservations = reservation::take(5)->paginate(10);
                 break;
         }
 

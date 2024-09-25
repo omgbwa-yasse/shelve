@@ -53,7 +53,7 @@ class SearchController extends Controller
             $records = $records->where('name', 'LIKE', "%$query%");
         }
 
-        $records = $records->get();
+        $records = $records->paginate(10);
         $statuses = RecordStatus::all();
         $terms = Term::all();
 
@@ -63,7 +63,7 @@ class SearchController extends Controller
     public function communication(Request $request)
     {
         $query = $request->input('query');
-        $communications = Record::where('name', 'LIKE', "%$query%")->get(); // Corrected variable name
+        $communications = Record::where('name', 'LIKE', "%$query%")->paginate(10); // Corrected variable name
 
         return view('search.communication.slip', compact('communications'));
     }
@@ -71,7 +71,7 @@ class SearchController extends Controller
     public function communicationRecord(Request $request)
     {
         $query = $request->input('query');
-        $communicationRecords = CommunicationRecord::where('name', 'LIKE', "%$query%")->get(); // Corrected variable name
+        $communicationRecords = CommunicationRecord::where('name', 'LIKE', "%$query%")->paginate(10); // Corrected variable name
 
         return view('search.communication.record', compact('communicationRecords'));
     }
@@ -81,33 +81,33 @@ class SearchController extends Controller
         $query = $request->input('query');
 
         if ($request->input('advanced') == false) {
-            $mails = Mail::where('name', 'LIKE', "%$query%")->get();
+            $mails = Mail::where('name', 'LIKE', "%$query%")->paginate(10);
         } elseif ($categ = $request->input('categ')) {
             switch ($categ) {
                 case "dates":
-                    $mails = Mail::where('date', 'LIKE', "%{$request->input('date')}%")->get();
+                    $mails = Mail::where('date', 'LIKE', "%{$request->input('date')}%")->paginate(10);
                     break;
                 case "typology":
-                    $mails = Mail::where('typology_id', $request->input('id'))->get();
+                    $mails = Mail::where('typology_id', $request->input('id'))->paginate(10);
                     break;
                 case "author":
-                    $mails = Mail::where('author_id', $request->input('id'))->get();
+                    $mails = Mail::where('author_id', $request->input('id'))->paginate(10);
                     break;
                 case "container":
-                    $mails = Mail::where('container_id', $request->input('id'))->get();
+                    $mails = Mail::where('container_id', $request->input('id'))->paginate(10);
                     break;
                 default:
                     $mails = Mail::where('code', 'LIKE', "%$query%")
                         ->orWhere('name', 'LIKE', "%$query%")
                         ->orWhere('description', 'LIKE', "%$query%")
-                        ->get();
+                        ->paginate(10);
                     break;
             }
         } else {
             $mails = Mail::where('code', 'LIKE', "%$query%")
                 ->orWhere('name', 'LIKE', "%$query%")
                 ->orWhere('description', 'LIKE', "%$query%")
-                ->get();
+                ->paginate(10);
         }
 
         $priorities = MailPriority::all();
@@ -123,7 +123,7 @@ class SearchController extends Controller
         $query = $request->input('query');
 
         if ($request->input('advanced') == true) {
-            $slips = Slip::where('name', 'LIKE', "%$query%")->get();
+            $slips = Slip::where('name', 'LIKE', "%$query%")->paginate(10);
         } else {
             $slips = Slip::where('name', 'LIKE', "%$query%")
                 ->orWhereHas('officer', function ($q) use ($query) {
@@ -132,7 +132,7 @@ class SearchController extends Controller
                 ->orWhereHas('user', function ($q) use ($query) {
                     $q->where('name', 'LIKE', "%$query%");
                 })
-                ->get();
+                ->paginate(10);
         }
 
         return view('transferrings.slips.index', compact('slips'));
@@ -160,9 +160,9 @@ class SearchController extends Controller
                 })
                 ->orWhereHas('container', function ($q) use ($query) {
                     $q->where('name', 'LIKE', "%$query%");
-                })->get();
+                })->paginate(10);
         } else {
-            $records = SlipRecord::where('name', 'LIKE', "%$query%")->get();
+            $records = SlipRecord::where('name', 'LIKE', "%$query%")->paginate(10);
         }
 
         $records->load('slip');
@@ -177,25 +177,25 @@ class SearchController extends Controller
             ->orWhere('code', 'LIKE', "%$query%")
             ->orWhere('content', 'LIKE', "%$query%")
             ->latest()->take(4)
-            ->get();
+            ->paginate(10);
 
         $mails = Mail::where('name', 'LIKE', "%$query%")
             ->orWhere('code', 'LIKE', "%$query%")
             ->orWhere('description', 'LIKE', "%$query%")
             ->latest()->take(4)
-            ->get();
+            ->paginate(10);
 
         $transferrings = Slip::where('name', 'LIKE', "%$query%")
             ->orWhere('code', 'LIKE', "%$query%")
             ->orWhere('description', 'LIKE', "%$query%")
             ->latest()->take(4)
-            ->get();
+            ->paginate(10);
 
         $transferringRecords = SlipRecord::where('name', 'LIKE', "%$query%")
             ->orWhere('code', 'LIKE', "%$query%")
             ->orWhere('content', 'LIKE', "%$query%")
             ->latest()->take(4)
-            ->get();
+            ->paginate(10);
 
         return view('search.index', compact('records', 'mails', 'transferrings', 'transferringRecords'));
     }
