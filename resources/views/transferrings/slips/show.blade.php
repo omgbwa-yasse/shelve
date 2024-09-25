@@ -41,69 +41,38 @@
     });
 </script>
 @section('content')
-    <div class="container my-5">
-        <h1 class="mb-4">Détails du bordereau du versement</h1>
+    <h1 class="">Détails du bordereau du versement</h1>
+    <div class="container my-2">
         <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">{{ $slip->code }} - {{ $slip->name }}</h5>
-            </div>
-            <div class="card-body">
-                <p class="card-text">{{ $slip->description }}</p>
-
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Service versant</h5>
-                            </div>
-                            <div class="card-body">
-                                <p><strong>Organisation:</strong> {{ $slip->userOrganisation->name }}</p>
-                                <p><strong>Utilisateur:</strong> {{ $slip->user ? $slip->user->name : 'Aucun' }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <h5 class="mb-0"><i class="fas fa-archive me-2"></i>Service d'archives</h5>
-                            </div>
-                            <div class="card-body">
-                                <p><strong>Organisation:</strong> {{ $slip->officerOrganisation->name }}</p>
-                                <p><strong>Agent:</strong> {{ $slip->officer->name }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Statut du transfert</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Statut:</strong>
-                                    <span class="badge bg-primary status-badge">{{ $slip->slipStatus->name ?? 'N/A' }}</span>
-                                </p>
-                                <p><strong>Reçu:</strong>
-                                    <span class="badge {{ $slip->is_received ? 'bg-success' : 'bg-danger' }} status-badge">
-                                    {{ $slip->is_received ? 'Oui' : 'Non' }}
-                                </span>
-                                </p>
-                                <p><strong>Date de réception:</strong> {{ $slip->received_date ?? 'Aucune' }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><strong>Approuvé:</strong>
-                                    <span class="badge {{ $slip->is_approved ? 'bg-success' : 'bg-warning' }} status-badge">
-                                    {{ $slip->is_approved ? 'Oui' : 'Non' }}
-                                </span>
-                                </p>
-                                <p><strong>Date d'approbation:</strong> {{ $slip->approved_date ?? 'Aucune' }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <div  class="table-responsive">
+            <table class="table table-light">
+                <tbody>
+                    <tr class="">
+                        <td colspan="2">
+                            <h4><strong> {{ $slip->code }} : {{ $slip->name }}</strong>  </h4>
+                            Contenu : {{ $slip->description }}
+                        </td>
+                    </tr>
+                    <tr class="" >
+                        <td width="50%">
+                            Service versant : <strong>{{ $slip->userOrganisation->name }}</strong> <br>
+                            Intervenant : <strong>{{ $slip->user ? $slip->user->name : 'Aucun' }}</strong>
+                        </td>
+                        <td>
+                            Service des archives : <strong>{{ $slip->officerOrganisation->name }} </strong> <br>
+                            Responsable des archives : <strong>{{ $slip->officer->name }}</strong>
+                        </td>
+                    </tr>
+                    <tr class="" >
+                        <td colspan="2">
+                            Statut : <strong>{{ $slip->slipStatus->name ?? 'Sans statut' }}</strong><br>
+                            Date de réception :<strong> {{ $slip->received_date ?? 'A définir' }}</strong><br>
+                            Approuvé : <strong>{{ $slip->is_approved ? 'oui' : 'non' }} </strong><br>
+                            Date d'approbation : <strong>{{ $slip->approved_date ?? 'A définir'}}</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
                 <div class="mt-4">
                     <a href="{{ route('slips.index') }}" class="btn btn-secondary btn-icon">
@@ -140,10 +109,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">Supprimer</button>
-                    </form>
-                </div>
-            </div>
-        </div>
+            </form>
     </div>
 @endsection
 

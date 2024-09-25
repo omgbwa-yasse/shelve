@@ -26,9 +26,6 @@
                     <a class="nav-link text-dark" href="{{ route('record-select-building')}}"><i class="bi bi-building"></i> Locaux</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-archive"></i> Fonds d'archives **</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('record-select-last')}}"><i class="bi bi-clock-history"></i> Récents</a>
                 </li>
             </ul>
