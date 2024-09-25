@@ -11,20 +11,12 @@
                 <input type="text" name="code" id="code" class="form-control" value="{{ $reservation->code }}" required>
             </div>
             <div class="mb-3">
-                <label for="operator_id" class="form-label">Operator</label>
-                <select name="operator_id" id="operator_id" class="form-select" required>
-                    @foreach ($operators as $operator)
-                        <option value="{{ $operator->id }}" {{ $operator->id == $reservation->operator_id ? 'selected' : '' }}>{{ $operator->name }}</option>
-                    @endforeach
-                </select>
+                <label for="name" class="form-label">Objet</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ $reservation->name }}" required>
             </div>
             <div class="mb-3">
-                <label for="operator_organisation_id" class="form-label">Operator Organisation</label>
-                <select name="operator_organisation_id" id="operator_organisation_id" class="form-select" required>
-                    @foreach ($organisations as $organisation)
-                        <option value="{{ $organisation->id }}" {{ $organisation->id == $reservation->operator_organisation_id ? 'selected' : '' }}>{{ $organisation->name }}</option>
-                    @endforeach
-                </select>
+                <label for="content" class="form-label">Description</label>
+                <textarea class="form-control" id="content" name="content" value="{{ $reservation->content }}"></textarea>
             </div>
             <div class="mb-3">
                 <label for="user_id" class="form-label">User</label>
@@ -39,14 +31,6 @@
                 <select name="user_organisation_id" id="user_organisation_id" class="form-select" required>
                     @foreach ($organisations as $organisation)
                         <option value="{{ $organisation->id }}" {{ $organisation->id == $reservation->user_organisation_id ? 'selected' : '' }}>{{ $organisation->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="status_id" class="form-label">Status</label>
-                <select name="status_id" id="status_id" class="form-select" required>
-                    @foreach ($statuses as $status)
-                        <option value="{{ $status->id }}" {{ $status->id == $reservation->status_id ? 'selected' : '' }}>{{ $status->name }}</option>
                     @endforeach
                 </select>
             </div>

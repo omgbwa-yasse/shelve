@@ -82,6 +82,7 @@
                 @else
                     <a href="{{ route('return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">Annuler le retour effectif</a>
                 @endif
+                <a href="{{ route('record-transmission') }}?id={{$communication->id}}" class="btn btn-success">Transmettre les documents</a>
                 <hr>
                 <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-warning">Ajouter des documents</a>
             </div>
@@ -90,6 +91,9 @@
             <ul class="list-group list-group-numbered">
                 <li class="list-group-item">
                     {{ $record->record->name }} / {{ $record->is_original }} : {{ $record->return_date }} ; date effective : {{ $record->return_effective }}
+                    <p class="card-text">
+                        <strong>Contenu :</strong> {{ $record->content ?? 'N/A' }}<br>
+                    </p>
                     <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-secondary">Voir</a>
                     @if($record->return_effective == NULL)
                         <a href="{{ route('record-return-effective') }}?id={{  $record->id }}" class="btn btn-success"> Returner </a>

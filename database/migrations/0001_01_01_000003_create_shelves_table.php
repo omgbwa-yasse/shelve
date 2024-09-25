@@ -441,6 +441,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('communication_id')->nullable(false);
             $table->unsignedBigInteger('record_id')->nullable(false);
+            $table->text('content')->nullable(true);
             $table->boolean('is_original')->default(false)->nullable(false);
             $table->date('return_date')->nullable(false);
             $table->date('return_effective')->nullable();

@@ -2,95 +2,40 @@
 
 @section('content')
     <div class="container">
-        <h1>Create New Reservation</h1>
+        <h1>Nouvelle réservation</h1>
         <form action="{{ route('reservations.store') }}" method="POST">
             @csrf
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="code" class="form-label">Code</label>
-                    <input type="text" name="code" id="code" class="form-control" required>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="status_id" class="form-label">Status</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search status...">
-                        </div>
-                        <select name="status_id" id="status_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the status</option>
-                            @foreach ($statuses as $status)
-                                <option value="{{ $status->id }}">{{ $status->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+            <div class="mb-3">
+                <label for="code" class="form-label">Code</label>
+                <input type="text" class="form-control" id="code" name="code" required>
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="operator_id" class="form-label">Operator</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search operator...">
-                        </div>
-                        <select name="operator_id" id="operator_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the operator</option>
-                            @foreach ($operators as $operator)
-                                <option value="{{ $operator->id }}">{{ $operator->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="operator_organisation_id" class="form-label">Operator Organisation</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search operator organisation...">
-                        </div>
-                        <select name="operator_organisation_id" id="operator_organisation_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the operator organisation</option>
-                            @foreach ($organisations as $organisation)
-                                <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Objet</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">Description</label>
+                <textarea class="form-control" id="content" name="content"></textarea>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="user_id" class="form-label">User</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user...">
-                        </div>
                         <select name="user_id" id="user_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the user</option>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                             @endforeach
                         </select>
-                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="user_organisation_id" class="form-label">User Organisation</label>
-                    <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user organisation...">
-                        </div>
                         <select name="user_organisation_id" id="user_organisation_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the user organisation</option>
                             @foreach ($organisations as $organisation)
                                 <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
                             @endforeach
                         </select>
-                    </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
         </form>
     </div>
 

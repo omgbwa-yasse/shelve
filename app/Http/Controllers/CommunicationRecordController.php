@@ -58,6 +58,7 @@ class CommunicationRecordController extends Controller
         $request->validate([
             'record_id' => 'required|exists:records,id',
             'is_original' => 'required|boolean',
+            'content' => 'nullable|string',
             'return_effective' => 'nullable|date',
         ]);
 
@@ -65,8 +66,11 @@ class CommunicationRecordController extends Controller
 
         $communicationRecord = CommunicationRecord::create([
             'communication_id' => $communication->id,
+            'content' => $request->input('content'),
             'record_id' => $request->record_id,
             'is_original' => $request->is_original,
+            'return_date' => date('y-m-d', strtotime("+14 days")),
+
         ]);
 
         return redirect()->route('transactions.records.index', $communication )->with('success', 'Communication created successfully.');
@@ -81,6 +85,7 @@ class CommunicationRecordController extends Controller
         $request->validate([
             'record_id' => 'required|exists:records,id',
             'is_original' => 'required|boolean',
+            'content' => 'nullable|string',
         ]);
 
         $communicationRecord->update($request->all());

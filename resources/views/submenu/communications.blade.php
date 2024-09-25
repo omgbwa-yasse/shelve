@@ -54,25 +54,12 @@
         <div class="collapse show" id="CommunicationMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transactions.create')}}"><i class="bi bi-inbox"></i> Transaction</a>
+                    <a class="nav-link text-dark" href="{{ route('transactions.create')}}"><i class="bi bi-inbox"></i> Communication</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('reservations.create')}}"><i class="bi bi-envelope"></i> Réservation</a>
                 </li>
 
-            </ul>
-        </div>
-
-        <!-- Etat -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#etatMenu" aria-expanded="true"
-            aria-controls="etatMenu">
-            <i class="bi bi-info-circle" style="padding: 10px;"></i> Panier
-        </a>
-        <div class="collapse show" id="etatMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-cash-stack"></i> Gestion</a>
-                </li>
             </ul>
         </div>
     </div>

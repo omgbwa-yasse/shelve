@@ -43,7 +43,6 @@ class CommunicationController extends Controller
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
         Communication::create([
@@ -55,7 +54,7 @@ class CommunicationController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'operator_organisation_id' => Auth()->user()->organisation->id,
             'return_date' => $request->return_date,
-            'status_id' => $request->status_id,
+            'status_id' => 1,
         ]);
 
         return redirect()->route('transactions.index')->with('success', 'Communication created successfully.');
@@ -82,16 +81,30 @@ class CommunicationController extends Controller
     }
 
 
+    public function tranmission(Request $request)
+    {
+        $communication = Communication::findOrFail($request->input('id'));
+        if($communication->return_effective == NULL){
+            $communication->update([
+                'status_id' => 2, // traités
+            ]);
+        }
+        return view('communications.show', compact('communication'));
+    }
+
+
     public function returnEffective(Request $request)
     {
         $communication = Communication::findOrFail($request->input('id'));
         if($communication->return_effective == NULL){
             $communication->update([
                 'return_effective' => Now(),
+                'status_id' => 3, // traités
             ]);
         }
         return view('communications.show', compact('communication'));
     }
+
 
     public function returnCancel(Request $request)
     {
@@ -125,7 +138,7 @@ class CommunicationController extends Controller
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'status_id' => $request->status_id,
+            'status_id' => 1,
         ]);
 
         return redirect()->route('transactions.index')->with('success', 'Communication updated successfully.');

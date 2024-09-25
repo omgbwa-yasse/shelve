@@ -2,45 +2,82 @@
 
 @section('content')
     <div class="container">
-        <h1>Reservation #{{ $reservation->code }}</h1>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Operator</h5>
-                <p class="card-text">{{ $reservation->operator->name }}</p>
+        <h1>Fiche de réservation</h1>
+            <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+                <div class="d-flex align-items-center">
+                    <a href="#" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-cart me-1"></i>
+                        Chariot
+                    </a>
+                    <a href="#" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-download me-1"></i>
+                        Exporter
+                    </a>
+                    <a href="#" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-printer me-1"></i>
+                        Imprimer
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="#" class="btn btn-light btn-sm">
+                        <i class="bi bi-check-square me-1"></i>
+                        Tout chocher
+                    </a>
+                </div>
+            </div>
+
+
+
+        <div class="col-13 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="card-title">
+                               <strong>{{ $reservation->code ?? 'N/A' }} : {{ $reservation->name ?? 'N/A' }}</strong>
+                            </h5>
+                            <p class="card-text">
+                                <strong>Contenu :</strong> {{ $reservation->content ?? 'N/A' }}<br>
+                            </p>
+                        </div>
+                        <div class="card-text d-flex flex-wrap">
+                            <div class="mr-3">
+                                <strong>Demandeur :</strong>
+                                <span>{{ $reservation->user->name ?? 'N/A' }} ({{ $reservation->userOrganisation->name ?? 'N/A' }})</span>
+                            </div>
+                        </div>
+
+                        <div class="card-text d-flex flex-wrap">
+                            <div class="mr-3">
+                                <strong>Opérateur :</strong>
+                                <span>{{ $reservation->operator->name ?? 'N/A' }} ({{ $reservation->operatorOrganisation->name ?? 'N/A' }})</span>
+                            </div>
+                        </div>
+
+                        <div class="card-text d-flex flex-wrap">
+                            <div class="mr-3">
+                                <strong>Date de retour prévu :</strong> {{ $reservation->return_date ?? 'N/A' }}
+                            </div>
+                            <div>
+                                <strong>Statut :</strong> {{ $reservation->status->name ?? 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">User</h5>
-                <p class="card-text">{{ $reservation->user->name }}</p>
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Status</h5>
-                <p class="card-text">{{ $reservation->status->name }}</p>
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">User Organisation</h5>
-                <p class="card-text">{{ $reservation->userOrganisation->name }}</p>
-            </div>
-        </div>
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Operator Organisation</h5>
-                <p class="card-text">{{ $reservation->operatorOrganisation->name }}</p>
-            </div>
-        </div>
+
+
         <a href="{{ route('reservations.index') }}" class="btn btn-secondary">Back</a>
-        <a href="{{ route('reservations.edit', $reservation->id) }}" class="btn btn-warning btn-sm">Edit</a>
+        <a href="{{ route('reservations.edit', $reservation->id) }}" class="btn btn-warning">Edit</a>
         <form action="{{ route('reservations.destroy', $reservation->id) }}" method="POST" class="d-inline">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this reservation?')">Delete</button>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reservation?')">Delete</button>
         </form>
-        <a href="{{ route('reservations.records.create', $reservation->id) }}" class="btn btn-warning btn-sm">Ajouter des documents</a>
+        <a href="{{ route('reservations.records.create', $reservation->id) }}" class="btn btn-warning ">Ajouter des documents</a>
+        <a href="{{ route('reservations-approved') }}?id={{ $reservation->id }}" class="btn btn-success ">
+            <i class="bi bi-check me-1"></i> Approuver la réservation</a>
     </div>
 
     <ul class="list-group list-group-none">
@@ -53,7 +90,6 @@
                     </form>
                 </li>
         @endforeach
-
 
     </ul>
 

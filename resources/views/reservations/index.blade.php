@@ -4,38 +4,79 @@
     <div class="container">
         <h1>Reservations</h1>
         <a href="{{ route('reservations.create') }}" class="btn btn-primary mb-3">
-            <i class="bi bi-plus-circle"></i> Create New Reservation
+            <i class="bi bi-plus-circle"></i> Nouvelle réservation
         </a>
-
         <div class="row">
             @foreach ($reservations as $reservation)
-                <div class="col-12 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h5 class="card-title">
-                                        <i class="bi bi-upc"></i> Code: {{ $reservation->code ?? 'N/A' }}
-                                    </h5>
-                                    <p class="card-text">
-                                        <i class="bi bi-person"></i> <strong>Operator:</strong> {{ $reservation->operator->name ?? 'N/A' }}<br>
-                                        <i class="bi bi-building"></i> <strong>Operator Organisation:</strong> {{ $reservation->operatorOrganisation->name ?? 'N/A' }}
-                                    </p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="card-text">
-                                        <i class="bi bi-people"></i> <strong>User:</strong> {{ $reservation->user->name ?? 'N/A' }}<br>
-                                        <i class="bi bi-building"></i> <strong>User Organisation:</strong> {{ $reservation->userOrganisation->name ?? 'N/A' }}<br>
-                                        <i class="bi bi-flag"></i> <strong>Status:</strong> {{ $reservation->status->name ?? 'N/A' }}
-                                    </p>
+                    <div class="col-12 ml-3 mb-1">
+                        <h5 class="card-title">
+                            <input class="form-check-input" type="checkbox" value="{{$reservation->id}}" id="communication_id" />
+                            <label class="form-check-label" for="">
+                                <span style="font-size: 1.4em; font-weight: bold;">
+                                    <a href="{{ route('reservations.show', $reservation->id) }}">
+                                        <strong> {{ $reservation->code ?? 'N/A' }} : {{ $reservation->name ?? 'N/A' }}</strong>
+                                    </a>
+                                </span>
+                            </label>
+                        </h5>
+                    </div>
+                    <div class="col-12 mb-4">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p class="card-text">
+                                                <strong>Contenu :</strong> {{ $reservation->content ?? 'N/A' }}<br>
+                                            </p>
+                                        </div>
+                                        <div class="card-text d-flex flex-wrap">
+                                            <div class="mr-3">
+                                                <strong>Demandeur :</strong>
+                                                <span>
+                                                    <a href="{{ route('reservations-sort')}}?user={{ $reservation->user->id }}">
+                                                        {{ $reservation->user->name ?? 'N/A' }}
+                                                    </a>
+
+                                                    (<a href="{{ route('reservations-sort')}}?user_organisation={{ $reservation->userOrganisation->id }}">
+                                                            {{ $reservation->userOrganisation->name ?? 'N/A' }}
+                                                    </a>)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-text d-flex flex-wrap">
+                                            <div class="mr-3">
+                                                <strong>Opérateur :</strong>
+                                                <span>
+
+                                                    <a href="{{ route('reservations-sort')}}?operator={{ $reservation->operator->id }}">
+                                                        {{ $reservation->operator->name ?? 'N/A' }}
+                                                    </a>
+
+                                                    (<a href="{{ route('reservations-sort')}}?operator_organisation={{ $reservation->operatorOrganisation->id }}">
+                                                        {{ $reservation->operatorOrganisation->name ?? 'N/A' }}
+                                                    </a>
+                                                    )</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="card-text d-flex flex-wrap">
+                                            <div class="mr-3">
+                                                <strong>Date de retour :</strong> {{ $reservation->return_date ?? 'N/A' }}
+                                            </div>
+                                            <div>
+                                                <strong>Statut :</strong>
+                                                <a href="{{ route('reservations-sort')}}?status={{ $reservation->status->id }}">
+                                                    {{ $reservation->status->name ?? 'N/A' }}
+                                                </a>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
-                            <a href="{{ route('reservations.show', $reservation->id) }}" class="btn btn-info mt-3">
-                                <i class="bi bi-eye"></i> View
-                            </a>
                         </div>
-                    </div>
-                </div>
+
             @endforeach
         </div>
     </div>

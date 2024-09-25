@@ -13,6 +13,7 @@ class communicationRecord extends Model
     protected $fillable = [
         'communication_id',
         'record_id',
+        'content',
         'is_original',
         'return_date',
         'return_effective',
