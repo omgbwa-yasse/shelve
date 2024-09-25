@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Fiche de communication</h1>
+        <h1>Remplir une fiche</h1>
         <form action="{{ route('transactions.store') }}" method="POST">
             @csrf
             <div class="mb-3">
@@ -45,11 +45,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="return_date" class="form-label">Return Date</label>
-                    <input type="datetime-local" class="form-control" id="return_date" name="return_date" required>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="return_effective" class="form-label">Return Effective</label>
-                    <input type="date" class="form-control" id="return_effective" name="return_effective">
+                    <input type="date" class="form-control" id="return_date" name="return_date" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="status_id" class="form-label">Status</label>

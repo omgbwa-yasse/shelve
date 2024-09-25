@@ -29,6 +29,9 @@ class CommunicationRecordController extends Controller
         return view('communications.records.create', compact('communication', 'records', 'users'));
     }
 
+
+
+
     public function show(INT $id, INT $idRecord)
     {
         $communicationRecord = communicationRecord::findOrFail($idRecord);
@@ -37,6 +40,9 @@ class CommunicationRecordController extends Controller
         return view('communications.records.show', compact('communicationRecord', 'communication'));
     }
 
+
+
+
     public function edit(Communication $communication, CommunicationRecord $communicationRecord)
     {
         $records = Record::all();
@@ -44,12 +50,14 @@ class CommunicationRecordController extends Controller
         return view('communications.records.edit', compact('communicationRecord', 'communication', 'records', 'users'));
     }
 
+
+
+
     public function store(Request $request, INT $id)
     {
         $request->validate([
             'record_id' => 'required|exists:records,id',
             'is_original' => 'required|boolean',
-            'return_date' => 'required|date',
             'return_effective' => 'nullable|date',
         ]);
 
@@ -59,26 +67,47 @@ class CommunicationRecordController extends Controller
             'communication_id' => $communication->id,
             'record_id' => $request->record_id,
             'is_original' => $request->is_original,
-            'return_date' => $request->return_date,
-            'return_effective' => $request->return_effective,
         ]);
 
         return redirect()->route('transactions.records.index', $communication )->with('success', 'Communication created successfully.');
     }
+
+
+
+
 
     public function update(Request $request, CommunicationRecord $communicationRecord)
     {
         $request->validate([
             'record_id' => 'required|exists:records,id',
             'is_original' => 'required|boolean',
-            'return_date' => 'required|date',
-            'return_effective' => 'nullable|date',
         ]);
 
         $communicationRecord->update($request->all());
-
         return redirect()->route('communication-transactions.index')->with('success', 'Communication updated successfully.');
     }
+
+
+
+
+    public function returnEffective(Request $request)
+    {
+        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
+        $communicationRecord->update(['return_effective' => now(), 'operator_id' => Auth()->user()->getAuthIdentifier() ]);  // Ajouter operateur qui fait le retour effectif
+        $communication = $communicationRecord ->communication;
+        return redirect()->route('transactions.show', $communication)->with('success', 'Communication updated successfully.');
+    }
+
+
+    public function returnCancel(Request $request)
+    {
+        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
+        $communicationRecord->update(['return_effective' => NULL]);
+        $communication = $communicationRecord->communication;
+        return redirect()->route('transactions.show', $communication)->with('success', 'Communication updated successfully.');
+    }
+
+
 
     public function destroy(INT $communication_id, INT $record_id)
     {

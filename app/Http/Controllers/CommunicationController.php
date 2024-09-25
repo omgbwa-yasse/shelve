@@ -43,7 +43,6 @@ class CommunicationController extends Controller
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'return_effective' => 'nullable|date',
             'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
@@ -56,7 +55,6 @@ class CommunicationController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'operator_organisation_id' => Auth()->user()->organisation->id,
             'return_date' => $request->return_date,
-            'return_effective' => $request->return_effective,
             'status_id' => $request->status_id,
         ]);
 
@@ -74,14 +72,37 @@ class CommunicationController extends Controller
 
 
 
-    public function edit(Communication $communication)
+    public function edit(INT $id)
     {
+        $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
         $users = User::all();
         $statuses = CommunicationStatus::all();
-        return view('communications.edit', compact('communication', 'users', 'statuses'));
+        $organisations = Organisation::all();
+        return view('communications.edit', compact('organisations','communication', 'users', 'statuses'));
     }
 
 
+    public function returnEffective(Request $request)
+    {
+        $communication = Communication::findOrFail($request->input('id'));
+        if($communication->return_effective == NULL){
+            $communication->update([
+                'return_effective' => Now(),
+            ]);
+        }
+        return view('communications.show', compact('communication'));
+    }
+
+    public function returnCancel(Request $request)
+    {
+        $communication = Communication::findOrFail($request->input('id'));
+        if($communication->return_effective != NULL){
+            $communication->update([
+                'return_effective' => NULL,
+            ]);
+        }
+        return view('communications.show', compact('communication'));
+    }
 
 
     public function update(Request $request, Communication $communication)
@@ -92,7 +113,6 @@ class CommunicationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
-            'return_effective' => 'nullable|date',
             'status_id' => 'required|exists:communication_statuses,id',
         ]);
 
@@ -105,7 +125,6 @@ class CommunicationController extends Controller
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'return_effective' => $request->return_effective,
             'status_id' => $request->status_id,
         ]);
 
@@ -114,11 +133,21 @@ class CommunicationController extends Controller
 
 
 
-    public function destroy(Communication $communication)
+
+    public function destroy(INT $communication_id)
     {
-        $communication->delete();
-        return redirect()->route('transactions.index')->with('success', 'Communication deleted successfully.');
+        $communication = Communication::with('records')->findOrFail($communication_id);
+        if ($communication->records->isEmpty()) {
+            $communication->delete();
+            return redirect()->route('transactions.index')->with('success', 'Communication deleted successfully.');
+        } else {
+            return redirect()->route('transactions.index')->with('error', 'You cannot delete this communication.');
+        }
     }
-}
+
+
+
+
+    }
 
 

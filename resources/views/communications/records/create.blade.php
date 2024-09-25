@@ -19,14 +19,6 @@
                 <option value="0">No</option>
             </select>
         </div>
-        <div class="form-group">
-            <label for="return_date">Return Date</label>
-            <input type="date" name="return_date" id="return_date" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="return_effective">Return Effective</label>
-            <input type="date" name="return_effective" id="return_effective" class="form-control">
-        </div>
         <button type="submit" class="btn btn-primary">Create</button>
     </form>
 @endsection

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Communication</h1>
+        <h1>Fiches de communication {{ $title ?? ''}}</h1>
         <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> Remplir une fiche
         </a>
@@ -57,14 +57,30 @@
                                 <div class="card-text d-flex flex-wrap">
                                     <div class="mr-3">
                                         <strong>Demandeur :</strong>
-                                        <span>{{ $communication->user->name ?? 'N/A' }} ({{ $communication->userOrganisation->name ?? 'N/A' }})</span>
+                                        <span>
+                                            <a href="{{ route('communications-sort')}}?user={{ $communication->user->id }}">
+                                                {{ $communication->user->name ?? 'N/A' }}
+                                            </a>
+
+                                            (<a href="{{ route('communications-sort')}}?user_organisation={{ $communication->userOrganisation->id }}">
+                                                    {{ $communication->userOrganisation->name ?? 'N/A' }}
+                                            </a>)</span>
                                     </div>
                                 </div>
 
                                 <div class="card-text d-flex flex-wrap">
                                     <div class="mr-3">
                                         <strong>Opérateur :</strong>
-                                        <span>{{ $communication->operator->name ?? 'N/A' }} ({{ $communication->operatorOrganisation->name ?? 'N/A' }})</span>
+                                        <span>
+
+                                            <a href="{{ route('communications-sort')}}?operator={{ $communication->operator->id }}">
+                                                {{ $communication->operator->name ?? 'N/A' }}
+                                            </a>
+
+                                            (<a href="{{ route('communications-sort')}}?operator_organisation={{ $communication->operatorOrganisation->id }}">
+                                                {{ $communication->operatorOrganisation->name ?? 'N/A' }}
+                                            </a>
+                                            )</span>
                                     </div>
                                 </div>
 
@@ -76,7 +92,11 @@
                                         <strong>Date de retour effectif :</strong> {{ $communication->return_effective ?? 'N/A' }}
                                     </div>
                                     <div>
-                                        <strong>Statut :</strong> {{ $communication->status->name ?? 'N/A' }}
+                                        <strong>Statut :</strong>
+                                        <a href="{{ route('communications-sort')}}?status={{ $communication->status->id }}">
+                                            {{ $communication->status->name ?? 'N/A' }}
+                                        </a>
+
                                     </div>
                                 </div>
                             </div>

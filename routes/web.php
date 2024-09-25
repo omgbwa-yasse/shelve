@@ -133,6 +133,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);
         Route::resource('reservations.records', ReservationRecordController::class);
+        Route::get('transactions/return', [CommunicationController::class, 'returnEffective'])->name('return-effective');
+        Route::get('transactions/cancel', [CommunicationController::class, 'returnCancel'])->name('return-cancel');
+        Route::get('transactions/record/return', [CommunicationRecordController::class, 'returnEffective'])->name('record-return-effective');
+        Route::get('transactions/record/cancel', [CommunicationRecordController::class, 'returnCancel'])->name('record-return-cancel');
         Route::get('sort', [SearchCommunicationController::class, 'index'])->name('communications-sort');
         Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
         Route::get('reservations.sort', [SearchReservationController::class, 'index'])->name('reservations-sort');
