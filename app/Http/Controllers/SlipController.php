@@ -69,9 +69,10 @@ class SlipController extends Controller
 
     public function show(Slip $slip)
     {
-        return view('transferrings.slips.show', compact('slip'));
+        $slip->load('records.level', 'records.support', 'records.activity', 'records.container', 'records.creator');
+        $slipRecords = $slip->records;
+        return view('transferrings.slips.show', compact('slip', 'slipRecords'));
     }
-
 
 
     public function edit(Slip $slip)
