@@ -73,7 +73,7 @@
                     <thead class="table-white">
                     <tr >
                         <th>ID</th>
-                        <th>Titre</th>
+
                         <th>Dates</th>
                         <th>Niveau</th>
                         <th>Actions</th>
@@ -83,7 +83,6 @@
                     @foreach($dolly->records as $record)
                         <tr>
                             <td>{{ $record->id }}</td>
-                            <td>{{ $record->title }}</td>
                             <td>{{ $record->date_start }} - {{ $record->date_end }}</td>
                             <td>{{ $record->level->name ?? 'N/A'}}</td>
                             <td>
@@ -146,7 +145,7 @@
                         <label for="record_id">Sélectionner un enregistrement</label>
                         <select class="form-control" id="record_id" name="record_id">
                             @foreach($records as $record)
-                                <option value="{{ $record->id }}">{{ $record->title }}</option>
+                                <option value="{{ $record->id }}">{{ $record->code }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -230,7 +229,7 @@
                         <label for="slip_record_id">Sélectionner un enregistrement de versement</label>
                         <select class="form-control" id="slip_record_id" name="slip_record_id">
                             @foreach($slip_records as $slip_record)
-                                <option value="{{ $slip_record->id }}">{{ $slip_record->title }}</option>
+                                <option value="{{ $slip_record->id }}">{{ $slip_record->code }}</option>
                             @endforeach
                         </select>
                     </div>

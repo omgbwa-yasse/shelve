@@ -62,7 +62,7 @@
                                                 {{ $communication->user->name ?? 'N/A' }}
                                             </a>
 
-                                            (<a href="{{ route('communications-sort')}}?user_organisation={{ $communication->userOrganisation->id }}">
+                                            (<a href="{{ route('communications-sort')}}?user_organisation={{ $communication->userOrganisation->id??'' }}">
                                                     {{ $communication->userOrganisation->name ?? 'N/A' }}
                                             </a>)</span>
                                     </div>
@@ -77,7 +77,7 @@
                                                 {{ $communication->operator->name ?? 'N/A' }}
                                             </a>
 
-                                            (<a href="{{ route('communications-sort')}}?operator_organisation={{ $communication->operatorOrganisation->id }}">
+                                            (<a href="{{ route('communications-sort')}}?operator_organisation={{ $communication->operatorOrganisation->id ??'' }}">
                                                 {{ $communication->operatorOrganisation->name ?? 'N/A' }}
                                             </a>
                                             )</span>
