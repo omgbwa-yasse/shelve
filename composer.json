@@ -6,13 +6,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "ext-zip": "*",
         "laravel/framework": "^11.0",
         "laravel/scout": "^10.11",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "maatwebsite/excel": "^3.1",
         "teamtnt/laravel-scout-tntsearch-driver": "^14.0",
-        "ext-zip": "*"
+        "teamtnt/tntsearch": "^4.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
