@@ -42,43 +42,54 @@ class SlipRecordController extends Controller
     public function store(Request $request, Slip $slip)
     {
         $request->merge(['date_format' => $this->getDateFormat($request->date_start, $request->date_end)]);
+        $request->merge(['creator_id' => auth()->id()]);
+        $request->merge(['slip_id' => $slip->id]);
+
         $request->validate([
-            'code' => 'required|max:10',
-            'name' => 'required',
-            'date_format' => 'required|max:1',
-            'date_start' => 'nullable|max:10',
-            'date_end' => 'nullable|max:10',
+            'slip_id' => 'required|exists:slips,id',
+            'code' => 'required|string|max:10',
+            'name' => 'required|string',
+            'date_format' => 'required|string|max:1',
+            'date_start' => 'nullable|string|max:10',
+            'date_end' => 'nullable|string|max:10',
             'date_exact' => 'nullable|date',
-            'content' => 'nullable',
+            'content' => 'nullable|string',
             'level_id' => 'required',
             'width' => 'nullable|numeric',
-            'width_description' => 'nullable|max:100',
+            'width_description' => 'nullable|string|max:100',
             'support_id' => 'required|exists:record_supports,id',
             'activity_id' => 'required|exists:activities,id',
             'container_id' => 'nullable|exists:containers,id',
+            'creator_id' => 'required|exists:users,id',
         ]);
 
-        SlipRecord::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'date_format' => $request->date_format,
-            'date_start' => $request->date_start,
-            'date_end' => $request->date_end,
-            'date_exact' => $request->date_exact,
+        $slipRecordData = [
+            'slip_id' => $request->input('slip_id'),
+            'code' => $request->input('code'),
+            'name' => $request->input('name'),
+            'date_format' => $request->input('date_format'),
+            'date_start' => $request->input('date_start'),
+            'date_end' => $request->input('date_end'),
+            'date_exact' => $request->input('date_exact'),
             'content' => $request->input('content'),
-            'level_id' => $request->level_id,
-            'width' => $request->width,
-            'width_description' => $request->width_description,
-            'support_id' => $request->support_id,
-            'activity_id' => $request->activity_id,
-            'container_id' => $request->container_id,
-            'slip_id' => $slip->id,
-            'creator_id' => auth()->id(),
-        ]);
+            'level_id' => $request->input('level_id'),
+            'width' => $request->input('width'),
+            'width_description' => $request->input('width_description'),
+            'support_id' => $request->input('support_id'),
+            'activity_id' => $request->input('activity_id'),
+            'container_id' => $request->input('container_id'),
+            'creator_id' => $request->input('creator_id'),
+        ];
+
+        $slipRecord = SlipRecord::create($slipRecordData);
+
+
 
         return redirect()->route('slips.records.index', $slip->id)
             ->with('success', 'Slip record created successfully.');
     }
+
+
 
 
 
