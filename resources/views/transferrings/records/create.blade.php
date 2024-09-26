@@ -2,6 +2,15 @@
 
 @section('content')
     <div class="container">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <h1> Ajouter un document </h1>
         <form action="{{ route('slips.records.store', $slip->id) }}" method="POST">
@@ -12,9 +21,9 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="code" class="form-label">Code</label>
-                    <input type="text" class="form-control" id="code" name="code" required  maxlength="10">
+                    <input type="text" class="form-control" id="code" name="code" required maxlength="10">
                 </div>
-             </div>
+            </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>
@@ -77,7 +86,7 @@
                     <label for="container_id" class="form-label">Contenant</label>
                     <select class="form-select" id="container_id" name="container_id">
                         @foreach ($containers as $container)
-                            <option value="{{ $container->id }}">{{ $container->name }}</option>
+                            <option value="{{ $container->id }}">{{ $container->code }}</option>
                         @endforeach
                     </select>
                 </div>

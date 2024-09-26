@@ -41,7 +41,13 @@ class SlipRecordController extends Controller
 
     public function store(Request $request, Slip $slip)
     {
-        $request->merge(['date_format' => $this->getDateFormat($request->date_start, $request->date_end)]);
+        // Assurez-vous que getDateFormat retourne une valeur valide (un seul caractère)
+        $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
+        if (strlen($dateFormat) > 1) {
+            return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
+        }
+
+        $request->merge(['date_format' => $dateFormat]);
         $request->merge(['creator_id' => auth()->id()]);
         $request->merge(['slip_id' => $slip->id]);
 
@@ -54,7 +60,7 @@ class SlipRecordController extends Controller
             'date_end' => 'nullable|string|max:10',
             'date_exact' => 'nullable|date',
             'content' => 'nullable|string',
-            'level_id' => 'required',
+            'level_id' => 'required|exists:record_levels,id',
             'width' => 'nullable|numeric',
             'width_description' => 'nullable|string|max:100',
             'support_id' => 'required|exists:record_supports,id',
@@ -83,12 +89,25 @@ class SlipRecordController extends Controller
 
         $slipRecord = SlipRecord::create($slipRecordData);
 
-
-
         return redirect()->route('slips.records.index', $slip->id)
             ->with('success', 'Slip record created successfully.');
     }
 
+    private function getDateFormat($dateStart, $dateEnd)
+    {
+        // Implémentez la logique pour déterminer le format de date
+        // Assurez-vous que cette méthode retourne une valeur valide (un seul caractère)
+        // Par exemple, retournez 'S' pour une date de début, 'E' pour une date de fin, etc.
+        if ($dateStart && $dateEnd) {
+            return 'B'; // Both dates are present
+        } elseif ($dateStart) {
+            return 'S'; // Only start date is present
+        } elseif ($dateEnd) {
+            return 'E'; // Only end date is present
+        } else {
+            return 'N'; // No dates are present
+        }
+    }
 
 
 
@@ -153,18 +172,7 @@ class SlipRecordController extends Controller
 
 
 
-   public function getDateFormat($date1, $date2) {
-        $patternY = '/^\d{4}$/';
-        $patternYM = '/^\d{4}[-\/\.]\d{2}$/';
-        $patternYMD = '/^\d{4}[-\/\.]\d{2}[-\/\.]\d{2}$/';
 
-        $format1 = (preg_match($patternY, $date1)) ? 'Y' : ((preg_match($patternYM, $date1)) ? 'Y-M' : 'Y-M-D');
-        $format2 = (preg_match($patternY, $date2)) ? 'Y' : ((preg_match($patternYM, $date2)) ? 'Y-M' : 'Y-M-D');
-
-        if ($format1 == $format2) {
-            return $format1;
-        }
-    }
 
 }
 
