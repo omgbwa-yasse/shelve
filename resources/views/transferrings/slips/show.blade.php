@@ -76,44 +76,16 @@
                         <div class="mt-5">
                             <h3 class="text-primary border-bottom pb-2 mb-3">Documents associés</h3>
                             @if($slipRecords->isNotEmpty())
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead class="table-light">
-                                        <tr>
-                                            <th>Code</th>
-                                            <th>Nom</th>
-                                            <th>Date</th>
-                                            <th>Niveau</th>
-                                            <th>Support</th>
-                                            <th>Activité</th>
-                                            <th>Conteneur</th>
-                                            <th>Créateur</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
+
                                         @foreach($slipRecords as $record)
-                                            <tr>
-                                                <td><a href="{{ route('records.show', $record->id) }}">{{ $record->code }}</a></td>
-                                                <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $record->name }}">
-                                                    {{ Str::limit($record->name, 30) }}
-                                                </td>
-                                                <td>
-                                                    @if($record->date_format === 'exact')
-                                                        {{ $record->date_exact }}
-                                                    @else
-                                                        {{ $record->date_start }} - {{ $record->date_end }}
-                                                    @endif
-                                                </td>
-                                                <td>{{ $record->level->name ?? 'N/A' }}</td>
-                                                <td>{!! $record->support ? '<a href="' . route('record-supports.show', $record->support->id) . '">' . $record->support->name . '</a>' : 'N/A' !!}</td>
-                                                <td>{!! $record->activity ? '<a href="' . route('activities.show', $record->activity->id) . '">' . $record->activity->name . '</a>' : 'N/A' !!}</td>
-                                                <td>{!! $record->container ? '<a href="' . route('containers.show', $record->container->id) . '">' . $record->container->name . '</a>' : 'N/A' !!}</td>
-                                                <td>{!! $record->creator ? '<a href="' . route('users.show', $record->creator->id) . '">' . $record->creator->name . '</a>' : 'N/A' !!}</td>
-                                            </tr>
+                                            <div class="list-group">
+                                                <a href="#" class="mt-2">
+                                                   <strong> {{ $record->code }} : {{ $record->name }}</strong>
+                                                    {{ $record->content }}
+                                                </a>
+                                            </div>
+
                                         @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
                             @else
                                 <p class="text-muted">Aucun document associé à ce bordereau.</p>
                             @endif
