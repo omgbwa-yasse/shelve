@@ -27,6 +27,7 @@ class SlipRecord extends Model
         'support_id',
         'activity_id',
         'container_id',
+        'creator_id',
     ];
 
 

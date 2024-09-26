@@ -54,7 +54,7 @@
             <a href="{{ route('records.show', $record) }}">
             <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="" />
             <label class="form-check-label" for="">
-                <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  - {{ $record->name }}</span>
+                <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
             </label>
             </a>
         </div>

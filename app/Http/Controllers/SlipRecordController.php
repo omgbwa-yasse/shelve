@@ -10,6 +10,7 @@ use App\Models\RecordSupport;
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class SlipRecordController extends Controller
 {
@@ -40,6 +41,7 @@ class SlipRecordController extends Controller
 
     public function store(Request $request, Slip $slip)
     {
+        $request->merge(['date_format' => $this->getDateFormat($request->date_start, $request->date_end)]);
         $request->validate([
             'code' => 'required|max:10',
             'name' => 'required',
@@ -56,15 +58,27 @@ class SlipRecordController extends Controller
             'container_id' => 'nullable|exists:containers,id',
         ]);
 
-        $slipRecord = new SlipRecord($request->all());
-        $slipRecord->slip_id = $slip->id;
-        $slipRecord->creator_id = auth()->id();
-        $slipRecord->save();
+        SlipRecord::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'date_format' => $request->date_format,
+            'date_start' => $request->date_start,
+            'date_end' => $request->date_end,
+            'date_exact' => $request->date_exact,
+            'content' => $request->input('content'),
+            'level_id' => $request->level_id,
+            'width' => $request->width,
+            'width_description' => $request->width_description,
+            'support_id' => $request->support_id,
+            'activity_id' => $request->activity_id,
+            'container_id' => $request->container_id,
+            'slip_id' => $slip->id,
+            'creator_id' => auth()->id(),
+        ]);
 
         return redirect()->route('slips.records.index', $slip->id)
             ->with('success', 'Slip record created successfully.');
     }
-
 
 
 
@@ -125,6 +139,22 @@ class SlipRecordController extends Controller
         return redirect()->route('slips.records.index', $slip->id)
             ->with('success', 'Slip record deleted successfully.');
     }
+
+
+
+   public function getDateFormat($date1, $date2) {
+        $patternY = '/^\d{4}$/';
+        $patternYM = '/^\d{4}[-\/\.]\d{2}$/';
+        $patternYMD = '/^\d{4}[-\/\.]\d{2}[-\/\.]\d{2}$/';
+
+        $format1 = (preg_match($patternY, $date1)) ? 'Y' : ((preg_match($patternYM, $date1)) ? 'Y-M' : 'Y-M-D');
+        $format2 = (preg_match($patternY, $date2)) ? 'Y' : ((preg_match($patternYM, $date2)) ? 'Y-M' : 'Y-M-D');
+
+        if ($format1 == $format2) {
+            return $format1;
+        }
+    }
+
 }
 
 

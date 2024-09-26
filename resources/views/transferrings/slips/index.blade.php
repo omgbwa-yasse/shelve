@@ -14,24 +14,29 @@
                         <div class="row align-items-center">
                             <div class="col-md-9">
                                 <h5 class="card-title mb-2">
-                                    <b>{{ $slip->code }}</b> - {{ $slip->name }}
+                                    <a href="{{ route('slips.show', $slip->id) }}"  title="View">
+                                        <b>{{ $slip->code }} : {{ $slip->name }}</b>
+                                    </a>
                                 </h5>
                                 <p class="card-text mb-1">
-                                    <strong>Description:</strong> {{ $slip->description }}<br>
+                                    Description : {{ $slip->description }}<br>
+                                </p>
+                                <p class="card-text mb-1">
+                                     Du :<strong>
+                                        <a href="{{ route('slips-sort')}}?categ=dates&date_exact={{ $slip->created_at->format('Y-m-d') }}">
+                                            {{ $slip->created_at->format('Y-m-d') }}</strong>
+                                        </a><br>
+                                </p>
+                                <p class="card-text mb-1">
+                                     Service versant :
+                                     <strong><a href="{{ route('slips-sort')}}?categ=user-organisation&id={{ $slip->userOrganisation->id }}">
+                                        {{ $slip->userOrganisation->name }}<br>
+                                    </a></strong>
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">
                                 <div class="d-flex justify-content-md-end justify-content-center align-items-center">
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('slips.show', $slip->id) }}" class="btn btn-sm btn-outline-secondary" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('slips.edit', $slip->id) }}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ $slip->id }})" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
