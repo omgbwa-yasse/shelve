@@ -129,6 +129,8 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('communications')->group(function () {
+        Route::get('/export', [CommunicationController::class, 'export'])->name('communications.export');
+        Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);

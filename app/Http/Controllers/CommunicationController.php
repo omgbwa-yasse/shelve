@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 
+use App\Exports\CommunicationsExport;
 use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
 use App\Models\CommunicationStatus;
 use App\Models\Organisation;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CommunicationController extends Controller
 {
@@ -160,7 +163,24 @@ class CommunicationController extends Controller
 
 
 
+    public function export(Request $request)
+    {
+        $communicationIds = explode(',', $request->query('communications'));
+        $communications = Communication::whereIn('id', $communicationIds)->get();
 
+        return Excel::download(new CommunicationsExport($communications), 'communications_export.xlsx');
+    }
+
+    public function print(Request $request)
+    {
+        $communicationIds = explode(',', $request->query('communications'));
+        $communications = Communication::with(['user', 'userOrganisation', 'operator', 'operatorOrganisation', 'status', 'records'])
+            ->whereIn('id', $communicationIds)
+            ->get();
+
+        $pdf = PDF::loadView('communications.print', compact('communications'));
+        return $pdf->download('communications_print.pdf');
+    }
     }
 
 

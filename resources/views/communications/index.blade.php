@@ -9,27 +9,26 @@
 
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
-                <a href="#" class="btn btn-light btn-sm me-2">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-cart me-1"></i>
                     Chariot
                 </a>
-                <a href="#" class="btn btn-light btn-sm me-2">
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
                     Exporter
                 </a>
-                <a href="#" class="btn btn-light btn-sm me-2">
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-printer me-1"></i>
                     Imprimer
                 </a>
             </div>
             <div class="d-flex align-items-center">
-                <a href="#" class="btn btn-light btn-sm">
+                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                     <i class="bi bi-check-square me-1"></i>
-                    Tout chocher
+                    Tout cocher
                 </a>
             </div>
         </div>
-
         <div class="row">
             @foreach ($communications as $communication)
 
@@ -132,3 +131,58 @@
         </div>
     </footer>
 @endsection
+@push('scripts')
+    <script>
+        document.getElementById('cartBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedCommunications.length === 0) {
+                alert('Veuillez sélectionner au moins une communication.');
+                return;
+            }
+
+            // Implement cart functionality here
+            alert('Fonctionnalité de chariot à implémenter');
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedCommunications.length === 0) {
+                alert('Veuillez sélectionner au moins une communication à exporter.');
+                return;
+            }
+
+            window.location.href = `{{ route('communications.export') }}?communications=${checkedCommunications.join(',')}`;
+        });
+
+        document.getElementById('printBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedCommunications.length === 0) {
+                alert('Veuillez sélectionner au moins une communication à imprimer.');
+                return;
+            }
+
+            // Rediriger vers la route d'impression avec les IDs des communications sélectionnées
+            window.location.href = `{{ route('communications.print') }}?communications=${checkedCommunications.join(',')}`;
+        });
+        document.getElementById('checkAllBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = !allChecked;
+            });
+
+            this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>Tout cocher' : '<i class="bi bi-square me-1"></i>Tout décocher';
+        });
+    </script>
+@endpush
