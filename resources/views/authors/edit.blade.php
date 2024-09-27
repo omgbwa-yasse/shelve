@@ -18,41 +18,40 @@
         </div>
 
         <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
+            <label for="name" class="form-label">Nom</label>
             <input type="text" id="name" name="name" class="form-control" data-field="name" value="{{ $author->name }}" required>
         </div>
 
         <div class="mb-3">
-            <label for="parallel_name" class="form-label">Parallel Name</label>
+            <label for="parallel_name" class="form-label">Nom équivalent</label>
             <input type="text" id="parallel_name" name="parallel_name" class="form-control" data-field="parallel_name" value="{{ $author->parallel_name }}">
         </div>
 
         <div class="mb-3">
-            <label for="other_name" class="form-label">Other Name</label>
+            <label for="other_name" class="form-label">Autre nom</label>
             <input type="text" id="other_name" name="other_name" class="form-control" data-field="other_name" value="{{ $author->other_name }}">
         </div>
 
         <div class="mb-3">
-            <label for="lifespan" class="form-label">Lifespan</label>
+            <label for="lifespan" class="form-label">Période de vie</label>
             <input type="text" id="lifespan" name="lifespan" class="form-control" value="{{ $author->lifespan }}">
         </div>
 
         <div class="mb-3">
-            <label for="locations" class="form-label">Locations</label>
+            <label for="locations" class="form-label">Résidence</label>
             <input type="text" id="locations" name="locations" class="form-control" data-field="locations" value="{{ $author->locations }}">
         </div>
 
         <div class="mb-3">
-            <label for="parent_id" class="form-label">Parent Author</label>
+            <label for="parent_id" class="form-label">Entité parente</label>
             <select id="parent_id" name="parent_id" class="form-control">
-                <option value="">None</option>
                 @foreach ($parents as $parent)
                     <option value="{{ $parent->id }}" {{ $author->parent_id == $parent->id ? 'selected' : '' }}>{{ $parent->name }}</option>
                 @endforeach
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Update Author<button type="submit" class="btn btn-primary">Update Author</button>
+        <button type="submit" class="btn btn-primary">Mettre à jour<button type="submit" class="btn btn-primary">Update Author</button>
     </form>
 </div>
 

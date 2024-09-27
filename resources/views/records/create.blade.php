@@ -134,37 +134,37 @@
                 </div>
                 <div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
                     <div class="mb-3">
-                        <label for="access_conditions" class="form-label">Access Conditions</label>
+                        <label for="access_conditions" class="form-label">Conditions d'accès</label>
                         <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="reproduction_conditions" class="form-label">Reproduction Conditions</label>
+                        <label for="reproduction_conditions" class="form-label">Conditions de reproduction</label>
                         <input type="text" name="reproduction_conditions" id="reproduction_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="language_material" class="form-label">Language Material</label>
+                        <label for="language_material" class="form-label">Langue du document</label>
                         <input type="text" name="language_material" id="language_material" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="characteristic" class="form-label">Characteristic</label>
+                        <label for="characteristic" class="form-label">Caractéristiques</label>
                         <input type="text" name="characteristic" id="characteristic" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="finding_aids" class="form-label">Finding Aids</label>
+                        <label for="finding_aids" class="form-label">Instruments de recherche</label>
                         <input type="text" name="finding_aids" id="finding_aids" class="form-control" maxlength="100">
                     </div>
                 </div>
                 <div class="tab-pane fade" id="sources" role="tabpanel" aria-labelledby="sources-tab">
                     <div class="mb-3">
-                        <label for="location_original" class="form-label">Location Original</label>
+                        <label for="location_original" class="form-label">Conservation originaux</label>
                         <input type="text" name="location_original" id="location_original" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="location_copy" class="form-label">Location Copy</label>
+                        <label for="location_copy" class="form-label">Conservation des copies</label>
                         <input type="text" name="location_copy" id="location_copy" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="related_unit" class="form-label">Related Unit</label>
+                        <label for="related_unit" class="form-label">Sources complémentaires</label>
                         <input type="text" name="related_unit" id="related_unit" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
@@ -180,17 +180,16 @@
                 </div>
                 <div class="tab-pane fade" id="controle" role="tabpanel" aria-labelledby="controle-tab">
                     <div class="mb-3">
-                        <label for="archivist_note" class="form-label">Archivist Note</label>
+                        <label for="archivist_note" class="form-label">Dote de l'archiviste</label>
                         <textarea name="archivist_note" id="archivist_note" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="rule_convention" class="form-label">Rule Convention</label>
+                        <label for="rule_convention" class="form-label">Règle et convention</label>
                         <input type="text" name="rule_convention" id="rule_convention" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="status_id" class="form-label">Status</label>
+                        <label for="status_id" class="form-label">Statut</label>
                         <select name="status_id" id="status_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the status</option>
                             @foreach ($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                             @endforeach
@@ -221,12 +220,7 @@
                     <div class="mb-3">
                         <label for="activity_id" class="form-label"> Activités </label>
                         <div class="select-with-search">
-                            <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search activity...">
-                            </div>
                             <select name="activity_id" id="activity_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the activity</option>
                                 @foreach ($activities as $activity)
                                     <option value="{{ $activity->id }}">{{ $activity->code }} - {{ $activity->name }}</option>
                                 @endforeach
@@ -237,7 +231,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
     </div>
 

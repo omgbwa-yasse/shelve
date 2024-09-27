@@ -7,7 +7,7 @@
                 <h2 class="mb-0">Authors</h2>
             </div>
             <div class="card-body">
-                <a href="{{ route('mail-author.create') }}" class="btn btn-primary mb-3">Add New Author</a>
+                <a href="{{ route('mail-author.create') }}" class="btn btn-primary mb-3">Ajouter un auteur</a>
 
                 @if ($message = Session::get('success'))
                     <div class="alert alert-success">
@@ -18,25 +18,23 @@
                 <table class="table table-bordered table-hover">
                     <thead class="bg-light">
                     <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Name</th>
+                        <th>Type d'entité</th>
+                        <th>Nom</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach ($authors as $author)
                         <tr>
-                            <td>{{ $author->id }}</td>
                             <td>{{ $author->authorType->name }}</td>
                             <td>{{ $author->name }}</td>
                             <td>
-                                <a class="btn btn-info btn-sm" href="{{ route('mail-author.show', $author) }}"><i class="bi bi-eye"></i> Show</a>
-                                <a class="btn btn-primary btn-sm" href="{{ route('mail-author.edit', $author) }}"><i class="bi bi-pencil"></i> Edit</a>
+                                <a class="btn btn-info btn-sm" href="{{ route('mail-author.show', $author) }}"><i class="bi bi-eye"></i> Afficher</a>
+                                <a class="btn btn-primary btn-sm" href="{{ route('mail-author.edit', $author) }}"><i class="bi bi-pencil"></i> Modifier</a>
                                 <form action="{{ route('mail-author.destroy', $author) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i> Supprimer</button>
                                 </form>
                             </td>
                         </tr>

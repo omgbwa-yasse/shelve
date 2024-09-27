@@ -5,10 +5,10 @@
     <table class="table">
         <tbody>
             <tr>
-                <td>Code : {{  $mailBatch->code  }}</td>
+                <td>Reference : {{  $mailBatch->code  }}</td>
             </tr>
             <tr>
-                <td>Nom : {{  $mailBatch->name  }}</td>
+                <td>Désignation : {{  $mailBatch->name  }}</td>
             </tr>
         </tbody>
     </table>

@@ -13,9 +13,9 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Code</th>
-                    <th>Name</th>
-                    <th>Action</th>
+                    <th>Reference</th>
+                    <th>Désignation</th>
+                    <th>Option</th>
                 </tr>
             </thead>
             <tbody>

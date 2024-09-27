@@ -7,25 +7,23 @@
     <div class="card">
         <div class="card-body">
             <h5 class="card-title">{{ $author->name }}</h5>
-            <p class="card-text">Type: {{ $author->authorType->name }}</p>
+            <p class="card-text">Type : {{ $author->authorType->name }}</p>
             @if ($author->parallel_name)
-                <p class="card-text">Parallel Name: {{ $author->parallel_name }}</p>
+                <p class="card-text">Nom parallèle : {{ $author->parallel_name }}</p>
             @endif
             @if ($author->other_name)
-                <p class="card-text">Other Name: {{ $author->other_name }}</p>
+                <p class="card-text">Autre nom : {{ $author->other_name }}</p>
             @endif
             @if ($author->lifespan)
-                <p class="card-text">Lifespan: {{ $author->lifespan }}</p>
+                <p class="card-text">Période de vie : {{ $author->lifespan }}</p>
             @endif
             @if ($author->locations)
-                <p class="card-text">Locations: {{ $author->locations }}</p>
+                <p class="card-text">Lieux : {{ $author->locations }}</p>
             @endif
             @if ($author->parent)
-                <p class="card-text">Parent Author: {{ $author->parent->name }}</p>
+                <p class="card-text">Auteur parent : {{ $author->parent->name }}</p>
             @endif
-
         </div>
-    </div>
 <hr>
 
     <div  class="table-responsive" >
