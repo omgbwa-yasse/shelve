@@ -19,12 +19,12 @@
             @method('PUT')
 
             <div class="form-group">
-                <label for="code">Code</label>
+                <label for="code">Reference</label>
                 <input type="text" name="code" id="code" class="form-control" value="{{ $mailBatch->code }}">
             </div>
 
             <div class="form-group">
-                <label for="name">Name</label>
+                <label for="name">Desigantion </label>
                 <input type="text" name="name" id="name" class="form-control" value="{{ $mailBatch->name }}">
             </div>
 
