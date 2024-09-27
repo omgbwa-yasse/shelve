@@ -21,6 +21,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf;
 use ZipArchive;
 
 
@@ -504,5 +505,21 @@ class RecordController extends Controller
             // Clean up temporary files
             Storage::deleteDirectory('temp_import');
         }
+    }
+//    public function export(Request $request)
+//    {
+//        $recordIds = explode(',', $request->query('records'));
+//        $records = Record::whereIn('id', $recordIds)->get();
+//
+//        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
+//    }
+
+    public function printRecords(Request $request)
+    {
+        $recordIds = $request->input('records');
+        $records = Record::whereIn('id', $recordIds)->get();
+
+        $pdf = PDF::loadView('records.print', compact('records'));
+        return $pdf->download('records_print.pdf');
     }
 }

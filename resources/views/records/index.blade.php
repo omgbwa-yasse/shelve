@@ -1,64 +1,65 @@
 @extends('layouts.app')
+
 <style>
     a {
         text-decoration: none;
         color: #0178d4;
     }
 </style>
+
 @section('content')
     <div class="container-fluid mt-4">
         <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Inventaire des archives {{ $title ?? ''}}</h1>
-            <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-                <div class="d-flex align-items-center">
-                    <a href="#" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-cart me-1"></i>
-                        Chariot
-                    </a>
-                    <a href="#" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-download me-1"></i>
-                        Exporter
-                    </a>
-                    <a href="#" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-printer me-1"></i>
-                        Imprimer
-                    </a>
-                    <a href="" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-list-task me-1"></i>
-                        Tâches
-                    </a>
-                    <a href="" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-calendar-check me-1"></i>
-                        Réservations
-                    </a>
-                </div>
-                <div class="d-flex align-items-center">
-                    <a href="#" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-arrow-repeat me-1"></i>
-                        Transférer
-                    </a>
-                    <a href="#" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-envelope me-1"></i>
-                        Communiqué
-                    </a>
-                    <a href="#" class="btn btn-light btn-sm">
-                        <i class="bi bi-check-square me-1"></i>
-                        Tout chocher
-                    </a>
-                </div>
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+            <div class="d-flex align-items-center">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-cart me-1"></i>
+                    Chariot
+                </a>
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-download me-1"></i>
+                    Exporter
+                </a>
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-printer me-1"></i>
+                    Imprimer
+                </a>
+                <a href="" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-list-task me-1"></i>
+                    Tâches
+                </a>
+                <a href="" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    Réservations
+                </a>
             </div>
-
-
-    <div id="recordList">
-       @foreach ($records as $record)
-        <div class="form-check">
-            <a href="{{ route('records.show', $record) }}">
-            <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="" />
-            <label class="form-check-label" for="">
-                <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
-            </label>
-            </a>
+            <div class="d-flex align-items-center">
+                <a href="#" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Transférer
+                </a>
+                <a href="#" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-envelope me-1"></i>
+                    Communiqué
+                </a>
+                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                    <i class="bi bi-check-square me-1"></i>
+                    Tout cocher
+                </a>
+            </div>
         </div>
-            <div class="card mb-3 shadow-sm">
+
+        <div id="recordList">
+            @foreach ($records as $record)
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" />
+                    <label class="form-check-label" for="record-{{$record->id}}">
+                        <a href="{{ route('records.show', $record) }}">
+                            <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
+                        </a>
+                    </label>
+                </div>
+                <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-12">
@@ -81,61 +82,110 @@
                                         @endif
                                     @endforeach
                                 </p>
-
                             </div>
-
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
-
     </div>
-
-
 
     <footer class="bg-light py-3">
         <div class="container">
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item {{ $records->currentPage() == 1 ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ $records->previousPageUrl() }}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    @for ($i = 1; $i <= $records->lastPage(); $i++)
-                        <li class="page-item {{ $records->currentPage() == $i ? 'active' : '' }}">
-                            <a class="page-link" href="{{ $records->url($i) }}">{{ $i }}</a>
-                        </li>
-                    @endfor
-                    <li class="page-item {{ $records->currentPage() == $records->lastPage() ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ $records->nextPageUrl() }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
+                    {{ $records->links() }}
                 </ul>
             </nav>
         </div>
     </footer>
 
-    @push('scripts')
-        <script>
-            document.getElementById('searchInput').addEventListener('keyup', function() {
-                var input, filter, cards, card, i, txtValue;
-                input = document.getElementById('searchInput');
-                filter = input.value.toUpperCase();
-                cards = document.getElementById('recordList').getElementsByClassName('card');
-
-                for (i = 0; i < cards.length; i++) {
-                    card = cards[i];
-                    txtValue = card.textContent || card.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        card.style.display = "";
-                    } else {
-                        card.style.display = "none";
-                    }
-                }
-            });
-        </script>
-    @endpush
 @endsection
+
+@push('scripts')
+    <script>
+        document.getElementById('cartBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement.');
+                return;
+            }
+
+            fetch('{{ route("dolly.createWithRecords") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ records: checkedRecords })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Un nouveau chariot a été créé avec les enregistrements sélectionnés.');
+                    } else {
+                        alert('Une erreur est survenue lors de la création du chariot.');
+                    }
+                });
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement à exporter.');
+                return;
+            }
+
+            window.location.href = '{{ route("records.export") }}?records=' + checkedRecords.join(',');
+        });
+
+        document.getElementById('printBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement à imprimer.');
+                return;
+            }
+
+            fetch('{{ route("records.print") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ records: checkedRecords })
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'records_print.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                });
+        });
+
+        let checkAllBtn = document.getElementById('checkAllBtn');
+        checkAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = !allChecked;
+            });
+
+            this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>Tout cocher' : '<i class="bi bi-square me-1"></i>Tout décocher';
+        });
+    </script>
+@endpush

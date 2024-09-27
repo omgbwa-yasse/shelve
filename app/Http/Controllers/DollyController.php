@@ -51,7 +51,22 @@ class DollyController extends Controller
         $dolly->load('type');
         return view('dollies.show', compact('dolly', 'records', 'mails', 'communications', 'rooms', 'containers', 'shelves', 'slip_records'));
     }
+    public function createWithRecords(Request $request)
+    {
+        $recordIds = $request->input('records');
 
+        // Créer un nouveau Dolly
+        $dolly = Dolly::create([
+            'name' => 'Chariot ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'Créé automatiquement',
+            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+        ]);
+
+        // Associer les enregistrements au Dolly
+        $dolly->records()->attach($recordIds);
+
+        return response()->json(['success' => true]);
+    }
     public function edit(Dolly $dolly)
     {
         return view('dollies.edit', compact('dolly'));
