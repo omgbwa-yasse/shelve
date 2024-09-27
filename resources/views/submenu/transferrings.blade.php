@@ -26,6 +26,7 @@
                     <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-list"></i> Approvés</a>
                 </li>
 
+
             </ul>
         </div>
 
@@ -44,6 +45,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=approved"><i class="bi bi-check-circle"></i> Approuvés</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=integrated"><i class="bi bi-folder-plus"></i> Intégrés</a>
                 </li>
             </ul>
         </div>

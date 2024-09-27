@@ -208,14 +208,22 @@ return new class extends Migration
             $table->unsignedBigInteger('slip_status_id')->nullable(false);
             $table->boolean('is_received')->nullable(true)->default(false);
             $table->dateTime('received_date')->nullable();
+            $table->unsignedBigInteger('received_by')->nullable(true);
             $table->boolean('is_approved')->nullable(true)->default(false);
             $table->dateTime('approved_date')->nullable(true);
+            $table->unsignedBigInteger('approved_by')->nullable(true);
+            $table->boolean('is_integrated')->nullable(true)->default(false);
+            $table->dateTime('integrated_date')->nullable(true);
+            $table->unsignedBigInteger('integrated_by')->nullable(true);
             $table->timestamps();
             $table->foreign('officer_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('officer_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('slip_status_id')->references('id')->on('slip_statuses')->onDelete('cascade');
+            $table->foreign('received_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('approved_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('integrated_by')->references('id')->on('users')->onDelete('cascade');
         });
 
         Schema::create('slip_records', function (Blueprint $table) {

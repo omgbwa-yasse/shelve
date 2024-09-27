@@ -10,7 +10,7 @@ use App\Models\SlipStatus;
 class Slip extends Model
 {
     use HasFactory;
-    use Searchable;
+    // use Searchable;
 
     protected $fillable = [
         'code',
@@ -23,8 +23,13 @@ class Slip extends Model
         'slip_status_id',
         'is_received',
         'received_date',
+        'received_by',
         'is_approved',
         'approved_date',
+        'approved_by',
+        'is_integrated',
+        'integrated_date',
+        'integrated_by',
     ];
 
 
@@ -60,6 +65,23 @@ class Slip extends Model
     public function records()
     {
         return $this->hasMany(slipRecord::class, 'slip_id');
+    }
+
+
+
+    public function receivedAgent()
+    {
+        return $this->belongsTo(User::class, 'received_by');
+    }
+
+    public function approvedAgent()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function integratedAgent()
+    {
+        return $this->belongsTo(User::class, 'integrated_by');
     }
 
 

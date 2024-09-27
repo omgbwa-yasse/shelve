@@ -125,8 +125,14 @@ class SlipRecordController extends Controller
 
 
 
-    public function update(Request $request, Slip $slip, SlipRecord $slipRecord)
+    public function update(Request $request, INT $slip_id, INT $record_id)
     {
+        $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
+        if (strlen($dateFormat) > 1) {
+            return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
+        }
+
+        $request->merge(['date_format' => $dateFormat]);
         $request->validate([
             'code' => 'required|max:10',
             'name' => 'required',
@@ -143,9 +149,10 @@ class SlipRecordController extends Controller
             'container_id' => 'nullable|exists:containers,id',
         ]);
 
+        $slipRecord = slipRecord::findOrFail($record_id);
         $slipRecord->update($request->all());
         $slip = $slipRecord->slip;
-        return view('transferrings.slips.show', compact('slip', 'slipRecords'));
+        return view('transferrings.records.show', compact('slip','slipRecord' ));
     }
 
 

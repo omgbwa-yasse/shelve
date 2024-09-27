@@ -16,6 +16,16 @@
                                 <h5 class="card-title mb-2">
                                     <a href="{{ route('slips.show', $slip->id) }}"  title="View">
                                         <b>{{ $slip->code }} : {{ $slip->name }}</b>
+                                        @if($slip->is_received  == FALSE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                                            <span class="badge rounded-pill text-bg-secondary">Projet</span>
+                                        @elseif($slip->is_received  == TRUE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                                            <span class="badge rounded-pill text-bg-primary">Examen</span>
+                                        @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE )
+                                            <span class="badge rounded-pill text-bg-warning">Approuvé</span>
+                                        @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE)
+                                            <span class="badge rounded-pill text-bg-success">Intégré</span>
+                                        @endif
+
                                     </a>
                                 </h5>
                                 <p class="card-text mb-1">
@@ -46,4 +56,32 @@
             @endforeach
         </div>
     </div>
+
+
+    <footer class="bg-light py-3">
+        <div class="container">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item {{ $slips->currentPage() == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $slips->previousPageUrl() }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    @for ($i = 1; $i <= $slips->lastPage(); $i++)
+                        <li class="page-item {{ $slips->currentPage() == $i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $slips->url($i) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+                    <li class="page-item {{ $slips->currentPage() == $slips->lastPage() ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $slips->nextPageUrl() }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </footer>
+
+
+
 @endsection

@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Description </h1>
-        <form action="{{ route('records.store') }}" method="POST">
+        <form action="{{ route('records.store') }}" method="PUT">
             @csrf
             <input type="hidden" name="parent_id" value="{{$parent->id}}">
 

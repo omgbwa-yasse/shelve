@@ -55,13 +55,28 @@
                         </p>
                     </div>
 
-                <a href="{{ route('slips.records.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
-                <a href="{{ route('slips.records.edit', [$slip, $slipRecord->id]) }}" class="btn btn-warning mt-3">Edit</a>
-                <form action="{{ route('slips.records.destroy', [$slip->id, $slipRecord->id]) }}" method="POST" style="display: inline-block;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this slip record?')">Delete</button>
-                </form>
+
+                @if($slip->is_received  == FALSE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                    <a href="{{ route('slips.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
+                    <a href="{{ route('slips.records.edit', [$slip, $slipRecord->id]) }}" class="btn btn-warning mt-3">Edit</a>
+                    <form action="{{ route('slips.records.destroy', [$slip->id, $slipRecord->id]) }}" method="POST" style="display: inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this slip record?')">Delete</button>
+                    </form>
+                @elseif($slip->is_received  == TRUE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                    <a href="{{ route('slips.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
+                    <a href="{{ route('slips.records.edit', [$slip, $slipRecord->id]) }}" class="btn btn-warning mt-3">Edit</a>
+                    <form action="{{ route('slips.records.destroy', [$slip->id, $slipRecord->id]) }}" method="POST" style="display: inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this slip record?')">Delete</button>
+                    </form>
+                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE )
+                    <a href="{{ route('slips.records.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
+                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE)
+                    <a href="{{ route('slips.records.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
+                @endif
         </div>
         </div>
     </div>

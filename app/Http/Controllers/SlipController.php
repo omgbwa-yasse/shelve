@@ -10,11 +10,16 @@ use App\Models\Dolly;
 use Illuminate\Http\Request;
 use App\Models\Organisation;
 use App\Models\Slip;
+use App\Models\Record;
 use App\Models\SlipStatus;
 use App\Models\User;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleXMLElement;
 use ZipArchive;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class SlipController extends Controller
@@ -22,7 +27,10 @@ class SlipController extends Controller
 
     public function index()
     {
-        $slips = Slip::all();
+        $slips = Slip::where('is_received', false)
+            ->where('is_approved', false)
+            ->where('is_integrated', false)
+            ->paginate(10);
         return view('transferrings.slips.index', compact('slips'));
     }
 
@@ -44,9 +52,9 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id',
-            'user_organisation_id' => 'required|exists:organisations,id',
-            'user_id' => 'nullable|exists:users,id',
+            'officer_organisation_id' => 'required|exists:organisations,id', // supprimer
+            'user_organisation_id' => 'required|exists:organisations,id',  // Supprimer et merge
+            'user_id' => 'nullable|exists:users,id', // Supprimer et merge
             'slip_status_id' => 'required|exists:slip_statuses,id',
             'is_received' => 'nullable|boolean',
             'received_date' => 'nullable|date',
@@ -63,7 +71,109 @@ class SlipController extends Controller
     }
 
 
+    public function reception(Request $request)
+    {
 
+        $request->validate([
+            'id' => 'required|exists:slips,id',
+        ]);
+
+        $slip = Slip::findOrFail($request->input('id'));
+        $slip->update([
+            'is_received' => TRUE,
+            'received_by' => auth()->id(),
+            'received_date' => now(),
+        ]);
+
+        return redirect()->route('slips.index')
+            ->with('success', 'Slip received successfully.');
+    }
+
+
+    public function approve(Request $request){
+
+        $request->validate([
+            'id' => [
+                'required',
+                'exists:slips,id',
+                function ($attribute, $value, $fail) {
+                    $slip = Slip::find($value);
+                    if (!$slip) {
+                        $fail('Le slip spécifié n\'existe pas.');
+                    } elseif (!$slip->is_received) {
+                        $fail('Le slip sélectionné n\'a pas encore été reçu.');
+                    } elseif (empty($slip->received_date)) {
+                        $fail('La date de réception du slip n\'est pas définie.');
+                    }
+                },
+            ],
+        ]);
+
+
+
+        $slip = Slip::findOrFail($request->input('id'));
+
+        $slip->update([
+            'is_approved' => TRUE,
+            'approved_by' => auth()->id(),
+            'approved_date' => now(),
+        ]);
+
+        return redirect()->route('slips.show',$slip)
+            ->with('success', 'Slip received successfully.');
+
+    }
+
+
+
+
+    public function integrate(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|exists:slips,id',
+        ]);
+
+        $slip = Slip::updateOrCreate(
+            ['id' => $request->input('id')],
+            [
+                'is_integrated' => true,
+                'integrated_by' => auth()->id(),
+                'integrated_date' => now(),
+            ]
+        );
+
+        if ($slip) {
+            foreach ($slip->records as $source) {
+
+                $record = Record::create([
+                    'code' => $source->code,
+                    'name' => $source->name,
+                    'date_format' => $source->date_format,
+                    'date_start' => $source->date_start,
+                    'date_end' => $source->date_end,
+                    'date_exact' => $source->date_exact,
+                    'content' => $source->content,
+                    'level_id' => $source->level_id,
+                    'width' => $source->width,
+                    'width_description' => $source->width_description,
+                    'support_id' => $source->support_id,
+                    'activity_id' => $source->activity_id,
+                    'container_id' => $source->container_id,
+                    'user_id' => $source->creator_id,
+                    'status_id' => 1,
+                ]);
+                if($source->authors){
+                    $record->authors()->attach($source->authors->pluck('id'));
+                }
+
+            }
+        } else {
+            return back()->withErrors(['error' => 'Failed to integrate slip.']);
+        }
+
+        return redirect()->route('slips.show', $slip)
+            ->with('success', 'Slip integrated successfully.');
+    }
 
 
 
@@ -73,6 +183,8 @@ class SlipController extends Controller
         $slipRecords = $slip->records;
         return view('transferrings.slips.show', compact('slip', 'slipRecords'));
     }
+
+
 
 
     public function edit(Slip $slip)
@@ -130,19 +242,32 @@ class SlipController extends Controller
             case 'project':
                 $slips = Slip::where('is_received', '=', false)
                             ->where('is_approved', '=', false)
-                            ->get();
+                            ->paginate(10);
                 break;
 
             case 'received':
                 $slips = Slip::where('is_received', '=', true)
                             ->whereNull('is_approved')
-                            ->get();
+                            ->paginate(10);
                 break;
 
             case 'approved':
                 $slips = Slip::where('is_approved', '=', true)
-                            ->get();
+                            ->paginate(10);
                 break;
+
+            case 'integrated':
+                $slips = Slip::where('is_integrated', '=', true)
+                            ->paginate(10);
+                break;
+
+            default:
+                $slips = Slip::where('is_received', false)
+                            ->where('is_approved', false)
+                            ->paginate(10);
+                break;
+
+
         }
 
         $slips->load('officer', 'officerOrganisation', 'userOrganisation', 'user','slipStatus','records');

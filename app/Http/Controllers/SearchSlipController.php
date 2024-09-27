@@ -41,55 +41,55 @@ class SearchSlipController extends Controller
                     });
                 }
 
-                $slips = $query->get();
+                $slips = $query->paginate(10);
                 break;
 
 
 
             case "code":
                 $slips = Slip::where('code', $request->input('value'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "officer":
                 $slips = Slip::where('operator_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
 
             case "officer-organisation":
                 $slips = Slip::where('officer_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user":
                 $slips = Slip::where('user_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "user-organisation":
                 $slips = Slip::where('user_organisation_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
 
             case "approved":
                     $slips = Slip::where('is_approved', true)
-                    ->get();
+                    ->paginate(10);
                     break;
 
             case "draft":
                     $slips = Slip::where('is_approved', false)
-                    ->get();
+                    ->paginate(10);
                     break;
 
             default:
-                $slips = Slip::take(5)->get();
+                $slips = Slip::take(5)->paginate(10);
                 break;
         }
 

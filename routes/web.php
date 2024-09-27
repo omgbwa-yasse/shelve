@@ -170,6 +170,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
         Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
 
+        Route::get('/slips/reception', [SlipController::class, 'reception'])->name('slips.reception');
+        Route::get('/slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
+        Route::get('/slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
 
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);

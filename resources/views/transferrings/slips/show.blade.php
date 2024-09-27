@@ -112,15 +112,35 @@
                                 <i class="fas fa-arrow-left me-2"></i>Retour
                             </a>
                             <div>
-                                <a href="{{ route('slips.edit', $slip->id) }}" class="btn btn-warning me-2">
-                                    <i class="fas fa-edit me-2"></i>Modifier
-                                </a>
-                                <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                    <i class="fas fa-trash-alt me-2"></i>Supprimer
-                                </button>
-                                <a href="{{ route('slips.records.create', $slip) }}" class="btn btn-success">
-                                    <i class="fas fa-plus me-2"></i>Ajouter des documents
-                                </a>
+
+                                @if($slip->is_received  == FALSE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                                    <a href="{{ route('slips.records.create', $slip) }}" class="btn btn-success">
+                                        <i class="fas bi-file-upload me-2"></i>Ajouter des documents
+                                    </a>
+                                    <a href="{{ route('slips.reception') }}?id={{ $slip->id }}" class="btn btn-success">
+                                            <i class="fas bi-inbox me-2"></i> Receptionner
+                                    </a>
+                                    <a href="{{ route('slips.edit', $slip->id) }}" class="btn btn-warning me-2">
+                                        <i class="fas fa-edit me-2"></i>Modifier
+                                    </a>
+                                    <button type="button" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="fas bi-trash-alt me-2"></i>Supprimer
+                                    </button>
+
+                                @elseif($slip->is_received  == TRUE && $slip->is_approved  == FALSE && $slip->is_integrated  == FALSE)
+                                    <a href="{{ route('slips.approve') }}?id={{ $slip->id }}" class="btn btn-success">
+                                        <i class="fas bi-check-circle me-2"></i> Approuver
+                                    </a>
+                                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE )
+                                    <a href="{{ route('slips.integrate') }}?id={{ $slip->id }}" class="btn btn-success">
+                                        <i class="fas bi-folder-plus me-2"></i>Intégrer dans le repertoire
+                                    </a>
+                                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE)
+                                    <a href="" class="btn btn-success">
+                                        <i class="fas bi-folder-plus me-2"></i>Imprimer le bordereau ***
+                                    </a>
+                                @endif
+
                             </div>
                         </div>
                     </div>
