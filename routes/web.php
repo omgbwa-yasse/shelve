@@ -127,10 +127,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
     });
+    Route::get('/communications/print', [CommunicationController::class, 'print'])->name('communications.print');
+    Route::post('/communications/add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
 
     Route::prefix('communications')->group(function () {
         Route::get('/export', [CommunicationController::class, 'export'])->name('communications.export');
-        Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
+//        Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);

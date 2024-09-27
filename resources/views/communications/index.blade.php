@@ -139,14 +139,29 @@
                 .map(checkbox => checkbox.value);
 
             if (checkedCommunications.length === 0) {
-                alert('Veuillez sélectionner au moins une communication.');
+                alert('Veuillez sélectionner au moins une communication à ajouter au chariot.');
                 return;
             }
 
-            // Implement cart functionality here
-            alert('Fonctionnalité de chariot à implémenter');
+            fetch('{{ route('communications.addToCart') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ communications: checkedCommunications })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    // Optionnel : rediriger vers la page du chariot
+                    {{--// window.location.href = '{{ route('cart.show') }}';--}}
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de l\'ajout au chariot.');
+                });
         });
-
         document.getElementById('exportBtn').addEventListener('click', function(e) {
             e.preventDefault();
             let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
