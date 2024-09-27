@@ -228,7 +228,7 @@ class SlipController extends Controller
     {
         $slip->delete();
 
-        return redirect()->route('slip.index')
+        return redirect()->route('slips.index')
             ->with('success', 'Slip deleted successfully.');
     }
 

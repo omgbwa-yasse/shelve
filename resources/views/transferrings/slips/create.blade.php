@@ -13,12 +13,7 @@
                 <div class="flex-grow-1">
                     <label for="slip_status_id" class="form-label">Transferring Status</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search status...">
-                        </div>
                         <select class="form-select" id="slip_status_id" name="slip_status_id" required>
-                            <option value="" disabled selected>Enter the status</option>
                             @foreach ($slipStatuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                             @endforeach
@@ -38,12 +33,7 @@
                 <div class="flex-grow-1 me-3">
                     <label for="officer_organisation_id" class="form-label">Officer Organisation</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search officer organisation...">
-                        </div>
                         <select class="form-select" id="officer_organisation_id" name="officer_organisation_id" required>
-                            <option value="" disabled selected>Enter the officer organisation</option>
                             @foreach ($organisations as $organisation)
                                 <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
                             @endforeach
@@ -55,12 +45,7 @@
                 <div class="flex-grow-1 me-3">
                     <label for="user_organisation_id" class="form-label">User Organisation</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user organisation...">
-                        </div>
                         <select class="form-select" id="user_organisation_id" name="user_organisation_id" required>
-                            <option value="" disabled selected>Enter the user organisation</option>
                             @foreach ($organisations as $organisation)
                                 <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
                             @endforeach
@@ -70,12 +55,7 @@
                 <div class="flex-grow-1">
                     <label for="user_id" class="form-label">User</label>
                     <div class="select-with-search">
-                        <div class="input-group mb-2">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search user...">
-                        </div>
                         <select class="form-select" id="user_id" name="user_id">
-                            <option value="" disabled selected>Enter the user</option>
                             @foreach ($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->name }}</option>
                             @endforeach
