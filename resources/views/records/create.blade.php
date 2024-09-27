@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Description </h1>
-        <form action="{{ route('records.store') }}" method="POST">
+        <form action="{{ route('records.store')}}" method="POST">
             @csrf
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
@@ -16,7 +16,7 @@
                     <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">Contenu</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">Condition d'accès</a>
+                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">Condition d/accès</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">Sources complémentaires</a>
@@ -36,18 +36,17 @@
                 <div class="tab-pane fade show active " id="identification" role="tabpanel" aria-labelledby="identification-tab">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="level_id" class="form-label">Level</label>
+                            <label for="level_id" class="form-label">Niveau</label>
                             <select name="level_id" id="level_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the level</option>
+                                <option value="" disabled selected>Niveau de description</option>
                                 @foreach ($levels as $level)
                                     <option value="{{ $level->id }}">{{ $level->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="support_id" class="form-label">Support</label>
+                            <label for="support_id" class="form-label">Support </label>
                             <select name="support_id" id="support_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the support</option>
                                 @foreach ($supports as $support)
                                     <option value="{{ $support->id }}">{{ $support->name }}</option>
                                 @endforeach
@@ -62,30 +61,30 @@
 
                     </div>
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
+                        <label for="name" class="form-label">Intitulé</label>
                         <textarea name="name" id="name" class="form-control" required></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="date_start" class="form-label">Date Start</label>
+                            <label for="date_start" class="form-label">Date de début</label>
                             <input type="text" name="date_start" id="date_start" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_end" class="form-label">Date End</label>
+                            <label for="date_end" class="form-label">Date de fin</label>
                             <input type="text" name="date_end" id="date_end" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_exact" class="form-label">Date Exact</label>
+                            <label for="date_exact" class="form-label">Date exacte</label>
                             <input type="date" name="date_exact" id="date_exact" class="form-control">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <label for="width" class="form-label">Width</label>
+                            <label for="width" class="form-label">Epaisseur</label>
                             <input type="number" name="width" id="width" class="form-control" step="0.01" min="0" max="9999999999.99">
                         </div>
                         <div class="col-md-10 mb-3">
-                            <label for="width_description" class="form-label">Width Description</label>
+                            <label for="width_description" class="form-label">Description de épaisseur</label>
                             <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100">
                         </div>
                     </div>
@@ -102,34 +101,34 @@
                         <input type="hidden" name="author_ids[]" id="author-ids">
                     </div>
                     <div class="mb-3">
-                        <label for="biographical_history" class="form-label">Biographical History</label>
+                        <label for="biographical_history" class="form-label">Bibliographie</label>
                         <textarea name="biographical_history" id="biographical_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="archival_history" class="form-label">Archival History</label>
+                        <label for="archival_history" class="form-label">Historique archivage</label>
                         <textarea name="archival_history" id="archival_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="acquisition_source" class="form-label">Acquisition Source</label>
+                        <label for="acquisition_source" class="form-label">Source acquisition</label>
                         <textarea name="acquisition_source" id="acquisition_source" class="form-control"></textarea>
                     </div>
 
                 </div>
                 <div class="tab-pane fade" id="contenu" role="tabpanel" aria-labelledby="contenu-tab">
                     <div class="mb-3">
-                        <label for="content" class="form-label">Content</label>
+                        <label for="content" class="form-label">Contenu</label>
                         <textarea name="content" id="content" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="appraisal" class="form-label">Appraisal</label>
+                        <label for="appraisal" class="form-label">Evaluation</label>
                         <textarea name="appraisal" id="appraisal" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="accrual" class="form-label">Accrual</label>
+                        <label for="accrual" class="form-label">Accroissement</label>
                         <textarea name="accrual" id="accrual" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="arrangement" class="form-label">Arrangement</label>
+                        <label for="arrangement" class="form-label">Classement</label>
                         <textarea name="arrangement" id="arrangement" class="form-control"></textarea>
                     </div>
                 </div>
