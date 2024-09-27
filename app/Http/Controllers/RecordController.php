@@ -234,6 +234,26 @@ class RecordController extends Controller
 
 
     // ici c'est pour l'import export
+    public function exportButton(Request $request)
+    {
+        $recordIds = explode(',', $request->query('records'));
+        $format = $request->query('format', 'excel');
+        $records = Record::whereIn('id', $recordIds)->get();
+
+        switch ($format) {
+            case 'excel':
+                return Excel::download(new RecordsExport($records), 'records_export.xlsx');
+            case 'ead':
+                $xml = $this->generateEAD($records);
+                return response($xml)
+                    ->header('Content-Type', 'application/xml')
+                    ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
+            case 'seda':
+                return $this->exportSEDA($records);
+            default:
+                return redirect()->back()->with('error', 'Format d\'exportation non valide.');
+        }
+    }
     public function export(Request $request)
     {
         $dollyId = $request->input('dolly_id');

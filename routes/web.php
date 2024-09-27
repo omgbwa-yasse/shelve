@@ -146,6 +146,9 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('repositories')->group(function () {
+        Route::post('/dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
+//        Route::get('/records/export', [RecordController::class, 'export'])->name('records.export');
+        Route::post('/records/print', [RecordController::class, 'printRecords'])->name('records.print');
         Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
         //Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');

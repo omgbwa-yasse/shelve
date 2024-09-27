@@ -99,6 +99,40 @@
             </nav>
         </div>
     </footer>
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">Choisir le format d'exportation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatExcel" value="excel" checked>
+                        <label class="form-check-label" for="formatExcel">
+                            Excel
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatEAD" value="ead">
+                        <label class="form-check-label" for="formatEAD">
+                            EAD
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="exportFormat" id="formatSEDA" value="seda">
+                        <label class="form-check-label" for="formatSEDA">
+                            SEDA
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmExport">Exporter</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -186,6 +220,32 @@
             });
 
             this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>Tout cocher' : '<i class="bi bi-square me-1"></i>Tout décocher';
+        });
+        document.getElementById('exportBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement à exporter.');
+                return;
+            }
+
+            // Ouvrir le modal de sélection de format
+            var exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+            exportModal.show();
+        });
+
+        document.getElementById('confirmExport').addEventListener('click', function() {
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+            let format = document.querySelector('input[name="exportFormat"]:checked').value;
+
+            window.location.href = `{{ route("records.export") }}?records=${checkedRecords.join(',')}&format=${format}`;
+
+            // Fermer le modal
+            var exportModal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+            exportModal.hide();
         });
     </script>
 @endpush
