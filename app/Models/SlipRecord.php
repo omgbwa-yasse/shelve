@@ -10,7 +10,7 @@ use Monolog\Level;
 class SlipRecord extends Model
 {
     use HasFactory;
-    //    use Searchable;
+//    use Searchable;
 
     protected $fillable = [
         'slip_id',

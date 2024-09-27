@@ -10,7 +10,7 @@ use App\Models\SlipStatus;
 class Slip extends Model
 {
     use HasFactory;
-    // use Searchable;
+    use Searchable;
 
     protected $fillable = [
         'code',

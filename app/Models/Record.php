@@ -17,7 +17,7 @@ use App\Models\User;
 class Record extends Model
 {
     use HasFactory;
-   // use Searchable;
+    use Searchable;
 
     protected $fillable = [
         'code',

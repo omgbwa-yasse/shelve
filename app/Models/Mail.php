@@ -20,7 +20,7 @@ class Mail extends Model
 {
     use HasFactory;
 
-    // use Searchable;
+    use Searchable;
     protected $fillable = [
         'code',
         'name',

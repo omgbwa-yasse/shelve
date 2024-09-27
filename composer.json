@@ -12,7 +12,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",
         "maatwebsite/excel": "^3.1",
-        "teamtnt/laravel-scout-tntsearch-driver": "*",
+        "teamtnt/laravel-scout-tntsearch-driver": "^14.0",
         "teamtnt/tntsearch": "^4.3"
     },
     "require-dev": {

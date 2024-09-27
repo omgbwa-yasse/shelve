@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class mailArchivingController extends Controller
 {
 
+
     public function index($id)
     {
         $mailArchivings = MailArchiving::with('container', 'mail', 'documentType')->where('container_id','=',$id);

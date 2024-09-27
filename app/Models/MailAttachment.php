@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MailAttachment extends Model
 {
-    protected $table="attachments";
+protected $table="attachments";
     use HasFactory;
 
     protected $fillable = [
