@@ -241,18 +241,24 @@ class RecordController extends Controller
         $format = $request->query('format', 'excel');
         $records = Record::whereIn('id', $recordIds)->get();
 
-        switch ($format) {
-            case 'excel':
-                return Excel::download(new RecordsExport($records), 'records_export.xlsx');
-            case 'ead':
-                $xml = $this->generateEAD($records);
-                return response($xml)
-                    ->header('Content-Type', 'application/xml')
-                    ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
-            case 'seda':
-                return $this->exportSEDA($records);
-            default:
-                return redirect()->back()->with('error', 'Format d\'exportation non valide.');
+        $slips = "";
+        try {
+            switch ($format) {
+                case 'excel':
+                    return Excel::download(new RecordsExport($records), 'records_export.xlsx');
+                case 'ead':
+                    $xml = $this->generateEAD($records);
+                    return response($xml)
+                        ->header('Content-Type', 'application/xml')
+                        ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
+                case 'seda':
+                    return $this->exportSEDA($records,$slips);
+                default:
+                    return response()->json(['error' => 'Format d\'exportation non valide.'], 400);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de l\'exportation: ' . $e->getMessage());
+            return response()->json(['error' => 'Une erreur est survenue lors de l\'exportation.'], 500);
         }
     }
     public function export(Request $request)

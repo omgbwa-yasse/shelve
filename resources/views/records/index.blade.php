@@ -176,9 +176,10 @@
                 return;
             }
 
-            window.location.href = '{{ route("records.exportButton") }}?records=' + checkedRecords.join(',');
+            // Ouvrir le modal de sélection de format
+            var exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
+            exportModal.show();
         });
-
         document.getElementById('printBtn').addEventListener('click', function(e) {
             e.preventDefault();
             let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
@@ -221,27 +222,11 @@
 
             this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>Tout cocher' : '<i class="bi bi-square me-1"></i>Tout décocher';
         });
-        document.getElementById('exportBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value);
-
-            if (checkedRecords.length === 0) {
-                alert('Veuillez sélectionner au moins un enregistrement à exporter.');
-                return;
-            }
-
-            // Ouvrir le modal de sélection de format
-            var exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
-            exportModal.show();
-        });
-
         document.getElementById('confirmExport').addEventListener('click', function() {
             let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
                 .map(checkbox => checkbox.value);
             let format = document.querySelector('input[name="exportFormat"]:checked').value;
 
-            // Au lieu de rediriger, faisons une requête fetch
             fetch(`{{ route("records.exportButton") }}?records=${checkedRecords.join(',')}&format=${format}`, {
                 method: 'GET',
                 headers: {
@@ -249,22 +234,47 @@
                 }
             })
                 .then(response => {
-                    if (response.ok) return response.blob();
-                    throw new Error('Erreur réseau');
+                    if (!response.ok) throw new Error('Erreur réseau');
+
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Une erreur est survenue');
+                        });
+                    }
+
+                    return response.blob();
                 })
                 .then(blob => {
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.style.display = 'none';
                     a.href = url;
-                    a.download = `records_export.${format === 'excel' ? 'xlsx' : format}`;
+
+                    // Déterminer l'extension du fichier en fonction du format
+                    let extension;
+                    switch (format) {
+                        case 'excel':
+                            extension = 'xlsx';
+                            break;
+                        case 'ead':
+                            extension = 'xml';
+                            break;
+                        case 'seda':
+                            extension = 'zip';
+                            break;
+                        default:
+                            extension = 'txt';
+                    }
+
+                    a.download = `records_export.${extension}`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de l\'exportation');
+                    alert(error.message || 'Une erreur est survenue lors de l\'exportation');
                 });
 
             // Fermer le modal
