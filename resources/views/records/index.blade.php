@@ -65,13 +65,13 @@
                             <div class="col-md-12">
                                 <p class="card-text">
                                     <i class="bi bi-card-text me-2"></i> Content : {{ $record->content }}<br>
-                                    <i class="bi bi-bar-chart-fill me-2"></i>Niveau de description :  <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id ?? ''}}">{{ $record->level->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-flag-fill me-2"></i>Statut : <a href=" {{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-hdd-fill me-2"></i>Support : <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-activity me-2"></i>Activité : <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-calendar-event me-2"></i>Dates : <a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
-                                    <i class="bi bi-geo-alt-fill me-2"></i>Contenant : <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? 'Non conditionné' }}</a>
-                                    <i class="bi bi-people-fill me-2"></i>Producteur : <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
+                                    <i class="bi bi-bar-chart-fill me-2"></i>Niveau de description :<a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id ?? ''}}">{{ $record->level->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-flag-fill me-2"></i>Statut :<a href=" {{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-hdd-fill me-2"></i>Support :<a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-activity me-2"></i>Activité :<a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-calendar-event me-2"></i>Dates :<a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Contenant :<a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? 'Non conditionné' }}</a>
+                                    <i class="bi bi-people-fill me-2"></i>Producteur :<a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
                                 </p>
                                 <strong>Vedettes : </strong>
                                 <p class="card-text">
