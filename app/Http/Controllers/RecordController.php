@@ -17,11 +17,12 @@ use App\Models\Accession;
 use App\Models\Author;
 use App\Models\RecordLevel;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Writer\Pdf;
+
 use ZipArchive;
 
 

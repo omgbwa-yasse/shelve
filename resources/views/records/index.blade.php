@@ -176,7 +176,7 @@
                 return;
             }
 
-            window.location.href = '{{ route("records.export") }}?records=' + checkedRecords.join(',');
+            window.location.href = '{{ route("records.exportButton") }}?records=' + checkedRecords.join(',');
         });
 
         document.getElementById('printBtn').addEventListener('click', function(e) {
@@ -241,7 +241,31 @@
                 .map(checkbox => checkbox.value);
             let format = document.querySelector('input[name="exportFormat"]:checked').value;
 
-            window.location.href = `{{ route("records.export") }}?records=${checkedRecords.join(',')}&format=${format}`;
+            // Au lieu de rediriger, faisons une requête fetch
+            fetch(`{{ route("records.exportButton") }}?records=${checkedRecords.join(',')}&format=${format}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (response.ok) return response.blob();
+                    throw new Error('Erreur réseau');
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `records_export.${format === 'excel' ? 'xlsx' : format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de l\'exportation');
+                });
 
             // Fermer le modal
             var exportModal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
