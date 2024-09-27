@@ -36,7 +36,7 @@ class SlipRecord extends Model
 
     public function slip()
     {
-        return $this->belongsTo(Slip::class);
+        return $this->belongsTo(Slip::class, 'slip_id');
     }
 
     public function level()
@@ -46,19 +46,19 @@ class SlipRecord extends Model
 
     public function support()
     {
-        return $this->belongsTo(RecordSupport::class);
+        return $this->belongsTo(RecordSupport::class,'support_id' );
     }
 
     public function activity()
     {
-        return $this->belongsTo(Activity::class);
+        return $this->belongsTo(Activity::class, 'activity_id');
     }
 
 
 
     public function container()
     {
-        return $this->belongsTo(Container::class);
+        return $this->belongsTo(Container::class, 'container_id');
     }
 
 

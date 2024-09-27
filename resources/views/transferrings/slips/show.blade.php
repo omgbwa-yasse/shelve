@@ -41,51 +41,66 @@
                             <div class="col-md-12">
                                 <h4 class="text-primary mb-3">Informations supplémentaires</h4>
                                 <div class="table-responsive">
-                                    <table class="table table-borderless">
-                                        <tbody>
-                                        <tr>
-                                            <th scope="row" class="w-25">Statut</th>
-                                            <td>
-                                                <span class="badge bg-info">
-                                                    {{ $slip->slipStatus ? $slip->slipStatus->name : 'Sans statut' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Date de réception</th>
-                                            <td>{{ $slip->received_date ?? 'A définir' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Approuvé</th>
-                                            <td>
-                                                <span class="badge bg-{{ $slip->is_approved ? 'success' : 'danger' }}">
-                                                    {{ $slip->is_approved ? 'Oui' : 'Non' }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">Date d'approbation</th>
-                                            <td>{{ $slip->approved_date ?? 'A définir' }}</td>
-                                        </tr>
+                                    <table class="table table-borderless d-flex">
+                                        <tbody class="d-flex flex-wrap align-items-center justify-content-between w-100">
+                                            <tr class="d-flex">
+                                                <th scope="row" class="">Statut</th>
+                                                <td>
+                                                    <span class="badge bg-info">
+                                                        {{ $slip->slipStatus ? $slip->slipStatus->name : 'Sans statut' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr class="d-flex">
+                                                <th scope="row">Date de réception</th>
+                                                <td>{{ $slip->received_date ?? 'A définir' }}</td>
+                                            </tr>
+                                            <tr class="d-flex">
+                                                <th scope="row">Approuvé</th>
+                                                <td>
+                                                    <span class="badge bg-{{ $slip->is_approved ? 'success' : 'danger' }}">
+                                                        {{ $slip->is_approved ? 'Oui' : 'Non' }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr class="d-flex">
+                                                <th scope="row">Date d'approbation</th>
+                                                <td>{{ $slip->approved_date ?? 'A définir' }}</td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
                         </div>
 
+
                         <div class="mt-5">
                             <h3 class="text-primary border-bottom pb-2 mb-3">Documents associés</h3>
-                            @if($slipRecords->isNotEmpty())
+                            @if($slip->records->isNotEmpty())
+                                    @foreach($slip->records as $record)
+                                        <div class="d-flex align-items-center justify-content-between border p-3 mb-3">
 
-                                        @foreach($slipRecords as $record)
-                                            <div class="list-group">
-                                                <a href="#" class="mt-2">
-                                                   <strong> {{ $record->code }} : {{ $record->name }}</strong>
-                                                    {{ $record->content }}
-                                                </a>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="record-{{ $record->id }}">
+                                                <label class="form-check-label" for="record-{{ $record->id }}">
+                                                    <a href="{{  route('slips.records.show', [$slip,$record] ) }}">
+                                                    <strong>{{ $record->code }} : {{ $record->name }} de {{ $record->author->name?? 'Nan' }}</strong>
+                                                        @if (is_null($record->date_exact) && is_null($record->date_end))
+                                                             du {{ $record->date_start }}
+                                                        @elseif (is_null($record->date_exact) && !is_null($record->date_end))
+                                                            de {{ $record->date_start }} - {{ $record->date_end }}
+                                                        @else
+                                                            du {{ $record->date_exact }}
+                                                        @endif
+                                                    </a>
+                                                </label>
+                                            </div>
+                                            <div class="ms-3">
+                                                {{ $record->content }}
                                             </div>
 
-                                        @endforeach
+                                        </div>
+                                    @endforeach
                             @else
                                 <p class="text-muted">Aucun document associé à ce bordereau.</p>
                             @endif

@@ -16,16 +16,6 @@ class SlipRecordController extends Controller
 {
 
 
-    public function index(Slip $slip)
-    {
-        $slip->load('records');
-        $slipRecords = $slip->records;
-        return view('transferrings.records.index', compact('slip', 'slipRecords'));
-    }
-
-
-
-
     public function create(Slip $slip)
     {
         $supports = RecordSupport::all();
@@ -88,26 +78,25 @@ class SlipRecordController extends Controller
         ];
 
         $slipRecord = SlipRecord::create($slipRecordData);
-
-        return redirect()->route('slips.records.index', $slip->id)
-            ->with('success', 'Slip record created successfully.');
+        $slip = $slipRecord->slip;
+        return view('transferrings.slips.show', compact('slip'));
     }
 
     private function getDateFormat($dateStart, $dateEnd)
     {
-        // Implémentez la logique pour déterminer le format de date
-        // Assurez-vous que cette méthode retourne une valeur valide (un seul caractère)
-        // Par exemple, retournez 'S' pour une date de début, 'E' pour une date de fin, etc.
-        if ($dateStart && $dateEnd) {
-            return 'B'; // Both dates are present
-        } elseif ($dateStart) {
-            return 'S'; // Only start date is present
-        } elseif ($dateEnd) {
-            return 'E'; // Only end date is present
-        } else {
-            return 'N'; // No dates are present
+        $start = new \DateTime($dateStart);
+        $end = new \DateTime($dateEnd);
+
+        if ($start->format('Y') !== $end->format('Y')) {
+            return 'Y';
+        } elseif ($start->format('m') !== $end->format('m')) {
+            return 'M';
+        } elseif ($start->format('d') !== $end->format('d')) {
+            return 'D';
         }
+        return 'D';
     }
+
 
 
 
@@ -155,19 +144,18 @@ class SlipRecordController extends Controller
         ]);
 
         $slipRecord->update($request->all());
-
-        return redirect()->route('slips.records.index', $slip->id)
-            ->with('success', 'Slip record updated successfully.');
+        $slip = $slipRecord->slip;
+        return view('transferrings.slips.show', compact('slip', 'slipRecords'));
     }
 
 
 
-    public function destroy(Slip $slip, SlipRecord $slipRecord)
+    public function destroy(int $slip_id, int $slipRecord_id)
     {
+        $slipRecord = SlipRecord::where(['slip_id' => $slip_id, 'id' => $slipRecord_id])->firstOrFail();
+        $slip = $slipRecord->slip;
         $slipRecord->delete();
-
-        return redirect()->route('slips.records.index', $slip->id)
-            ->with('success', 'Slip record deleted successfully.');
+        return view('transferrings.slips.show', compact('slip'));
     }
 
 

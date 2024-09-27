@@ -2,24 +2,59 @@
 
 @section('content')
     <div class="container">
-        <h1>Slip Record Details for Slip {{ $slip->name }}</h1>
+        <h1>Détail de enregistrement</h1>
+        <div class="col-md-12">
+            <h4 class="border-bottom pb-3">
+                Versement | <strong> {{ $slip->code?? ''}} :  {{ $slip->name }}</strong>
+            </h4>
+            <p class="lead"> Description : {{ $slip->description }}</p>
+            <a name="" id=""  class="btn btn-primary mb-3" href="{{ route('slips.show', $slip) }}" role="button" >Consulter le bordereau</a>
+        </div>
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{ $slipRecord->name }}</h5>
-                <p class="card-text">{{ $slipRecord->content }}</p>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item"><strong>Code:</strong> {{ $slipRecord->code }}</li>
-                    <li class="list-group-item"><strong>Date Format:</strong> {{ $slipRecord->date_format }}</li>
-                    <li class="list-group-item"><strong>Date Start:</strong> {{ $slipRecord->date_start }}</li>
-                    <li class="list-group-item"><strong>Date End:</strong> {{ $slipRecord->date_end }}</li>
-                    <li class="list-group-item"><strong>Date Exact:</strong> {{ $slipRecord->date_exact }}</li>
-                    <li class="list-group-item"><strong>Level ID:</strong> {{ $slipRecord->level_id }}</li>
-                    <li class="list-group-item"><strong>Width:</strong> {{ $slipRecord->width }}</li>
-                    <li class="list-group-item"><strong>Width Description:</strong> {{ $slipRecord->width_description }}</li>
-                    <li class="list-group-item"><strong>Support ID:</strong> {{ $slipRecord->support_id }}</li>
-                    <li class="list-group-item"><strong>Activity ID:</strong> {{ $slipRecord->activity_id }}</li>
-                    <li class="list-group-item"><strong>Container ID:</strong> {{ $slipRecord->container_id }}</li>
-                </ul>
+                <div class="row mb-4">
+
+
+                    <div class="">
+                        <p>
+                            <strong>Code </strong> : {{ $slipRecord->code }}
+                        </p>
+                        <p class="card-title">
+                            <strong>Intitulé </strong> : {{ $slipRecord->name }}
+                        </p>
+                        <p class="card-text">
+                            <strong>Description </strong> : {{ $slipRecord->content }}
+                        </p>
+                    </div>
+
+                </div>
+                    <div class="d-flex -ml-3 justify-content-between">
+                        <p>
+                            @if (is_null($slipRecord->date_exact) && is_null($slipRecord->date_end))
+                                Date : {{ $slipRecord->date_start }}
+                            @elseif (is_null($slipRecord->date_exact) && !is_null($slipRecord->date_end))
+                                Dates extrêmes : {{ $slipRecord->date_start }} - {{ $slipRecord->date_end }}
+                            @else
+                                Date : {{ $slipRecord->date_exact }}
+                            @endif
+                        </p>
+                        <p>
+                            <strong>Niveau de description </strong> :{{ $slipRecord->level->name}}
+                        </p>
+                        <p>
+                            <strong>Width:</strong> :{{ $slipRecord->width }} cm ,  {{ $slipRecord->width_description }}</li></li>
+                        </p>
+                        <p>
+                            <strong>support</strong> :{{ $slipRecord->support->name}}
+                        </p>
+                        <p>
+                            <strong>Activité </strong> : {{ $slipRecord->activity->name }}
+                        </p>
+                        <p>
+                            <strong>Boites/chrono :</strong> {{ $slipRecord->container->name }}
+                        </p>
+                    </div>
+
                 <a href="{{ route('slips.records.index', $slip->id) }}" class="btn btn-secondary mt-3">Back</a>
                 <a href="{{ route('slips.records.edit', [$slip, $slipRecord->id]) }}" class="btn btn-warning mt-3">Edit</a>
                 <form action="{{ route('slips.records.destroy', [$slip->id, $slipRecord->id]) }}" method="POST" style="display: inline-block;">
