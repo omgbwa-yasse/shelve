@@ -143,7 +143,7 @@
                 return;
             }
 
-            fetch('{{ route('communications.addToCart') }}', {
+            fetch('{{ route('dolly.createWithCommunications') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,13 +153,17 @@
             })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.message);
-                    // Optionnel : rediriger vers la page du chariot
-                    {{--// window.location.href = '{{ route('cart.show') }}';--}}
+                    if (data.success) {
+                        alert(data.message);
+                        // Optionnel : rediriger vers la page du chariot nouvellement créé
+                        // window.location.href = '/dolly/' + data.dolly_id;
+                    } else {
+                        alert('Une erreur est survenue lors de la création du chariot.');
+                    }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de l\'ajout au chariot.');
+                    alert('Une erreur est survenue lors de la création du chariot.');
                 });
         });
         document.getElementById('exportBtn').addEventListener('click', function(e) {

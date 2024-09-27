@@ -24,20 +24,7 @@ class CommunicationController extends Controller
         $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
         return view('communications.index', compact('communications'));
     }
-    public function addToCart(Request $request)
-    {
-        $communicationIds = $request->input('communications');
-        $dolly = Dolly::firstOrCreate(['user_id' => auth()->id()]);
 
-        foreach ($communicationIds as $communicationId) {
-            DollyCommunication::firstOrCreate([
-                'communication_id' => $communicationId,
-                'dolly_id' => $dolly->id,
-            ]);
-        }
-
-        return response()->json(['message' => 'Communications ajoutées au chariot avec succès']);
-    }
 
 
     public function create()
