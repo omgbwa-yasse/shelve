@@ -11,7 +11,7 @@
             <div class="d-flex align-items-center">
                 <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-cart me-1"></i>
-                    Chariot
+                    Chariot**
                 </a>
                 <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
