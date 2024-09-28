@@ -20,6 +20,7 @@ class Attachment extends Model
         'crypt_sha512',
         'size',
         'creator_id',
+        'type',
     ];
 
 

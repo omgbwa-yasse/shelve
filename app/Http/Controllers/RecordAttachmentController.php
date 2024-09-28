@@ -32,6 +32,8 @@ class RecordAttachmentController extends Controller
             'file' => 'required|file|mimes:pdf',
         ]);
 
+        $validatedData['type'] = 'record';
+
         // Traitement du fichier téléchargé
         $filePath = $request->file('file')->store('attachments');
         $fileSize = $request->file('file')->getSize();
@@ -45,8 +47,9 @@ class RecordAttachmentController extends Controller
             'crypt_sha512' => $fileCryptSha512,
             'size' => $fileSize,
             'creator_id' => auth()->id(),
-            'type' => 'record',
+            'type' => $validatedData['type'],
         ]);
+
 
         $record->attachments()->attach($attachment->id);
 
