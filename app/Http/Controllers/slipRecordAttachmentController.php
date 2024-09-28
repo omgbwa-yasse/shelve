@@ -24,7 +24,8 @@ class slipRecordAttachmentController extends Controller
             'name' => $request->file('file')->getClientOriginalName(),
             'crypt' => md5_file($request->file('file')),
             'size' => $request->file('file')->getSize(),
-            'creator_id' => auth()->id()
+            'creator_id' => auth()->id(),
+            'type' => 'transferring',
         ]);
 
         // Enregistrer la relation entre SlipRecord et Attachment

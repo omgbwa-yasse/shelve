@@ -810,6 +810,8 @@ return new class extends Migration
             $table->string('name', 100)->nullable(false);
             $table->string('crypt', 255)->nullable(false);
             $table->integer('size')->nullable(false);
+            $table->string('crypt_sha512')->nullable(false);
+            $table->enum('type', ['mail','record','communication','transferting'])->nullable(false);
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');

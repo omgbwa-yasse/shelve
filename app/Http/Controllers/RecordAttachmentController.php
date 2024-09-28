@@ -43,6 +43,7 @@ class RecordAttachmentController extends Controller
             'crypt' => $fileCrypt,
             'size' => $fileSize,
             'creator_id' => auth()->id(),
+            'type' => 'record',
         ]);
 
         $record->attachments()->attach($attachment->id);

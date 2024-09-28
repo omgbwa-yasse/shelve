@@ -39,6 +39,7 @@ class MailAttachmentController extends Controller
             'name' => $validatedData['name'],
             'crypt' => $fileCrypt,
             'size' => $fileSize,
+            'type' => 'mail',
             'creator_id' => auth()->id(),
         ]);
 
