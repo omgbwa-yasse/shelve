@@ -79,16 +79,44 @@ class SearchSlipController extends Controller
 
 
             case "approved":
-                    $slips = Slip::where('is_approved', true)
-                    ->paginate(10);
-                    break;
+                $slips = Slip::where([
+                    'is_approved' => true,
+                    'is_received' => false,
+                    'is_integrated' => false
+                ])->paginate(10);
+                break;
 
+            case "received":
+                $slips = Slip::where([
+                    'is_approved' => true,
+                    'is_received' => true,
+                    'is_integrated' => false
+                ])->paginate(10);
+                break;
+
+            case "integrated":
+                $slips = Slip::where([
+                    'is_approved' => true,
+                    'is_received' => true,
+                    'is_integrated' => true
+                ])->paginate(10);
+                break;
+
+
+            case "project":
             case "draft":
-                    $slips = Slip::where('is_approved', false)
-                    ->paginate(10);
-                    break;
+            case "brouillon":
+                        $slips = Slip::whereNotNull('created_at')
+                            ->whereNotNull('name')
+                            ->whereNotNull('code')
+                            ->where('is_approved', false)
+                            ->where('is_received', false)
+                            ->where('is_integrated', false)
+                            ->paginate(10);
+                        break;
 
-            default:
+
+                default:
                 $slips = Slip::take(5)->paginate(10);
                 break;
         }

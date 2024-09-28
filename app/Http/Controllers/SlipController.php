@@ -28,6 +28,8 @@ class SlipController extends Controller
     public function index()
     {
         $slips = Slip::where('is_received', false)
+            ->whereNotNull('code')
+            ->whereNotNull('name')
             ->where('is_approved', false)
             ->where('is_integrated', false)
             ->paginate(10);

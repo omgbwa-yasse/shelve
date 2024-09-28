@@ -178,6 +178,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('/slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
         Route::post('/slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+        Route::get('search', [SearchController::class, 'index'])->name('transferrings.search');
 
         Route::get('/slips/reception', [SlipController::class, 'reception'])->name('slips.reception');
         Route::get('/slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
@@ -185,14 +186,13 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
-        Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');
-        Route::get('slip.select', [SearchSlipController::class, 'date'])->name('slips-select-date');
-        Route::get('organisation-select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
+        Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
+        Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
+        Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
 
         Route::post('/slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
         Route::post('/slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
         Route::delete('/slipRecordAttachment/delete/{id}', [SlipRecordAttachmentController::class, 'delete']);
-
 
     });
 
@@ -286,13 +286,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/repositories/container', [SearchRecordController::class, 'selectContainer'])->name('record-select-container');
     Route::get('/repositories/room', [SearchRecordController::class, 'selectRoom'])->name('record-select-room');
     Route::get('/repositories/shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
-
-    Route::get('/transferrings/sort', [SlipController::class, 'sort'])->name('slips.sort');
     Route::get('/mails/InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
     Route::get('/mails/approve', [MailReceivedController::class, 'approve'])->name('mails.approve');
     Route::get('/mails/feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
-    Route::get('/transferrings/search', [SearchController::class, 'index'])->name('transferrings.search');
-
     Route::get('attachments/{id}/download', [MailAttachmentController::class, 'download'])->name('attachments.download');
 });
 

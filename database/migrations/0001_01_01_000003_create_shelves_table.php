@@ -460,6 +460,8 @@ return new class extends Migration
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+
+
         Schema::create('communication_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->unique()->nullable(false);

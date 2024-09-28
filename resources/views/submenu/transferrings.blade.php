@@ -9,7 +9,7 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i> Tous mes bordereauX</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i>Mes bordereaux</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('slips-select-date') }}"><i class="bi bi-list"></i> Dates</a>
@@ -17,16 +17,6 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('slips-select-organisation') }}?categ=organisation"><i class="bi bi-list"></i> Organisations</a>
                 </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=draft"><i class="bi bi-list"></i> En cours</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-list"></i> Approvés</a>
-                </li>
-
-
             </ul>
         </div>
 
@@ -38,16 +28,16 @@
 
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=project"><i class="bi bi-folder"></i> Projets</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=project"><i class="bi bi-folder"></i> Projets</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=received"><i class="bi bi-envelope-check"></i> Reçus</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=received"><i class="bi bi-envelope-check"></i> Reçus</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=approved"><i class="bi bi-check-circle"></i> Approuvés</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-check-circle"></i> Approuvés</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.sort') }}?categ=integrated"><i class="bi bi-folder-plus"></i> Intégrés</a>
+                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=integrated"><i class="bi bi-folder-plus"></i> Intégrés</a>
                 </li>
             </ul>
         </div>
