@@ -95,7 +95,8 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 Route::get('/tasks/myTasks', [TaskController::class, 'myTasks'])->name('tasks.myTasks');
 Route::get('/tasks/supervision', [TaskController::class, 'supervision'])->name('tasks.supervision');
 Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
-
+Route::post('/dolly/create-with-communications', [DollyController::class, 'createWithCommunications'])
+    ->name('dolly.createWithCommunications');
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/statistics/mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
@@ -128,10 +129,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
     });
+    Route::get('/communications/print', [CommunicationController::class, 'print'])->name('communications.print');
+    Route::post('/communications/add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
 
     Route::prefix('communications')->group(function () {
         Route::get('/export', [CommunicationController::class, 'export'])->name('communications.export');
-        Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
+//        Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);

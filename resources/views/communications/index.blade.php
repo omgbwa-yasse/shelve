@@ -11,7 +11,7 @@
             <div class="d-flex align-items-center">
                 <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-cart me-1"></i>
-                    Chariot
+                    Chariot**
                 </a>
                 <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
@@ -139,14 +139,33 @@
                 .map(checkbox => checkbox.value);
 
             if (checkedCommunications.length === 0) {
-                alert('Veuillez sélectionner au moins une communication.');
+                alert('Veuillez sélectionner au moins une communication à ajouter au chariot.');
                 return;
             }
 
-            // Implement cart functionality here
-            alert('Fonctionnalité de chariot à implémenter');
+            fetch('{{ route('dolly.createWithCommunications') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ communications: checkedCommunications })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Optionnel : rediriger vers la page du chariot nouvellement créé
+                        // window.location.href = '/dolly/' + data.dolly_id;
+                    } else {
+                        alert('Une erreur est survenue lors de la création du chariot.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la création du chariot.');
+                });
         });
-
         document.getElementById('exportBtn').addEventListener('click', function(e) {
             e.preventDefault();
             let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))

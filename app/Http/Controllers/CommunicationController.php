@@ -7,6 +7,8 @@ use App\Exports\CommunicationsExport;
 use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
 use App\Models\CommunicationStatus;
+use App\Models\Dolly;
+use App\Models\DollyCommunication;
 use App\Models\Organisation;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -22,7 +24,6 @@ class CommunicationController extends Controller
         $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
         return view('communications.index', compact('communications'));
     }
-
 
 
 
@@ -174,9 +175,33 @@ class CommunicationController extends Controller
     public function print(Request $request)
     {
         $communicationIds = explode(',', $request->query('communications'));
-        $communications = Communication::with(['user', 'userOrganisation', 'operator', 'operatorOrganisation', 'status', 'records'])
+        $communications = Communication::with([
+            'user',
+            'userOrganisation',
+            'operator',
+            'operatorOrganisation',
+            'status',
+            'records.record' => function ($query) {
+                $query->with([
+                    'status',
+                    'support',
+                    'level',
+                    'activity',
+                    'parent',
+                    'container',
+                    'user',
+                    'authors',
+                    'terms',
+                    'attachments',
+                    'children'
+                ]);
+            }
+        ])
             ->whereIn('id', $communicationIds)
             ->get();
+
+        // Uncomment the following line for debugging
+        // dd($communications);
 
         $pdf = PDF::loadView('communications.print', compact('communications'));
         return $pdf->download('communications_print.pdf');

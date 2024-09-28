@@ -67,6 +67,38 @@ class DollyController extends Controller
 
         return response()->json(['success' => true]);
     }
+    public function createWithCommunications(Request $request)
+    {
+        // Valider la requête
+        $request->validate([
+            'communications' => 'required|array',
+            'communications.*' => 'exists:communications,id'
+        ]);
+
+        $communicationIds = $request->input('communications');
+
+        // Créer un nouveau Dolly
+        $dolly = Dolly::create([
+            'name' => 'Chariot ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'Créé automatiquement',
+            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+            'user_id' => auth()->id() // Associer le Dolly à l'utilisateur connecté
+        ]);
+
+        // Associer les communications au Dolly
+        foreach ($communicationIds as $communicationId) {
+            DollyCommunication::create([
+                'dolly_id' => $dolly->id,
+                'communication_id' => $communicationId
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chariot créé avec succès',
+            'dolly_id' => $dolly->id
+        ]);
+    }
     public function edit(Dolly $dolly)
     {
         return view('dollies.edit', compact('dolly'));
