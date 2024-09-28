@@ -23,6 +23,7 @@ class slipRecordAttachmentController extends Controller
             'path' => $path,
             'name' => $request->file('file')->getClientOriginalName(),
             'crypt' => md5_file($request->file('file')),
+            'crypt_sha512' => hash_file('sha512', $request->file('file')->getRealPath()),
             'size' => $request->file('file')->getSize(),
             'creator_id' => auth()->id(),
             'type' => 'transferring',

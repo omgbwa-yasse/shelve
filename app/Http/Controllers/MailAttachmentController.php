@@ -33,11 +33,13 @@ class MailAttachmentController extends Controller
         $filePath = $request->file('file')->store('attachments');
         $fileSize = $request->file('file')->getSize();
         $fileCrypt = md5_file($request->file('file')->getRealPath());
+        $fileCryptSha512 = hash_file('sha512', $request->file('file')->getRealPath());
 
         $attachment = MailAttachment::create([
             'path' => $filePath,
             'name' => $validatedData['name'],
             'crypt' => $fileCrypt,
+            'crypt_sha512' => $fileCryptSha512,
             'size' => $fileSize,
             'type' => 'mail',
             'creator_id' => auth()->id(),
