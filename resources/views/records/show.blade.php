@@ -32,12 +32,32 @@
                 <div class="card text-start">
                     <div class="card-body">
                         <h4 class="card-title">
-                           <strong>{{ $record->name }}</strong>
+                           <strong>{{ $record->name }} [{{ $record->level->name }}]</strong>
                         </h4>
                         <div class="container mt-1">
                             <div class="row">
                                 <div class="col">
                                     <div class="d-flex flex-column">
+                                        @if ($record->parent)
+                                        <div class="p-2">
+                                        Dans : <a href="{{ route('records.show', $record->parent) }}">
+                                            [{{ $record->parent->level->name ??'' }}]  {{ $record->parent->name ??'' }} /
+                                                @foreach ( $record->parent->authors as $author )
+                                                    {{ $author->name ??'' }}
+                                                @endforeach
+                                        -
+                                                @if($record->parent->date_start != NULL && $record->parent->date_end != NULL)
+                                                    {{ $record->parent->date_start }} du {{ $record->parent->date_end  }}
+                                                @elseif($record->parent->date_exact != NULL && $record->parent->date_end == NULL)
+                                                    {{ $record->parent->date_start }}
+                                                @elseif($record->parent->date_exact != NULL && $record->parent->date_start == NULL)
+                                                    {{ $record->parent->date_exact }}
+                                                @endif
+
+                                            </a>
+                                        </div>
+
+                                        @endif
                                         <div class="p-2">
                                             Cote : {{ $record->code }}
                                         </div>
@@ -135,9 +155,11 @@
                     <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-box me-2"></i> Inserer dans une boîte
                     </a>
-                    <a href="{{ route('record-child.create', $record->id) }}" class="btn btn-outline-success">
-                        <i class="bi bi-plus-circle me-2"></i> Ajouter un fiche fille
-                    </a>
+                    @if ($record->level->has_child == true)
+                        <a href="{{ route('record-child.create', $record->id) }}" class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle me-2"></i> Ajouter un fiche fille
+                        </a>
+                    @endif
                 </div>
 
                 <div class="card shadow-sm mb-4">

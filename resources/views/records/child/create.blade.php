@@ -52,9 +52,12 @@
                             <label for="level_id" class="form-label">Niveau</label>
                             <select name="level_id" id="level_id" class="form-select" required>
                                 @foreach ($levels as $level)
-                                    <option value="{{ $level->id }}">{{ $level->name }}</option>
+                                    @if ($level->id >$record->level->id )
+                                        <option value="{{ $level->id }}">{{ $level->name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
+
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="support_id" class="form-label">Support </label>
