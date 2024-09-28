@@ -22,7 +22,7 @@ class RecordChildController extends Controller
     }
 
 
-    public function create(Record $parent)
+    public function create(INT $id)
     {
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -33,7 +33,9 @@ class RecordChildController extends Controller
         $records = Record::all();
         $authors = Author::with('authorType')->get();
         $terms = Term::all();
-        return view('records.child.create', compact('parent','terms','authors','levels','statuses', 'supports', 'activities', 'containers', 'users'));
+        $record = record::findOrFail($id);
+        return view('records.child.create', compact('record','terms','authors','levels','statuses', 'supports', 'activities', 'containers', 'users'));
+
     }
 
 

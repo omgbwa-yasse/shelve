@@ -5,6 +5,9 @@
         <h1>Description </h1>
         <form action="{{ route('records.store')}}" method="POST">
             @csrf
+            @if (!empty($record))
+                <input type="hidden" name="parent_id" value="{{$record->id}}">
+            @endif
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">Identification</a>

@@ -58,7 +58,12 @@ class RecordController extends Controller
     public function store(Request $request)
     {
 
-        $request->merge(['date_format' => $request->input('date_format', 'Y')]);
+        $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
+        if (strlen($dateFormat) > 1) {
+            return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
+        }
+
+        $request->merge(['date_format' => $dateFormat ]);
         $request->merge(['user_id' => Auth::id()]);
 
         $validatedData = $request->validate([
@@ -126,6 +131,36 @@ class RecordController extends Controller
 
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
     }
+
+
+
+
+
+
+
+    private function getDateFormat($dateStart, $dateEnd)
+    {
+        $start = new \DateTime($dateStart);
+        $end = new \DateTime($dateEnd);
+
+        if ($start->format('Y') !== $end->format('Y')) {
+            return 'Y';
+        } elseif ($start->format('m') !== $end->format('m')) {
+            return 'M';
+        } elseif ($start->format('d') !== $end->format('d')) {
+            return 'D';
+        }
+        return 'D';
+    }
+
+
+
+
+
+
+
+
+
 
     public function show(Record $record)
     {

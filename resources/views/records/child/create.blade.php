@@ -1,12 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
+
     <div class="container">
         <h1>Description </h1>
-        <form action="{{ route('records.store') }}" method="PUT">
+            <label class="form-check-label" for="record-{{$record->id}}">
+                <a href="{{ route('records.show', $record) }}">
+                    <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
+                </a>
+            </label>
+            <p>
+                {{ $record->content }}
+            </p>
+        <hr/>
+        <form action="{{ route('records.store')}}" method="POST">
             @csrf
-            <input type="hidden" name="parent_id" value="{{$parent->id}}">
-
+            @if (!empty($record))
+                <input type="hidden" name="parent_id" value="{{$record->id}}">
+            @endif
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">Identification</a>
@@ -38,18 +49,16 @@
                 <div class="tab-pane fade show active " id="identification" role="tabpanel" aria-labelledby="identification-tab">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="level_id" class="form-label">Level</label>
+                            <label for="level_id" class="form-label">Niveau</label>
                             <select name="level_id" id="level_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the level</option>
                                 @foreach ($levels as $level)
                                     <option value="{{ $level->id }}">{{ $level->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="support_id" class="form-label">Support</label>
+                            <label for="support_id" class="form-label">Support </label>
                             <select name="support_id" id="support_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the support</option>
                                 @foreach ($supports as $support)
                                     <option value="{{ $support->id }}">{{ $support->name }}</option>
                                 @endforeach
@@ -64,30 +73,30 @@
 
                     </div>
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
+                        <label for="name" class="form-label">Intitulé</label>
                         <textarea name="name" id="name" class="form-control" required></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="date_start" class="form-label">Date Start</label>
+                            <label for="date_start" class="form-label">Date de début</label>
                             <input type="text" name="date_start" id="date_start" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_end" class="form-label">Date End</label>
+                            <label for="date_end" class="form-label">Date de fin</label>
                             <input type="text" name="date_end" id="date_end" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_exact" class="form-label">Date Exact</label>
+                            <label for="date_exact" class="form-label">Date exacte</label>
                             <input type="date" name="date_exact" id="date_exact" class="form-control">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <label for="width" class="form-label">Width</label>
+                            <label for="width" class="form-label">Epaisseur</label>
                             <input type="number" name="width" id="width" class="form-control" step="0.01" min="0" max="9999999999.99">
                         </div>
                         <div class="col-md-10 mb-3">
-                            <label for="width_description" class="form-label">Width Description</label>
+                            <label for="width_description" class="form-label">Description de épaisseur</label>
                             <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100">
                         </div>
                     </div>
@@ -104,70 +113,70 @@
                         <input type="hidden" name="author_ids[]" id="author-ids">
                     </div>
                     <div class="mb-3">
-                        <label for="biographical_history" class="form-label">Biographical History</label>
+                        <label for="biographical_history" class="form-label">Bibliographie</label>
                         <textarea name="biographical_history" id="biographical_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="archival_history" class="form-label">Archival History</label>
+                        <label for="archival_history" class="form-label">Historique archivage</label>
                         <textarea name="archival_history" id="archival_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="acquisition_source" class="form-label">Acquisition Source</label>
+                        <label for="acquisition_source" class="form-label">Source acquisition</label>
                         <textarea name="acquisition_source" id="acquisition_source" class="form-control"></textarea>
                     </div>
 
                 </div>
                 <div class="tab-pane fade" id="contenu" role="tabpanel" aria-labelledby="contenu-tab">
                     <div class="mb-3">
-                        <label for="content" class="form-label">Content</label>
+                        <label for="content" class="form-label">Contenu</label>
                         <textarea name="content" id="content" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="appraisal" class="form-label">Appraisal</label>
+                        <label for="appraisal" class="form-label">Evaluation</label>
                         <textarea name="appraisal" id="appraisal" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="accrual" class="form-label">Accrual</label>
+                        <label for="accrual" class="form-label">Accroissement</label>
                         <textarea name="accrual" id="accrual" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="arrangement" class="form-label">Arrangement</label>
+                        <label for="arrangement" class="form-label">Classement</label>
                         <textarea name="arrangement" id="arrangement" class="form-control"></textarea>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
                     <div class="mb-3">
-                        <label for="access_conditions" class="form-label">Access Conditions</label>
+                        <label for="access_conditions" class="form-label">Conditions d'accès</label>
                         <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="reproduction_conditions" class="form-label">Reproduction Conditions</label>
+                        <label for="reproduction_conditions" class="form-label">Conditions de reproduction</label>
                         <input type="text" name="reproduction_conditions" id="reproduction_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="language_material" class="form-label">Language Material</label>
+                        <label for="language_material" class="form-label">Langue du document</label>
                         <input type="text" name="language_material" id="language_material" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="characteristic" class="form-label">Characteristic</label>
+                        <label for="characteristic" class="form-label">Caractéristiques</label>
                         <input type="text" name="characteristic" id="characteristic" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="finding_aids" class="form-label">Finding Aids</label>
+                        <label for="finding_aids" class="form-label">Instruments de recherche</label>
                         <input type="text" name="finding_aids" id="finding_aids" class="form-control" maxlength="100">
                     </div>
                 </div>
                 <div class="tab-pane fade" id="sources" role="tabpanel" aria-labelledby="sources-tab">
                     <div class="mb-3">
-                        <label for="location_original" class="form-label">Location Original</label>
+                        <label for="location_original" class="form-label">Conservation originaux</label>
                         <input type="text" name="location_original" id="location_original" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="location_copy" class="form-label">Location Copy</label>
+                        <label for="location_copy" class="form-label">Conservation des copies</label>
                         <input type="text" name="location_copy" id="location_copy" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="related_unit" class="form-label">Related Unit</label>
+                        <label for="related_unit" class="form-label">Sources complémentaires</label>
                         <input type="text" name="related_unit" id="related_unit" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
@@ -183,17 +192,16 @@
                 </div>
                 <div class="tab-pane fade" id="controle" role="tabpanel" aria-labelledby="controle-tab">
                     <div class="mb-3">
-                        <label for="archivist_note" class="form-label">Archivist Note</label>
+                        <label for="archivist_note" class="form-label">Dote de l'archiviste</label>
                         <textarea name="archivist_note" id="archivist_note" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="rule_convention" class="form-label">Rule Convention</label>
+                        <label for="rule_convention" class="form-label">Règle et convention</label>
                         <input type="text" name="rule_convention" id="rule_convention" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="status_id" class="form-label">Status</label>
+                        <label for="status_id" class="form-label">Statut</label>
                         <select name="status_id" id="status_id" class="form-select" required>
-                            <option value="" disabled selected>Enter the status</option>
                             @foreach ($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
                             @endforeach
@@ -224,12 +232,7 @@
                     <div class="mb-3">
                         <label for="activity_id" class="form-label"> Activités </label>
                         <div class="select-with-search">
-                            <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search activity...">
-                            </div>
                             <select name="activity_id" id="activity_id" class="form-select" required>
-                                <option value="" disabled selected>Enter the activity</option>
                                 @foreach ($activities as $activity)
                                     <option value="{{ $activity->id }}">{{ $activity->code }} - {{ $activity->name }}</option>
                                 @endforeach
@@ -240,7 +243,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
     </div>
 

@@ -135,7 +135,7 @@
                     <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-box me-2"></i> Inserer dans une boîte
                     </a>
-                    <a href="{{ route('record-child.create', $record) }}" class="btn btn-outline-success">
+                    <a href="{{ route('record-child.create', $record->id) }}" class="btn btn-outline-success">
                         <i class="bi bi-plus-circle me-2"></i> Ajouter un fiche fille
                     </a>
                 </div>
