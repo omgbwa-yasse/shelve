@@ -73,6 +73,7 @@ use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
+use App\Http\Controllers\SlipRecordAttachmentController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
@@ -184,6 +185,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('slip.sort', [SearchSlipController::class, 'index'])->name('slips-sort');
         Route::get('slip.select', [SearchSlipController::class, 'date'])->name('slips-select-date');
         Route::get('organisation-select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
+
+        Route::post('/slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
+        Route::post('/slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
+        Route::delete('/slipRecordAttachment/delete/{id}', [SlipRecordAttachmentController::class, 'delete']);
+
+
     });
 
     Route::prefix('deposits')->group(function () {

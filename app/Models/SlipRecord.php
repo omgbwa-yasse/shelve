@@ -67,5 +67,10 @@ class SlipRecord extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function attachments()
+    {
+        return $this->belongsToMany(Attachment::class, 'slip_record_attachments','slip_record_id','attachment_id');
+    }
+
 
 }
