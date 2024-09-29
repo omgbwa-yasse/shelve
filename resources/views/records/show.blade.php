@@ -8,6 +8,17 @@
                 <li class="breadcrumb-item active" aria-current="page">{{ $record->code }}</li>
             </ol>
         </nav>
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
 
         <div class="row mb-1">
             <div class="col-md-8">
@@ -147,19 +158,52 @@
                     @endif
                 </div>
 
-                <h4 class="card-title mb-3"><i class="bi bi-gear me-2"></i>Actions</h4>
-                <div class="d-grid gap-2">
-                    <a href="{{ route('records.edit', $record) }}" class="btn btn-outline-primary">
-                        <i class="bi bi-pencil me-2"></i> Modifier
-                    </a>
-                    <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-box me-2"></i> Inserer dans une boîte
-                    </a>
+                <div class="d-grid gap-3">
                     @if ($record->level->has_child == true)
                         <a href="{{ route('record-child.create', $record->id) }}" class="btn btn-outline-success">
                             <i class="bi bi-plus-circle me-2"></i> Ajouter un fiche fille
                         </a>
                     @endif
+                </div>
+
+                <div class="card shadow-sm mb-4 mt-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">
+                            <i class="bi bi-archive me-2"></i>Boites d'archives
+                        </h4>
+
+                        <div class="d-grid">
+                            @foreach ($record->recordContainers as $recordContainer)
+                                <div class="list-group">
+                                    <div class="list-group-item list-group-item-action">
+                                        {{ $recordContainer->container->code }} - {{ $recordContainer->description }}
+                                        <form action="{{ route('record-container-remove')}}?r_id={{ $recordContainer->record_id }}&c_id={{ $recordContainer->container_id }}" method="post">
+                                            @csrf
+                                            <button class="btn btn-primary float-right" >Retirer de la boite</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row justify-content-center mt-3 mb-3">
+                    <div class="col-md-12">
+                        <form action="{{ route('record-container-insert')}}?r_id={{ $record->id }}" method="post" class="row g-4 align-items-center">
+                            @csrf
+                            <div class="col-md-3">
+                                <input type="text" name="code" class="form-control" placeholder="Code: B12453">
+                            </div>
+                            <div class="col">
+                                <textarea name="description" class="form-control" placeholder="Description"></textarea>
+                            </div>
+                            <div class="col-auto">
+                                <input type="submit" class="btn btn-primary" value="Insert">
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="card shadow-sm mb-4">

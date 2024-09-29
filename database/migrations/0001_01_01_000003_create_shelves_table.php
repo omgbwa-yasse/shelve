@@ -367,6 +367,7 @@ return new class extends Migration
             $table->string('name', 50);
             $table->text('description')->nullable();
             $table->unsignedBigInteger('child_id')->nullable();
+            $table->boolean('has_child')->default(true);
             $table->foreign('child_id')->references('id')->on('record_levels')->onDelete('cascade');
             $table->timestamps();
         });
@@ -420,6 +421,20 @@ return new class extends Migration
             $table->string('name', 250)->nullable(false)->unique();
             $table->timestamps();
         });
+
+
+        Schema::create('record_container', function (Blueprint $table) {
+            $table->unsignedBigInteger('record_id');
+            $table->unsignedInteger('container_id');
+            $table->string('description', 100)->nullable();
+            $table->unsignedBigInteger('creator_id');
+            $table->timestamps();
+            $table->primary(['record_id', 'container_id']);
+            $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
+            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
 
         /*
             Communication

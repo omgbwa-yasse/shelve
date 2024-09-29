@@ -31,7 +31,7 @@ class RecordController extends Controller
 
     public function index()
     {
-        $records = Record::with(['level','attachments','status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
+        $records = Record::with(['level','attachments','status', 'support', 'activity', 'parent', 'containers', 'user', 'authors', 'terms'])
             ->paginate(10);
         $statuses = RecordStatus::all();
         $terms = Term::all();

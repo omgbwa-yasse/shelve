@@ -17,6 +17,7 @@ use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
+use App\Http\Controllers\RecordContainerController;
 use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\activityCommunicabilityController;
 //use App\Http\Controllers\AttachmentController;
@@ -158,6 +159,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('/records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
         //Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+
+        Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
+        Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
+
         Route::get('/records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('/records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
