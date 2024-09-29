@@ -79,6 +79,7 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserOrganisationRoleController;
 use App\Http\Controllers\DollyActionController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\UserOrganisationController;
@@ -217,7 +218,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('settings')->group(function () {
         Route::get('users', [UserController::class, 'index'] );
-        Route::resource('user-organisations', UserOrganisationController::class);
+        Route::resource('user-organisation-role', UserOrganisationRoleController::class);
         Route::resource('user-roles', UserRoleController::class);
         Route::resource('roles', RoleController::class);
         Route::resource('users', UserController::class);

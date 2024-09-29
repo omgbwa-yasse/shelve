@@ -51,14 +51,41 @@ class User extends Authenticatable
         ];
     }
 
-    public function organisation()
+
+
+    public function currentOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'current_organisation_id');
     }
 
+
+
+    public function organisations()
+    {
+        return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')->withTimestamps();
+    }
+
+
+
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'user_role', 'user_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(Role::class, 'user_organisation_role', 'user_id', 'role_id')->withTimestamps();
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
+            ->join('user_organisation_role', 'role_permissions.role_id', '=', 'user_organisation_role.role_id')
+            ->where('user_organisation_role.user_id', $this->id);
+    }
+
+
+    public function hasPermissionTo(String $value)
+    {
+        foreach($this->pemissions as $permission){
+            return $permission == $value? true:false;
+        }
+    }
+
 
 }
