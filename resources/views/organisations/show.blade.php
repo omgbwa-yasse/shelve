@@ -44,13 +44,11 @@
                 @foreach($organisation->activities as $activity )
                     <li class="list-group-item d-flex justify-content-between align-items-center" >
                         {{ $activity->code }} - {{ $activity->name }}
-                        <span class="badge bg-secondary badge-pill">
                             <form action="{{ route('organisations.activities.destroy', [$organisation, $activity]) }}" method="POST" style="display:inline;">
                                 @csrf
                                 @method('DELETE')
-                                Supprimer
+                                <button type="submit" class="btn btn-danger"> Supprimer </button>
                             </form>
-                        </span>
                     </li>
                 @endforeach
             @endif

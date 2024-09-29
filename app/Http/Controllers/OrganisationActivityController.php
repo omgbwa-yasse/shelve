@@ -12,12 +12,6 @@ class OrganisationActivityController extends Controller
 {
 
 
-    public function index(Organisation $organisation)
-    {
-        $activities = $organisation->activities;
-
-        return view('organisations.activities.index', compact('activities'));
-    }
 
 
 
@@ -43,18 +37,8 @@ class OrganisationActivityController extends Controller
         ]);
 
         $organisation = Organisation::findOrFail($organisation->id);
-        return redirect()->route('organisations.activities.index', $organisation);
+        return redirect()->route('organisations.index', $organisation);
     }
-
-
-
-
-
-    public function show(Organisation $organisation, OrganisationActivity $organisationActivity)
-    {
-        return view('organisations.activities.show', compact('organisationActivity'));
-    }
-
 
 
 
@@ -80,14 +64,15 @@ class OrganisationActivityController extends Controller
             'activity_id' => $request->activity_id,
         ]);
 
-        return redirect()->route('organisations.activities.show', [$organisation, $organisationActivity]);
+        return redirect()->route('organisations.show', $organisation);
     }
 
 
-    public function destroy(Organisation $organisation, OrganisationActivity $organisationActivity)
+
+    public function destroy(Organisation $organisation, Activity $activity)
     {
-        $organisationActivity->delete();
-        return redirect()->route('organisations.activities.index', $organisation);
+        OrganisationActivity::where(['organisation_id' => $organisation->id, 'activity_id' => $activity->id])->delete();
+        return redirect()->route('organisations.show', $organisation);
     }
 }
 

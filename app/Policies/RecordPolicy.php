@@ -15,8 +15,10 @@ class RecordPolicy
 
     public function show(User $user, Record $record)
     {
+        foreach($record->activity->organisations as $organisation){
+            return $user->currentOrganisation->id == $organisation->id;
+        }
 
-        return true;
     }
 
 
