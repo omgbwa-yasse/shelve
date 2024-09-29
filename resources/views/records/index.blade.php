@@ -142,8 +142,9 @@
                     <h5 class="modal-title" id="communicationModalLabel">Créer une nouvelle communication</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form id="communicationForm">
+                <form action="{{ route('transactions.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
                         <div class="mb-3">
                             <label for="code" class="form-label">Code</label>
                             <input type="text" class="form-control" id="code" name="code" required>
@@ -153,8 +154,8 @@
                             <input type="text" class="form-control" id="name" name="name" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Contenu</label>
-                            <textarea class="form-control" id="content" name="content" rows="3"></textarea>
+                            <label for="gcontent" class="form-label">Contenu</label>
+                            <textarea class="form-control" id="gcontent" name="gcontent" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="user_id" class="form-label">Utilisateur</label>
@@ -176,17 +177,13 @@
                                 @endforeach
                             </select>
                         </div>
-                        <hr>
-                        <h6>Records sélectionnés</h6>
-                        <div id="selectedRecords">
-                            <!-- Les records sélectionnés seront ajoutés ici dynamiquement -->
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="saveCommunication">Enregistrer</button>
-                </div>
+                        <div id="selectedRecords"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -341,9 +338,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const communicateBtn = document.getElementById('communicateBtn');
             const modal = new bootstrap.Modal(document.getElementById('communicationModal'));
-            const saveCommunicationBtn = document.getElementById('saveCommunication');
             const selectedRecordsContainer = document.getElementById('selectedRecords');
-            const communicationForm = document.getElementById('communicationForm');
 
             communicateBtn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -362,70 +357,22 @@
                     selectedRecordsContainer.innerHTML += `
             <div class="mb-3">
                 <h6>${recordName}</h6>
+                <input type="hidden" name="selected_records[]" value="${recordId}">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="original-${recordId}" name="original-${recordId}">
+                    <input class="form-check-input" type="checkbox" id="original-${recordId}" name="original[${recordId}]">
                     <label class="form-check-label" for="original-${recordId}">
                         Original
                     </label>
                 </div>
                 <div class="mb-2">
                     <label for="content-${recordId}" class="form-label">Contenu</label>
-                    <textarea class="form-control" id="content-${recordId}" name="content-${recordId}" rows="2"></textarea>
+                    <textarea class="form-control" id="content-${recordId}" name="content[${recordId}]" rows="2"></textarea>
                 </div>
             </div>
-        `;
+            `;
                 });
 
                 modal.show();
-            });
-
-            saveCommunicationBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const formData = new FormData(communicationForm);
-
-                // Ajouter les records sélectionnés au formData
-                const selectedRecords = [];
-                Array.from(selectedRecordsContainer.children).forEach(recordDiv => {
-                    const recordId = recordDiv.querySelector('input[type="checkbox"]').id.split('-')[1];
-                    selectedRecords.push({
-                        id: recordId,
-                        is_original: document.getElementById(`original-${recordId}`).checked,
-                        content: document.getElementById(`content-${recordId}`).value
-                    });
-                });
-                formData.append('selected_records', JSON.stringify(selectedRecords));
-
-                // Ajout du token CSRF
-                formData.append('_token', '{{ csrf_token() }}');
-
-                fetch('{{ route("transactions.store") }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Erreur réseau');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            alert('Communication créée avec succès');
-                            modal.hide();
-                            // Optionnel : recharger la page ou mettre à jour la liste des communications
-                            window.location.reload();
-                        } else {
-                            throw new Error(data.message || 'Erreur lors de la création de la communication');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                        alert('Une erreur est survenue: ' + error.message);
-                    });
             });
         });
     </script>

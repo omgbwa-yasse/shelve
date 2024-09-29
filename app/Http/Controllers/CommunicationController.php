@@ -41,24 +41,26 @@ class CommunicationController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'code' => 'required|unique:communications,code',
-            'name' => 'required|string|max:200',
-            'content' => 'nullable|string',
+        $validatedData = $request->validate([
+            'code' => 'required',
+            'name' => 'required',
+            'content' => 'nullable',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'selected_records' => 'required|json'
+            'selected_records' => 'required|array',
+            'original' => 'array',
+            'content' => 'array',
         ]);
 
         $communication = Communication::create([
             'code' => $request->code,
             'name' => $request->name,
-            'content' => $request->input('content'),
+            'content' => $request->input('gcontent'),
             'operator_id' => Auth()->user()->id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
-            'operator_organisation_id' => Auth()->user()->organisation->id,
+            'operator_organisation_id' => Auth()->user()->current_organisation_id,
             'return_date' => $request->return_date,
             'status_id' => 1,
         ]);
@@ -75,7 +77,7 @@ class CommunicationController extends Controller
             ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Communication créée avec succès']);
+        return redirect()->back()->with('success', 'Communication créée avec succès');
     }
 
     public function show(INT $id)

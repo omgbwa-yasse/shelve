@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use DateTime;
 use Illuminate\Http\Request;
 use App\Models\Activity;
 use App\Models\Container;
@@ -84,8 +85,8 @@ class SlipRecordController extends Controller
 
     private function getDateFormat($dateStart, $dateEnd)
     {
-        $start = new \DateTime($dateStart);
-        $end = new \DateTime($dateEnd);
+        $start = new DateTime($dateStart);
+        $end = new DateTime($dateEnd);
 
         if ($start->format('Y') !== $end->format('Y')) {
             return 'Y';
