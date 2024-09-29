@@ -618,9 +618,12 @@ return new class extends Migration
         Schema::create('organisation_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->primary(['organisation_id', 'activity_id']);
+            $table->timestamps();
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 

@@ -58,8 +58,6 @@ class RecordController extends Controller
 
     public function store(Request $request)
     {
-        $user = User::findOrFail(auth()->user()->id);
-        Gate::authorize('store', [$user, $request]);
 
         $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
         if (strlen($dateFormat) > 1) {
@@ -158,15 +156,9 @@ class RecordController extends Controller
 
 
 
-
-
-
-
-
-
     public function show(Record $record)
     {
-        Gate::authorize('view', $record);
+       Gate::authorize('show', $record);
         $record->load('children');  // Charge les enregistrements enfants
         return view('records.show', compact('record'));
     }
@@ -175,6 +167,7 @@ class RecordController extends Controller
     public function edit(Record $record)
     {
         Gate::authorize('edit', $record);
+
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -195,6 +188,7 @@ class RecordController extends Controller
     public function update(Request $request, Record $record)
     {
         Gate::authorize('update', $record);
+
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
         $validatedData = $request->validate([
@@ -247,11 +241,11 @@ class RecordController extends Controller
         $term_ids = explode(',', $term_ids[0]);
 
         $author_ids = explode(',', $author_ids[0]);
-// Supprimez les valeurs vides du tableau
-//        $term_ids = array_filter($term_ids);
-//        $author_ids = array_filter($author_ids);
+        // Supprimez les valeurs vides du tableau
+        //        $term_ids = array_filter($term_ids);
+        //        $author_ids = array_filter($author_ids);
 
-// Convertissez les valeurs en entiers
+        // Convertissez les valeurs en entiers
 
         $term_ids = array_map('intval', $term_ids);
         $author_ids = array_map('intval', $author_ids);
@@ -300,6 +294,8 @@ class RecordController extends Controller
             return response()->json(['error' => 'Une erreur est survenue lors de l\'exportation.'], 500);
         }
     }
+
+
     public function export(Request $request)
     {
         $dollyId = $request->input('dolly_id');
@@ -377,8 +373,8 @@ class RecordController extends Controller
     private function generateEAD($records)
     {
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>
-<ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9">
-</ead>');
+    <ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9">
+    </ead>');
 
         $eadheader = $xml->addChild('eadheader');
         $eadheader->addChild('eadid', 'YOUR_UNIQUE_ID');
@@ -415,8 +411,8 @@ class RecordController extends Controller
     private function exportSEDA($records, $slips)
     {
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>
-<ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1">
-</ArchiveTransfer>');
+        <ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1">
+        </ArchiveTransfer>');
 
         $xml->addChild('Comment', 'Archive Transfer');
         $xml->addChild('Date', date('Y-m-d'));
@@ -572,13 +568,13 @@ class RecordController extends Controller
             Storage::deleteDirectory('temp_import');
         }
     }
-//    public function export(Request $request)
-//    {
-//        $recordIds = explode(',', $request->query('records'));
-//        $records = Record::whereIn('id', $recordIds)->get();
-//
-//        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
-//    }
+        //    public function export(Request $request)
+        //    {
+        //        $recordIds = explode(',', $request->query('records'));
+        //        $records = Record::whereIn('id', $recordIds)->get();
+        //
+        //        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
+        //    }
 
     public function printRecords(Request $request)
     {

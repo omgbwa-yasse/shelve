@@ -44,6 +44,7 @@ use App\Http\Controllers\retentionActivityController;
 use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
+use App\Http\Controllers\OrganisationActivityController;
 use App\Http\Controllers\OrganisationActiveController;
 use App\Http\Controllers\TermCategoryController;
 use App\Http\Controllers\TermEquivalentTypeController;
@@ -275,6 +276,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
         Route::resource('organisations.rooms', OrganisationRoomController::class);
+        Route::resource('organisations.activities', OrganisationActivityController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');

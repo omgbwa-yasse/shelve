@@ -80,6 +80,11 @@ class Record extends Model
         return $this->belongsTo(Activity::class, 'activity_id');
     }
 
+    public function organisation()
+    {
+        return $this->belongsTo(Activity::class, 'activity_id');
+    }
+
 
     public function parent()
     {
