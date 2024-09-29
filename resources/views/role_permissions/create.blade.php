@@ -22,13 +22,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="permission_id">Permission</label>
-                            <select class="form-control" id="permission_id" name="permission_id" required>
-                                <option value="">Select Permission</option>
-                                @foreach ($permissions as $permission)
-                                <option value="{{ $permission->id }}">{{ $permission->name }}</option>
-                                @endforeach
-                            </select>
+                            <label for="permissions">Permissions</label>
+                            @foreach ($permissions as $permission)
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="permission_{{ $permission->id }}" name="permissions[]" value="{{ $permission->id }}">
+                                    <label class="form-check-label" for="permission_{{ $permission->id }}">{{ $permission->name }}</label>
+                                </div>
+                            @endforeach
                         </div>
 
                         <button type="submit" class="btn btn-primary">Save</button>
