@@ -12,23 +12,19 @@ return new class extends Migration
             User Jobs
         */
 
-        Schema::create('user_organisation', function (Blueprint $table) {
+        Schema::create('user_organisation_role', function (Blueprint $table) {
             $table->bigInteger('user_id')->unsigned()->notNull();
             $table->bigInteger('organisation_id')->unsigned()->notNull();
+            $table->bigInteger('role_id')->unsigned()->notNull();
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->primary(['user_id', 'organisation_id']);
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::create('user_role', function (Blueprint $table) {
-            $table->bigInteger('role_id')->unsigned()->notNull();
-            $table->bigInteger('user_id')->unsigned()->notNull();
-            $table->timestamps();
-            $table->primary(['role_id', 'user_id']);
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
 
         Schema::create('roles', function (Blueprint $table) {
             $table->bigIncrements('id');
@@ -622,9 +618,12 @@ return new class extends Migration
         Schema::create('organisation_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('organisation_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->primary(['organisation_id', 'activity_id']);
+            $table->timestamps();
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
 

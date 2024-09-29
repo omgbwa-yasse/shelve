@@ -22,7 +22,7 @@
                             @foreach ($rolePermissions as $rolePermission)
                             <tr>
                                 <td>{{ $rolePermission->role->name }}</td>
-                                <td>{{ $rolePermission->permission->name }}</td>
+                                <td>{{ $rolePermission->permission->name ??'' }}</td>
                                 <td>
                                     <a href="{{ route('role_permissions.show',[$rolePermission->role, $rolePermission->role]) }}" class="btn btn-info">Show</a>
                                     <a href="{{ route('role_permissions.edit', [$rolePermission->role, $rolePermission->role]) }}" class="btn btn-primary">Edit</a>

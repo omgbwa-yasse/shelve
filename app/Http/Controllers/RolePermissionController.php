@@ -29,19 +29,25 @@ class RolePermissionController extends Controller
 
 
 
+
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'role_id' => 'required|exists:roles,id',
-            'permission_id' => 'required|exists:permissions,id',
+            'permissions' => 'required|array',
         ]);
 
-        RolePermission::create($request->all());
+        $role = Role::findOrFail($validatedData['role_id']);
 
-        return redirect()->route('role_permissions.index')
-            ->with('success', 'Role permission created successfully.');
+        $role->permissions()->detach();
+
+        foreach ($validatedData['permissions'] as $permissionId) {
+            $permission = Permission::findOrFail($permissionId);
+            $role->permissions()->attach($permission);
+        }
+
+        return redirect()->route('role_permissions.index')->with('success', 'Permissions saved successfully.');
     }
-
 
 
 

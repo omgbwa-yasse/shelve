@@ -25,11 +25,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-roles.index') }}"><i class="bi bi-gear"></i> Utilisateurs et habilités </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link text-dark" href="{{ route('user-organisations.index') }}"><i class="bi bi-gear"></i> Postes affectés ***</a>
+                <a class="nav-link text-dark" href="{{ route('user-organisation-role.index') }}"><i class="bi bi-gear"></i> Postes affectés ***</a>
             </li>
 
         </ul>

@@ -31,6 +31,12 @@ class Activity extends Model
         return $this->belongsToMany(Retention::class, 'retention_activity', 'retention_id', 'activity_id');
     }
 
+
+    public function organisations()
+    {
+        return $this->belongsToMany(Organisation::class, 'organisation_activity',  'activity_id', 'organisation_id');
+    }
+
     public function communicability()
     {
         return $this->belongsTo(Communicability::class, 'communicability_id');

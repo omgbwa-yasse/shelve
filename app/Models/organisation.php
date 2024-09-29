@@ -42,6 +42,10 @@ class Organisation extends Model
         return $this->hasMany(Slip::class, 'officer_organisation_id');
     }
 
+    public function activities()
+    {
+        return $this->belongsToMany(Activity::class, 'organisation_activity', 'organisation_id', 'activity_id');
+    }
 
     public function rooms()
     {

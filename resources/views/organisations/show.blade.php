@@ -13,7 +13,10 @@
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this organisation?')">Delete</button>
         </form>
-        <a href="{{ route('organisations.rooms.create', $organisation) }}" class="btn btn-secondary">Associer un local</a>
+
+        <a href="{{ route('organisations.rooms.create', $organisation) }}" class="btn btn-secondary mt-6">Associer un local</a>
+
+
         <ul class="list-group">
             @if($organisation->rooms == NULL)
                 Cette unité n'a aucun local d'archives
@@ -28,6 +31,24 @@
                                 Supprimer
                             </form>
                         </span>
+                    </li>
+                @endforeach
+            @endif
+        </ul>
+
+        <a href="{{ route('organisations.activities.create', $organisation) }}" class="btn btn-primary mt-3">Associer à un activité</a>
+        <ul class="list-group">
+            @if($organisation->rooms == NULL)
+                Cette unité n'a d'activité
+            @else
+                @foreach($organisation->activities as $activity )
+                    <li class="list-group-item d-flex justify-content-between align-items-center" >
+                        {{ $activity->code }} - {{ $activity->name }}
+                            <form action="{{ route('organisations.activities.destroy', [$organisation, $activity]) }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger"> Supprimer </button>
+                            </form>
                     </li>
                 @endforeach
             @endif

@@ -73,8 +73,11 @@ class SearchRecordController extends Controller
 
 
             case "container":
-                $records = Record::where('container_id',  $request->input('id'))->paginate(10);
+                $records = Record::join('record_container', 'records.id', '=', 'record_container.record_id')
+                    ->where('record_container.container_id', $request->input('id'))
+                    ->paginate(10);
                 break;
+
 
             default:
                 $records = record::take(5)->paginate(10);
@@ -144,7 +147,7 @@ class SearchRecordController extends Controller
 
     public function selectLast()
     {
-        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'container', 'user', 'authors', 'terms'])
+        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'containers', 'user', 'authors', 'terms'])
             ->latest()
             ->paginate(10);
 
