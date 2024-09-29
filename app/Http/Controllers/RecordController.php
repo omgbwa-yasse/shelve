@@ -6,6 +6,7 @@ use App\Imports\RecordsImport;
 
 use App\Models\Attachment;
 use App\Models\Dolly;
+use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
@@ -31,11 +32,28 @@ class RecordController extends Controller
 
     public function index()
     {
-        $records = Record::with(['level','attachments','status', 'support', 'activity', 'parent', 'containers', 'user', 'authors', 'terms'])
-            ->paginate(10);
+        $records = Record::with([
+            'level',
+            'status',
+            'support',
+            'activity',
+//            'container',
+            'authors',
+            'terms'
+        ])->paginate(10);
+
         $statuses = RecordStatus::all();
         $terms = Term::all();
-        return view('records.index', compact('records', 'statuses', 'terms'));
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
+
+        return view('records.index', compact(
+            'records',
+            'statuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 

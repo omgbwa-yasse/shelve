@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Exports\CommunicationsExport;
 use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
+use App\Models\communicationRecord;
 use App\Models\CommunicationStatus;
 use App\Models\Dolly;
 use App\Models\DollyCommunication;
@@ -47,9 +48,10 @@ class CommunicationController extends Controller
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
+            'selected_records' => 'required|json'
         ]);
 
-        Communication::create([
+        $communication = Communication::create([
             'code' => $request->code,
             'name' => $request->name,
             'content' => $request->input('content'),
@@ -61,10 +63,20 @@ class CommunicationController extends Controller
             'status_id' => 1,
         ]);
 
-        return redirect()->route('transactions.index')->with('success', 'Communication created successfully.');
+        $selectedRecords = json_decode($request->selected_records, true);
+
+        foreach ($selectedRecords as $record) {
+            CommunicationRecord::create([
+                'communication_id' => $communication->id,
+                'record_id' => $record['id'],
+                'is_original' => $record['is_original'],
+                'content' => $record['content'],
+                'return_date' => date('Y-m-d', strtotime("+14 days")),
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Communication créée avec succès']);
     }
-
-
 
     public function show(INT $id)
     {
