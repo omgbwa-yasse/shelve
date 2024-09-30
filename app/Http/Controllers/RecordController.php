@@ -16,10 +16,10 @@ use App\Models\Container;
 use App\Models\Activity;
 use App\Models\Slip;
 use App\Models\Term;
+use App\Models\User;
 use App\Models\Accession;
 use App\Models\Author;
 use App\Models\RecordLevel;
-use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +40,7 @@ class RecordController extends Controller
             'status',
             'support',
             'activity',
-//            'container',
+            'containers',
             'authors',
             'terms'
         ])->paginate(10);
@@ -60,22 +60,22 @@ class RecordController extends Controller
         ));
     }
 
-
     public function create()
-    {
-        $statuses = RecordStatus::all();
-        $supports = RecordSupport::all();
-        $activities = Activity::all();
-        $parents = Record::all();
-        $containers = Container::all();
-        $users = User::all();
-        $levels = RecordLevel::all();
-        $records = Record::all();
-        $authors = Author::with('authorType')->get();
-        $terms = Term::all();
-        return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
-    }
+    {       $user = User::with(['currentOrganisation', 'organisations', 'roles', 'permissions'])->findOrFail(Auth()->user()->id);
+            dd($user);
 
+            $statuses = RecordStatus::all();
+            $supports = RecordSupport::all();
+            $activities = Activity::all();
+            $parents = Record::all();
+            $containers = Container::all();
+            $users = User::all();
+            $levels = RecordLevel::all();
+            $records = Record::all();
+            $authors = Author::with('authorType')->get();
+            $terms = Term::all();
+            return view('records.create', compact('', 'records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+    }
 
     public function store(Request $request)
     {

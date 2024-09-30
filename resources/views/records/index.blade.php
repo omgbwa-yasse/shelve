@@ -52,9 +52,9 @@
 
         <div id="recordList">
             @foreach ($records as $record)
-                @can('show', $record)
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" />
+
                     <label class="form-check-label" for="record-{{$record->id}}">
                         <a href="{{ route('records.show', $record) }}">
                             <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }} [{{ $record->level->name }}]</span>
@@ -88,7 +88,6 @@
                         </div>
                     </div>
                 </div>
-                @endcan
             @endforeach
         </div>
     </div>
