@@ -13,7 +13,7 @@ class RecordPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_viewAny');
     }
 
     /**
@@ -21,7 +21,7 @@ class RecordPolicy
      */
     public function view(User $user, Record $record): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_view');
     }
 
     /**
@@ -29,7 +29,7 @@ class RecordPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_create');
     }
 
     /**
@@ -37,7 +37,7 @@ class RecordPolicy
      */
     public function update(User $user, Record $record): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_update');
     }
 
     /**
@@ -45,7 +45,7 @@ class RecordPolicy
      */
     public function delete(User $user, Record $record): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_delete');
     }
 
     /**
@@ -53,7 +53,7 @@ class RecordPolicy
      */
     public function restore(User $user, Record $record): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_restore');
     }
 
     /**
@@ -61,6 +61,6 @@ class RecordPolicy
      */
     public function forceDelete(User $user, Record $record): bool
     {
-        return true;
+        return $user->hasPermissionTo('record_force_delete');
     }
 }
