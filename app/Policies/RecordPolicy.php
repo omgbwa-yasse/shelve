@@ -4,56 +4,63 @@ namespace App\Policies;
 
 use App\Models\Record;
 use App\Models\User;
-use App\Models\UserOrganisationRole;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
 class RecordPolicy
 {
-    use HandlesAuthorization;
-
-
-
-    public function show(User $user, Record $record)
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny(User $user): bool
     {
-        foreach($record->activity->organisations as $organisation){
-            return $user->currentOrganisation->id == $organisation->id;
-        }
-
-    }
-
-
-
-
-    public function create(User $user)
-    {
-       /*  $userOrganisationRoles = UserOrganisationRole::where('user_id', $user->id)->get();
-
-        foreach($userOrganisationRoles as $userOrganisationRole){
-            if($user->current_organisation_id === $userOrganisationRole->organisation_id && $user->hasPermissionTo('record_create')){
-                return true;
-            }
-        }
-        */
         return true;
     }
 
-
-
-
-    public function update(User $user, Record $record)
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, Record $record): bool
     {
-        return $user->current_organisation_id === $record->activity->organisation_id
-            && $user->hasPermissionTo('record_update');
+        return true;
     }
 
-
-
-
-    public function delete(User $user, Record $record)
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create(User $user): bool
     {
-        return $user->current_organisation_id === $record->activity->organisation_id
-            && $user->hasPermissionTo('record_delete');
+        return true;
     }
 
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, Record $record): bool
+    {
+        return true;
+    }
 
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, Record $record): bool
+    {
+        return true;
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     */
+    public function restore(User $user, Record $record): bool
+    {
+        return true;
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete(User $user, Record $record): bool
+    {
+        return true;
+    }
 }

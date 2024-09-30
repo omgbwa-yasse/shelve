@@ -33,12 +33,14 @@ class RecordController extends Controller
 
     public function index()
     {
+        $this->authorize('viewAny', Record::class);
+
         $records = Record::with([
             'level',
             'status',
             'support',
             'activity',
-//            'container',
+            'containers',
             'authors',
             'terms'
         ])->paginate(10);
@@ -57,9 +59,10 @@ class RecordController extends Controller
         ));
     }
 
-
     public function create()
     {
+        $this->authorize('create', Record::class);
+
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
         $activities = Activity::all();
@@ -72,7 +75,6 @@ class RecordController extends Controller
         $terms = Term::all();
         return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
-
 
     public function store(Request $request)
     {
