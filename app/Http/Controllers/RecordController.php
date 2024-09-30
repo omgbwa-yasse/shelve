@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
+use App\Models\SlipStatus;
 use Illuminate\Support\Facades\Gate;
 
 use App\Models\Attachment;
@@ -33,6 +34,7 @@ class RecordController extends Controller
 
     public function index()
     {
+        $slipStatuses = SlipStatus::all();
         $records = Record::with([
             'level',
             'status',
@@ -51,6 +53,7 @@ class RecordController extends Controller
         return view('records.index', compact(
             'records',
             'statuses',
+            'slipStatuses',
             'terms',
             'users',
             'organisations'
@@ -176,7 +179,7 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
-       Gate::authorize('show', $record);
+        Gate::authorize('show', $record);
         $record->load('children');  // Charge les enregistrements enfants
         return view('records.show', compact('record'));
     }
@@ -586,13 +589,13 @@ class RecordController extends Controller
             Storage::deleteDirectory('temp_import');
         }
     }
-        //    public function export(Request $request)
-        //    {
-        //        $recordIds = explode(',', $request->query('records'));
-        //        $records = Record::whereIn('id', $recordIds)->get();
-        //
-        //        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
-        //    }
+    //    public function export(Request $request)
+    //    {
+    //        $recordIds = explode(',', $request->query('records'));
+    //        $records = Record::whereIn('id', $recordIds)->get();
+    //
+    //        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
+    //    }
 
     public function printRecords(Request $request)
     {

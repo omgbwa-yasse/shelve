@@ -150,6 +150,8 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::prefix('repositories')->group(function () {
+        Route::post('/slips/store', [SlipController::class, 'store'])->name('slips.storetransfert');
+
         Route::get('/', [RecordController::class, 'index']);
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
@@ -188,6 +190,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('transferrings')->group(function () {
         Route::get('/', [SlipController::class, 'index']);
+
         Route::get('slips/export', [SlipController::class, 'exportForm'])->name('slips.export.form');
         Route::post('slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
