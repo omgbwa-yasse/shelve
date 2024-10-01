@@ -177,11 +177,8 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
-<<<<<<< HEAD
-=======
-        Gate::authorize('show', $record);
->>>>>>> 86067458e4e4111eee376c1e22633ae325fc0556
-        $record->load('children');  // Charge les enregistrements enfants
+
+        $record->load('children');
         return view('records.show', compact('record'));
     }
 
