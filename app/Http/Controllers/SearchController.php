@@ -1,6 +1,9 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Organisation;
+use App\Models\SlipStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Mail;
 use App\Models\Record;
@@ -56,8 +59,21 @@ class SearchController extends Controller
         $records = $records->paginate(10);
         $statuses = RecordStatus::all();
         $terms = Term::all();
-
-        return view('records.index', compact('records', 'statuses', 'terms'));
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $slipStatuses = SlipStatus::all();
+        $organisations = Organisation::select('id', 'name')->get();
+        
+        return view('records.index', compact(
+            'records',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
+//        return view('records.index', compact('records', 'statuses', 'terms'));
     }
 
     public function communication(Request $request)

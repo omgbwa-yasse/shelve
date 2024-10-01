@@ -24,14 +24,8 @@
                     <i class="bi bi-printer me-1"></i>
                     Imprimer
                 </a>
-                <a href="" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-list-task me-1"></i>
-                    Tâches
-                </a>
-                <a href="" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-calendar-check me-1"></i>
-                    Réservations
-                </a>
+
+
             </div>
             <div class="d-flex align-items-center">
                 <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">
