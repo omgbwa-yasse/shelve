@@ -6,8 +6,8 @@
             <div class="">
                 <h3 class="card-title mb-4">{{ $attachment->name }}</h3>
                 <div class="mb-3">
-                    <a href="{{  route('slips.records.show', [$slipRecord->slip, $slipRecord] ) }}" class="btn btn-primary me-2>
-                        <i class="bi bi-eye"></i> Retour
+                    <a href="{{  route('slips.records.show', [$slipRecord->slip, $slipRecord] ) }}" class="btn btn-primary me-2">
+                        <i class= "bi bi-eye"></i> Retour
                     </a>
                     <a href="" class="btn btn-primary me-2">
                         <i class="bi bi-download"></i>Télécharger
