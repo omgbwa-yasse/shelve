@@ -191,7 +191,6 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('transferrings')->group(function () {
         Route::get('/', [SlipController::class, 'index']);
-
         Route::get('slips/export', [SlipController::class, 'exportForm'])->name('slips.export.form');
         Route::post('slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
