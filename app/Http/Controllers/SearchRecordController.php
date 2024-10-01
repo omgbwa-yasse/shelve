@@ -21,6 +21,21 @@ use App\Models\RecordStatus;
 use App\Models\Term;
 use App\Models\Slip;
 use App\Models\SlipRecord;
+use App\Exports\RecordsExport;
+use App\Imports\RecordsImport;
+use App\Models\SlipStatus;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Attachment;
+use App\Models\Dolly;
+use App\Models\Organisation;
+use App\Models\RecordSupport;
+use App\Models\User;
+use App\Models\Accession;
+use App\Models\RecordLevel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SearchRecordController extends Controller
 {
@@ -86,7 +101,18 @@ class SearchRecordController extends Controller
 
         $statuses = RecordStatus::all();
         $terms = Term::all();
-        return view('records.index', compact('records','terms', 'statuses'));
+        $statuses = RecordStatus::all();
+        $supports = RecordSupport::all();
+        $activities = Activity::all();
+        $parents = Record::all();
+        $containers = Container::all();
+        $users = User::all();
+        $levels = RecordLevel::all();
+        $records = Record::all();
+        $authors = Author::with('authorType')->get();
+        $terms = Term::all();
+
+        return view('records.index', compact('users','records','terms', 'statuses','terms','supports','activities','containers','levels','records','authors'));
     }
 
 

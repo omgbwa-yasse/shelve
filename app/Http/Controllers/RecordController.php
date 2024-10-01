@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Models\SlipStatus;
-use Illuminate\Support\Facades\Gate;
-
 use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
@@ -25,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Gate;
 
 use ZipArchive;
 
@@ -342,15 +341,24 @@ class RecordController extends Controller
         }
     }
 
+
+
+
     public function importForm()
     {
         return view('records.import');
     }
+
+
+
     public function exportForm()
     {
         $dollies = Dolly::all();
         return view('records.export', compact('dollies'));
     }
+
+
+
 
     public function import(Request $request)
     {
@@ -386,6 +394,9 @@ class RecordController extends Controller
             return redirect()->back()->with('error', 'Error importing records: ' . $e->getMessage());
         }
     }
+
+
+
 
     private function generateEAD($records)
     {
