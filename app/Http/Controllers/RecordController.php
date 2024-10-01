@@ -58,9 +58,7 @@ class RecordController extends Controller
     }
 
     public function create()
-    {       $user = User::with(['currentOrganisation', 'organisations', 'roles', 'permissions'])->findOrFail(Auth()->user()->id);
-            dd($user);
-
+    {
             $statuses = RecordStatus::all();
             $supports = RecordSupport::all();
             $activities = Activity::all();
@@ -71,7 +69,7 @@ class RecordController extends Controller
             $records = Record::all();
             $authors = Author::with('authorType')->get();
             $terms = Term::all();
-            return view('records.create', compact('', 'records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+            return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
     public function store(Request $request)
@@ -176,7 +174,6 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
-       Gate::authorize('show', $record);
         $record->load('children');  // Charge les enregistrements enfants
         return view('records.show', compact('record'));
     }
@@ -184,8 +181,6 @@ class RecordController extends Controller
 
     public function edit(Record $record)
     {
-        Gate::authorize('edit', $record);
-
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
