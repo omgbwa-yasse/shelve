@@ -64,7 +64,7 @@ class SearchController extends Controller
         $users = User::select('id', 'name')->get();
         $slipStatuses = SlipStatus::all();
         $organisations = Organisation::select('id', 'name')->get();
-        
+
         return view('records.index', compact(
             'records',
             'statuses',

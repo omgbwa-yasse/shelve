@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PDFController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
@@ -95,7 +96,7 @@ Auth::routes();
 //Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
-
+Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 Route::group(['middleware' => 'auth'], function () {
 
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

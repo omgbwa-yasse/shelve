@@ -99,7 +99,7 @@ class CommunicationController extends Controller
     }
 
 
-    public function tranmission(Request $request)
+    public function transmission(Request $request)
     {
         $communication = Communication::findOrFail($request->input('id'));
         if($communication->return_effective == NULL){
