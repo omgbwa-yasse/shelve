@@ -17,7 +17,10 @@
 
     <title>{{ config('app.name', 'Shelve') }}</title>
     <style>
-
+        .org-dropdown {
+            max-height: 300px;
+            overflow-y: auto;
+        }
 
         input,
         textarea,
@@ -81,6 +84,42 @@
 </head>
 
 <body class="bg-light">
+@auth
+    <div class="bg-dark text-white py-1 px-3">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="font-weight-bold">
+                    <i class="bi bi-building"></i> Organisation actuelle : {{ Auth::user()->currentOrganisation->name ?? 'Non définie' }}
+                </span>
+                <button class="btn btn-sm btn-outline-light" onclick="openOrgModal()">
+                    <i class="bi bi-arrow-repeat"></i> Changer d'organisation
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal pour changer d'organisation -->
+    <div class="modal fade" id="orgModal" tabindex="-1" role="dialog" aria-labelledby="orgModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orgModalLabel">Changer d'organisation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group org-list">
+                        @foreach(Auth::user()->organisations as $organisation)
+                            <button type="button" class="list-group-item list-group-item-action" onclick="switchOrganisation({{ $organisation->id }})">
+                                {{ $organisation->name }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endauth
 <div id="app">
     @guest
     @else
@@ -265,7 +304,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-10">
+                <div class="@auth col-md-10 @else col-md-12 @endauth">
                     @endguest
                         <div id="container" class="card">
                             <button onclick="history.back()" class="btn btn-primary position-fixed bottom-0 end-0 z-1 " title="Retour">
@@ -285,6 +324,34 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="{{ asset('js/jquery-3.7.1.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{{--<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>--}}
+
+<script>
+    function openOrgModal() {
+        $('#orgModal').modal('show');
+    }
+
+    function switchOrganisation(organisationId) {
+        $.ajax({
+            url: '{{ route("switch.organisation") }}',
+            method: 'POST',
+            data: {
+                organisation_id: organisationId,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Erreur', 'Impossible de changer d\'organisation', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
+            }
+        });
+    }
+</script>
 </body>
 
 </html>

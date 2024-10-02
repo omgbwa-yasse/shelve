@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Organisation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrganisationController extends Controller
 {
@@ -15,7 +16,19 @@ class OrganisationController extends Controller
         return view('organisations.index', compact('organisations'));
     }
 
+    public function switchOrganisation(Request $request)
+    {
+        $user = Auth::user();
+        $organisationId = $request->input('organisation_id');
 
+        if ($user->organisations->contains($organisationId)) {
+            $user->current_organisation_id = $organisationId;
+            $user->save();
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false], 400);
+    }
     public function create()
     {
         $organisations = Organisation::all();

@@ -75,16 +75,26 @@ class User extends Authenticatable
 
 
 
-    public function hasPermissionTo($permission)
+//    public function hasPermissionTo($permission)
+//    {
+//        if (is_string($permission)) {
+//            return $this->permissions()->where('name', $permission)->exists();
+//        }
+//
+//        if (is_int($permission)) {
+//            return $this->permissions()->where('id', $permission)->exists();
+//        }
+//
+//        return false;
+//    }
+
+    public function hasPermissionTo($permission, $organisation = null)
     {
-        if (is_string($permission)) {
-            return $this->permissions()->where('name', $permission)->exists();
-        }
+        $organisation = $organisation ?? $this->currentOrganisation;
 
-        if (is_int($permission)) {
-            return $this->permissions()->where('id', $permission)->exists();
-        }
-
-        return false;
+        return $this->permissions()
+            ->where('permissions.name', $permission)
+            ->where('user_organisation_role.organisation_id', $organisation->id)
+            ->exists();
     }
 }
