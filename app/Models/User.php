@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Organisation;
+use App\Models\Role;
+use App\Models\Permission;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
-
 
     protected $fillable = [
         'name',
@@ -23,8 +23,6 @@ class User extends Authenticatable
     ];
 
 
-
-
     protected $hidden = [
         'password',
         'remember_token',
@@ -32,12 +30,11 @@ class User extends Authenticatable
 
 
 
-
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'birthday' => 'date',
     ];
-
 
 
 
@@ -49,16 +46,19 @@ class User extends Authenticatable
 
 
     public function organisations()
-
     {
-        return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')->withTimestamps();
+        return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')
+                    ->withTimestamps();
     }
 
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'user_organisation_role', 'user_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(Role::class, 'user_organisation_role', 'user_id', 'role_id')
+                    ->withPivot('organisation_id')
+                    ->withTimestamps();
     }
+
 
 
     public function checkUserPermission($permissionName, $organisationId = null)
@@ -72,14 +72,27 @@ class User extends Authenticatable
         $organisationId = $organisationId ?? $this->current_organisation_id;
 
         return $this->roles()
-            ->whereHas('organisations', function ($query) use ($organisationId) {
-                $query->where('organisations.id', $organisationId);
-            })
+            ->wherePivot('organisation_id', $organisationId)
             ->whereHas('permissions', function ($query) use ($permission) {
                 $query->where('permissions.id', $permission->id);
             })
             ->exists();
     }
+
+
+
+    public function hasPermissionTo($permissionName, $organisationId = null)
+    {
+        $organisationId = $organisationId ?? $this->current_organisation_id;
+
+        return $this->roles()
+            ->wherePivot('organisation_id', $organisationId)
+            ->whereHas('permissions', function ($query) use ($permissionName) {
+                $query->where('permissions.name', $permissionName);
+            })
+            ->exists();
+    }
+
 
 
 }
