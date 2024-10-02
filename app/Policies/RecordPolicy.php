@@ -74,7 +74,12 @@ class RecordPolicy
      */
     private function checkOrganisationAccess(User $user, Record $record): bool
     {
-        // Assurez-vous que votre modèle Record a une relation avec Organisation
-        return $record->organisation_id === $user->current_organisation_id;
+    foreach($record->activity->organisations as $organisation){
+        if ($organisation->id == $user->current_organisation_id) {
+        return true;
+        }
     }
+    return false;
+    }
+
 }

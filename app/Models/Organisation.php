@@ -52,6 +52,24 @@ class Organisation extends Model
         return $this->belongsToMany(Room::class, 'organisation_room', 'organisation_id', 'room_id');
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'user_organisation_role', 'organisation_id', 'role_id');
+    }
+
+
+    public function permissions()
+    {
+        return $this->hasManyThrough(
+            Permission::class,
+            Role::class,
+            'organisation_id', // Foreign key on user_organisation_role table
+            'role_id',         // Foreign key on role_permissions table
+            'id',              // Local key on organisations table
+            'id'               // Local key on roles table
+        );
+    }
+
 }
 
 

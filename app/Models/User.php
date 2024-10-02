@@ -55,46 +55,31 @@ class User extends Authenticatable
     }
 
 
-
-
     public function roles()
     {
         return $this->belongsToMany(Role::class, 'user_organisation_role', 'user_id', 'role_id')->withTimestamps();
     }
 
 
-
-
-    public function permissions()
+    public function checkUserPermission($permissionName, $organisationId = null)
     {
-        return $this->belongsToMany(Permission::class, 'role_permissions', 'role_id', 'permission_id')
-            ->join('user_organisation_role', 'role_permissions.role_id', '=', 'user_organisation_role.role_id')
-            ->where('user_organisation_role.user_id', $this->id)
-            ->distinct();
-    }
+        $permission = Permission::where('name', $permissionName)->first();
 
+        if (!$permission) {
+            return false;
+        }
 
+        $organisationId = $organisationId ?? $this->current_organisation_id;
 
-//    public function hasPermissionTo($permission)
-//    {
-//        if (is_string($permission)) {
-//            return $this->permissions()->where('name', $permission)->exists();
-//        }
-//
-//        if (is_int($permission)) {
-//            return $this->permissions()->where('id', $permission)->exists();
-//        }
-//
-//        return false;
-//    }
-
-    public function hasPermissionTo($permission, $organisation = null)
-    {
-        $organisation = $organisation ?? $this->currentOrganisation;
-
-        return $this->permissions()
-            ->where('permissions.name', $permission)
-            ->where('user_organisation_role.organisation_id', $organisation->id)
+        return $this->roles()
+            ->whereHas('organisations', function ($query) use ($organisationId) {
+                $query->where('organisations.id', $organisationId);
+            })
+            ->whereHas('permissions', function ($query) use ($permission) {
+                $query->where('permissions.id', $permission->id);
+            })
             ->exists();
     }
+
+
 }
