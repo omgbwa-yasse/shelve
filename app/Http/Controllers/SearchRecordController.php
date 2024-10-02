@@ -179,8 +179,20 @@ class SearchRecordController extends Controller
 
         $statuses = RecordStatus::all();
         $terms = Term::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $slipStatuses = SlipStatus::all();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'statuses', 'terms'));
+        return view('records.index', compact(
+            'records',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 

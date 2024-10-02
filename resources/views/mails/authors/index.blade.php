@@ -4,7 +4,7 @@
     <div class="container mt-4">
         <div class="card border-0 shadow-sm rounded-lg">
             <div class="card-header bg-primary text-white rounded-top d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">Authors</h2>
+                <h2 class="mb-0">Auteurs</h2>
                 <!-- Search Input -->
                 <div class="input-group" style="width: 300px;">
                     <input type="text" id="searchInput" class="form-control" placeholder="Search authors...">
@@ -13,7 +13,7 @@
             </div>
             <div class="card-body">
                 <a href="{{ route('mail-author.create') }}" class="btn btn-primary mb-3">
-                    <i class="bi bi-plus-circle"></i> Add New Author
+                    <i class="bi bi-plus-circle"></i> Ajouter un nouvel Auteur
                 </a>
 
                 @if ($message = Session::get('success'))

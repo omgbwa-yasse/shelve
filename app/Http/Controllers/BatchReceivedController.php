@@ -13,8 +13,9 @@ class BatchReceivedController extends Controller
 {
     public function index()
     {
+//        dd( auth()->user()->currentOrganisation);
         $batchTransactions = Batchtransaction::where('organisation_received_id',
-            auth()->user()->organisation->id)
+            auth()->user()->currentOrganisation->id)
             ->latest()
             ->paginate(10);
         return view('batch.received.index', compact('batchTransactions'));
@@ -63,7 +64,7 @@ class BatchReceivedController extends Controller
             'organisation_send_id' => 'required|integer',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->organisation->id;
+        $validatedData['organisation_received_id'] = auth()->user()->currentOrganisation->id;
 
 
         $batch = BatchTransaction::create($validatedData);
@@ -74,7 +75,7 @@ class BatchReceivedController extends Controller
             $mail['date_creation'] = now();
             $mail['mail_id'] = $data->id;
             $mail['user_send_id'] = auth()->user()->id;
-            $mail['organisation_send_id'] = auth()->user()->organisation->id;
+            $mail['organisation_send_id'] = auth()->user()->currentOrganisation->id;
             $mail['user_received_id'] = $validatedData['user_received_id'];
             $mail['organisation_received_id'] = $validatedData['organisation_received_id'];
             $mail['document_type_id'] = $data->document_type_id;
@@ -109,7 +110,7 @@ class BatchReceivedController extends Controller
             'organisation_send_id' => 'required|integer',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->orgqnisqtion->id;
+        $validatedData['organisation_received_id'] = auth()->user()->currentOrganisation->id;
 
         $batchTransaction->update($validatedData);
 

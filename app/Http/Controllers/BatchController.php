@@ -10,7 +10,7 @@ class BatchController extends Controller
     public function index()
     {
 
-        $mailBatches = Batch::where('organisation_holder_id', auth()->user()->organisation->id)->get();
+        $mailBatches = Batch::where('organisation_holder_id', auth()->user()->currentOrganisation->id??'')->get();
         return view('batch.index', compact('mailBatches'));
     }
 
@@ -30,7 +30,7 @@ class BatchController extends Controller
             'name' => 'required|max:100',
         ]);
 
-        $validatedData['organisation_holder_id'] = auth()->user()->organisation->id;
+        $validatedData['organisation_holder_id'] = auth()->user()->currentOrganisation->id;
 
 
         Batch::create($validatedData);
@@ -65,7 +65,7 @@ class BatchController extends Controller
             'code' => 'nullable|unique:batches,code,' . $mailBatch->id . '|max:10',
             'name' => 'required|max:100',
         ]);
-        $validatedData['organisation_holder_id'] = auth()->user()->organisation->id;
+        $validatedData['organisation_holder_id'] = auth()->user()->currentOrganisation->id;
         $mailBatch->update($validatedData);
         return redirect()->route('batch.index')->with('success', 'Mail batch updated successfully.');
     }

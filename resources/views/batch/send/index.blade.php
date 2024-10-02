@@ -1,26 +1,40 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Parapheurs envoyés</h1>
-    <table class="table">
-        <thead>
+    <div class="container">
+        <h1 class="mb-4">Parapheurs envoyés</h1>
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <table class="table table-bordered table-striped">
+            <thead class="">
             <tr>
-                <th>code</th>
-                <th>Intitulé </th>
+                <th>Code</th>
+                <th>Intitulé</th>
                 <th>Organisation de départ</th>
                 <th>Organisation d'arrivée</th>
                 <th>Date</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             @foreach ($batchTransactions as $batchTransaction)
                 <tr>
                     <td>{{ $batchTransaction->batch->code }}</td>
                     <td>{{ $batchTransaction->batch->name }}</td>
                     <td>{{ $batchTransaction->organisationSend->name }}</td>
                     <td>{{ $batchTransaction->organisationReceived->name }}</td>
-                    <td>{{ $batchTransaction->created_at }}</td>
+                    <td>{{ $batchTransaction->created_at->format('d/m/Y H:i') }}</td>
                     <td>
                         <a href="{{ route('batch-send.show', $batchTransaction) }}" class="btn btn-sm btn-info">Show</a>
                         <a href="{{ route('batch-send.edit', $batchTransaction) }}" class="btn btn-sm btn-primary">Edit</a>
@@ -32,6 +46,9 @@
                     </td>
                 </tr>
             @endforeach
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+
+        {{ $batchTransactions->links() }}
+    </div>
 @endsection

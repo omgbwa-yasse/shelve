@@ -14,10 +14,22 @@ class BatchSendController extends Controller
     public function index()
     {
         $batchTransactions = Batchtransaction::where('organisation_send_id',
-            auth()->user()->organisation->id)
+            auth()->user()->currentOrganisation->id??'')
             ->latest()
             ->paginate(10);
         return view('batch.send.index', compact('batchTransactions'));
+    }
+    public function show(BatchTransaction $batchTransaction)
+    {
+        // Assurez-vous que l'utilisateur a les droits de voir cette transaction
+        if ($batchTransaction->organisation_send_id !== auth()->user()->currentOrganisation->id) {
+            return redirect()->route('batch-send.index')->with('error', 'Unauthorized access.');
+        }
+
+        // Récupérez les détails de la transaction de batch
+        $batchTransaction->load(['batch', 'organisationSend', 'organisationReceived']);
+
+        return view('batch.send.show', compact('batchTransaction'));
     }
 
 
@@ -47,7 +59,7 @@ class BatchSendController extends Controller
             'user_received_id' => 'required|integer', // Assuming this is a required field
         ]);
 
-        $validatedData['organisation_send_id'] = auth()->user()->organisation->id;
+        $validatedData['organisation_send_id'] = auth()->user()->currentOrganisation->id;
 
         $batch = BatchTransaction::create($validatedData);
 
@@ -58,7 +70,7 @@ class BatchSendController extends Controller
             $mail['date_creation'] = now();
             $mail['mail_id'] = $data->id;
             $mail['user_send_id'] = auth()->user()->id;
-            $mail['organisation_send_id'] = auth()->user()->organisation->id;
+            $mail['organisation_send_id'] = auth()->user()->currentOrganisation->id;
             $mail['user_received_id'] = $validatedData['user_received_id'];
             $mail['organisation_received_id'] = $validatedData['organisation_received_id'];
             $mail['document_type_id'] = $data->document_type_id;
@@ -81,7 +93,7 @@ class BatchSendController extends Controller
         $batches = Batch::all();
         $organisations = Organisation::all();
         $batchTransaction = Batchtransaction::where('organisation_send_id',
-            auth()->user()->organisation->id);
+            auth()->user()->currentOrganisation->id);
         return view('batch.send.edit', compact('batchTransaction', 'batches', 'organisations'));
     }
 
@@ -94,7 +106,7 @@ class BatchSendController extends Controller
             'organisation_received_id' => 'required|integer',
         ]);
 
-        $validatedData['organisation_send_id'] = auth()->user()->organisation->id;
+        $validatedData['organisation_send_id'] = auth()->user()->currentOrganisation->id;
 
         $batchTransaction->update($validatedData);
         return redirect()->route('batch-send.index')->with('success', 'Batch transaction updated successfully.');

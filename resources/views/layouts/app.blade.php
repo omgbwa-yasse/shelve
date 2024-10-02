@@ -265,10 +265,15 @@
                     </div>
                 </div>
 
-                <div class="col-md-10">@endguest
-                    <div id="container" class="card">
-                        @yield('content')
-                    </div>
+                <div class="col-md-10">
+                    @endguest
+                        <div id="container" class="card">
+                            <button onclick="history.back()" class="btn btn-primary position-fixed bottom-0 end-0 z-1 " title="Retour">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                            @yield('content')
+                        </div>
+
                 </div>
             </div>
         </div>

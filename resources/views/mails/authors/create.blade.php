@@ -1,146 +1,142 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mt-4">
-        <h2>Add New Author</h2>
-        <form action="{{ route('mail-author.store') }}" method="POST">
-            @csrf
-            <div class="mb-3">
-                <label for="type_id" class="form-label">Type</label>
-                <select id="type_id" name="type_id" class="form-control" required>
-                    <option value="" disabled selected>Enter the type</option>
-                    @foreach ($authorTypes as $type)
-                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" id="name" name="name" class="form-control" data-field="name" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="parallel_name" class="form-label">Parallel Name</label>
-                <input type="text" id="parallel_name" name="parallel_name" class="form-control" data-field="parallel_name">
-            </div>
-
-            <div class="mb-3">
-                <label for="other_name" class="form-label">Other Name</label>
-                <input type="text" id="other_name" name="other_name" class="form-control" data-field="other_name">
-            </div>
-
-            <div class="mb-3">
-                <label for="lifespan" class="form-label">Lifespan</label>
-                <input type="text" id="lifespan" name="lifespan" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label for="locations" class="form-label">Locations</label>
-                <input type="text" id="locations" name="locations" class="form-control" data-field="locations">
-            </div>
-
-            <div class="mb-3">
-                <label for="parent_id" class="form-label">Parent Author</label>
-                <div class="select-with-search">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search parent author...">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="">
+                <div class="">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0">Add New Author</h2>
                     </div>
-                    <select id="parent_id" name="parent_id" class="form-control">
-                        <option value="" disabled selected>Enter the parent author</option>
-                        @foreach ($parents as $parent)
-                            <option value="{{ $parent->id }}">{{ $parent->name }} <i>({{ $parent->authorType->name }})</i></option>
-                        @endforeach
-                    </select>
+                    <div class="card-body">
+                        <form action="{{ route('mail-author.store') }}" method="POST" id="authorForm">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="type_id" class="form-label">Type</label>
+                                <select id="type_id" name="type_id" class="form-select" required>
+                                    <option value="" disabled selected>Enter the type</option>
+                                    @foreach ($authorTypes as $type)
+                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" id="name" name="name" class="form-control" data-field="name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="parallel_name" class="form-label">Parallel Name</label>
+                                <input type="text" id="parallel_name" name="parallel_name" class="form-control" data-field="parallel_name">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="other_name" class="form-label">Other Name</label>
+                                <input type="text" id="other_name" name="other_name" class="form-control" data-field="other_name">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="lifespan" class="form-label">Lifespan</label>
+                                <input type="text" id="lifespan" name="lifespan" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="locations" class="form-label">Locations</label>
+                                <input type="text" id="locations" name="locations" class="form-control" data-field="locations">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="parent_id" class="form-label">Parent Author</label>
+                                <div class="input-group">
+                                    <input type="text" id="parent_name" class="form-control" readonly>
+                                    <input type="hidden" id="parent_id" name="parent_id">
+                                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#authorModal">
+                                        Select Author
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Create Author</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Create Author</button>
-        </form>
+        </div>
     </div>
 
-    <style>
-        .select-with-search {
-            position: relative;
-        }
-        .select-with-search .search-input {
-            border-top-right-radius: 0.25rem;
-            border-bottom-right-radius: 0.25rem;
-        }
-        .select-with-search .form-select {
-            border-color: #ced4da;
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-            border-color: #ced4da;
-        }
-        .btn-primary {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-        }
-    </style>
+    <!-- Author Selection Modal -->
+    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="authorModalLabel">Select Parent Author</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="authorSearch" class="form-control mb-3" placeholder="Search authors...">
+                    <ul id="authorList" class="list-group">
+                        @foreach ($parents as $parent)
+                            <li class="list-group-item" data-id="{{ $parent->id }}" data-name="{{ $parent->name }}">
+                                {{ $parent->name }} <small class="text-muted">({{ $parent->authorType->name }})</small>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveAuthor">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+@endsection
+
+@push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const selectWithSearchElements = document.querySelectorAll('.select-with-search');
+            const authorSearch = document.getElementById('authorSearch');
+            const authorList = document.getElementById('authorList');
+            const parentIdInput = document.getElementById('parent_id');
+            const parentNameInput = document.getElementById('parent_name');
+            const saveAuthorBtn = document.getElementById('saveAuthor');
+            const authorModal = new bootstrap.Modal(document.getElementById('authorModal'));
 
-            selectWithSearchElements.forEach(selectWithSearch => {
-                const searchInput = selectWithSearch.querySelector('.search-input');
-                const select = selectWithSearch.querySelector('select');
-                const options = Array.from(select.options).slice(1); // Exclude the first option
+            let selectedAuthor = null;
 
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
+            authorSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const authors = authorList.querySelectorAll('li');
 
-                    options.forEach(option => {
-                        const optionText = option.textContent.toLowerCase();
-                        if (optionText.includes(searchTerm)) {
-                            option.style.display = '';
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
-
-                    // Reset selection and show placeholder option
-                    select.selectedIndex = 0;
-                    select.options[0].style.display = '';
-
-                    // If no visible options, show a "No results" option
-                    const visibleOptions = options.filter(option => option.style.display !== 'none');
-                    if (visibleOptions.length === 0) {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (!noResultsOption) {
-                            const newNoResultsOption = document.createElement('option');
-                            newNoResultsOption.textContent = 'No results found';
-                            newNoResultsOption.disabled = true;
-                            newNoResultsOption.setAttribute('data-no-results', 'true');
-                            select.appendChild(newNoResultsOption);
-                        } else {
-                            noResultsOption.style.display = '';
-                        }
+                authors.forEach(author => {
+                    const authorName = author.textContent.toLowerCase();
+                    if (authorName.includes(searchTerm)) {
+                        author.style.display = '';
                     } else {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (noResultsOption) {
-                            noResultsOption.style.display = 'none';
-                        }
-                    }
-                });
-
-                // Clear search input when select changes
-                select.addEventListener('change', function() {
-                    searchInput.value = '';
-                    options.forEach(option => option.style.display = '');
-                    const noResultsOption = select.querySelector('option[data-no-results]');
-                    if (noResultsOption) {
-                        noResultsOption.style.display = 'none';
+                        author.style.display = 'none';
                     }
                 });
             });
+
+            authorList.addEventListener('click', function(e) {
+                if (e.target.tagName === 'LI') {
+                    authorList.querySelectorAll('li').forEach(li => li.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedAuthor = {
+                        id: e.target.dataset.id,
+                        name: e.target.dataset.name
+                    };
+                }
+            });
+
+            saveAuthorBtn.addEventListener('click', function() {
+                if (selectedAuthor) {
+                    parentIdInput.value = selectedAuthor.id;
+                    parentNameInput.value = selectedAuthor.name;
+                    authorModal.hide();
+                }
+            });
         });
     </script>
-@endsection
+@endpush
