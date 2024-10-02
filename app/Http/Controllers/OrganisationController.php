@@ -18,16 +18,17 @@ class OrganisationController extends Controller
 
     public function switchOrganisation(Request $request)
     {
-        $user = Auth::user();
         $organisationId = $request->input('organisation_id');
+        $user = Auth::user();
 
         if ($user->organisations->contains($organisationId)) {
             $user->current_organisation_id = $organisationId;
             $user->save();
-            return response()->json(['success' => true]);
+
+            return redirect()->back()->with('success', 'Organisation changée avec succès');
         }
 
-        return response()->json(['success' => false], 400);
+        return redirect()->back()->with('error', 'Impossible de changer d\'organisation');
     }
     public function create()
     {

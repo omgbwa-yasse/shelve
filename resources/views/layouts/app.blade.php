@@ -108,17 +108,21 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="list-group org-list">
-                        @foreach(Auth::user()->organisations as $organisation)
-                            <button type="button" class="list-group-item list-group-item-action" onclick="switchOrganisation({{ $organisation->id }})">
-                                {{ $organisation->name }}
-                            </button>
-                        @endforeach
-                    </div>
+                    <form action="{{ route('switch.organisation') }}" method="POST">
+                        @csrf
+                        <div class="list-group org-list">
+                            @foreach(Auth::user()->organisations as $organisation)
+                                <button type="submit" name="organisation_id" value="{{ $organisation->id }}" class="list-group-item list-group-item-action">
+                                    {{ $organisation->name }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+
 @endauth
 <div id="app">
     @guest
@@ -330,27 +334,12 @@
     function openOrgModal() {
         $('#orgModal').modal('show');
     }
-
-    function switchOrganisation(organisationId) {
-        $.ajax({
-            url: '{{ route("switch.organisation") }}',
-            method: 'POST',
-            data: {
-                organisation_id: organisationId,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    location.reload();
-                } else {
-                    Swal.fire('Erreur', 'Impossible de changer d\'organisation', 'error');
-                }
-            },
-            error: function() {
-                Swal.fire('Erreur', 'Une erreur est survenue', 'error');
-            }
+    $(document).ready(function() {
+        $('.close').on('click', function() {
+            $('#orgModal').modal('hide');
         });
-    }
+    });
+
 </script>
 </body>
 

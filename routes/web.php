@@ -99,8 +99,7 @@ Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 Route::group(['middleware' => 'auth'], function () {
 //    Route::get('/switch-organisation/{organisation}', 'OrganisationController@switchOrganisation')->name('switch.organisation');
-    Route::post('/switch-organisation', 'OrganisationController@switchOrganisation')->name('switch.organisation');
-    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
     Route::prefix('mails')->group(function () {
         Route::get('/', [mailController::class, 'index']);
