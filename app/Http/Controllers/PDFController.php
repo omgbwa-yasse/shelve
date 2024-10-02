@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Attachment;
+use Illuminate\Support\Facades\Log;
 use Imagick;
 
 class PDFController extends Controller
 {
     public function thumbnail($id)
     {
+        if (!extension_loaded('imagick')) {
+            Log::error("L'extension Imagick n'est pas installée ou chargée.");
+            // Utilisez une image par défaut ou affichez un message d'erreur
+        }
         $attachment = Attachment::findOrFail($id);
         $pdfPath = storage_path('app/public/' . $attachment->path);
 
