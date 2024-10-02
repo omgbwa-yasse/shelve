@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Models\SlipStatus;
-use Illuminate\Support\Facades\Gate;
-
 use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
@@ -25,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Gate;
 
 use ZipArchive;
 
@@ -61,9 +60,7 @@ class RecordController extends Controller
     }
 
     public function create()
-    {       $user = User::with(['currentOrganisation', 'organisations', 'roles', 'permissions'])->findOrFail(Auth()->user()->id);
-            dd($user);
-
+    {
             $statuses = RecordStatus::all();
             $supports = RecordSupport::all();
             $activities = Activity::all();
@@ -74,7 +71,7 @@ class RecordController extends Controller
             $records = Record::all();
             $authors = Author::with('authorType')->get();
             $terms = Term::all();
-            return view('records.create', compact('', 'records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+            return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
     public function store(Request $request)
@@ -179,16 +176,14 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
-        Gate::authorize('show', $record);
-        $record->load('children');  // Charge les enregistrements enfants
+
+        $record->load('children');
         return view('records.show', compact('record'));
     }
 
 
     public function edit(Record $record)
     {
-        Gate::authorize('edit', $record);
-
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -346,15 +341,24 @@ class RecordController extends Controller
         }
     }
 
+
+
+
     public function importForm()
     {
         return view('records.import');
     }
+
+
+
     public function exportForm()
     {
         $dollies = Dolly::all();
         return view('records.export', compact('dollies'));
     }
+
+
+
 
     public function import(Request $request)
     {
@@ -390,6 +394,9 @@ class RecordController extends Controller
             return redirect()->back()->with('error', 'Error importing records: ' . $e->getMessage());
         }
     }
+
+
+
 
     private function generateEAD($records)
     {
