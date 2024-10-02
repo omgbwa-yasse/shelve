@@ -40,10 +40,17 @@ class RecordController extends Controller
                 'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
             ])->paginate(10);
         } else {
-            // L'utilisateur ne peut voir que les records de son organisation actuelle
+            // L'utilisateur ne peut voir que les records associés aux activités de son organisation actuelle
+            $currentOrganisationId = auth()->user()->current_organisation_id;
+
             $records = Record::with([
                 'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
             ])
+                ->whereHas('activity', function($query) use ($currentOrganisationId) {
+                    $query->whereHas('organisations', function($q) use ($currentOrganisationId) {
+                        $q->where('organisations.id', $currentOrganisationId);
+                    });
+                })
                 ->paginate(10);
         }
 
@@ -62,7 +69,6 @@ class RecordController extends Controller
             'organisations'
         ));
     }
-
     public function create()
     {
             $statuses = RecordStatus::all();
