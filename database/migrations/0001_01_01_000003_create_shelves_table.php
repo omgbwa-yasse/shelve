@@ -325,7 +325,6 @@ return new class extends Migration
             $table->unsignedBigInteger('activity_id')->nullable(false); // Activité rattachée
             $table->unsignedBigInteger('parent_id')->nullable(true); // Fiche de description parente
             $table->unsignedBigInteger('container_id')->nullable(true); // Lieu de consersation
-            $table->unsignedBigInteger('organisation_id')->nullable(true); // Versement
             $table->unsignedBigInteger('user_id')->nullable(false); // créateur
             $table->foreign('status_id')->references('id')->on('record_statuses')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');

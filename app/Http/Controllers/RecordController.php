@@ -44,7 +44,6 @@ class RecordController extends Controller
             $records = Record::with([
                 'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
             ])
-                ->where('organisation_id', auth()->user()->current_organisation_id)
                 ->paginate(10);
         }
 
@@ -90,7 +89,7 @@ class RecordController extends Controller
         $request->merge([
             'date_format' => $dateFormat,
             'user_id' => Auth::id(),
-            'organisation_id' => Auth::user()->current_organisation_id // Ajout de l'organisation_id
+//            'organisation_id' => Auth::user()->current_organisation_id // Ajout de l'organisation_id
         ]);
 
         $validatedData = $request->validate([
