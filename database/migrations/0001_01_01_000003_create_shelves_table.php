@@ -325,14 +325,13 @@ return new class extends Migration
             $table->unsignedBigInteger('activity_id')->nullable(false); // Activité rattachée
             $table->unsignedBigInteger('parent_id')->nullable(true); // Fiche de description parente
             $table->unsignedBigInteger('container_id')->nullable(true); // Lieu de consersation
-            $table->unsignedBigInteger('accession_id')->nullable(true); // Versement
+            $table->unsignedBigInteger('organisation_id')->nullable(true); // Versement
             $table->unsignedBigInteger('user_id')->nullable(false); // créateur
             $table->foreign('status_id')->references('id')->on('record_statuses')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('parent_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
-            $table->foreign('accession_id')->references('id')->on('accessions')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 

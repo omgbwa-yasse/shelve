@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
+use App\Models\RecordAttachment;
 use App\Models\SlipStatus;
 use App\Models\Attachment;
 use App\Models\Dolly;
@@ -33,17 +34,21 @@ class RecordController extends Controller
 
     public function index()
     {
-        $slipStatuses = SlipStatus::all();
-        $records = Record::with([
-            'level',
-            'status',
-            'support',
-            'activity',
-            'containers',
-            'authors',
-            'terms'
-        ])->paginate(10);
+        if (Gate::allows('viewAny', Record::class)) {
+            // L'utilisateur a la permission de voir tous les records
+            $records = Record::with([
+                'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
+            ])->paginate(10);
+        } else {
+            // L'utilisateur ne peut voir que les records de son organisation actuelle
+            $records = Record::with([
+                'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
+            ])
+                ->where('organisation_id', auth()->user()->current_organisation_id)
+                ->paginate(10);
+        }
 
+        $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
         $terms = Term::all();
         $users = User::select('id', 'name')->get();
@@ -82,8 +87,11 @@ class RecordController extends Controller
             return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
         }
 
-        $request->merge(['date_format' => $dateFormat ]);
-        $request->merge(['user_id' => Auth::id()]);
+        $request->merge([
+            'date_format' => $dateFormat,
+            'user_id' => Auth::id(),
+            'organisation_id' => Auth::user()->current_organisation_id // Ajout de l'organisation_id
+        ]);
 
         $validatedData = $request->validate([
             'code' => 'required|string|max:10',
@@ -184,6 +192,7 @@ class RecordController extends Controller
 
     public function edit(Record $record)
     {
+        $this->authorize('update', $record);
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -204,6 +213,7 @@ class RecordController extends Controller
     public function update(Request $request, Record $record)
     {
         Gate::authorize('update', $record);
+        $this->authorize('update', $record);
 
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
@@ -277,6 +287,7 @@ class RecordController extends Controller
 
     public function destroy(Record $record)
     {
+        $this->authorize('delete', $record);
         $record->delete();
 
         return redirect()->route('records.index')->with('success', 'Record deleted successfully.');
