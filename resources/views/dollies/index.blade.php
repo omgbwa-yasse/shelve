@@ -18,19 +18,19 @@
                 <td>{{ $dolly->name }}</td>
                 <td>{{ $dolly->description }}</td>
                 <td>
-                    @if($dolly->type->name == 'record')
+                    @if($dolly->type->name??'' == 'record')
                         Archives
-                    @elseif($dolly->type->name == 'mail')
+                    @elseif($dolly->type->name??''== 'mail')
                         Courrier
-                    @elseif($dolly->type->name == 'communication')
+                    @elseif($dolly->type->name??'' == 'communication')
                         Communication des archives
-                    @elseif($dolly->type->name == 'room')
+                    @elseif($dolly->type->name??'' == 'room')
                         Salle d'archives
-                    @elseif($dolly->type->name == 'container')
+                    @elseif($dolly->type->name??'' == 'container')
                         Boites d'archives et chronos
-                    @elseif($dolly->type->name == 'shelf')
+                    @elseif($dolly->type->name??'' == 'shelf')
                         Etagère
-                    @elseif($dolly->type->name == 'slip_record')
+                    @elseif($dolly->type->name??''== 'slip_record')
                         Archives (versement)
                     @endif
 
