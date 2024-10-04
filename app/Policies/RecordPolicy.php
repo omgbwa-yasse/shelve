@@ -69,6 +69,8 @@ class RecordPolicy
             $this->checkOrganisationAccess($user, $record);
     }
 
+
+
     /**
      * Check if the user has access to the record within their current organisation.
      */
