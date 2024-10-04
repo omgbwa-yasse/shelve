@@ -42,14 +42,26 @@ class slipRecordAttachmentController extends Controller
     }
 
     // Fonction pour la suppression
-    public function delete($id)
+    public function delete(Slip $slip, SlipRecord $slipRecord, $id)
     {
         $attachment = Attachment::findOrFail($id);
-        Storage::delete($attachment->path); // Supprimer le fichier du stockage
-        $attachment->delete(); // Supprimer l'entrée de la base de données
 
-        return response()->json(['success' => true]);
+        // Ensure the attachment belongs to the correct slip and record
+//        if ($attachment->slipRecord->id !== $record->id || $record->slip_id !== $slip->id) {
+//            return abort(404);
+//        }
+
+        Storage::delete($attachment->path);
+        $attachment->delete();
+//        return view('transferrings.records.show', compact('slip', 'slipRecord'));
+
+        return view('transferrings.slips.show', compact('slip', 'record'));
+
+
+//        return redirect()->route('transferrings.slips.show', [$slip, $record])
+//            ->with('success', 'Pièce jointe supprimée avec succès.');
     }
+
 
 
     public function download($id)
