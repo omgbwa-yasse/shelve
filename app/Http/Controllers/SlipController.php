@@ -43,11 +43,10 @@ class SlipController extends Controller
     public function create()
     {
         $organisations = Organisation::all();
-        $users = User::all();
+        $users = User::with('organisations')->get();
         $slipStatuses = SlipStatus::all();
         return view('transferrings.slips.create', compact('organisations', 'users', 'slipStatuses'));
     }
-
 
 
     public function store(Request $request)

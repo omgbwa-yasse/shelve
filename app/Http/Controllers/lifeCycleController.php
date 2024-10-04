@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 namespace App\Http\Controllers;
+use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\Activity;
+use App\Models\SlipStatus;
 use App\Models\Term;
 use App\Models\Accession;
 use App\Models\Author;
@@ -30,8 +32,19 @@ class lifeCycleController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'title'));
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 
@@ -44,8 +57,18 @@ class lifeCycleController extends Controller
         })
         ->orderBy('created_at', 'desc')
         ->paginate(10);
-
-        return view('records.index', compact('records', 'title'));
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 
@@ -62,8 +85,19 @@ class lifeCycleController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'title'));
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 
@@ -73,8 +107,19 @@ class lifeCycleController extends Controller
         $records = Record::whereHas('activity.communicability', function ($query) {
                 $query->whereRaw('DATE_ADD(records.created_at, INTERVAL communicabilities.duration YEAR) > NOW()');
             })->paginate(10);
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'title'));
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
     public function recordToKeep()
@@ -90,8 +135,19 @@ class lifeCycleController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'title'));
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 
@@ -109,8 +165,19 @@ class lifeCycleController extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact('records', 'title'));
+        return view('records.index', compact('records', 'title',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
     }
 
 

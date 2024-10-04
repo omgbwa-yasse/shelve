@@ -37,7 +37,7 @@
                     <input class="form-check-input" type="checkbox" value="{{$communication->id}}" id="communication_id" />
                     <label class="form-check-label" for="">
                         <span style="font-size: 1.4em; font-weight: bold;">
-                            <a href="{{ route('transactions.show', $communication->id) }}">
+                            <a href="{{ route('transactions.show', $communication->id??'') }}">
                                 <strong> {{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
                             </a>
                         </span>

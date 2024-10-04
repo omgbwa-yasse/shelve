@@ -21,7 +21,7 @@ class ReservationController extends Controller
 
 
 
-    public function show(INT $id)
+    public function show($id)
     {
         $reservation = reservation::findOrFail($id);
         return view('reservations.show', compact('reservation'));
