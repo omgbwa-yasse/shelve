@@ -9,16 +9,10 @@
                     <a href="{{  route('slips.records.show', [$slipRecord->slip, $slipRecord] ) }}" class="btn btn-primary me-2">
                         <i class= "bi bi-eye"></i> Retour
                     </a>
-                    <a href="" class="btn btn-primary me-2">
-                        <i class="bi bi-download"></i>Télécharger
-                    </a>
-                    <a href="" class="btn btn-secondary me-2">
-                        <i class="bi bi-pencil"></i> Modifier
-                    </a>
-                    <form action="" method="POST" class="d-inline">
+                    <form action="{{ route('slipRecordAttachment.delete', [$slipRecord->slip, $slipRecord, $attachment->id]) }}" method="POST" class="d-inline" id="delete-form">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete()">
                             <i class="bi bi-trash"></i> Supprimer
                         </button>
                     </form>
@@ -49,5 +43,10 @@
             container.style.display = 'block';
             pdfControls.style.display = 'flex';
         });
+        function confirmDelete() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette pièce jointe ?')) {
+                document.getElementById('delete-form').submit();
+            }
+        }
     </script>
 @endsection
