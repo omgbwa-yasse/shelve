@@ -24,8 +24,6 @@
                     <i class="bi bi-printer me-1"></i>
                     Imprimer
                 </a>
-
-
             </div>
             <div class="d-flex align-items-center">
                 <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">

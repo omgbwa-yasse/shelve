@@ -3,25 +3,70 @@
 @section('content')
     <div class="container-fluid">
         <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Courriers</h1>
-
         <div id="mailList">
+
+
+            <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+                <div class="d-flex align-items-center">
+                    <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-cart me-1"></i>
+                        Chariot ***
+                    </a>
+                    <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-download me-1"></i>
+                        Exporter ***
+                    </a>
+                    <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-printer me-1"></i>
+                        Imprimer ***
+                    </a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-arrow-repeat me-1"></i>
+                        Transférer ***
+                    </a>
+
+                    <a href="#" id="communicateBtn" class="btn btn-light btn-sm me-2">
+                        <i class="bi bi-envelope me-1"></i>
+                        Communiquer ***
+                    </a>
+                    <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                        <i class="bi bi-check-square me-1"></i>
+                        Tout cocher ***
+                    </a>
+                </div>
+            </div>
+
+
+
             @foreach ($mails as $mail)
+            <h4 class="card-title mb-2">
+                <div class="btn-group mt-1" role="group">
+                    <input type="checkbox" class="me-2" name="selected_mail[]" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" autocomplete="off" />
+                </div>
+                <a href="{{ route('mails.show', $mail) }}"><b>{{ $mail->code }} - {{ $mail->name }}</b></a>
+                <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }}">
+                    {{ $mail->priority->name ?? '' }}
+                </span>
+            </h4>
                 <div class="card mb-3 shadow-sm">
                     <div class="card-body">
                         <div class="row align-items-center">
                             <div class="col-md-9">
-                                <h5 class="card-title mb-2">
-                                    <i class="bi bi-envelope me-2"></i>
-                                    <b>{{ $mail->code }} - {{ $mail->name }}</b>
-                                    <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }}">
-                                        {{ $mail->priority->name ?? '' }}
-                                    </span>
-                                </h5>
                                 <p class="card-text mb-1">
-                                    <i class="bi bi-card-text me-2"></i><strong>Description:</strong> {{ $mail->description }}<br>
-                                    <i class="bi bi-person-fill me-2"></i><strong>Auteur:</strong><i> {{ $mail->author }}</i>
-                                    <i class="bi bi-calendar-event me-2"></i><strong>Date:</strong> {{ $mail->date }}
-                                    <i class="bi bi-tag-fill me-2"></i><strong>Type:</strong> {{ $mail->type->name ?? '' }}
+                                    <i class="bi bi-card-text me-2"></i><em>Description:</em> {{ $mail->description }} <br>
+                                    @foreach ($mail->authors as $index => $author)
+                                        <i class="bi bi-person-fill me-2"></i><em>Auteur:</em><i> {{ $author->name }}</i>
+                                        @if(!$loop->last)
+                                            ;
+                                        @endif
+                                    @endforeach
+                                    <i class="bi bi-calendar-event me-2"></i><em>Date:</em> {{ $mail->date }}
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i><em>Priorité :</em> {{ $mail->priority->name ?? '' }}
+                                    <i class="bi bi-envelope-fill me-2"></i><em>Type de courriel :</em> {{ $mail->type->name ?? '' }}
+                                    <i class="bi bi-diagram-3-fill me-2"></i><em>Typologie :</em> {{ $mail->typology->name ?? '' }}
+                                    <i class="bi bi-file-earmark-text-fill me-2"></i><em>Copie :</em> {{ $mail->documentType->name ?? '' }}
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">
@@ -33,17 +78,6 @@
                                     @else
                                         <span class="text-muted me-2"><i class="bi bi-paperclip"></i> 0</span>
                                     @endif
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-sm btn-outline-secondary" title="Voir">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                        <a href="{{ route('mails.edit', $mail->id) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ $mail->id }})" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -87,7 +121,31 @@
             @endif
         @endforeach
     </div>
+
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{ $mails->onFirstPage() ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ $mails->previousPageUrl() }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @foreach ($mails->getUrlRange(1, $mails->lastPage()) as $page => $url)
+                <li class="page-item {{ $page == $mails->currentPage() ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                </li>
+            @endforeach
+            <li class="page-item {{ $mails->hasMorePages() ? '' : 'disabled' }}">
+                <a class="page-link" href="{{ $mails->nextPageUrl() }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
 @endsection
+
+
 
 @push('scripts')
     <script>
