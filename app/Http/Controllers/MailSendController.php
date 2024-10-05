@@ -33,7 +33,12 @@ class MailSendController extends Controller
 
     public function create()
     {
-        $mails = mail::all();
+        $mails = Mail::where('creator_organisation_id', Auth::user()->current_organisation_id)
+                    ->whereHas('transactions', function ($query) {
+                    $query->where('organisation_received_id', Auth::user()->current_organisation_id);
+            })
+            ->get();
+
         $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $documentTypes = documentType :: all();
@@ -94,7 +99,7 @@ class MailSendController extends Controller
     {
         $mails = mail::all();
         $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = organisation ::all();
+        $organisations = Organisation ::all();
         $sendOrganisations = Organisation::whereIn('id', UserOrganisation::where('user_id', auth()->id())
             ->where('active',true)
             ->pluck('organisation_id'))

@@ -9,7 +9,7 @@ use App\Models\Mail;
 use Illuminate\Support\Facades\Auth;
 
 
-class mailArchivingController extends Controller
+class MailArchivingController extends Controller
 {
 
 
@@ -30,9 +30,15 @@ class mailArchivingController extends Controller
     public function create()
 {
     $mailContainers = MailContainer::all();
+
     $mails = Mail::where('create_by', Auth::id())
-             ->where('is_archived', false)
+             ->whereHas('transactions', function ($query) {
+                 $query->where('is_archived', false)
+                       ->where('organisation_send_id', Auth::user()->current_organisation_id)
+                       ->where('organisation_received_id', Auth::user()->current_organisation_id);
+             })
              ->get();
+
     $documentTypes = DocumentType::all();
 
     return view('mails.archiving.create', compact('mailContainers', 'mails', 'documentTypes'));

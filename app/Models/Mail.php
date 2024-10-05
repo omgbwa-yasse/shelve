@@ -34,6 +34,7 @@ class Mail extends Model
         'mail_type_id',
         'mail_typology_id',
         'document_type_id',
+        'creator_organisation_id',
     ];
     public $timestamps = true;
 
@@ -87,6 +88,13 @@ class Mail extends Model
     {
         return $this->belongsTo(User::class, 'create_by', 'id');
     }
+
+
+    public function organisation()
+    {
+        return $this->belongsTo(Organisation::class, 'creator_organisation_id', 'id');
+    }
+
 
     public function updator()
     {

@@ -718,9 +718,9 @@ return new class extends Migration
             $table->text('contacts')->nullable(false);
             $table->text('description')->nullable(true);
             $table->date('date')->nullable(false);
-            $table->boolean('is_archived')->nullable(false);
             $table->unsignedBigInteger('subject_id')->nullable(false);
             $table->unsignedBigInteger('create_by')->nullable(false);
+            $table->unsignedBigInteger('creator_organisation_id')->nullable(false);
             $table->unsignedBigInteger('update_by')->nullable(true);
             $table->unsignedBigInteger('mail_priority_id')->nullable(false);
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
@@ -729,12 +729,15 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('subject_id')->references('id')->on('mail_subjects')->onDelete('cascade');
             $table->foreign('create_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('creator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('update_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('mail_priority_id')->references('id')->on('mail_priorities')->onDelete('cascade');
             $table->foreign('mail_type_id')->references('id')->on('mail_types')->onDelete('cascade');
             $table->foreign('mail_typology_id')->references('id')->on('mail_typologies')->onDelete('cascade');
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
         });
+
+
 
         Schema::create('mail_actions', function (Blueprint $table) {
             $table->id();
@@ -757,6 +760,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mail_type_id')->nullable(false);
             $table->unsignedBigInteger('document_type_id')->nullable(false);
             $table->unsignedBigInteger('action_id')->nullable(false);
+            $table->boolean('is_archived')->nullable(false);
             $table->text('description')->nullable(false);
             $table->timestamps();
             $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
@@ -768,6 +772,16 @@ return new class extends Migration
             $table->foreign('document_type_id')->references('id')->on('document_types')->onDelete('cascade');
             $table->foreign('action_id')->references('id')->on('mail_actions')->onDelete('cascade');
         });
+
+
+        Schema::create('mail_related', function (Blueprint $table) {
+            $table->unsignedBigInteger('mail_id')->nullable(false);
+            $table->unsignedBigInteger('mail_related_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('mail_id')->references('id')->on('mails')->onDelete('cascade');
+            $table->foreign('mail_related_id')->references('id')->on('mails')->onDelete('cascade');
+        });
+
 
         Schema::create('mail_organisation', function (Blueprint $table) {
             $table->unsignedBigInteger('mail_id')->nullable(false);

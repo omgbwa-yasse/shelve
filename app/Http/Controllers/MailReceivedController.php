@@ -65,8 +65,14 @@ class MailReceivedController extends Controller
 
     public function create()
     {
+        $mails = Mail::where('creator_organisation_id', Auth::user()->current_organisation_id)
+                    ->whereHas('transactions', function ($query) {
+                    $query->where('organisation_received_id', Auth::user()->current_organisation_id);
+            })
+            ->get();
+
         $type = mailType::where('name','=','received');
-        $mails = mail::all();
+
         $users = User::where('id', '!=', auth()->id())->get();
         $organisations = organisation ::all();
         $documentTypes = documentType :: all();
