@@ -57,16 +57,18 @@
                                 <p class="card-text mb-1">
                                     <i class="bi bi-card-text me-2"></i><em>Description:</em> {{ $mail->description }} <br>
                                     @foreach ($mail->authors as $index => $author)
-                                        <i class="bi bi-person-fill me-2"></i><em>Auteur:</em><i> {{ $author->name }}</i>
+                                        <i class="bi bi-person-fill me-2"></i><em>Auteur:</em><i>
+                                                <a href="{{ route('mails.sort')}}?categ=author&value={{ $author->id }}">{{ $author->name }}</a>
+                                            </i>
                                         @if(!$loop->last)
                                             ;
                                         @endif
                                     @endforeach
-                                    <i class="bi bi-calendar-event me-2"></i><em>Date:</em> {{ $mail->date }}
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i><em>Priorité :</em> {{ $mail->priority->name ?? '' }}
-                                    <i class="bi bi-envelope-fill me-2"></i><em>Type de courriel :</em> {{ $mail->type->name ?? '' }}
-                                    <i class="bi bi-diagram-3-fill me-2"></i><em>Typologie :</em> {{ $mail->typology->name ?? '' }}
-                                    <i class="bi bi-file-earmark-text-fill me-2"></i><em>Copie :</em> {{ $mail->documentType->name ?? '' }}
+                                    <i class="bi bi-calendar-event me-2"></i><em>Date:</em><a href="{{ route('mails.sort')}}?categ=dates&value={{ $mail->date }}"> {{ $mail->date }}</a>
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i><em>Priorité :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
+                                    <i class="bi bi-envelope-fill me-2"></i><em>Type de courriel :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
+                                    <i class="bi bi-diagram-3-fill me-2"></i><em>Typologie :</em> <a href="{{ route('mails.sort')}}?categ=typology&id={{ $mail->typology->id }}"> {{ $mail->typology->name ?? '' }} </a>
+                                    <i class="bi bi-file-earmark-text-fill me-2"></i><em>Copie :</em> <a href="{{ route('mails.sort')}}?categ=documentType&id={{ $mail->documentType->id }}">{{ $mail->documentType->name ?? '' }}</a>
                                 </p>
                             </div>
                             <div class="col-md-3 text-md-end text-center">

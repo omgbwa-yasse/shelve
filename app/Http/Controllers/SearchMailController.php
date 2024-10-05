@@ -20,52 +20,50 @@ use App\Models\SlipRecord;
 class SearchMailController extends Controller
 {
     public function index(Request $request)
-    {   $mails = '';
+    {
+        $mails = '';
         switch($request->input('categ')){
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
 
-                $query = mail::query();
+                $query = Mail::query(); // Classe 'Mail' avec la majuscule
 
                 if ($exactDate) {
                     $query->whereDate('date', $exactDate);
                 }
 
                 if ($startDate && $endDate) {
-                    $query->orWhere(function ($query) use ($startDate, $endDate) {
-                        $query->whereDate('date', '>=', $startDate)
-                            ->whereDate('date', '<=', $endDate);
-                    });
+                    $query->whereBetween('date', [$startDate, $endDate]);
                 }
 
-                $mails = $query->get();
+                $mails = $query->paginate(10);
                 break;
 
             case "typology":
-                $mails = mail::where('mail_typology_id', $request->input('id'))
-                    ->get();
+                $mails = Mail::where('mail_typology_id', $request->input('id'))
+                    ->paginate(10);
                 break;
 
             case "author":
                 $mails = Mail::join('mail_author', 'mails.id', '=', 'mail_author.mail_id')
                     ->where('mail_author.author_id', $request->input('id'))
-                    ->get();
+                    ->paginate(10);
                 break;
 
             case "container":
                 $mails = Mail::whereIn('id', MailArchiving::where('container_id', $request->input('id'))->pluck('mail_id'))
-                    ->get();
+                    ->paginate(10); // Correction de 'pagination' en 'paginate'
                 break;
 
             case "batch":
                 $mails = Mail::whereIn('id', BatchMail::where('batch_id', $request->input('id'))->pluck('mail_id'))
-                    ->get();
+                    ->paginate(10); // Correction de 'pagination' en 'paginate'
                 break;
 
             default:
-                $mails = mail::take(5)->get();
+                $mails = Mail::paginate(10);
                 break;
         }
 
@@ -77,10 +75,8 @@ class SearchMailController extends Controller
         return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
     }
 
-
     public function date()
     {
         return view('search.mail.dateSearch');
     }
 }
-
