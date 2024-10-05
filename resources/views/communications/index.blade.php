@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Fiches de communication {{ $title ?? ''}}</h1>
+        <h1><i class="bi bi-file-earmark-spreadsheet"></i>  Fiches de communication {{ $title ?? ''}}</h1>
         <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> Remplir une fiche
         </a>

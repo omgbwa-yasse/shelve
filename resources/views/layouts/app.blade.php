@@ -38,16 +38,17 @@
         }
 
         /* Style pour l'en-tête */
-        #container h1,
-        #container h2 {
-            background-color: #0178d4;
-            color: #fff;
-            font-weight: lighter;
-            padding: 0.3rem;
-            border-top-left-radius: 0.3rem;
-            border-top-right-radius: 0.3rem;
-            margin-top: 0;
+        #container h1, #container h2 {
+            /*background-color: #0178d4;*/
+            color: #0178d4;
+            /*font-weight: bold;*/
+
+            font-family: inherit; /* Added to match .display-6 */
+            font-size: 2rem; /* Typical size for .display-6, adjust if needed */
+            line-height: 1.2; /* Typical line-height for .display-6 */
         }
+
+
 
         /* Style pour les boutons */
         #container .btn {

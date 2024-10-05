@@ -8,7 +8,7 @@
 </style>
 
 @section('content')
-    <div class="container-fluid mt-4">
+    <div class="container-fluid ">
         <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>Inventaire des archives {{ $title ?? ''}}</h1>
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">

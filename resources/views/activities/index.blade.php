@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-4">
+    <div class="container-fluid">
         <div class="row mb-4 align-items-center">
             <div class="col">
-                <h1 class="h2 mb-0"><b>Plan de classement</b></h1>
+                <h1 class="h2 mb-0">Plan de classement</h1>
             </div>
             <div class="col-auto">
                 <a href="{{ route('activities.create') }}" class="btn btn-primary">

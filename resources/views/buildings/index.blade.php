@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1> Liste des bâtiments </h1>
+        <h1>  <i class="bi bi-building"></i> Liste des bâtiments </h1>
         <a href="{{ route('buildings.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> Ajouter un bâtiment
         </a>

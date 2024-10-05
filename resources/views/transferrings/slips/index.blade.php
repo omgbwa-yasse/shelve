@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-4">
+    <div class="container-fluid ">
         <div class="row mb-4 align-items-center">
             <div class="col">
-                <h3 class="display-6 text-primary">
+                <h1 class="">
                     <i class="bi bi-file-earmark-text"></i> Bordereau de versement
-                </h3>
+                </h1>
             </div>
             <div class="col-auto">
                 <a href="{{ route('slips.create') }}" class="btn btn-primary btn-lg">
