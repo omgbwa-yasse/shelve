@@ -19,7 +19,7 @@
                     <tr>
                         <td>{{ $mailContainer->code }}</td>
                         <td>{{ $mailContainer->name }}</td>
-                        <td>{{ $mailContainer->creator->name }}</td>
+                        <td>{{ $mailContainer->creator->name }} ( {{ $mailContainer->creatorOrganisation->name }} ) </td>
                         <td>{{ $mailContainer->containerType->name }}</td>
                         <td>
                             <a href="{{ route('mail-container.show', $mailContainer->id) }}" class="btn btn-info">Paramètre</a>

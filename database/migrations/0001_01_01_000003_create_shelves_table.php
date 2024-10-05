@@ -815,9 +815,12 @@ return new class extends Migration
             $table->string('name', 100)->nullable();
             $table->unsignedBigInteger('type_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->unsignedBigInteger('user_organisation_id')->nullable(false);
             $table->foreign('type_id')->references('id')->on('container_types')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
+
 
         Schema::create('mail_status', function (Blueprint $table) {
             $table->id();

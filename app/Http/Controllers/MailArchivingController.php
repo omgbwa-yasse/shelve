@@ -29,7 +29,7 @@ class MailArchivingController extends Controller
 
     public function create()
 {
-    $mailContainers = MailContainer::all();
+    $mailContainers = MailContainer::where('user_organisation_id', auth()->user()->current_organisation_id)->get();
 
     $mails = Mail::where('create_by', Auth::id())
              ->whereHas('transactions', function ($query) {

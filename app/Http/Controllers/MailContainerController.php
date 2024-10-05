@@ -12,10 +12,13 @@ class MailContainerController extends Controller
 
     public function index()
     {
-        $mailContainers = MailContainer::all();
-        $mailContainers->load('containerType','creator','mailArchivings');
+        $mailContainers = MailContainer::with(['containerType', 'creator', 'mailArchivings', 'creatorOrganisation'])
+            ->where('user_organisation_id', auth()->user()->current_organisation_id)
+            ->paginate(10);
+
         return view('mails.containers.index', compact('mailContainers'));
     }
+
 
 
 
@@ -39,6 +42,7 @@ class MailContainerController extends Controller
         ]);
 
         $request->merge(['user_id' => auth()->id()]);
+        $request->merge(['user_organisation_id' => auth()->user()->current_organisation_id]);
 
         MailContainer::create($request->all());
 
@@ -78,6 +82,7 @@ class MailContainerController extends Controller
         ]);
 
         $request->merge(['user_id' => auth()->id()]);
+        $request->merge(['user_organisation_id' => auth()->user()->current_organisation_id]);
 
         $mailContainer->update($request->all());
 

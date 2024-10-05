@@ -13,7 +13,6 @@ class ContainerController extends Controller
     public function index()
     {
         $containers = Container::with('shelf', 'status', 'property')->get();
-//        dd($containers);
         return view('containers.index', compact('containers'));
     }
 
@@ -40,6 +39,7 @@ class ContainerController extends Controller
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
             'creator_id' => auth()->id(),
+            'user_organisation_id' => auth()->user()->current8orgqnisqtion_id,
         ]);
 
         return redirect()->route('containers.index')->with('success', 'Container created successfully.');
@@ -72,6 +72,8 @@ class ContainerController extends Controller
             'shelve_id' => $request->shelve_id,
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
+            'creator_id' => auth()->id(),
+            'user_organisation_id' => auth()->user()->current8orgqnisqtion_id,
         ]);
 
         return redirect()->route('containers.index')->with('success', 'Container updated successfully.');

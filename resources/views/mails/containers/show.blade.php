@@ -9,6 +9,7 @@
                 <p class="card-text">Code: {{ $mailContainer->code }}</p>
                 <p class="card-text">Code: {{ $mailContainer->creator->name }}</p>
                 <p class="card-text">Type: {{ $mailContainer->containerType->name }}</p>
+                <p class="card-text">Propriétaire : {{ $mailContainer->creatorOrganisation->name }}</p>
                 <a href="{{ route('mail-container.index') }}" class="btn btn-secondary">Back</a>
                 <a href="{{ route('mail-container.edit', $mailContainer->id) }}" class="btn btn-warning btn-secondary">Edit</a>
                 <form action="{{ route('mail-container.destroy', $mailContainer->id) }}" method="POST" style="display: inline-block;">

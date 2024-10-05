@@ -40,7 +40,7 @@ class MailSendController extends Controller
             ->get();
 
         $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = organisation ::all();
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
         $documentTypes = documentType :: all();
         $mailActions = MailAction :: all();
         $sendOrganisations = Organisation::all(); // à reveoir
@@ -99,7 +99,9 @@ class MailSendController extends Controller
     {
         $mails = mail::all();
         $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = Organisation ::all();
+
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
+
         $sendOrganisations = Organisation::whereIn('id', UserOrganisation::where('user_id', auth()->id())
             ->where('active',true)
             ->pluck('organisation_id'))

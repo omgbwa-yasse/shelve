@@ -11,7 +11,7 @@ class MailContainer extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'code', 'name', 'type_id','user_id'
+        'code', 'name', 'type_id','user_id', 'user_organisation_id'
     ];
 
     protected $table = 'mail_containers';
@@ -34,6 +34,12 @@ class MailContainer extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function creatorOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'user_organisation_id');
+    }
+
 
     public $timestamps = true;
 

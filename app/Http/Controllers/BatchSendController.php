@@ -60,8 +60,18 @@ class BatchSendController extends Controller
 
     public function create()
     {
-        $batches = Batch::all();
-        $organisations = Organisation::all();
+        $batches = Batch::whereHas('transactions', function($query) {
+            $query->where('organisation_send_id', auth()->user()->currentOrganisation->id)
+                  ->where('id', function($subQuery) {
+                      $subQuery->selectRaw('MAX(id)')
+                               ->from('batch_transactions')
+                               ->whereColumn('batch_id', 'batch_transactions.batch_id');
+                  });
+        })->get();
+
+
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
+
         return view('batch.send.create', compact('batches', 'organisations'));
     }
 
@@ -106,8 +116,17 @@ class BatchSendController extends Controller
 
     public function edit(INT $id)
     {
-        $batches = Batch::all();
-        $organisations = Organisation::all();
+        $batches = Batch::whereHas('transactions', function($query) {
+            $query->where('organisation_send_id', auth()->user()->currentOrganisation->id)
+                  ->where('id', function($subQuery) {
+                      $subQuery->selectRaw('MAX(id)')
+                               ->from('batch_transactions')
+                               ->whereColumn('batch_id', 'batch_transactions.batch_id');
+                  });
+        })->get();
+
+
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
         $batchTransaction = Batchtransaction::where('organisation_send_id',
             auth()->user()->currentOrganisation->id);
         return view('batch.send.edit', compact('batchTransaction', 'batches', 'organisations'));

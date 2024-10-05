@@ -74,7 +74,9 @@ class MailReceivedController extends Controller
         $type = mailType::where('name','=','received');
 
         $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = organisation ::all();
+
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
+
         $documentTypes = documentType :: all();
         $mailActions = MailAction :: all();
         $receivedOrganisations = auth()->user()->organisation;
@@ -134,7 +136,7 @@ class MailReceivedController extends Controller
     {
         $mails = mail::all();
         $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = organisation ::all();
+        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
         $receivedOrganisations = auth()->user()->organisation;
         $documentTypes = documentType :: all();
         $mailActions = MailAction :: all();
