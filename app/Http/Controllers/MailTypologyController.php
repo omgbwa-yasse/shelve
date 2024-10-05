@@ -11,8 +11,7 @@ class MailTypologyController extends Controller
 
     public function index()
     {
-        $mailTypologies = MailTypology::all();
-
+        $mailTypologies = MailTypology::paginate(10);
         $mailTypologies->load(['class','mails']);
 
         return view('mails.typologies.index', compact('mailTypologies'));

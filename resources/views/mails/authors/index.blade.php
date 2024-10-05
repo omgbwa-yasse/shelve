@@ -52,16 +52,6 @@
                                     <a href="{{ route('mails.sort') }}?categ=author&id={{$author->id}}" class="btn btn-sm btn-outline-info">
                                         <i class="bi bi-eye"></i> View Mails
                                     </a>
-                                    <a href="{{ route('mail-author.edit', $author) }}" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </a>
-                                    <form action="{{ route('mail-author.destroy', $author) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </form>
                                 </div>
                             </div>
                         </div>

@@ -4,8 +4,6 @@
     <div class="container-fluid">
         <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Courriers</h1>
         <div id="mailList">
-
-
             <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
                 <div class="d-flex align-items-center">
                     <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
