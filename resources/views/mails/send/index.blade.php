@@ -56,8 +56,8 @@
                             <div class="col-md-9">
                                 <p class="card-text mb-1">
                                         <i class="bi bi-info-circle me-2"></i><em>Description :</em>{{ $transaction->description }}<br/>
-                                        <i class="bi bi-person me-2"></i><em>Envoyé par :</em><a href="#"> {{ $transaction->userSend->name ?? 'N/A' }}</a>
-                                        <i class="bi bi-building me-2"></i><em>Poste :</em> <a href="#"> {{ $transaction->organisationSend->name ?? 'N/A' }}</a>
+                                        <i class="bi bi-person me-2"></i><em>Reçu par :</em><a href="#"> {{ $transaction->userSend->name ?? 'N/A' }}</a>
+                                        <i class="bi bi-building me-2"></i><em>Poste destinataire :</em> <a href="#"> {{ $transaction->organisationSend->name ?? 'N/A' }}</a>
                                         <i class="bi bi-file-earmark me-2"></i><em>Type de document :</em> <a href="#"> {{ $transaction->documentType->name ?? 'N/A' }}</a>
                                         <i class="bi bi-calendar me-2"></i><em>le :</em> <a href="#"> {{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</a>
                                 </p>

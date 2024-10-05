@@ -7,13 +7,13 @@ use App\Models\Batch;
 use App\Models\Organisation;
 use App\Models\BatchTransaction;
 use App\Models\MailTransaction;
+use Illuminate\Support\Facades\DB;
 
 
 class BatchReceivedController extends Controller
 {
     public function index()
     {
-//        dd( auth()->user()->currentOrganisation);
         $batchTransactions = Batchtransaction::where('organisation_received_id',
             auth()->user()->currentOrganisation->id)
             ->latest()
@@ -22,15 +22,27 @@ class BatchReceivedController extends Controller
     }
 
 
-    public function batches_received()
+    public function last()
     {
-        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
-        return view('batch.received.index', compact('batchTransactions'));
+        $latestBatchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('batch_transactions')
+                    ->groupBy('batch_id');
+            })
+            ->where('organisation_received_id', auth()->user()->currentOrganisation->id)
+            ->paginate(10);
+
+        return view('batch.received.index', compact('latestBatchTransactions'));
     }
 
 
 
-
+    public function logs()
+    {
+        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
+        return view('batch.received.index', compact('batchTransactions'));
+    }
 
     public function create()
     {

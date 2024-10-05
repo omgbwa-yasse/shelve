@@ -20,9 +20,7 @@ class MailController extends Controller
         $typologies = MailTypology::all();
         $authors = Author::all();
         $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
-            ->where('is_archived', false)
             ->paginate(15);
-//        dd($mails);
         return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
 
     }
@@ -49,7 +47,6 @@ class MailController extends Controller
         $typologies = MailTypology::all();
         $authors = Author::all();
         $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
-            ->where('is_archived', true)
             ->paginate(15);
         return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
     }

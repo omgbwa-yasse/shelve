@@ -7,6 +7,7 @@ use App\Models\Batch;
 use App\Models\BatchTransaction;
 use App\Models\MailTransaction;
 use App\Models\Organisation;
+use Illuminate\Support\Facades\DB;
 use App\Models\user;
 
 class BatchSendController extends Controller
@@ -34,11 +35,32 @@ class BatchSendController extends Controller
 
 
 
-    public function batches_send()
+
+
+    public function last()
+    {
+        $latestBatchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('batch_transactions')
+                    ->groupBy('batch_id');
+            })
+            ->where('organisation_send_id', auth()->user()->currentOrganisation->id)
+            ->paginate(10);
+
+        return view('batch.received.index', compact('latestBatchTransactions'));
+    }
+
+
+
+
+
+    public function logs()
     {
         $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
         return view('batch.send.send', compact('batchTransactions'));
     }
+
 
 
 
