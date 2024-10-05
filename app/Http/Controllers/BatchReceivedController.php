@@ -12,7 +12,25 @@ use Illuminate\Support\Facades\DB;
 
 class BatchReceivedController extends Controller
 {
+
+
     public function index()
+    {
+        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
+            ->whereIn('id', function ($query) {
+                $query->select(DB::raw('MAX(id)'))
+                    ->from('batch_transactions')
+                    ->groupBy('batch_id');
+            })
+            ->where('organisation_received_id', auth()->user()->currentOrganisation->id)
+            ->paginate(10);
+
+        return view('batch.received.index', compact('batchTransactions'));
+    }
+
+
+
+    public function logs()
     {
         $batchTransactions = Batchtransaction::where('organisation_received_id',
             auth()->user()->currentOrganisation->id)
@@ -22,27 +40,6 @@ class BatchReceivedController extends Controller
     }
 
 
-    public function last()
-    {
-        $latestBatchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
-            ->whereIn('id', function ($query) {
-                $query->select(DB::raw('MAX(id)'))
-                    ->from('batch_transactions')
-                    ->groupBy('batch_id');
-            })
-            ->where('organisation_received_id', auth()->user()->currentOrganisation->id)
-            ->paginate(10);
-
-        return view('batch.received.index', compact('latestBatchTransactions'));
-    }
-
-
-
-    public function logs()
-    {
-        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
-        return view('batch.received.index', compact('batchTransactions'));
-    }
 
     public function create()
     {

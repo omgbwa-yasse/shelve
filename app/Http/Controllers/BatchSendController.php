@@ -12,14 +12,7 @@ use App\Models\user;
 
 class BatchSendController extends Controller
 {
-    public function index()
-    {
-        $batchTransactions = Batchtransaction::where('organisation_send_id',
-            auth()->user()->currentOrganisation->id??'')
-            ->latest()
-            ->paginate(10);
-        return view('batch.send.index', compact('batchTransactions'));
-    }
+
     public function show(BatchTransaction $batchTransaction)
     {
         // Assurez-vous que l'utilisateur a les droits de voir cette transaction
@@ -37,9 +30,9 @@ class BatchSendController extends Controller
 
 
 
-    public function last()
+    public function index()
     {
-        $latestBatchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
+        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])
             ->whereIn('id', function ($query) {
                 $query->select(DB::raw('MAX(id)'))
                     ->from('batch_transactions')
@@ -48,17 +41,18 @@ class BatchSendController extends Controller
             ->where('organisation_send_id', auth()->user()->currentOrganisation->id)
             ->paginate(10);
 
-        return view('batch.received.index', compact('latestBatchTransactions'));
+        return view('batch.received.index', compact('batchTransactions'));
     }
-
-
 
 
 
     public function logs()
     {
-        $batchTransactions = BatchTransaction::with(['batch', 'organisationSend', 'organisationReceived'])->get();
-        return view('batch.send.send', compact('batchTransactions'));
+        $batchTransactions = Batchtransaction::where('organisation_send_id',
+            auth()->user()->currentOrganisation->id??'')
+            ->latest()
+            ->paginate(10);
+        return view('batch.send.index', compact('batchTransactions'));
     }
 
 

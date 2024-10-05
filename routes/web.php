@@ -117,8 +117,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
         Route::resource('batch', BatchController::class)->names('batch');
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
+
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
+
+        Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
+        Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
+
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'index'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
