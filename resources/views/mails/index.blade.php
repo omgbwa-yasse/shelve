@@ -2,7 +2,11 @@
 
 @section('content')
     <div class="container-fluid">
-        <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Courriers</h1>
+        <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>Courriers
+            @if(isset($title))
+                {{ $title }}
+            @endif
+        </h1>
         <div id="mailList">
             <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
                 <div class="d-flex align-items-center">
@@ -61,7 +65,7 @@
                                             ;
                                         @endif
                                     @endforeach
-                                    <i class="bi bi-calendar-event me-2"></i><em>Date:</em><a href="{{ route('mails.sort')}}?categ=dates&value={{ $mail->date }}"> {{ $mail->date }}</a>
+                                    <i class="bi bi-calendar-event me-2"></i><em>Date:</em><a href="{{ route('mails.sort')}}?categ=dates&date_exact={{ $mail->date }}"> {{ $mail->date }}</a>
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i><em>Priorité :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
                                     <i class="bi bi-envelope-fill me-2"></i><em>Type de courriel :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->type->id }}">{{ $mail->type->name ?? '' }}</a>
                                     <i class="bi bi-diagram-3-fill me-2"></i><em>Typologie :</em> <a href="{{ route('mails.sort')}}?categ=typology&id={{ $mail->typology->id }}"> {{ $mail->typology->name ?? '' }} </a>
