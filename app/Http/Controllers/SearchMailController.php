@@ -29,7 +29,7 @@ class SearchMailController extends Controller
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
 
-                $query = Mail::query(); // Classe 'Mail' avec la majuscule
+                $query = Mail::query();
 
 
                 if ($exactDate != NULL) {
