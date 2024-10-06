@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Mail;
 use App\Models\Record;
+use App\Models\Batch;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailType;
@@ -62,13 +63,20 @@ class SearchMailController extends Controller
             case "container":
                 $title = " par contenant ";
                 $mails = Mail::whereIn('id', MailArchiving::where('container_id', $request->input('id'))->pluck('mail_id'))
-                    ->paginate(10); // Correction de 'pagination' en 'paginate'
+                    ->paginate(10);
                 break;
 
             case "batch":
-                $title = " par parapheur ";
+                $batchId = $request->input('id');
+                if ($batchId) {
+                    $batch = Batch::findOrFail($batchId);
+                    $title = " du parapheur " . $batch->code . " - " . $batch->name;
+                } else {
+                    return back()->withErrors(['message' => 'ID du batch manquant.']);
+                }
+
                 $mails = Mail::whereIn('id', BatchMail::where('batch_id', $request->input('id'))->pluck('mail_id'))
-                    ->paginate(10); // Correction de 'pagination' en 'paginate'
+                    ->paginate(10);
                 break;
 
             default:

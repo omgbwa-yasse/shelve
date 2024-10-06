@@ -1,64 +1,5 @@
 @extends('layouts.app')
-<style>
-    .timeline {
-        position: relative;
-        padding: 20px 0;
-    }
-    .timeline::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 50%;
-        width: 2px;
-        margin-left: -1px;
-        background-color: #e9ecef;
-    }
-    .timeline-item {
-        position: relative;
-        margin-bottom: 30px;
-    }
-    .timeline-badge {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        width: 14px;
-        height: 14px;
-        margin-left: -7px;
-        border-radius: 50%;
-        z-index: 1;
-    }
-    .timeline-panel {
-        position: relative;
-        width: calc(50% - 30px);
-        float: left;
-    }
-    .timeline-item:nth-child(even) .timeline-panel {
-        float: right;
-    }
-    .timeline-item:nth-child(odd) .timeline-panel::before {
-        content: " ";
-        position: absolute;
-        top: 26px;
-        right: -15px;
-        display: inline-block;
-        border-top: 15px solid transparent;
-        border-left: 15px solid #fff;
-        border-right: 0 solid #fff;
-        border-bottom: 15px solid transparent;
-    }
-    .timeline-item:nth-child(even) .timeline-panel::before {
-        content: " ";
-        position: absolute;
-        top: 26px;
-        left: -15px;
-        display: inline-block;
-        border-top: 15px solid transparent;
-        border-right: 15px solid #fff;
-        border-left: 0 solid #fff;
-        border-bottom: 15px solid transparent;
-    }
-</style>
+
 @section('content')
     <div class="container-fluid">
         <div class="row justify-content-center">
@@ -73,10 +14,10 @@
                                 <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab">Details</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="transactions-tab" data-toggle="tab" href="#transactions" role="tab">Transactions</a>
+                                <a class="nav-link" id="attachments-tab" data-toggle="tab" href="#attachments" role="tab">Attachments</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="attachments-tab" data-toggle="tab" href="#attachments" role="tab">Attachments</a>
+                                <a class="nav-link" id="transactions-tab" data-toggle="tab" href="#transactions" role="tab">Transaction History</a>
                             </li>
                         </ul>
                         <div class="tab-content mt-3" id="mailTabsContent">
@@ -120,6 +61,46 @@
                                     </a>
                                 </div>
                             </div>
+
+                            <div class="tab-pane fade" id="attachments" role="tabpanel">
+                                <h5 class="border-bottom pb-2 mb-3">Attachments</h5>
+                                @if($mail->attachments->isNotEmpty())
+                                    <ul class="list-group">
+                                        @foreach($mail->attachments as $attachment)
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="bi bi-file-earmark me-2"></i>
+                                                    <span>{{ $attachment->name }}</span>
+                                                    <small class="text-muted ms-2">({{ number_format($attachment->size / 1024, 2) }} KB)</small>
+                                                </div>
+                                                <div>
+                                                    <a href="{{ route('mail-attachment.show', [$mail->id, $attachment->id]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                        <i class="bi bi-download"></i>
+                                                    </a>
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <div class="alert alert-info">No attachments found.</div>
+                                @endif
+
+                                <form action="{{ route('mail-attachment.store', $mail->id) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div class="row mb-3">
+                                            <div class="col">
+                                                <label for="name" class="form-label">Nom du fichier</label>
+                                                <input type="text" class="form-control" id="name" name="name" required>
+                                            </div>
+                                            <div class="col">
+                                                <label for="file" class="form-label">Ajouter un fichier</label>
+                                                <input class="form-control" type="file" id="formFile" name="file">
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                </form>
+
+                            </div>
                             <div class="tab-pane fade" id="transactions" role="tabpanel">
                                 <h5 class="border-bottom pb-2 mb-3">Transaction History</h5>
                                 @if($mail->transactions->isNotEmpty())
@@ -150,52 +131,12 @@
                                     <div class="alert alert-info">No transactions found.</div>
                                 @endif
                             </div>
-                            <div class="tab-pane fade" id="attachments" role="tabpanel">
-                                <h5 class="border-bottom pb-2 mb-3">Attachments</h5>
-                                @if($mail->attachments->isNotEmpty())
-                                    <ul class="list-group">
-                                        @foreach($mail->attachments as $attachment)
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <i class="bi bi-file-earmark me-2"></i>
-                                                    <span>{{ $attachment->name }}</span>
-                                                    <small class="text-muted ms-2">({{ number_format($attachment->size / 1024, 2) }} KB)</small>
-                                                </div>
-                                                <div>
-{{--                                                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="previewAttachment({{ $attachment->id }})">--}}
-{{--                                                        <i class="bi bi-eye"></i> Preview--}}
-{{--                                                    </button>--}}
-                                                    <a href="{{ route('mail-attachment.show', [$mail->id, $attachment->id]) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                                        <i class="bi bi-download"></i>
-                                                    </a>
-                                                </div>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <div class="alert alert-info">No attachments found.</div>
-                                @endif
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{{--    <div class="modal fade" id="attachmentPreviewModal" tabindex="-1" aria-labelledby="attachmentPreviewModalLabel" aria-hidden="true">--}}
-{{--        <div class="modal-dialog modal-lg">--}}
-{{--            <div class="modal-content">--}}
-{{--                <div class="modal-header">--}}
-{{--                    <h5 class="modal-title" id="attachmentPreviewModalLabel">Attachment Preview</h5>--}}
-{{--                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>--}}
-{{--                </div>--}}
-{{--                <div class="modal-body">--}}
-{{--                    <iframe id="attachmentPreviewFrame" src="" style="width: 100%; height: 500px; border: none;"></iframe>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
-{{--    </div>--}}
-
 @endsection
 
 @push('styles')
@@ -210,31 +151,11 @@
             }
         }
 
-        {{--function previewAttachment(attachmentId) {--}}
-        {{--    const previewUrl = `{{ route('mail-attachment.show', [$mail->id, ':attachmentId']) }}`.replace(':attachmentId', attachmentId);--}}
-        {{--    document.getElementById('attachmentPreviewFrame').src = previewUrl;--}}
-        {{--    const previewModal = new bootstrap.Modal(document.getElementById('attachmentPreviewModal'));--}}
-        {{--    previewModal.show();--}}
-        {{--}--}}
-
         $(document).ready(function() {
-            // Initialize Bootstrap tabs
             $('#mailTabs a').on('click', function (e) {
                 e.preventDefault();
                 $(this).tab('show');
             });
-
-            // Add smooth scrolling to timeline
-            $('.timeline').on('scroll', function() {
-                $('.timeline-item').each(function() {
-                    if ($(this).offset().top < window.pageYOffset + window.innerHeight * 0.75 && $(this).hasClass('invisible')) {
-                        $(this).removeClass('invisible').addClass('animate__animated animate__fadeInUp');
-                    }
-                });
-            });
-
-            // Trigger scroll event on page load
-            $('.timeline').scroll();
         });
     </script>
 @endpush

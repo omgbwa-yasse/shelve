@@ -16,6 +16,7 @@ protected $table="attachments";
         'crypt',
         'size',
         'creator_id',
+        'crypt_sha512',
     ];
 
     public function creator()

@@ -22,6 +22,7 @@ class MailAttachmentController extends Controller
 
     public function store(Request $request, $file)
     {
+
         $mail = Mail::findOrFail($file);
 
         $validatedData = $request->validate([
@@ -47,7 +48,7 @@ class MailAttachmentController extends Controller
 
         $mail->attachments()->attach($attachment->id);
 
-        return redirect()->route('mail-attachment.index', $mail->id)->with('success', 'MailAttachment created successfully.');
+        return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
     }
 
     public function show($id, MailAttachment $attachment)
