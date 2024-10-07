@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Mail;
 use App\Models\MailAttachment;
 use Illuminate\Http\Request;
+use Imagick;
 
 class MailAttachmentController extends Controller
 {
@@ -20,9 +21,12 @@ class MailAttachmentController extends Controller
         return view('mails.attachments.create', compact('mail'));
     }
 
+
+
+
+
     public function store(Request $request, $file)
     {
-
         $mail = Mail::findOrFail($file);
 
         $validatedData = $request->validate([
@@ -30,7 +34,6 @@ class MailAttachmentController extends Controller
             'file' => 'required|file|mimes:pdf',
         ]);
 
-        // Traitement du fichier téléchargé
         $filePath = $request->file('file')->store('attachments');
         $fileSize = $request->file('file')->getSize();
         $fileCrypt = md5_file($request->file('file')->getRealPath());
@@ -50,6 +53,10 @@ class MailAttachmentController extends Controller
 
         return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
     }
+
+
+
+
 
     public function show($id, MailAttachment $attachment)
     {
