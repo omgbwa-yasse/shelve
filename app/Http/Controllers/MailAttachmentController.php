@@ -3,7 +3,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\MailAttachment;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Imagick;
 
 class MailAttachmentController extends Controller
@@ -25,33 +28,48 @@ class MailAttachmentController extends Controller
 
 
 
-    public function store(Request $request, $file)
+    public function store(Request $request, $id)
     {
-        $mail = Mail::findOrFail($file);
+        try {
+            $request->validate([
+                'name' => 'required|max:100',
+                'file' => 'required|file|mimes:pdf|max:2048',
+                'thumbnail' => 'nullable|string',
+            ]);
 
-        $validatedData = $request->validate([
-            'name' => 'required|max:100',
-            'file' => 'required|file|mimes:pdf',
-        ]);
+            $mail = Mail::findOrFail($id);
+            $file = $request->file('file');
 
-        $filePath = $request->file('file')->store('attachments');
-        $fileSize = $request->file('file')->getSize();
-        $fileCrypt = md5_file($request->file('file')->getRealPath());
-        $fileCryptSha512 = hash_file('sha512', $request->file('file')->getRealPath());
+            $path = $file->store('mail_attachments');
 
-        $attachment = MailAttachment::create([
-            'path' => $filePath,
-            'name' => $validatedData['name'],
-            'crypt' => $fileCrypt,
-            'crypt_sha512' => $fileCryptSha512,
-            'size' => $fileSize,
-            'type' => 'mail',
-            'creator_id' => auth()->id(),
-        ]);
+            $attachment = MailAttachment::create([
+                'path' => $path,
+                'name' => $request->input('name'),
+                'crypt' => md5_file($file),
+                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                'size' => $file->getSize(),
+                'creator_id' => auth()->id(),
+                'type' => 'mail',
+            ]);
 
-        $mail->attachments()->attach($attachment->id);
+            if ($request->filled('thumbnail')) {
+                $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnail));
+                $thumbnailPath = 'thumbnails_mail/' . $attachment->id . '.jpg';
+                $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
 
-        return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
+                if ($stored) {
+                    $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                }
+            }
+
+            $mail->attachments()->attach($attachment->id);
+            return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
+//            return response()->json(['success' => true, 'message' => 'Pièce jointe ajoutée avec succès au mail.']);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de l\'ajout de la pièce jointe au mail : ' . $e->getMessage());
+            return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
+//            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de l\'ajout de la pièce jointe au mail.'], 500);
+        }
     }
 
 

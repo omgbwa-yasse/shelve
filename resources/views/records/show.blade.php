@@ -207,23 +207,40 @@
                 </div>
 
                 <div class="card shadow-sm mb-4">
-                    <div class="card-body">
-                        <h4 class="card-title mb-3">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0">
                             <i class="bi bi-paperclip me-2"></i>Attachments
                         </h4>
-                        <ul class="list-group list-group-flush mb-3" id="attachmentsList">
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="attachmentsList">
                             @forelse($record->attachments as $attachment)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>{{ $attachment->name }}</span>
-                                    <a href="{{ route('records.attachments.show', [$record, $attachment]) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-download"></i> Voir le fichier
-                                    </a>
-                                </li>
+                                <div class="col-md-4 col-lg-3 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                                            @if($attachment->thumbnail_path)
+                                                <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Thumbnail" class="img-fluid" style="width: 100%; object-fit: cover; object-position: top;">
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                                    <i class="bi bi-file-earmark-pdf fs-1 text-secondary"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-truncate mb-2" title="{{ $attachment->name }}">{{ $attachment->name }}</h6>
+                                            <a href="{{ route('records.attachments.show', [$record, $attachment]) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-download me-1"></i> Voir le fichier
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
                             @empty
-                                <li class="list-group-item text-muted">No attachments found.</li>
+                                <div class="col-12">
+                                    <p class="text-muted mb-0">No attachments found.</p>
+                                </div>
                             @endforelse
-                        </ul>
-                        <div class="d-grid">
+                        </div>
+                        <div class="d-grid mt-3">
                             <a href="{{ route('records.attachments.create', $record) }}" class="btn btn-outline-success">
                                 <i class="bi bi-plus-circle me-2"></i> Ajouter un fichier
                             </a>

@@ -7,7 +7,10 @@ use App\Models\RecordAttachment;
 use App\Models\Record;
 use App\Models\Attachment;
 
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class RecordAttachmentController extends Controller
 {
@@ -25,35 +28,45 @@ class RecordAttachmentController extends Controller
 
     public function store(Request $request, $id)
     {
-        $record = Record::findOrFail($id);
+        try {
+            $request->validate([
+                'name' => 'required|max:100',
+                'file' => 'required|file|mimes:pdf|max:2048',
+                'thumbnail' => 'nullable|string',
+            ]);
 
-        $validatedData = $request->validate([
-            'name' => 'required|max:100',
-            'file' => 'required|file|mimes:pdf',
-        ]);
+            $record = Record::findOrFail($id);
+            $file = $request->file('file');
 
-        $validatedData['type'] = 'record';
+            $path = $file->store('attachments');
 
-        // Traitement du fichier téléchargé
-        $filePath = $request->file('file')->store('attachments');
-        $fileSize = $request->file('file')->getSize();
-        $fileCrypt = md5_file($request->file('file')->getRealPath());
-        $fileCryptSha512 = hash_file('sha512', $request->file('file')->getRealPath());
+            $attachment = Attachment::create([
+                'path' => $path,
+                'name' => $request->input('name'),
+                'crypt' => md5_file($file),
+                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                'size' => $file->getSize(),
+                'creator_id' => auth()->id(),
+                'type' => 'record',
+            ]);
 
-        $attachment = Attachment::create([
-            'path' => $filePath,
-            'name' => $validatedData['name'],
-            'crypt' => $fileCrypt,
-            'crypt_sha512' => $fileCryptSha512,
-            'size' => $fileSize,
-            'creator_id' => auth()->id(),
-            'type' => $validatedData['type'],
-        ]);
+            if ($request->filled('thumbnail')) {
+                $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnail));
+                $thumbnailPath = 'thumbnails_record/' . $attachment->id . '.jpg';
+                $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
 
+                if ($stored) {
+                    $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                }
+            }
 
-        $record->attachments()->attach($attachment->id);
+            $record->attachments()->attach($attachment->id);
+            return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
 
-        return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
+        } catch (Exception $e) {
+            Log::error('Erreur lors de l\'ajout de la pièce jointe : ' . $e->getMessage());
+            return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
+        }
     }
 
     public function edit(Record $record, Attachment $attachment)
