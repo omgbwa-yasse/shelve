@@ -72,35 +72,44 @@
             </div>
         </div>
 
-        <div class="row ">
+        <div class="row mt-1">
             <div class="col-md-12">
-                <h2 class="mb-4">Fichiers joints</h2>
-                <div class="row" id="file-list">
-                    @foreach ($slipRecord->attachments as $attachment)
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <div class="card-img-top" style="height: 200px; overflow: hidden;">
-                                    @if ($attachment->thumbnail_path)
-                                        <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Thumbnail" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
-                                    @else
-                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                                            <i class="bi bi-file-earmark-pdf fs-1 text-muted"></i>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Fichiers joints</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="file-list">
+                            @foreach ($slipRecord->attachments as $attachment)
+                                <div class="col-md-4 col-lg-3 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-img-top" style="height: 200px; overflow: hidden;">
+                                            @if ($attachment->thumbnail_path)
+                                                <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Thumbnail" class="img-fluid" style="width: 100%; object-fit: cover; object-position: top;">
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                                    <i class="bi bi-file-earmark-pdf fs-1 text-secondary"></i>
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-truncate mb-1" title="{{ $attachment->name ?? '' }}">{{ $attachment->name ?? '' }}</h6>
+                                            <p class="card-text small text-muted mb-2">
+                                                {{ $attachment->size ?? '' }} KB
+                                            </p>
+                                            <p class="card-text small text-muted mb-3">
+                                                Ajouté par: {{ $attachment->creator->name ?? '' }}
+                                            </p>
+                                            <form action="{{ route('slip-record-show') }}?r_id={{$slipRecord->id }}&a_id={{ $attachment->id }}" method="post">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-primary btn-sm w-100">Consulter</button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <h6 class="card-title">{{ $attachment->name ?? '' }}</h6>
-                                    <p class="card-text small text-muted">
-                                        {{ $attachment->size ?? '' }} KB | Ajouté par: {{ $attachment->creator->name ?? '' }}
-                                    </p>
-                                    <form action="{{ route('slip-record-show') }}?r_id={{$slipRecord->id }}&a_id={{ $attachment->id }}" method="post">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary btn-sm">Consulter</button>
-                                    </form>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
-                    @endforeach
+                    </div>
                 </div>
             </div>
         </div>
