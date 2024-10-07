@@ -62,67 +62,100 @@
             <div class="file-list row" id="file-list">
                 @foreach ($slipRecord->attachments as $attachment)
                     <div class="file-item col-md-6 col-lg-4 d-flex align-items-center">
-                        <i class="bi bi-file-earmark-pdf fs-1 me-1"></i>
+                        @if ($attachment->thumbnail_path)
+                            <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                        @else
+                            <i class="bi bi-file-earmark-pdf fs-1 me-1"></i>
+                        @endif
                         <div>
                             <p class="mb-1">
                                 {{ $attachment->name ?? '' }} ({{ $attachment->size ?? '' }} KB) Ajouté par: {{ $attachment->creator->name ?? '' }}
-                                <form action="{{ route('slip-record-show', )}}?r_id={{$slipRecord->id }}&a_id={{ $attachment->id }}" method="post">
-                                    @csrf
-                                    <button type="submit"  class="btn btn-primary me-2">Consulter</button>
-                                </form>
-                                </p>
+                            <form action="{{ route('slip-record-show') }}?r_id={{$slipRecord->id }}&a_id={{ $attachment->id }}" method="post">
+                                @csrf
+                                <button type="submit" class="btn btn-primary me-2">Consulter</button>
+                            </form>
+                            </p>
                         </div>
                     </div>
                 @endforeach
             </div>
             <h2 class="mb-4">Ajouter des fichiers</h2>
-            <form action="{{ route('slip-record-upload') }}?s_id={{$slip->id}}&r_id={{ $slipRecord->id }}" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" action="{{ route('slip-record-upload') }}?s_id={{$slip->id}}&r_id={{ $slipRecord->id }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <input type="file" name="file" class="mt-2 mt-3">
+                <input type="file" name="file" id="fileInput" class="mt-2 mt-3" accept=".pdf,.jpg,.jpeg,.png">
+                <canvas id="pdfThumbnail" style="display:none;"></canvas>
+                <input type="hidden" name="thumbnail" id="thumbnailInput">
                 <button type="submit" class="btn btn-danger mt-3">Enregistrer</button>
             </form>
             <div class="file-list" id="file-list"></div>
         </div>
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
         <script>
-            // Fonction pour ajouter un fichier à la liste avec les boutons "Modifier" et "Supprimer"
-            function addFileToList(file) {
-                const fileList = document.getElementById('file-list');
-                const fileItem = document.createElement('div');
-                fileItem.classList.add('file-item');
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file.type === 'application/pdf') {
+                    generatePdfThumbnail(file);
+                }
+            });
 
-                fileItem.innerHTML = `
-                    <span>${file.name}</span>
-                    <div>
-                        <button class="btn btn-primary btn-sm mr-2" onclick="editFile('${file.id}')">Modifier</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.id}', this)">Supprimer</button>
-                    </div>
-                `;
+            function generatePdfThumbnail(pdfFile) {
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                    const typedarray = new Uint8Array(this.result);
 
-                fileList.appendChild(fileItem);
+                    pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+                        pdf.getPage(1).then(function(page) {
+                            const scale = 1.5;
+                            const viewport = page.getViewport({ scale: scale });
+                            const canvas = document.getElementById('pdfThumbnail');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport: viewport
+                            };
+                            page.render(renderContext).promise.then(() => {
+                                const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+                                document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+                                console.log('Thumbnail generated:', thumbnailDataUrl.substring(0, 100) + '...'); // Log pour déboguer
+                            });
+                        });
+                    });
+                };
+                fileReader.readAsArrayBuffer(pdfFile);
             }
 
-            // Fonction pour supprimer un fichier
-            function deleteFile(fileId, btn) {
-                fetch(`/slipRecordAttachment/delete/${fileId}`, {
-                    method: 'DELETE',
+            document.getElementById('uploadForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                console.log('Thumbnail data before send:', formData.get('thumbnail') ? 'Present' : 'Not present'); // Log pour déboguer
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        btn.closest('.file-item').remove();
-                    }
-                });
-            }
-
-            // Fonction pour modifier un fichier (à implémenter)
-            function editFile(fileId) {
-                // Implement the edit functionality here
-                alert('Fonction de modification à implémenter');
-            }
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Server response:', data); // Log pour déboguer
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            console.error('Upload failed:', data.message);
+                            alert('L\'upload a échoué. Veuillez réessayer.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Une erreur est survenue. Veuillez réessayer.');
+                    });
+            });
         </script>
     </div>
 @endsection

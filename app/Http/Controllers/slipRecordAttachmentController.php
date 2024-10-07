@@ -14,31 +14,41 @@ class slipRecordAttachmentController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimes:jpg,jpeg,png,pdf|max:2048', // validation
+            'file' => 'required|mimes:jpg,jpeg,png,pdf|max:2048',
+            'thumbnail' => 'nullable|string',
         ]);
 
-        // Enregistrer le fichier dans le système
         $path = $request->file('file')->store('attachments');
+        $file = $request->file('file');
+
         $attachment = Attachment::create([
             'path' => $path,
-            'name' => $request->file('file')->getClientOriginalName(),
-            'crypt' => md5_file($request->file('file')),
-            'crypt_sha512' => hash_file('sha512', $request->file('file')->getRealPath()),
-            'size' => $request->file('file')->getSize(),
+            'name' => $file->getClientOriginalName(),
+            'crypt' => md5_file($file),
+            'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+            'size' => $file->getSize(),
             'creator_id' => auth()->id(),
             'type' => 'transferring',
         ]);
 
-        // Enregistrer la relation entre SlipRecord et Attachment
+        // Sauvegarder la vignette si elle est fournie
+        if ($request->filled('thumbnail')) {
+            $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnail));
+            $thumbnailPath = 'thumbnails/' . $attachment->id . '.jpg';
+
+            $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
+
+            if ($stored) {
+                $attachment->update(['thumbnail_path' => $thumbnailPath]);
+            }
+        }
+
         SlipRecordAttachment::create([
             'slip_record_id' => $request->r_id,
             'attachment_id' => $attachment->id,
         ]);
 
-        $slipRecord = slipRecord::findOrFail($request->r_id);
-        $slip =  slip::findOrFail($request->s_id);
-
-        return view('transferrings.records.show', compact('slip', 'slipRecord'));
+        return response()->json(['success' => true]);
     }
 
     // Fonction pour la suppression
