@@ -145,13 +145,13 @@
                 <form class="d-flex w-75" action="{{ route('records.search') }}">
                     <input type="hidden" name="advanced" value="false">
                     <input class="form-control mr-2 w-75" name="query" type="search" placeholder="Rechercher"
-                           aria-label="Search">
+                        value="@if (isset($_GET['query'])) {{ preg_replace('/\s+/', ' ', trim($_GET['query'])) }} @endif" aria-label="Search">
                     <select class="form-select w-25" name="search_type">
                         <option value="">Par tout</option>
-                        <option value="mail">Courriel</option>
-                        <option value="record">Archives</option>
-                        <option value="transferring_record">Archives versées</option>
-                        <option value="transferring">Versement</option>
+                        <option value="mail" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'mail') selected @endif>Courriel</option>
+                        <option value="record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'record') selected @endif>Archives</option>
+                        <option value="transferring_record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring_record') selected @endif>Archives versées</option>
+                        <option value="transferring" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring') selected @endif>Versement</option>
                     </select>
                     <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
                 </form>

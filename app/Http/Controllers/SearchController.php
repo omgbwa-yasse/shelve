@@ -20,6 +20,7 @@ use App\Models\SlipRecord;
 class SearchController extends Controller
 {
     public function index(Request $request){
+
         switch($request['search_type']){
             case 'record' : return $this->record($request);
             case 'mail' : return $this->mail($request);
@@ -35,7 +36,7 @@ class SearchController extends Controller
 
     public function record(Request $request)
     {
-        $queries = preg_split('/[\+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
 
         $records = Record::query();
 
