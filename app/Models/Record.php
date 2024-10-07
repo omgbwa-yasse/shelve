@@ -83,7 +83,7 @@ class Record extends Model
 
     public function organisation()
     {
-        return $this->belongsTo(Activity::class, 'activity_id');
+        return $this->belongsToMany(Organisation::class, 'organisation_activity','organisation_id','activity_id');
     }
 
 
@@ -109,7 +109,7 @@ class Record extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Dans votre modèle Record
+
     public function authors()
     {
         return $this->belongsToMany(Author::class, 'record_author', 'record_id', 'author_id');

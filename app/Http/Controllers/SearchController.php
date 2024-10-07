@@ -31,50 +31,39 @@ class SearchController extends Controller
         }
     }
 
+
+
     public function record(Request $request)
     {
-        $query = $request->input('query');
+        $queries = preg_split('/[\+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+
         $records = Record::query();
 
-        if ($request->input('advanced') == true) {
-            $records = $records->where(function ($queryBuilder) use ($query) {
-                $fields = [
-                    'date_start', 'date_end', 'date_exact', 'biographical_history',
-                    'archival_history', 'acquisition_source', 'appraisal', 'accrual',
-                    'arrangement', 'access_conditions', 'reproduction_conditions',
-                    'language_material', 'characteristic', 'finding_aids',
-                    'location_original', 'location_copy', 'related_unit',
-                    'publication_note', 'note', 'archivist_note', 'rule_convention'
-                ];
-
-                foreach ($fields as $field) {
-                    $queryBuilder->orWhere($field, 'LIKE', "%$query%");
-                }
+        foreach ($queries as $query) {
+            $records->where(function ($queryBuilder) use ($query) {
+                $queryBuilder->where('name', 'LIKE', "%{$query}%")
+                            ->orWhere('code', 'LIKE', "%{$query}%")
+                            ->orWhere('content', 'LIKE', "%{$query}%")
+                            ->orWhereHas('authors', function ($q) use ($query) {
+                                $q->where('name', 'LIKE', "%$query%");
+                            })
+                            ->orWhereHas('activity', function ($q) use ($query) {
+                                $q->where('name', 'LIKE', "%$query%");
+                            })
+                            ->orWhereHas('terms', function ($q) use ($query) {
+                                $q->where('name', 'LIKE', "%$query%");
+                            });
             });
-        } else {
-            // Ensure you have a search method on the Record model
-            $records = $records->where('name', 'LIKE', "%$query%");
         }
 
-        $records = $records->paginate(10);
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $users = User::select('id', 'name')->get();
+        $records = $records->paginate(15); // Pagination après construction de la requête
+        $users = User::all();
+        $organisations = Organisation::all();
         $slipStatuses = SlipStatus::all();
-        $organisations = Organisation::select('id', 'name')->get();
 
-        return view('records.index', compact(
-            'records',
-            'statuses',
-            'slipStatuses',
-            'terms',
-            'users',
-            'organisations'
-        ));
-//        return view('records.index', compact('records', 'statuses', 'terms'));
+        return view('records.index', compact('records', 'users', 'organisations', 'slipStatuses'));
     }
+
 
     public function communication(Request $request)
     {

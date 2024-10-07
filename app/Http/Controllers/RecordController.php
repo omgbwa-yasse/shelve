@@ -197,7 +197,6 @@ class RecordController extends Controller
 
     public function edit(Record $record)
     {
-        $this->authorize('update', $record);
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -217,8 +216,6 @@ class RecordController extends Controller
 
     public function update(Request $request, Record $record)
     {
-        Gate::authorize('update', $record);
-        $this->authorize('update', $record);
 
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
@@ -292,7 +289,7 @@ class RecordController extends Controller
 
     public function destroy(Record $record)
     {
-        $this->authorize('delete', $record);
+
         $record->delete();
 
         return redirect()->route('records.index')->with('success', 'Record deleted successfully.');
