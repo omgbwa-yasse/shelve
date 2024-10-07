@@ -39,7 +39,6 @@ class MailAttachmentController extends Controller
 
             $mail = Mail::findOrFail($id);
             $file = $request->file('file');
-
             $path = $file->store('mail_attachments');
 
             $attachment = MailAttachment::create([
@@ -58,20 +57,19 @@ class MailAttachmentController extends Controller
                 $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
 
                 if ($stored) {
-                    $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                    $attachment->thumbnail_path = $thumbnailPath;
+                    $attachment->save();
                 }
             }
 
             $mail->attachments()->attach($attachment->id);
-            return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
-//            return response()->json(['success' => true, 'message' => 'Pièce jointe ajoutée avec succès au mail.']);
+
+            return redirect()->route('mails.show', $mail)->with('success', 'Pièce jointe ajoutée avec succès au mail.');
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'ajout de la pièce jointe au mail : ' . $e->getMessage());
-            return redirect()->route('mails.show', $mail)->with('success', 'MailAttachment created successfully.');
-//            return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de l\'ajout de la pièce jointe au mail.'], 500);
+            return redirect()->route('mails.show', $mail)->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe au mail.');
         }
     }
-
 
 
 
