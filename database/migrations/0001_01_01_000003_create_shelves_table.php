@@ -154,18 +154,21 @@ return new class extends Migration
 
         Schema::create('containers', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 20)->nullable(false);
+            $table->string('code', 20)->nullable(false)->unique();
             $table->unsignedBigInteger('shelve_id')->nullable(false);
             $table->unsignedBigInteger('status_id')->nullable(false);
             $table->unsignedBigInteger('property_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->unsignedBigInteger('creator_organisation_id')->nullable(false);
+            $table->boolean('is_archived')->nullable(false)->default(false);
+            $table->timestamps();
+            $table->foreign('creator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('shelve_id')->references('id')->on('shelves')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('container_status')->onDelete('cascade');
             $table->foreign('property_id')->references('id')->on('container_properties')->onDelete('cascade');
-            $table->unique('code');
-            $table->unsignedBigInteger('creator_id')->nullable(false);
-            $table->timestamps();
-            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
+
 
         Schema::create('container_statuses', function (Blueprint $table) {
             $table->id();
@@ -222,6 +225,21 @@ return new class extends Migration
             $table->foreign('integrated_by')->references('id')->on('users')->onDelete('cascade');
         });
 
+
+        Schema::create('slip_record_container', function (Blueprint $table) {
+            $table->unsignedBigInteger('slip_record_id')->nullable(false);
+            $table->unsignedBigInteger('container_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->string('description', 200)->nullable(false);
+            $table->primary(['slip_record_id','container_id']);
+            $table->timestamps();
+            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
+            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+
+
         Schema::create('slip_records', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('slip_id')->nullable(false);
@@ -237,15 +255,14 @@ return new class extends Migration
             $table->string('width_description', 100)->nullable(true);
             $table->unsignedBigInteger('support_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
-            $table->unsignedBigInteger('container_id')->nullable(true);
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
-            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
+
 
         // A ajouter
         Schema::create('slip_record_attachment', function (Blueprint $table) {

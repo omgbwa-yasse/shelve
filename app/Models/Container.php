@@ -8,7 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Container extends Model
 {
     use HasFactory;
-    protected $fillable = ['code', 'shelve_id', 'status_id', 'property_id', 'creator_id'];
+    protected $fillable = [
+        'code',
+        'description',
+        'shelve_id',
+        'status_id',
+        'property_id',
+        'creator_id',
+        'creator_organisation_id'
+    ];
+
 
     public function shelf()
     {
@@ -28,5 +37,15 @@ class Container extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function creatorOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'creator_organisation_id');
+    }
+
+    public function slipRecord()
+    {
+        return $this->belongsTo(SlipRecord::class,);
     }
 }

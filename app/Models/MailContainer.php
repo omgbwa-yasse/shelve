@@ -11,7 +11,11 @@ class MailContainer extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'code', 'name', 'type_id','user_id', 'user_organisation_id'
+        'code',
+        'name',
+        'type_id',
+        'user_id',
+        'user_organisation_id'
     ];
 
     protected $table = 'mail_containers';

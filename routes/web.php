@@ -78,6 +78,7 @@ use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipRecordAttachmentController;
 use App\Http\Controllers\SlipController;
+use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -98,10 +99,13 @@ Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLog
 Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 Route::group(['middleware' => 'auth'], function () {
+
+
     //Route::get('/switch-organisation/{organisation}', 'OrganisationController@switchOrganisation')->name('switch.organisation');
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/about-us', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/', [mailController::class, 'index']);
+
 
     Route::prefix('mails')->group(function () {
         Route::resource('file', MailController::class)->names('mails');
@@ -134,6 +138,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
+
     Route::prefix('communications')->group(function () {
         Route::get('/', [CommunicationController::class, 'index']);
         Route::get('print', [CommunicationController::class, 'print'])->name('communications.print');
@@ -155,6 +160,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('reservations/select', [SearchReservationController::class, 'date'])->name('reservations-select-date');
         Route::get('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
     });
+
+
 
     Route::prefix('repositories')->group(function () {
         Route::post('/slips/store', [SlipController::class, 'store'])->name('slips.storetransfert');
@@ -207,12 +214,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
+        Route::resource('containers', SlipContainerController::class)->names('slips.containers');
         Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
         Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
         Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
         Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
         Route::post('slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
-//        Route::delete('slipRecordAttachment/{id}', [SlipRecordAttachmentController::class, 'delete'])->name('slipRecordAttachment.delete');
+        // Route::delete('slipRecordAttachment/{id}', [SlipRecordAttachmentController::class, 'delete'])->name('slipRecordAttachment.delete');
         Route::delete('slips/{slip}/records/{record}/attachments/{id}', [SlipRecordAttachmentController::class, 'delete'])
             ->name('slipRecordAttachment.delete');
 

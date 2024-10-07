@@ -15,13 +15,11 @@ use Illuminate\Support\Facades\Auth;
 
 class SlipRecordController extends Controller
 {
-
-
     public function create(Slip $slip)
     {
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $containers = Container::all();
+        $containers = Container::where('user_organisation_id', auth()->user()->current_organisation_id);
         $users = User::all();
         $levels = RecordLevel::all();
         return view('transferrings.records.create', compact('slip','levels', 'supports', 'activities', 'containers', 'users'));
@@ -32,7 +30,7 @@ class SlipRecordController extends Controller
 
     public function store(Request $request, Slip $slip)
     {
-        // Assurez-vous que getDateFormat retourne une valeur valide (un seul caractère)
+
         $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
         if (strlen($dateFormat) > 1) {
             return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
@@ -83,6 +81,9 @@ class SlipRecordController extends Controller
         return view('transferrings.slips.show', compact('slip'));
     }
 
+
+
+
     private function getDateFormat($dateStart, $dateEnd)
     {
         $start = new DateTime($dateStart);
@@ -105,8 +106,13 @@ class SlipRecordController extends Controller
     public function show(INT $id, INT $slipRecordId)
     {
         $slipRecord = SlipRecord::findOrFail($slipRecordId);
+
         $slip = Slip::findOrFail($id);
-        return view('transferrings.records.show', compact('slip', 'slipRecord'));
+
+        $containers = Container::where('creator_organisation_id', auth()->user()->current_organisation_id)
+            ->where('is_archived', false)->get();
+
+        return view('transferrings.records.show', compact('slip', 'slipRecord','containers'));
     }
 
 

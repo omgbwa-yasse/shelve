@@ -42,7 +42,6 @@
                                 <p><strong>Largeur :</strong> {{ $slipRecord->width }} cm, {{ $slipRecord->width_description }}</p>
                                 <p><strong>Support :</strong> {{ $slipRecord->support->name }}</p>
                                 <p><strong>Activité :</strong> {{ $slipRecord->activity->name }}</p>
-                                <p><strong>Boites/chrono :</strong> {{ $slipRecord->container->name }}</p>
                             </div>
                         </div>
 
@@ -132,6 +131,42 @@
                 </div>
             </div>
         </div>
+
+
+
+        <div class="row mt-1">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4">Liste de contenants</h5>
+                        <ul class="list-group">
+                        @foreach ($slipRecord->containers as $container)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    List item
+                                    <span class="badge bg-secondary badge-pill">pill2</span>
+                                </li>
+                        @endforeach
+                        </ul>
+                        <br>
+                        <form id="uploadForm" action="?s_id={{ $slip->id }}&r_id={{ $slipRecord->id }}&c_id={{ $slipRecord->id }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="container_id" class="form-label">Sélectionner un conteneur</label>
+                                <select name="container_id" id="container_id" class="form-select" required>
+                                    @foreach($containers as $container)
+                                        <option value="{{ $container->id }}">{{ $container->code }} - {{ $container->description }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
     </div>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
         <script>

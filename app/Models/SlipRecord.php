@@ -56,9 +56,14 @@ class SlipRecord extends Model
 
 
 
-    public function container()
+    public function containers()
     {
-        return $this->belongsTo(Container::class, 'container_id');
+        return $this->belongsToMany(
+            Container::class,
+            'slip_record_container', // Nom de la table pivot
+            'slip_record_id',        // Clé étrangère de la table actuelle dans la table pivot
+            'container_id'           // Clé étrangère de la table Container dans la table pivot
+        );
     }
 
 

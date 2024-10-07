@@ -16,6 +16,8 @@ class ContainerController extends Controller
         return view('containers.index', compact('containers'));
     }
 
+
+
     public function create()
     {
         $shelves = Shelf::all();
@@ -23,6 +25,8 @@ class ContainerController extends Controller
         $properties = ContainerProperty::all();
         return view('containers.create', compact('shelves', 'statuses', 'properties'));
     }
+
+
 
     public function store(Request $request)
     {
@@ -45,10 +49,16 @@ class ContainerController extends Controller
         return redirect()->route('containers.index')->with('success', 'Container created successfully.');
     }
 
+
+
+
     public function show(Container $container)
     {
-        return view('containers.show', compact('container'));
+        return view('containers.show', compact('container',''));
     }
+
+
+
 
     public function edit(Container $container)
     {
@@ -57,6 +67,9 @@ class ContainerController extends Controller
         $properties = ContainerProperty::all();
         return view('containers.edit', compact('container', 'shelves', 'statuses', 'properties'));
     }
+
+
+
 
     public function update(Request $request, Container $container)
     {
@@ -78,6 +91,9 @@ class ContainerController extends Controller
 
         return redirect()->route('containers.index')->with('success', 'Container updated successfully.');
     }
+
+
+
 
     public function destroy(Container $container)
     {

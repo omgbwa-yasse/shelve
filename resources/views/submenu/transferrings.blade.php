@@ -49,7 +49,10 @@
             <div class="collapse show" id="enregistrementMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.create') }}"><i class="bi bi-building"></i>Bordereau</a>
+                    <a class="nav-link text-dark" href="{{ route('slips.create') }}"><i class="bi bi-building"></i> Bordereau</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('slips.containers.index') }}"><i class="bi bi-archive"></i> Boite / chrono</a>
                 </li>
             </ul>
         </div>

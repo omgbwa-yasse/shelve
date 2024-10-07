@@ -232,7 +232,7 @@ class SlipController extends Controller
 
     public function show(Slip $slip)
     {
-        $slip->load('records.level', 'records.support', 'records.activity', 'records.container', 'records.creator');
+        $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator');
         $slipRecords = $slip->records;
         return view('transferrings.slips.show', compact('slip', 'slipRecords'));
     }
