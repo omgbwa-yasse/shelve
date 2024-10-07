@@ -838,6 +838,7 @@ return new class extends Migration
             $table->string('path', 100)->nullable(false);
             $table->string('name', 100)->nullable(false);
             $table->string('crypt', 255)->nullable(false);
+            $table->string('thumbnail_path', 150)->nullable(false);
             $table->integer('size')->nullable(false);
             $table->string('crypt_sha512')->nullable(false);
             $table->enum('type', ['mail','record','communication','transferting'])->nullable(false);
@@ -845,20 +846,6 @@ return new class extends Migration
             $table->timestamps();
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-
-
-        Schema::create('thumbnails', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('attachment_id')->nullable(false);
-            $table->string('attachment_md5', 200)->nullable(true);
-            $table->string('path');
-            $table->enum('size', ['small', 'medium', 'large']);
-            $table->timestamps();
-            $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
-        });
-
-
 
 
         Schema::create('mail_attachment', function (Blueprint $table) {

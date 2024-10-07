@@ -17,6 +17,7 @@ protected $table="attachments";
         'size',
         'creator_id',
         'crypt_sha512',
+        'thumbnail_path',
     ];
 
     public function creator()

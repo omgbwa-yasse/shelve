@@ -16,6 +16,8 @@ protected $table="record_attachment";
         'crypt',
         'size',
         'creator_id',
+        'crypt_sha512',
+        'thumbnail_path',
     ];
 
     public function creator()
