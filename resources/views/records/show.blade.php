@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-4">
+    <div class="container-fluid">
         <nav aria-label="breadcrumb" class="mb-2">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('records.index') }}">Records</a></li>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-8">
+            <div class="">
                 <div class="card text-start">
                     <div class="card-body">
                         <h4 class="card-title">
