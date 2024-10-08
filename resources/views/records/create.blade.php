@@ -148,7 +148,7 @@
 
                                         <div class="mb-3">
                                             <label for="lifespan" class="form-label">Période de vie</label>
-                                            <input type="number" id="lifespan" name="lifespan" class="form-control" autocomplete="lifespan" placeholder="Entrez la période de vie (année)">
+                                            <input type="text" id="lifespan" name="lifespan" class="form-control" autocomplete="lifespan" placeholder="Entrez la période de vie (année)">
                                         </div>
 
                                         <div class="mb-3">
