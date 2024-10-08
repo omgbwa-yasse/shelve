@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'driver' => env('SCOUT_DRIVER', 'algolia'),
+    'driver' => env('SCOUT_DRIVER', 'tntsearch'),
 
     /*
     |--------------------------------------------------------------------------
@@ -201,7 +201,7 @@ return [
 
 
 'tntsearch' => [
-    'storage'  => storage_path('app/tntsearch'), // Absolute path to the index files directory
+    'storage'  => storage_path('tntsearch'), // Absolute path to the index files directory
     'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
     'fuzzy' => [
         'prefix_length' => 2,

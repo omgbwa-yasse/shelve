@@ -17,7 +17,7 @@ use App\Models\User;
 class Record extends Model
 {
     use HasFactory;
-    // use Searchable;
+    use Searchable;
 
     protected $fillable = [
         'code',
@@ -127,6 +127,36 @@ class Record extends Model
     public function children()
     {
         return $this->hasMany(Record::class, 'parent_id');
+    }
+    public function toSearchableArray()
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'code' => $this->code,
+            'date_start' => $this->date_start,
+            'date_end' => $this->date_end,
+            'date_exact' => $this->date_exact,
+            'biographical_history' => $this->biographical_history,
+            'archival_history' => $this->archival_history,
+            'acquisition_source' => $this->acquisition_source,
+            'content' => $this->content,
+            'appraisal' => $this->appraisal,
+            'accrual' => $this->accrual,
+            'arrangement' => $this->arrangement,
+            'access_conditions' => $this->access_conditions,
+            'reproduction_conditions' => $this->reproduction_conditions,
+            'language_material' => $this->language_material,
+            'characteristic' => $this->characteristic,
+            'finding_aids' => $this->finding_aids,
+            'location_original' => $this->location_original,
+            'location_copy' => $this->location_copy,
+            'related_unit' => $this->related_unit,
+            'publication_note' => $this->publication_note,
+            'note' => $this->note,
+            'archivist_note' => $this->archivist_note,
+            'rule_convention' => $this->rule_convention,
+        ];
     }
 
 }

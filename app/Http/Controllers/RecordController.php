@@ -32,6 +32,12 @@ use ZipArchive;
 
 class RecordController extends Controller
 {
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $results = Record::search($query)->paginate(10);
+        return view('records.search', compact('results', 'query'));
+    }
 
     public function index()
     {
