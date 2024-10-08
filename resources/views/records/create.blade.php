@@ -121,7 +121,7 @@
                                 <div class="modal-body">
                                     <form action="{{ route('record-author.store') }}" method="POST">
                                         @csrf
-                                        <legend>Ajouter un nouvel auteur</legend>
+                                        <legend>Ajouter un nouveau producteur</legend>
                                         <div class="mb-3">
                                             <label for="type_id" class="form-label">Type</label>
                                             <select id="type_id" name="type_id" class="form-control" required>
@@ -157,7 +157,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="parent_id" class="form-label">Auteur parent</label>
+                                            <label for="parent_id" class="form-label">Producteur parent</label>
                                             <select id="parent_id" name="parent_id" class="form-control">
                                                 <option value="">Aucun</option>
                                                 @foreach ($parents as $parent)
@@ -165,7 +165,7 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Créer l'auteur</button>
+                                        <button type="submit" class="btn btn-primary">Créer le producteur</button>
                                     </form>
                                 </div>
                             </div>
