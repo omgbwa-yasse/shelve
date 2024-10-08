@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class slipRecordAttachmentController extends Controller
 {
-    // Fonction pour l'upload
+
     public function upload(Request $request)
     {
         $request->validate([
@@ -31,7 +31,6 @@ class slipRecordAttachmentController extends Controller
             'type' => 'transferring',
         ]);
 
-        // Sauvegarder la vignette si elle est fournie
         if ($request->filled('thumbnail')) {
             $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnail));
             $thumbnailPath = 'thumbnails/' . $attachment->id . '.jpg';
@@ -42,34 +41,21 @@ class slipRecordAttachmentController extends Controller
                 $attachment->update(['thumbnail_path' => $thumbnailPath]);
             }
         }
-
         SlipRecordAttachment::create([
             'slip_record_id' => $request->r_id,
             'attachment_id' => $attachment->id,
         ]);
-
         return response()->json(['success' => true]);
     }
 
-    // Fonction pour la suppression
+
     public function delete(Slip $slip, SlipRecord $slipRecord, $id)
     {
         $attachment = Attachment::findOrFail($id);
-
-        // Ensure the attachment belongs to the correct slip and record
-//        if ($attachment->slipRecord->id !== $record->id || $record->slip_id !== $slip->id) {
-//            return abort(404);
-//        }
-
         Storage::delete($attachment->path);
         $attachment->delete();
-//        return view('transferrings.records.show', compact('slip', 'slipRecord'));
+        return view('slips.show', compact('slip', 'record'));
 
-        return view('transferrings.slips.show', compact('slip', 'record'));
-
-
-//        return redirect()->route('transferrings.slips.show', [$slip, $record])
-//            ->with('success', 'Pièce jointe supprimée avec succès.');
     }
 
 
@@ -102,7 +88,7 @@ class slipRecordAttachmentController extends Controller
         $attachment = Attachment::findOrFail($request->a_id);
         $slipRecord = SlipRecord::findOrFail($request->r_id);
 
-        return view('transferrings.records.attachments.show', compact('slipRecord', 'attachment'));
+        return view('slips.records.attachments.show', compact('slipRecord', 'attachment'));
     }
 
 

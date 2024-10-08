@@ -10,6 +10,7 @@ use App\Models\RecordLevel;
 use App\Models\RecordSupport;
 use App\Models\Slip;
 use App\Models\SlipRecord;
+use App\Models\SlipRecordContainer;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,7 +23,7 @@ class SlipRecordController extends Controller
         $containers = Container::where('user_organisation_id', auth()->user()->current_organisation_id);
         $users = User::all();
         $levels = RecordLevel::all();
-        return view('transferrings.records.create', compact('slip','levels', 'supports', 'activities', 'containers', 'users'));
+        return view('slips.records.create', compact('slip','levels', 'supports', 'activities', 'containers', 'users'));
     }
 
 
@@ -78,7 +79,7 @@ class SlipRecordController extends Controller
 
         $slipRecord = SlipRecord::create($slipRecordData);
         $slip = $slipRecord->slip;
-        return view('transferrings.slips.show', compact('slip'));
+        return view('slips.show', compact('slip'));
     }
 
 
@@ -112,7 +113,7 @@ class SlipRecordController extends Controller
         $containers = Container::where('creator_organisation_id', auth()->user()->current_organisation_id)
             ->where('is_archived', false)->get();
 
-        return view('transferrings.records.show', compact('slip', 'slipRecord','containers'));
+        return view('slips.records.show', compact('slip', 'slipRecord','containers'));
     }
 
 
@@ -126,7 +127,7 @@ class SlipRecordController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        return view('transferrings.records.edit', compact('slip', 'levels','slipRecord', 'supports', 'activities', 'containers', 'users'));
+        return view('slips.records.edit', compact('slip', 'levels','slipRecord', 'supports', 'activities', 'containers', 'users'));
     }
 
 
@@ -159,7 +160,7 @@ class SlipRecordController extends Controller
         $slipRecord = slipRecord::findOrFail($record_id);
         $slipRecord->update($request->all());
         $slip = $slipRecord->slip;
-        return view('transferrings.records.show', compact('slip','slipRecord' ));
+        return view('slips.records.show', compact('slip','slipRecord' ));
     }
 
 
@@ -169,11 +170,8 @@ class SlipRecordController extends Controller
         $slipRecord = SlipRecord::where(['slip_id' => $slip_id, 'id' => $slipRecord_id])->firstOrFail();
         $slip = $slipRecord->slip;
         $slipRecord->delete();
-        return view('transferrings.slips.show', compact('slip'));
+        return view('slips.show', compact('slip'));
     }
-
-
-
 
 
 }

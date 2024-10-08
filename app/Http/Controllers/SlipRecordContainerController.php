@@ -8,11 +8,6 @@ use Illuminate\Http\Request;
 class SlipRecordContainerController extends Controller
 {
 
-        public function index()
-        {
-            $containers = SlipRecordContainer::all();
-            return view('transferrings.slips.records.containers.index', compact('containers'));
-        }
 
 
         public function store(Request $request, SlipRecord $slipRecord)
@@ -24,18 +19,22 @@ class SlipRecordContainerController extends Controller
                 'description' => 'required|string|max:200',
             ]);
 
+            $slip = $slipRecord->slip;
             SlipRecordContainer::create($request->all());
-
-            return redirect()->route('slips.records.show', $slipRecord)
+            return redirect()->route('slips.records.show', compact('slip','slipRecord'))
                              ->with('success', 'Slip record container created successfully.');
         }
 
 
 
+
+
         public function edit(SlipRecord $slipRecord, SlipRecordContainer $slipRecordContainer)
         {
-            return view('transferrings.slips.records.show', compact('slipRecord', 'slipRecordContainer'));
+            return view('slips.records.show', compact('slipRecord', 'slipRecordContainer'));
         }
+
+
 
 
         public function update(Request $request, SlipRecordContainer $slipRecordContainer)
@@ -48,10 +47,11 @@ class SlipRecordContainerController extends Controller
             ]);
 
             $slipRecordContainer->update($request->all());
-
-            return redirect()->route('slips.records.container.index')
+            return redirect()->route('slips.records.containers.index')
                              ->with('success', 'Slip record container updated successfully.');
         }
+
+
 
 
         public function destroy(SlipRecord $slipRecord, SlipRecordContainer $slipRecordContainer)
@@ -60,6 +60,10 @@ class SlipRecordContainerController extends Controller
             return redirect()->route('slips.records.show', $slipRecord )
                              ->with('success', 'Slip record container deleted successfully.');
         }
+
+
+
+
 
 
 }

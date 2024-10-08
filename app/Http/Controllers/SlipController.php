@@ -35,7 +35,7 @@ class SlipController extends Controller
             ->where('is_approved', false)
             ->where('is_integrated', false)
             ->paginate(10);
-        return view('transferrings.slips.index', compact('slips'));
+        return view('slips.index', compact('slips'));
     }
 
 
@@ -45,7 +45,7 @@ class SlipController extends Controller
         $organisations = Organisation::all();
         $users = User::with('organisations')->get();
         $slipStatuses = SlipStatus::all();
-        return view('transferrings.slips.create', compact('organisations', 'users', 'slipStatuses'));
+        return view('slips.create', compact('organisations', 'users', 'slipStatuses'));
     }
 
 
@@ -234,7 +234,7 @@ class SlipController extends Controller
     {
         $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator');
         $slipRecords = $slip->records;
-        return view('transferrings.slips.show', compact('slip', 'slipRecords'));
+        return view('slips.show', compact('slip', 'slipRecords'));
     }
 
 
@@ -245,7 +245,7 @@ class SlipController extends Controller
         $organisations = Organisation::all();
         $users = User::all();
         $slipStatuses = SlipStatus::all();
-        return view('transferrings.slips.edit', compact('slip', 'organisations', 'users', 'slipStatuses'));
+        return view('slips.edit', compact('slip', 'organisations', 'users', 'slipStatuses'));
     }
 
 
@@ -324,12 +324,12 @@ class SlipController extends Controller
         }
 
         $slips->load('officer', 'officerOrganisation', 'userOrganisation', 'user','slipStatus','records');
-        return view('transferrings.slips.index', compact('slips'));
+        return view('slips.index', compact('slips'));
     }
     public function exportForm()
     {
         $dollies = Dolly::all();
-        return view('transferrings.slips.export', compact('dollies'));
+        return view('slips.export', compact('dollies'));
     }
 
 
@@ -408,7 +408,7 @@ class SlipController extends Controller
                 'name' => (string)$slip->did->unittitle,
                 'code' => (string)$slip->did->unitid,
                 'description' => (string)$slip->scopecontent->p,
-                // Map other fields as needed
+
             ];
 
             $newSlip = Slip::create($data);
@@ -427,7 +427,6 @@ class SlipController extends Controller
             $data = [
                 'name' => (string)$slip->Name,
                 'description' => (string)$slip->Description,
-                // Map other fields as needed
             ];
 
             $newSlip = Slip::create($data);
@@ -520,7 +519,7 @@ class SlipController extends Controller
 
     public function importForm()
     {
-        return view('transferrings.slips.import');
+        return view('slips.import');
     }
 
 }
