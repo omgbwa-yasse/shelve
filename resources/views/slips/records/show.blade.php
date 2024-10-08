@@ -148,9 +148,11 @@
                         @endforeach
                         </ul>
                         <br>
-                        <form id="uploadForm" action="?s_id={{ $slip->id }}&r_id={{ $slipRecord->id }}&c_id={{ $slipRecord->id }}" method="POST">
+
+                        <form id="uploadForm" action="" method="POST" class="row">
                             @csrf
-                            <div class="mb-3">
+                            @method('PUT')
+                            <div class="col-md-9">
                                 <label for="container_id" class="form-label">Sélectionner un conteneur</label>
                                 <select name="container_id" id="container_id" class="form-select" required>
                                     @foreach($containers as $container)
@@ -158,8 +160,12 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </div>
                         </form>
+
+
                     </div>
                 </div>
             </div>

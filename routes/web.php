@@ -79,6 +79,7 @@ use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipRecordAttachmentController;
 use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
+use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -214,6 +215,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
         Route::resource('slips', SlipController::class);
         Route::resource('slips.records', SlipRecordController::class);
+        Route::resource('slips.records.containers', SlipRecordContainerController::class);
         Route::resource('containers', SlipContainerController::class)->names('slips.containers');
         Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
         Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
