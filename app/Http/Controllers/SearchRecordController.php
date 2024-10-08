@@ -39,81 +39,81 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SearchRecordController extends Controller
 {
+
     public function index(Request $request)
-    {   $records = '';
-        switch($request->input('categ')){
+    {
+        $records = Record::query(); // Initialisation de la requête de base
+
+        switch ($request->input('categ')) {
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
 
-
-                $query = record::query();
-
                 if ($exactDate) {
-                    $query->whereDate('date_exact', $exactDate);
+                    $records->whereDate('date_exact', $exactDate);
                 }
 
                 if ($startDate && $endDate) {
-                    $query->orWhere(function ($query) use ($startDate, $endDate) {
+                    $records->orWhere(function ($query) use ($startDate, $endDate) {
                         $query->whereDate('date_start', '>=', $startDate)
-                            ->whereDate('date_end', '<=', $endDate);
+                              ->whereDate('date_end', '<=', $endDate);
                     });
                 }
-
-                $records = $query->paginate(10);
                 break;
 
             case "typology":
-                $records = record::where('record_typology_id', $request->input('id'))
-                ->paginate(10);
+                $typologyId = $request->input('id');
+                $records->where('record_typology_id', $typologyId);
                 break;
 
             case "term":
-                $id = $request->input('id');
-                $records = Record::whereHas('terms', function ($query) use ($id) {
-                    $query->where('id', $id);
-                })->paginate(10);
+                $termId = $request->input('id');
+                $records->whereHas('terms', function ($query) use ($termId) {
+                    $query->where('id', $termId);
+                });
                 break;
 
             case "author":
-                $records = Record::join('record_author', 'records.id', '=', 'record_author.record_id')
-                    ->where('record_author.author_id', $request->input('id'))
-                    ->paginate(10);
+                $authorId = $request->input('id');
+                $records->join('record_author', 'records.id', '=', 'record_author.record_id')
+                        ->where('record_author.author_id', $authorId);
                 break;
 
             case "activity":
-                $records = record::where('activity_id', $request->input('id'))->paginate(10);
+                $activityId = $request->input('id');
+                $records->where('activity_id', $activityId);
                 break;
-
 
             case "container":
-                $records = Record::join('record_container', 'records.id', '=', 'record_container.record_id')
-                    ->where('record_container.container_id', $request->input('id'))
-                    ->paginate(10);
+                $containerId = $request->input('id');
+                $records->join('record_container', 'records.id', '=', 'record_container.record_id')
+                        ->where('record_container.container_id', $containerId);
                 break;
 
-
             default:
-                $records = record::take(5)->paginate(10);
+                $records->take(5); // Limite de résultats en cas de catégorie non définie
                 break;
         }
 
+        $records = $records->paginate(10);
+
+        // Récupération des données annexes pour la vue
         $statuses = RecordStatus::all();
         $terms = Term::all();
-        $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $parents = Record::all();
         $containers = Container::all();
+        $organisations = Organisation::all();
+        $slipStatuses = SlipStatus::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $records = Record::all();
         $authors = Author::with('authorType')->get();
-        $terms = Term::all();
 
-        return view('records.index', compact('users','records','terms', 'statuses','terms','supports','activities','containers','levels','records','authors'));
+        return view('records.index', compact('slipStatuses','organisations','users', 'records', 'terms', 'statuses', 'supports', 'activities', 'containers', 'levels', 'authors'));
     }
+
+
 
 
     public function date()

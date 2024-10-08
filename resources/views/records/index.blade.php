@@ -88,11 +88,29 @@
         <div class="container">
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
-                    {{ $records->links() }}
+                    <li class="page-item {{ $records->currentPage() == 1 ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $records->previousPageUrl() }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    @for ($i = 1; $i <= $records->lastPage(); $i++)
+                        <li class="page-item {{ $records->currentPage() == $i ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $records->url($i) }}">{{ $i }}</a>
+                        </li>
+                    @endfor
+                    <li class="page-item {{ $records->currentPage() == $records->lastPage() ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $records->nextPageUrl() }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
     </footer>
+
+
+
+
     <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

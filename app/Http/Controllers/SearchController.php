@@ -41,7 +41,8 @@ class SearchController extends Controller
 
     public function record(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
+
         $records = Record::query();
 
         foreach ($queries as $query) {
@@ -84,7 +85,8 @@ class SearchController extends Controller
 
     public function communicationRecord(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
+
         $communicationRecords = CommunicationRecord::query();
 
         foreach ($queries as $query) {
@@ -100,7 +102,8 @@ class SearchController extends Controller
 
     public function mail(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
+
         $mails = Mail::query();
         $categ = $request->input('categ');
 
@@ -152,7 +155,8 @@ class SearchController extends Controller
 
     public function transferring(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
+
         $slips = Slip::query();
 
         if ($request->input('advanced')) {
@@ -181,7 +185,8 @@ class SearchController extends Controller
 
     public function transferringRecord(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
+
         $records = SlipRecord::query();
 
         if ($request->input('advanced')) {
@@ -219,7 +224,7 @@ class SearchController extends Controller
 
     public function default(Request $request)
     {
-        $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
+        $queries = $this->convertStringToWords($request);
 
         $records = Record::query();
         foreach ($queries as $query) {
@@ -255,5 +260,17 @@ class SearchController extends Controller
 
         return view('search.index', compact('records', 'mails', 'transferrings', 'transferringRecords'));
     }
+
+
+    public function convertStringToWords(Request $request)
+    {
+        $inputQuery = $request->input('query', '');
+        if (empty($inputQuery)) {
+            return [];
+        }
+        $queries = preg_split('/[+\s]+/', $inputQuery, -1, PREG_SPLIT_NO_EMPTY);
+        return $queries;
+    }
+
 
 }
