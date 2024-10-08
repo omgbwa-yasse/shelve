@@ -41,36 +41,7 @@ class SearchController extends Controller
 
     public function record(Request $request)
     {
-<<<<<<< Updated upstream
-        $queries = $this->convertStringToWords($request);
 
-        $records = Record::query();
-
-        foreach ($queries as $query) {
-            $records->where(function ($queryBuilder) use ($query) {
-                $queryBuilder->where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('code', 'LIKE', "%{$query}%")
-                    ->orWhere('content', 'LIKE', "%{$query}%")
-                    ->orWhereHas('authors', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
-                    })
-                    ->orWhereHas('activity', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
-                    })
-                    ->orWhereHas('terms', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
-                    });
-            });
-        }
-
-        $records = $records->paginate(15);
-        $users = User::all();
-        $organisations = Organisation::all();
-        $slipStatuses = SlipStatus::all();
-
-        return view('records.index', compact('records', 'users', 'organisations', 'slipStatuses'));
-=======
-<<<<<<< HEAD
         $query = $request->input('query');
         $advanced = $request->input('advanced') == true;
 
@@ -91,7 +62,7 @@ class SearchController extends Controller
         $statuses = RecordStatus::all();
         $terms = Term::all();
         $users = User::select('id', 'name')->get();
-=======
+
         $queries = $this->convertStringToWords($request);
 
         $records = Record::query();
@@ -116,10 +87,10 @@ class SearchController extends Controller
         $records = $records->paginate(15);
         $users = User::all();
         $organisations = Organisation::all();
->>>>>>> e50498793d85fef17ae6d5139b904899a62ea870
+
         $slipStatuses = SlipStatus::all();
 
-<<<<<<< HEAD
+
         return view('records.index', compact(
             'records',
             'statuses',
@@ -128,10 +99,7 @@ class SearchController extends Controller
             'users',
             'organisations'
         ));
-=======
-        return view('records.index', compact('records', 'users', 'organisations', 'slipStatuses'));
->>>>>>> e50498793d85fef17ae6d5139b904899a62ea870
->>>>>>> Stashed changes
+
     }
 
     public function communication(Request $request)
