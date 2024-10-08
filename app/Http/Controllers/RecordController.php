@@ -18,6 +18,7 @@ use App\Models\Term;
 use App\Models\User;
 use App\Models\Accession;
 use App\Models\Author;
+use App\Models\AuthorType;
 use App\Models\RecordLevel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -81,7 +82,9 @@ class RecordController extends Controller
             $records = Record::all();
             $authors = Author::with('authorType')->get();
             $terms = Term::all();
-            return view('records.create', compact('records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+            $authorTypes = AuthorType::all();
+            $parents = Author::all();
+            return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
     public function store(Request $request)

@@ -103,6 +103,81 @@
                         <div id="selected-authors" class="mt-3"></div>
                         <input type="hidden" name="author_ids[]" id="author-ids">
                     </div>
+
+
+                    <!-- Bouton d'ouverture de la fenêtre modale -->
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authorModal">
+                        Ajouter un producteur
+                    </button>
+
+                    <!-- Fenêtre modale -->
+                    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="authorModalLabel">Ajouter un nouvel auteur</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ route('record-author.store') }}" method="POST">
+                                        @csrf
+                                        <legend>Ajouter un nouvel auteur</legend>
+                                        <div class="mb-3">
+                                            <label for="type_id" class="form-label">Type</label>
+                                            <select id="type_id" name="type_id" class="form-control" required>
+                                                @foreach ($authorTypes as $type)
+                                                    <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Nom</label>
+                                            <input type="text" id="name" name="name" class="form-control" required autocomplete="name" placeholder="Entrez le nom de l'auteur">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="parallel_name" class="form-label">Nom parallèle</label>
+                                            <input type="text" id="parallel_name" name="parallel_name" class="form-control" autocomplete="parallel_name" placeholder="Entrez le nom parallèle">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="other_name" class="form-label">Autre nom</label>
+                                            <input type="text" id="other_name" name="other_name" class="form-control" autocomplete="other_name" placeholder="Entrez l'autre nom">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="lifespan" class="form-label">Période de vie</label>
+                                            <input type="number" id="lifespan" name="lifespan" class="form-control" autocomplete="lifespan" placeholder="Entrez la période de vie (année)">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="locations" class="form-label">Lieux</label>
+                                            <input type="text" id="locations" name="locations" class="form-control" autocomplete="locations" placeholder="Entrez les lieux">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="parent_id" class="form-label">Auteur parent</label>
+                                            <select id="parent_id" name="parent_id" class="form-control">
+                                                <option value="">Aucun</option>
+                                                @foreach ($parents as $parent)
+                                                    <option value="{{ $parent->id }}">{{ $parent->name }} <i>({{ $parent->authorType->name }})</i></option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Créer l'auteur</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
                     <div class="mb-3">
                         <label for="biographical_history" class="form-label">Bibliographie</label>
                         <textarea name="biographical_history" id="biographical_history" class="form-control"></textarea>
