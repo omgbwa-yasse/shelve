@@ -122,13 +122,13 @@ class SearchSlipController extends Controller
         }
 
 
-        return view('transferrings.slips.index', compact('slips'));
+        return view('slips.index', compact('slips'));
     }
 
 
     public function date()
     {
-        return view('search.transferring.dateSearch');
+        return view('search.slips.dateSearch');
     }
 
 
@@ -136,7 +136,7 @@ class SearchSlipController extends Controller
     {
         $organisations = Organisation::all();
         $organisations->load('userSlips','officerSlips');
-        return view('search.transferring.organisationSearch', compact('organisations'));
+        return view('search.slips.organisationSearch', compact('organisations'));
     }
 
 }
