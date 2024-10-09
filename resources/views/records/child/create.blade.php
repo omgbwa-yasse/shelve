@@ -1,17 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-
     <div class="container">
         <h1>Description </h1>
-            <label class="form-check-label" for="record-{{$record->id}}">
-                <a href="{{ route('records.show', $record) }}">
-                    <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
-                </a>
-            </label>
-            <p>
-                {{ $record->content }}
-            </p>
+        <label class="form-check-label" for="record-{{$record->id}}">
+            <a href="{{ route('records.show', $record) }}">
+                <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }}</span>
+            </a>
+        </label>
+        <p>
+            {{ $record->content }}
+        </p>
         <hr/>
         <form action="{{ route('records.store')}}" method="POST">
             @csrf
@@ -109,11 +108,14 @@
                     <div class="mb-3">
                         <div class="mb-3">
                             <label for="author" class="form-label">Producteur</label>
-                            <input type="text" class="form-control" id="author" autocomplete="off">
-                            <div id="suggestions" class="list-group mt-2"></div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="selected-authors-display" readonly>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authorModal">
+                                    Sélectionner
+                                </button>
+                            </div>
+                            <input type="hidden" name="author_ids[]" id="author-ids">
                         </div>
-                        <div id="selected-authors" class="mt-3"></div>
-                        <input type="hidden" name="author_ids[]" id="author-ids">
                     </div>
                     <div class="mb-3">
                         <label for="biographical_history" class="form-label">Bibliographie</label>
@@ -213,41 +215,110 @@
                 </div>
 
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
-
-                    <div class="mt-3">
-                        <label for="term_search" class="form-label">Rechercher un terme</label>
-                        <input type="text" id="term_search" class="form-control" placeholder="Taper pour rechercher...">
-                    </div>
-
-                    <div class="mt-3">
+                    <div class="mb-3">
                         <label for="term_id" class="form-label">Thésaurus</label>
-                        <select name="term_id" id="term_id" class="form-select" multiple required>
-                            @foreach ($terms as $term)
-                                <option value="{{ $term->id }}">{{ $term->name }}</option>
-                            @endforeach
-                        </select>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="selected-terms-display" readonly>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#termModal">
+                                Sélectionner
+                            </button>
+                        </div>
+                        <input type="hidden" name="term_ids[]" id="term-ids">
                     </div>
-
-                    <div id="selected-terms" class="mt-3"></div>
-                    <button type="button" class="btn btn-secondary mt-3" onclick="clearTerms()">Vider les termes</button>
-                    <input type="hidden" name="term_ids[]" id="term-ids">
 
                     <div class="mb-3">
-                        <label for="activity_id" class="form-label"> Activités </label>
-                        <div class="select-with-search">
-                            <select name="activity_id" id="activity_id" class="form-select" required>
-                                @foreach ($activities as $activity)
-                                    <option value="{{ $activity->id }}">{{ $activity->code }} - {{ $activity->name }}</option>
-                                @endforeach
-                            </select>
+                        <label for="activity_id" class="form-label">Activités</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="selected-activity-display" readonly>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
+                                Sélectionner
+                            </button>
                         </div>
+                        <input type="hidden" name="activity_id" id="activity-id">
                     </div>
-
                 </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Enregistrer</button>
         </form>
+    </div>
+
+    <!-- Modal pour les producteurs -->
+    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="authorModalLabel">Sélectionner les producteurs</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="author-search" class="form-control mb-3" placeholder="Rechercher un producteur">
+                    <div id="author-list" class="list-group">
+                        @foreach ($authors as $author)
+                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $author->id }}">
+                                {{ $author->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="save-authors">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour le thésaurus -->
+    <div class="modal fade" id="termModal" tabindex="-1" aria-labelledby="termModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="termModalLabel">Sélectionner les termes du thésaurus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="term-search" class="form-control mb-3" placeholder="Rechercher un terme">
+                    <div id="term-list" class="list-group">
+                        @foreach ($terms as $term)
+                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $term->id }}">
+                                {{ $term->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="save-terms">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour les activités -->
+    <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activityModalLabel">Sélectionner une activité</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="activity-search" class="form-control mb-3" placeholder="Rechercher une activité">
+                    <div id="activity-list" class="list-group">
+                        @foreach ($activities as $activity)
+                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $activity->id }}">
+                                {{ $activity->code }} - {{ $activity->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="save-activity">Enregistrer</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <style>
@@ -277,154 +348,114 @@
 
     <script>
         const authors = @json($authors);
-        document.getElementById('term_id').addEventListener('change', function () {
-            let selectedOptions = Array.from(this.selectedOptions);
-            selectedOptions.forEach(option => {
-                addTerm(option.text, option.value);
-            });
-            this.selectedOptions = [];
-        });
-
-        document.getElementById('term_search').addEventListener('input', function () {
-            let searchQuery = this.value.toLowerCase();
-            let termOptions = document.getElementById('term_id').options;
-            for (let i = 0; i < termOptions.length; i++) {
-                let option = termOptions[i];
-                option.style.display = option.text.toLowerCase().includes(searchQuery) ? 'block' : 'none';
-            }
-        });
-
-        function addTerm(termName, termId) {
-            let selectedTerms = document.getElementById('selected-terms');
-            let termItem = document.createElement('div');
-            termItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-            let termNameSpan = document.createElement('span');
-            termNameSpan.textContent = termName;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                termItem.remove();
-            };
-
-            termItem.appendChild(termNameSpan);
-            termItem.appendChild(removeButton);
-            selectedTerms.appendChild(termItem);
-
-            let termIdsInput = document.getElementById('term-ids');
-            termIdsInput.value += termId + ',';
-        }
-
-        function clearTerms() {
-            document.getElementById('selected-terms').innerHTML = '';
-            document.getElementById('term-ids').value = '';
-        }
-
-        document.getElementById('author').addEventListener('input', function () {
-            let query = this.value.toLowerCase();
-            let suggestions = document.getElementById('suggestions');
-            suggestions.innerHTML = '';
-
-            if (query.length >= 2) {
-                let filteredProducers = authors.filter(author => author.name.toLowerCase().includes(query));
-                filteredProducers.forEach(author => {
-                    let item = document.createElement('a');
-                    item.classList.add('list-group-item', 'list-group-item-action');
-                    item.textContent = author.name;
-                    item.onclick = function () {
-                        addProducer(author);
-                    };
-                    suggestions.appendChild(item);
-                });
-            }
-        });
-
-        function addProducer(author) {
-            let selectedProducers = document.getElementById('selected-authors');
-            let authorItem = document.createElement('div');
-            authorItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            let authorName = document.createElement('span');
-            authorName.textContent = author.name;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                authorItem.remove();
-            };
-
-            authorItem.appendChild(authorName);
-            authorItem.appendChild(removeButton);
-            selectedProducers.appendChild(authorItem);
-            document.getElementById('suggestions').innerHTML = '';
-            document.getElementById('author').value = '';
-
-            // Ajouter l'ID de l'auteur au champ caché author_ids[]
-            let authorIdsInput = document.getElementById('author-ids');
-            authorIdsInput.value += author.id + ',';
-        }
-
-        function createProducer() {
-            // Logique pour créer un nouveau producteur
-            alert('Créer un nouveau producteur');
-        }
+        const terms = @json($terms);
 
         document.addEventListener('DOMContentLoaded', function() {
-            const selectWithSearchElements = document.querySelectorAll('.select-with-search');
+            // Fonction pour filtrer les éléments d'une liste
+            function filterList(searchInput, listItems) {
+                const filter = searchInput.value.toLowerCase();
+                listItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(filter) ? '' : 'none';
+                });
+            }
 
-            selectWithSearchElements.forEach(selectWithSearch => {
-                const searchInput = selectWithSearch.querySelector('.search-input');
-                const select = selectWithSearch.querySelector('select');
-                const options = Array.from(select.options).slice(1); // Exclude the first option
+            // Gestionnaire pour le modal des producteurs
+            const authorModal = document.getElementById('authorModal');
+            const authorSearch = document.getElementById('author-search');
+            const authorList = document.getElementById('author-list');
+            const authorItems = authorList.querySelectorAll('.list-group-item');
+            const saveAuthors = document.getElementById('save-authors');
+            const selectedAuthorsDisplay = document.getElementById('selected-authors-display');
+            const authorIds = document.getElementById('author-ids');
 
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
+            let selectedAuthors = new Set();
 
-                    options.forEach(option => {
-                        const optionText = option.textContent.toLowerCase();
-                        if (optionText.includes(searchTerm)) {
-                            option.style.display = '';
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
+            authorSearch.addEventListener('input', () => filterList(authorSearch, authorItems));
 
-                    // Reset selection and show placeholder option
-                    select.selectedIndex = 0;
-                    select.options[0].style.display = '';
-
-                    // If no visible options, show a "No results" option
-                    const visibleOptions = options.filter(option => option.style.display !== 'none');
-                    if (visibleOptions.length === 0) {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (!noResultsOption) {
-                            const newNoResultsOption = document.createElement('option');
-                            newNoResultsOption.textContent = 'No results found';
-                            newNoResultsOption.disabled = true;
-                            newNoResultsOption.setAttribute('data-no-results', 'true');
-                            select.appendChild(newNoResultsOption);
-                        } else {
-                            noResultsOption.style.display = '';
-                        }
+            authorItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    item.classList.toggle('active');
+                    const authorId = item.dataset.id;
+                    if (selectedAuthors.has(authorId)) {
+                        selectedAuthors.delete(authorId);
                     } else {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (noResultsOption) {
-                            noResultsOption.style.display = 'none';
-                        }
+                        selectedAuthors.add(authorId);
                     }
                 });
+            });
 
-                // Clear search input when select changes
-                select.addEventListener('change', function() {
-                    searchInput.value = '';
-                    options.forEach(option => option.style.display = '');
-                    const noResultsOption = select.querySelector('option[data-no-results]');
-                    if (noResultsOption) {
-                        noResultsOption.style.display = 'none';
+            saveAuthors.addEventListener('click', () => {
+                const selectedAuthorNames = Array.from(authorItems)
+                    .filter(item => item.classList.contains('active'))
+                    .map(item => item.textContent.trim());
+                selectedAuthorsDisplay.value = selectedAuthorNames.join(', ');
+                authorIds.value = Array.from(selectedAuthors).join(',');
+                bootstrap.Modal.getInstance(authorModal).hide();
+            });
+
+            // Gestionnaire pour le modal du thésaurus (similaire aux producteurs)
+            const termModal = document.getElementById('termModal');
+            const termSearch = document.getElementById('term-search');
+            const termList = document.getElementById('term-list');
+            const termItems = termList.querySelectorAll('.list-group-item');
+            const saveTerms = document.getElementById('save-terms');
+            const selectedTermsDisplay = document.getElementById('selected-terms-display');
+            const termIds = document.getElementById('term-ids');
+
+            let selectedTerms = new Set();
+
+            termSearch.addEventListener('input', () => filterList(termSearch, termItems));
+
+            termItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    item.classList.toggle('active');
+                    const termId = item.dataset.id;
+                    if (selectedTerms.has(termId)) {
+                        selectedTerms.delete(termId);
+                    } else {
+                        selectedTerms.add(termId);
                     }
                 });
+            });
+
+            saveTerms.addEventListener('click', () => {
+                const selectedTermNames = Array.from(termItems)
+                    .filter(item => item.classList.contains('active'))
+                    .map(item => item.textContent.trim());
+                selectedTermsDisplay.value = selectedTermNames.join(', ');
+                termIds.value = Array.from(selectedTerms).join(',');
+                bootstrap.Modal.getInstance(termModal).hide();
+            });
+
+            // Gestionnaire pour le modal des activités
+            const activityModal = document.getElementById('activityModal');
+            const activitySearch = document.getElementById('activity-search');
+            const activityList = document.getElementById('activity-list');
+            const activityItems = activityList.querySelectorAll('.list-group-item');
+            const saveActivity = document.getElementById('save-activity');
+            const selectedActivityDisplay = document.getElementById('selected-activity-display');
+            const activityId = document.getElementById('activity-id');
+
+            activitySearch.addEventListener('input', () => filterList(activitySearch, activityItems));
+
+            activityItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    activityItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                });
+            });
+
+            saveActivity.addEventListener('click', () => {
+                const selectedActivity = activityList.querySelector('.list-group-item.active');
+                if (selectedActivity) {
+                    selectedActivityDisplay.value = selectedActivity.textContent.trim();
+                    activityId.value = selectedActivity.dataset.id;
+                }
+                bootstrap.Modal.getInstance(activityModal).hide();
             });
         });
     </script>

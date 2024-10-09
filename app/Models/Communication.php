@@ -5,11 +5,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Record;
 use App\Models\User;
+use Laravel\Scout\Searchable;
 
 
 class Communication extends Model
 {
     use HasFactory;
+    use searchable;
     protected $fillable = [
         'code',
         'name',

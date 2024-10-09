@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class communicationRecord extends Model
 {
     use HasFactory;
+    use searchable;
 
     protected $table = 'communication_record';
     protected $fillable = [

@@ -35,7 +35,7 @@
                     </a>
                     <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                         <i class="bi bi-check-square me-1"></i>
-                        Tout cocher ***
+                        Tout cocher
                     </a>
                 </div>
             </div>
@@ -146,17 +146,148 @@
         </ul>
     </nav>
 
+
+
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cartModalLabel">Ajouter au chariot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Voulez-vous ajouter les enregistrements sélectionnés à un nouveau chariot ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmCart">Confirmer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal pour l'Impression -->
+    <div class="modal fade" id="printModal" tabindex="-1" aria-labelledby="printModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="printModalLabel">Imprimer les enregistrements</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Voulez-vous imprimer les enregistrements sélectionnés ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmPrint">Imprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 
 
 @push('scripts')
     <script>
+        document.getElementById('cartBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement.');
+                return;
+            }
+
+            var cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+            cartModal.show();
+        });
+
+        document.getElementById('confirmCart').addEventListener('click', function() {
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            fetch('{{ route("dolly.createWithRecords") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ records: checkedRecords })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Un nouveau chariot a été créé avec les enregistrements sélectionnés.');
+                    } else {
+                        alert('Une erreur est survenue lors de la création du chariot.');
+                    }
+                });
+
+            var cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+            cartModal.hide();
+        });
+
+        document.getElementById('printBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un enregistrement à imprimer.');
+                return;
+            }
+
+            var printModal = new bootstrap.Modal(document.getElementById('printModal'));
+            printModal.show();
+        });
+
+        document.getElementById('confirmPrint').addEventListener('click', function() {
+            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            fetch('{{ route("records.print") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ records: checkedRecords })
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'records_print.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                });
+
+            var printModal = bootstrap.Modal.getInstance(document.getElementById('printModal'));
+            printModal.hide();
+        });
+
         function confirmDelete(mailId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')) {
                 document.getElementById('delete-form-' + mailId).submit();
             }
         }
+        let checkAllBtn = document.getElementById('checkAllBtn');
+        checkAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = !allChecked;
+            });
+
+            this.innerHTML = allChecked ?
+                '<i class="bi bi-check-square me-1"></i>Tout cocher' :
+                '<i class="bi bi-square me-1"></i>Tout décocher';
+        });
 
         document.getElementById('searchInput').addEventListener('keyup', function() {
             var input, filter, cards, card, i, txtValue;

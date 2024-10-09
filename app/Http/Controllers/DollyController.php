@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Communication;
 use App\Models\Container;
+use App\Models\DollyCommunication;
 use App\Models\Mail;
 use App\Models\Record;
 use App\Models\Room;
