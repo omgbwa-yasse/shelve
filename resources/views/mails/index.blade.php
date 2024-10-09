@@ -24,7 +24,7 @@
                     </a>
                 </div>
                 <div class="d-flex align-items-center">
-                    
+
                     <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                         <i class="bi bi-check-square me-1"></i>
                         Tout cocher
