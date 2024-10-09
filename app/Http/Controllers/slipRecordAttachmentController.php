@@ -54,7 +54,8 @@ class slipRecordAttachmentController extends Controller
         $attachment = Attachment::findOrFail($id);
         Storage::delete($attachment->path);
         $attachment->delete();
-        return view('slips.show', compact('slip', 'record'));
+        return redirect()->back();
+//        return view('slips.show', compact('slip', 'slipRecord'));
 
     }
 
