@@ -53,14 +53,16 @@ return new class extends Migration
             Suivi des transactions du system
         */
 
-        Schema::create('user_logs', function (Blueprint $table) {
+        Schema::create('logs', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->nullable();
-            $table->text('crypt')->notNull(); // crypt = crypt  + crypt(precedent) en MD5
-            $table->string('action')->notNull();
-            $table->text('description')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->string('action', 255)->nullable(false);
+            $table->text('description');
+            $table->string('ip_address', 45);
+            $table->text('user_agent');
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('set null');
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
         /*
@@ -1117,7 +1119,7 @@ return new class extends Migration
 
 
 
-        Schema::create('ladp_content', function (Blueprint $table) {
+        Schema::create('ladp_contents', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('type', 50)->nullable();
@@ -1133,14 +1135,54 @@ return new class extends Migration
 
         Schema::create('ladp_distribution', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('content_id')->constrained('ladp_content')->cascadeOnDelete();
-            $table->foreignId('client_id')->constrained('ladp_clients')->cascadeOnDelete();
+            $table->unsignedBigInteger('content_id');
+            $table->unsignedBigInteger('client_id');
             $table->timestamp('start_time')->useCurrent();
-            $table->timestamp('end_time')->nullable();
+            $table->timestamp('end_time')->nullable('true');
             $table->enum('status', ['pending', 'in_progress', 'completed', 'failed'])->default('pending');
             $table->timestamps();
 
             $table->unique(['content_id', 'client_id']);
+
+            $table->foreign('content_id')->references('id')->on('ladp_contents')->onDelete('cascade');
+            $table->foreign('client_id')->references('id')->on('ladp_clients')->onDelete('cascade');
+        });
+
+
+
+        /* Sauvegarde */
+
+        Schema::create('backups', function (Blueprint $table) {
+            $table->id();
+            $table->timestamp('date_time')->useCurrent()->nullable(false);
+            $table->enum('type', ['metadata', 'full'])->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->enum('status', ['in_progress', 'success', 'failed'])->nullable(false);
+            $table->unsignedBigInteger('user_id')->nullable(false);
+            $table->bigInteger('size')->nullable(false);
+            $table->string('backup_file')->nullable(false);
+            $table->string('path')->nullable(false);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+        Schema::create('backup_files', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('backup_id')->nullable(false);
+            $table->string('path_original')->nullable(false);
+            $table->string('path_storage')->nullable(false);
+            $table->bigInteger('size')->nullable(false);
+            $table->string('hash', 150)->nullable(false);
+            $table->foreign('backup_id')->references('id')->on('backups')->onDelete('cascade');
+        });
+
+        Schema::create('backup_plannings', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('backup_id')->nullable(false);
+            $table->string('frequence')->nullable(false);
+            $table->integer('week_day')->nullable(true);
+            $table->integer('month_day')->nullable(true);
+            $table->time('hour')->nullable(true);
+            $table->foreign('backup_id')->references('id')->on('backups')->onDelete('cascade');
         });
 
 
@@ -1148,6 +1190,9 @@ return new class extends Migration
 
     public function down()
     {
+        Schema::dropIfExists('backup_planning');
+        Schema::dropIfExists('backup_files');
+        Schema::dropIfExists('backups');
         Schema::dropIfExists('ladp_distribution');
         Schema::dropIfExists('ladp_content');
         Schema::dropIfExists('ladp_clients');

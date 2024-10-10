@@ -16,6 +16,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\LogController;
 use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
 use App\Http\Controllers\RecordContainerController;
@@ -261,6 +262,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('mail-action', MailActionController::class);
         Route::resource('taskstatus', TaskStatusController::class);
         Route::resource('tasktype', TaskTypeController::class);
+        Route::resource('logs', LogController::class)->only(['index', 'show']);
     });
 
 
