@@ -1086,10 +1086,72 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
         });
+
+
+
+
+
+        Schema::create('ladp_servers', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 150)->unique();
+            $table->string('ip_address', 45);
+            $table->unsignedSmallInteger('port')->nullable();
+            $table->enum('status', ['online', 'offline', 'maintenance'])->default('online');
+            $table->timestamps();
+
+            $table->unique(['ip_address', 'port']);
+        });
+
+
+
+        Schema::create('ladp_clients', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 150)->unique();
+            $table->string('ip_address', 45);
+            $table->unsignedSmallInteger('port')->nullable();
+            $table->foreignId('server_id')->nullable()->constrained('ladp_servers')->nullOnDelete();
+            $table->timestamps();
+
+            $table->unique(['ip_address', 'port']);
+        });
+
+
+
+        Schema::create('ladp_content', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('type', 50)->nullable();
+            $table->unsignedBigInteger('size')->nullable();
+            $table->string('hash', 64)->nullable();
+            $table->foreignId('server_id')->nullable()->constrained('ladp_servers')->nullOnDelete();
+            $table->timestamps();
+
+            $table->unique(['name', 'server_id']);
+        });
+
+
+
+        Schema::create('ladp_distribution', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('content_id')->constrained('ladp_content')->cascadeOnDelete();
+            $table->foreignId('client_id')->constrained('ladp_clients')->cascadeOnDelete();
+            $table->timestamp('start_time')->useCurrent();
+            $table->timestamp('end_time')->nullable();
+            $table->enum('status', ['pending', 'in_progress', 'completed', 'failed'])->default('pending');
+            $table->timestamps();
+
+            $table->unique(['content_id', 'client_id']);
+        });
+
+
     }
 
     public function down()
     {
+        Schema::dropIfExists('ladp_distribution');
+        Schema::dropIfExists('ladp_content');
+        Schema::dropIfExists('ladp_clients');
+        Schema::dropIfExists('ladp_servers');
         Schema::dropIfExists('dolly_types');
         Schema::dropIfExists('dollies');
         Schema::dropIfExists('dolly_mails');
