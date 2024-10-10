@@ -56,7 +56,11 @@ return new class extends Migration
         Schema::create('logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable(false);
+<<<<<<< HEAD
             $table->string('action', 150)->nullable(false);
+=======
+            $table->string('action', 255)->nullable(false);
+>>>>>>> 8859924a56007ef392f95f52efcc9239e4de3630
             $table->text('description');
             $table->string('ip_address', 45);
             $table->text('user_agent');
