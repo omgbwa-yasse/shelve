@@ -80,5 +80,18 @@
                 </li>
             </ul>
         </div>
+
+        <!-- Thésaurus -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
+           aria-controls="thesaurusMenu" style="padding: 10px;">
+            <i class="bi bi-tools me-2"></i> Boite à outils
+        </a>
+        <div class="collapse show" id="thesaurusMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('barcode.create') }}"><i class="bi bi-tree me-2"></i>Code de barre</a>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>

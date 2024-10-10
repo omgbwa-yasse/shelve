@@ -75,6 +75,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\DollyController;
+use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
 use App\Http\Controllers\SlipRecordAttachmentController;
@@ -302,6 +303,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('organisations.activities', OrganisationActivityController::class);
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
+        Route::get('barcode', [BarcodeController::class,'create'])->name('barcode.create');
+        Route::post('barcode', [BarcodeController::class,'generate'])->name('barcode.generate');
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
