@@ -89,7 +89,7 @@
         <div class="collapse show" id="thesaurusMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('barcode.create') }}"><i class="bi bi-tree me-2"></i>Code de barre</a>
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('barcode.create') }}"><i class="bi bi-tree me-2"></i> Code de barre</a>
                 </li>
             </ul>
         </div>

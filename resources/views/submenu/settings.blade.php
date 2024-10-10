@@ -186,7 +186,10 @@ aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-people"></i
 
         <ul class="list-unstyled pl-3">
             <li class="nav-item">
-                <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> Sauvegarde</a>
+                <a class="nav-link text-dark" href="{{ route('backups.index')}}"><i class="bi bi-gear"></i> Mes sauvegardes</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="{{ route('backups.create')}}"><i class="bi bi-gear"></i> Nouvelle sauvegarde</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> LADP </a>

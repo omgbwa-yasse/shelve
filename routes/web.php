@@ -94,6 +94,9 @@ use App\Http\Controllers\SearchSlipController;
 use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BackupController;
+use App\Http\Controllers\BackupFileController;
+use App\Http\Controllers\BackupPlanningController;
 
 
 Auth::routes();
@@ -168,7 +171,6 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
         Route::post('/slips/store', [SlipController::class, 'store'])->name('slips.storetransfert');
-
         Route::get('/', [RecordController::class, 'index']);
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
@@ -265,6 +267,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('taskstatus', TaskStatusController::class);
         Route::resource('tasktype', TaskTypeController::class);
         Route::resource('logs', LogController::class)->only(['index', 'show']);
+        Route::resource('backups', BackupController::class);
+        Route::resource('backups.files', BackupFileController::class);
+        Route::resource('backups.plannings', BackupPlanningController::class);
     });
 
 
