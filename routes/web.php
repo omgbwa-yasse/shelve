@@ -192,6 +192,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('recordtokeep', [lifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
         Route::get('recordtoretain', [lifeCycleController::class, 'recordToRetain'])->name('records.toretain');
         Route::get('recordtostore', [lifeCycleController::class, 'recordToStore'])->name('records.tostore');
+        Route::get('advanced', [RecordController::class, 'advanced'])->name('records.advanced');
         Route::get('search', [SearchController::class, 'index'])->name('records.search');
         Route::get('sort', [SearchRecordController::class, 'index'])->name('records.sort');
         Route::get('select', [SearchRecordController::class, 'date'])->name('record-select-date');

@@ -39,6 +39,12 @@ class RecordController extends Controller
         return view('records.search', compact('results', 'query'));
     }
 
+
+    public function advanced()
+    {
+        return view('search.record.advanced');
+    }
+
     public function index()
     {
         if (Gate::allows('viewAny', Record::class)) {

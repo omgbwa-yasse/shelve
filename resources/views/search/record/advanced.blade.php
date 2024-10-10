@@ -1,67 +1,97 @@
-<form action="{{ route('records.search') }}" method="GET" class="mb-4">
-    <div class="row">
-        <div class="col-md-6">
-            <input type="text" name="code" class="form-control" placeholder="Recherche par code">
-        </div>
-        <div class="col-md-3">
-            <button type="submit" class="btn btn-primary">Rechercher</button>
-        </div>
-        <div class="col-md-3">
-            <button type="button" class="btn btn-secondary" data-toggle="collapse" data-target="#advancedSearch">Recherche avancée</button>
-        </div>
-    </div>
+@extends('layouts.app')
 
-    <div class="collapse mt-3" id="advancedSearch">
-        <div class="card card-body">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input type="text" name="name" class="form-control" placeholder="Nom">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <input type="date" name="date_start" class="form-control" placeholder="Date de début">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <input type="date" name="date_end" class="form-control" placeholder="Date de fin">
-                </div>
+@section('content')
+<div class="container my-5">
+    <h1 class="mb-4">Recherche Avancée</h1>
+
+    <strong>Cycle de vie aussi - Création -  Activité -   Boites </strong>
+
+    <form method="GET" action="/search">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="name" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Nom de l'enregistrement">
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input type="text" name="description" class="form-control" placeholder="Description">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <input type="text" name="language" class="form-control" placeholder="Langue">
-                </div>
+            <div class="col-md-4">
+                <label for="code" class="form-label">Code</label>
+                <input type="text" class="form-control" id="code" name="code" placeholder="Code de l'enregistrement">
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input type="text" name="author" class="form-control" placeholder="Auteur">
-                </div>
-                <div class="col-md-6 mb-3">
-                    <select name="status" class="form-control">
-                        <option value="">Sélectionner un statut</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status->id }}">{{ $status->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="col-md-4">
+                <label for="date_exact" class="form-label">Date exacte</label>
+                <input type="date" class="form-control" id="date_exact" name="date_exact">
             </div>
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <label for="term_search">Rechercher des termes</label>
-                    <input type="text" id="term_search" class="form-control" placeholder="Taper pour rechercher...">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12 mb-3">
-                    <select id="term_id" class="form-select" multiple>
-                        @foreach ($terms as $term)
-                            <option value="{{ $term->id }}">{{ $term->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div id="selected-terms" class="mt-3"></div>
-            <input type="hidden" name="term_ids" id="term-ids">
         </div>
-    </div>
-</form>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="date_start" class="form-label">Date de début</label>
+                <input type="date" class="form-control" id="date_start" name="date_start">
+            </div>
+            <div class="col-md-4">
+                <label for="date_end" class="form-label">Date de fin</label>
+                <input type="date" class="form-control" id="date_end" name="date_end">
+            </div>
+            <div class="col-md-4">
+                <label for="status_id" class="form-label">Statut</label>
+                <select class="form-select" id="status_id" name="status_id">
+                    <option value="">Choisir un statut</option>
+                    <!-- Les options devraient être générées dynamiquement depuis la base de données -->
+                    <option value="1">Actif</option>
+                    <option value="2">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="support_id" class="form-label">Support</label>
+                <select class="form-select" id="support_id" name="support_id">
+                    <option value="">Choisir un support</option>
+                    <!-- Les options devraient être générées dynamiquement -->
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="level_id" class="form-label">Niveau</label>
+                <select class="form-select" id="level_id" name="level_id">
+                    <option value="">Choisir un niveau</option>
+                    <!-- Les options devraient être générées dynamiquement -->
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="organisation_id" class="form-label">Organisation</label>
+                <select class="form-select" id="organisation_id" name="organisation_id">
+                    <option value="">Choisir une organisation</option>
+                    <!-- Les options devraient être générées dynamiquement -->
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="biographical_history" class="form-label">Histoire Biographique</label>
+                <input type="text" class="form-control" id="biographical_history" name="biographical_history" placeholder="Histoire Biographique">
+            </div>
+            <div class="col-md-6">
+                <label for="archival_history" class="form-label">Histoire Archivistique</label>
+                <input type="text" class="form-control" id="archival_history" name="archival_history" placeholder="Histoire Archivistique">
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="content" class="form-label">Contenu</label>
+                <input type="text" class="form-control" id="content" name="content" placeholder="Description du contenu">
+            </div>
+            <div class="col-md-6">
+                <label for="acquisition_source" class="form-label">Source d'Acquisition</label>
+                <input type="text" class="form-control" id="acquisition_source" name="acquisition_source" placeholder="Source d'Acquisition">
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+            <button type="reset" class="btn btn-secondary">Réinitialiser</button>
+        </div>
+    </form>
+</div>
+@endsection

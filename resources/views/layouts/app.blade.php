@@ -153,8 +153,11 @@
                         <option value="transferring_record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring_record') selected @endif>Archives versées</option>
                         <option value="transferring" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring') selected @endif>Versement</option>
                     </select>
-                    <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+                    <button class="btn btn-outline-light ml-2" type="submit"><i class="bi bi-search"></i></button>
                 </form>
+                <a href="{{ route('records.advanced') }}">
+                    <button class="btn btn-outline-light ml-3" type="submit"><i class="bi bi-search"></i> Avancée</button>
+                </a>
 
                 <div class="d-grid gap-2">
 
