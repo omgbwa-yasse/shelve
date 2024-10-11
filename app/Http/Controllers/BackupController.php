@@ -14,6 +14,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Artisan;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -42,52 +45,35 @@ class BackupController extends Controller
     }
 
 
+
+
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'type' => 'required|in:metadata,full',
-            'description' => 'nullable|string',
-            'status' => 'required|in:in_progress,success,failed',
-        ]);
+        // Generate a unique filename for the backup
+        $filename = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
 
-        if ($validator->fails()) {
-            return redirect()->route('backups.index')->with('error', 'Validation error');
-        }
+        // Use Artisan to execute the mysqldump command
+        $command = 'mysqldump -h ' . env('DB_HOST') . ' -u ' . env('DB_USERNAME') . ' -p' . escapeshellarg(env('DB_PASSWORD')) . ' ' . env('DB_DATABASE') . ' > ' . storage_path('app/backups/' . $filename);
 
-        // Get database credentials
-        $databaseName = env('DB_DATABASE');
-        $userName = env('DB_USERNAME');
-        $password = env('DB_PASSWORD');
-        $host = env('DB_HOST');
 
-        // Generate filename and command
-        $filename = "backup_" . date("Y-m-d_H-i-s") . ".sql";
-        $command = "mysqldump -h {$host} -u {$userName} -p'{$password}' {$databaseName} > " . storage_path("app/backups/{$filename}");
 
-        // Execute mysqldump command
-        $output = [];
-        $return_var = 0;
-        exec($command, $output, $return_var);
+        Artisan::call($command);
 
-        if ($return_var !== 0) {
-            return redirect()->route('backups.index')->with('error', 'Backup failed');
-        }
-
-        // Create ZIP archive
+        // Create a ZIP archive of the backup
         $zip = new ZipArchive();
-        $zipFilename = "backup_" . date("Y-m-d_H-i-s") . ".zip";
+        $zipFilename = 'backup_' . date('Y-m-d_H-i-s') . '.zip';
         $zip->open($zipFilename, ZipArchive::CREATE);
-        $zip->addFile($filename);
+        $zip->addFile(storage_path('app/backups/' . $filename));
         $zip->close();
 
         // Calculate size and hash
         $size = filesize($zipFilename);
         $hash = hash('sha256', file_get_contents($zipFilename));
 
-        // Delete temporary SQL file
-        unlink($filename);
+        // Delete the temporary SQL file
+        unlink(storage_path('app/backups/' . $filename));
 
-        // Store backup information in database
+        // Store the backup information in the database
         $backup = Backup::create([
             'date_time' => now(),
             'type' => $request->input('type'),
@@ -102,6 +88,7 @@ class BackupController extends Controller
 
         return redirect()->route('backups.index')->with('success', 'Backup created successfully');
     }
+
 
 
 
