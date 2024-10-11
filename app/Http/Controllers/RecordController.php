@@ -40,10 +40,6 @@ class RecordController extends Controller
     }
 
 
-    public function advanced()
-    {
-        return view('search.record.advanced');
-    }
 
     public function index()
     {

@@ -40,10 +40,35 @@ use Maatwebsite\Excel\Facades\Excel;
 class SearchRecordController extends Controller
 {
 
+    public function form()
+    {
+        $rooms = Room::all();
+        $shelve = Shelf::all();
+        $activities = Activity::all();
+        $terms = Term::all();
+        $authors = Author::all();
+        $creators = User::all();
+        $statues = RecordStatus::all();
+
+        $data = [
+            'rooms' => $rooms,
+            'shelve' => $shelve,
+            'activities' => $activities,
+            'terms' => $terms,
+            'authors' => $authors,
+            'creators' => $creators,
+            'statues' => $statues,
+        ];
+
+        return view('search.record.advanced', ['data' => json_encode($data)]);
+    }
+
+
 
 
     public function advanced(Request $request)
     {
+        dd($request);
         $fields = $request->input('field');
         $operators = $request->input('operator');
         $values = $request->input('value');

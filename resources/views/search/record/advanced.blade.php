@@ -4,35 +4,42 @@
 <div class="container">
     <div class="row">
         <!-- Colonne de champs principaux -->
-        <div class="col-md-4">
+        <div class="col-md-3">
             <h5>Champs disponibles</h5>
             <ul class="list-group" id="fields-list">
-                <li class="list-group-item" data-field="code">Code</li>
-                <li class="list-group-item" data-field="nom">Nom</li>
-                <li class="list-group-item" data-field="contenu">Contenu</li>
-                <li class="list-group-item" data-field="boite">Boite d’archives</li>
-                <li class="list-group-item" data-field="etagere">Étagère</li>
-                <li class="list-group-item" data-field="depot">Dépôt</li>
-                <li class="list-group-item" data-field="tri">Tri</li>
-                <li class="list-group-item" data-field="duree communicabilite">Durée de communicabilité</li>
-                <li class="list-group-item" data-field="duree legale">Durée légale</li>
-                <li class="list-group-item" data-field="auteur">Auteur</li>
-                <li class="list-group-item" data-field="date creation">Date de création</li>
-                <li class="list-group-item" data-field="statut">Statut</li>
-                <li class="list-group-item" data-field="date debut">Date de début</li>
-                <li class="list-group-item" data-field="date fin">Date de fin</li>
-                <li class="list-group-item" data-field="date exacte">Date exacte</li>
-                <li class="list-group-item" data-field="sort">Sort</li>
+                <h6 class="mt-3 mb-2">Description</h6>
+                <li class="list-group-item" data-field="code" name-field="Code">Code</li>
+                <li class="list-group-item" data-field="name" name-field="Intitulé">Nom</li>
+                <li class="list-group-item" data-field="author" name-field="Producteur">Auteur</li>
+                <li class="list-group-item" data-field="content" name-field="Contenu">Contenu</li>
+                <li class="list-group-item" data-field="date_start" name-field="Date début">Date de début</li>
+                <li class="list-group-item" data-field="date_end" name-field="Date fin">Date de fin</li>
+                <li class="list-group-item" data-field="date_exact" name-field="Date exacte">Date exacte</li>
+                <li class="list-group-item" data-field="status" name-field="Statut">Statut</li>
+                <li class="list-group-item" data-field="date_creation" name-field="Date création">Date de création</li>
+
+                <h6 class="mt-4 mb-2">Cycle de vie</h6>
+                <li class="list-group-item" data-field="dua" name-field="Délai communicabilité">Durée de communicabilité</li>
+                <li class="list-group-item" data-field="dul" name-field="Délai légal">Durée légale</li>
+
+                <h6 class="mt-4 mb-2">Localisation</h6>
+                <li class="list-group-item" data-field="container" name-field="Boite/chrono">Boite d’archives</li>
+                <li class="list-group-item" data-field="shelf" name-field="Etagère">Étagère</li>
+                <li class="list-group-item" data-field="room" name-field="Dépôt">Dépôt</li>
+
+                <h6 class="mt-4 mb-2">Indexation</h6>
+                <li class="list-group-item" data-field="term" name-field="Terme (thésaurus)">Terme</li>
+                <li class="list-group-item" data-field="activity" name-field="Activité">Activité</li>
             </ul>
         </div>
 
         <!-- Colonne de champs de recherche dynamique -->
-        <div class="col-md-8">
+        <div class="col-md-9">
             <h5>Critères de recherche</h5>
-            <form id="advanced-search-form" method="POST" action="{{ route('records.result')}}">
+            <form id="advanced-search-form" method="POST" action="{{ route('records.advanced')}}">
                 @csrf
                 <div id="search-criteria-container"></div>
-                <button type="button" class="btn btn-primary mt-3" id="search-btn">Rechercher</button>
+                <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
                 <button type="button" class="btn btn-secondary mt-3" id="save-search-btn">Enregistrer la recherche</button>
             </form>
         </div>
@@ -55,6 +62,8 @@
 </template>
 
 <script>
+    const data = @json($data);
+
     document.addEventListener('DOMContentLoaded', function () {
         const fieldsList = document.getElementById('fields-list');
         const searchCriteriaContainer = document.getElementById('search-criteria-container');
@@ -63,46 +72,50 @@
         fieldsList.addEventListener('click', function (e) {
             if (e.target && e.target.nodeName === 'LI') {
                 const fieldName = e.target.getAttribute('data-field');
-                addSearchCriteria(fieldName);
+                const name = e.target.getAttribute('name-field');
+                addSearchCriteria(fieldName, name);
             }
         });
 
-        function addSearchCriteria(field) {
+        function addSearchCriteria(field, Name) {
             const criteriaClone = searchCriteriaTemplate.content.cloneNode(true);
             const fieldNameInput = criteriaClone.querySelector('.field-name');
             const fieldLabel = criteriaClone.querySelector('.field-label');
             const operatorSelect = criteriaClone.querySelector('.field-operator');
 
             fieldNameInput.value = field;
-            fieldLabel.textContent = field.charAt(0).toUpperCase() + field.slice(1);
+
+
+            fieldLabel.textContent = Name.charAt(0).toUpperCase() + Name.slice(1);
 
             // Définir les options de tri en fonction du champ
             let operators = [];
             switch (field) {
                 case 'code':
-                case 'nom':
-                case 'contenu':
+                case 'name':
+                case 'content':
                     operators = ['commence par', 'contient', 'ne contient pas'];
                     break;
-                case 'date debut':
-                case 'date fin':
-                case 'date exacte':
+                case 'date_start':
+                case 'date_end':
+                case 'date_exact':
+                case 'date_creation':
+                case 'dua':
+                case 'dul':
                     operators = ['=', '>', '<'];
                     break;
-                case 'duree_communicabilite':
-                case 'duree_legale':
-                    operators = ['=', '>', '<'];
-                    break;
-                case 'boite':
-                case 'etagere':
-                case 'depot':
-                case 'auteur':
+                case 'container':
+                case 'shelf':
+                case 'room':
+                case 'author':
+                case 'activity':
+                case 'organisation':
                 case 'sort':
-                    operators = ['='];
+                case 'status':
+                case 'term':
+                    operators = ['avec','sauf'];
                     break;
-                default:
-                    operators = ['='];
-                    break;
+
             }
 
             // Ajouter les options au select
