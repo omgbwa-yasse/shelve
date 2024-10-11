@@ -40,7 +40,54 @@ use Maatwebsite\Excel\Facades\Excel;
 class SearchRecordController extends Controller
 {
 
-    public function index(Request $request)
+
+
+    public function advanced(Request $request)
+    {
+        $fields = $request->input('field');
+        $operators = $request->input('operator');
+        $values = $request->input('value');
+
+        $query = Record::query();
+
+        if ($fields && $operators && $values) {
+            foreach ($fields as $index => $field) {
+                $operator = $operators[$index];
+                $value = $values[$index];
+
+                switch ($operator) {
+                    case 'commence par':
+                        $query->where($field, 'like', $value . '%');
+                        break;
+                    case 'contient':
+                        $query->where($field, 'like', '%' . $value . '%');
+                        break;
+                    case 'ne contient pas':
+                        $query->where($field, 'not like', '%' . $value . '%');
+                        break;
+                    case '=':
+                        $query->where($field, '=', $value);
+                        break;
+                    case '>':
+                        $query->where($field, '>', $value);
+                        break;
+                    case '<':
+                        $query->where($field, '<', $value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        $results = $query->paginate('20');
+        return view('records.index', compact('records'));
+    }
+
+
+
+
+    public function sort(Request $request)
     {
         $records = Record::query(); // Initialisation de la requête de base
 

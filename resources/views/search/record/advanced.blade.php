@@ -1,97 +1,127 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container my-5">
-    <h1 class="mb-4">Recherche Avancée</h1>
-
-    <strong>Cycle de vie aussi - authors -  terms (thésaurus) - Création -  Activité -   Boites - communicabilité - Délai de conservation </strong>
-
-    <form method="GET" action="/search">
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="name" class="form-label">Nom</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="Nom de l'enregistrement">
-            </div>
-            <div class="col-md-4">
-                <label for="code" class="form-label">Code</label>
-                <input type="text" class="form-control" id="code" name="code" placeholder="Code de l'enregistrement">
-            </div>
-            <div class="col-md-4">
-                <label for="date_exact" class="form-label">Date exacte</label>
-                <input type="date" class="form-control" id="date_exact" name="date_exact">
-            </div>
+<div class="container">
+    <div class="row">
+        <!-- Colonne de champs principaux -->
+        <div class="col-md-4">
+            <h5>Champs disponibles</h5>
+            <ul class="list-group" id="fields-list">
+                <li class="list-group-item" data-field="code">Code</li>
+                <li class="list-group-item" data-field="nom">Nom</li>
+                <li class="list-group-item" data-field="contenu">Contenu</li>
+                <li class="list-group-item" data-field="boite">Boite d’archives</li>
+                <li class="list-group-item" data-field="etagere">Étagère</li>
+                <li class="list-group-item" data-field="depot">Dépôt</li>
+                <li class="list-group-item" data-field="tri">Tri</li>
+                <li class="list-group-item" data-field="duree communicabilite">Durée de communicabilité</li>
+                <li class="list-group-item" data-field="duree legale">Durée légale</li>
+                <li class="list-group-item" data-field="auteur">Auteur</li>
+                <li class="list-group-item" data-field="date creation">Date de création</li>
+                <li class="list-group-item" data-field="statut">Statut</li>
+                <li class="list-group-item" data-field="date debut">Date de début</li>
+                <li class="list-group-item" data-field="date fin">Date de fin</li>
+                <li class="list-group-item" data-field="date exacte">Date exacte</li>
+                <li class="list-group-item" data-field="sort">Sort</li>
+            </ul>
         </div>
 
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="date_start" class="form-label">Date de début</label>
-                <input type="date" class="form-control" id="date_start" name="date_start">
-            </div>
-            <div class="col-md-4">
-                <label for="date_end" class="form-label">Date de fin</label>
-                <input type="date" class="form-control" id="date_end" name="date_end">
-            </div>
-            <div class="col-md-4">
-                <label for="status_id" class="form-label">Statut</label>
-                <select class="form-select" id="status_id" name="status_id">
-                    <option value="">Choisir un statut</option>
-                    <!-- Les options devraient être générées dynamiquement depuis la base de données -->
-                    <option value="1">Actif</option>
-                    <option value="2">Inactif</option>
-                </select>
-            </div>
+        <!-- Colonne de champs de recherche dynamique -->
+        <div class="col-md-8">
+            <h5>Critères de recherche</h5>
+            <form id="advanced-search-form" method="POST" action="{{ route('records.result')}}">
+                @csrf
+                <div id="search-criteria-container"></div>
+                <button type="button" class="btn btn-primary mt-3" id="search-btn">Rechercher</button>
+                <button type="button" class="btn btn-secondary mt-3" id="save-search-btn">Enregistrer la recherche</button>
+            </form>
         </div>
-
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="support_id" class="form-label">Support</label>
-                <select class="form-select" id="support_id" name="support_id">
-                    <option value="">Choisir un support</option>
-                    <!-- Les options devraient être générées dynamiquement -->
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="level_id" class="form-label">Niveau</label>
-                <select class="form-select" id="level_id" name="level_id">
-                    <option value="">Choisir un niveau</option>
-                    <!-- Les options devraient être générées dynamiquement -->
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="organisation_id" class="form-label">Organisation</label>
-                <select class="form-select" id="organisation_id" name="organisation_id">
-                    <option value="">Choisir une organisation</option>
-                    <!-- Les options devraient être générées dynamiquement -->
-                </select>
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="biographical_history" class="form-label">Histoire Biographique</label>
-                <input type="text" class="form-control" id="biographical_history" name="biographical_history" placeholder="Histoire Biographique">
-            </div>
-            <div class="col-md-6">
-                <label for="archival_history" class="form-label">Histoire Archivistique</label>
-                <input type="text" class="form-control" id="archival_history" name="archival_history" placeholder="Histoire Archivistique">
-            </div>
-        </div>
-
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="content" class="form-label">Contenu</label>
-                <input type="text" class="form-control" id="content" name="content" placeholder="Description du contenu">
-            </div>
-            <div class="col-md-6">
-                <label for="acquisition_source" class="form-label">Source d'Acquisition</label>
-                <input type="text" class="form-control" id="acquisition_source" name="acquisition_source" placeholder="Source d'Acquisition">
-            </div>
-        </div>
-
-        <div class="text-end">
-            <button type="submit" class="btn btn-primary">Rechercher</button>
-            <button type="reset" class="btn btn-secondary">Réinitialiser</button>
-        </div>
-    </form>
+    </div>
 </div>
+
+<!-- Template de critère de recherche -->
+<template id="search-criteria-template">
+    <div class="search-criteria-row d-flex align-items-center mb-2">
+        <input type="hidden" name="field[]" class="field-name">
+        <div class="me-2">
+            <label class="form-label field-label"></label>
+        </div>
+        <select class="form-select me-2 field-operator" name="operator[]">
+            <!-- Options seront dynamiquement ajoutées en fonction du champ -->
+        </select>
+        <input type="text" class="form-control me-2 field-value" name="value[]">
+        <button type="button" class="btn btn-danger btn-sm remove-criteria-btn">Retirer</button>
+    </div>
+</template>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fieldsList = document.getElementById('fields-list');
+        const searchCriteriaContainer = document.getElementById('search-criteria-container');
+        const searchCriteriaTemplate = document.getElementById('search-criteria-template');
+
+        fieldsList.addEventListener('click', function (e) {
+            if (e.target && e.target.nodeName === 'LI') {
+                const fieldName = e.target.getAttribute('data-field');
+                addSearchCriteria(fieldName);
+            }
+        });
+
+        function addSearchCriteria(field) {
+            const criteriaClone = searchCriteriaTemplate.content.cloneNode(true);
+            const fieldNameInput = criteriaClone.querySelector('.field-name');
+            const fieldLabel = criteriaClone.querySelector('.field-label');
+            const operatorSelect = criteriaClone.querySelector('.field-operator');
+
+            fieldNameInput.value = field;
+            fieldLabel.textContent = field.charAt(0).toUpperCase() + field.slice(1);
+
+            // Définir les options de tri en fonction du champ
+            let operators = [];
+            switch (field) {
+                case 'code':
+                case 'nom':
+                case 'contenu':
+                    operators = ['commence par', 'contient', 'ne contient pas'];
+                    break;
+                case 'date debut':
+                case 'date fin':
+                case 'date exacte':
+                    operators = ['=', '>', '<'];
+                    break;
+                case 'duree_communicabilite':
+                case 'duree_legale':
+                    operators = ['=', '>', '<'];
+                    break;
+                case 'boite':
+                case 'etagere':
+                case 'depot':
+                case 'auteur':
+                case 'sort':
+                    operators = ['='];
+                    break;
+                default:
+                    operators = ['='];
+                    break;
+            }
+
+            // Ajouter les options au select
+            operators.forEach(op => {
+                const option = document.createElement('option');
+                option.value = op;
+                option.textContent = op;
+                operatorSelect.appendChild(option);
+            });
+
+            searchCriteriaContainer.appendChild(criteriaClone);
+        }
+
+        // Supprimer un critère de recherche
+        searchCriteriaContainer.addEventListener('click', function (e) {
+            if (e.target && e.target.classList.contains('remove-criteria-btn')) {
+                e.target.closest('.search-criteria-row').remove();
+            }
+        });
+    });
+    </script>
 @endsection
