@@ -126,6 +126,22 @@
                 operatorSelect.appendChild(option);
             });
 
+
+            if (['container', 'shelf', 'room', 'author', 'activity', 'term', 'status'].includes(field)) {
+            const selectElement = document.createElement('select');
+            selectElement.classList.add('form-select', 'me-2', 'field-value');
+            selectElement.name = 'value[]';
+
+            data[field].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = item.name || item.title;
+                selectElement.appendChild(option);
+            });
+
+            fieldValueInput.replaceWith(selectElement);
+
+
             searchCriteriaContainer.appendChild(criteriaClone);
         }
 
