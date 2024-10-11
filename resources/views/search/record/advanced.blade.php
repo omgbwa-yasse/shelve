@@ -4,7 +4,7 @@
 <div class="container my-5">
     <h1 class="mb-4">Recherche Avancée</h1>
 
-    <strong>Cycle de vie aussi - Création -  Activité -   Boites </strong>
+    <strong>Cycle de vie aussi - authors -  terms (thésaurus) - Création -  Activité -   Boites - communicabilité - Délai de conservation </strong>
 
     <form method="GET" action="/search">
         <div class="row mb-3">

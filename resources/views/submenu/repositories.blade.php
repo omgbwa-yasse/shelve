@@ -28,6 +28,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('record-select-last')}}"><i class="bi bi-clock-history"></i> Récents</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('records.advanced')}}"><i class="bi bi-search"></i> Avancées</a>
+                </li>
             </ul>
         </div>
 

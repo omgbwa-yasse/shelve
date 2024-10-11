@@ -155,9 +155,7 @@
                     </select>
                     <button class="btn btn-outline-light ml-2" type="submit"><i class="bi bi-search"></i></button>
                 </form>
-                <a href="{{ route('records.advanced') }}">
-                    <button class="btn btn-outline-light ml-3" type="submit"><i class="bi bi-search"></i> Avancée</button>
-                </a>
+
 
                 <div class="d-grid gap-2">
 
