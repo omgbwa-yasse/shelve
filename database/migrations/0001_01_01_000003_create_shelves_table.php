@@ -1135,7 +1135,7 @@ return new class extends Migration
             $table->unsignedBigInteger('content_id');
             $table->unsignedBigInteger('client_id');
             $table->timestamp('start_time')->useCurrent();
-            $table->timestamp('end_time')->nullable('true');
+            $table->timestamp('end_time')->nullable(true);
             $table->enum('status', ['pending', 'in_progress', 'completed', 'failed'])->default('pending');
             $table->timestamps();
 
@@ -1159,6 +1159,7 @@ return new class extends Migration
             $table->bigInteger('size')->nullable(false);
             $table->string('backup_file')->nullable(false);
             $table->string('path')->nullable(false);
+            $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -1169,6 +1170,7 @@ return new class extends Migration
             $table->string('path_storage')->nullable(false);
             $table->bigInteger('size')->nullable(false);
             $table->string('hash', 150)->nullable(false);
+            $table->timestamps();
             $table->foreign('backup_id')->references('id')->on('backups')->onDelete('cascade');
         });
 
@@ -1179,6 +1181,7 @@ return new class extends Migration
             $table->integer('week_day')->nullable(true);
             $table->integer('month_day')->nullable(true);
             $table->time('hour')->nullable(true);
+            $table->timestamps();
             $table->foreign('backup_id')->references('id')->on('backups')->onDelete('cascade');
         });
 

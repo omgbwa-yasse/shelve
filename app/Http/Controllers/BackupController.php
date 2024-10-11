@@ -22,6 +22,14 @@ class BackupController extends Controller
     public function index()
     {
         $backups = Backup::with(['backupFiles', 'backupPlannings', 'user'])->get();
+
+        foreach ($backups as $backup) {
+            if (!Storage::exists($backup->backup_file)) {
+                $backup->status = 'failed';
+                $backup->save();
+            }
+        }
+
         return view('backups.index', compact('backups'));
     }
 
@@ -42,43 +50,46 @@ class BackupController extends Controller
             'status' => 'required|in:in_progress,success,failed',
         ]);
 
-
-
         if ($validator->fails()) {
-            return redirect()->route('backups.index')->with('error', 'Erreur de validation');
+            return redirect()->route('backups.index')->with('error', 'Validation error');
         }
 
+        // Get database credentials
         $databaseName = env('DB_DATABASE');
         $userName = env('DB_USERNAME');
         $password = env('DB_PASSWORD');
         $host = env('DB_HOST');
 
-        $command = "mysqldump -h $host -u $userName -p$password $databaseName";
+        // Generate filename and command
         $filename = "backup_" . date("Y-m-d_H-i-s") . ".sql";
+        $command = "mysqldump -h {$host} -u {$userName} -p'{$password}' {$databaseName} > " . storage_path("app/backups/{$filename}");
 
-        $fp = fopen($filename, "w");
-        $process = popen($command, "w");
-        fwrite($fp, fread($process, 1024));
-        pclose($process);
-        fclose($fp);
+        // Execute mysqldump command
+        $output = [];
+        $return_var = 0;
+        exec($command, $output, $return_var);
 
-        // Conversion en ZIP
+        if ($return_var !== 0) {
+            return redirect()->route('backups.index')->with('error', 'Backup failed');
+        }
+
+        // Create ZIP archive
         $zip = new ZipArchive();
         $zipFilename = "backup_" . date("Y-m-d_H-i-s") . ".zip";
         $zip->open($zipFilename, ZipArchive::CREATE);
         $zip->addFile($filename);
         $zip->close();
 
-        // Récupération de la taille et du hash
+        // Calculate size and hash
         $size = filesize($zipFilename);
         $hash = hash('sha256', file_get_contents($zipFilename));
 
-        // Suppression du fichier SQL
+        // Delete temporary SQL file
         unlink($filename);
 
-        // Création de la sauvegarde
+        // Store backup information in database
         $backup = Backup::create([
-            'date_time' => Now(),
+            'date_time' => now(),
             'type' => $request->input('type'),
             'description' => $request->input('description'),
             'status' => $request->input('status'),
@@ -89,9 +100,8 @@ class BackupController extends Controller
             'hash' => $hash,
         ]);
 
-        return redirect()->route('backups.index')->with('success', 'Sauvegarde créée avec succès');
+        return redirect()->route('backups.index')->with('success', 'Backup created successfully');
     }
-
 
 
 
@@ -101,7 +111,7 @@ class BackupController extends Controller
         if (!$backup) {
             return redirect()->route('backups.index')->with('errors', 'backup failed.');
         }
-        return view('backups.show', compact('backups'));
+        return view('backups.show', compact('backup'));
     }
 
 
@@ -137,14 +147,20 @@ class BackupController extends Controller
     public function destroy($id)
     {
         $backup = Backup::find($id);
-        if (!$backup) {
 
-            return redirect()->route('backups.index')->with('errors', 'backup not found.');
+        if (!$backup) {
+            return redirect()->route('backups.index')->with('errors', 'Backup non trouvé.');
         }
+
+        if (Storage::exists($backup->backup_file)) {
+            Storage::delete($backup->backup_file);
+        }
+
         $backup->delete();
 
-        return view('backups.show', compact('backups'));
+        return redirect()->route('backups.index')->with('success', 'Sauvegarde supprimée avec succès.');
     }
+
 
 
 }

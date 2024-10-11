@@ -1,41 +1,70 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Backups</h1>
-    <table class="table table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>User</th>
-                <th>Size</th>
-                <th>Backup File</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($backups as $backup)
+    <div class="container">
+        <h1>Liste des Sauvegardes</h1>
+
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>{{ $backup->date_time }}</td>
-                    <td>{{ $backup->type }}</td>
-                    <td>{{ $backup->description }}</td>
-                    <td>{{ $backup->status }}</td>
-                    <td>{{ $backup->user->name }}</td>
-                    <td>{{ $backup->size }}</td>
-                    <td>{{ $backup->backup_file }}</td>
-                    <td>
-                        <a href="{{ route('backups.show', $backup->id) }}" class="btn btn-sm btn-info">Voir</a>
-                        <a href="{{ route('backups.edit', $backup->id) }}" class="btn btn-sm btn-warning">Éditer</a>
-                        <form action="{{ route('backups.destroy', $backup->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
-                        </form>
-                    </td>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Statut</th>
+                    <th>Utilisateur</th>
+                    <th>Taille</th>
+                    <th>Fichier de sauvegarde</th>
+                    <th>Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($backups as $backup)
+                    <tr>
+                        <td>{{ $backup->date_time }}</td>
+                        <td>{{ ucfirst($backup->type) }}</td>
+                        <td>{{ $backup->description ?? 'Aucune description' }}</td>
+                        <td>{{ ucfirst($backup->status) }}</td>
+                        <td>{{ $backup->user ? $backup->user->name : 'Utilisateur inconnu' }}</td>
+                        <td>{{ number_format($backup->size / 1024, 2) }} KB</td>
+                        <td>
+                            @if (Storage::exists($backup->backup_file))
+                                <a href="{{ Storage::url($backup->backup_file) }}" target="_blank">{{ $backup->backup_file }}</a>
+                            @else
+                                Fichier non disponible
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('backups.show', $backup->id) }}" class="btn btn-sm btn-info">Voir</a>
+                        </td>
+                    </tr>
+                    <!-- Afficher les fichiers et les plannings de la sauvegarde -->
+                    @if($backup->backupFiles->isNotEmpty())
+                        <tr>
+                            <td colspan="8">
+                                <strong>Fichiers de sauvegarde :</strong>
+                                <ul>
+                                    @foreach ($backup->backupFiles as $file)
+                                        <li>{{ $file->path_original }} ({{ number_format($file->size / 1024, 2) }} KB)</li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                        </tr>
+                    @endif
+
+                    @if($backup->backupPlannings->isNotEmpty())
+                        <tr>
+                            <td colspan="8">
+                                <strong>Plannings de sauvegarde :</strong>
+                                <ul>
+                                    @foreach ($backup->backupPlannings as $planning)
+                                        <li>Fréquence : {{ $planning->frequence }} - Jour de la semaine : {{ $planning->week_day ?? 'N/A' }} - Jour du mois : {{ $planning->month_day ?? 'N/A' }} - Heure : {{ $planning->hour ?? 'N/A' }}</li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                        </tr>
+                    @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 @endsection
