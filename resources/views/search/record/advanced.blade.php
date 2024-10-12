@@ -30,6 +30,9 @@
                 <h6 class="mt-4 mb-2">Indexation</h6>
                 <li class="list-group-item" data-field="term" data-name-field="Terme (thésaurus)">Terme</li>
                 <li class="list-group-item" data-field="activity" data-name-field="Activité">Activité</li>
+
+                <h6 class="mt-4 mb-2">Autres</h6>
+                <li class="list-group-item" data-field="creator" data-name-field="Créateur">Créateur</li>
             </ul>
         </div>
 
@@ -62,7 +65,7 @@
 </template>
 
 <script>
-    const data = @json($data);
+    const data = JSON.parse(@json($data));
 
     document.addEventListener('DOMContentLoaded', function () {
         const fieldsList = document.getElementById('fields-list');
@@ -104,13 +107,14 @@
                     operators = ['=', '>', '<'];
                     fieldValueInput.type = 'date';
                     break;
-                case 'container':
-                case 'shelf':
                 case 'room':
-                case 'author':
+                case 'shelf':
                 case 'activity':
-                case 'status':
                 case 'term':
+                case 'author':
+                case 'creator':
+                case 'container':
+                case 'status':
                     operators = ['avec', 'sauf'];
                     break;
             }
@@ -123,16 +127,44 @@
                 operatorSelect.appendChild(option);
             });
 
-            if (['container', 'shelf', 'room', 'author', 'activity', 'term', 'status'].includes(field)) {
+            if (['room', 'shelf', 'activity', 'term', 'author', 'creator', 'status','container'].includes(field)) {
                 const selectElement = document.createElement('select');
                 selectElement.classList.add('form-select', 'me-2', 'field-value');
                 selectElement.name = 'value[]';
 
-                if (data[field]) {
-                    data[field].forEach(item => {
+                let items;
+                switch (field) {
+                    case 'room':
+                        items = data.rooms;
+                        break;
+                    case 'shelf':
+                        items = data.shelve;
+                        break;
+                    case 'activity':
+                        items = data.activities;
+                        break;
+                    case 'term':
+                        items = data.terms;
+                        break;
+                    case 'author':
+                        items = data.authors;
+                        break;
+                    case 'creator':
+                        items = data.creators;
+                        break;
+                    case 'container':
+                        items = data.containers;
+                        break;
+                    case 'status':
+                        items = data.statues;
+                        break;
+                }
+
+                if (items) {
+                    items.forEach(item => {
                         const option = document.createElement('option');
                         option.value = item.id;
-                        option.textContent = item.name || item.title;
+                        option.textContent = item.name || item.title || item.code ;
                         selectElement.appendChild(option);
                     });
                 }

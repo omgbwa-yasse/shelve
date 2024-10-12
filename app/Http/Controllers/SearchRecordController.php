@@ -49,6 +49,7 @@ class SearchRecordController extends Controller
         $authors = Author::all();
         $creators = User::all();
         $statues = RecordStatus::all();
+        $containers = Container::all();
 
         $data = [
             'rooms' => $rooms,
@@ -58,6 +59,7 @@ class SearchRecordController extends Controller
             'authors' => $authors,
             'creators' => $creators,
             'statues' => $statues,
+            'containers' => $containers,
         ];
 
         return view('search.record.advanced', ['data' => json_encode($data)]);
@@ -68,7 +70,6 @@ class SearchRecordController extends Controller
 
     public function advanced(Request $request)
     {
-        dd($request);
         $fields = $request->input('field');
         $operators = $request->input('operator');
         $values = $request->input('value');
@@ -80,35 +81,108 @@ class SearchRecordController extends Controller
                 $operator = $operators[$index];
                 $value = $values[$index];
 
-                switch ($operator) {
-                    case 'commence par':
-                        $query->where($field, 'like', $value . '%');
+                switch ($field) {
+                    case 'code':
+                    case 'name':
+                    case 'content':
+                        $this->applyTextSearch($query, $field, $operator, $value);
                         break;
-                    case 'contient':
-                        $query->where($field, 'like', '%' . $value . '%');
+                    case 'date_start':
+                    case 'date_end':
+                    case 'date_exact':
+                    case 'date_creation':
+                    case 'dua':
+                    case 'dul':
+                        $this->applyDateSearch($query, $field, $operator, $value);
                         break;
-                    case 'ne contient pas':
-                        $query->where($field, 'not like', '%' . $value . '%');
-                        break;
-                    case '=':
-                        $query->where($field, '=', $value);
-                        break;
-                    case '>':
-                        $query->where($field, '>', $value);
-                        break;
-                    case '<':
-                        $query->where($field, '<', $value);
+                    case 'room':
+                    case 'shelf':
+                    case 'activity':
+                    case 'term':
+                    case 'author':
+                    case 'creator':
+                    case 'container':
+                    case 'status':
+                        $this->applyRelationSearch($query, $field, $operator, $value);
                         break;
                     default:
+                        // Handle any other fields not specifically covered
+                        $query->where($field, '=', $value);
                         break;
                 }
             }
         }
 
-        $results = $query->paginate('20');
-        return view('records.index', compact('records'));
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = Term::all();
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
+
+        $records = $query->paginate(20);
+        return view('records.index', compact('records','statuses','slipStatuses','terms','users','organisations'));
     }
 
+    private function applyTextSearch($query, $field, $operator, $value)
+    {
+        switch ($operator) {
+            case 'commence par':
+                $query->where($field, 'like', $value . '%');
+                break;
+            case 'contient':
+                $query->where($field, 'like', '%' . $value . '%');
+                break;
+            case 'ne contient pas':
+                $query->where($field, 'not like', '%' . $value . '%');
+                break;
+        }
+    }
+
+    private function applyDateSearch($query, $field, $operator, $value)
+    {
+        switch ($operator) {
+            case '=':
+                $query->whereDate($field, '=', $value);
+                break;
+            case '>':
+                $query->whereDate($field, '>', $value);
+                break;
+            case '<':
+                $query->whereDate($field, '<', $value);
+                break;
+        }
+    }
+
+    private function applyRelationSearch($query, $field, $operator, $value)
+    {
+        $relation = $this->getRelationName($field);
+
+        if ($operator === 'avec') {
+            $query->whereHas($relation, function ($q) use ($value) {
+                $q->where('id', $value);
+            });
+        } else if ($operator === 'sauf') {
+            $query->whereDoesntHave($relation, function ($q) use ($value) {
+                $q->where('id', $value);
+            });
+        }
+    }
+
+    private function getRelationName($field)
+    {
+        $relationMap = [
+            'room' => 'room',
+            'shelf' => 'shelf',
+            'activity' => 'activity',
+            'term' => 'terms',
+            'author' => 'authors',
+            'creator' => 'creator',
+            'container' => 'containers',
+            'status' => 'status'
+        ];
+
+        return $relationMap[$field] ?? $field;
+    }
 
 
 
