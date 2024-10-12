@@ -11,12 +11,16 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('report.statistics.mails') }}"><i class="bi bi-envelope"></i> Courrier</a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-journal-album"></i> Répertoire</a>
+                    <a class="nav-link text-dark" href="{{ route('report.statistics.repositories') }}"><i class="bi bi-journal-album"></i> Répertoire</a>
                 </li>
+
+
                 <li class="nav-item">
                     <a class="nav-link text-dark" href=""><i class="bi bi-clipboard-check"></i> Demande</a>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link text-dark" href=""><i class="bi bi-arrow-left-right"></i> Transfert</a>
                 </li>

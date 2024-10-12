@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Accession;
 use App\Models\Activity;
+use App\Models\Attachment;
 use App\Models\Author;
 use App\Models\Communicability;
 use App\Models\Communication;
@@ -14,6 +15,10 @@ use App\Models\MailAction;
 use App\Models\MailAttachment;
 use App\Models\Organisation;
 use App\Models\Record;
+use App\Models\RecordAttachment;
+use App\Models\RecordLevel;
+use App\Models\RecordStatus;
+use App\Models\RecordSupport;
 use App\Models\Slip;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -154,8 +159,103 @@ class ReportController extends Controller
 
     public function statisticsRepositories()
     {
-        // Logique pour afficher les statistiques du module Répertoire
-        return view('report.statistics.repositories');
+        // Statistiques générales
+        $totalRecords = Record::count();
+        $recordsWithContainer = Record::whereHas('containers')->count();
+        $recordsWithoutContainer = $totalRecords - $recordsWithContainer;
+
+        // Records par niveau de description
+        $recordsByLevel = Record::select('level_id', DB::raw('count(*) as count'))
+            ->groupBy('level_id')
+            ->get()
+            ->pluck('count', 'level_id')
+            ->toArray();
+
+        // Records par support
+        $recordsBySupport = Record::select('support_id', DB::raw('count(*) as count'))
+            ->groupBy('support_id')
+            ->get()
+            ->pluck('count', 'support_id')
+            ->toArray();
+
+        // Évolution du nombre de records
+        $recordsEvolution = Record::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get();
+        $recordsEvolutionLabels = $recordsEvolution->pluck('date');
+        $recordsEvolutionData = $recordsEvolution->pluck('count');
+
+        // Top 5 des activités liées aux records
+        $topActivities = Record::select('activity_id', DB::raw('count(*) as count'))
+            ->groupBy('activity_id')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get();
+
+        // Distribution des records par statut
+        $recordsByStatus = Record::select('status_id', DB::raw('count(*) as count'))
+            ->groupBy('status_id')
+            ->get()
+            ->pluck('count', 'status_id')
+            ->toArray();
+
+        // Statistiques des pièces jointes
+        $totalAttachments = Attachment::count();
+        $averageAttachmentSize = Attachment::avg('size') / 1024 / 1024; // Convertir en MB
+
+        // Types de pièces jointes
+        $attachmentTypes = Attachment::select(
+            DB::raw("SUBSTRING_INDEX(path, '.', -1) as extension"),
+            DB::raw('count(*) as count')
+        )
+            ->groupBy(DB::raw("SUBSTRING_INDEX(path, '.', -1)"))
+            ->pluck('count', 'extension')
+            ->toArray();
+
+        // Distribution mensuelle des records
+        $monthlyDistribution = Record::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->orderBy('month')
+            ->get();
+        $monthlyDistributionLabels = $monthlyDistribution->pluck('month')->map(function($month) {
+            return date('F', mktime(0, 0, 0, $month, 1));
+        });
+        $monthlyDistributionData = $monthlyDistribution->pluck('count');
+
+        // Nouveaux statistiques basés sur le modèle Record
+        $recordsWithAuthors = Record::has('authors')->count();
+        $recordsWithTerms = Record::has('terms')->count();
+        $recordsWithAttachments = Record::has('attachments')->count();
+
+        $topOrganisations = Record::select('organisation_id', DB::raw('count(*) as count'))
+            ->groupBy('organisation_id')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get()
+            ->pluck('count', 'organisation_id')
+            ->toArray();
+
+        $recordsWithChildren = Record::has('children')->count();
+        $averageChildrenPerRecord = 0;
+
+        // Préparer les données pour les graphiques
+        $levelNames = RecordLevel::pluck('name', 'id')->toArray();
+        $supportNames = RecordSupport::pluck('name', 'id')->toArray();
+        $statusNames = RecordStatus::pluck('name', 'id')->toArray();
+        $activityNames = Activity::pluck('name', 'id')->toArray();
+        $organisationNames = Organisation::whereIn('id', array_keys($topOrganisations))->pluck('name', 'id')->toArray();
+
+        return view('report.statistics.repositories', compact(
+            'totalRecords', 'recordsWithContainer', 'recordsWithoutContainer',
+            'recordsByLevel', 'recordsBySupport', 'recordsByStatus',
+            'recordsEvolutionLabels', 'recordsEvolutionData',
+            'topActivities', 'totalAttachments', 'averageAttachmentSize',
+            'attachmentTypes', 'monthlyDistributionLabels', 'monthlyDistributionData',
+            'recordsWithAuthors', 'recordsWithTerms', 'recordsWithAttachments',
+            'topOrganisations', 'recordsWithChildren', 'averageChildrenPerRecord',
+            'levelNames', 'supportNames', 'statusNames', 'activityNames', 'organisationNames'
+        ));
     }
 
     public function statisticsCommunications()
