@@ -9,7 +9,7 @@
         <div class="collapse show" id="statistiquesMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-envelope"></i> Courrier</a>
+                    <a class="nav-link text-dark" href="{{ route('report.statistics.mails') }}"><i class="bi bi-envelope"></i> Courrier</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href=""><i class="bi bi-journal-album"></i> Répertoire</a>
