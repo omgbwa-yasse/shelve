@@ -63,6 +63,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+            'host' => env('LDAP_HOST', '127.0.0.1'),
+            'port' => env('LDAP_PORT', 389),
+            'base_dn' => env('LDAP_BASE_DN', 'dc=example,dc=com'),
+            'username' => env('LDAP_USERNAME', 'cn=admin,dc=example,dc=com'),
+            'password' => env('LDAP_PASSWORD', 'admin'),
         ],
 
         // 'users' => [
