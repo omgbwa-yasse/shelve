@@ -165,7 +165,7 @@
                                 {{ strtoupper(App::getLocale()) }}
                             </a>
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="{{ route('language.switch', 'fr') }}}">FR</a>
+                                <a class="dropdown-item" href="{{ route('language.switch', 'fr') }}">FR</a>
                                 <a class="dropdown-item" href="{{ route('language.switch', 'en') }}">EN</a>
                             </div>
                         </li>
