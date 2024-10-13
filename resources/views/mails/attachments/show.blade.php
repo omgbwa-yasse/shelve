@@ -6,6 +6,9 @@
             <div class="">
                 <h3 class="card-title mb-4">{{ $attachment->name }}</h3>
                 <div class="mb-3">
+                    <a href="{{ route('mails.show', $mail->id) }}" class="btn btn-primary me-2">
+                        <i class="bi bi bi-arrow-left"></i> Retour
+                    </a>
                     <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-primary me-2">
                         <i class="bi bi-download"></i> Download File
                     </a>
