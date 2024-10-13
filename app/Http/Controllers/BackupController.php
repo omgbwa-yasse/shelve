@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
 use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+
 
 class BackupController extends Controller
 {
@@ -46,50 +49,130 @@ class BackupController extends Controller
 
 
 
-
     public function store(Request $request)
     {
-        // Generate a unique filename for the backup
-        $filename = 'backup_' . date('Y-m-d_H-i-s') . '.sql';
+        $timestamp = date('Y-m-d_H-i-s');
+        $filename = 'backup_' . $timestamp . '.sql';
+        $backupDir = storage_path('app/backups/' . $timestamp);
 
-        // Use Artisan to execute the mysqldump command
-        $command = 'mysqldump -h ' . env('DB_HOST') . ' -u ' . env('DB_USERNAME') . ' -p' . escapeshellarg(env('DB_PASSWORD')) . ' ' . env('DB_DATABASE') . ' > ' . storage_path('app/backups/' . $filename);
+        // Création du dossier de sauvegarde s'il n'existe pas
+        if (!file_exists($backupDir)) {
+            mkdir($backupDir, 0755, true);
+        }
 
+        // Commande de sauvegarde de la base de données
+        $command = sprintf(
+            'mysqldump -h %s -u %s -p%s %s > %s',
+            escapeshellarg(env('DB_HOST')),
+            escapeshellarg(env('DB_USERNAME')),
+            escapeshellarg(env('DB_PASSWORD')),
+            escapeshellarg(env('DB_DATABASE')),
+            escapeshellarg($backupDir . '/' . $filename)
+        );
+        exec($command);
 
+        // Si une sauvegarde complète est demandée, sauvegarder les fichiers
+        if ($request->input('type') === 'full') {
+            $this->copyDirectory(storage_path('app'), $backupDir . '/storage_app');
+            $this->copyDirectory(public_path('storage'), $backupDir . '/public_storage');
+        }
 
-        Artisan::call($command);
-
-        // Create a ZIP archive of the backup
+        // Création d'une archive ZIP du dossier de sauvegarde
+        $zipFilename = 'backup_' . $timestamp . '.zip';
+        $zipPath = storage_path('app/' . $zipFilename);
         $zip = new ZipArchive();
-        $zipFilename = 'backup_' . date('Y-m-d_H-i-s') . '.zip';
-        $zip->open($zipFilename, ZipArchive::CREATE);
-        $zip->addFile(storage_path('app/backups/' . $filename));
-        $zip->close();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            $this->addFolderToZip($backupDir, $zip);
+            $zip->close();
+        }
 
-        // Calculate size and hash
-        $size = filesize($zipFilename);
-        $hash = hash('sha256', file_get_contents($zipFilename));
+        $size = filesize($zipPath);
+        $hash = hash_file('sha256', $zipPath);
 
-        // Delete the temporary SQL file
-        unlink(storage_path('app/backups/' . $filename));
+        $this->deleteDirectory($backupDir);
 
-        // Store the backup information in the database
+
         $backup = Backup::create([
             'date_time' => now(),
             'type' => $request->input('type'),
             'description' => $request->input('description'),
             'status' => $request->input('status'),
-            'user_id' => auth()->user()->id,
+            'user_id' => auth()->id(),
             'size' => $size,
             'backup_file' => $zipFilename,
-            'path' => Storage::disk('public')->putFile('backups', $zipFilename),
+            'path' => Storage::disk('public')->putFileAs('backups', new \Illuminate\Http\File($zipPath), $zipFilename),
             'hash' => $hash,
         ]);
+
+        unlink($zipPath);
 
         return redirect()->route('backups.index')->with('success', 'Backup created successfully');
     }
 
 
+        private function copyDirectory($source, $destination)
+        {
+            if (!file_exists($destination)) {
+                mkdir($destination, 0755, true);
+            }
+
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::SELF_FIRST
+            );
+
+            foreach ($iterator as $item) {
+                $destPath = $destination . DIRECTORY_SEPARATOR . $iterator->getSubPathname();
+                if ($item->isDir()) {
+                    if (!file_exists($destPath)) {
+                        mkdir($destPath);
+                    }
+                } else {
+                    copy($item, $destPath);
+                }
+            }
+        }
+
+
+
+        private function addFolderToZip($folder, &$zipFile)
+        {
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS),
+                RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($iterator as $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($folder) + 1);
+                    $zipFile->addFile($filePath, $relativePath);
+                }
+            }
+        }
+
+        private function deleteDirectory($dir)
+        {
+            if (!file_exists($dir)) {
+                return true;
+            }
+
+            if (!is_dir($dir)) {
+                return unlink($dir);
+            }
+
+            foreach (scandir($dir) as $item) {
+                if ($item === '.' || $item === '..') {
+                    continue;
+                }
+
+                if (!$this->deleteDirectory($dir . DIRECTORY_SEPARATOR . $item)) {
+                    return false;
+                }
+            }
+
+            return rmdir($dir);
+        }
 
 
     public function show($id)
