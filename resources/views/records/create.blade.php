@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Create Description</h1>
+        <h1>{{ __('create_description') }}</h1>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -22,28 +22,28 @@
             @endif
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">Identification</a>
+                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">Contexte</a>
+                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">Contenu</a>
+                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">Condition d'accès</a>
+                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_condition') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">Sources complémentaires</a>
+                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('complementary_sources') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes</a>
+                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">Contrôle de description</a>
+                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">Indexation</a>
+                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
                 </li>
             </ul>
 
@@ -51,7 +51,7 @@
                 <div class="tab-pane fade show active" id="identification" role="tabpanel" aria-labelledby="identification-tab">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="level_id" class="form-label">Level</label>
+                            <label for="level_id" class="form-label">{{ __('level') }}</label>
                             <select name="level_id" id="level_id" class="form-select" required>
                                 @foreach ($levels as $level)
                                     <option value="{{ $level->id }}">{{ $level->name }}</option>
@@ -59,7 +59,7 @@
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="support_id" class="form-label">Support</label>
+                            <label for="support_id" class="form-label">{{ __('support') }}</label>
                             <select name="support_id" id="support_id" class="form-select" required>
                                 @foreach ($supports as $support)
                                     <option value="{{ $support->id }}">{{ $support->name }}</option>
@@ -67,35 +67,35 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="code" class="form-label">Code</label>
+                            <label for="code" class="form-label">{{ __('code') }}</label>
                             <input type="text" name="code" id="code" class="form-control" required maxlength="10">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
+                        <label for="name" class="form-label">{{ __('name') }}</label>
                         <textarea name="name" id="name" class="form-control" required></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="date_start" class="form-label">Date Start</label>
+                            <label for="date_start" class="form-label">{{ __('date_start') }}</label>
                             <input type="text" name="date_start" id="date_start" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_end" class="form-label">Date End</label>
+                            <label for="date_end" class="form-label">{{ __('date_end') }}</label>
                             <input type="text" name="date_end" id="date_end" class="form-control" maxlength="10">
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="date_exact" class="form-label">Date Exact</label>
+                            <label for="date_exact" class="form-label">{{ __('date_exact') }}</label>
                             <input type="date" name="date_exact" id="date_exact" class="form-control">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <label for="width" class="form-label">Width</label>
+                            <label for="width" class="form-label">{{ __('width') }}</label>
                             <input type="number" name="width" id="width" class="form-control" step="0.01" min="0" max="9999999999.99">
                         </div>
                         <div class="col-md-10 mb-3">
-                            <label for="width_description" class="form-label">Width Description</label>
+                            <label for="width_description" class="form-label">{{ __('width_description') }}</label>
                             <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100">
                         </div>
                     </div>
@@ -103,113 +103,106 @@
                 <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
                     <div class="mb-3">
                         <div class="mb-3">
-                            <label for="author" class="form-label">Producteurs</label>
+                            <label for="author" class="form-label">{{ __('producers') }}</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="selected-authors-display" readonly>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authorModal">
-                                    Sélectionner
+                                    {{ __('select') }}
                                 </button>
                             </div>
                             <input type="hidden" name="author_ids[]" id="author-ids">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="biographical_history" class="form-label">Biographical History</label>
+                        <label for="biographical_history" class="form-label">{{ __('biographical_history') }}</label>
                         <textarea name="biographical_history" id="biographical_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="archival_history" class="form-label">Archival History</label>
+                        <label for="archival_history" class="form-label">{{ __('archival_history') }}</label>
                         <textarea name="archival_history" id="archival_history" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="acquisition_source" class="form-label">Acquisition Source</label>
+                        <label for="acquisition_source" class="form-label">{{ __('acquisition_source') }}</label>
                         <textarea name="acquisition_source" id="acquisition_source" class="form-control"></textarea>
                     </div>
                 </div>
-                <!-- Onglet "contenu" -->
                 <div class="tab-pane fade" id="contenu" role="tabpanel" aria-labelledby="contenu-tab">
                     <div class="mb-3">
-                        <label for="content" class="form-label">Content</label>
+                        <label for="content" class="form-label">{{ __('content') }}</label>
                         <textarea name="content" id="content" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="appraisal" class="form-label">Appraisal</label>
+                        <label for="appraisal" class="form-label">{{ __('appraisal') }}</label>
                         <textarea name="appraisal" id="appraisal" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="accrual" class="form-label">Accrual</label>
+                        <label for="accrual" class="form-label">{{ __('accrual') }}</label>
                         <textarea name="accrual" id="accrual" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="arrangement" class="form-label">Arrangement</label>
+                        <label for="arrangement" class="form-label">{{ __('arrangement') }}</label>
                         <textarea name="arrangement" id="arrangement" class="form-control"></textarea>
                     </div>
-                </div>
-
-                <!-- Onglet "condition" -->
-                <div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
+                </div><div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
                     <div class="mb-3">
-                        <label for="access_conditions" class="form-label">Access Conditions</label>
+                        <label for="access_conditions" class="form-label">{{ __('access_conditions') }}</label>
                         <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="reproduction_conditions" class="form-label">Reproduction Conditions</label>
+                        <label for="reproduction_conditions" class="form-label">{{ __('reproduction_conditions') }}</label>
                         <input type="text" name="reproduction_conditions" id="reproduction_conditions" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="language_material" class="form-label">Language Material</label>
+                        <label for="language_material" class="form-label">{{ __('language_material') }}</label>
                         <input type="text" name="language_material" id="language_material" class="form-control" maxlength="50">
                     </div>
                     <div class="mb-3">
-                        <label for="characteristic" class="form-label">Characteristic</label>
+                        <label for="characteristic" class="form-label">{{ __('characteristic') }}</label>
                         <input type="text" name="characteristic" id="characteristic" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="finding_aids" class="form-label">Finding Aids</label>
+                        <label for="finding_aids" class="form-label">{{ __('finding_aids') }}</label>
                         <input type="text" name="finding_aids" id="finding_aids" class="form-control" maxlength="100">
                     </div>
                 </div>
 
-                <!-- Onglet "sources" -->
                 <div class="tab-pane fade" id="sources" role="tabpanel" aria-labelledby="sources-tab">
                     <div class="mb-3">
-                        <label for="location_original" class="form-label">Location Original</label>
+                        <label for="location_original" class="form-label">{{ __('location_original') }}</label>
                         <input type="text" name="location_original" id="location_original" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="location_copy" class="form-label">Location Copy</label>
+                        <label for="location_copy" class="form-label">{{ __('location_copy') }}</label>
                         <input type="text" name="location_copy" id="location_copy" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="related_unit" class="form-label">Related Unit</label>
+                        <label for="related_unit" class="form-label">{{ __('related_unit') }}</label>
                         <input type="text" name="related_unit" id="related_unit" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="publication_note" class="form-label">Publication Note</label>
+                        <label for="publication_note" class="form-label">{{ __('publication_note') }}</label>
                         <textarea name="publication_note" id="publication_note" class="form-control"></textarea>
                     </div>
                 </div>
 
-                <!-- Onglet "notes" -->
                 <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                     <div class="mb-3">
-                        <label for="note" class="form-label">Note</label>
+                        <label for="note" class="form-label">{{ __('note') }}</label>
                         <textarea name="note" id="note" class="form-control"></textarea>
                     </div>
                 </div>
 
-                <!-- Onglet "controle" -->
                 <div class="tab-pane fade" id="controle" role="tabpanel" aria-labelledby="controle-tab">
                     <div class="mb-3">
-                        <label for="archivist_note" class="form-label">Archivist Note</label>
+                        <label for="archivist_note" class="form-label">{{ __('archivist_note') }}</label>
                         <textarea name="archivist_note" id="archivist_note" class="form-control"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="rule_convention" class="form-label">Rule Convention</label>
+                        <label for="rule_convention" class="form-label">{{ __('rule_convention') }}</label>
                         <input type="text" name="rule_convention" id="rule_convention" class="form-control" maxlength="100">
                     </div>
                     <div class="mb-3">
-                        <label for="status_id" class="form-label">Status</label>
+                        <label for="status_id" class="form-label">{{ __('status') }}</label>
                         <select name="status_id" id="status_id" class="form-select" required>
                             @foreach ($statuses as $status)
                                 <option value="{{ $status->id }}">{{ $status->name }}</option>
@@ -218,48 +211,43 @@
                     </div>
                 </div>
 
-                <!-- Onglet "indexation" -->
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
                     <div class="mb-3">
-                        <label for="term_id" class="form-label">Thésaurus</label>
+                        <label for="term_id" class="form-label">{{ __('thesaurus') }}</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="selected-terms-display" readonly>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#termModal">
-                                Sélectionner
+                                {{ __('select') }}
                             </button>
                         </div>
                         <input type="hidden" name="term_ids[]" id="term-ids">
                     </div>
 
-
                     <div class="mb-3">
-                        <label for="activity_id" class="form-label">Activités</label>
+                        <label for="activity_id" class="form-label">{{ __('activities') }}</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="selected-activity-display" readonly>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
-                                Sélectionner
+                                {{ __('select') }}
                             </button>
                         </div>
                         <input type="hidden" name="activity_id" id="activity-id">
                     </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
+            <button type="submit" class="btn btn-primary">{{ __('create') }}</button>
         </form>
     </div>
-
-
-
 
     <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="authorModalLabel">Sélectionner les producteurs</h5>
+                    <h5 class="modal-title" id="authorModalLabel">{{ __('select_producers') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="author-search" class="form-control mb-3" placeholder="Rechercher un producteur">
+                    <input type="text" id="author-search" class="form-control mb-3" placeholder="{{ __('search_producer') }}">
                     <div id="author-list" class="list-group">
                         @foreach ($authors as $author)
                             <a href="#" class="list-group-item list-group-item-action" data-id="{{ $author->id }}">
@@ -269,23 +257,22 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="save-authors">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
+                    <button type="button" class="btn btn-primary" id="save-authors">{{ __('save') }}</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal pour le thésaurus -->
     <div class="modal fade" id="termModal" tabindex="-1" aria-labelledby="termModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="termModalLabel">Sélectionner les termes du thésaurus</h5>
+                    <h5 class="modal-title" id="termModalLabel">{{ __('select_thesaurus_terms') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="term-search" class="form-control mb-3" placeholder="Rechercher un terme">
+                    <input type="text" id="term-search" class="form-control mb-3" placeholder="{{ __('search_term') }}">
                     <div id="term-list" class="list-group">
                         @foreach ($terms as $term)
                             <a href="#" class="list-group-item list-group-item-action" data-id="{{ $term->id }}">
@@ -295,23 +282,22 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="save-terms">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
+                    <button type="button" class="btn btn-primary" id="save-terms">{{ __('save') }}</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal pour les activités -->
     <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="activityModalLabel">Sélectionner une activité</h5>
+                    <h5 class="modal-title" id="activityModalLabel">{{ __('select_activity') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="activity-search" class="form-control mb-3" placeholder="Rechercher une activité">
+                    <input type="text" id="activity-search" class="form-control mb-3" placeholder="{{ __('search_activity') }}">
                     <div id="activity-list" class="list-group">
                         @foreach ($activities as $activity)
                             <a href="#" class="list-group-item list-group-item-action" data-id="{{ $activity->id }}">
@@ -321,13 +307,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="save-activity">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
+                    <button type="button" class="btn btn-primary" id="save-activity">{{ __('save') }}</button>
                 </div>
             </div>
         </div>
     </div>
-
     <script>
         // Ajoutez le code JavaScript pour gérer les champs dynamiques, comme dans le formulaire de création
         const authors = @json($authors);
@@ -520,5 +505,4 @@
             });
         });
     </script>
-
 @endsection
