@@ -270,6 +270,79 @@
     "shelves": "Étagères",
     "archive_container": "Contenant d'archives",
     "buildings": "Bâtiments",
-    "rooms": "Salles"
+    "rooms": "Salles",
+
+
+
+    "all_carts": "Tous les chariots",
+
+    "archives": "Archives",
+    "communication": "Communication",
+
+    "shelf": "Étagère",
+    "archives_transfer": "Archives (versement)",
+
+    "my_account": "Mon compte",
+    "authorizations_and_positions": "Habilitations et postes",
+    "users": "Utilisateurs",
+    "assigned_positions": "Postes affectés",
+    "rights_and_permissions": "Droits et permissions",
+    "roles": "Rôles",
+    "assign_permissions": "Affecter des permissions",
+    "tasks": "Tâches",
+    "task_types": "Type de tâches",
+    "task_statuses": "Statut de tâches",
+
+    "actions": "Actions",
+    "directory": "Répertoire",
+    "supports": "Supports",
+    "statuses": "Status",
+    "communication_status": "Status de communication",
+    "reservation_status": "Status de réservation",
+    "deposit": "Dépôt",
+    "container_statuses": "Status des contenants",
+    "container_property": "Propriété de contenant",
+    "management_tools": "Outils de gestion",
+    "retention_final_sorts": "Rétention : Sorts finaux",
+    "thesaurus_languages": "Thésaurus : langues",
+    "thesaurus_categories": "Thésaurus : catégories",
+    "thesaurus_equivalents": "Thésaurus : équivalents",
+    "thesaurus_types": "Thésaurus : types",
+    "system": "Système",
+    "my_backups": "Mes sauvegardes",
+    "new_backup": "Nouvelle sauvegarde",
+    "ldap": "LDAP",
+
+    "statistics": "Statistiques",
+    "request": "Demande",
+
+    "tool": "Outil",
+    "carts": "Chariots",
+    "task": "Tâche",
+    "task_tracking": "Suivi des tâches",
+    "ongoing_tasks": "Tâches en cours",
+    "completed_tasks": "Tâches terminées",
+    "my_tasks": "Mes Tâches",
+    "supervision": "Supervision",
+
+    "mails": "Courriers",
+
+    "check_all": "Tout cocher",
+    "uncheck_all": "Tout décocher",
+    "author": "Auteur",
+    "date": "Date",
+    "priority": "Priorité",
+    "mail_type": "Type de courriel",
+    "typology": "Typologie",
+    "copy": "Copie",
+
+    "add_to_cart": "Ajouter au chariot",
+    "confirm": "Confirmer",
+    "print_records": "Imprimer les enregistrements",
+    "select_at_least_one": "Veuillez sélectionner au moins un enregistrement.",
+    "cart_created": "Un nouveau chariot a été créé avec les enregistrements sélectionnés.",
+    "cart_error": "Une erreur est survenue lors de la création du chariot.",
+    "select_to_print": "Veuillez sélectionner au moins un enregistrement à imprimer.",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce courrier ?"
 
 }

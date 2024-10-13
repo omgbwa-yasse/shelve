@@ -1,54 +1,50 @@
-<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
+<div class="container" style="background-color: #f1f1f1;">
     <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>Recherche</a>
-
-        <div class="collapse show" id="rechercheMenu">
-
+        <!-- Search -->
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#searchMenu" aria-expanded="true" aria-controls="searchMenu" style="padding: 10px;">
+            <i class="bi bi-search"></i> {{ __('search') }}
+        </a>
+        <div class="collapse show" id="searchMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dolly.index') }}"><i class="bi bi-cart3"></i> Tous les chariots</a>
+                    <a class="nav-link text-dark" href="{{ route('dolly.index') }}"><i class="bi bi-cart3"></i> {{ __('all_carts') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=mail"><i class="bi bi-cart3"></i> Courrier</a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=mail"><i class="bi bi-cart3"></i> {{ __('mail') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=record"><i class="bi bi-cart3"></i> Archives</a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=record"><i class="bi bi-cart3"></i> {{ __('archives') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=communication"><i class="bi bi-cart3"></i> Communication </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=communication"><i class="bi bi-cart3"></i> {{ __('communication') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=room"><i class="bi bi-cart3"></i> Salle </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=room"><i class="bi bi-cart3"></i> {{ __('room') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=shelf"><i class="bi bi-cart3"></i> Etagère </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=shelf"><i class="bi bi-cart3"></i> {{ __('shelf') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=container"><i class="bi bi-cart3"></i> Boites d'archives </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=container"><i class="bi bi-cart3"></i> {{ __('archive_boxes') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip_record"><i class="bi bi-cart3"></i> Archives (versement) </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip_record"><i class="bi bi-cart3"></i> {{ __('archives_transfer') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip"><i class="bi bi-cart3"></i> Versement </a>
+                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip"><i class="bi bi-cart3"></i> {{ __('transfer') }}</a>
                 </li>
             </ul>
         </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
-
-            <div class="collapse show" id="enregistrementMenu">
+        <!-- Create -->
+        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#createMenu" aria-expanded="true" aria-controls="createMenu" style="padding: 10px;">
+            {{ __('create') }}
+        </a>
+        <div class="collapse show" id="createMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dolly.create') }}"><i class="bi bi-cart3"></i>Chariot</a>
+                    <a class="nav-link text-dark" href="{{ route('dolly.create') }}"><i class="bi bi-cart3"></i> {{ __('cart') }}</a>
                 </li>
-            </ul>
-        </div>
-
-
-            <div>
             </ul>
         </div>
     </div>

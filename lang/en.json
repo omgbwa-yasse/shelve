@@ -277,5 +277,83 @@
     "shelves": "Shelves",
     "archive_container": "Archive Container",
     "buildings": "Buildings",
-    "rooms": "Rooms"
+    "rooms": "Rooms",
+
+    "all_carts": "All Carts",
+
+    "archives": "Archives",
+    "communication": "Communication",
+
+    "shelf": "Shelf",
+
+    "archives_transfer": "Archives (Transfer)",
+
+
+    "my_account": "My Account",
+    "authorizations_and_positions": "Authorizations and Positions",
+    "users": "Users",
+    "assigned_positions": "Assigned Positions",
+    "rights_and_permissions": "Rights and Permissions",
+    "roles": "Roles",
+    "assign_permissions": "Assign Permissions",
+    "tasks": "Tasks",
+    "task_types": "Task Types",
+    "task_statuses": "Task Statuses",
+
+    "actions": "Actions",
+    "directory": "Directory",
+    "supports": "Supports",
+    "statuses": "Statuses",
+
+    "communication_status": "Communication Status",
+    "reservation_status": "Reservation Status",
+    "deposit": "Deposit",
+    "container_statuses": "Container Statuses",
+    "container_property": "Container Property",
+    "management_tools": "Management Tools",
+    "retention_final_sorts": "Retention: Final Sorts",
+    "thesaurus_languages": "Thesaurus: Languages",
+    "thesaurus_categories": "Thesaurus: Categories",
+    "thesaurus_equivalents": "Thesaurus: Equivalents",
+    "thesaurus_types": "Thesaurus: Types",
+    "system": "System",
+    "my_backups": "My Backups",
+    "new_backup": "New Backup",
+    "ldap": "LDAP",
+
+    "statistics": "Statistics",
+
+    "request": "Request",
+
+    "tool": "Tool",
+    "carts": "Carts",
+
+    "task": "Task",
+    "task_tracking": "Task Tracking",
+    "ongoing_tasks": "Ongoing Tasks",
+    "completed_tasks": "Completed Tasks",
+    "my_tasks": "My Tasks",
+    "supervision": "Supervision",
+
+    "mails": "Mails",
+
+    "check_all": "Check All",
+    "uncheck_all": "Uncheck All",
+
+    "author": "Author",
+    "date": "Date",
+    "priority": "Priority",
+    "mail_type": "Mail Type",
+    "typology": "Typology",
+    "copy": "Copy",
+
+    "add_to_cart": "Add to Cart",
+
+    "confirm": "Confirm",
+    "print_records": "Print Records",
+    "select_at_least_one": "Please select at least one record.",
+    "cart_created": "A new cart has been created with the selected records.",
+    "cart_error": "An error occurred while creating the cart.",
+    "select_to_print": "Please select at least one record to print.",
+    "confirm_delete": "Are you sure you want to delete this mail?"
 }
