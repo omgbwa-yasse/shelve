@@ -187,6 +187,53 @@
     "export_records": "Export Records",
     "select_dolly": "Select Dolly (optional)",
     "all_records": "All Records",
-    "export_format": "Export Format"
+    "export_format": "Export Format",
+
+    "search": "Search",
+    "my_archives": "My Archives",
+    "holders": "Holders",
+
+    "keywords": "Keywords",
+
+    "premises": "Premises",
+    "recent": "Recent",
+    "advanced": "Advanced",
+    "registration": "Registration",
+    "new": "New",
+
+    "life_cycle": "Life Cycle",
+    "to_transfer": "To Transfer",
+    "active_files": "Active Files",
+    "to_deposit": "To Deposit",
+    "to_eliminate": "To Eliminate",
+    "to_keep": "To Keep",
+    "to_sort": "To Sort",
+    "import_export": "Import / Export",
+    "import": "Import",
+
+    "my_mails": "My Mails",
+    "received_mails": "Received Mails",
+    "sent_mails": "Sent Mails",
+    "archived_mails": "Archived Mails",
+
+    "typologies": "Typologies",
+
+
+    "my_paraphers": "My Paraphers",
+    "received_paraphers": "Received Paraphers",
+    "sent_paraphers": "Sent Paraphers",
+    "case_follow_up": "Case Follow-up",
+    "expected_returns": "Expected Returns",
+    "overdue_returns": "Overdue Returns",
+
+    "mail": "Mail",
+    "parapher": "Parapher",
+
+    "box_chrono": "Box & Chrono",
+    "to_receive": "To Receive",
+    "receive": "Receive",
+    "send": "Send",
+    "archive": "Archive"
+
 
 }

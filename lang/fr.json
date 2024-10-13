@@ -107,16 +107,14 @@
     "create_description": "Créer une description",
     "identification": "Identification",
     "context": "Contexte",
-    "content": "Contenu",
+
     "access_condition": "Condition d'accès",
     "complementary_sources": "Sources complémentaires",
     "notes": "Notes",
     "description_control": "Contrôle de la description",
     "indexing": "Indexation",
     "level": "Niveau",
-    "support": "Support",
-    "code": "Code",
-    "name": "Nom",
+
     "date_start": "Date de début",
     "date_end": "Date de fin",
     "date_exact": "Date exacte",
@@ -181,5 +179,50 @@
     "export_records": "Exporter les fiches",
     "select_dolly": "Sélectionner un chariot (optionnel)",
     "all_records": "Toutes les fiches",
-    "export_format": "Format d'exportation"
+    "export_format": "Format d'exportation",
+    "search": "Recherche",
+    "my_archives": "Mes archives",
+    "holders": "Detenteurs",
+
+    "keywords": "Mots-clés",
+
+    "premises": "Locaux",
+    "recent": "Récents",
+    "advanced": "Avancées",
+    "registration": "Enregistrement",
+    "new": "Nouveau",
+
+    "life_cycle": "Cycle de vie",
+    "to_transfer": "A transférer",
+    "active_files": "Dossiers actifs",
+    "to_deposit": "A verser",
+    "to_eliminate": "A éliminer",
+    "to_keep": "A conserver",
+    "to_sort": "A trier",
+    "import_export": "Import / Export",
+    "import": "Import",
+
+    "my_mails": "Mes courriers",
+    "received_mails": "Courriers reçus",
+    "sent_mails": "Courriers envoyés",
+    "archived_mails": "Courriers archivés",
+
+    "typologies": "Typologies",
+
+    "my_paraphers": "Mes parapheurs",
+    "received_paraphers": "Parapheurs reçus",
+    "sent_paraphers": "Parapheurs envoyés",
+    "case_follow_up": "Suivi des affaires",
+    "expected_returns": "Retours attendus",
+    "overdue_returns": "Retours dépassés",
+
+    "mail": "Courrier",
+    "parapher": "Parapheur",
+
+    "box_chrono": "Boîte & Chrono",
+    "to_receive": "A recevoir",
+    "receive": "Recevoir",
+    "send": "Envoyer",
+    "archive": "Archiver"
+
 }
