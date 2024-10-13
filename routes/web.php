@@ -4,6 +4,7 @@ use App\Http\Controllers\PDFController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
@@ -339,11 +340,17 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
     });
 
-    Route::get('language/{locale}', function ($locale) {
-        app()->setLocale($locale);
-        session()->put('locale', $locale);
-        return redirect()->back();
-    })->name('language');
+//    Route::get('/language/{locale}', function ($locale) {
+//        if (!in_array($locale, ['en', 'fr'])) {
+//            abort(400);
+//        }
+//
+//        App::setLocale($locale);
+//        session()->put('locale', $locale);
+//
+//        return redirect()->back();
+//    })->name('language');
+    Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 });
 

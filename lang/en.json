@@ -50,5 +50,28 @@
     "Complementary Sources": "Complementary Sources",
     "Notes": "Notes",
     "Description Control": "Description Control",
-    "Indexation": "Indexation"
+    "Indexation": "Indexation",
+
+
+    "Current Organization": "Current Organization",
+    "Not defined": "Not defined",
+    "Change Organization": "Change Organization",
+    "Toggle navigation": "Toggle navigation",
+    "Search": "Search",
+    "All": "All",
+    "Mail": "Mail",
+    "Archives": "Archives",
+    "Transferred Archives": "Transferred Archives",
+    "Transfer": "Transfer",
+    "Login": "Login",
+    "Register": "Register",
+    "Logout": "Logout",
+    "Repository": "Repository",
+    "Request": "Request",
+    "Tasks": "Tasks",
+    "Deposit": "Deposit",
+    "Report": "Report",
+    "Tool": "Tool",
+    "Dolly": "Dolly",
+    "Setting": "Setting"
 }
