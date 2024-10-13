@@ -102,8 +102,8 @@ use App\Http\Controllers\BackupPlanningController;
 
 Auth::routes();
 //Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
-Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
+//Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+//Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 Route::group(['middleware' => 'auth'], function () {
 
