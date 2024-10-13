@@ -143,7 +143,8 @@
                         <label for="arrangement" class="form-label">{{ __('arrangement') }}</label>
                         <textarea name="arrangement" id="arrangement" class="form-control"></textarea>
                     </div>
-                </div><div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
+                </div>
+                <div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
                     <div class="mb-3">
                         <label for="access_conditions" class="form-label">{{ __('access_conditions') }}</label>
                         <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50">
@@ -359,7 +360,7 @@
 
             // Ajouter l'ID de l'auteur au champ caché author_ids[]
             let authorIdsInput = document.getElementById('author-ids');
-            authorIdsInput.value += author.id + ';';
+            authorIdsInput.value += author.id + ',';
         }
 
         const terms = @json($terms);
@@ -436,7 +437,7 @@
                 const selectedAuthorNames = Array.from(authorItems)
                     .filter(item => item.classList.contains('active'))
                     .map(item => item.textContent.trim());
-                selectedAuthorsDisplay.value = selectedAuthorNames.join(', ');
+                selectedAuthorsDisplay.value = selectedAuthorNames.join('; ');
                 authorIds.value = Array.from(selectedAuthors).join(',');
                 bootstrap.Modal.getInstance(authorModal).hide();
             });
