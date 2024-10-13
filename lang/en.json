@@ -14,7 +14,6 @@
     "Biographical History": "Biographical History",
     "Archival History": "Archival History",
     "Acquisition Source": "Acquisition Source",
-    "Content": "Content",
     "Appraisal": "Appraisal",
     "Accrual": "Accrual",
     "Arrangement": "Arrangement",
@@ -82,10 +81,10 @@
     "communicate": "Communicate",
     "checkAll": "Check All",
     "uncheckAll": "Uncheck All",
-    "content": "Content",
+
     "descriptionLevel": "Description Level",
     "status": "Status",
-    "support": "Support",
+
     "activity": "Activity",
     "dates": "Dates",
     "container": "Container",
@@ -93,13 +92,12 @@
     "producer": "Producer",
     "headings": "Headings",
     "choosePrintFormat": "Choose export format",
-    "cancel": "Cancel",
+
     "createNewCommunication": "Create a new communication",
     "close": "Close",
     "save": "Save",
     "createNewSlip": "Create a new slip",
-    "code": "Code",
-    "name": "Name",
+
     "description": "Description",
     "officerOrganization": "Officer Organization",
     "userOrganization": "User Organization",
@@ -161,23 +159,17 @@
     "edit_sheet": "Edit Sheet",
     "delete_sheet": "Delete Sheet",
     "in": "In",
-    "code": "Code",
+
     "title_analysis": "Title / Analysis",
-    "dates": "Dates",
+
     "to": "to",
-    "producers": "Producers",
-    "content": "Content",
-    "support": "Support",
-    "status": "Status",
-    "container": "Container",
+
     "not_containerized": "Not containerized",
     "created_by": "Created By",
-    "width": "Width",
-    "width_description": "Width Description",
+
+
     "terms": "Terms",
-    "activity": "Activity",
-    "note": "Note",
-    "archivist_note": "Archivist Note",
+
     "no_child_records": "No child records found.",
     "add_child_sheet": "Add Child Sheet",
     "archive_boxes": "Archive Boxes",
@@ -191,6 +183,10 @@
     "confirm_deletion": "Confirm Deletion",
     "delete_confirmation": "Are you sure you want to delete this record?",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "export_records": "Export Records",
+    "select_dolly": "Select Dolly (optional)",
+    "all_records": "All Records",
+    "export_format": "Export Format"
 
 }

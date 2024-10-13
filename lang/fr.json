@@ -176,5 +176,10 @@
     "back_to_home": "Retour à l'accueil",
     "confirm_deletion": "Confirmer la suppression",
     "delete_confirmation": "Êtes-vous sûr de vouloir supprimer cette Notice ?",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+
+    "export_records": "Exporter les fiches",
+    "select_dolly": "Sélectionner un chariot (optionnel)",
+    "all_records": "Toutes les fiches",
+    "export_format": "Format d'exportation"
 }
