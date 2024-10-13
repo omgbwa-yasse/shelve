@@ -7,6 +7,8 @@ use App\Models\BatchMail;
 use App\Models\Mail;
 use App\Models\MailbatchTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
 
 class BatchMailController extends Controller
 {
@@ -43,7 +45,7 @@ class BatchMailController extends Controller
 
         $batchMail->save();
 
-        return redirect()->route('batch.mail.index', $batch)
+        return redirect()->route('batch.show', $batch->id)
             ->with('success', 'Courriel de lot créé avec succès.');
     }
 
@@ -70,12 +72,18 @@ class BatchMailController extends Controller
     }
 
 
-    public function destroy(Batch $batch, INT $id)
+    public function destroy(Batch $batch, int $id)
     {
-        $batchMail = BatchMail::findOrFail($id);
-        $batchMail->delete();
-        return redirect()->route('batch.mail.index', $batch)->with('success', 'Batch mail deleted successfully.');
-    }
+        $mail = $batch->mails()->find($id);
 
+        if (!$mail) {
+            return redirect()->route('batch.show', $batch->id)->with('error', 'Mail not found in this batch.');
+        }
+
+
+        $batch->mails()->detach($id);
+
+        return redirect()->route('batch.show', $batch->id)->with('success', 'Mail and its attachments removed from batch successfully.');
+    }
 
 }

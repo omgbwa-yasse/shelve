@@ -1,18 +1,31 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Create Batch Mail for {{ e($batch->name) }}</h1>
+    <div class="container">
+        <h1 class="mt-5">Parapheur : fiche</h1>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>Reference : {{  $batch->code  }}</td>
+                </tr>
+                <tr>
+                    <td>Désignation : {{  $batch->name  }}</td>
+                </tr>
+            </tbody>
+        </table>
+    <a href="{{ route('batch.show', $batch->id ) }}" class="btn btn-secondary mt-3">Back</a>
+
     <form action="{{ route('batch.mail.store', $batch) }}" method="POST">
         @csrf
-        <div class="mb-3">
-            <label for="mailInput">Mail</label>
+        <div class="mb-3 mt-4">
+            <label for="mailInput">Saisir le code ou quelques mots clés</label>
             <input type="text" id="mailInput" class="form-control" />
             <div id="suggestions" class="list-group"></div>
             <input type="hidden" name="mail_id" id="selectedMailId">
         </div>
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-primary">Ajouter</button>
     </form>
-
+</div>
     <script>
         const mailInput = document.getElementById('mailInput');
         const suggestionsContainer = document.getElementById('suggestions');
