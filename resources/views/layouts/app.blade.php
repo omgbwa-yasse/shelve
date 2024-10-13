@@ -204,6 +204,17 @@
                     @endguest
                 </ul>
             </div>
+            <div class="ml-auto">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        {{ strtoupper(app()->getLocale()) }}
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="{{ route('language', 'fr') }}">FR</a></li>
+                        <li><a class="dropdown-item" href="{{ route('language', 'en') }}">EN</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </nav>
 

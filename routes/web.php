@@ -339,6 +339,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
     });
 
+    Route::get('language/{locale}', function ($locale) {
+        app()->setLocale($locale);
+        session()->put('locale', $locale);
+        return redirect()->back();
+    })->name('language');
+
 });
 
 
