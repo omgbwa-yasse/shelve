@@ -359,7 +359,7 @@
 
             // Ajouter l'ID de l'auteur au champ caché author_ids[]
             let authorIdsInput = document.getElementById('author-ids');
-            authorIdsInput.value += author.id + ',';
+            authorIdsInput.value += author.id + ';';
         }
 
         const terms = @json($terms);
