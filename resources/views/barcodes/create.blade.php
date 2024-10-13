@@ -3,10 +3,10 @@
 @section('content')
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">Générateur de Codes-Barres</h2>
+                    <h3 class="mb-0">Générateur de Codes-Barres</h3>
                 </div>
 
 

@@ -223,6 +223,53 @@
     "to_receive": "A recevoir",
     "receive": "Recevoir",
     "send": "Envoyer",
-    "archive": "Archiver"
+    "archive": "Archiver",
+
+    "classification_plan": "Plan de classement",
+    "all_classes": "Toutes les classes",
+    "add_class": "Ajouter une classe",
+    "retention_schedule": "Référentiel de conservation",
+    "all_durations": "Toutes les durées",
+    "add_rule": "Ajouter une règle",
+    "communicability": "Communicabilité",
+    "organization_chart": "Organigramme",
+    "all_units": "Toutes les unités",
+    "add_organization": "Ajouter une organisation",
+
+    "view_branches": "Voir les branches",
+    "add_word": "Ajouter un mot",
+    "toolbox": "Boîte à outils",
+    "barcode": "Code-barres",
+    "my_slips": "Mes bordereaux",
+
+    "organizations": "Organisations",
+    "transfer_tracking": "Suivi de transfert",
+    "projects": "Projets",
+    "received": "Reçus",
+
+    "integrated": "Intégrés",
+
+    "slip": "Bordereau",
+    "communications": "Communications",
+    "reservations": "Réservations",
+    "add": "Ajouter",
+    "view_all": "Tout voir",
+    "returned": "Retournés",
+    "without_return": "Sans retour",
+    "not_returned": "Non retournés",
+    "under_review": "En examen",
+    "approved": "Approuvée",
+    "add_communication": "Communication",
+    "add_reservation": "Réservation",
+
+
+
+    "my_carts": "Mes chariots",
+    "building": "Bâtiment",
+    "room": "Salle",
+    "shelves": "Étagères",
+    "archive_container": "Contenant d'archives",
+    "buildings": "Bâtiments",
+    "rooms": "Salles"
 
 }

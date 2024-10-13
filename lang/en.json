@@ -233,7 +233,49 @@
     "to_receive": "To Receive",
     "receive": "Receive",
     "send": "Send",
-    "archive": "Archive"
+    "archive": "Archive",
+
+    "classification_plan": "Classification Plan",
+    "all_classes": "All Classes",
+    "add_class": "Add a Class",
+    "retention_schedule": "Retention Schedule",
+    "all_durations": "All Durations",
+    "add_rule": "Add a Rule",
+    "communicability": "Communicability",
+    "organization_chart": "Organization Chart",
+    "all_units": "All Units",
+    "add_organization": "Add an Organization",
+    "view_branches": "View Branches",
+    "add_word": "Add a Word",
+    "toolbox": "Toolbox",
+    "barcode": "Barcode",
 
 
+    "my_slips": "My Slips",
+
+    "organizations": "Organizations",
+    "transfer_tracking": "Transfer Tracking",
+    "projects": "Projects",
+    "received": "Received",
+
+    "integrated": "Integrated",
+
+    "slip": "Slip",
+    "communications": "Communications",
+    "reservations": "Reservations",
+    "add": "Add",
+    "view_all": "View all",
+    "returned": "Returned",
+    "without_return": "Without return",
+    "not_returned": "Not returned",
+    "under_review": "Under review",
+    "add_communication": "Communication",
+    "add_reservation": "Reservation",
+    "my_carts": "My Carts",
+    "building": "Building",
+    "room": "Room",
+    "shelves": "Shelves",
+    "archive_container": "Archive Container",
+    "buildings": "Buildings",
+    "rooms": "Rooms"
 }
