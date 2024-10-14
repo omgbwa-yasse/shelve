@@ -578,6 +578,16 @@ return new class extends Migration
             $table->string('name', 200)->nullable(false);
             $table->text('description')->nullable(true);
             $table->date('publish_date')->nullable(false);
+            $table->unsignedBigInteger('law_type_id')->nullable(false);
+            $table->timestamps();
+            $table->foreign('law_id')->references('id')->on('law_types')->onDelete('cascade');
+        });
+
+
+        Schema::create('law_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 200)->nullable(false);
+            $table->text('description')->nullable(true);
             $table->timestamps();
         });
 
@@ -586,7 +596,7 @@ return new class extends Migration
             $table->string('code', 10)->nullable(false);
             $table->string('name', 200)->nullable(false);
             $table->text('description')->nullable(true);
-            $table->unsignedBigInteger('law_id')->nullable(false);;
+            $table->unsignedBigInteger('law_id')->nullable(false);
             $table->timestamps();
             $table->foreign('law_id')->references('id')->on('laws')->onDelete('cascade');
         });
