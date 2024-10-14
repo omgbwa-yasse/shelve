@@ -12,10 +12,10 @@
                     <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-primary me-2">
                         <i class="bi bi-download"></i> Download File
                     </a>
-                    <a href="{{ route('mail-attachment.edit', [$mail, $attachment]) }}" class="btn btn-secondary me-2">
+                    <a href="{{ route('mail-attachment.edit', [$mail->id, $attachment->id]) }}" class="btn btn-secondary me-2">
                         <i class="bi bi-pencil"></i> Edit
                     </a>
-                    <form action="{{ route('mail-attachment.destroy', [$mail, $attachment]) }}" method="POST" class="d-inline">
+                    <form action="{{ route('mail-attachment.destroy', [$mail->id, $attachment->id]) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger">

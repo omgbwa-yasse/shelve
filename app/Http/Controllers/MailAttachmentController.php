@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\MailAttachment;
+use App\Models\Attachment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -112,19 +113,30 @@ class MailAttachmentController extends Controller
 
 
 
-    public function show($id, MailAttachment $attachment)
+    public function show(INT $mailid, INT $attachmentid)
     {
-        $mail = Mail::findOrFail($id);
+        $mail = Mail::findOrFail($mailid);
+        $attachment = MailAttachment::findOrFail($attachmentid);
         return view('mails.attachments.show', compact('mail', 'attachment'));
     }
 
-    public function destroy(Mail $mail, MailAttachment $attachment)
+
+
+
+    public function destroy(INT $mailid, INT $attachmentid)
     {
+        $attachment = MailAttachment::findOrFail($attachmentid);
+        $mail = Mail::findOrFail($mailid);
+
         $mail->attachments()->detach($attachment->id);
+
         $attachment->delete();
 
-        return redirect()->route('mail-attachment.index', $mail)->with('success', 'MailAttachment deleted successfully.');
+        return redirect()->route('mails.show', $mail->id)->with('success', 'MailAttachment deleted successfully.');
     }
+
+
+
     public function download($id)
     {
         $attachment = MailAttachment::findOrFail($id);
@@ -134,7 +146,7 @@ class MailAttachmentController extends Controller
             // Obtenez l'extension du fichier à partir du chemin
             $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
             $fileName = $attachment->name . '.' . $fileExtension;
-//dd( $fileExtension,$filePath);
+            //dd( $fileExtension,$filePath);
             return response()->download($filePath, $fileName);
         }
 
