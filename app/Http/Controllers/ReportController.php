@@ -8,8 +8,12 @@ use App\Models\Attachment;
 use App\Models\Author;
 use App\Models\Communicability;
 use App\Models\Communication;
+use App\Models\CommunicationStatus;
 use App\Models\Container;
 use App\Models\Dolly;
+use App\Models\DollyType;
+use App\Models\Law;
+use App\Models\LawArticle;
 use App\Models\Mail;
 use App\Models\MailAction;
 use App\Models\MailAttachment;
@@ -19,7 +23,13 @@ use App\Models\RecordAttachment;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
+use App\Models\Retention;
 use App\Models\Slip;
+use App\Models\SlipRecord;
+use App\Models\SlipStatus;
+use App\Models\Sort;
+use App\Models\Term;
+use App\Models\TermCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Task;
@@ -260,34 +270,325 @@ class ReportController extends Controller
 
     public function statisticsCommunications()
     {
-        // Logique pour afficher les statistiques du module Demande
-        return view('report.statistics.communications');
+        // Statistiques générales
+        $totalCommunications = Communication::count();
+        $pendingCommunications = Communication::where('status_id', 1)->count(); // Supposons que 1 est le statut "en attente"
+        $completedCommunications = Communication::whereNotNull('return_effective')->count();
+
+        // Communications par statut
+        $communicationsByStatus = Communication::select('status_id', DB::raw('count(*) as count'))
+            ->groupBy('status_id')
+            ->pluck('count', 'status_id')
+            ->toArray();
+        $statusNames = CommunicationStatus::pluck('name', 'id')->toArray();
+
+        // Évolution du nombre de communications
+        $communicationsEvolution = Communication::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $communicationsEvolutionLabels = $communicationsEvolution->pluck('date');
+        $communicationsEvolutionData = $communicationsEvolution->pluck('count');
+
+        // Top 5 des utilisateurs demandeurs
+        $topUsers = Communication::select('user_id', DB::raw('count(*) as count'))
+            ->groupBy('user_id')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get();
+        $topUsersLabels = User::whereIn('id', $topUsers->pluck('user_id'))->pluck('name', 'id')->toArray();
+        $topUsersData = $topUsers->pluck('count')->toArray();
+
+        // Top 5 des organisations demandeuses
+        $topOrganisations = Communication::select('user_organisation_id', DB::raw('count(*) as count'))
+            ->groupBy('user_organisation_id')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get();
+        $topOrganisationsLabels = Organisation::whereIn('id', $topOrganisations->pluck('user_organisation_id'))->pluck('name', 'id')->toArray();
+        $topOrganisationsData = $topOrganisations->pluck('count')->toArray();
+
+        // Temps moyen de retour (corrigé)
+        $averageReturnTime = Communication::whereNotNull('return_effective')
+            ->whereRaw('return_effective > created_at')
+            ->selectRaw('AVG(DATEDIFF(return_effective, created_at)) as avg_time')
+            ->value('avg_time');
+
+        $averageReturnTime = $averageReturnTime ? number_format($averageReturnTime, 1) : 'N/A';
+
+        // Distribution mensuelle des communications
+        $monthlyDistribution = Communication::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->orderBy('month')
+            ->get();
+        $monthlyDistributionLabels = $monthlyDistribution->pluck('month')->map(function($month) {
+            return Carbon::create()->month($month)->format('F');
+        })->toArray();
+        $monthlyDistributionData = $monthlyDistribution->pluck('count')->toArray();
+
+        return view('report.statistics.communications', compact(
+            'totalCommunications', 'pendingCommunications', 'completedCommunications',
+            'communicationsByStatus', 'statusNames',
+            'communicationsEvolutionLabels', 'communicationsEvolutionData',
+            'topUsersLabels', 'topUsersData',
+            'topOrganisationsLabels', 'topOrganisationsData',
+            'averageReturnTime',
+            'monthlyDistributionLabels', 'monthlyDistributionData'
+        ));
     }
 
     public function statisticsTransferrings()
     {
-        // Logique pour afficher les statistiques du module Transfert
-        return view('report.statistics.transferrings');
+        // Statistiques générales sur les bordereaux
+        $totalSlips = Slip::count();
+        $pendingSlips = Slip::where('slip_status_id', 1)->count(); // Supposons que 1 est le statut "en attente"
+        $approvedSlips = Slip::where('is_approved', true)->count();
+        $integratedSlips = Slip::where('is_integrated', true)->count();
+
+        // Bordereaux par statut
+        $slipsByStatus = Slip::select('slip_status_id', DB::raw('count(*) as count'))
+            ->groupBy('slip_status_id')
+            ->pluck('count', 'slip_status_id')
+            ->toArray();
+        $statusNames = SlipStatus::pluck('name', 'id')->toArray();
+
+        // Évolution du nombre de bordereaux
+        $slipsEvolution = Slip::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+        $slipsEvolutionLabels = $slipsEvolution->pluck('date');
+        $slipsEvolutionData = $slipsEvolution->pluck('count');
+
+        // Top 5 des organisations de transfert
+        $topOrganisations = Slip::select('user_organisation_id', DB::raw('count(*) as count'))
+            ->groupBy('user_organisation_id')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get();
+        $topOrganisationsLabels = Organisation::whereIn('id', $topOrganisations->pluck('user_organisation_id'))->pluck('name', 'id')->toArray();
+        $topOrganisationsData = $topOrganisations->pluck('count')->toArray();
+
+        // Statistiques sur les enregistrements de bordereaux
+        $totalSlipRecords = SlipRecord::count();
+        $averageRecordsPerSlip = DB::table(function ($query) {
+            $query->select('slip_id', DB::raw('count(*) as record_count'))
+                ->from('slip_records')
+                ->groupBy('slip_id');
+        }, 'subquery')->avg('record_count');
+
+        // Distribution mensuelle des bordereaux
+        $monthlyDistribution = Slip::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->orderBy('month')
+            ->get();
+        $monthlyDistributionLabels = $monthlyDistribution->pluck('month')->map(function($month) {
+            return Carbon::create()->month($month)->format('F');
+        })->toArray();
+        $monthlyDistributionData = $monthlyDistribution->pluck('count')->toArray();
+
+        return view('report.statistics.transferrings', compact(
+            'totalSlips', 'pendingSlips', 'approvedSlips', 'integratedSlips',
+            'slipsByStatus', 'statusNames',
+            'slipsEvolutionLabels', 'slipsEvolutionData',
+            'topOrganisationsLabels', 'topOrganisationsData',
+            'totalSlipRecords', 'averageRecordsPerSlip',
+            'monthlyDistributionLabels', 'monthlyDistributionData'
+        ));
     }
+
 
     public function statisticsDeposits()
     {
-        // Logique pour afficher les statistiques du module Dépôt
-        return view('report.statistics.deposits');
+        // Statistiques générales
+        $totalBuildings = \App\Models\Building::count();
+        $totalFloors = \App\Models\Floor::count();
+        $totalRooms = \App\Models\Room::count();
+        $totalShelves = \App\Models\Shelf::count();
+        $totalContainers = \App\Models\Container::count();
+
+        // Distribution des conteneurs par statut
+        $containersByStatus = \App\Models\Container::select('status_id', \DB::raw('count(*) as count'))
+            ->groupBy('status_id')
+            ->pluck('count', 'status_id')
+            ->toArray();
+
+        // Top 5 des bâtiments par nombre de conteneurs
+        $topBuildings = \App\Models\Building::withCount(['floors' => function ($query) {
+            $query->withCount(['rooms' => function ($query) {
+                $query->withCount(['shelves' => function ($query) {
+                    $query->withCount('containers');
+                }]);
+            }]);
+        }])
+            ->get()
+            ->sortByDesc(function ($building) {
+                return $building->floors->sum(function ($floor) {
+                    return $floor->rooms->sum(function ($room) {
+                        return $room->shelves->sum('containers_count');
+                    });
+                });
+            })
+            ->take(5);
+
+        // Utilisation moyenne des étagères (nombre de conteneurs par étagère)
+        $averageContainersPerShelf = \DB::table('containers')
+            ->selectRaw('COUNT(*) / COUNT(DISTINCT shelve_id) as average_containers')
+            ->value('average_containers');
+
+        // Distribution des salles par type
+        $roomsByType = \App\Models\Room::select('type_id', \DB::raw('count(*) as count'))
+            ->groupBy('type_id')
+            ->pluck('count', 'type_id')
+            ->toArray();
+
+        // Évolution du nombre de conteneurs au fil du temps
+        $containerEvolution = \App\Models\Container::select(\DB::raw('DATE(created_at) as date'), \DB::raw('count(*) as count'))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        // Capacité totale vs utilisation réelle
+        $totalCapacity = \App\Models\Shelf::sum('shelf_length');
+        $usedCapacity = \App\Models\Container::join('container_properties', 'containers.property_id', '=', 'container_properties.id')
+            ->sum('container_properties.length');
+
+        // Top 5 des organisations créatrices de conteneurs
+        $topOrganisations = \App\Models\Container::select('creator_organisation_id', \DB::raw('count(*) as count'))
+            ->groupBy('creator_organisation_id')
+            ->orderByDesc('count')
+            ->take(5)
+            ->get();
+
+        return view('report.statistics.deposits', compact(
+            'totalBuildings', 'totalFloors', 'totalRooms', 'totalShelves', 'totalContainers',
+            'containersByStatus', 'topBuildings', 'averageContainersPerShelf',
+            'roomsByType', 'containerEvolution', 'totalCapacity', 'usedCapacity', 'topOrganisations'
+        ));
     }
 
     public function statisticsTools()
     {
-        // Logique pour afficher les statistiques du module Outil
-        return view('report.statistics.tools');
+        // Plan de classement (Activities)
+        $totalActivities = Activity::count();
+        $topLevelActivities = Activity::whereNull('parent_id')->count();
+        $activitiesWithCommunicability = Activity::whereNotNull('communicability_id')->count();
+
+        // Référentiel de conservation (Retentions)
+        $totalRetentions = Retention::count();
+        $averageRetentionDuration = Retention::avg('duration');
+        $retentionsBySort = Retention::select('sort_id', DB::raw('count(*) as count'))
+            ->groupBy('sort_id')
+            ->pluck('count', 'sort_id')
+            ->toArray();
+        $sortNames = Sort::pluck('name', 'id')->toArray();
+
+        // Lois et articles
+        $totalLaws = Law::count();
+        $totalLawArticles = LawArticle::count();
+
+        // Communicabilités
+        $totalCommunicabilities = Communicability::count();
+        $averageCommunicabilityDuration = Communicability::avg('duration');
+
+        // Organigramme (Organisations)
+        $totalOrganisations = Organisation::count();
+        $topLevelOrganisations = Organisation::whereNull('parent_id')->count();
+
+        // Thésaurus (Terms)
+        $totalTerms = Term::count();
+        $termsByCategory = Term::select('category_id', DB::raw('count(*) as count'))
+            ->groupBy('category_id')
+            ->pluck('count', 'category_id')
+            ->toArray();
+        $categoryNames = TermCategory::pluck('name', 'id')->toArray();
+
+        $termsByLanguage = Term::select('language_id', DB::raw('count(*) as count'))
+            ->groupBy('language_id')
+            ->pluck('count', 'language_id')
+            ->toArray();
+        $languageNames = DB::table('languages')->pluck('name', 'id')->toArray();
+
+        return view('report.statistics.tools', compact(
+            'totalActivities', 'topLevelActivities', 'activitiesWithCommunicability',
+            'totalRetentions', 'averageRetentionDuration', 'retentionsBySort', 'sortNames',
+            'totalLaws', 'totalLawArticles',
+            'totalCommunicabilities', 'averageCommunicabilityDuration',
+            'totalOrganisations', 'topLevelOrganisations',
+            'totalTerms', 'termsByCategory', 'categoryNames', 'termsByLanguage', 'languageNames'
+        ));
     }
 
     public function statisticsDollies()
     {
-        // Logique pour afficher les statistiques du module Chariots
-        return view('report.statistics.dollies');
-    }
+        // Statistiques générales
+        $totalDollies = Dolly::count();
 
+        // Dollies par type
+        $dolliesByType = Dolly::select('type_id', DB::raw('count(*) as count'))
+            ->groupBy('type_id')
+            ->get();
+        $dollyTypeLabels = DollyType::whereIn('id', $dolliesByType->pluck('type_id'))
+            ->pluck('name', 'id')
+            ->toArray();
+        $dollyTypeData = $dolliesByType->pluck('count', 'type_id')->toArray();
+
+        // Évolution du nombre de dollies
+        $dolliesEvolution = Dolly::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('DATE(created_at)'))
+            ->orderBy('date')
+            ->get();
+        $dolliesEvolutionLabels = $dolliesEvolution->pluck('date');
+        $dolliesEvolutionData = $dolliesEvolution->pluck('count');
+
+        // Statistiques des éléments dans les dollies
+        $totalMails = DB::table('dolly_mails')->count();
+        $totalRecords = DB::table('dolly_records')->count();
+        $totalCommunications = DB::table('dolly_communications')->count();
+        $totalSlips = DB::table('dolly_slips')->count();
+        $totalSlipRecords = DB::table('dolly_slip_records')->count();
+        $totalBuildings = DB::table('dolly_buildings')->count();
+        $totalRooms = DB::table('dolly_rooms')->count();
+        $totalShelves = DB::table('dolly_shelves')->count();
+        $totalContainers = DB::table('dolly_containers')->count();
+
+        $totalItems = $totalMails + $totalRecords + $totalCommunications + $totalSlips +
+            $totalSlipRecords + $totalBuildings + $totalRooms + $totalShelves + $totalContainers;
+
+        $averageItemsPerDolly = $totalDollies > 0 ? $totalItems / $totalDollies : 0;
+
+        // Types d'éléments dans les dollies
+        $itemTypes = [
+            'Mails' => $totalMails,
+            'Records' => $totalRecords,
+            'Communications' => $totalCommunications,
+            'Slips' => $totalSlips,
+            'Slip Records' => $totalSlipRecords,
+            'Buildings' => $totalBuildings,
+            'Rooms' => $totalRooms,
+            'Shelves' => $totalShelves,
+            'Containers' => $totalContainers
+        ];
+
+        // Distribution mensuelle des créations de dollies
+        $monthlyDistribution = Dolly::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+            ->groupBy(DB::raw('MONTH(created_at)'))
+            ->orderBy('month')
+            ->get();
+        $monthlyDistributionLabels = $monthlyDistribution->pluck('month')->map(function($month) {
+            return date('F', mktime(0, 0, 0, $month, 1));
+        });
+        $monthlyDistributionData = $monthlyDistribution->pluck('count');
+
+        return view('report.statistics.dollies', compact(
+            'totalDollies',
+            'dollyTypeLabels', 'dollyTypeData',
+            'dolliesEvolutionLabels', 'dolliesEvolutionData',
+            'totalItems', 'averageItemsPerDolly',
+            'itemTypes',
+            'monthlyDistributionLabels', 'monthlyDistributionData'
+        ));
+    }
     public function dashboard()
     {
         // Communications

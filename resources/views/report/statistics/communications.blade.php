@@ -1,66 +1,125 @@
-<div class="container">
-    <div class="row">
-        <!-- Recherche -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;">
-            <i class="bi bi-search"></i> Communications
-        </a>
-        <div class="collapse show" id="rechercheMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transactions.index')}}"><i class="bi bi-inbox"></i> Tout voir </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=return-effective"><i class="bi bi-inbox"></i> Returnés</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=unreturn"><i class="bi bi-inbox"></i> Sans retour</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=not-return"><i class="bi bi-inbox"></i> Non returnés</a>
-                </li>
-                </ul>
+@extends('layouts.app')
+
+@section('content')
+    <div class="container-fluid">
+        <h1 class="mb-4">Statistiques du module Communication</h1>
+
+        <div class="row">
+            <!-- Statistiques générales des communications -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Aperçu général</h5>
+                        <p class="card-text">Total des communications: {{ $totalCommunications }}</p>
+                        <p class="card-text">Communications en attente: {{ $pendingCommunications }}</p>
+                        <p class="card-text">Communications terminées: {{ $completedCommunications }}</p>
+                        <p class="card-text">Temps moyen de retour: {{ $averageReturnTime }} jours</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communications par statut -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Communications par statut</h5>
+                        <canvas id="communicationStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribution mensuelle des communications -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Distribution mensuelle</h5>
+                        <canvas id="monthlyDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-
-
-        <!-- Recherche -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;">
-            <i class="bi bi-search"></i> Reservations
-        </a>
-        <div class="collapse show" id="rechercheMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations.index')}}"><i class="bi bi-inbox"></i> Tout voir </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=InProgess"><i class="bi bi-inbox"></i> En examen</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=approved"><i class="bi bi-inbox"></i> Approuvée</a>
-                </li>
-
-            </ul>
+        <div class="row">
+            <!-- Évolution du nombre de communications -->
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Évolution du nombre de communications</h5>
+                        <canvas id="communicationsEvolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <div class="row">
+            <!-- Top 5 des utilisateurs demandeurs -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 5 des utilisateurs demandeurs</h5>
+                        <canvas id="topUsersChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-
-        <!-- Communication -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#CommunicationMenu"
-            aria-expanded="true" aria-controls="CommunicationMenu" style="padding: 10px;">
-            <i class="bi bi-journal-plus"></i> Ajouter
-        </a>
-        <div class="collapse show" id="CommunicationMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transactions.create')}}"><i class="bi bi-inbox"></i> Communication</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations.create')}}"><i class="bi bi-envelope"></i> Réservation</a>
-                </li>
-
-            </ul>
+            <!-- Top 5 des organisations demandeuses -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 5 des organisations demandeuses</h5>
+                        <canvas id="topOrganisationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const generateRandomColors = (count) => {
+            return Array.from({length: count}, () =>
+                '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+            );
+        };
+
+        const createChart = (id, type, labels, data, options = {}) => {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre',
+                        data: data,
+                        backgroundColor: generateRandomColors(labels.length),
+                        borderColor: type === 'line' ? 'rgb(75, 192, 192)' : undefined,
+                        tension: type === 'line' ? 0.1 : undefined
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    ...options
+                }
+            });
+        };
+
+        // Création des graphiques
+        createChart('communicationStatusChart', 'pie', @json(array_values($statusNames)), @json(array_values($communicationsByStatus)));
+        createChart('communicationsEvolutionChart', 'line', @json($communicationsEvolutionLabels), @json($communicationsEvolutionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('topUsersChart', 'bar', @json(array_values($topUsersLabels)), @json($topUsersData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('topOrganisationsChart', 'bar', @json(array_values($topOrganisationsLabels)), @json($topOrganisationsData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('monthlyDistributionChart', 'bar', @json($monthlyDistributionLabels), @json($monthlyDistributionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+    </script>
+@endsection

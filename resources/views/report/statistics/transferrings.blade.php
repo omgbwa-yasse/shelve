@@ -1,80 +1,123 @@
-<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
-    <div class="row">
+@extends('layouts.app')
 
+@section('content')
+    <div class="container-fluid">
+        <h1 class="mb-4">Statistiques du module Transfert</h1>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>Recherche</a>
+        <div class="row">
+            <!-- Statistiques générales des bordereaux -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Aperçu général</h5>
+                        <p>Total des bordereaux : {{ $totalSlips }}</p>
+                        <p>Bordereaux en attente : {{ $pendingSlips }}</p>
+                        <p>Bordereaux approuvés : {{ $approvedSlips }}</p>
+                        <p>Bordereaux intégrés : {{ $integratedSlips }}</p>
+                    </div>
+                </div>
+            </div>
 
-        <div class="collapse show" id="rechercheMenu">
+            <!-- Bordereaux par statut -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Bordereaux par statut</h5>
+                        <canvas id="slipStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i>Mes bordereaux</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-select-date') }}"><i class="bi bi-list"></i> Dates</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-select-organisation') }}?categ=organisation"><i class="bi bi-list"></i> Organisations</a>
-                </li>
-            </ul>
+            <!-- Statistiques des enregistrements -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Enregistrements</h5>
+                        <p>Total des enregistrements : {{ $totalSlipRecords }}</p>
+                        <p>Moyenne par bordereau : {{ number_format($averageRecordsPerSlip, 2) }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <div class="row">
+            <!-- Évolution du nombre de bordereaux -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Évolution du nombre de bordereaux</h5>
+                        <canvas id="slipsEvolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i> Suivi de transfert </a>
-
-        <div class="collapse show" id="rechercheMenu">
-
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=project"><i class="bi bi-folder"></i> Projets</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=received"><i class="bi bi-envelope-check"></i> Reçus</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-check-circle"></i> Approuvés</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=integrated"><i class="bi bi-folder-plus"></i> Intégrés</a>
-                </li>
-            </ul>
+            <!-- Distribution mensuelle des bordereaux -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Distribution mensuelle des bordereaux</h5>
+                        <canvas id="monthlyDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
-            <div class="collapse show" id="enregistrementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.create') }}"><i class="bi bi-building"></i> Bordereau</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.containers.index') }}"><i class="bi bi-archive"></i> Boite / chrono</a>
-                </li>
-            </ul>
-        </div>
-
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#lifeCycleMenu" aria-expanded="false"
-            aria-controls="lifeCycleMenu" style="padding: 10px;">
-            <i class="bi bi-cart"></i> Import / Export (EAD, Excel, SEDA)
-        </a>
-        <div class="collapse show" id="lifeCycleMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.import.form') }}"><i class="bi bi-folder-check"></i> Import</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('slips.export.form') }}" class="nav-link text-dark"><i class="bi bi-folder-check"></i> Export </a>
-                </li>
-            </ul>
-        </div>
-
-        <div>
-        </ul>
+        <div class="row">
+            <!-- Top 5 des organisations de transfert -->
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 5 des organisations de transfert</h5>
+                        <canvas id="topOrganisationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const generateRandomColors = (count) => {
+            return Array.from({length: count}, () =>
+                '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+            );
+        };
+
+        const createChart = (id, type, labels, data, options = {}) => {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre',
+                        data: data,
+                        backgroundColor: generateRandomColors(labels.length),
+                        borderColor: type === 'line' ? 'rgb(75, 192, 192)' : undefined,
+                        tension: type === 'line' ? 0.1 : undefined
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    ...options
+                }
+            });
+        };
+
+        // Création des graphiques
+        createChart('slipStatusChart', 'pie', @json(array_values($statusNames)), @json(array_values($slipsByStatus)));
+        createChart('slipsEvolutionChart', 'line', @json($slipsEvolutionLabels), @json($slipsEvolutionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('topOrganisationsChart', 'bar', @json(array_values($topOrganisationsLabels)), @json($topOrganisationsData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('monthlyDistributionChart', 'bar', @json($monthlyDistributionLabels), @json($monthlyDistributionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+    </script>
+@endsection

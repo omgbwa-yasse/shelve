@@ -1,67 +1,162 @@
-<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
-    <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>Recherche</a>
+@extends('layouts.app')
 
-        <div class="collapse show" id="rechercheMenu">
+@section('content')
+    <div class="container-fluid">
+        <h1 class="mb-4">Statistiques du module Dépôt</h1>
 
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('buildings.index') }}"><i class="bi bi-building"></i> Bâtiment</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('rooms.index') }}"><i class="bi bi-house"></i> Salle</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('shelves.index') }}"><i class="bi bi-bookshelf"></i> Etagères</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('containers.index') }}"><i class="bi bi-box"></i> Contenant d'archives</a>
-                </li>
-            </ul>
-        </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
-
-            <div class="collapse show" id="enregistrementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('buildings.create') }}"><i class="bi bi-building"></i> Batiment</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('rooms.create') }}"><i class="bi bi-house"></i> Salle</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('shelves.create') }}"><i class="bi bi-bookshelf"></i> étagère</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('containers.create') }}"><i class="bi bi-archive"></i> Contenant d'archives</a>
-                </li>
-            </ul>
-        </div>
-
-            <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#chariotMenu"
-            aria-expanded="true" aria-controls="chariotMenu" style="padding: 10px;">Mes chariots</a>
-
-            <div class="collapse show" id="chariotMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('buildings.create') }}"><i class="bi bi-building"></i> Bâtiments</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('rooms.create') }}"><i class="bi bi-house"></i> Salle</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('shelves.create') }}"><i class="bi bi-bookshelf"></i> étagères</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('containers.create') }}"><i class="bi bi-archive"></i> contenant d'archives</a>
-                </li>
-                </ul>
+        <div class="row">
+            <!-- Aperçu général -->
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Aperçu général</h5>
+                        <p class="card-text">Total des bâtiments: {{ $totalBuildings }}</p>
+                        <p class="card-text">Total des étages: {{ $totalFloors }}</p>
+                        <p class="card-text">Total des salles: {{ $totalRooms }}</p>
+                        <p class="card-text">Total des étagères: {{ $totalShelves }}</p>
+                        <p class="card-text">Total des conteneurs: {{ $totalContainers }}</p>
+                    </div>
+                </div>
             </div>
-            <div>
-            </ul>
+
+            <!-- Distribution des conteneurs par statut -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Conteneurs par statut</h5>
+                        <canvas id="containersByStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 5 des bâtiments -->
+            <div class="col-md-5 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 5 des bâtiments par nombre de conteneurs</h5>
+                        <canvas id="topBuildingsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Utilisation moyenne des étagères -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Utilisation moyenne des étagères</h5>
+                        <p class="card-text">Nombre moyen de conteneurs par étagère: {{ number_format($averageContainersPerShelf, 2) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribution des salles par type -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Distribution des salles par type</h5>
+                        <canvas id="roomsByTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Évolution du nombre de conteneurs -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Évolution du nombre de conteneurs</h5>
+                        <canvas id="containerEvolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Capacité totale vs utilisation réelle -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Capacité totale vs utilisation réelle</h5>
+                        <canvas id="capacityUsageChart"></canvas>
+                        <p class="mt-2">Capacité totale: {{ number_format($totalCapacity, 2) }} unités</p>
+                        <p>Capacité utilisée: {{ number_format($usedCapacity, 2) }} unités</p>
+                        <p>Taux d'utilisation: {{ number_format(($usedCapacity / $totalCapacity) * 100, 2) }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 5 des organisations créatrices de conteneurs -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Top 5 des organisations créatrices de conteneurs</h5>
+                        <canvas id="topOrganisationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+    <script>
+        // Fonction pour générer des couleurs aléatoires
+        const generateRandomColors = (count) => {
+            return Array.from({length: count}, () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'));
+        };
+
+        // Fonction pour créer un graphique
+        const createChart = (id, type, labels, data, options = {}) => {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre',
+                        data: data,
+                        backgroundColor: generateRandomColors(labels.length),
+                        borderColor: type === 'line' ? 'rgb(75, 192, 192)' : undefined,
+                        tension: type === 'line' ? 0.1 : undefined
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    ...options
+                }
+            });
+        };
+
+        // Création des graphiques
+        createChart('containersByStatusChart', 'pie', @json(array_keys($containersByStatus)), @json(array_values($containersByStatus)));
+        createChart('topBuildingsChart', 'bar',
+            @json($topBuildings->pluck('name')),
+            @json($topBuildings->map(function($building) {
+                return $building->floors->sum(function($floor) {
+                    return $floor->rooms->sum(function($room) {
+                        return $room->shelves->sum('containers_count');
+                    });
+                });
+            })),
+            {
+                scales: { y: { beginAtZero: true } },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Top 5 des bâtiments par nombre de conteneurs'
+                    }
+                }
+            }
+        );
+        createChart('roomsByTypeChart', 'doughnut', @json(array_keys($roomsByType)), @json(array_values($roomsByType)));
+        createChart('containerEvolutionChart', 'line', @json($containerEvolution->pluck('date')), @json($containerEvolution->pluck('count')), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('capacityUsageChart', 'pie', ['Utilisé', 'Disponible'], [{{ $usedCapacity }}, {{ $totalCapacity - $usedCapacity }}]);
+        createChart('topOrganisationsChart', 'bar', @json($topOrganisations->pluck('creator_organisation_id')), @json($topOrganisations->pluck('count')), {
+            scales: { y: { beginAtZero: true } }
+        });
+    </script>
+@endsection

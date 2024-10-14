@@ -1,97 +1,145 @@
-<div class="container">
-    <div class="row">
-        <!-- Plan de classement -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#planClassementMenu"
-           aria-expanded="true" style="padding: 10px;" aria-controls="planClassementMenu">
-            <i class="bi bi-grid me-2"></i> Plan de classement
-        </a>
-        <div class="collapse show" id="planClassementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.index') }}"><i class="bi bi-list-check me-2"></i> Toutes les classes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.create') }}"><i class="bi bi-plus-square me-2"></i> Ajouter une classe</a>
-                </li>
-            </ul>
+@extends('layouts.app')
+
+@section('content')
+    <div class="container-fluid">
+        <h1 class="mb-4">Statistiques du module Outils</h1>
+
+        <div class="row">
+            <!-- Plan de classement -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Plan de classement</h5>
+                        <p>Total des activités : {{ $totalActivities }}</p>
+                        <p>Activités de premier niveau : {{ $topLevelActivities }}</p>
+                        <p>Activités avec communicabilité : {{ $activitiesWithCommunicability }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Référentiel de conservation -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Référentiel de conservation</h5>
+                        <p>Total des règles : {{ $totalRetentions }}</p>
+                        <p>Durée moyenne : {{ number_format($averageRetentionDuration, 2) }} ans</p>
+                        <canvas id="retentionsBySortChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communicabilités -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Communicabilités</h5>
+                        <p>Total des règles : {{ $totalCommunicabilities }}</p>
+                        <p>Durée moyenne : {{ number_format($averageCommunicabilityDuration, 2) }} ans</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Référentiel de conservation -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#referentielConservationMenu"
-           aria-expanded="true" style="padding: 10px;" aria-controls="referentielConservationMenu">
-            <i class="bi bi-archive me-2"></i> Référentiel de conservation
-        </a>
-        <div class="collapse show" id="referentielConservationMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('retentions.index') }}"><i class="bi bi-clock-history me-2"></i> Tous les durées</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('retentions.create') }}"><i class="bi bi-plus-square me-2"></i> Ajouter un règle</a>
-                </li>
-            </ul>
+        <div class="row">
+            <!-- Lois et Articles -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Lois et Articles</h5>
+                        <p>Total des lois : {{ $totalLaws }}</p>
+                        <p>Total des articles : {{ $totalLawArticles }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organigramme -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Organigramme</h5>
+                        <p>Total des organisations : {{ $totalOrganisations }}</p>
+                        <p>Organisations de premier niveau : {{ $topLevelOrganisations }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thésaurus -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Thésaurus</h5>
+                        <p>Total des termes : {{ $totalTerms }}</p>
+                        <canvas id="termsByCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Communicabilité -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#communicabiliteMenu"
-           aria-expanded="false" style="padding: 10px;" aria-controls="communicabiliteMenu">
-            <i class="bi bi-chat-square-text me-2"></i> Communicabilité
-        </a>
-        <div class="collapse show" id="communicabiliteMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('communicabilities.index')}}"><i class="bi bi-list-check me-2"></i> Toutes les classes</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('communicabilities.create')}}"><i class="bi bi-plus-square me-2"></i> Ajouter une classe</a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Organigramme -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#organigrammeMenu"
-           aria-expanded="false" style="padding: 10px;" aria-controls="organigrammeMenu">
-            <i class="bi bi-diagram-3 me-2"></i> Organigramme
-        </a>
-        <div class="collapse show" id="organigrammeMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('organisations.index')}}"><i class="bi bi-building me-2"></i> Toutes les unités</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('organisations.create')}}"><i class="bi bi-plus-square me-2"></i> Ajouter une organisation</a>
-                </li>
-            </ul>
-        </div>
-
-
-        <!-- Thésaurus -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
-           aria-controls="thesaurusMenu" style="padding: 10px;">
-            <i class="bi bi-book-half me-2"></i> Thésaurus
-        </a>
-        <div class="collapse show" id="thesaurusMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('terms.index') }}"><i class="bi bi-tree me-2"></i> Voir les branches</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('terms.create') }}"><i class="bi bi-plus-square me-2"></i> Ajouter un mot</a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Thésaurus -->
-        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
-           aria-controls="thesaurusMenu" style="padding: 10px;">
-            <i class="bi bi-tools me-2"></i> Boite à outils
-        </a>
-        <div class="collapse show" id="thesaurusMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('barcode.create') }}"><i class="bi bi-tree me-2"></i> Code de barre</a>
-                </li>
-            </ul>
+        <div class="row">
+            <!-- Termes par langue -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Termes par langue</h5>
+                        <canvas id="termsByLanguageChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const generateRandomColors = (count) => {
+            return Array.from({length: count}, () =>
+                '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+            );
+        };
+
+        const createChart = (id, type, labels, data, options = {}) => {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre',
+                        data: data,
+                        backgroundColor: generateRandomColors(labels.length),
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    ...options
+                }
+            });
+        };
+
+        // Création des graphiques
+        createChart('retentionsBySortChart', 'pie',
+            @json(array_values($sortNames)),
+            @json(array_values($retentionsBySort))
+        );
+
+        createChart('termsByCategoryChart', 'bar',
+            @json(array_values($categoryNames)),
+            @json(array_values($termsByCategory)),
+            {
+                scales: { y: { beginAtZero: true } }
+            }
+        );
+
+        createChart('termsByLanguageChart', 'bar',
+            @json(array_values($languageNames)),
+            @json(array_values($termsByLanguage)),
+            {
+                scales: { y: { beginAtZero: true } }
+            }
+        );
+    </script>
+@endsection

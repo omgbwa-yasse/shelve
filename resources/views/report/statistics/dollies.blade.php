@@ -1,55 +1,107 @@
-<div class="container" style="background-color: #f1f1f1;"> <!-- Couleur de fond marron -->
-    <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>Recherche</a>
+@extends('layouts.app')
 
-        <div class="collapse show" id="rechercheMenu">
+@section('content')
+    <div class="container-fluid">
+        <h1 class="mb-4">Statistiques du module Dolly</h1>
 
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dolly.index') }}"><i class="bi bi-cart3"></i> Tous les chariots</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=mail"><i class="bi bi-cart3"></i> Courrier</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=record"><i class="bi bi-cart3"></i> Archives</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=communication"><i class="bi bi-cart3"></i> Communication </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=room"><i class="bi bi-cart3"></i> Salle </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=shelf"><i class="bi bi-cart3"></i> Etagère </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=container"><i class="bi bi-cart3"></i> Boites d'archives </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip_record"><i class="bi bi-cart3"></i> Archives (versement) </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dollies-sort')}}?categ=slip"><i class="bi bi-cart3"></i> Versement </a>
-                </li>
-            </ul>
+        <div class="row">
+            <!-- Statistiques générales des dollies -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Aperçu général</h5>
+                        <p class="card-text">Total des dollies: {{ $totalDollies }}</p>
+                        <p class="card-text">Total des éléments: {{ $totalItems }}</p>
+                        <p class="card-text">Moyenne d'éléments par dolly: {{ number_format($averageItemsPerDolly, 2) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiques par type de dolly -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Dollies par type</h5>
+                        <canvas id="dolliesTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types d'éléments dans les dollies -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Types d'éléments dans les dollies</h5>
+                        <canvas id="itemTypesChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">Créer</a>
+        <div class="row">
+            <!-- Évolution du nombre de dollies -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Évolution du nombre de dollies</h5>
+                        <canvas id="dolliesEvolutionChart"></canvas>
+                    </div>
+                </div>
+            </div>
 
-            <div class="collapse show" id="enregistrementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dolly.create') }}"><i class="bi bi-cart3"></i>Chariot</a>
-                </li>
-            </ul>
-        </div>
-
-
-            <div>
-            </ul>
+            <!-- Distribution mensuelle des créations de dollies -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Distribution mensuelle des créations</h5>
+                        <canvas id="monthlyDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const generateRandomColors = (count) => {
+            return Array.from({length: count}, () =>
+                '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+            );
+        };
+
+        const createChart = (id, type, labels, data, options = {}) => {
+            new Chart(document.getElementById(id).getContext('2d'), {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Nombre',
+                        data: data,
+                        backgroundColor: generateRandomColors(labels.length),
+                        borderColor: type === 'line' ? 'rgb(75, 192, 192)' : undefined,
+                        tension: type === 'line' ? 0.1 : undefined
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    },
+                    ...options
+                }
+            });
+        };
+
+        // Création des graphiques
+        createChart('dolliesTypeChart', 'pie', @json(array_values($dollyTypeLabels)), @json(array_values($dollyTypeData)));
+        createChart('dolliesEvolutionChart', 'line', @json($dolliesEvolutionLabels), @json($dolliesEvolutionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+        createChart('itemTypesChart', 'pie', @json(array_keys($itemTypes)), @json(array_values($itemTypes)));
+        createChart('monthlyDistributionChart', 'bar', @json($monthlyDistributionLabels), @json($monthlyDistributionData), {
+            scales: { y: { beginAtZero: true } }
+        });
+    </script>
+@endsection
