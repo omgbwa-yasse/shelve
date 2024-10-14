@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 use Imagick;
 use Intervention\Image\Image;
 use FFMpeg;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class MailAttachmentController extends Controller
 {
@@ -37,7 +39,7 @@ class MailAttachmentController extends Controller
         try {
             $request->validate([
                 'name' => 'required|max:100',
-                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:20480', // 20MB max
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|', // 20MB max
                 'thumbnail' => 'nullable|string',
             ]);
 
@@ -141,16 +143,19 @@ class MailAttachmentController extends Controller
     public function preview($id)
     {
         $attachment = MailAttachment::findOrFail($id);
-        $filePath = storage_path('app/' . $attachment->path);
+        $path = storage_path('app/' . $attachment->path);
 
-        if (file_exists($filePath)) {
-            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
-            $mimeType = $this->getMimeType($fileExtension);
-
-            return response()->file($filePath, ['Content-Type' => $mimeType]);
+        if (!File::exists($path)) {
+            abort(404);
         }
 
-        return abort(404);
+        $file = File::get($path);
+        $type = File::mimeType($path);
+
+        $response = Response::make($file, 200);
+        $response->header("Content-Type", $type);
+
+        return $response;
     }
 
     private function getMimeType($extension)

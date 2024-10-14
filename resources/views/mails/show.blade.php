@@ -87,7 +87,7 @@
                                                             Ajouté par: {{ $attachment->creator->name ?? 'N/A' }}
                                                         </p>
                                                         <a href="{{ route('mail-attachment.show', [$mail->id, $attachment->id]) }}" class="btn btn-outline-primary btn-sm w-100" target="_blank">
-                                                            <i class="bi bi-download me-1"></i> Télécharger
+                                                            <i class="bi bi-eye me-1"></i> Consulter
                                                         </a>
                                                     </div>
                                                 </div>
@@ -108,12 +108,12 @@
                                                 <input type="text" class="form-control" id="name" name="name" required>
                                             </div>
                                             <div class="col-md-6">
-                                                <label for="file" class="form-label">Fichier</label>
-                                                <input class="form-control" type="file" id="file" name="file" accept="application/pdf" required>
+                                                <label for="file" class="form-label">Fichier (PDF, Image, ou Vidéo)</label>
+                                                <input class="form-control" type="file" id="file" name="file" accept="application/pdf,image/*,video/*" required>
                                             </div>
                                         </div>
-                                        <div id="pdf-preview" class="mb-3" style="display: none;">
-                                            <canvas id="pdf-canvas" style="max-width: 100%; height: auto;"></canvas>
+                                        <div id="file-preview" class="mb-3" style="display: none;">
+                                            <!-- Le preview sera inséré ici -->
                                         </div>
                                         <input type="hidden" name="thumbnail" id="thumbnailInput">
                                         <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
@@ -212,27 +212,7 @@
                 });
             }
 
-            function generatePdfThumbnail(pdfData) {
-                pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
-                    pdf.getPage(1).then(function(page) {
-                        const scale = 1.5;
-                        const viewport = page.getViewport({scale: scale});
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
 
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        page.render(renderContext).promise.then(() => {
-                            const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
-                            document.getElementById('thumbnailInput').value = thumbnailDataUrl;
-                        });
-                    });
-                });
-            }
 
             document.getElementById('attachmentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -248,5 +228,115 @@
         }
 
 
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file');
+            const nameInput = document.getElementById('name');
+            const submitBtn = document.getElementById('submitBtn');
+            const filePreview = document.getElementById('file-preview');
+
+            function updateSubmitButton() {
+                submitBtn.disabled = !(fileInput.files.length > 0 && nameInput.value.trim() !== '');
+            }
+
+            fileInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const fileType = file.type.split('/')[0];
+                    const fileReader = new FileReader();
+
+                    fileReader.onload = function(e) {
+                        switch(fileType) {
+                            case 'application':
+                                if (file.type === 'application/pdf') {
+                                    renderPdfPreview(new Uint8Array(e.target.result));
+                                } else {
+                                    filePreview.innerHTML = '<p>Aperçu non disponible pour ce type de fichier.</p>';
+                                }
+                                break;
+                            case 'image':
+                                filePreview.innerHTML = `<img src="${e.target.result}" alt="Image preview" style="max-width: 100%; max-height: 300px;">`;
+                                generateImageThumbnail(e.target.result);
+                                break;
+                            case 'video':
+                                filePreview.innerHTML = `<video src="${e.target.result}" controls style="max-width: 100%; max-height: 300px;"></video>`;
+                                generateVideoThumbnail(file);
+                                break;
+                            default:
+                                filePreview.innerHTML = '<p>Aperçu non disponible pour ce type de fichier.</p>';
+                        }
+                        filePreview.style.display = 'block';
+                    };
+
+                    if (fileType === 'application' && file.type === 'application/pdf') {
+                        fileReader.readAsArrayBuffer(file);
+                    } else {
+                        fileReader.readAsDataURL(file);
+                    }
+                } else {
+                    filePreview.style.display = 'none';
+                }
+                updateSubmitButton();
+            });
+
+            nameInput.addEventListener('input', updateSubmitButton);
+
+            function renderPdfPreview(pdfData) {
+                pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
+                    pdf.getPage(1).then(function(page) {
+                        const scale = 1.5;
+                        const viewport = page.getViewport({scale: scale});
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+                        page.render(renderContext).promise.then(() => {
+                            filePreview.innerHTML = '';
+                            filePreview.appendChild(canvas);
+                            generatePdfThumbnail(canvas);
+                        });
+                    });
+                });
+            }
+
+            function generatePdfThumbnail(canvas) {
+                const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+                document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+            }
+
+            function generateImageThumbnail(imageDataUrl) {
+                document.getElementById('thumbnailInput').value = imageDataUrl;
+            }
+
+            function generateVideoThumbnail(videoFile) {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.onloadedmetadata = function() {
+                    video.currentTime = 1;
+                };
+                video.onseeked = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+                    document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+                };
+                video.src = URL.createObjectURL(videoFile);
+            }
+
+            document.getElementById('attachmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Envoi en cours...';
+                this.submit();
+            });
+        });
     </script>
 @endpush
