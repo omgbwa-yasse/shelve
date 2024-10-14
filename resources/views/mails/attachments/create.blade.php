@@ -12,11 +12,11 @@
                         <input type="text" class="form-control" id="name" name="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="file" class="form-label">Fichier PDF</label>
-                        <input type="file" class="form-control" id="file" name="file" accept="application/pdf" required>
+                        <label for="file" class="form-label">Fichier (PDF, Image, ou Vidéo)</label>
+                        <input type="file" class="form-control" id="file" name="file" accept="application/pdf,image/*,video/*" required>
                     </div>
-                    <div id="pdf-preview" class="mb-3">
-                        <canvas id="pdf-canvas" style="max-width: 100%; height: auto;"></canvas>
+                    <div id="file-preview" class="mb-3">
+                        <!-- Preview will be inserted here -->
                     </div>
                     <input type="hidden" name="thumbnail" id="thumbnailInput">
                     <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
@@ -33,8 +33,7 @@
             const fileInput = document.getElementById('file');
             const nameInput = document.getElementById('name');
             const submitBtn = document.getElementById('submitBtn');
-            const pdfCanvas = document.getElementById('pdf-canvas');
-            const ctx = pdfCanvas.getContext('2d');
+            const filePreview = document.getElementById('file-preview');
 
             function updateSubmitButton() {
                 submitBtn.disabled = !(fileInput.files.length > 0 && nameInput.value.trim() !== '');
@@ -42,17 +41,39 @@
 
             fileInput.addEventListener('change', function(event) {
                 const file = event.target.files[0];
-                if (file && file.type === 'application/pdf') {
+                if (file) {
+                    const fileType = file.type.split('/')[0];
                     const fileReader = new FileReader();
-                    fileReader.onload = function() {
-                        const pdfData = new Uint8Array(this.result);
-                        renderPdfPreview(pdfData);
-                        generatePdfThumbnail(pdfData);
+
+                    fileReader.onload = function(e) {
+                        switch(fileType) {
+                            case 'application':
+                                if (file.type === 'application/pdf') {
+                                    renderPdfPreview(new Uint8Array(e.target.result));
+                                } else {
+                                    filePreview.innerHTML = '<p>Aperçu non disponible pour ce type de fichier.</p>';
+                                }
+                                break;
+                            case 'image':
+                                filePreview.innerHTML = `<img src="${e.target.result}" alt="Image preview" style="max-width: 100%; max-height: 300px;">`;
+                                generateImageThumbnail(e.target.result);
+                                break;
+                            case 'video':
+                                filePreview.innerHTML = `<video src="${e.target.result}" controls style="max-width: 100%; max-height: 300px;"></video>`;
+                                generateVideoThumbnail(file);
+                                break;
+                            default:
+                                filePreview.innerHTML = '<p>Aperçu non disponible pour ce type de fichier.</p>';
+                        }
                     };
-                    fileReader.readAsArrayBuffer(file);
+
+                    if (fileType === 'application' && file.type === 'application/pdf') {
+                        fileReader.readAsArrayBuffer(file);
+                    } else {
+                        fileReader.readAsDataURL(file);
+                    }
                 } else {
-                    pdfCanvas.style.display = 'none';
-                    alert('Veuillez sélectionner un fichier PDF.');
+                    filePreview.innerHTML = '';
                 }
                 updateSubmitButton();
             });
@@ -60,25 +81,6 @@
             nameInput.addEventListener('input', updateSubmitButton);
 
             function renderPdfPreview(pdfData) {
-                pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
-                    pdf.getPage(1).then(function(page) {
-                        const viewport = page.getViewport({scale: 1});
-                        const scale = pdfCanvas.offsetWidth / viewport.width;
-                        const scaledViewport = page.getViewport({scale: scale});
-
-                        pdfCanvas.height = scaledViewport.height;
-                        pdfCanvas.width = scaledViewport.width;
-                        pdfCanvas.style.display = 'block';
-
-                        page.render({
-                            canvasContext: ctx,
-                            viewport: scaledViewport
-                        });
-                    });
-                });
-            }
-
-            function generatePdfThumbnail(pdfData) {
                 pdfjsLib.getDocument({data: pdfData}).promise.then(function(pdf) {
                     pdf.getPage(1).then(function(page) {
                         const scale = 1.5;
@@ -93,11 +95,38 @@
                             viewport: viewport
                         };
                         page.render(renderContext).promise.then(() => {
-                            const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
-                            document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+                            filePreview.innerHTML = '';
+                            filePreview.appendChild(canvas);
+                            generatePdfThumbnail(canvas);
                         });
                     });
                 });
+            }
+
+            function generatePdfThumbnail(canvas) {
+                const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+                document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+            }
+
+            function generateImageThumbnail(imageDataUrl) {
+                document.getElementById('thumbnailInput').value = imageDataUrl;
+            }
+
+            function generateVideoThumbnail(videoFile) {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.onloadedmetadata = function() {
+                    video.currentTime = 1;
+                };
+                video.onseeked = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const thumbnailDataUrl = canvas.toDataURL('image/jpeg');
+                    document.getElementById('thumbnailInput').value = thumbnailDataUrl;
+                };
+                video.src = URL.createObjectURL(videoFile);
             }
 
             document.getElementById('mailAttachmentForm').addEventListener('submit', function(e) {

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
+use Intervention\Image\Image;
+use FFMpeg;
 
 class MailAttachmentController extends Controller
 {
@@ -30,16 +32,20 @@ class MailAttachmentController extends Controller
 
     public function store(Request $request, $id)
     {
+        $mail = Mail::findOrFail($id);
+
         try {
             $request->validate([
                 'name' => 'required|max:100',
-                'file' => 'required|file|mimes:pdf|max:2048',
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:20480', // 20MB max
                 'thumbnail' => 'nullable|string',
             ]);
 
-            $mail = Mail::findOrFail($id);
             $file = $request->file('file');
             $path = $file->store('mail_attachments');
+
+            $mimeType = $file->getMimeType();
+            $fileType = explode('/', $mimeType)[0];
 
             $attachment = MailAttachment::create([
                 'path' => $path,
@@ -48,7 +54,8 @@ class MailAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
-                'type' => 'mail',
+                'type' => $fileType,
+                'mime_type' => $mimeType,
             ]);
 
             if ($request->filled('thumbnail')) {
@@ -60,6 +67,15 @@ class MailAttachmentController extends Controller
                     $attachment->thumbnail_path = $thumbnailPath;
                     $attachment->save();
                 }
+            } else {
+                // Generate thumbnail for images and videos if not provided
+                if (in_array($fileType, ['image', 'video'])) {
+                    $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
+                    if ($thumbnailPath) {
+                        $attachment->thumbnail_path = $thumbnailPath;
+                        $attachment->save();
+                    }
+                }
             }
 
             $mail->attachments()->attach($attachment->id);
@@ -67,10 +83,30 @@ class MailAttachmentController extends Controller
             return redirect()->route('mails.show', $mail)->with('success', 'Pièce jointe ajoutée avec succès au mail.');
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'ajout de la pièce jointe au mail : ' . $e->getMessage());
+            Log::error('Stack trace : ' . $e->getTraceAsString());
             return redirect()->route('mails.show', $mail)->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe au mail.');
         }
     }
 
+    private function generateThumbnail($file, $attachmentId, $fileType)
+    {
+        $thumbnailPath = 'thumbnails_mail/' . $attachmentId . '.jpg';
+
+        if ($fileType === 'image') {
+            $img = Image::make($file->getRealPath());
+            $img->fit(300, 300);
+            $img->save(storage_path('app/public/' . $thumbnailPath));
+        } elseif ($fileType === 'video') {
+            $ffmpeg = FFMpeg\FFMpeg::create();
+            $video = $ffmpeg->open($file->getRealPath());
+            $frame = $video->frame(FFMpeg\Coordinate\TimeCode::fromSeconds(1));
+            $frame->save(storage_path('app/public/' . $thumbnailPath));
+        } else {
+            return null;
+        }
+
+        return $thumbnailPath;
+    }
 
 
 
@@ -108,10 +144,29 @@ class MailAttachmentController extends Controller
         $filePath = storage_path('app/' . $attachment->path);
 
         if (file_exists($filePath)) {
-            return response()->file($filePath);
+            $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
+            $mimeType = $this->getMimeType($fileExtension);
+
+            return response()->file($filePath, ['Content-Type' => $mimeType]);
         }
 
         return abort(404);
+    }
+
+    private function getMimeType($extension)
+    {
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'mp4' => 'video/mp4',
+            'webm' => 'video/webm',
+            'ogg' => 'video/ogg',
+        ];
+
+        return $mimeTypes[$extension] ?? 'application/octet-stream';
     }
 
 

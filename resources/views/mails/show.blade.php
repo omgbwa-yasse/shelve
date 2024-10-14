@@ -6,7 +6,7 @@
             <div class="">
                 <div class="">
                     <div class="card-header bg-primary text-white">
-                        <h2 class="mb-0">{{ $mail->name }}</h2>
+                        <h3 class="mb-0">{{ $mail->name }}</h3>
                     </div>
                     <div class="card-body">
                         <ul class="nav nav-tabs" id="mailTabs" role="tablist">
@@ -247,11 +247,6 @@
             }
         }
 
-        $(document).ready(function() {
-            $('#mailTabs a').on('click', function (e) {
-                e.preventDefault();
-                $(this).tab('show');
-            });
-        });
+
     </script>
 @endpush
