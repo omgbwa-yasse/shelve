@@ -31,51 +31,63 @@
                 </div>
             </div>
 
-            @foreach ($mails as $mail)
-                <h4 class="card-title mb-2">
-                    <div class="btn-group mt-1" role="group">
-                        <input type="checkbox" class="me-2" name="selected_mail[]" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" autocomplete="off" />
-                    </div>
-                    <a href="{{ route('mails.show', $mail) }}"><b>{{ $mail->code }} - {{ $mail->name }}</b></a>
-                    <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }}">
-                    {{ $mail->priority->name ?? '' }}
-                </span>
-                </h4>
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-9">
-                                <p class="card-text mb-1">
-                                    <i class="bi bi-card-text me-2"></i><em>{{ __('description') }}:</em> {{ $mail->description }} <br>
-                                    @foreach ($mail->authors as $index => $author)
-                                        <i class="bi bi-person-fill me-2"></i><em>{{ __('author') }}:</em>
-                                        <a href="{{ route('mails.sort')}}?categ=author&value={{ $author->id }}">{{ $author->name }}</a>
-                                        @if(!$loop->last)
-                                            ;
-                                        @endif
-                                    @endforeach
-                                    <i class="bi bi-calendar-event me-2"></i><em>{{ __('date') }}:</em><a href="{{ route('mails.sort')}}?categ=dates&date_exact={{ $mail->date }}"> {{ $mail->date }}</a>
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i><em>{{ __('priority') }} :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
-                                    <i class="bi bi-envelope-fill me-2"></i><em>{{ __('mail_type') }} :</em> <a href="{{ route('mails.sort')}}?categ=priority&id={{ $mail->type->id }}">{{ $mail->type->name ?? '' }}</a>
-                                    <i class="bi bi-diagram-3-fill me-2"></i><em>{{ __('typology') }} :</em> <a href="{{ route('mails.sort')}}?categ=typology&id={{ $mail->typology->id }}"> {{ $mail->typology->name ?? '' }} </a>
-                                    <i class="bi bi-file-earmark-text-fill me-2"></i><em>{{ __('copy') }} :</em> <a href="{{ route('mails.sort')}}?categ=documentType&id={{ $mail->documentType->id }}">{{ $mail->documentType->name ?? '' }}</a>
-                                </p>
+            <div id="mailList" class="mb-4">
+                @foreach ($mails as $mail)
+                    <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                        <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail-{{ $mail->id }}" name="selected_mail[]" />
                             </div>
-                            <div class="col-md-3 text-md-end text-center">
-                                <div class="d-flex justify-content-md-end justify-content-center align-items-center">
-                                    @if($mail->attachments->count() > 0)
-                                        <button class="btn btn-sm btn-outline-info me-2" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $mail->id }}">
-                                            {{ $mail->attachments->count() }} <i class="bi bi-paperclip"></i>
-                                        </button>
-                                    @else
-                                        <span class="text-muted me-2"><i class="bi bi-paperclip"></i> 0</span>
-                                    @endif
+                            <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $mail->id }}" aria-expanded="false" aria-controls="details-{{ $mail->id }}">
+                                <i class="bi bi-chevron-down fs-5"></i>
+                            </button>
+                            <h4 class="card-title flex-grow-1 m-0 text-primary" for="mail-{{ $mail->id }}">
+                                <a href="{{ route('mails.show', $mail) }}" class="text-decoration-none text-dark">
+                                    <span class="fs-5 fw-semibold">{{ $mail->code }}</span>
+                                    <span class="fs-5"> - {{ $mail->name }}</span>
+                                    <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }} ms-2">{{ $mail->priority->name ?? '' }}</span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div class="collapse" id="details-{{ $mail->id }}">
+                            <div class="card-body bg-white">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <p class="mb-2"><i class="bi bi-card-text me-2 text-primary"></i><strong>{{ __('description') }}:</strong> {{ $mail->description }}</p>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <p class="mb-2">
+                                            <i class="bi bi-person-fill me-2 text-primary"></i><strong>{{ __('author') }}:</strong>
+                                            @foreach ($mail->authors as $index => $author)
+                                                <a href="{{ route('mails.sort') }}?categ=author&value={{ $author->id }}">{{ $author->name }}</a>@if(!$loop->last),@endif
+                                            @endforeach
+                                            <br>
+                                             <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('date') }}:</strong> <a href="{{ route('mails.sort') }}?categ=dates&date_exact={{ $mail->date }}">{{ $mail->date }}</a>
+
+                                            <i class="bi bi-exclamation-triangle-fill me-2 text-primary"></i><strong>{{ __('priority') }}:</strong> <a href="{{ route('mails.sort') }}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
+
+                                            <i class="bi bi-envelope-fill me-2 text-primary"></i><strong>{{ __('mail_type') }}:</strong> <a href="{{ route('mails.sort') }}?categ=priority&id={{ $mail->type->id }}">{{ $mail->type->name ?? '' }}</a>
+
+                                            <i class="bi bi-diagram-3-fill me-2 text-primary"></i><strong>{{ __('typology') }}:</strong> <a href="{{ route('mails.sort') }}?categ=typology&id={{ $mail->typology->id }}">{{ $mail->typology->name ?? '' }}</a>
+                                            <br>
+                                            <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i><strong>{{ __('copy') }}:</strong> <a href="{{ route('mails.sort') }}?categ=documentType&id={{ $mail->documentType->id }}">{{ $mail->documentType->name ?? '' }}</a>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-3 text-md-end">
+                                        @if($mail->attachments->count() > 0)
+                                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $mail->id }}">
+                                                {{ $mail->attachments->count() }} <i class="bi bi-paperclip"></i>
+                                            </button>
+                                        @else
+                                            <span class="text-muted"><i class="bi bi-paperclip"></i> 0</span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
 
         <!-- Pagination -->
@@ -286,6 +298,38 @@
                     card.style.display = "none";
                 }
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapseElements = document.querySelectorAll('.collapse');
+            collapseElements.forEach(collapse => {
+                collapse.addEventListener('show.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                });
+                collapse.addEventListener('hide.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                });
+            });
+
+            // Gestion du "voir plus / voir moins" pour le contenu
+            document.querySelectorAll('.content-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    const fullText = this.getAttribute('data-full-text');
+
+                    if (this.textContent === 'Voir plus') {
+                        targetElement.textContent = fullText;
+                        this.textContent = 'Voir moins';
+                    } else {
+                        targetElement.textContent = fullText.substr(0, 200) + '...';
+                        this.textContent = 'Voir plus';
+                    }
+                });
+            });
         });
     </script>
 @endpush

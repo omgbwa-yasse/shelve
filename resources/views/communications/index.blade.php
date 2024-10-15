@@ -2,108 +2,87 @@
 
 @section('content')
     <div class="container">
-        <h1><i class="bi bi-file-earmark-spreadsheet"></i>  Fiches de communication {{ $title ?? ''}}</h1>
+        <h1><i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Communications') }} {{ $title ?? ''}}</h1>
         <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
-            <i class="bi bi-plus-circle"></i> Remplir une fiche
+            <i class="bi bi-plus-circle"></i> {{ __('Fill a form') }}
         </a>
 
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
                 <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-cart me-1"></i>
-                    Chariot**
+                    {{ __('Cart') }}
                 </a>
                 <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
-                    Exporter
+                    {{ __('Export') }}
                 </a>
                 <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-printer me-1"></i>
-                    Imprimer
+                    {{ __('Print') }}
                 </a>
             </div>
             <div class="d-flex align-items-center">
                 <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                     <i class="bi bi-check-square me-1"></i>
-                    Tout cocher
+                    {{ __('Check all') }}
                 </a>
             </div>
         </div>
         <div class="row">
-            @foreach ($communications as $communication)
-
-            <div class="col-12 ml-3 mb-1">
-                <h5 class="card-title">
-                    <input class="form-check-input" type="checkbox" value="{{$communication->id}}" id="communication_id" />
-                    <label class="form-check-label" for="">
-                        <span style="font-size: 1.4em; font-weight: bold;">
-                            <a href="{{ route('transactions.show', $communication->id??'') }}">
-                                <strong> {{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
-                            </a>
-                        </span>
-                    </label>
-                </h5>
-            </div>
-            <div class="col-12 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="card-text">
-                                        <strong>Contenu :</strong> {{ $communication->content ?? 'N/A' }}<br>
-                                    </p>
-                                </div>
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Demandeur :</strong>
-                                        <span>
-                                            <a href="{{ route('communications-sort')}}?user={{ $communication->user->id }}">
-                                                {{ $communication->user->name ?? 'N/A' }}
-                                            </a>
-
-                                            (<a href="{{ route('communications-sort')}}?user_organisation={{ $communication->userOrganisation->id??'' }}">
-                                                    {{ $communication->userOrganisation->name ?? 'N/A' }}
-                                            </a>)</span>
+            <div id="communicationsList" class="mb-4">
+                @foreach ($communications as $communication)
+                    <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                        <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="checkbox" value="{{ $communication->id }}" id="communication-{{ $communication->id }}" />
+                            </div>
+                            <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $communication->id }}" aria-expanded="false" aria-controls="details-{{ $communication->id }}">
+                                <i class="bi bi-chevron-down fs-5"></i>
+                            </button>
+                            <h4 class="card-title flex-grow-1 m-0 text-primary" for="communication-{{ $communication->id }}">
+                                <a href="{{ route('transactions.show', $communication->id ?? '') }}" class="text-decoration-none text-dark">
+                                    <span class="fs-5 fw-semibold">{{ $communication->code ?? 'N/A' }}</span>
+                                    <span class="fs-5"> : {{ $communication->name ?? 'N/A' }}</span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div class="collapse" id="details-{{ $communication->id }}">
+                            <div class="card-body bg-white">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <p class="mb-2"><i class="bi bi-card-text me-2 text-primary"></i><strong>{{ __('Content') }} :</strong> {{ $communication->content ?? 'N/A' }}</p>
                                     </div>
-                                </div>
-
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Opérateur :</strong>
-                                        <span>
-
-                                            <a href="{{ route('communications-sort')}}?operator={{ $communication->operator->id }}">
-                                                {{ $communication->operator->name ?? 'N/A' }}
-                                            </a>
-
-                                            (<a href="{{ route('communications-sort')}}?operator_organisation={{ $communication->operatorOrganisation->id ??'' }}">
-                                                {{ $communication->operatorOrganisation->name ?? 'N/A' }}
-                                            </a>
-                                            )</span>
+                                    <div class="col-md-6">
+                                        <p class="mb-2">
+                                            <i class="bi bi-person-fill me-2 text-primary"></i><strong>{{ __('Requester') }} :</strong>
+                                            <a href="{{ route('communications-sort') }}?user={{ $communication->user->id }}">{{ $communication->user->name ?? 'N/A' }}</a>
+                                            (<a href="{{ route('communications-sort') }}?user_organisation={{ $communication->userOrganisation->id ?? '' }}">{{ $communication->userOrganisation->name ?? 'N/A' }}</a>)
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-person-badge-fill me-2 text-primary"></i><strong>{{ __('Operator') }} :</strong>
+                                            <a href="{{ route('communications-sort') }}?operator={{ $communication->operator->id }}">{{ $communication->operator->name ?? 'N/A' }}</a>
+                                            (<a href="{{ route('communications-sort') }}?operator_organisation={{ $communication->operatorOrganisation->id ?? '' }}">{{ $communication->operatorOrganisation->name ?? 'N/A' }}</a>)
+                                        </p>
                                     </div>
-                                </div>
-
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Date de retour :</strong> {{ $communication->return_date ?? 'N/A' }}
-                                    </div>
-                                    <div class="mr-3">
-                                        <strong>Date de retour effectif :</strong> {{ $communication->return_effective ?? 'N/A' }}
-                                    </div>
-                                    <div>
-                                        <strong>Statut :</strong>
-                                        <a href="{{ route('communications-sort')}}?status={{ $communication->status->id }}">
-                                            {{ $communication->status->name ?? 'N/A' }}
-                                        </a>
-
+                                    <div class="col-md-6">
+                                        <p class="mb-2">
+                                            <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('Return date') }} :</strong> {{ $communication->return_date ?? 'N/A' }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-calendar-check me-2 text-primary"></i><strong>{{ __('Effective return date') }} :</strong> {{ $communication->return_effective ?? 'N/A' }}
+                                        </p>
+                                        <p class="mb-2">
+                                            <i class="bi bi-info-circle-fill me-2 text-primary"></i><strong>{{ __('Status') }} :</strong>
+                                            <a href="{{ route('communications-sort') }}?status={{ $communication->status->id }}">{{ $communication->status->name ?? 'N/A' }}</a>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
     </div>
 
@@ -139,7 +118,7 @@
                 .map(checkbox => checkbox.value);
 
             if (checkedCommunications.length === 0) {
-                alert('Veuillez sélectionner au moins une communication à ajouter au chariot.');
+                alert("{{ __('Please select at least one communication to add to the cart.') }}");
                 return;
             }
 
@@ -158,12 +137,12 @@
                         // Optionnel : rediriger vers la page du chariot nouvellement créé
                         // window.location.href = '/dolly/' + data.dolly_id;
                     } else {
-                        alert('Une erreur est survenue lors de la création du chariot.');
+                        alert("{{ __('An error occurred while creating the cart.') }}");
                     }
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de la création du chariot.');
+                    alert("{{ __('An error occurred while creating the cart.') }}");
                 });
         });
         document.getElementById('exportBtn').addEventListener('click', function(e) {
@@ -172,7 +151,7 @@
                 .map(checkbox => checkbox.value);
 
             if (checkedCommunications.length === 0) {
-                alert('Veuillez sélectionner au moins une communication à exporter.');
+                alert("{{ __('Please select at least one communication to export.') }}");
                 return;
             }
 
@@ -185,7 +164,7 @@
                 .map(checkbox => checkbox.value);
 
             if (checkedCommunications.length === 0) {
-                alert('Veuillez sélectionner au moins une communication à imprimer.');
+                alert("{{ __('Please select at least one communication to print.') }}");
                 return;
             }
 
@@ -201,7 +180,39 @@
                 checkbox.checked = !allChecked;
             });
 
-            this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>Tout cocher' : '<i class="bi bi-square me-1"></i>Tout décocher';
+            this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>{{ __("Check all") }}' : '<i class="bi bi-square me-1"></i>{{ __("Uncheck all") }}';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapseElements = document.querySelectorAll('.collapse');
+            collapseElements.forEach(collapse => {
+                collapse.addEventListener('show.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                });
+                collapse.addEventListener('hide.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                });
+            });
+
+            // Gestion du "voir plus / voir moins" pour le contenu
+            document.querySelectorAll('.content-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    const fullText = this.getAttribute('data-full-text');
+
+                    if (this.textContent === "{{ __('See more') }}") {
+                        targetElement.textContent = fullText;
+                        this.textContent = "{{ __('See less') }}";
+                    } else {
+                        targetElement.textContent = fullText.substr(0, 200) + '...';
+                        this.textContent = "{{ __('See more') }}";
+                    }
+                });
+            });
         });
     </script>
 @endpush

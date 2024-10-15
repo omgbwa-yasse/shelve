@@ -2,109 +2,99 @@
 
 @section('content')
     <div class="container">
-        <h1>Fiche de communication </h1>
-        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-            <div class="d-flex align-items-center">
-                <a href="#" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-cart me-1"></i>
-                    Chariot
-                </a>
-                <a href="#" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-download me-1"></i>
-                    Exporter
-                </a>
-                <a href="#" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-printer me-1"></i>
-                    Imprimer
-                </a>
-            </div>
-            <div class="d-flex align-items-center">
-                <a href="#" class="btn btn-light btn-sm">
-                    <i class="bi bi-check-square me-1"></i>
-                    Tout chocher
-                </a>
-            </div>
-        </div>
-
-
-                <div class="col-13 mb-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h5 class="card-title">
-                                       <strong>{{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
-                                    </h5>
-                                    <p class="card-text">
-                                        <strong>Contenu :</strong> {{ $communication->content ?? 'N/A' }}<br>
-                                    </p>
-                                </div>
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Demandeur :</strong>
-                                        <span>{{ $communication->user->name ?? 'N/A' }} ({{ $communication->userOrganisation->name ?? 'N/A' }})</span>
-                                    </div>
-                                </div>
-
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Opérateur :</strong>
-                                        <span>{{ $communication->operator->name ?? 'N/A' }} ({{ $communication->operatorOrganisation->name ?? 'N/A' }})</span>
-                                    </div>
-                                </div>
-
-                                <div class="card-text d-flex flex-wrap">
-                                    <div class="mr-3">
-                                        <strong>Date de retour :</strong> {{ $communication->return_date ?? 'N/A' }}
-                                    </div>
-                                    <div class="mr-3">
-                                        <strong>Date de retour effectif :</strong> {{ $communication->return_effective ?? 'N/A' }}
-                                    </div>
-                                    <div>
-                                        <strong>Statut :</strong> {{ $communication->status->name ?? 'N/A' }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <h1 class="mb-4">{{ __('Communication Form') }}</h1>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-download me-1"></i>{{ __('Export') }}
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-printer me-1"></i>{{ __('Print') }}
+                        </a>
                     </div>
                 </div>
-
-
-                <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-secondary">Back</a>
-                <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning">Edit</a>
-                <form action="{{ route('transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this communication?')">Delete</button>
-                </form>
-                @if($communication->return_effective ==  NULL)
-                    <a href="{{ route('return-effective') }}?id={{$communication->id}}" class="btn btn-success">Retour effectif</a>
-                @else
-                    <a href="{{ route('return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">Annuler le retour effectif</a>
-                @endif
-                <a href="{{ route('record-transmission') }}?id={{$communication->id}}" class="btn btn-success">Transmettre les documents</a>
-                <hr>
-                <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-warning">Ajouter des documents</a>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <strong>{{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
+                </h5>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p class="card-text"><strong>{{ __('Content') }}:</strong> {{ $communication->content ?? 'N/A' }}</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>{{ __('Requester') }}:</strong> {{ $communication->user->name ?? 'N/A' }}</p>
+                        <p><small class="text-muted">({{ $communication->userOrganisation->name ?? 'N/A' }})</small></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>{{ __('Operator') }}:</strong> {{ $communication->operator->name ?? 'N/A' }}</p>
+                        <p><small class="text-muted">({{ $communication->operatorOrganisation->name ?? 'N/A' }})</small></p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>{{ __('Return Date') }}:</strong> {{ $communication->return_date ?? 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>{{ __('Effective Return Date') }}:</strong> {{ $communication->return_effective ?? 'N/A' }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>{{ __('Status') }}:</strong> {{ $communication->status->name ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="btn-group">
+                    <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-outline-secondary">{{ __('Back') }}</a>
+                    <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning">{{ __('Edit') }}</a>
+                    <form action="{{ route('transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('Are you sure you want to delete this communication?') }}')">{{ __('Delete') }}</button>
+                    </form>
+                    @if($communication->return_effective ==  NULL)
+                        <a href="{{ route('return-effective') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Effective Return') }}</a>
+                    @else
+                        <a href="{{ route('return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">{{ __('Cancel Effective Return') }}</a>
+                    @endif
+                    <a href="{{ route('record-transmission') }}?id={{$communication->id}}" class="btn btn-primary">{{ __('Transmit Documents') }}</a>
+                </div>
             </div>
         </div>
-        @foreach($communication->records as $record)
-            <ul class="list-group list-group-numbered">
-                <li class="list-group-item">
-                    {{ $record->record->name }} / {{ $record->is_original }} : {{ $record->return_date }} ; date effective : {{ $record->return_effective }}
-                    <p class="card-text">
-                        <strong>Contenu :</strong> {{ $record->content ?? 'N/A' }}<br>
-                    </p>
-                    <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-secondary">Voir</a>
 
-
-                    @if($record->return_effective == NULL & $record->is_orginal == false)
-                        <a href="{{ route('record-return-effective') }}?id={{  $record->id }}" class="btn btn-success"> Returner </a>
-                    @elseif($record->return_effective != NULL &  $record->is_orginal == True )
-                    <a href="{{ route('record-return-cancel') }}?id={{  $record->id }}" class="btn btn-danger"> Annuler le retour </a>
-                    @endif
-
-                </li>
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ __('Documents') }}</h5>
+                <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>{{ __('Add Documents') }}
+                </a>
+            </div>
+            <ul class="list-group list-group-flush">
+                @foreach($communication->records as $record)
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ $record->record->name }}</h6>
+                                <p class="mb-1"><small>{{ $record->is_original ? __('Original') : __('Copy') }} | {{ __('Return Date') }}: {{ $record->return_date }}</small></p>
+                                <p class="mb-1"><small>{{ __('Effective Return Date') }}: {{ $record->return_effective ?? __('Not returned') }}</small></p>
+                                <p class="mb-0"><strong>{{ __('Content') }}:</strong> {{ $record->content ?? 'N/A' }}</p>
+                            </div>
+                            <div class="btn-group">
+                                <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-outline-secondary btn-sm">{{ __('View') }}</a>
+                                @if($record->return_effective == NULL && !$record->is_original)
+                                    <a href="{{ route('record-return-effective') }}?id={{ $record->id }}" class="btn btn-success btn-sm">{{ __('Return') }}</a>
+                                @elseif($record->return_effective != NULL && $record->is_original)
+                                    <a href="{{ route('record-return-cancel') }}?id={{ $record->id }}" class="btn btn-danger btn-sm">{{ __('Cancel Return') }}</a>
+                                @endif
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
             </ul>
-        @endforeach
+        </div>
     </div>
 @endsection
