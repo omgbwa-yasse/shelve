@@ -180,16 +180,36 @@ class CommunicationController extends Controller
 
     public function export(Request $request)
     {
-        $communicationIds = explode(',', $request->query('communications'));
-        $communications = Communication::whereIn('id', $communicationIds)->get();
+        $id = $request->route('id');
+        if ($id) {
+            $communications = Communication::where('id', $id)->get();
+        } else {
+            $communicationIds = explode(',', $request->query('communications', ''));
+            $communications = Communication::whereIn('id', $communicationIds)->get();
+        }
+
+        if ($communications->isEmpty()) {
+            return redirect()->back()->with('error', 'No communications found to export.');
+        }
 
         return Excel::download(new CommunicationsExport($communications), 'communications_export.xlsx');
     }
 
     public function print(Request $request)
     {
-        $communicationIds = explode(',', $request->query('communications'));
-        $communications = Communication::with([
+        $id = $request->route('id');
+        if ($id) {
+            $communications = Communication::where('id', $id)->get();
+        } else {
+            $communicationIds = explode(',', $request->query('communications', ''));
+            $communications = Communication::whereIn('id', $communicationIds)->get();
+        }
+
+        if ($communications->isEmpty()) {
+            return redirect()->back()->with('error', 'No communications found to print.');
+        }
+
+        $communications->load([
             'user',
             'userOrganisation',
             'operator',
@@ -202,7 +222,6 @@ class CommunicationController extends Controller
                     'level',
                     'activity',
                     'parent',
-                    'container',
                     'user',
                     'authors',
                     'terms',
@@ -210,16 +229,9 @@ class CommunicationController extends Controller
                     'children'
                 ]);
             }
-        ])
-            ->whereIn('id', $communicationIds)
-            ->get();
-
-        // Uncomment the following line for debugging
-        // dd($communications);
+        ]);
 
         $pdf = PDF::loadView('communications.print', compact('communications'));
         return $pdf->download('communications_print.pdf');
     }
-    }
-
-
+}

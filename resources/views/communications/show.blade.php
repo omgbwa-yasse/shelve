@@ -2,24 +2,23 @@
 
 @section('content')
     <div class="container">
-        <h1 class="mb-4">{{ __('Communication Form') }}</h1>
+        <h1 class="mb-4"><i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Communication Form') }}</h1>
+
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-light">
                 <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</h5>
                     <div class="btn-group">
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <button class="btn btn-outline-secondary btn-sm" id="exportBtn">
                             <i class="bi bi-download me-1"></i>{{ __('Export') }}
-                        </a>
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" id="printBtn">
                             <i class="bi bi-printer me-1"></i>{{ __('Print') }}
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <h5 class="card-title mb-3">
-                    <strong>{{ $communication->code ?? 'N/A' }} : {{ $communication->name ?? 'N/A' }}</strong>
-                </h5>
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <p class="card-text"><strong>{{ __('Content') }}:</strong> {{ $communication->content ?? 'N/A' }}</p>
@@ -49,14 +48,16 @@
             </div>
             <div class="card-footer bg-light">
                 <div class="btn-group">
-                    <a href="{{ route('transactions.show', $communication->id) }}" class="btn btn-outline-secondary">{{ __('Back') }}</a>
-                    <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning">{{ __('Edit') }}</a>
+                    <a href="{{ route('transactions.index') }}" class="btn btn-outline-secondary"> {{ __('Back') }}</a>
+                    <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning"> {{ __('Edit') }}</a>
                     <form action="{{ route('transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('Are you sure you want to delete this communication?') }}')">{{ __('Delete') }}</button>
                     </form>
-                    @if($communication->return_effective ==  NULL)
+                </div>
+                <div class="btn-group ms-2">
+                    @if($communication->return_effective == NULL)
                         <a href="{{ route('return-effective') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Effective Return') }}</a>
                     @else
                         <a href="{{ route('return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">{{ __('Cancel Effective Return') }}</a>
@@ -66,7 +67,7 @@
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow-sm">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">{{ __('Documents') }}</h5>
                 <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-primary btn-sm">
@@ -98,3 +99,20 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = "{{ route('communications.export', $communication->id) }}";
+            });
+
+            document.getElementById('printBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = "{{ route('communications.print', $communication->id) }}";
+        });
+        });
+    </script>
+
+@endpush
