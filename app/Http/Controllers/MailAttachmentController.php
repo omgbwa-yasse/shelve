@@ -57,7 +57,7 @@ class MailAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
-                'type' => $fileType,
+                'type' => 'mail',
                 'mime_type' => $mimeType,
             ]);
 

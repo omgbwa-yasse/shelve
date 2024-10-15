@@ -30,7 +30,7 @@ class RecordAttachmentController extends Controller
 
     public function store(Request $request, $id)
     {
-        dd( $request);
+//        dd( $request);
         try {
             $request->validate([
                 'name' => 'required|max:100',
@@ -53,7 +53,7 @@ class RecordAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
-                'type' => $fileType,
+                'type' => 'record',
                 'mime_type' => $mimeType,
             ]);
 
@@ -78,9 +78,11 @@ class RecordAttachmentController extends Controller
             $record->attachments()->attach($attachment->id);
             return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
 
-        } catch (Exception $e) {
-            Log::error('Erreur lors de l\'ajout de la pièce jointe : ' . $e->getMessage());
-            return redirect()->route('records.attachments.index', $record->id)->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe.');
+        } catch (\Exception $e) {
+            // Log l'erreur
+            \Log::error('Erreur dans RecordAttachmentController@store: ' . $e->getMessage());
+            // Retournez l'erreur pour le débogage
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
