@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\RecordAttachment;
 use App\Models\Record;
 use App\Models\Attachment;
-
+use Intervention\Image\Image;
+use FFMpeg\FFMpeg;
+use FFMpeg\Coordinate\TimeCode;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,10 +30,11 @@ class RecordAttachmentController extends Controller
 
     public function store(Request $request, $id)
     {
+        dd( $request);
         try {
             $request->validate([
                 'name' => 'required|max:100',
-                'file' => 'required|file|mimes:pdf|max:2048',
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:20480', // 20MB max
                 'thumbnail' => 'nullable|string',
             ]);
 
@@ -40,6 +43,9 @@ class RecordAttachmentController extends Controller
 
             $path = $file->store('attachments');
 
+            $mimeType = $file->getMimeType();
+            $fileType = explode('/', $mimeType)[0];
+
             $attachment = Attachment::create([
                 'path' => $path,
                 'name' => $request->input('name'),
@@ -47,7 +53,8 @@ class RecordAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
-                'type' => 'record',
+                'type' => $fileType,
+                'mime_type' => $mimeType,
             ]);
 
             if ($request->filled('thumbnail')) {
@@ -58,6 +65,14 @@ class RecordAttachmentController extends Controller
                 if ($stored) {
                     $attachment->update(['thumbnail_path' => $thumbnailPath]);
                 }
+            } else {
+                // Generate thumbnail for images and videos if not provided
+                if (in_array($fileType, ['image', 'video'])) {
+                    $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
+                    if ($thumbnailPath) {
+                        $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                    }
+                }
             }
 
             $record->attachments()->attach($attachment->id);
@@ -65,8 +80,28 @@ class RecordAttachmentController extends Controller
 
         } catch (Exception $e) {
             Log::error('Erreur lors de l\'ajout de la pièce jointe : ' . $e->getMessage());
-            return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
+            return redirect()->route('records.attachments.index', $record->id)->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe.');
         }
+    }
+
+    private function generateThumbnail($file, $attachmentId, $fileType)
+    {
+        $thumbnailPath = 'thumbnails_record/' . $attachmentId . '.jpg';
+
+        if ($fileType === 'image') {
+            $img = Image::make($file->getRealPath());
+            $img->fit(300, 300);
+            $img->save(storage_path('app/public/' . $thumbnailPath));
+        } elseif ($fileType === 'video') {
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open($file->getRealPath());
+            $frame = $video->frame(TimeCode::fromSeconds(1));
+            $frame->save(storage_path('app/public/' . $thumbnailPath));
+        } else {
+            return null;
+        }
+
+        return $thumbnailPath;
     }
 
     public function edit(Record $record, Attachment $attachment)
