@@ -11,6 +11,7 @@ use App\Models\SlipRecord;
 use App\Models\slipRecordAttachment;
 use Illuminate\Http\Request;
 use App\Models\Organisation;
+use App\Models\MailContainer;
 use App\Models\Slip;
 use App\Models\Record;
 use App\Models\SlipStatus;
@@ -72,6 +73,63 @@ class SlipController extends Controller
         return redirect()->route('slips.index')
             ->with('success', 'Slip created successfully.');
     }
+
+
+
+    public function mailArchiving(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|max:20',
+            'name' => 'required|max:200',
+            'description' => 'nullable',
+            'mail_containers' => 'required|array',
+        ]);
+
+        $request->merge(['officer_id' => auth()->user()->id]);
+        $request->merge(['organisation_id' => auth()->user()->current_organisation_id]);
+        $request->merge(['slip_status_id' => 1]);
+        $request->merge(['is_received' => False]);
+        $request->merge(['received_date' => null]);
+        $request->merge(['is_approved' => false]);
+        $request->merge(['approved_date' => NULL]);
+
+        $slip = Slip::create($request->all());
+
+        $selectedMailContainers = $request->input('mail_containers');
+        $containers = MailContainer::findOrFail($selectedMailContainers)->with('mails')->get();
+        $mails = $containers->mails;
+
+        $container = Container::findOrFail(); // transferer les containers
+
+
+        foreach( $mails as $mail){
+            $i = 0;
+            SlipRecord::create([
+                'slip_id' => $slip->id,
+                'code' => $slip->code.'-'.$i,
+                'name' => $mail->name,
+                'date_format' => 'D',
+                'date_exact' => $mail->date,
+                'content' => $mail->description,
+                'level_id' => 1,
+                'width' => 1,
+                'width_description' => 1,
+                'support_id' => 1,
+                'activity_id' => 1,
+                'container_id' => 1,
+                'creator_id' => auth()->user()->id,
+            ]);
+            $i++;
+        }
+
+
+        return redirect()->route('slips.index')
+            ->with('success', 'Slip created successfully.');
+    }
+
+
+
+
 
     public function storetransfert(Request $request)
     {
