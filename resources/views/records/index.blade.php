@@ -17,8 +17,7 @@
                     <i class="bi bi-printer me-1"></i>
                     {{ __('print') }}
                 </a>
-            </div>
-            <div class="d-flex align-items-center">
+
                 <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-arrow-repeat me-1"></i>
                     {{ __('transfer') }}
@@ -34,45 +33,66 @@
             </div>
         </div>
 
-        <div id="recordList">
+        <div id="recordList" class="mb-4">
             @foreach ($records as $record)
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" />
-                    <label class="form-check-label" for="record-{{$record->id}}">
-                        <a href="{{ route('records.show', $record) }}">
-                            <span style="font-size: 1.6em; font-weight: bold;">{{ $record->code }}  : {{ $record->name }} [{{ $record->level->name }}]</span>
-                        </a>
-                    </label>
-                </div>
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-12">
-                                <p class="card-text">
-                                    <i class="bi bi-card-text me-2"></i> {{ __('content') }} : {{ $record->content }}<br>
-                                    <i class="bi bi-bar-chart-fill me-2"></i>{{ __('descriptionLevel') }} : <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id ?? ''}}">{{ $record->level->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-flag-fill me-2"></i>{{ __('status') }} : <a href=" {{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-hdd-fill me-2"></i>{{ __('support') }} : <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-activity me-2"></i>{{ __('activity') }} : <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
-                                    <i class="bi bi-calendar-event me-2"></i>{{ __('dates') }} : <a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
-                                    <i class="bi bi-geo-alt-fill me-2"></i>{{ __('container') }} : <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? __('notConditioned') }}</a>
-                                    <i class="bi bi-people-fill me-2"></i>{{ __('producer') }} : <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
-                                </p>
-                                <strong>{{ __('headings') }} : </strong>
-                                <p class="card-text">
-                                    @foreach($record->terms as $index => $term)
-                                        <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}"> {{ $term->name ?? 'N/A' }} </a>
-                                        @if(!$loop->last)
-                                            {{ " ; " }}
+                <div class=" mb-3 " style="transition: all 0.3s ease; transform: translateZ(0);">
+                    <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" />
+                        </div>
+                        <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{$record->id}}" aria-expanded="false" aria-controls="details-{{$record->id}}">
+                            <i class="bi bi-chevron-down fs-5"></i>
+                        </button>
+                        <h4  class="card-title flex-grow-1 m-0 text-primary" for="record-{{$record->id}}">
+                            <a href="{{ route('records.show', $record) }}" class="text-decoration-none text-dark">
+                                <span class="fs-5 fw-semibold">{{ $record->code }}</span>
+                                <span class="fs-5"> : {{ $record->name }}</span>
+                                <span class="badge bg-secondary ms-2">{{ $record->level->name }}</span>
+                            </a>
+                        </h4>
+                    </div>
+                    <div class="collapse" id="details-{{$record->id}}">
+                        <div class="card-body bg-white">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <p class="mb-2"><i class="bi bi-card-text me-2 text-primary"></i><strong>{{ __('content') }} :</strong>
+                                        <span class="content-text" id="content-{{$record->id}}">
+                                    {{ Str::limit($record->content, 200) }}
+                                </span>
+                                        @if (strlen($record->content) > 200)
+                                            <a href="#" class="text-primary content-toggle" data-target="content-{{$record->id}}" data-full-text="{{ $record->content }}">Voir plus</a>
                                         @endif
-                                    @endforeach
-                                </p>
+                                    </p>
+                                </div>
+                                <div class="">
+                                    <p class="mb-2"><i class="bi bi-bar-chart-fill me-2 text-primary"></i><strong>{{ __('descriptionLevel') }} :</strong> <a href="{{ route('records.sort')}}?categ=level&id={{ $record->level->id ?? ''}}">{{ $record->level->name ?? 'N/A' }}</a>
+                                   <i class="bi bi-flag-fill me-2 text-primary"></i><strong>{{ __('status') }} :</strong> <a href="{{route('records.sort')}}?categ=status&id={{ $record->status->id ?? 'N/A' }}">{{ $record->status->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-hdd-fill me-2 text-primary"></i><strong>{{ __('support') }} :</strong> <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-activity me-2 text-primary"></i><strong>{{ __('activity') }} :</strong> <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('dates') }} :</strong> <a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
+                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i><strong>{{ __('container') }} :</strong> <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? __('notConditioned') }}</a>
+                                        <br>  <i class="bi bi-people-fill me-2 text-primary"></i><strong>{{ __('producer') }} :</strong> <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <p class="mb-0">
+                                        <strong>{{ __('headings') }} : </strong>
+                                        @foreach($record->terms as $index => $term)
+                                            <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}" class="badge bg-info text-decoration-none">{{ $term->name ?? 'N/A' }}</a>
+                                            @if(!$loop->last)
+                                                {{ " " }}
+                                            @endif
+                                        @endforeach
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
+
     </div>
 
     <footer class="bg-light py-3">
@@ -463,6 +483,38 @@
                 });
 
                 modal.show();
+            });
+
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapseElements = document.querySelectorAll('.collapse');
+            collapseElements.forEach(collapse => {
+                collapse.addEventListener('show.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                });
+                collapse.addEventListener('hide.bs.collapse', function () {
+                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
+                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                });
+            });
+
+            // Gestion du "voir plus / voir moins" pour le contenu
+            document.querySelectorAll('.content-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    const fullText = this.getAttribute('data-full-text');
+
+                    if (this.textContent === 'Voir plus') {
+                        targetElement.textContent = fullText;
+                        this.textContent = 'Voir moins';
+                    } else {
+                        targetElement.textContent = fullText.substr(0, 200) + '...';
+                        this.textContent = 'Voir plus';
+                    }
+                });
             });
         });
     </script>
