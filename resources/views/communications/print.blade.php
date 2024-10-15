@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impression des communications</title>
+    <title>{{ __('communication_sheets') }}</title>
     <style>
         body { font-family: Arial, sans-serif; }
         .communication { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
@@ -13,28 +13,26 @@
     </style>
 </head>
 <body>
-<h1>Fiches de communication</h1>
+<h1>{{ __('communication_sheets') }}</h1>
 @foreach($communications as $communication)
     <div class="communication">
         <h2>{{ $communication->code }} : {{ $communication->name }}</h2>
-        <p><strong>Contenu :</strong> {{ $communication->content }}</p>
-        <p><strong>Demandeur :</strong> {{ $communication->user->name??'N/A' }} ({{ $communication->userOrganisation->name??'N/A' }})</p>
-        <p><strong>Opérateur :</strong> {{ $communication->operator->name??'N/A' }} ({{ $communication->operatorOrganisation->name ??'N/A'}})</p>
-        <p><strong>Date de retour :</strong> {{ $communication->return_date??'N/A' }}</p>
-        <p><strong>Date de retour effectif :</strong> {{ $communication->return_effective??'N/A' }}</p>
-        <p><strong>Statut :</strong> {{ $communication->status->name??'N/A' }}</p>
-
+        <p><strong>{{ __('content') }} :</strong> {{ $communication->content }}</p>
+        <p><strong>{{ __('requester') }} :</strong> {{ $communication->user->name ?? __('not_available') }} ({{ $communication->userOrganisation->name ?? __('not_available') }})</p>
+        <p><strong>{{ __('operator') }} :</strong> {{ $communication->operator->name ?? __('not_available') }} ({{ $communication->operatorOrganisation->name ?? __('not_available') }})</p>
+        <p><strong>{{ __('return_date') }} :</strong> {{ $communication->return_date ?? __('not_available') }}</p>
+        <p><strong>{{ __('effective_return_date') }} :</strong> {{ $communication->return_effective ?? __('not_available') }}</p>
+        <p><strong>{{ __('status') }} :</strong> {{ $communication->status->name ?? __('not_available') }}</p>
         @if($communication->records->count() > 0)
-            <h3>Enregistrements associés :</h3>
+            <h3>{{ __('associated_records') }} :</h3>
             @foreach($communication->records as $communicationRecord)
                 <div class="record">
-                    <h4>{{ $communicationRecord->record->code??'N/A' }} : {{ $communicationRecord->record->name??'N/A' }}</h4>
-                    <p><strong>Contenu :</strong> {{ $communicationRecord->content??'N/A' }}</p>
-                    <p><strong>Est original :</strong> {{ $communicationRecord->is_original ? 'Oui' : 'Non' }}</p>
-                    <p><strong>Niveau :</strong> {{ $communicationRecord->record->level->name ?? 'N/A' }}</p>
-                    <p><strong>Support :</strong> {{ $communicationRecord->record->support->name ?? 'N/A' }}</p>
-                    <p><strong>Statut :</strong> {{ $communicationRecord->record->status->name ?? 'N/A' }}</p>
-
+                    <h4>{{ $communicationRecord->record->code ?? __('not_available') }} : {{ $communicationRecord->record->name ?? __('not_available') }}</h4>
+                    <p><strong>{{ __('content') }} :</strong> {{ $communicationRecord->content ?? __('not_available') }}</p>
+                    <p><strong>{{ __('is_original') }} :</strong> {{ $communicationRecord->is_original ? __('yes') : __('no') }}</p>
+                    <p><strong>{{ __('level') }} :</strong> {{ $communicationRecord->record->level->name ?? __('not_available') }}</p>
+                    <p><strong>{{ __('support') }} :</strong> {{ $communicationRecord->record->support->name ?? __('not_available') }}</p>
+                    <p><strong>{{ __('status') }} :</strong> {{ $communicationRecord->record->status->name ?? __('not_available') }}</p>
                 </div>
             @endforeach
         @endif

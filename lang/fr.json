@@ -387,6 +387,19 @@
     "Not returned": "Non retourné",
     "View": "Voir",
     "Return": "Retourner",
-    "Cancel Return": "Annuler le retour"
+    "Cancel Return": "Annuler le retour",
+
+    "communication_sheets": "Fiches de communication",
+
+    "requester": "Demandeur",
+    "operator": "Opérateur",
+    "return_date": "Date de retour",
+    "effective_return_date": "Date de retour effectif",
+
+    "associated_records": "Enregistrements associés",
+    "is_original": "Est original",
+    "yes": "Oui",
+    "no": "Non",
+    "not_available": "N/A"
 
 }

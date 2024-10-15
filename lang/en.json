@@ -399,6 +399,17 @@
     "Not returned": "Not returned",
     "View": "View",
     "Return": "Return",
-    "Cancel Return": "Cancel Return"
+    "Cancel Return": "Cancel Return",
+
+    "communication_sheets": "Communication Sheets",
+    "requester": "Requester",
+    "operator": "Operator",
+    "return_date": "Return Date",
+    "effective_return_date": "Effective Return Date",
+    "associated_records": "Associated Records",
+    "is_original": "Is Original",
+    "yes": "Yes",
+    "no": "No",
+    "not_available": "N/A"
 
 }
