@@ -139,7 +139,7 @@ class CommunicationController extends Controller
     public function update(Request $request, Communication $communication)
     {
         $request->validate([
-            'code' => 'required|unique:communications,code,' . $communication->id,
+            'code' => 'required' . $communication->id,
             'name' => 'required|string|max:200',
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
@@ -152,14 +152,14 @@ class CommunicationController extends Controller
             'name' => $request->name,
             'content' => $request->input('content'),
             'operator_id' => Auth()->user()->id,
-            'operator_organisation_id' => Auth()->user()->organisation->id,
+            'operator_organisation_id' => Auth()->user()->current_organisation_id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
             'status_id' => 1,
         ]);
 
-        return redirect()->route('transactions.index')->with('success', 'Communication updated successfully.');
+        return redirect()->back()->with('success', 'Communication updated successfully.');
     }
 
 
