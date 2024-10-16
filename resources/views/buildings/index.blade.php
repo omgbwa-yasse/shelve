@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="">
         <h1>  <i class="bi bi-building"></i> Liste des bâtiments </h1>
         <a href="{{ route('buildings.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> Ajouter un bâtiment

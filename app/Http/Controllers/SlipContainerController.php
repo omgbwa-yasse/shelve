@@ -17,7 +17,7 @@ class SlipContainerController extends Controller
             ->where('is_archived', false)
             ->get();
 
-        return view('transferrings.containers.index', compact('containers'));
+        return view('containers.index', compact('containers'));
     }
 
 
