@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="">
                 <div class="">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header text-white">
                         <h2 class="mb-0">Add New Author</h2>
                     </div>
                     <div class="card-body">

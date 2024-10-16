@@ -25,7 +25,7 @@
         <div class="row justify-content-center">
             <div class="">
                 <div class="">
-                    <div class="card-header bg-primary text-white py-3">
+                    <div class=" text-white py-3">
                         <h3 class="mb-0">Créer un courrier</h3>
                     </div>
                     <div class="card-body">
