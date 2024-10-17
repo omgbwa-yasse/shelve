@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
+<div class="container">
     <div class="row justify-content-center">
         <div class="">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="">
+                <div class="">
                     <h3 class="mb-0">Générateur de Codes-Barres</h3>
                 </div>
 

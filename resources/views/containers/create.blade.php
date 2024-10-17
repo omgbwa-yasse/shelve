@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid p-0">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
+    <div class="container">
+        <div class="">
+            <div class="">
                 <h2 class="mb-0">Créer un contenant d'archives</h2>
             </div>
             <div class="card-body">
