@@ -156,8 +156,16 @@ class BarcodeController extends Controller
         $dompdf->setPaper($data['page_size'], 'portrait');
 
         $perPage = $data['per_page'];
-        $columns = min(5, ceil(sqrt($perPage)));
+
+        // Calcul dynamique du nombre de colonnes
+        $columns = 5; // On commence avec 5 colonnes
         $rows = ceil($perPage / $columns);
+
+        // Si le nombre de lignes est supérieur à 10, on essaie avec 4 colonnes
+        if ($rows > 10) {
+            $columns = 4;
+            $rows = ceil($perPage / $columns);
+        }
 
         $barcodeGenerator = new DNS1D();
         $pageSize = $data['page_size'];
@@ -172,4 +180,5 @@ class BarcodeController extends Controller
 
         return $dompdf->output();
     }
+
 }

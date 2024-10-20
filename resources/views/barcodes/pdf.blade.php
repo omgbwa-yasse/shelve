@@ -14,19 +14,19 @@
         table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 4mm;
+            border-spacing: 2mm;
         }
         td {
             text-align: center;
             vertical-align: middle;
-            padding: 3mm;
+            padding: 2mm;
             border: 1px solid #e0e0e0;
             border-radius: 2mm;
             background-color: #fff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .barcode-image {
-            margin-bottom: 2mm;
+            margin-bottom: 1mm;
             max-width: 100%;
             overflow: hidden;
         }
@@ -35,7 +35,7 @@
             height: auto;
         }
         .barcode-text {
-            font-size: 9px;
+            font-size: 8px;
             color: #555;
             margin-top: 1mm;
             word-break: break-all;
