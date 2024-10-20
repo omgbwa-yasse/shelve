@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-5 bg-light">
+    <div class="container-fluid bg-light">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="">
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-0">
                         <div class="row g-0">
@@ -14,10 +14,12 @@
                                     <div class="mb-3">
                                         <label for="start" class="form-label">Numéro de début</label>
                                         <input type="number" class="form-control" id="start" name="start" value="1" required min="0">
+                                        <div class="invalid-feedback">Veuillez entrer un numéro de début valide.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="count" class="form-label">Nombre de codes-barres</label>
                                         <input type="number" class="form-control" id="count" name="count" value="50" required min="1" max="1000">
+                                        <div class="invalid-feedback">Veuillez entrer un nombre entre 1 et 1000.</div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -30,8 +32,9 @@
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="per_page" class="form-label">Codes-barres par page</label>
+                                        <label for="per_page" class="form-label">Codes-barres par page (souhaité)</label>
                                         <input type="number" class="form-control" id="per_page" name="per_page" value="20" required min="1" max="100">
+                                        <div id="layoutInfo" class="form-text"></div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="page_size" class="form-label">Format de page</label>
@@ -53,10 +56,12 @@
                                     <div class="mb-3">
                                         <label for="barcode_width" class="form-label">Largeur du code-barres</label>
                                         <input type="number" class="form-control" id="barcode_width" name="barcode_width" value="2" required min="1" max="5" step="0.1">
+                                        <div class="invalid-feedback">Veuillez entrer une largeur entre 1 et 5.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label for="barcode_height" class="form-label">Hauteur du code-barres</label>
                                         <input type="number" class="form-control" id="barcode_height" name="barcode_height" value="30" required min="10" max="100">
+                                        <div class="invalid-feedback">Veuillez entrer une hauteur entre 10 et 100.</div>
                                     </div>
                                     <div class="mb-3 form-check">
                                         <input type="checkbox" class="form-check-input" id="show_text" name="show_text" checked>
@@ -94,6 +99,7 @@
             </div>
         </div>
     </div>
+    <div id="layoutInfo" class="mt-2 text-muted"></div>
 @endsection
 
 @push('styles')
@@ -123,124 +129,222 @@
 @endpush
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('barcodeForm');
-            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-            const previewContainer = document.getElementById('previewContainer');
-            const previewContent = document.getElementById('previewContent');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const barcodeTypeSelect = document.getElementById('barcode_type');
-
-            form.addEventListener('input', debounce(updatePreview, 300));
-
-            barcodeTypeSelect.addEventListener('change', function() {
-                const selectedType = this.value;
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let currentLayout = {};
+                const form = document.getElementById('barcodeForm');
+                const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                const previewContainer = document.getElementById('previewContainer');
+                const previewContent = document.getElementById('previewContent');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                const barcodeTypeSelect = document.getElementById('barcode_type');
                 const startInput = document.getElementById('start');
                 const countInput = document.getElementById('count');
+                const perPageInput = document.getElementById('per_page');
+                const barcodeWidthInput = document.getElementById('barcode_width');
+                const barcodeHeightInput = document.getElementById('barcode_height');
+                const pageSizeSelect = document.getElementById('page_size');
+                const layoutInfoDiv = document.getElementById('layoutInfo');
 
-                if (selectedType === 'UPC' || selectedType === 'EAN13') {
-                    startInput.min = 100000000000;
-                    startInput.max = 999999999999;
-                    countInput.max = 100;
-                    if (startInput.value < 100000000000) {
-                        startInput.value = 100000000000;
+                function updateFieldsBasedOnBarcodeType() {
+                    const selectedType = barcodeTypeSelect.value;
+                    if (selectedType === 'UPC' || selectedType === 'EAN13') {
+                        startInput.min = 100000000000;
+                        startInput.max = 999999999999;
+                        countInput.max = 100;
+                        if (parseInt(startInput.value) < 100000000000) {
+                            startInput.value = 100000000000;
+                        }
+                        if (parseInt(countInput.value) > 100) {
+                            countInput.value = 100;
+                        }
+                    } else {
+                        startInput.min = 0;
+                        startInput.removeAttribute('max');
+                        countInput.max = 1000;
                     }
-                    if (countInput.value > 100) {
-                        countInput.value = 100;
-                    }
-                } else {
-                    startInput.min = 0;
-                    startInput.max = '';
-                    countInput.max = 1000;
+                    calculateOptimalLayout();
                 }
 
+                function calculateOptimalLayout() {
+                    const pageSize = pageSizeSelect.value;
+                    const barcodeWidth = parseFloat(barcodeWidthInput.value);
+                    const barcodeHeight = parseFloat(barcodeHeightInput.value);
+                    const desiredPerPage = parseInt(perPageInput.value);
+
+                    // Dimensions en mm (approximatives)
+                    const pageDimensions = {
+                        'A4': { width: 210, height: 297 },
+                        'Letter': { width: 215.9, height: 279.4 }
+                    };
+
+                    const pageWidth = pageDimensions[pageSize].width;
+                    const pageHeight = pageDimensions[pageSize].height;
+
+                    // Conversion approximative de px à mm (1 px ≈ 0.26 mm)
+                    const barcodeWidthMm = barcodeWidth * 0.26;
+                    const barcodeHeightMm = barcodeHeight * 0.26;
+
+                    // Marge et espacement (en mm)
+                    const margin = 10;
+                    const spacing = 5;
+
+                    // Calcul du nombre maximum de colonnes et de lignes
+                    const availableWidth = pageWidth - (2 * margin);
+                    const availableHeight = pageHeight - (2 * margin);
+                    const maxColumns = Math.floor(availableWidth / (barcodeWidthMm + spacing));
+                    const maxRows = Math.floor(availableHeight / (barcodeHeightMm + spacing));
+
+                    // Calcul du nombre optimal de colonnes
+                    let optimalColumns = Math.min(5, maxColumns);
+                    let optimalRows = Math.ceil(desiredPerPage / optimalColumns);
+
+                    // Ajuster si nécessaire pour ne pas dépasser le nombre maximum de lignes
+                    if (optimalRows > maxRows) {
+                        optimalRows = maxRows;
+                        optimalColumns = Math.min(5, Math.ceil(desiredPerPage / optimalRows));
+                    }
+
+                    const actualPerPage = optimalColumns * optimalRows;
+
+                    // Mise à jour du champ "Codes-barres par page"
+                    perPageInput.value = actualPerPage;
+                    perPageInput.max = maxColumns * maxRows;
+
+                    // Mise à jour des informations de mise en page
+                    layoutInfoDiv.textContent = `Mise en page optimale : ${optimalColumns} colonnes x ${optimalRows} lignes = ${actualPerPage} codes-barres par page`;
+
+                    currentLayout = { columns: optimalColumns, rows: optimalRows, perPage: actualPerPage };
+
+                    return currentLayout;
+                }
+
+                function validateForm() {
+                    let isValid = true;
+                    form.classList.add('was-validated');
+
+                    // Validation spécifique pour UPC et EAN13
+                    if (barcodeTypeSelect.value === 'UPC' || barcodeTypeSelect.value === 'EAN13') {
+                        if (parseInt(startInput.value) < 100000000000 || parseInt(startInput.value) > 999999999999) {
+                            startInput.setCustomValidity('Le numéro de début doit être compris entre 100000000000 et 999999999999 pour UPC et EAN13.');
+                            isValid = false;
+                        } else {
+                            startInput.setCustomValidity('');
+                        }
+                    } else {
+                        startInput.setCustomValidity('');
+                    }
+
+                    // La validation du nombre de codes-barres par page n'est plus nécessaire ici
+                    // car elle est gérée automatiquement par calculateOptimalLayout
+
+                    return isValid;
+                }
+
+                function updatePreview() {
+                    if (!validateForm()) return;
+
+                    const layout = calculateOptimalLayout();
+                    const formData = new FormData(form);
+                    formData.set('count', Math.min(10, formData.get('count'))); // Limiter à 10 pour la prévisualisation
+                    formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
+                    formData.set('per_page', layout.perPage);
+
+                    fetch('{{ route('barcode.preview') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                previewContent.innerHTML = `<div class="error-message">${data.error}</div>`;
+                            } else if (data.html) {
+                                previewContent.innerHTML = data.html;
+                            } else {
+                                previewContent.innerHTML = 'Erreur de prévisualisation';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erreur détaillée:', error);
+                            previewContent.innerHTML = 'Erreur lors de la génération de la prévisualisation.';
+                        });
+                }
+
+                barcodeTypeSelect.addEventListener('change', updateFieldsBasedOnBarcodeType);
+                [pageSizeSelect, barcodeWidthInput, barcodeHeightInput, perPageInput].forEach(input => {
+                    input.addEventListener('input', calculateOptimalLayout);
+                    input.addEventListener('input', debounce(updatePreview, 300));
+                });
+
+                [startInput, countInput].forEach(input => {
+                    input.addEventListener('input', debounce(updatePreview, 300));
+                });
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!validateForm()) return;
+
+                    loadingModal.show();
+
+                    const layout = calculateOptimalLayout();
+                    const formData = new FormData(form);
+                    formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
+                    formData.set('per_page', layout.perPage);
+                    formData.set('columns', layout.columns);  // Ajout du nombre de colonnes
+                    formData.set('rows', layout.rows);        // Ajout du nombre de lignes
+
+                    fetch('{{ route('barcode.generate') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': csrfToken
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => { throw err; });
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            loadingModal.hide();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = 'barcodes.pdf';
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => {
+                            loadingModal.hide();
+                            console.error('Erreur:', error);
+                            if (error.error) {
+                                alert(error.error);
+                            } else {
+                                alert('Une erreur est survenue lors de la génération du PDF.');
+                            }
+                        });
+                });
+
+                function debounce(func, wait) {
+                    let timeout;
+                    return function(...args) {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(this, args), wait);
+                    };
+                }
+
+                // Initialisation
+                updateFieldsBasedOnBarcodeType();
+                calculateOptimalLayout();
                 updatePreview();
             });
-
-            function updatePreview() {
-                const formData = new FormData(form);
-                formData.set('count', Math.min(10, formData.get('count'))); // Limiter à 10 pour la prévisualisation
-                formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
-
-                console.log('Données envoyées:', Object.fromEntries(formData));
-
-                fetch('{{ route('barcode.preview') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            previewContent.innerHTML = `<div class="error-message">${data.error}</div>`;
-                        } else if (data.html) {
-                            previewContent.innerHTML = data.html;
-                        } else {
-                            previewContent.innerHTML = 'Erreur de prévisualisation';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erreur détaillée:', error);
-                        previewContent.innerHTML = 'Erreur lors de la génération de la prévisualisation.';
-                    });
-            }
-
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                loadingModal.show();
-
-                const formData = new FormData(form);
-                formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
-
-                fetch('{{ route('barcode.generate') }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': csrfToken
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                throw err;
-                            });
-                        }
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        loadingModal.hide();
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = 'barcodes.pdf';
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    })
-                    .catch(error => {
-                        loadingModal.hide();
-                        console.error('Erreur:', error);
-                        if (error.error) {
-                            alert(error.error);
-                        } else {
-                            alert('Une erreur est survenue lors de la génération du PDF.');
-                        }
-                    });
-            });
-
-            function debounce(func, wait) {
-                let timeout;
-                return function(...args) {
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => func.apply(this, args), wait);
-                };
-            }
-        });
-    </script>
+        </script>
 @endpush
