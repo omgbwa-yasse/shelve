@@ -49,44 +49,38 @@
     </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title" id="transferModalLabel">Transfer Dolly</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transferModalLabel">Transfer Dolly</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transferForm">
+                        <div class="mb-3">
+                            <label for="transferDescription" class="form-label">Description du transfert</label>
+                            <input type="text" class="form-control" id="transferDescription" placeholder="Entrez la description du transfert">
+                        </div>
+                        <div class="mb-3">
+                            <label for="serviceSelect" class="form-label">Service qui reçoit</label>
+                            <select class="form-select" id="serviceSelect">
+                                <option selected>Choisir un service</option>
+                                <option value="1">Service A</option>
+                                <option value="2">Service B</option>
+                                <option value="3">Service C</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Envoyer le transfert</button>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body">
-            <form action="" method="POST">
-                @csrf
-                <div class="mb-3">
-                    <label for="name" class="form-label">Name</label>
-                    <input type="text" class="form-control" id="name" name="name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" id="description" name="description" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="type_id" class="form-label">Type</label>
-                    <select class="form-select" id="type_id" name="type_id" required>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-        </div>
         </div>
     </div>
 
     <script>
-        var transferBtn = document.getElementById('transferBtn');
-        transferBtn.addEventListener('click', function(event) {
-          event.preventDefault();
-          var transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
-          transferModal.show();
-        });
-      </script>
+
+
+    </script>
 @endsection
 

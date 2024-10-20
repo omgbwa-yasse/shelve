@@ -3,19 +3,14 @@
 @section('content')
     <div class="container">
         <h1>Ajouter un versement</h1>
+
+        <!-- J4qi supprimer le choix du service qui émet le verserment et les statuts // cela va être gérer dans le controler   -->
+
         <form id="slipForm" action="{{ route('slips.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
                 <input type="text" class="form-control" id="code" name="code" required maxlength="20">
-            </div>
-            <div class="mb-3">
-                <label for="slip_status_id" class="form-label">Transferring Status</label>
-                <select class="form-select" id="slip_status_id" name="slip_status_id" required>
-                    @foreach ($slipStatuses as $status)
-                        <option value="{{ $status->id }}">{{ $status->name }}</option>
-                    @endforeach
-                </select>
             </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
@@ -26,27 +21,11 @@
                 <textarea class="form-control" id="description" name="description"></textarea>
             </div>
             <div class="mb-3">
-                <label for="officer_organisation_id" class="form-label">Officer Organisation</label>
+                <label for="officer_organisation_id" class="form-label">Service d'archives</label>
                 <div class="input-group">
                     <input type="text" class="form-control" id="officer_organisation_name" readonly>
                     <input type="hidden" id="officer_organisation_id" name="officer_organisation_id" required>
                     <button class="btn btn-outline-secondary select-btn" data-type="officer_organisation" type="button">Select</button>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="user_organisation_id" class="form-label">User Organisation</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="user_organisation_name" readonly>
-                    <input type="hidden" id="user_organisation_id" name="user_organisation_id" required>
-                    <button class="btn btn-outline-secondary select-btn" data-type="user_organisation" type="button">Select</button>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label for="user_id" class="form-label">User</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="user_name" readonly>
-                    <input type="hidden" id="user_id" name="user_id">
-                    <button class="btn btn-outline-secondary select-btn" data-type="user" type="button">Select</button>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Create</button>
