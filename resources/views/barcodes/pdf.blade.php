@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <title>Étiquettes de Codes-Barres</title>
     <style>
-        @page {
-            margin: 10mm;
-        }
+        @page { margin: 10mm; }
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             font-size: 10px;
@@ -29,6 +27,8 @@
         }
         .barcode-image {
             margin-bottom: 2mm;
+            max-width: 100%;
+            overflow: hidden;
         }
         .barcode-image svg {
             max-width: 100%;
@@ -50,9 +50,11 @@
                 @foreach ($rowBarcodes as $barcode)
                     <td>
                         <div class="barcode-image">
-                            {!! $barcodeGenerator->getBarcodeHTML($barcode, 'C128', 1.5, 30) !!}
+                            {!! $barcodeGenerator->getBarcodeHTML($barcode, $barcodeType, $barcodeWidth, $barcodeHeight) !!}
                         </div>
-                        <div class="barcode-text">{{ $barcode }}</div>
+                        @if ($showText)
+                            <div class="barcode-text">{{ $barcode }}</div>
+                        @endif
                     </td>
                 @endforeach
                 @for ($i = $rowBarcodes->count(); $i < $columns; $i++)

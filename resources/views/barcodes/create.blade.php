@@ -33,12 +33,34 @@
                                         <label for="per_page" class="form-label">Codes-barres par page</label>
                                         <input type="number" class="form-control" id="per_page" name="per_page" value="20" required min="1" max="100">
                                     </div>
-                                    <div class="mb-4">
+                                    <div class="mb-3">
                                         <label for="page_size" class="form-label">Format de page</label>
                                         <select class="form-select" id="page_size" name="page_size" required>
                                             <option value="A4">A4</option>
                                             <option value="Letter">Letter</option>
                                         </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="barcode_type" class="form-label">Type de code-barres</label>
+                                        <select class="form-select" id="barcode_type" name="barcode_type" required>
+                                            <option value="C128">Code 128</option>
+                                            <option value="C39">Code 39</option>
+                                            <option value="EAN13">EAN-13</option>
+                                            <option value="UPC">UPC</option>
+                                            <option value="I25">Interleaved 2 of 5</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="barcode_width" class="form-label">Largeur du code-barres</label>
+                                        <input type="number" class="form-control" id="barcode_width" name="barcode_width" value="2" required min="1" max="5" step="0.1">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="barcode_height" class="form-label">Hauteur du code-barres</label>
+                                        <input type="number" class="form-control" id="barcode_height" name="barcode_height" value="30" required min="10" max="100">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="show_text" name="show_text" checked>
+                                        <label class="form-check-label" for="show_text">Afficher le texte sous le code-barres</label>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100 py-2">Générer les codes-barres</button>
                                 </form>
@@ -88,6 +110,15 @@
         #previewContainer {
             max-height: 500px;
         }
+        .barcode-image svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 @endpush
 
@@ -99,12 +130,40 @@
             const previewContainer = document.getElementById('previewContainer');
             const previewContent = document.getElementById('previewContent');
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const barcodeTypeSelect = document.getElementById('barcode_type');
 
             form.addEventListener('input', debounce(updatePreview, 300));
+
+            barcodeTypeSelect.addEventListener('change', function() {
+                const selectedType = this.value;
+                const startInput = document.getElementById('start');
+                const countInput = document.getElementById('count');
+
+                if (selectedType === 'UPC' || selectedType === 'EAN13') {
+                    startInput.min = 100000000000;
+                    startInput.max = 999999999999;
+                    countInput.max = 100;
+                    if (startInput.value < 100000000000) {
+                        startInput.value = 100000000000;
+                    }
+                    if (countInput.value > 100) {
+                        countInput.value = 100;
+                    }
+                } else {
+                    startInput.min = 0;
+                    startInput.max = '';
+                    countInput.max = 1000;
+                }
+
+                updatePreview();
+            });
 
             function updatePreview() {
                 const formData = new FormData(form);
                 formData.set('count', Math.min(10, formData.get('count'))); // Limiter à 10 pour la prévisualisation
+                formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
+
+                console.log('Données envoyées:', Object.fromEntries(formData));
 
                 fetch('{{ route('barcode.preview') }}', {
                     method: 'POST',
@@ -114,12 +173,18 @@
                         'X-CSRF-TOKEN': csrfToken
                     }
                 })
-                    .then(response => response.ok ? response.json() : Promise.reject(response))
+                    .then(response => response.json())
                     .then(data => {
-                        previewContent.innerHTML = data.html || 'Erreur de prévisualisation';
+                        if (data.error) {
+                            previewContent.innerHTML = `<div class="error-message">${data.error}</div>`;
+                        } else if (data.html) {
+                            previewContent.innerHTML = data.html;
+                        } else {
+                            previewContent.innerHTML = 'Erreur de prévisualisation';
+                        }
                     })
                     .catch(error => {
-                        console.error('Erreur de prévisualisation:', error);
+                        console.error('Erreur détaillée:', error);
                         previewContent.innerHTML = 'Erreur lors de la génération de la prévisualisation.';
                     });
             }
@@ -128,15 +193,25 @@
                 e.preventDefault();
                 loadingModal.show();
 
+                const formData = new FormData(form);
+                formData.set('show_text', document.getElementById('show_text').checked ? '1' : '0');
+
                 fetch('{{ route('barcode.generate') }}', {
                     method: 'POST',
-                    body: new FormData(form),
+                    body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': csrfToken
                     }
                 })
-                    .then(response => response.ok ? response.blob() : Promise.reject(response))
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw err;
+                            });
+                        }
+                        return response.blob();
+                    })
                     .then(blob => {
                         loadingModal.hide();
                         const url = window.URL.createObjectURL(blob);
@@ -151,7 +226,11 @@
                     .catch(error => {
                         loadingModal.hide();
                         console.error('Erreur:', error);
-                        alert('Une erreur est survenue lors de la génération du PDF.');
+                        if (error.error) {
+                            alert(error.error);
+                        } else {
+                            alert('Une erreur est survenue lors de la génération du PDF.');
+                        }
                     });
             });
 

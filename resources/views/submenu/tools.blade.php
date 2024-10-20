@@ -1,103 +1,96 @@
-<nav class="pure-menu">
-    @foreach ([
-        'classification_plan' => ['grid', 'activities'],
-        'retention_schedule' => ['archive', 'retentions'],
-        'communicability' => ['chat-square-text', 'communicabilities'],
-        'organization_chart' => ['diagram-3', 'organisations'],
-        'thesaurus' => ['book-half', 'terms'],
-        'toolbox' => ['tools', null]
-    ] as $section => [$icon, $route])
-        <div class="pure-menu-section">
-            <button class="pure-menu-heading" data-bs-toggle="collapse" data-bs-target="#{{ $section }}Menu">
-                <i class="bi bi-{{ $icon }}"></i>
-                <span>{{ __($section) }}</span>
-            </button>
-            <ul class="pure-menu-list collapse show" id="{{ $section }}Menu">
-                @if ($route)
-                    <li class="pure-menu-item">
-                        <a href="{{ route($route . '.index') }}" class="pure-menu-link">
-                            <i class="bi bi-list-check"></i>
-                            <span>{{ __('all_' . ($section === 'organization_chart' ? 'units' : 'classes')) }}</span>
-                        </a>
-                    </li>
-                    <li class="pure-menu-item">
-                        <a href="{{ route($route . '.create') }}" class="pure-menu-link">
-                            <i class="bi bi-plus-square"></i>
-                            <span>{{ __('add_' . rtrim($section, 's')) }}</span>
-                        </a>
-                    </li>
-                @elseif ($section === 'toolbox')
-                    <li class="pure-menu-item">
-                        <a href="{{ route('barcode.create') }}" class="pure-menu-link">
-                            <i class="bi bi-upc-scan"></i>
-                            <span>{{ __('barcode') }}</span>
-                        </a>
-                    </li>
-                @endif
+<div class="container">
+    <div class="row">
+        <!-- Plan de classement -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#planClassementMenu"
+           aria-expanded="true" style="padding: 10px;" aria-controls="planClassementMenu">
+            <i class="bi bi-grid me-2"></i> {{ __('classification_plan') }}
+        </a>
+        <div class="collapse show" id="planClassementMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.index') }}"><i class="bi bi-list-check me-2"></i> {{ __('all_classes') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('activities.create') }}"><i class="bi bi-plus-square me-2"></i> {{ __('add_class') }}</a>
+                </li>
             </ul>
         </div>
-    @endforeach
-</nav>
 
-<style>
-    .pure-menu {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        overflow: hidden;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+        <!-- Référentiel de conservation -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#referentielConservationMenu"
+           aria-expanded="true" style="padding: 10px;" aria-controls="referentielConservationMenu">
+            <i class="bi bi-archive me-2"></i> {{ __('retention_schedule') }}
+        </a>
+        <div class="collapse show" id="referentielConservationMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('retentions.index') }}"><i class="bi bi-clock-history me-2"></i> {{ __('all_durations') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('retentions.create') }}"><i class="bi bi-plus-square me-2"></i> {{ __('add_rule') }}</a>
+                </li>
+            </ul>
+        </div>
 
-    .pure-menu-section:not(:last-child) {
-        border-bottom: 1px solid #e9ecef;
-    }
+        <!-- Communicabilité -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#communicabiliteMenu"
+           aria-expanded="false" style="padding: 10px;" aria-controls="communicabiliteMenu">
+            <i class="bi bi-chat-square-text me-2"></i> {{ __('communicability') }}
+        </a>
+        <div class="collapse show" id="communicabiliteMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('communicabilities.index')}}"><i class="bi bi-list-check me-2"></i> {{ __('all_classes') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('communicabilities.create')}}"><i class="bi bi-plus-square me-2"></i> {{ __('add_class') }}</a>
+                </li>
+            </ul>
+        </div>
 
-    .pure-menu-heading {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 12px 16px;
-        background-color: transparent;
-        border: none;
-        text-align: left;
-        font-weight: 600;
-        color: #495057;
-        transition: background-color 0.2s;
-    }
+        <!-- Organigramme -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#organigrammeMenu"
+           aria-expanded="false" style="padding: 10px;" aria-controls="organigrammeMenu">
+            <i class="bi bi-diagram-3 me-2"></i> {{ __('organization_chart') }}
+        </a>
+        <div class="collapse show" id="organigrammeMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('organisations.index')}}"><i class="bi bi-building me-2"></i> {{ __('all_units') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('organisations.create')}}"><i class="bi bi-plus-square me-2"></i> {{ __('add_organization') }}</a>
+                </li>
+            </ul>
+        </div>
 
-    .pure-menu-heading:hover {
-        background-color: #e9ecef;
-    }
+        <!-- Thésaurus -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="false"
+           aria-controls="thesaurusMenu" style="padding: 10px;">
+            <i class="bi bi-book-half me-2"></i> {{ __('thesaurus') }}
+        </a>
+        <div class="collapse show" id="thesaurusMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('terms.index') }}"><i class="bi bi-tree me-2"></i> {{ __('view_branches') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('terms.create') }}"><i class="bi bi-plus-square me-2"></i> {{ __('add_word') }}</a>
+                </li>
+            </ul>
+        </div>
 
-    .pure-menu-heading i {
-        margin-right: 10px;
-    }
-
-    .pure-menu-list {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .pure-menu-item {
-        margin: 4px 0;
-    }
-
-    .pure-menu-link {
-        display: flex;
-        align-items: center;
-        padding: 8px 16px 8px 40px;
-        color: #495057;
-        text-decoration: none;
-        transition: background-color 0.2s;
-    }
-
-    .pure-menu-link:hover {
-        background-color: #e9ecef;
-    }
-
-    .pure-menu-link i {
-        margin-right: 10px;
-        font-size: 0.9em;
-        color: #6c757d;
-    }
-</style>
+        <!-- Boite à outils -->
+        <a class="nav-link active bg-primary rounded-2 text-white d-flex align-items-center" data-toggle="collapse" href="#outilsMenu" aria-expanded="false"
+           aria-controls="outilsMenu" style="padding: 10px;">
+            <i class="bi bi-tools me-2"></i> {{ __('toolbox') }}
+        </a>
+        <div class="collapse show" id="outilsMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark d-flex align-items-center" href="{{ route('barcode.create') }}"><i class="bi bi-upc-scan me-2"></i> {{ __('barcode') }}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
