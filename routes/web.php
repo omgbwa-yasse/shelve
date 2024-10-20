@@ -151,8 +151,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::post('add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
         Route::get('export', [CommunicationController::class, 'export'])->name('communications.export');
-        Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
-        Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
+//        Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
+//        Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
         // Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
@@ -316,7 +316,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
         Route::get('barcode', [BarcodeController::class,'create'])->name('barcode.create');
-        Route::post('barcode', [BarcodeController::class,'generate'])->name('barcode.generate');
+//        Route::post('barcode', [BarcodeController::class,'generate'])->name('barcode.generate');
+        Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');
+        Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
+        Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
         Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
         Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
         Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
@@ -342,16 +345,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
     });
 
-//    Route::get('/language/{locale}', function ($locale) {
-//        if (!in_array($locale, ['en', 'fr'])) {
-//            abort(400);
-//        }
-//
-//        App::setLocale($locale);
-//        session()->put('locale', $locale);
-//
-//        return redirect()->back();
-//    })->name('language');
+
     Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 });

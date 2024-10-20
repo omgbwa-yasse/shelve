@@ -1,141 +1,167 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mt-5">
+    <div class="container-fluid py-5 bg-light">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Générateur de Codes-Barres Professionnel</h3>
-                    </div>
-                    <div class="card-body">
-                        @if ($errors->any())
-                            <div class="alert alert-danger">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+            <div class="col-lg-10">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-md-5 p-4">
+                                <h2 class="mb-4 fw-bold text-primary">Générateur de Codes-Barres</h2>
+                                <form id="barcodeForm" class="needs-validation" novalidate>
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="start" class="form-label">Numéro de début</label>
+                                        <input type="number" class="form-control" id="start" name="start" value="1" required min="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="count" class="form-label">Nombre de codes-barres</label>
+                                        <input type="number" class="form-control" id="count" name="count" value="50" required min="1" max="1000">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="prefix" class="form-label">Préfixe</label>
+                                            <input type="text" class="form-control" id="prefix" name="prefix" maxlength="10" placeholder="Optionnel">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="suffix" class="form-label">Suffixe</label>
+                                            <input type="text" class="form-control" id="suffix" name="suffix" maxlength="10" placeholder="Optionnel">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="per_page" class="form-label">Codes-barres par page</label>
+                                        <input type="number" class="form-control" id="per_page" name="per_page" value="20" required min="1" max="100">
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="page_size" class="form-label">Format de page</label>
+                                        <select class="form-select" id="page_size" name="page_size" required>
+                                            <option value="A4">A4</option>
+                                            <option value="Letter">Letter</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 py-2">Générer les codes-barres</button>
+                                </form>
                             </div>
-                        @endif
-
-                        <form id="barcodeForm" method="POST" action="{{ route('barcode.generate') }}">
-                            @csrf
-                            <div class="row g-3">
-                                <!-- Les champs du formulaire restent les mêmes -->
-                                <!-- ... -->
-                                <div class="col-12 mt-4">
-                                    <button type="submit" class="btn btn-primary w-100">Générer les codes-barres</button>
+                            <div class="col-md-7 bg-white">
+                                <div class="h-100 d-flex flex-column">
+                                    <div class="p-4 border-bottom">
+                                        <h4 class="mb-0 fw-bold">Prévisualisation</h4>
+                                    </div>
+                                    <div id="previewContainer" class="flex-grow-1 overflow-auto p-4">
+                                        <div id="previewContent" class="text-center">
+                                            <p class="text-muted">La prévisualisation apparaîtra ici</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
-                        <div id="generationStatus" class="mt-3 alert alert-info" style="display: none;">
-                            Génération en cours... <span id="progressPercentage">0%</span>
-                            <div class="progress mt-2">
-                                <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-                        <div id="downloadLink" class="mt-3 text-center" style="display: none;">
-                            <a href="#" class="btn btn-success" download>Télécharger le PDF</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 bg-transparent">
+                <div class="modal-body text-center text-white">
+                    <div class="spinner-border text-light" role="status"></div>
+                    <p class="mt-2">Génération des codes-barres en cours, veuillez patienter...</p>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('styles')
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-control, .form-select {
+            border-radius: 0;
+        }
+        .btn-primary {
+            border-radius: 0;
+        }
+        #previewContainer {
+            max-height: 500px;
+        }
+    </style>
+@endpush
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('barcodeForm');
-            const downloadLinkContainer = document.getElementById('downloadLink');
-            const downloadLink = downloadLinkContainer.querySelector('a');
-            const submitButton = form.querySelector('button[type="submit"]');
-            const generationStatus = document.getElementById('generationStatus');
-            const progressBar = document.getElementById('progressBar');
-            const progressPercentage = document.getElementById('progressPercentage');
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            const previewContainer = document.getElementById('previewContainer');
+            const previewContent = document.getElementById('previewContent');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitButton.disabled = true;
-                submitButton.innerHTML = 'Génération en cours...';
-                generationStatus.style.display = 'block';
-                downloadLinkContainer.style.display = 'none';
+            form.addEventListener('input', debounce(updatePreview, 300));
 
+            function updatePreview() {
                 const formData = new FormData(form);
+                formData.set('count', Math.min(10, formData.get('count'))); // Limiter à 10 pour la prévisualisation
 
-                // Simuler une progression pour donner un retour visuel à l'utilisateur
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += 5;
-                    if (progress > 90) {
-                        clearInterval(progressInterval);
-                    }
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.setAttribute('aria-valuenow', progress);
-                    progressPercentage.textContent = `${progress}%`;
-                }, 500);
-
-                fetch(form.action, {
+                fetch('{{ route('barcode.preview') }}', {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
+                        'X-CSRF-TOKEN': csrfToken
+                    }
                 })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Erreur réseau ou serveur');
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.ok ? response.json() : Promise.reject(response))
                     .then(data => {
-                        clearInterval(progressInterval);
-                        progressBar.style.width = '100%';
-                        progressBar.setAttribute('aria-valuenow', 100);
-                        progressPercentage.textContent = '100%';
-
-                        if (data.pdf_file) {
-                            setTimeout(() => {
-                                generationStatus.style.display = 'none';
-                                downloadLink.href = data.pdf_file;
-                                downloadLinkContainer.style.display = 'block';
-
-                                // Vérifier si le PDF est accessible avant de le télécharger
-                                fetch(data.pdf_file, { method: 'HEAD' })
-                                    .then(response => {
-                                        if (response.ok) {
-                                            const tempLink = document.createElement('a');
-                                            tempLink.href = data.pdf_file;
-                                            tempLink.setAttribute('download', 'barcodes.pdf');
-                                            tempLink.click();
-                                        } else {
-                                            throw new Error('Le PDF généré n\'est pas accessible');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Erreur lors de la vérification du PDF:', error);
-                                        alert('Le PDF généré n\'est pas accessible. Veuillez réessayer ou contacter le support.');
-                                    });
-                            }, 1000);
-                        } else {
-                            throw new Error('Aucun fichier PDF n\'a été généré');
-                        }
+                        previewContent.innerHTML = data.html || 'Erreur de prévisualisation';
                     })
                     .catch(error => {
-                        clearInterval(progressInterval);
-                        console.error('Error:', error);
-                        alert('Une erreur est survenue lors de la génération du PDF. Veuillez réessayer ou contacter le support.');
-                        generationStatus.style.display = 'none';
+                        console.error('Erreur de prévisualisation:', error);
+                        previewContent.innerHTML = 'Erreur lors de la génération de la prévisualisation.';
+                    });
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                loadingModal.show();
+
+                fetch('{{ route('barcode.generate') }}', {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                })
+                    .then(response => response.ok ? response.blob() : Promise.reject(response))
+                    .then(blob => {
+                        loadingModal.hide();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = 'barcodes.pdf';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
                     })
-                    .finally(() => {
-                        submitButton.disabled = false;
-                        submitButton.innerHTML = 'Générer les codes-barres';
+                    .catch(error => {
+                        loadingModal.hide();
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue lors de la génération du PDF.');
                     });
             });
+
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
         });
     </script>
 @endpush

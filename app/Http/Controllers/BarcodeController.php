@@ -5,169 +5,121 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Facades\Log;
 use Milon\Barcode\DNS1D;
-use Illuminate\Support\Facades\Storage;
 
 class BarcodeController extends Controller
 {
+    public function index()
+    {
+        return view('barcodes.create');
+    }
     public function create()
     {
         return view('barcodes.create');
     }
 
+
     public function generate(Request $request)
     {
-        // Validation des paramètres
-        $request->validate([
-            'debut' => 'required|integer',
-            'nombre' => 'required|integer',
-            'prefixe' => 'required|string',
-            'suffixe' => 'required|string',
-            'barcodes_per_line' => 'required|integer',
-            'barcodes_per_column' => 'required|integer',
-            'margin_left' => 'required|integer',
-            'margin_top' => 'required|integer',
-            'margin_right' => 'required|integer',
-            'margin_bottom' => 'required|integer',
-        ]);
+        Log::info('Generate method called', $request->all());
 
-        // Récupération des paramètres
-        $debut = $request->debut;
-        $nombre = $request->nombre;
-        $prefixe = $request->prefixe;
-        $suffixe = $request->suffixe;
+        try {
+            $validatedData = $request->validate([
+                'start' => 'required|integer|min:0',
+                'count' => 'required|integer|min:1|max:1000',
+                'prefix' => 'nullable|string|max:10',
+                'suffix' => 'nullable|string|max:10',
+                'per_page' => 'required|integer|min:1|max:100',
+                'page_size' => 'required|in:A4,Letter',
+            ]);
 
-        // Génération des codes-barres
-        $barcodes = [];
-        for ($i = $debut; $i < $debut + $nombre; $i++) {
-            $barcodes[] = $prefixe . $i . $suffixe;
+            Log::info('Data validated successfully', $validatedData);
+
+            $barcodes = $this->generateBarcodes($validatedData);
+            $pdf = $this->generatePDF($barcodes, $validatedData);
+
+            Log::info('PDF generated successfully');
+
+            return response($pdf)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="barcodes.pdf"');
+        } catch (\Exception $e) {
+            Log::error('Error in generate method', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
 
-        // Configuration de Dompdf
+    private function generateBarcodes($data)
+    {
+        $barcodes = [];
+        $end = $data['start'] + $data['count'];
+        for ($i = $data['start']; $i < $end; $i++) {
+            $barcodes[] = ($data['prefix'] ?? '') . $i . ($data['suffix'] ?? '');
+        }
+        return collect($barcodes);  // Convertir en Collection
+    }
+
+    private function generatePDF($barcodes, $data)
+    {
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isPhpEnabled', true);
+        $options->set('isFontSubsettingEnabled', true);
+        $options->set('defaultFont', 'Arial');
 
         $dompdf = new Dompdf($options);
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper($data['page_size'], 'portrait');
 
-        // Génération du HTML pour le PDF
-        $html = $this->generateHtml($barcodes, $request);
+        $perPage = $data['per_page'];
+        $columns = min(5, ceil(sqrt($perPage))); // Calculer le nombre de colonnes, max 5
+        $rows = ceil($perPage / $columns);
 
+        $barcodeGenerator = new DNS1D();
+        $pageSize = $data['page_size'];
+
+        $html = view('barcodes.pdf', compact('barcodes', 'perPage', 'columns', 'rows', 'barcodeGenerator', 'pageSize'))->render();
         $dompdf->loadHtml($html);
         $dompdf->render();
 
-        // Sauvegarde du PDF
-        $output = $dompdf->output();
-
-        // Générer un nom de fichier unique pour éviter les conflits
-
-        $fileName = 'barcodes_' . time() . '.pdf';
-
-        // Utilisation de Storage pour sauvegarder le fichier
-        Storage::disk('public')->put('barcodes/' . $fileName, $output);
-
-        // Génération de l'URL du fichier
-        $fileUrl = Storage::disk('public')->url('barcodes/' . $fileName);
-
-        // Retourner l'URL du fichier PDF en JSON
-        return response()->json([
-            'pdf_file' => $fileUrl
-        ]);
+        return $dompdf->output();
     }
 
 
 
 
-    private function generateHtml($barcodes, $request)
+    public function preview(Request $request)
     {
-        $barcodesPerLine = $request->barcodes_per_line;
-        $barcodesPerColumn = $request->barcodes_per_column;
-        $marginLeft = $request->margin_left;
-        $marginTop = $request->margin_top;
-        $marginRight = $request->margin_right;
-        $marginBottom = $request->margin_bottom;
+        $validatedData = $request->validate([
+            'start' => 'required|integer|min:0',
+            'count' => 'required|integer|min:1|max:10',
+            'prefix' => 'nullable|string|max:10',
+            'suffix' => 'nullable|string|max:10',
+            'per_page' => 'required|integer|min:1|max:100',
+            'page_size' => 'required|in:A4,Letter',
+        ]);
 
-        $html = '
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                            <style>
-                                body {
-                                    margin-left: ' . $marginLeft . 'mm;
-                                    margin-top: ' . $marginTop . 'mm;
-                                    margin-right: ' . $marginRight . 'mm;
-                                    margin-bottom: ' . $marginBottom . 'mm;
-                                    font-family: Arial, sans-serif;
-                                    background-color: #f4f4f4; /* Couleur de fond douce pour le corps */
-                                }
-                                .table-container {
-                                    width: 90%;
-                                    margin: 20px auto;
-                                    background-color: #ffffff;
-                                    padding: 15px;
-                                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                                    border-radius: 8px;
-                                }
-                                table {
-                                    width: 100%;
-                                    border-collapse: collapse;
-                                }
-                                td {
-                                    vertical-align: middle;
-                                    text-align: center;
-                                    padding: 10px;
-                                    border: 1px solid #ddd;
-                                    background-color: #fafafa;
-                                }
-                                td div {
-                                    margin-top: 5px;
-                                    font-size: 14px;
-                                    color: #333;
-                                }
-                                tr:nth-child(even) td {
-                                    background-color:
-                                }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="table-container">
-                                <table>
-                                    <tbody>';
+        $barcodes = $this->generateBarcodes($validatedData);
+        $perPage = $validatedData['per_page'];
+        $columns = 2; // Commencez avec 2 colonnes
+        $rows = ceil($perPage / $columns);
 
-                    $dns1d = new DNS1D();
-                    $barcodeCount = 0;
-                    for ($row = 0; $row < $barcodesPerColumn; $row++) {
-                        $html .= '<tr>';
-                        for ($col = 0; $col < $barcodesPerLine; $col++) {
-                            if ($barcodeCount < count($barcodes)) {
-                                $barcode = $barcodes[$barcodeCount];
-                                $html .= '
-                                    <td>
-                                        ' . $dns1d->getBarcodeHTML($barcode, 'C128', 1, 25) . '
-                                        <div>' . $barcode . '</div>
-                                    </td>';
-                                $barcodeCount++;
-                            } else {
-                                $html .= '<td></td>';
-                            }
-                        }
-                        $html .= '</tr>';
-                    }
-
-                    $html .= '
-                            </tbody>
-                            </table>
-                        </div>
-                        </body>
-                        </html>';
-
-                    return $html;
-
-
-
+        // Augmentez le nombre de colonnes jusqu'à ce que le nombre de lignes soit raisonnable
+        while ($rows > 10 && $columns < 5) {
+            $columns++;
+            $rows = ceil($perPage / $columns);
         }
+
+        $barcodeGenerator = new DNS1D();
+        $pageSize = $validatedData['page_size'];
+
+        $html = view('barcodes.preview', compact('barcodes', 'perPage', 'columns', 'rows', 'barcodeGenerator', 'pageSize'))->render();
+
+        return response()->json(['html' => $html]);
+    }
+
+
+
+
+
 }
