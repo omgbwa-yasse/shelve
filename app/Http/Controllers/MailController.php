@@ -10,6 +10,7 @@ use App\Models\Batch;
 use App\Models\documentType;
 use App\Models\Author;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class MailController extends Controller
 {
@@ -97,7 +98,8 @@ class MailController extends Controller
 
             $mail = Mail::create($validatedData + [
                 'create_by' => auth()->id(),
-            ]);
+                    'creator_organisation_id'=>Auth::user()->current_organisation_id
+                ]);
 
             $mail->authors()->attach($validatedData['author_id']);
 

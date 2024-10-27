@@ -30,24 +30,46 @@ class MailSendController extends Controller
     }
 
 
-
+// Pour les courriers envoyés (MailSend)
     public function create()
     {
-        $mails = Mail::where('creator_organisation_id', Auth::user()->current_organisation_id)
-                    ->whereHas('transactions', function ($query) {
-                    $query->where('organisation_received_id', Auth::user()->current_organisation_id);
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Récupérer les mails qui ont des transactions où l'organisation courante est expéditrice
+        $mails = Mail::with(['transactions', 'type'])
+            ->whereHas('transactions', function ($query) use ($currentOrganisationId) {
+                $query->where('organisation_send_id', $currentOrganisationId);
             })
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
-        $documentTypes = documentType :: all();
-        $mailActions = MailAction :: all();
-        $sendOrganisations = Organisation::all(); // à reveoir
-        return view('mails.send.create', compact('mails','users','organisations','sendOrganisations','documentTypes','mailActions'));
+        // Récupérer les utilisateurs sauf l'utilisateur courant
+        $users = User::where('id', '!=', Auth::id())
+            ->orderBy('name')
+            ->get();
+
+        // Récupérer toutes les organisations sauf l'organisation courante
+        $organisations = Organisation::whereNot('id', $currentOrganisationId)
+            ->orderBy('name')
+            ->get();
+
+        $documentTypes = DocumentType::orderBy('name')->get();
+        $mailActions = MailAction::orderBy('name')->get();
+
+        // Pour l'envoi, toutes les organisations sauf la courante peuvent être destinataires
+        $sendOrganisations = Organisation::whereNot('id', $currentOrganisationId)
+            ->orderBy('name')
+            ->get();
+
+        return view('mails.send.create', compact(
+            'mails',
+            'users',
+            'organisations',
+            'sendOrganisations',
+            'documentTypes',
+            'mailActions'
+        ));
     }
-
-
 
     public function store(Request $request)
     {
@@ -62,7 +84,7 @@ class MailSendController extends Controller
             'description' => 'nullable',
         ]);
 
-        $validatedData['organisation_send_id'] = auth()->user()->organisation->id ;
+        $validatedData['organisation_send_id'] = auth()->user()->current_organisation_id;
         $validatedData['user_send_id'] =  auth()->id();
 
         $validatedData['date_creation'] = now();
@@ -79,18 +101,28 @@ class MailSendController extends Controller
 
 
 
+
     public function show(int $id)
     {
         $mailTransaction = MailTransaction::with([
             'mail',
+            'mail.attachments',
             'documentType',
             'userReceived',
             'userSend',
             'organisationReceived',
-            'organisationSend'
+            'organisationSend',
+            'action',
+            'mailType'
         ])->findOrFail($id);
 
-        return view('mails.send.show', compact('mailTransaction'));
+        // Récupérer l'historique des transactions pour ce mail
+        $mailHistory = MailTransaction::where('mail_id', $mailTransaction->mail_id)
+            ->with(['userSend', 'userReceived', 'organisationSend', 'organisationReceived', 'action'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('mails.send.show', compact('mailTransaction', 'mailHistory'));
     }
 
 

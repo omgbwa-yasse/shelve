@@ -63,26 +63,53 @@ class MailReceivedController extends Controller
 
 
 
+
+
     public function create()
     {
-        $mails = Mail::where('creator_organisation_id', Auth::user()->current_organisation_id)
-                    ->whereHas('transactions', function ($query) {
-                    $query->where('organisation_received_id', Auth::user()->current_organisation_id);
+        // Get the current user's organisation ID
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Get mails that are related to the current organisation through transactions
+        $mails = Mail::with(['transactions', 'type'])
+            ->whereHas('transactions', function ($query) use ($currentOrganisationId) {
+                $query->where('organisation_received_id', $currentOrganisationId);
             })
+            ->latest()
             ->get();
 
-        $type = mailType::where('name','=','received');
+        // Get mail type for received mails
+        $mailType = MailType::where('name', 'received')->first();
 
-        $users = User::where('id', '!=', auth()->id())->get();
+        // Get all users except the current user
+        $users = User::where('id', '!=', Auth::id())
+            ->orderBy('name')
+            ->get();
 
-        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
+        // Get all organisations except the current user's organisation
+        $organisations = Organisation::whereNot('id', $currentOrganisationId)
+            ->orderBy('name')
+            ->get();
 
-        $documentTypes = documentType :: all();
-        $mailActions = MailAction :: all();
-        $receivedOrganisations = auth()->user()->organisation;
-        return view('mails.received.create', compact('mails','users','organisations','receivedOrganisations','documentTypes','mailActions'));
+        // Get all document types
+        $documentTypes = DocumentType::orderBy('name')->get();
+
+        // Get all mail actions
+        $mailActions = MailAction::orderBy('name')->get();
+
+        // Get received organisations for the current user
+        $receivedOrganisations = Auth::user()->organisations;
+
+        return view('mails.received.create', compact(
+            'mails',
+            'mailType',
+            'users',
+            'organisations',
+            'receivedOrganisations',
+            'documentTypes',
+            'mailActions'
+        ));
     }
-
 
 
     public function store(Request $request)
@@ -99,7 +126,7 @@ class MailReceivedController extends Controller
             'description' => 'nullable',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->organisation->id ;
+        $validatedData['organisation_received_id'] = auth()->user()->current_organisation_id ;
         $validatedData['user_received_id'] =  auth()->id();
 
         $validatedData['date_creation'] = now();

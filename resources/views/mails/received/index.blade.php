@@ -45,7 +45,7 @@
                     <div class="btn-group mt-1" role="group">
                         <input type="checkbox" class="me-2" name="selected_mail[]" value="{{ $transaction->id }}" id="mail_{{ $transaction->id }}" autocomplete="off" />
                     </div>
-                    <a href="{{ route('mails.show', $transaction) }}"><b>{{ $transaction->code ?? 'N/A' }} : {{ $transaction->mail->name ?? 'N/A' }}</b></a>
+                    <a href="{{ route('mail-received.show', $transaction) }}"><b>{{ $transaction->code ?? 'N/A' }} : {{ $transaction->mail->name ?? 'N/A' }}</b></a>
                     <span class="badge bg-danger }}">
                         {{ $transaction->action->name }}
                     </span>

@@ -9,8 +9,10 @@ class BatchController extends Controller
 {
     public function index()
     {
+        $mailBatches = Batch::where('organisation_holder_id', auth()->user()->currentOrganisation->id ?? '')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // Ajoute la pagination, 10 éléments par page
 
-        $mailBatches = Batch::where('organisation_holder_id', auth()->user()->currentOrganisation->id??'')->get();
         return view('batch.index', compact('mailBatches'));
     }
 
