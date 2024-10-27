@@ -34,7 +34,9 @@ class RecordController extends Controller
 {
     public function search(Request $request)
     {
+
         $query = $request->input('query');
+        dd($query);
         $results = Record::search($query)->paginate(10);
         return view('records.search', compact('results', 'query'));
     }
@@ -318,7 +320,7 @@ class RecordController extends Controller
 
 
 
-    // ici c'est pour l'import export
+    // ici c\'est pour l'import export
     public function exportButton(Request $request)
     {
         $recordIds = explode(',', $request->query('records'));

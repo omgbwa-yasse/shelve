@@ -1,186 +1,502 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <!-- Colonne de champs principaux -->
-        <div class="col-md-3">
-            <h5>Champs disponibles</h5>
-            <ul class="list-group" id="fields-list">
-                <h6 class="mt-3 mb-2">Description</h6>
-                <li class="list-group-item" data-field="code" data-name-field="Code">Code</li>
-                <li class="list-group-item" data-field="name" data-name-field="Intitulé">Nom</li>
-                <li class="list-group-item" data-field="author" data-name-field="Producteur">Auteur</li>
-                <li class="list-group-item" data-field="content" data-name-field="Contenu">Contenu</li>
-                <li class="list-group-item" data-field="date_start" data-name-field="Date début">Date de début</li>
-                <li class="list-group-item" data-field="date_end" data-name-field="Date fin">Date de fin</li>
-                <li class="list-group-item" data-field="date_exact" data-name-field="Date exacte">Date exacte</li>
-                <li class="list-group-item" data-field="status" data-name-field="Statut">Statut</li>
-                <li class="list-group-item" data-field="date_creation" data-name-field="Date création">Date de création</li>
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar des champs -->
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">{{ __('available_fields') }}</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="accordion" id="fieldsAccordion">
+                            <!-- Description -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDescription">
+                                        {{ __('description') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseDescription" class="accordion-collapse collapse show" data-bs-parent="#fieldsAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush" id="description-fields">
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="code" data-name-field="Code">
+                                                <i class="bi bi-hash me-2"></i>{{ __('code') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="name" data-name-field="Intitulé">
+                                                <i class="bi bi-type me-2"></i>{{ __('name') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="author" data-name-field="Producteur">
+                                                <i class="bi bi-person me-2"></i>{{ __('author') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="content" data-name-field="Contenu">
+                                                <i class="bi bi-file-text me-2"></i>{{ __('content') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="date_start" data-name-field="Date début">
+                                                <i class="bi bi-calendar me-2"></i>{{ __('start_date') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="date_end" data-name-field="Date fin">
+                                                <i class="bi bi-calendar me-2"></i>{{ __('end_date') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="date_exact" data-name-field="Date exacte">
+                                                <i class="bi bi-calendar me-2"></i>{{ __('exact_date') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="status" data-name-field="Statut">
+                                                <i class="bi bi-flag me-2"></i>{{ __('status') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="date_creation" data-name-field="Date création">
+                                                <i class="bi bi-calendar-plus me-2"></i>{{ __('creation_date') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <h6 class="mt-4 mb-2">Cycle de vie</h6>
-                <li class="list-group-item" data-field="dua" data-name-field="Délai communicabilité">Durée de communicabilité</li>
-                <li class="list-group-item" data-field="dul" data-name-field="Délai légal">Durée légale</li>
+                            <!-- Cycle de vie -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLifecycle">
+                                        {{ __('lifecycle') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseLifecycle" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="dua" data-name-field="Délai communicabilité">
+                                                <i class="bi bi-clock-history me-2"></i>{{ __('communication_delay') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="dul" data-name-field="Délai légal">
+                                                <i class="bi bi-clock me-2"></i>{{ __('legal_delay') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <h6 class="mt-4 mb-2">Localisation</h6>
-                <li class="list-group-item" data-field="container" data-name-field="Boite/chrono">Boite d'archives</li>
-                <li class="list-group-item" data-field="shelf" data-name-field="Etagère">Étagère</li>
-                <li class="list-group-item" data-field="room" data-name-field="Dépôt">Dépôt</li>
+                            <!-- Localisation -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocation">
+                                        {{ __('location') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseLocation" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="container" data-name-field="Boite/chrono">
+                                                <i class="bi bi-archive me-2"></i>{{ __('archive_box') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="shelf" data-name-field="Etagère">
+                                                <i class="bi bi-bookshelf me-2"></i>{{ __('shelf') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="room" data-name-field="Dépôt">
+                                                <i class="bi bi-building me-2"></i>{{ __('storage') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <h6 class="mt-4 mb-2">Indexation</h6>
-                <li class="list-group-item" data-field="term" data-name-field="Terme (thésaurus)">Terme</li>
-                <li class="list-group-item" data-field="activity" data-name-field="Activité">Activité</li>
+                            <!-- Indexation -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIndexation">
+                                        {{ __('indexation') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseIndexation" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="term" data-name-field="Terme (thésaurus)">
+                                                <i class="bi bi-tags me-2"></i>{{ __('term') }}
+                                            </a>
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="activity" data-name-field="Activité">
+                                                <i class="bi bi-gear me-2"></i>{{ __('activity') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <h6 class="mt-4 mb-2">Autres</h6>
-                <li class="list-group-item" data-field="creator" data-name-field="Créateur">Créateur</li>
-            </ul>
-        </div>
+                            <!-- Autres -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOthers">
+                                        {{ __('others') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseOthers" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <a href="#" class="list-group-item list-group-item-action" data-field="creator" data-name-field="Créateur">
+                                                <i class="bi bi-person-plus me-2"></i>{{ __('creator') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Colonne de champs de recherche dynamique -->
-        <div class="col-md-9">
-            <h5>Critères de recherche</h5>
-            <form id="advanced-search-form" method="POST" action="{{ route('records.advanced')}}">
-                @csrf
-                <div id="search-criteria-container"></div>
-                <button type="submit" class="btn btn-primary mt-3">Rechercher</button>
-                <button type="button" class="btn btn-secondary mt-3" id="save-search-btn">Enregistrer la recherche</button>
-            </form>
+            <!-- Zone de recherche -->
+            <div class="col-md-9">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ __('search_criteria') }}</h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="clear-search-btn">
+                                <i class="bi bi-x-circle me-1"></i>{{ __('clear') }}
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="save-search-btn">
+                                <i class="bi bi-bookmark me-1"></i>{{ __('save_search') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="advanced-search-form" method="POST" action="{{ route('records.advanced') }}">
+                            @csrf
+                            <div id="search-criteria-container">
+                                <div class="alert alert-info" id="no-criteria-message">
+                                    <i class="bi bi-info-circle me-2"></i>{{ __('click_fields_to_add_criteria') }}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-search me-1"></i>{{ __('search') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recherches sauvegardées -->
+                <div class="card shadow-sm mt-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">{{ __('saved_searches') }}</h5>
+                    </div>
+                    <div class="card-body" id="saved-searches-container">
+                        <!-- Les recherches sauvegardées seront ajoutées ici dynamiquement -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Template de critère de recherche -->
-<template id="search-criteria-template">
-    <div class="search-criteria-row d-flex align-items-center mb-2">
-        <input type="hidden" name="field[]" class="field-name">
-        <div class="me-2">
-            <label class="form-label field-label"></label>
+    <!-- Template de critère -->
+    <template id="search-criteria-template">
+        <div class="search-criteria-row card mb-2">
+            <div class="card-body p-2">
+                <div class="d-flex align-items-center">
+                    <input type="hidden" name="field[]" class="field-name">
+                    <div class="me-2 field-label-container">
+                        <span class="badge bg-secondary field-label"></span>
+                    </div>
+                    <select class="form-select form-select-sm me-2 field-operator" style="width: auto;" name="operator[]">
+                        <!-- Options ajoutées dynamiquement -->
+                    </select>
+                    <div class="flex-grow-1 me-2">
+                        <input type="text" class="form-control form-control-sm field-value" name="value[]">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-criteria-btn">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
         </div>
-        <select class="form-select me-2 field-operator" name="operator[]">
-            <!-- Options seront dynamiquement ajoutées en fonction du champ -->
-        </select>
-        <input type="text" class="form-control me-2 field-value" name="value[]">
-        <button type="button" class="btn btn-danger btn-sm remove-criteria-btn">Retirer</button>
-    </div>
-</template>
+    </template>
 
-<script>
-    const data = JSON.parse(@json($data));
+@endsection
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const fieldsList = document.getElementById('fields-list');
-        const searchCriteriaContainer = document.getElementById('search-criteria-container');
-        const searchCriteriaTemplate = document.getElementById('search-criteria-template');
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Données de l'application
+            const data = @json($data);
 
-        fieldsList.addEventListener('click', function (e) {
-            if (e.target && e.target.nodeName === 'LI') {
-                const fieldName = e.target.getAttribute('data-field');
-                const name = e.target.getAttribute('data-name-field');
-                addSearchCriteria(fieldName, name);
-            }
-        });
+            // Éléments du DOM
+            const searchCriteriaContainer = document.getElementById('search-criteria-container');
+            const searchCriteriaTemplate = document.getElementById('search-criteria-template');
+            const noCriteriaMessage = document.getElementById('no-criteria-message');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const saveSearchBtn = document.getElementById('save-search-btn');
 
-        function addSearchCriteria(field, name) {
-            const criteriaClone = document.importNode(searchCriteriaTemplate.content, true);
-            const fieldNameInput = criteriaClone.querySelector('.field-name');
-            const fieldLabel = criteriaClone.querySelector('.field-label');
-            const operatorSelect = criteriaClone.querySelector('.field-operator');
-            const fieldValueInput = criteriaClone.querySelector('.field-value');
+            // Configuration des opérateurs par type de champ
+            const operatorConfig = {
+                text: ['commence par', 'contient', 'ne contient pas'],
+                date: ['=', '>', '<'],
+                select: ['avec', 'sauf']
+            };
 
-            fieldNameInput.value = field;
-            fieldLabel.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            // Types de champs
+            const fieldTypes = {
+                code: 'text',
+                name: 'text',
+                content: 'text',
+                date_start: 'date',
+                date_end: 'date',
+                date_exact: 'date',
+                date_creation: 'date',
+                dua: 'date',
+                dul: 'date',
+                room: 'select',
+                shelf: 'select',
+                activity: 'select',
+                term: 'select',
+                author: 'select',
+                creator: 'select',
+                container: 'select',
+                status: 'select'
+            };
 
-            // Définir les options de tri en fonction du champ
-            let operators = [];
-            switch (field) {
-                case 'code':
-                case 'name':
-                case 'content':
-                    operators = ['commence par', 'contient', 'ne contient pas'];
-                    break;
-                case 'date_start':
-                case 'date_end':
-                case 'date_exact':
-                case 'date_creation':
-                case 'dua':
-                case 'dul':
-                    operators = ['=', '>', '<'];
-                    fieldValueInput.type = 'date';
-                    break;
-                case 'room':
-                case 'shelf':
-                case 'activity':
-                case 'term':
-                case 'author':
-                case 'creator':
-                case 'container':
-                case 'status':
-                    operators = ['avec', 'sauf'];
-                    break;
-            }
+            // Mapping des champs select avec leurs données
+            const selectFieldsData = {
+                room: data.rooms,
+                shelf: data.shelve,
+                activity: data.activities,
+                term: data.terms,
+                author: data.authors,
+                creator: data.creators,
+                container: data.containers,
+                status: data.statues
+            };
 
-            // Ajouter les options au select
-            operators.forEach(op => {
-                const option = document.createElement('option');
-                option.value = op;
-                option.textContent = op;
-                operatorSelect.appendChild(option);
+            // Gestionnaire de clic sur les champs
+            document.querySelectorAll('[data-field]').forEach(field => {
+                field.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const fieldName = field.getAttribute('data-field');
+                    const fieldLabel = field.getAttribute('data-name-field');
+                    addSearchCriteria(fieldName, fieldLabel);
+                    noCriteriaMessage.style.display = 'none';
+                });
             });
 
-            if (['room', 'shelf', 'activity', 'term', 'author', 'creator', 'status','container'].includes(field)) {
-                const selectElement = document.createElement('select');
-                selectElement.classList.add('form-select', 'me-2', 'field-value');
-                selectElement.name = 'value[]';
+            // Fonction d'ajout de critère
+            function addSearchCriteria(field, label) {
+                const criteriaClone = document.importNode(searchCriteriaTemplate.content, true);
 
-                let items;
-                switch (field) {
-                    case 'room':
-                        items = data.rooms;
-                        break;
-                    case 'shelf':
-                        items = data.shelve;
-                        break;
-                    case 'activity':
-                        items = data.activities;
-                        break;
-                    case 'term':
-                        items = data.terms;
-                        break;
-                    case 'author':
-                        items = data.authors;
-                        break;
-                    case 'creator':
-                        items = data.creators;
-                        break;
-                    case 'container':
-                        items = data.containers;
-                        break;
-                    case 'status':
-                        items = data.statues;
-                        break;
-                }
+                // Configuration des éléments de base
+                criteriaClone.querySelector('.field-name').value = field;
+                criteriaClone.querySelector('.field-label').textContent = label;
 
-                if (items) {
+                const operatorSelect = criteriaClone.querySelector('.field-operator');
+                const valueInput = criteriaClone.querySelector('.field-value');
+
+                // Configuration des opérateurs
+                const fieldType = fieldTypes[field];
+                const operators = operatorConfig[fieldType];
+                operators.forEach(op => {
+                    const option = document.createElement('option');
+                    option.value = op;
+                    option.textContent = op;
+                    operatorSelect.appendChild(option);
+                });
+
+                // Configuration du champ de valeur
+                if (fieldType === 'date') {
+                    valueInput.type = 'date';
+                } else if (fieldType === 'select') {
+                    const selectElement = document.createElement('select');
+                    selectElement.classList.add('form-select', 'form-select-sm');
+                    selectElement.name = 'value[]';
+
+                    // Ajout des options
+                    const items = selectFieldsData[field] || [];
                     items.forEach(item => {
                         const option = document.createElement('option');
                         option.value = item.id;
-                        option.textContent = item.name || item.title || item.code ;
+                        option.textContent = item.name || item.title || item.code;
                         selectElement.appendChild(option);
                     });
+
+                    valueInput.replaceWith(selectElement);
                 }
 
-                fieldValueInput.replaceWith(selectElement);
+                // Ajout des classes pour l'animation
+                const criteriaRow = criteriaClone.querySelector('.search-criteria-row');
+                criteriaRow.style.opacity = '0';
+                searchCriteriaContainer.appendChild(criteriaClone);
+
+                // Animation d'apparition
+                requestAnimationFrame(() => {
+                    criteriaRow.style.transition = 'opacity 0.3s ease-in-out';
+                    criteriaRow.style.opacity = '1';
+                });
             }
 
-            searchCriteriaContainer.appendChild(criteriaClone);
-        }
+            // Suppression d'un critère
+            searchCriteriaContainer.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-criteria-btn')) {
+                    const criteriaRow = e.target.closest('.search-criteria-row');
+                    criteriaRow.style.opacity = '0';
+                    setTimeout(() => {
+                        criteriaRow.remove();
+                        if (searchCriteriaContainer.querySelectorAll('.search-criteria-row').length === 0) {
+                            noCriteriaMessage.style.display = 'block';
+                        }
+                    }, 300);
+                }
+            });
 
-        // Supprimer un critère de recherche
-        searchCriteriaContainer.addEventListener('click', function (e) {
-            if (e.target && e.target.classList.contains('remove-criteria-btn')) {
-                e.target.closest('.search-criteria-row').remove();
+            // Effacer tous les critères
+            clearSearchBtn.addEventListener('click', function() {
+                const criteriaRows = searchCriteriaContainer.querySelectorAll('.search-criteria-row');
+                criteriaRows.forEach(row => {
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                });
+                setTimeout(() => {
+                    noCriteriaMessage.style.display = 'block';
+                }, 300);
+            });
+
+            // Sauvegarder la recherche
+            saveSearchBtn.addEventListener('click', function() {
+                const searchCriteria = collectSearchCriteria();
+                if (searchCriteria.length === 0) {
+                    showToast('warning', 'Veuillez ajouter au moins un critère de recherche');
+                    return;
+                }
+
+                // Demander le nom de la recherche
+                const searchName = prompt('Nom de la recherche :', '');
+                if (searchName) {
+                    const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+                    savedSearches.push({
+                        name: searchName,
+                        criteria: searchCriteria,
+                        date: new Date().toISOString()
+                    });
+                    localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+                    updateSavedSearchesList();
+                    showToast('success', 'Recherche sauvegardée avec succès');
+                }
+            });
+
+            // Collecter les critères de recherche
+            function collectSearchCriteria() {
+                const criteria = [];
+                const rows = searchCriteriaContainer.querySelectorAll('.search-criteria-row');
+
+                rows.forEach(row => {
+                    criteria.push({
+                        field: row.querySelector('.field-name').value,
+                        operator: row.querySelector('.field-operator').value,
+                        value: row.querySelector('.field-value').value
+                    });
+                });
+
+                return criteria;
             }
+
+            // Mettre à jour la liste des recherches sauvegardées
+            function updateSavedSearchesList() {
+                const container = document.getElementById('saved-searches-container');
+                const savedSearches = JSON.parse(localStorage.getItem('savedSearches') || '[]');
+
+                if (savedSearches.length === 0) {
+                    container.innerHTML = '<div class="text-muted">Aucune recherche sauvegardée</div>';
+                    return;
+                }
+
+                const searchesHTML = savedSearches.map((search, index) => `
+            <div class="saved-search-item d-flex justify-content-between align-items-center border-bottom py-2">
+                <div>
+                    <h6 class="mb-1">${search.name}</h6>
+                    <small class="text-muted">${new Date(search.date).toLocaleDateString()}</small>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary load-search" data-index="${index}">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-search" data-index="${index}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+                container.innerHTML = searchesHTML;
+
+                // Gestionnaires d'événements pour les recherches sauvegardées
+                container.querySelectorAll('.load-search').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.dataset.index;
+                        loadSavedSearch(savedSearches[index].criteria);
+                    });
+                });
+
+                container.querySelectorAll('.delete-search').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = this.dataset.index;
+                        savedSearches.splice(index, 1);
+                        localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+                        updateSavedSearchesList();
+                        showToast('success', 'Recherche supprimée');
+                    });
+                });
+            }
+
+            // Charger une recherche sauvegardée
+            function loadSavedSearch(criteria) {
+                clearSearchBtn.click();
+                setTimeout(() => {
+                    criteria.forEach(criterion => {
+                        const field = document.querySelector(`[data-field="${criterion.field}"]`);
+                        if (field) {
+                            const fieldName = field.getAttribute('data-field');
+                            const fieldLabel = field.getAttribute('data-name-field');
+                            addSearchCriteria(fieldName, fieldLabel);
+                            const lastRow = searchCriteriaContainer.lastElementChild;
+                            lastRow.querySelector('.field-operator').value = criterion.operator;
+                            const valueInput = lastRow.querySelector('.field-value');
+                            if (valueInput) {
+                                valueInput.value = criterion.value;
+                            }
+                        }
+                    });
+                }, 300);
+            }
+
+            // Afficher un toast
+            function showToast(type, message) {
+                const toastContainer = document.getElementById('toast-container') || createToastContainer();
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type} border-0`;
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+
+                toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+                toastContainer.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 3000 });
+                bsToast.show();
+
+                toast.addEventListener('hidden.bs.toast', () => toast.remove());
+            }
+
+            // Créer le conteneur de toast
+            function createToastContainer() {
+                const container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                document.body.appendChild(container);
+                return container;
+            }
+
+            // Initialiser les recherches sauvegardées au chargement
+            updateSavedSearchesList();
         });
-    });
-</script>
-@endsection
+    </script>
+@endpush

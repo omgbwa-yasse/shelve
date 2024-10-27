@@ -400,6 +400,55 @@
     "is_original": "Est original",
     "yes": "Oui",
     "no": "Non",
-    "not_available": "N/A"
+    "not_available": "N/A",
+
+    "available_fields": "Champs disponibles",
+    "search_criteria": "Critères de recherche",
+    "click_fields_to_add_criteria": "Cliquez sur les champs à gauche pour ajouter des critères de recherche",
+    "save_search": "Sauvegarder",
+    "saved_searches": "Recherches sauvegardées",
+    "no_saved_searches": "Aucune recherche sauvegardée",
+    "clear": "Effacer",
+
+
+    "lifecycle": "Cycle de vie",
+    "location": "Localisation",
+    "indexation": "Indexation",
+    "others": "Autres",
+
+
+
+    "start_date": "Date de début",
+    "end_date": "Date de fin",
+    "exact_date": "Date exacte",
+
+    "creation_date": "Date de création",
+    "communication_delay": "Délai de communicabilité",
+    "legal_delay": "Délai légal",
+    "archive_box": "Boîte d'archives",
+
+    "storage": "Dépôt",
+    "term": "Terme",
+
+    "creator": "Créateur",
+
+
+    "starts_with": "commence par",
+    "contains": "contient",
+    "not_contains": "ne contient pas",
+    "equals": "égal à",
+    "greater_than": "supérieur à",
+    "less_than": "inférieur à",
+    "with": "avec",
+    "without": "sauf",
+
+
+    "save_search_prompt": "Nom de la recherche :",
+    "search_saved_success": "Recherche sauvegardée avec succès",
+    "search_deleted_success": "Recherche supprimée",
+    "add_criteria_first": "Veuillez ajouter au moins un critère de recherche",
+    "confirm_delete_search": "Êtes-vous sûr de vouloir supprimer cette recherche ?",
+    "loading_search": "Chargement de la recherche...",
+    "no_criteria_added": "Aucun critère ajouté"
 
 }
