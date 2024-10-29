@@ -84,6 +84,7 @@ class MailController extends Controller
     {
         $mailCode = $this->getMailCode();
 
+
         $request->merge(['code' => $mailCode]);
 
         $validatedData = $request->validate([
@@ -100,6 +101,8 @@ class MailController extends Controller
             'document_type_id' => 'required|exists:document_types,id',
         ]);
 
+
+
         $mail = Mail::create($validatedData + [
             'create_by' => auth()->id(),
             'creator_organisation_id'=>Auth::user()->current_organisation_id
@@ -115,14 +118,27 @@ class MailController extends Controller
         $year = date('Y');
         $month = date('m');
 
-        $mailCount = Mail::whereYear('created_at', $year)->count();
-        $mailCount++;
+        try {
+            // Récupérer le dernier mail créé
+            $lastMail = Mail::latest('created_at')->first();
 
-         if($mailCount > 999999){
-            $formattedMailCount = str_pad($mailCount, 8, '0', STR_PAD_LEFT);
-         }else{
-            $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
-         }
+            if ($lastMail) {
+                // Extraire la troisième partie du code du dernier mail
+                $lastMailCode = explode('-', $lastMail->code);
+                $lastOrderNumber = (int) $lastMailCode[2];
+                $mailCount = $lastOrderNumber + 1;
+            } else {
+                // S'il n'y a pas de mail, initialiser le numéro d'ordre à 1
+                $mailCount = 1;
+            }
+        } catch (\Exception $e) {
+            // Gérer l'erreur (par exemple, logger l'erreur ou définir un numéro d'ordre par défaut)
+            $mailCount = 1;
+            // Log::error('Erreur lors de la génération du code du mail : ' . $e->getMessage());
+        }
+
+        // Formater le numéro d'ordre avec 6 chiffres
+        $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
 
         return $year . '-' . $month . '-' . $formattedMailCount;
     }
@@ -174,8 +190,8 @@ class MailController extends Controller
 
 
 
-    public function destroy(Mail $mail)
-    {
+    public function destroy(INT $id)
+    {   $mail = Mail::findOrFail($id);
         $mail->delete();
         return redirect()->route('mails.index')->with('success', 'Mail deleted successfully.');
     }
