@@ -262,11 +262,47 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Form -->
-    <form id="delete-form" action="{{ route('mails.destroy', $mail->id) }}" method="POST" class="d-none">
+    <form id="delete-form" action="{{ route('mails.destroy', $mail->id) }}" method="POST" style="display: none;">
         @csrf
         @method('DELETE')
     </form>
+
+    <!-- Modal - update the existing modal -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Confirm Deletion
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-trash display-4 text-danger"></i>
+                    </div>
+                    <p>Are you sure you want to delete this mail? This action cannot be undone.</p>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-1 text-muted small">Mail: <strong>{{ $mail->name }}</strong></p>
+                        <p class="mb-0 text-muted small">Code: <strong>#{{ $mail->code }}</strong></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="bi bi-trash me-1"></i>
+                        Delete Mail
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <style>
             /* Timeline Styles */
             .timeline {
@@ -545,12 +581,26 @@
                 });
 
                 // Delete confirmation
+
+                let deleteModal = null;
+
                 window.confirmDelete = function() {
-                    return new bootstrap.Modal(document.createElement('div'), {
-                        backdrop: 'static',
-                        keyboard: false
-                    }).show();
-                };
+                    deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                    deleteModal.show();
+                }
+
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Deleting...
+                    `;
+
+                    // Submit the delete form
+                    document.getElementById('delete-form').submit();
+                });
+
 
                 // Bootstrap Tooltip Initialization
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

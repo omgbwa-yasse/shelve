@@ -82,6 +82,10 @@ class MailController extends Controller
 
     public function store(Request $request)
     {
+        $mailCode = $this->getMailCode();
+
+        $request->merge(['code' => $mailCode]);
+
         $validatedData = $request->validate([
             'code' => 'required|unique:mails|max:255',
             'name' => 'nullable|max:255',
@@ -96,16 +100,32 @@ class MailController extends Controller
             'document_type_id' => 'required|exists:document_types,id',
         ]);
 
-            $mail = Mail::create($validatedData + [
-                'create_by' => auth()->id(),
-                    'creator_organisation_id'=>Auth::user()->current_organisation_id
-                ]);
+        $mail = Mail::create($validatedData + [
+            'create_by' => auth()->id(),
+            'creator_organisation_id'=>Auth::user()->current_organisation_id
+        ]);
 
-            $mail->authors()->attach($validatedData['author_id']);
+        $mail->authors()->attach($validatedData['author_id']);
 
-            return redirect()->route('mails.index')->with('success', 'Mail créé avec succès !');
+        return redirect()->route('mails.index')->with('success', 'Mail créé avec succès !');
     }
 
+
+    public function getMailCode(){
+        $year = date('Y');
+        $month = date('m');
+
+        $mailCount = Mail::whereYear('created_at', $year)->count();
+        $mailCount++;
+
+         if($mailCount > 999999){
+            $formattedMailCount = str_pad($mailCount, 8, '0', STR_PAD_LEFT);
+         }else{
+            $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
+         }
+
+        return $year . '-' . $month . '-' . $formattedMailCount;
+    }
 
 
 

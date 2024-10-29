@@ -35,14 +35,7 @@
                             <div class="form-section">
                                 <h4><i class="bi bi-info-circle"></i> Informations générales</h4>
                                 <div class="row">
-                                    <div class="col-md-6 ">
-                                        <label for="code" class="form-label">Code</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-barcode"></i></span>
-                                            <input type="text" class="form-control" id="code" name="code" value="{{ old('code') }}" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 ">
+                                    <div class="col-md-3">
                                         <label for="date" class="form-label">Date</label>
                                         <div class="input-group">
                                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
