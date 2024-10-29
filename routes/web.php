@@ -27,6 +27,7 @@ use App\Http\Controllers\activityCommunicabilityController;
 use App\Http\Controllers\ToolsController;
 use App\Http\Controllers\AuthorContactController;
 use App\Http\Controllers\MailAuthorController;
+use App\Http\Controllers\MailTransactionController;
 use App\Http\Controllers\MailAuthorContactController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\BuildingController;
@@ -134,6 +135,10 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
+
+
+        Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
+        Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
 
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'index'])->name('mails.sort');
