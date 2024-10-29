@@ -1014,6 +1014,16 @@ return new class extends Migration
             $table->timestamps();
         });
 
+
+        Schema::create('dolly_mail_transactions', function(Blueprint $table){
+            $table->unsignedBigInteger('mail_transaction_id')->nullable(false);
+            $table->unsignedBigInteger('dolly_id')->nullable(false);
+            $table->foreign('mail_transaction_id')->references('id')->on('mail_transactions')->onDelete('cascade');
+            $table->foreign('dolly_id')->references('id')->on('dollies')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+
         Schema::create('dolly_records', function(Blueprint $table){
             $table->unsignedBigInteger('record_id')->nullable(false);
             $table->unsignedBigInteger('dolly_id')->nullable(false);
