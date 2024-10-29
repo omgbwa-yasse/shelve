@@ -39,33 +39,118 @@
 
 
 
-        <div class="overflow-x-auto bg-white shadow-md rounded-lg">
-            @foreach ($transactions as $transaction)
-                <h4 class="card-title mb-2">
-                    <div class="btn-group mt-1" role="group">
-                        <input type="checkbox" class="me-2" name="selected_mail[]" value="{{ $transaction->id }}" id="mail_{{ $transaction->id }}" autocomplete="off" />
+    <div id="transactionList" class="mb-4">
+        @foreach ($transactions as $transaction)
+            <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                    <div class="form-check me-3">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               value="{{ $transaction->id }}"
+                               id="mail_{{ $transaction->id }}"
+                               name="selected_mail[]" />
                     </div>
-                    <a href="{{ route('mail-send.show', $transaction) }}"><b>{{ $transaction->code ?? 'N/A' }} : {{ $transaction->mail->name ?? 'N/A' }}</b></a>
-                    <span class="badge bg-danger }}">
-                        {{ $transaction->action->name }}
-                    </span>
-                </h4>
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-9">
-                                <p class="card-text mb-1">
-                                        <i class="bi bi-info-circle me-2"></i><em>Description :</em>{{ $transaction->description }}<br/>
-                                        <i class="bi bi-person me-2"></i><em>Reçu par :</em><a href="#"> {{ $transaction->userSend->name ?? 'N/A' }}</a>
-                                        <i class="bi bi-building me-2"></i><em>Poste destinataire :</em> <a href="#"> {{ $transaction->organisationSend->name ?? 'N/A' }}</a>
-                                        <i class="bi bi-file-earmark me-2"></i><em>Type de document :</em> <a href="#"> {{ $transaction->documentType->name ?? 'N/A' }}</a>
-                                        <i class="bi bi-calendar me-2"></i><em>le :</em> <a href="#"> {{ $transaction->date_creation ? date('Y-m-d', strtotime($transaction->date_creation)) : 'N/A' }}</a>
+
+                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#transaction-{{ $transaction->id }}"
+                            aria-expanded="false"
+                            aria-controls="transaction-{{ $transaction->id }}">
+                        <i class="bi bi-chevron-down fs-5"></i>
+                    </button>
+
+                    <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $transaction->id }}">
+                        <a href="{{ route('mail-send.show', $transaction) }}"
+                           class="text-decoration-none text-dark">
+                            <span class="fs-5 fw-semibold">{{ $transaction->code ?? 'N/A' }}</span>
+                            <span class="fs-5"> - {{ $transaction->mail->name ?? 'N/A' }}</span>
+                            <span class="badge bg-danger ms-2">{{ $transaction->action->name }}</span>
+                        </a>
+                    </h4>
+                </div>
+
+                <div class="collapse" id="transaction-{{ $transaction->id }}">
+                    <div class="card-body bg-white">
+                        @if($transaction->description)
+                            <div class="mb-3">
+                                <p class="mb-2">
+                                    <i class="bi bi-card-text me-2 text-primary"></i>
+                                    <strong>Description:</strong> {{ $transaction->description }}
+                                </p>
+                            </div>
+                        @endif
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="mb-2">
+
+                                    <i class="bi bi-person-fill me-2 text-primary"></i>
+                                    <strong>Envoyé par:</strong>
+                                    {{ $transaction->userSend->name ?? 'N/A' }}
+                                    ({{ $transaction->organisationSend->name ?? 'N/A' }})
+                                    <br>
+
+                                    <i class="bi bi-person-fill me-2 text-primary"></i>
+                                    <strong>Reçu par:</strong>
+                                    {{ $transaction->userReceived->name ?? 'N/A' }}
+                                    ({{ $transaction->organisationReceived->name ?? 'N/A' }})
+                                    <br>
+
+                                    <i class="bi bi-building me-2 text-primary"></i>
+                                    <strong>Poste destinataire:</strong>
+                                    {{ $transaction->organisationSend->name ?? 'N/A' }}
+                                    <br>
+
+                                    <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
+                                    <strong>Type de document:</strong>
+                                    {{ $transaction->documentType->name ?? 'N/A' }}
+                                    <br>
+
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                    <strong>Date:</strong>
+                                    {{ $transaction->date_creation ? \Carbon\Carbon::parse($transaction->date_creation)->format('d/m/Y') : 'N/A' }}
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
-            @endforeach
-        </div>
-</div>
+            </div>
+        @endforeach
+    </div>
+
+    <style>
+        .card-header {
+            transition: background-color 0.2s ease;
+        }
+
+        .card-header:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .bi {
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .collapse {
+            transition: all 0.3s ease-out;
+        }
+
+        .btn-link:focus {
+            box-shadow: none;
+        }
+
+        .bi-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        [aria-expanded="true"] .bi-chevron-down {
+            transform: rotate(180deg);
+        }
+        </style>
+
 @endsection

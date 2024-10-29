@@ -8,10 +8,6 @@
             @csrf
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="code" class="form-label">Code</label>
-                    <input type="text" name="code" id="code" class="form-control" value="{{ old('code') }}" required>
-                </div>
-                <div class="col-md-6 mb-3">
                     <label for="mailInput" class="form-label">Mail</label>
                     <div class="input-group">
                         <input type="text" id="mailInput" class="form-control" readonly required>

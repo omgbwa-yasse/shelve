@@ -82,7 +82,7 @@ class MailController extends Controller
 
     public function store(Request $request)
     {
-        $mailCode = $this->getMailCode();
+        $mailCode = $this->setMailCode();
 
 
         $request->merge(['code' => $mailCode]);
@@ -114,34 +114,26 @@ class MailController extends Controller
     }
 
 
-    public function getMailCode(){
+    public function setMailCode(){
         $year = date('Y');
-        $month = date('m');
 
-        try {
-            // Récupérer le dernier mail créé
-            $lastMail = Mail::latest('created_at')->first();
+        $lastMailCode = Mail::whereYear('created_at', $year)
+                            ->latest('created_at')
+                            ->value('code');
 
-            if ($lastMail) {
-                // Extraire la troisième partie du code du dernier mail
-                $lastMailCode = explode('-', $lastMail->code);
-                $lastOrderNumber = (int) $lastMailCode[2];
-                $mailCount = $lastOrderNumber + 1;
-            } else {
-                // S'il n'y a pas de mail, initialiser le numéro d'ordre à 1
-                $mailCount = 1;
-            }
-        } catch (\Exception $e) {
-            // Gérer l'erreur (par exemple, logger l'erreur ou définir un numéro d'ordre par défaut)
+        if ($lastMailCode) {
+            $lastCodeParts = explode('-', $lastMailCode);
+            $lastOrderNumber = isset($lastCodeParts[1]) ? (int) substr($lastCodeParts[1], 1) : 0;
+            $mailCount = $lastOrderNumber + 1;
+        } else {
             $mailCount = 1;
-            // Log::error('Erreur lors de la génération du code du mail : ' . $e->getMessage());
         }
 
-        // Formater le numéro d'ordre avec 6 chiffres
         $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
 
-        return $year . '-' . $month . '-' . $formattedMailCount;
+        return 'M' . $year . '-' . $formattedMailCount;
     }
+
 
 
 

@@ -23,19 +23,7 @@
                     <div class="row">
                         <!-- Première colonne -->
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Code du courrier</label>
-                                <input type="text"
-                                       name="code"
-                                       class="form-control @error('code') is-invalid @enderror"
-                                       value="{{ old('code') }}"
-                                       required>
-                                @error('code')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
+                             <div class="mb-3">
                                 <label class="form-label">Courrier associé</label>
                                 <div class="input-group">
                                     <input type="text"
@@ -160,6 +148,7 @@
                             </tr>
                             </thead>
                             <tbody>
+
                             @foreach($mails as $mail)
                                 <tr>
                                     <td>{{ $mail->code }}</td>

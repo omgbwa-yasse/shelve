@@ -23,8 +23,8 @@ class MailReceivedController extends Controller
 
     public function index()
     {
-        $user = Auth::user();
-        $transactions = MailTransaction::where('user_received_id', $user->id)->get();
+        $organisationId = Auth::user()->current_organisation_id;
+        $transactions = MailTransaction::where('organisation_received_id', $organisationId)->get();
         $transactions->load(['mail','action','organisationSend','organisationReceived']);
         return view('mails.received.index', compact('transactions'));
     }
@@ -67,37 +67,37 @@ class MailReceivedController extends Controller
 
     public function create()
     {
-        // Get the current user's organisation ID
+
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        // Get mails that are related to the current organisation through transactions
         $mails = Mail::with(['transactions', 'type'])
-            ->whereHas('transactions', function ($query) use ($currentOrganisationId) {
-                $query->where('organisation_received_id', $currentOrganisationId);
+            ->where(function ($query) use ($currentOrganisationId) {
+                $query->whereHas('transactions', function ($subquery) use ($currentOrganisationId) {
+                    $subquery->where('organisation_received_id', $currentOrganisationId);
+                })
+                ->orWhere('creator_organisation_id', $currentOrganisationId);
             })
             ->latest()
             ->get();
 
-        // Get mail type for received mails
         $mailType = MailType::where('name', 'received')->first();
 
-        // Get all users except the current user
+
         $users = User::where('id', '!=', Auth::id())
             ->orderBy('name')
             ->get();
 
-        // Get all organisations except the current user's organisation
         $organisations = Organisation::whereNot('id', $currentOrganisationId)
             ->orderBy('name')
             ->get();
 
-        // Get all document types
+
         $documentTypes = DocumentType::orderBy('name')->get();
 
-        // Get all mail actions
+
         $mailActions = MailAction::orderBy('name')->get();
 
-        // Get received organisations for the current user
+
         $receivedOrganisations = Auth::user()->organisations;
 
         return view('mails.received.create', compact(
@@ -114,6 +114,9 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
+        $code = $this->setMailTransactionCode();
+
+        $request->merge(['code' => $code]);
 
         $validatedData = $request->validate([
             'code' => 'required',
@@ -141,6 +144,25 @@ class MailReceivedController extends Controller
     }
 
 
+
+    public function setMailTransactionCode(){
+        $year = now()->format('Y');
+
+        $lastTransaction = MailTransaction::whereYear('created_at', $year)
+                                             ->latest('id')
+                                             ->first();
+
+        if ($lastTransaction) {
+            $lastcode = explode('-', $lastTransaction->code);
+            $lastOrderNumber = isset($lastcode[1]) ? (int)substr($lastcode[1], 1) : 0;
+            $transactionNumber = $lastOrderNumber + 1;
+        } else {
+            $transactionNumber = 1;
+        }
+
+        $newNumberFormatted = str_pad($transactionNumber, 7, '0', STR_PAD_LEFT);
+        return 'T' . $year . "-" . $newNumberFormatted;
+    }
 
 
     public function show(int $id)

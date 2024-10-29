@@ -23,8 +23,8 @@ class MailSendController extends Controller
 
     public function index()
     {
-        $user = Auth::user();
-        $transactions = MailTransaction::where('user_send_id', $user->id)->get();
+        $id = Auth::user()->current_organisation_id;
+        $transactions = MailTransaction::where('organisation_send_id', $id)->get();
         $transactions->load(['mail','action','organisationReceived','organisationSend']);
         return view('mails.send.index', compact('transactions'));
     }
@@ -35,20 +35,22 @@ class MailSendController extends Controller
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        // Récupérer les mails qui ont des transactions où l'organisation courante est expéditrice
         $mails = Mail::with(['transactions', 'type'])
-            ->whereHas('transactions', function ($query) use ($currentOrganisationId) {
-                $query->where('organisation_send_id', $currentOrganisationId);
+            ->where(function ($query) use ($currentOrganisationId) {
+                $query->whereHas('transactions', function ($subquery) use ($currentOrganisationId) {
+                    $subquery->where('organisation_send_id', $currentOrganisationId);
+                })
+                ->orWhere('creator_organisation_id', $currentOrganisationId);
             })
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->get();
 
-        // Récupérer les utilisateurs sauf l'utilisateur courant
+
         $users = User::where('id', '!=', Auth::id())
             ->orderBy('name')
             ->get();
 
-        // Récupérer toutes les organisations sauf l'organisation courante
+
         $organisations = Organisation::whereNot('id', $currentOrganisationId)
             ->orderBy('name')
             ->get();
@@ -56,7 +58,7 @@ class MailSendController extends Controller
         $documentTypes = DocumentType::orderBy('name')->get();
         $mailActions = MailAction::orderBy('name')->get();
 
-        // Pour l'envoi, toutes les organisations sauf la courante peuvent être destinataires
+
         $sendOrganisations = Organisation::whereNot('id', $currentOrganisationId)
             ->orderBy('name')
             ->get();
@@ -73,6 +75,9 @@ class MailSendController extends Controller
 
     public function store(Request $request)
     {
+        $code = $this->setMailTransactionCode();
+
+        $request->merge(['code' => $code]);
 
         $validatedData = $request->validate([
             'code' => 'required',
@@ -98,6 +103,26 @@ class MailSendController extends Controller
             ->with('success', 'MailTransaction created successfully.');
     }
 
+
+
+    public function setMailTransactionCode(){
+        $year = now()->format('Y');
+
+        $lastTransaction = MailTransaction::whereYear('created_at', $year)
+                                             ->latest('id')
+                                             ->first();
+
+        if ($lastTransaction) {
+            $lastcode = explode('-', $lastTransaction->code);
+            $lastOrderNumber = isset($lastcode[1]) ? (int)substr($lastcode[1], 1) : 0;
+            $transactionNumber = $lastOrderNumber + 1;
+        } else {
+            $transactionNumber = 1;
+        }
+
+        $newNumberFormatted = str_pad($transactionNumber, 7, '0', STR_PAD_LEFT);
+        return 'T' . $year . "-" . $newNumberFormatted;
+    }
 
 
 
