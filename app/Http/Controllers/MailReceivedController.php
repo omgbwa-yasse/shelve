@@ -15,6 +15,8 @@ use App\Models\UserOrganisation;
 use Illuminate\Http\Request;
 use App\Models\MailAttachment;
 use App\Models\MailTransaction;
+use App\Models\Dolly;
+use App\Models\DollyType;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +28,11 @@ class MailReceivedController extends Controller
         $organisationId = Auth::user()->current_organisation_id;
         $transactions = MailTransaction::where('organisation_received_id', $organisationId)->get();
         $transactions->load(['mail','action','organisationSend','organisationReceived']);
-        return view('mails.received.index', compact('transactions'));
+        $dollies = Dolly::whereHas('type', function ($q) {
+            $q->where('name', 'mail_transaction');
+        })->get();
+        $types = DollyType::all();
+        return view('mails.received.index', compact('transactions','dollies', 'types'));
     }
 
     public function inprogress()

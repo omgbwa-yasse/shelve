@@ -2,14 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-class DollyMailTransactionController extends Controller
-{
-    <?php
-
-namespace App\Http\Controllers;
-
 use App\Models\DollyMailTransaction;
 use App\Models\Dolly;
 use App\Models\MailTransaction;
@@ -78,8 +70,6 @@ class DollyMailTransactionController extends Controller
         return redirect()->route('dolly-mail-transactions.index')
                         ->with('success','Relation mise à jour avec succès');
     }
-
-
 
 
     public function destroy(DollyMailTransaction $dollyMailTransaction)

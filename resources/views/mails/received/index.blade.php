@@ -7,10 +7,10 @@
 
     <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
         <div class="d-flex align-items-center">
-            <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
                 <i class="bi bi-cart me-1"></i>
-                Chariot ***
-            </a>
+                Chariot
+              </a>
             <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                 <i class="bi bi-download me-1"></i>
                 Exporter ***
@@ -116,6 +116,61 @@
     </div>
 
 
+<div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="dolliesModalLabel">Chariot</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="dolliesList">
+          @foreach ($dollies as $dolly)
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">{{ $dolly->name }}</h5>
+                <p class="card-text">{{ $dolly->description }}</p>
+              </div>
+            </div>
+          @endforeach
+        </div>
+        <div id="dollyForm" style="display: none;">
+          <form action="{{ route('dolly.create') }}" method="POST">
+            @csrf
+            <div class="mb-3">
+              <label for="name" class="form-label">Nom</label>
+              <input type="text" class="form-control" id="name" name="name" required>
+
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea class="form-control" id="description"
+ name="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="type_id"
+ class="form-label">Type</label>
+              <select class="form-select" id="type_id" name="type_id" required>
+                @foreach ($types as $type)
+                  <option value="{{ $type->id }}" {{ $type->name == 'mail_transaction' ? 'selected' : '' }}>
+                    {{ $type->name }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Ajouter au chariot</button>
+          </form>
+          <button type="button" class="btn btn-secondary mt-2" id="backToListBtn">Retour à la liste</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        <button type="button" class="btn btn-primary"
+ id="addDollyBtn">Ajouter un Dolly</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
     <style>
@@ -151,6 +206,59 @@
             transform: rotate(180deg);
         }
         </style>
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const addDollyBtn = document.getElementById('addDollyBtn');
+                const dolliesList = document.getElementById('dolliesList');
+                const dollyForm = document.getElementById('dollyForm');
+                const dollyFormForm = dollyForm.querySelector('form');
+                const backToListBtn = document.getElementById('backToListBtn');
+
+                addDollyBtn.addEventListener('click', function() {
+                dolliesList.style.display = 'none';
+                dollyForm.style.display = 'block';
+                });
+
+                backToListBtn.addEventListener('click', function() {
+                dolliesList.style.display = 'block';
+                dollyForm.style.display = 'none';
+                });
+
+                dollyFormForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const formData = new FormData(this);
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+
+                })
+                .then(response => response.json())
+
+                .then(data => {
+
+                    const dolliesHTML = data.dollies.map(dolly => `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                        <h5 class="card-title">${dolly.name}</h5>
+                        <p class="card-text">${dolly.description}</p>
+                        </div>
+                    </div>
+                    `).join('');
+
+                    dolliesList.innerHTML = dolliesHTML;
+                    dolliesList.style.display = 'block';
+                    dollyForm.style.display = 'none';
+                    this.reset();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                });
+                });
+            });
+            </script>
 
 
 @endsection
