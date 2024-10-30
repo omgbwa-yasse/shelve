@@ -9,7 +9,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+
     <!-- Votre CSS personnalisé -->
+
+
 
     <!-- Votre JS jquery -->
 
@@ -341,6 +344,7 @@
         });
     });
 </script>
+
 </body>
 
 </html>

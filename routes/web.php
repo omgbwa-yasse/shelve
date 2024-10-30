@@ -291,6 +291,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('action', [DollyActionController::class, 'index'])->name('dollies.action');
         Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
+        Route::resource('dolly-mail-transactions', DollyMailTransactionController::class);
         Route::delete('{dolly}/remove-record/{record}', [DollyController::class, 'removeRecord'])->name('dolly.remove-record');
         Route::delete('{dolly}/remove-mail/{mail}', [DollyController::class, 'removeMail'])->name('dolly.remove-mail');
         Route::post('{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');

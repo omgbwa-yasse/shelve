@@ -1,3 +1,4 @@
+
 // Fonts
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
 
@@ -10,6 +11,12 @@ $font-family-sans-serif: 'Source Sans Pro', sans-serif;
 $font-family-serif: 'Source Sans Pro', sans-serif;
 $font-family-base: $font-family-sans-serif;
 $headings-font-family: $font-family-serif;
+
+// Style personnalisé - Ajoutée par Emmanuel
+@import '../css/custom.css';
+
+@import '../css/custom.scss';
+
 
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
