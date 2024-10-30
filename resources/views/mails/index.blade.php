@@ -7,6 +7,7 @@
                 {{ $title }}
             @endif
         </h1>
+        <button id="showPopupBtn" class="showPopupBtn">Afficher Popup</button>
         <div id="mailList">
             <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
                 <div class="d-flex align-items-center">

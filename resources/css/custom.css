@@ -1,0 +1,27 @@
+
+
+.showPopupBtn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 2px solid #ff69b4;  /* Bordure rose */
+    border-radius: 8px;
+    background-color: white;
+    color: #ff69b4;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(255, 105, 180, 0.3);  /* Ombre rose légère */
+    transition: all 0.3s ease;  /* Animation douce pour les interactions */
+}
+
+/* Effet au survol */
+.showPopupBtn:hover {
+    background-color: #ff69b4;
+    color: white;
+    box-shadow: 0 6px 12px rgba(255, 105, 180, 0.5);  /* Ombre plus prononcée au survol */
+    transform: translateY(-2px);  /* Léger effet de flottement */
+}
+
+/* Effet au clic */
+.showPopupBtn:active {
+    transform: translateY(1px);  /* Effet d'enfoncement */
+    box-shadow: 0 2px 4px rgba(255, 105, 180, 0.2);  /* Ombre réduite */
+}
