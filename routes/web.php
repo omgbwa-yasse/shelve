@@ -116,6 +116,9 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('mails')->group(function () {
+        Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
+        Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
+
         Route::resource('file', MailController::class)->names('mails');
         Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
         Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
@@ -156,8 +159,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::post('add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
         Route::get('export', [CommunicationController::class, 'export'])->name('communications.export');
-//        Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
-//        Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
+        // Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
+        // Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
         // Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);

@@ -12,6 +12,7 @@ use App\Models\MailType;
 use App\Models\Author;
 use App\Models\BatchMail;
 use App\Models\MailArchiving;
+use App\Models\DocumentType;
 use App\Models\MailContainer;
 use App\Models\RecordStatus;
 use App\Models\Term;
@@ -20,76 +21,159 @@ use App\Models\SlipRecord;
 
 class SearchMailController extends Controller
 {
-    public function index(Request $request)
+
+    public function form()
     {
-        $mails = '';
-        $title = '';
-        switch($request->input('categ')){
-            case "dates":
-                $exactDate = $request->input('date_exact');
-                $startDate = $request->input('date_start');
-                $endDate = $request->input('date_end');
+        $data = [
+            'priorities' => MailPriority::all(),
+            'types' => MailType::all(),
+            'typologies' => MailTypology::all(),
+            'authors' => Author::all(),
+            'documentTypes' => DocumentType::all(),
+            'containers' => MailContainer::all(),
+        ];
 
-                $query = Mail::query();
+        return view('search.mail.advanced', compact('data'));
+    }
 
 
-                if ($exactDate != NULL) {
-                    $title = "du " . $exactDate;
-                    $query->whereDate('date', $exactDate);
-                } elseif ($startDate != NULL && $endDate != NULL) {
-                    $title = "du " . $startDate . " au " . $endDate;
-                    $query->whereBetween('date', [$startDate, $endDate]);
-                } elseif ($startDate != NULL && $endDate == NULL) {
-                    $title = "à partir du " . $startDate;
-                    $query->where('date', '>=', $startDate);
-                }
 
-                $mails = $query->paginate(10);
-                break;
+    public function advanced(Request $request)
+    {
+        $query = Mail::query();
+        $title = 'Recherche avancée';
 
-            case "typology":
-                $title = " par typologie ";
-                $mails = Mail::where('mail_typology_id', $request->input('id'))
-                    ->paginate(10);
-                break;
-
-            case "author":
-                $title = " par auteur ";
-                $mails = Mail::join('mail_author', 'mails.id', '=', 'mail_author.mail_id')
-                    ->where('mail_author.author_id', $request->input('id'))
-                    ->paginate(10);
-                break;
-
-            case "container":
-                $title = " par contenant ";
-                $mails = Mail::whereIn('id', MailArchiving::where('container_id', $request->input('id'))->pluck('mail_id'))
-                    ->paginate(10);
-                break;
-
-            case "batch":
-                $batchId = $request->input('id');
-                if ($batchId) {
-                    $batch = Batch::findOrFail($batchId);
-                    $title = " du parapheur " . $batch->code . " - " . $batch->name;
-                } else {
-                    return back()->withErrors(['message' => 'ID du batch manquant.']);
-                }
-
-                $mails = Mail::whereIn('id', BatchMail::where('batch_id', $request->input('id'))->pluck('mail_id'))
-                    ->paginate(10);
-                break;
-
-            default:
-                $mails = Mail::paginate(10);
-                break;
+        // Recherche par code
+        if ($request->filled('code')) {
+            $query->where('code', 'like', '%' . $request->code . '%');
+            $title .= ' - Code: ' . $request->code;
         }
 
-        $priorities = MailPriority::all();
-        $types = MailType::all();
-        $typologies = MailTypology::all();
-        $authors = Author::all();
+        // Recherche par nom/objet
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+            $title .= ' - Objet: ' . $request->name;
+        }
 
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors', 'title'));
+        // Recherche par auteurs
+        if ($request->filled('author_ids')) {
+            $authorIds = explode(',', $request->author_ids);
+            $query->whereHas('authors', function ($q) use ($authorIds) {
+                $q->whereIn('authors.id', $authorIds);
+            });
+            $title .= ' - Auteurs sélectionnés';
+        }
+
+        // Recherche par date
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+            $title .= ' - Date: ' . $request->date;
+        }
+
+        // Recherche par priorité
+        if ($request->filled('mail_priority_id')) {
+            $query->where('mail_priority_id', $request->mail_priority_id);
+            $priority = MailPriority::find($request->mail_priority_id);
+            if ($priority) {
+                $title .= ' - Priorité: ' . $priority->name;
+            }
+        }
+
+        // Recherche par type
+        if ($request->filled('mail_type_id')) {
+            $query->where('mail_type_id', $request->mail_type_id);
+            $type = MailType::find($request->mail_type_id);
+            if ($type) {
+                $title .= ' - Type: ' . $type->name;
+            }
+        }
+
+        // Recherche par typologie
+        if ($request->filled('mail_typology_id')) {
+            $query->where('mail_typology_id', $request->mail_typology_id);
+            $typology = MailTypology::find($request->mail_typology_id);
+            if ($typology) {
+                $title .= ' - Typologie: ' . $typology->name;
+            }
+        }
+
+        // Recherche par type de document
+        if ($request->filled('document_type_id')) {
+            $query->whereHas('documents', function ($q) use ($request) {
+                $q->where('document_type_id', $request->document_type_id);
+            });
+            $documentType = DocumentType::find($request->document_type_id);
+            if ($documentType) {
+                $title .= ' - Type de document: ' . $documentType->name;
+            }
+        }
+
+        // Recherche par conteneur
+        if ($request->filled('container_id')) {
+            $query->whereHas('archivings', function ($q) use ($request) {
+                $q->where('container_id', $request->container_id);
+            });
+            $container = MailContainer::find($request->container_id);
+            if ($container) {
+                $title .= ' - Conteneur: ' . $container->name;
+            }
+        }
+
+        // Gérer la recherche par catégorie existante si nécessaire
+        if ($request->filled('categ')) {
+            switch($request->categ) {
+                case "dates":
+                    $this->handleDateSearch($query, $request, $title);
+                    break;
+                case "batch":
+                    $this->handleBatchSearch($query, $request, $title);
+                    break;
+                // Autres cas existants si nécessaire...
+            }
+        }
+
+        // Appliquer la pagination
+        $mails = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // Récupérer les données pour les select
+        $data = [
+            'priorities' => MailPriority::all(),
+            'types' => MailType::all(),
+            'typologies' => MailTypology::all(),
+            'authors' => Author::all(),
+            'documentTypes' => DocumentType::all(),
+            'containers' => MailContainer::all(),
+        ];
+
+        return view('mails.index', compact('mails', 'title', 'data'));
+    }
+
+    // Méthodes auxiliaires pour la clarté du code
+    private function handleDateSearch($query, $request, &$title)
+    {
+        if ($request->filled('date_exact')) {
+            $query->whereDate('date', $request->date_exact);
+            $title .= " - Date exacte: " . $request->date_exact;
+        } elseif ($request->filled('date_start') && $request->filled('date_end')) {
+            $query->whereBetween('date', [$request->date_start, $request->date_end]);
+            $title .= " - Période: du " . $request->date_start . " au " . $request->date_end;
+        } elseif ($request->filled('date_start')) {
+            $query->where('date', '>=', $request->date_start);
+            $title .= " - À partir du: " . $request->date_start;
+        }
+    }
+
+    private function handleBatchSearch($query, $request, &$title)
+    {
+        if ($request->filled('id')) {
+            $batch = Batch::find($request->id);
+            if ($batch) {
+                $query->whereHas('batches', function ($q) use ($request) {
+                    $q->where('batch_id', $request->id);
+                });
+                $title .= " - Parapheur: " . $batch->code . " - " . $batch->name;
+            }
+        }
     }
 
     public function date()

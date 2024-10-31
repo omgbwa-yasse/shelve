@@ -39,6 +39,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> {{ __('sent_paraphers') }}</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.advanced.form') }}"><i class="bi bi-inbox"></i> Advanced </a>
+                </li>
             </ul>
         </div>
 

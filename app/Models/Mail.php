@@ -124,6 +124,14 @@ class Mail extends Model
     {
         return $this->hasMany(MailArchiving::class, 'mail_id');
     }
+
+    public function archivings() {
+        return $this->hasMany(MailArchiving::class);
+    }
+
+    public function batches() {
+        return $this->belongsToMany(Batch::class, 'batch_mail');
+    }
 }
 
 
