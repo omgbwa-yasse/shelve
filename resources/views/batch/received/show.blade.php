@@ -27,12 +27,6 @@
 
         <div class="mt-3">
             <a href="{{ route('batch-received.index') }}" class="btn btn-secondary">Back</a>
-            <a href="{{ route('batch-received.edit', $batchTransaction) }}" class="btn btn-primary">Edit</a>
-            <form action="{{ route('batch-received.destroy', $batchTransaction) }}" method="POST" style="display: inline-block;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this batch transaction?')">Delete</button>
-            </form>
         </div>
     </div>
 @endsection

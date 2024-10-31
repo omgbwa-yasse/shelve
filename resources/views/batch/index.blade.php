@@ -60,7 +60,24 @@
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h6 class="text-muted mb-1">Présents</h6>
-                                <h3 class="mb-0">{{ $mailBatches->filter(fn($batch) => $batch->transactions->last()->organisationReceived->id == Auth()->user()->current_organisation_id)->count() }}</h3>
+                                <h3 class="mb-0">
+                                    {{ $mailBatches->filter(function($batch) {
+                                        if (!$batch->transactions || $batch->transactions->isEmpty()) {
+                                            return false;
+                                        }
+                                        $lastTransaction = $batch->transactions->last();
+
+                                        if (!$lastTransaction || !$lastTransaction->organisationReceived) {
+                                            return false;
+                                        }
+
+                                        if (!Auth()->user() || !Auth()->user()->current_organisation_id) {
+                                            return false;
+                                        }
+
+                                        return $lastTransaction->organisationReceived->id == Auth()->user()->current_organisation_id;
+                                    })->count() }}
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -75,7 +92,27 @@
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h6 class="text-muted mb-1">En Transit</h6>
-                                <h3 class="mb-0">{{ $mailBatches->filter(fn($batch) => $batch->transactions->last()->organisationReceived->id != Auth()->user()->current_organisation_id)->count() }}</h3>
+                                <h3 class="mb-0">
+                                    {{ $mailBatches->filter(function($batch) {
+                                        // Vérifie si transactions existe et n'est pas vide
+                                        if (!$batch->transactions || $batch->transactions->isEmpty()) {
+                                            return false;
+                                        }
+
+                                        $lastTransaction = $batch->transactions->last();
+
+                                        // Vérifie si organisationReceived existe
+                                        if (!$lastTransaction || !$lastTransaction->organisationReceived) {
+                                            return false;
+                                        }
+
+                                        if (!Auth()->user() || !Auth()->user()->current_organisation_id) {
+                                            return false;
+                                        }
+
+                                        return $lastTransaction->organisationReceived->id != Auth()->user()->current_organisation_id;
+                                    })->count() }}
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -149,32 +186,63 @@
                                         {{ $batch->mails->count() }}
                                     </span>
                                 </td>
+
                                 <td>
-                                    @if($batch->transactions->last()->organisationReceived->id == Auth()->user()->current_organisation_id)
-                                        <div class="d-flex align-items-center text-success">
-                                            <i class="bi bi-geo-alt me-1"></i> Présent
-                                        </div>
-                                    @else
-                                        <div>
-                                            <div class="small fw-medium">
-                                                {{ $batch->transactions->last()->organisationReceived->name }}
+                                    @php
+                                        $lastTransaction = $batch->transactions && $batch->transactions->count() > 0
+                                            ? $batch->transactions->last()
+                                            : null;
+                                    @endphp
+
+                                    @if($lastTransaction)
+                                        @if($lastTransaction->organisationReceived &&
+                                            $lastTransaction->organisationReceived->id == Auth()->user()->current_organisation_id)
+                                            <div class="d-flex align-items-center text-success">
+                                                <i class="bi bi-geo-alt me-1"></i> Présent
                                             </div>
-                                            <small class="text-muted">
-                                                Depuis: {{ $batch->transactions->last()->created_at->format('d/m/Y H:i') }}
-                                            </small>
-                                        </div>
+                                        @else
+                                            <div>
+                                                <div class="small fw-medium">
+                                                    {{ $lastTransaction->organisationReceived ? $lastTransaction->organisationReceived->name : 'N/A' }}
+                                                </div>
+                                                <small class="text-muted">
+                                                    Depuis: {{ $lastTransaction->created_at ? $lastTransaction->created_at->format('d/m/Y H:i') : 'N/A' }}
+                                                </small>
+                                            </div>
+                                        @endif
+                                    @else
+                                        <div class="text-muted">Aucune transaction</div>
                                     @endif
                                 </td>
+
                                 <td class="text-center">
                                     @php
-                                        $status = $batch->transactions->last()->organisationReceived->id == Auth()->user()->current_organisation_id
-                                            ? ['class' => 'success', 'text' => 'Disponible']
-                                            : ['class' => 'warning', 'text' => 'En transit'];
+                                        $lastTransaction = $batch->transactions && $batch->transactions->count() > 0
+                                            ? $batch->transactions->last()
+                                            : null;
+
+                                        if ($lastTransaction &&
+                                            $lastTransaction->organisationReceived &&
+                                            Auth()->user() &&
+                                            Auth()->user()->current_organisation_id &&
+                                            $lastTransaction->organisationReceived->id == Auth()->user()->current_organisation_id) {
+                                            $status = [
+                                                'class' => 'success',
+                                                'text' => 'Disponible'
+                                            ];
+                                        } else {
+                                            $status = [
+                                                'class' => 'warning',
+                                                'text' => 'En transit'
+                                            ];
+                                        }
                                     @endphp
+
                                     <span class="badge bg-{{ $status['class'] }}-subtle text-{{ $status['class'] }} px-3 py-2">
                                         {{ $status['text'] }}
                                     </span>
                                 </td>
+
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -191,13 +259,31 @@
                                                     <i class="bi bi-info-circle me-2"></i> Détails
                                                 </a>
                                             </li>
-                                            @if($batch->transactions->last()->organisationReceived->id == Auth()->user()->current_organisation_id)
+
+                                            @php
+                                                $lastTransaction = $batch->transactions && $batch->transactions->count() > 0
+                                                    ? $batch->transactions->last()
+                                                    : null;
+
+                                                $canTransfer = $lastTransaction &&
+                                                    $lastTransaction->organisationReceived &&
+                                                    Auth()->user() &&
+                                                    Auth()->user()->current_organisation_id &&
+                                                    $lastTransaction->organisationReceived->id == Auth()->user()->current_organisation_id;
+                                            @endphp
+
+                                            @if($canTransfer)
                                                 <li>
-                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#transferModal" data-batch-id="{{ $batch->id }}">
+                                                    <a class="dropdown-item"
+                                                    href="#"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#transferModal"
+                                                    data-batch-id="{{ $batch->id }}">
                                                         <i class="bi bi-send me-2"></i> Transférer
                                                     </a>
                                                 </li>
                                             @endif
+
                                         </ul>
                                     </div>
                                 </td>

@@ -34,25 +34,6 @@
                             <span class="fs-5"> - {{ $batchTransaction->batch->name ?? 'N/A' }}</span>
                         </a>
                     </h4>
-
-                    <div class="ms-auto d-flex gap-2">
-                        <a href="{{ route('batch-received.edit', $batchTransaction) }}"
-                           class="btn btn-sm btn-primary">
-                            <i class="bi bi-pencil me-1"></i>
-                            Modifier
-                        </a>
-                        <form action="{{ route('batch-received.destroy', $batchTransaction) }}"
-                              method="POST"
-                              class="d-inline"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce parapheur ?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash me-1"></i>
-                                Supprimer
-                            </button>
-                        </form>
-                    </div>
                 </div>
 
                 <div class="collapse" id="batch-{{ $batchTransaction->id }}">
