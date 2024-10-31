@@ -27,7 +27,7 @@
                 <p class="card-text">
                     Type :
                     <span class="badge bg-primary">
-                    @switch($dolly->type->name)
+                    @switch($dolly->type->name??'mail')
                             @case('record')
                                 Archives
                                 @break
@@ -64,7 +64,7 @@
         </div>
 
         <h2 class="mb-4">Actions disponibles</h2>
-        @include("dollies.partials.{$dolly->type->name}")
+        @include("dollies.partials.{$dolly->type->name??'mail'}")
 
         <h2 class="mt-5 mb-4">Contenu du chariot</h2>
         @if($dolly->type->name === 'record' && $dolly->records->isNotEmpty())
