@@ -29,7 +29,7 @@
             </ul>
         </div>
     @endif
-    <div class="container">
+    <div class="container-fluid ">
         <h1>{{ __('Edit Record') }}</h1>
         <form action="{{ route('transactions.update', $communication->id) }}" method="POST">
             @csrf

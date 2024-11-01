@@ -449,6 +449,19 @@
     "add_criteria_first": "Veuillez ajouter au moins un critère de recherche",
     "confirm_delete_search": "Êtes-vous sûr de vouloir supprimer cette recherche ?",
     "loading_search": "Chargement de la recherche...",
-    "no_criteria_added": "Aucun critère ajouté"
+    "no_criteria_added": "Aucun critère ajouté",
+    "printed_on": "Imprimé le",
+    "January": "Janvier",
+    "February": "Février",
+    "March": "Mars",
+    "April": "Avril",
+    "May": "Mai",
+    "June": "Juin",
+    "July": "Juillet",
+    "August": "Août",
+    "September": "Septembre",
+    "October": "Octobre",
+    "November": "Novembre",
+    "December": "Décembre"
 
 }

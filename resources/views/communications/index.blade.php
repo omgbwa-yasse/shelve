@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="container-fluid ">
         <h1><i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Communications') }} {{ $title ?? ''}}</h1>
         <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> {{ __('Fill a form') }}

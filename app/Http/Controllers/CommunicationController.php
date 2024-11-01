@@ -44,13 +44,13 @@ class CommunicationController extends Controller
         $validatedData = $request->validate([
             'code' => 'required',
             'name' => 'required',
-            'content' => 'nullable',
+            'gcontent' => 'nullable',  // Changé de 'content' à 'gcontent'
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'user_organisation_id' => 'required|exists:organisations,id',
             'selected_records' => 'required|array',
-            'original' => 'array',
-            'content' => 'array',
+            'original' => 'nullable|array',
+            'content' => 'nullable|array',
         ]);
 
         $communication = Communication::create([
@@ -65,14 +65,13 @@ class CommunicationController extends Controller
             'status_id' => 1,
         ]);
 
-        $selectedRecords = json_decode($request->selected_records, true);
-
-        foreach ($selectedRecords as $record) {
+        // Traitement direct du tableau de records
+        foreach ($request->selected_records as $recordId) {
             CommunicationRecord::create([
                 'communication_id' => $communication->id,
-                'record_id' => $record['id'],
-                'is_original' => $record['is_original'],
-                'content' => $record['content'],
+                'record_id' => $recordId,
+                'is_original' => isset($request->original[$recordId]) ? true : false,
+                'content' => $request->content[$recordId] ?? null,
                 'return_date' => date('Y-m-d', strtotime("+14 days")),
             ]);
         }

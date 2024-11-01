@@ -2,13 +2,12 @@
 
 namespace App\Exports;
 
-use App\Models\Record;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Illuminate\Support\Collection;
 
-class RecordsExport  implements FromCollection
+class RecordsExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $records;
 
@@ -25,44 +24,86 @@ class RecordsExport  implements FromCollection
     public function headings(): array
     {
         return [
-            'ID',
             'Code',
-            'Name',
-            'Date Format',
-            'Start Date',
-            'End Date',
-            'Exact Date',
-            'Level',
-            'Width',
-            'Width Description',
-            'Biographical History',
-            'Archival History',
-            'Acquisition Source',
-            'Content',
-            'Appraisal',
-            'Accrual',
-            'Arrangement',
-            'Access Conditions',
-            'Reproduction Conditions',
-            'Language Material',
-            'Characteristic',
-            'Finding Aids',
-            'Original Location',
-            'Copy Location',
-            'Related Unit',
-            'Publication Note',
-            'Note',
-            'Archivist Note',
-            'Rule Convention',
-            'Status',
+            'Nom',
+            'Format de date',
+            'Date début',
+            'Date fin',
+            'Date exacte',
+            'Niveau',
+            'Largeur',
+            'Description de la largeur',
+            'Histoire biographique',
+            'Histoire archivistique',
+            'Source d\'acquisition',
+            'Contenu',
+            'Évaluation',
+            'Accroissements',
+            'Classement',
+            'Conditions d\'accès',
+            'Conditions de reproduction',
+            'Langue des documents',
+            'Caractéristiques matérielles',
+            'Instruments de recherche',
+            'Localisation des originaux',
+            'Localisation des copies',
+            'Unités de description associées',
+            'Note de publication',
+            'Notes',
+            'Notes de l\'archiviste',
+            'Règles ou conventions',
+            'Statut',
             'Support',
-            'Activity',
+            'Activité',
             'Parent',
-            'Container',
-            'User',
-            'Authors',
-            'Terms',
-            // Add more headings as needed
+            'Conteneur',
+            'Producteurs',
+            'Termes',
+            'Organisation',
+            'Utilisateur'
+        ];
+    }
+
+    public function map($record): array
+    {
+        return [
+            $record->code,
+            $record->name,
+            $record->date_format,
+            $record->date_start,
+            $record->date_end,
+            $record->date_exact,
+            $record->level->name ?? 'N/A',
+            $record->width,
+            $record->width_description,
+            $record->biographical_history,
+            $record->archival_history,
+            $record->acquisition_source,
+            $record->content,
+            $record->appraisal,
+            $record->accrual,
+            $record->arrangement,
+            $record->access_conditions,
+            $record->reproduction_conditions,
+            $record->language_material,
+            $record->characteristic,
+            $record->finding_aids,
+            $record->location_original,
+            $record->location_copy,
+            $record->related_unit,
+            $record->publication_note,
+            $record->note,
+            $record->archivist_note,
+            $record->rule_convention,
+            $record->status->name ?? 'N/A',
+            $record->support->name ?? 'N/A',
+            $record->activity->name ?? 'N/A',
+            $record->parent->name ?? 'N/A',
+            $record->containers->pluck('name')->join('; '),
+            $record->authors->pluck('name')->join('; '),
+            $record->terms->pluck('name')->join('; '),
+            $record->organisation->pluck('name')->join('; '),
+            $record->user->name ?? 'N/A'
         ];
     }
 }

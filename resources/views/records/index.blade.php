@@ -528,21 +528,23 @@
                     const recordName = titleElement ? titleElement.textContent.trim() : `Record ${checkbox.value}`;
 
                     selectedRecordsContainer.innerHTML += `
-                <div class="mb-3 p-3 border rounded">
-                    <h6 class="mb-2">${recordName}</h6>
-                    <input type="hidden" name="selected_records[]" value="${checkbox.value}">
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="original-${checkbox.value}" name="original[${checkbox.value}]">
-                        <label class="form-check-label" for="original-${checkbox.value}">
-                            {{ __('original') }}
+            <div class="mb-3 p-3 border rounded">
+                <h6 class="mb-2">${recordName}</h6>
+                <input type="hidden" name="selected_records[]" value="${checkbox.value}">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="original-${checkbox.value}"
+                           name="original[${checkbox.value}]" value="1">
+                    <label class="form-check-label" for="original-${checkbox.value}">
+                        {{ __('original') }}
                     </label>
                 </div>
                 <div class="mb-2">
                     <label for="content-${checkbox.value}" class="form-label">{{ __('content') }}</label>
-                        <textarea class="form-control" id="content-${checkbox.value}" name="content[${checkbox.value}]" rows="2"></textarea>
-                    </div>
+                    <textarea class="form-control" id="content-${checkbox.value}"
+                              name="content[${checkbox.value}]" rows="2"></textarea>
                 </div>
-            `;
+            </div>
+        `;
                 });
 
                 var communicationModal = new bootstrap.Modal(document.getElementById('communicationModal'));
@@ -578,6 +580,8 @@
                         this.textContent = 'Voir plus';
                     }
                 });
+
+                
             });
         });
     </script>

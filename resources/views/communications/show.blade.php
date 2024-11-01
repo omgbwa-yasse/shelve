@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="container-fluid ">
         <h1 class="mb-4"><i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Communication Form') }}</h1>
 
         <div class="card shadow-sm mb-4">

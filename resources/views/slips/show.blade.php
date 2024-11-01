@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="">
                 <div class="">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header">
                         <h2 class="mb-0">Détails du bordereau du versement</h2>
                     </div>
                     <div class="card-body">
