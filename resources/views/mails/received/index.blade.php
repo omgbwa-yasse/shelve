@@ -21,15 +21,9 @@
             </a>
         </div>
         <div class="d-flex align-items-center">
-            <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-arrow-repeat me-1"></i>
-                Transférer ***
-            </a>
 
-            <a href="#" id="communicateBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-envelope me-1"></i>
-                Communiquer ***
-            </a>
+
+
             <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                 <i class="bi bi-check-square me-1"></i>
                 Tout cocher ***

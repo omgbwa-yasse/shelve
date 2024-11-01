@@ -181,7 +181,7 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('repositories')->group(function () {
-        Route::post('/slips/store', [SlipController::class, 'store'])->name('slips.storetransfert');
+        Route::post('/slips/store', [SlipController::class, 'storetransfert'])->name('slips.storetransfert');
         Route::get('/', [RecordController::class, 'index']);
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');

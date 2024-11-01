@@ -52,6 +52,7 @@ class SlipController extends Controller
 
     public function store(Request $request)
     {
+//        dd($request);
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
@@ -133,6 +134,7 @@ class SlipController extends Controller
 
     public function storetransfert(Request $request)
     {
+//        dd($request);
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',

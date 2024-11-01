@@ -64,7 +64,11 @@
         </div>
 
         <h2 class="mb-4">Actions disponibles</h2>
-        @include("dollies.partials.{$dolly->type->name??'mail'}")
+      @if(isset($dolly->type->name))
+            @include("dollies.partials.{$dolly->type->name}")
+      @endif
+
+
 
         <h2 class="mt-5 mb-4">Contenu du chariot</h2>
         @if($dolly->type->name === 'record' && $dolly->records->isNotEmpty())

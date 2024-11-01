@@ -41,8 +41,6 @@ class RecordController extends Controller
         return view('records.search', compact('results', 'query'));
     }
 
-
-
     public function index()
     {
         if (Gate::allows('viewAny', Record::class)) {
@@ -81,9 +79,6 @@ class RecordController extends Controller
         ));
     }
 
-
-
-
     public function create()
     {
             $statuses = RecordStatus::all();
@@ -100,8 +95,6 @@ class RecordController extends Controller
             $parents = Author::all();
             return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -182,7 +175,6 @@ class RecordController extends Controller
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
     }
 
-
     private function getDateFormat($dateStart, $dateEnd)
     {
         $start = new \DateTime($dateStart);
@@ -198,18 +190,12 @@ class RecordController extends Controller
         return 'D';
     }
 
-
-
-
     public function show(Record $record)
     {
 
         $record->load('children');
         return view('records.show', compact('record'));
     }
-
-
-
 
     public function edit(Record $record)
     {
@@ -229,8 +215,6 @@ class RecordController extends Controller
 
         return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'terms', 'term_ids'));
     }
-
-
 
 
     public function update(Request $request, Record $record)
@@ -307,8 +291,6 @@ class RecordController extends Controller
     }
 
 
-
-
     public function destroy(Record $record)
     {
 
@@ -316,8 +298,6 @@ class RecordController extends Controller
 
         return redirect()->route('records.index')->with('success', 'Record deleted successfully.');
     }
-
-
 
 
     // ici c\'est pour l'import export
@@ -347,8 +327,6 @@ class RecordController extends Controller
             return response()->json(['error' => 'Une erreur est survenue lors de l\'exportation.'], 500);
         }
     }
-
-
 
 
     public function export(Request $request)
@@ -381,13 +359,10 @@ class RecordController extends Controller
     }
 
 
-
-
     public function importForm()
     {
         return view('records.import');
     }
-
 
 
     public function exportForm()
@@ -395,9 +370,6 @@ class RecordController extends Controller
         $dollies = Dolly::all();
         return view('records.export', compact('dollies'));
     }
-
-
-
 
     public function import(Request $request)
     {
@@ -433,9 +405,6 @@ class RecordController extends Controller
             return redirect()->back()->with('error', 'Error importing records: ' . $e->getMessage());
         }
     }
-
-
-
 
     private function generateEAD($records)
     {
@@ -635,13 +604,6 @@ class RecordController extends Controller
             Storage::deleteDirectory('temp_import');
         }
     }
-    //    public function export(Request $request)
-    //    {
-    //        $recordIds = explode(',', $request->query('records'));
-    //        $records = Record::whereIn('id', $recordIds)->get();
-    //
-    //        return Excel::download(new RecordsExport($records), 'records_export.xlsx');
-    //    }
 
     public function printRecords(Request $request)
     {

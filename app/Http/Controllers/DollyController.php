@@ -68,6 +68,22 @@ class DollyController extends Controller
 
         return response()->json(['success' => true]);
     }
+    public function createWithMail(Request $request)
+    {
+        $recordIds = $request->input('records');
+
+        // Créer un nouveau Dolly
+        $dolly = Dolly::create([
+            'name' => 'Chariot ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'Créé automatiquement',
+            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+        ]);
+
+        // Associer les enregistrements au Dolly
+        $dolly->records()->attach($recordIds);
+
+        return response()->json(['success' => true]);
+    }
     public function createWithCommunications(Request $request)
     {
         // Valider la requête
