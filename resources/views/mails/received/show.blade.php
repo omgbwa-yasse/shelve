@@ -113,6 +113,7 @@
                         <a href="#" class="list-group-item list-group-item-action py-2">
                             <i class="bi bi-printer me-2"></i> Imprimer
                         </a>
+
                     </div>
                 </div>
             </div>

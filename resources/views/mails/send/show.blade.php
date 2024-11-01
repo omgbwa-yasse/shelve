@@ -27,6 +27,10 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Exporter</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Partager</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash me-2"></i>Supprimer
+                            </button></li>
                     </ul>
                 </div>
             </div>
@@ -176,7 +180,28 @@
             </div>
         </div>
     </div>
-
+    <!-- Modal de suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h6 class="modal-title">Confirmation</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Êtes-vous sûr de vouloir supprimer ce courrier ?</p>
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <form action="{{ route('mail-send.destroy', $mailTransaction->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     @push('styles')
         <style>
             .btn-group .btn {

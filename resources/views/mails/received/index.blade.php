@@ -2,7 +2,7 @@
 
 @section('content')
 <div id="mailList">
-    <div class="container">
+    <div class="container-fluid">
     <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
 
     <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">

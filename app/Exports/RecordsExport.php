@@ -25,85 +25,101 @@ class RecordsExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             'Code',
-            'Nom',
-            'Format de date',
-            'Date début',
-            'Date fin',
-            'Date exacte',
-            'Niveau',
-            'Largeur',
-            'Description de la largeur',
-            'Histoire biographique',
-            'Histoire archivistique',
-            'Source d\'acquisition',
-            'Contenu',
-            'Évaluation',
-            'Accroissements',
-            'Classement',
-            'Conditions d\'accès',
-            'Conditions de reproduction',
-            'Langue des documents',
-            'Caractéristiques matérielles',
-            'Instruments de recherche',
-            'Localisation des originaux',
-            'Localisation des copies',
-            'Unités de description associées',
-            'Note de publication',
-            'Notes',
-            'Notes de l\'archiviste',
-            'Règles ou conventions',
-            'Statut',
+            // 'Nom', // Déplacé plus bas dans l'ordre demandé
+            // 'Format de date', // Non requis
+            // 'Date début', // Sera combiné dans Dates
+            // 'Date fin', // Sera combiné dans Dates
+            // 'Date exacte', // Sera combiné dans Dates
+            'Niveau', // level
             'Support',
-            'Activité',
-            'Parent',
-            'Conteneur',
-            'Producteurs',
-            'Termes',
-            'Organisation',
-            'Utilisateur'
+            'Nom', // name
+            'Dates', // Combinaison des dates
+            'Largeur', // width
+            // 'Description de la largeur', // Non requis
+            // 'Histoire biographique', // Non requis
+            // 'Histoire archivistique', // Non requis
+            // 'Source d\'acquisition', // Non requis
+            'Contenu', // content
+            // 'Évaluation', // Non requis
+            // 'Accroissements', // Non requis
+            // 'Classement', // Non requis
+            // 'Conditions d\'accès', // Non requis
+            // 'Conditions de reproduction', // Non requis
+            // 'Langue des documents', // Non requis
+            // 'Caractéristiques matérielles', // Non requis
+            // 'Instruments de recherche', // Non requis
+            // 'Localisation des originaux', // Non requis
+            // 'Localisation des copies', // Non requis
+            // 'Unités de description associées', // Non requis
+            // 'Note de publication', // Non requis
+            // 'Notes', // Non requis
+            // 'Notes de l\'archiviste', // Non requis
+            // 'Règles ou conventions', // Non requis
+            'Statut', // status
+            // 'Support', // Déjà inclus plus haut
+            'Activité', // classes/activity
+            // 'Parent', // Non requis
+            'Conteneur', // location/containers
+            'Producteurs', // authors
+            'Termes', // terms
+            'Mots-clés', // keywords
+            // 'Organisation', // Non requis
+            // 'Utilisateur' // Non requis
         ];
     }
-
+    private function safeRelationPluck($relation, $key = 'name'): string
+    {
+        if (!$relation || !$relation->count()) {
+            return 'N/A';
+        }
+        return $relation->pluck($key)->filter()->join('; ') ?: 'N/A';
+    }
     public function map($record): array
     {
         return [
-            $record->code,
-            $record->name,
-            $record->date_format,
-            $record->date_start,
-            $record->date_end,
-            $record->date_exact,
+            $record->code ?? 'N/A',
             $record->level->name ?? 'N/A',
-            $record->width,
-            $record->width_description,
-            $record->biographical_history,
-            $record->archival_history,
-            $record->acquisition_source,
-            $record->content,
-            $record->appraisal,
-            $record->accrual,
-            $record->arrangement,
-            $record->access_conditions,
-            $record->reproduction_conditions,
-            $record->language_material,
-            $record->characteristic,
-            $record->finding_aids,
-            $record->location_original,
-            $record->location_copy,
-            $record->related_unit,
-            $record->publication_note,
-            $record->note,
-            $record->archivist_note,
-            $record->rule_convention,
-            $record->status->name ?? 'N/A',
             $record->support->name ?? 'N/A',
-            $record->activity->name ?? 'N/A',
-            $record->parent->name ?? 'N/A',
-            $record->containers->pluck('name')->join('; '),
-            $record->authors->pluck('name')->join('; '),
-            $record->terms->pluck('name')->join('; '),
-            $record->organisation->pluck('name')->join('; '),
-            $record->user->name ?? 'N/A'
-        ];
-    }
+            $record->name ?? 'N/A',
+            // Formatage des dates avec tiret (-) et gestion des nulls
+            ($record->date_start && $record->date_end)
+                ? "{$record->date_start} - {$record->date_end}"
+                : ($record->date_exact ?? 'N/A'),
+            $record->width ?? 'N/A',
+            $record->content ?? 'N/A',
+            $this->safeRelationPluck($record->authors), // Producteurs (auteurs) sécurisé
+            $this->safeRelationPluck($record->keywords), // Mots-clés sécurisé
+            $this->safeRelationPluck($record->terms), // Termes sécurisé
+            $record->activity->name ?? 'N/A', // Activité (classes)
+            $record->status->name ?? 'N/A',
+            $this->safeRelationPluck($record->containers), // Location (conteneurs) sécurisé
+            // $record->name, // Non requis - Déplacé plus haut
+            // $record->date_format, // Non requis
+            // $record->date_start, // Inclus dans le champ Dates
+            // $record->date_end, // Inclus dans le champ Dates
+            // $record->date_exact, // Inclus dans le champ Dates
+            // $record->width_description, // Non requis
+            // $record->biographical_history, // Non requis
+            // $record->archival_history, // Non requis
+            // $record->acquisition_source, // Non requis
+            // $record->appraisal, // Non requis
+            // $record->accrual, // Non requis
+            // $record->arrangement, // Non requis
+            // $record->access_conditions, // Non requis
+            // $record->reproduction_conditions, // Non requis
+            // $record->language_material, // Non requis
+            // $record->characteristic, // Non requis
+            // $record->finding_aids, // Non requis
+            // $record->location_original, // Non requis
+            // $record->location_copy, // Non requis
+            // $record->related_unit, // Non requis
+            // $record->publication_note, // Non requis
+            // $record->note, // Non requis
+            // $record->archivist_note, // Non requis
+            // $record->rule_convention, // Non requis
+            // $record->parent->name ?? 'N/A', // Non requis
+            // $record->organisation->pluck('name')->join('; '), // Non requis
+            // $record->user->name ?? 'N/A' // Non requis
+        ];}
+
 }
