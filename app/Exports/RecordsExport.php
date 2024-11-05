@@ -87,12 +87,15 @@ class RecordsExport implements FromCollection, WithHeadings, WithMapping
                 : ($record->date_exact ?? 'N/A'),
             $record->width ?? 'N/A',
             $record->content ?? 'N/A',
-            $this->safeRelationPluck($record->authors), // Producteurs (auteurs) sécurisé
-            $this->safeRelationPluck($record->keywords), // Mots-clés sécurisé
-            $this->safeRelationPluck($record->terms), // Termes sécurisé
-            $record->activity->name ?? 'N/A', // Activité (classes)
             $record->status->name ?? 'N/A',
-            $this->safeRelationPluck($record->containers), // Location (conteneurs) sécurisé
+            $record->activity->name ?? 'N/A', // Activité (classes)
+
+            $this->safeRelationPluck($record->containers),
+            $this->safeRelationPluck($record->authors), // Producteurs (auteurs) sécurisé
+            $this->safeRelationPluck($record->terms), // Termes sécurisé
+
+
+            $this->safeRelationPluck($record->keywords),
             // $record->name, // Non requis - Déplacé plus haut
             // $record->date_format, // Non requis
             // $record->date_start, // Inclus dans le champ Dates
