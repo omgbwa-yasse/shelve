@@ -14,8 +14,8 @@ return new class extends Migration
         // Créer d'abord les tables sans dépendances
         Schema::create('mail_priorities', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50);
-            $table->string('duration');
+            $table->string('name', 50)->unique(); // Assurer l'unicité des noms de priorités
+            $table->integer('duration');
             $table->timestamps();
         });
 
@@ -30,111 +30,72 @@ return new class extends Migration
 
         Schema::create('mail_typologies', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50);
-            $table->string('description', 100)->nullable();
-            $table->foreignId('class_id')->constrained()->cascadeOnDelete();
+            $table->string('name', 50)->unique();  // Assurer l'unicité des noms de typologies
+            $table->text('description')->nullable();
+            $table->foreignId('activity_id')->constrained('activities')->cascadeOnDelete();
             $table->timestamps();
         });
 
         Schema::create('mail_containers', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 50);
+            $table->string('code', 50)->unique();  // Assurer l'unicité des codes de conteneurs
             $table->string('name', 100)->nullable();
             $table->foreignId('type_id')->constrained('container_types')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('user_organisation_id')->constrained('organisations')->cascadeOnDelete();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('creator_organisation_id')->constrained('organisations')->cascadeOnDelete();
             $table->timestamps();
         });
 
-
-
-        // Table principale des mails
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
-
-            // Informations de base
-            $table->string('code')->unique();
+            $table->string('code', 25)->unique(true);
             $table->string('name', 150);
-            $table->text('description')->nullable();
             $table->datetime('date');
-
-            // Document type
-            $table->enum('document_type', ['original', 'duplicate', 'copy'])
-                ->default('original')
-                ->nullable(false);
-
-            // Relations
+            $table->text('description')->nullable();
+            $table->enum('document_type', ['original', 'duplicate', 'copy'])->default('original');
+            $table->enum('status', ['draft', 'in_progress', 'transmitted', 'reject'])->default('draft'); // Correction orthographique
             $table->foreignId('priority_id')->constrained('mail_priorities')->cascadeOnDelete();
             $table->foreignId('typology_id')->constrained('mail_typologies')->cascadeOnDelete();
-
-
-            // Relations utilisateurs et organisations
+            $table->foreignId('action_id')->constrained('mail_actions')->cascadeOnDelete();
             $table->foreignId('sender_user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('sender_organisation_id')->constrained('organisations')->cascadeOnDelete();
             $table->foreignId('recipient_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('recipient_organisation_id')->nullable()->constrained('organisations')->nullOnDelete();
-
-            // Action et statut
-            $table->foreignId('action_id')->constrained('mail_actions')->cascadeOnDelete();
             $table->boolean('is_archived')->default(false);
-
             $table->timestamps();
         });
-
-
-
-
 
         // Tables pivots
         Schema::create('mail_related', function (Blueprint $table) {
             $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('mail_related_id')->constrained('mails')->cascadeOnDelete();
-            $table->timestamps();
             $table->primary(['mail_id', 'mail_related_id']);
+            $table->timestamps(); // Timestamps pour la table pivot
         });
 
-
-
-        //
-        Schema::create('mail_organisation', function (Blueprint $table) {
-            $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('organisation_id')->constrained()->cascadeOnDelete();
-            $table->boolean('is_original');
-
-            $table->primary(['mail_id', 'organisation_id']);
-            $table->timestamps();
-        });
-
-
-
-        Schema::create('mail_archiving', function (Blueprint $table) {
+        Schema::create('mail_archives', function (Blueprint $table) { // Nom de table corrigé
             $table->id();
             $table->foreignId('container_id')->constrained('mail_containers')->cascadeOnDelete();
             $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('document_type_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('archived_by')->constrained('users')->cascadeOnDelete(); // Nom de colonne plus clair
+            $table->enum('document_type', ['original', 'duplicate', 'copy'])->default('original');
             $table->timestamps();
         });
-
-
 
         Schema::create('mail_attachment', function (Blueprint $table) {
             $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('attachment_id')->constrained('attachments')->cascadeOnDelete();
-
+            $table->foreignId('added_by')->constrained('users')->cascadeOnDelete(); // Nom de colonne plus clair
             $table->primary(['mail_id', 'attachment_id']);
-            $table->timestamps();
+            $table->timestamps(); // Timestamps pour la table pivot
         });
-
-
 
         Schema::create('mail_author', function (Blueprint $table) {
             $table->foreignId('author_id')->constrained('authors')->cascadeOnDelete();
-            $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
-
+            $table->foreignId('mail_id')->constrained('mails')->cascadeOnDelete();
             $table->primary(['author_id', 'mail_id']);
-            $table->timestamps();
+            $table->timestamps(); // Timestamps pour la table pivot
         });
-
 
 
     }
@@ -148,7 +109,6 @@ return new class extends Migration
         Schema::dropIfExists('mail_author');
         Schema::dropIfExists('mail_attachment');
         Schema::dropIfExists('mail_archiving');
-        Schema::dropIfExists('mail_organisation');
         Schema::dropIfExists('mail_related');
         Schema::dropIfExists('mails');
         Schema::dropIfExists('mail_containers');

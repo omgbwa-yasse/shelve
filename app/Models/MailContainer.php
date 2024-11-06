@@ -1,21 +1,21 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Mail;
-use App\Models\ContainerType;
 
 
 class MailContainer extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'code',
         'name',
         'type_id',
-        'user_id',
-        'user_organisation_id'
+        'created_by', // Corrigé d'après le schéma SQL
+        'creator_organisation_id'
     ];
 
     protected $table = 'mail_containers';
@@ -27,24 +27,20 @@ class MailContainer extends Model
 
     public function mails()
     {
-        return $this->belongsToMany(Mail::class);
-    }
-    public function mailArchivings()
-    {
-        return $this->hasMany(MailArchiving::class, 'container_id');
+        return $this->belongsToMany(Mail::class, 'mail_archives', 'container_id', 'mail_id') // Table pivot spécifiée
+                    ->withPivot('archived_by', 'document_type') // Champs pivot ajoutés
+                    ->withTimestamps();
     }
 
     public function creator()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'created_by'); // Clé étrangère corrigée
     }
 
     public function creatorOrganisation()
     {
-        return $this->belongsTo(Organisation::class, 'user_organisation_id');
+        return $this->belongsTo(Organisation::class, 'creator_organisation_id');
     }
 
-
     public $timestamps = true;
-
 }

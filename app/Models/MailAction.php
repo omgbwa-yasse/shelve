@@ -9,12 +9,11 @@ class MailAction extends Model
 {
     use HasFactory;
 
-
     protected $table = 'mail_actions';
 
     protected $fillable = [
         'name',
-        'description',
+        'duration', // Ajouté d'après le schéma SQL
         'to_return',
         'description',
     ];
@@ -23,9 +22,8 @@ class MailAction extends Model
         'to_return' => 'boolean',
     ];
 
-    public function transaction()
+    public function mails()
     {
-        return $this->hasMany(MailTransaction::class, 'action_id');
+        return $this->hasMany(Mail::class); // Relation avec la table 'mails'
     }
-
 }

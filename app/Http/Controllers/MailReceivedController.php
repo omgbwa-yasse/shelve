@@ -2,237 +2,170 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\documentType;
-use App\Models\MailAction;
 use App\Models\Mail;
-use App\Models\User;
-use App\Models\MailType;
-use App\Models\MailStatus;
-use App\Models\MailPriority;
-use App\Models\MailTypology;
+use App\Models\MailAction;
 use App\Models\Organisation;
-use App\Models\UserOrganisation;
 use Illuminate\Http\Request;
-use App\Models\MailAttachment;
-use App\Models\MailTransaction;
-use App\Models\Dolly;
-use App\Models\DollyType;
-use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class MailReceivedController extends Controller
 {
-
     public function index()
     {
         $organisationId = Auth::user()->current_organisation_id;
-        $transactions = MailTransaction::where('organisation_received_id', $organisationId)->get();
-        $transactions->load(['mail','action','organisationSend','organisationReceived']);
-        $dollies = Dolly::whereHas('type', function ($q) {
-            $q->where('name', 'mail_transaction');
-        })->get();
-        $types = DollyType::all();
-        return view('mails.received.index', compact('transactions','dollies', 'types'));
+        $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
+                     ->where('recipient_organisation_id', $organisationId)
+                     ->where('status', '!=', 'draft')
+                     ->get();
+
+        return view('mails.received.index', compact('mails'));
     }
 
     public function inprogress()
     {
-        $user = Auth::user();
-        $transactions = MailTransaction::where('user_received_id', $user->id)
-            ->where('mail_type_id', 3)
-            ->get();
-        $transactions->load(['mail','action','organisationSend','organisationReceived']);
-        return view('mails.received.index', compact('transactions'));
+        $userId = Auth::id();
+        $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
+                     ->where('recipient_user_id', $userId)
+                     ->where('status', 'in_progress')
+                     ->get();
+
+        return view('mails.received.index', compact('mails'));
     }
-
-
 
     public function approve(Request $request)
     {
-
         $validatedData = $request->validate([
-            'id' => 'required|exists:mail_transactions,id',
+            'id' => 'required|exists:mails,id',
         ]);
 
-        $mailTransaction = MailTransaction::findOrFail($validatedData['id']);
+        $mail = Mail::findOrFail($validatedData['id']);
 
-        $updateData = [
-            'user_received_id' => auth()->id(),
-            'date_creation' => $mailTransaction->created_at,
-            'mail_type_id' => 1, // 1 Recevoir
-        ];
+        $mail->update([
+            'recipient_user_id' => auth()->id(),
+            'status' => 'received',
+        ]);
 
-        $mailTransaction->update($updateData);
         return redirect()->route('mail-received.index')
-            ->with('success', 'Mail Transaction updated successfully');
+                         ->with('success', 'Mail updated successfully');
     }
-
-
-
-
 
     public function create()
     {
-
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        $mails = Mail::with(['transactions', 'type'])
-            ->where(function ($query) use ($currentOrganisationId) {
-                $query->whereHas('transactions', function ($subquery) use ($currentOrganisationId) {
-                    $subquery->where('organisation_received_id', $currentOrganisationId);
-                })
-                ->orWhere('creator_organisation_id', $currentOrganisationId);
-            })
-            ->latest()
-            ->get();
-
-        $mailType = MailType::where('name', 'received')->first();
-
-
-        $users = User::where('id', '!=', Auth::id())
-            ->orderBy('name')
-            ->get();
-
-        $organisations = Organisation::whereNot('id', $currentOrganisationId)
-            ->orderBy('name')
-            ->get();
-
-
-        $documentTypes = DocumentType::orderBy('name')->get();
-
-
         $mailActions = MailAction::orderBy('name')->get();
+        $senderOrganisations = Organisation::where('id', '!=', $currentOrganisationId)->orderBy('name')->get();
 
-
-        $receivedOrganisations = Auth::user()->organisations;
-
-        return view('mails.received.create', compact(
-            'mails',
-            'mailType',
-            'users',
-            'organisations',
-            'receivedOrganisations',
-            'documentTypes',
-            'mailActions'
-        ));
+        return view('mails.received.create', compact('mailActions', 'senderOrganisations'));
     }
-
 
     public function store(Request $request)
     {
-        $code = $this->setMailTransactionCode();
-
-        $request->merge(['code' => $code]);
+        $mailCode = $this->generateMailCode();
 
         $validatedData = $request->validate([
-            'code' => 'required',
-            'mail_id' => 'required|exists:mails,id',
-            'user_send_id' => 'required|exists:users,id',
-            'organisation_send_id' => 'required|exists:organisations,id',
-
-            'document_type_id' => 'required|exists:document_types,id',
-            'action_id' => 'required|exists:mail_actions,id',
+            'name' => 'required|max:150',
+            'date' => 'required|date',
             'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'action_id' => 'required|exists:mail_actions,id',
+            'sender_user_id' => 'required|exists:users,id',
+            'sender_organisation_id' => 'required|exists:organisations,id',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->current_organisation_id ;
-        $validatedData['user_received_id'] =  auth()->id();
-
-        $validatedData['date_creation'] = now();
-        $validatedData['mail_type_id'] = 1; // 1 Recevoir et 2 Emettre
-
-
-
-        MailTransaction::create($validatedData);
+        Mail::create($validatedData + [
+            'code' => $mailCode,
+            'recipient_organisation_id' => auth()->user()->current_organisation_id,
+            'recipient_user_id' => auth()->id(),
+            'status' => 'received',
+        ]);
 
         return redirect()->route('mail-received.index')
-            ->with('success', 'MailTransaction created successfully.');
+                         ->with('success', 'Mail created successfully.');
     }
 
+    public function generateMailCode()
+    {
+        $year = date('Y');
+        $lastMailCode = Mail::whereYear('created_at', $year)
+                            ->latest('created_at')
+                            ->value('code');
 
-
-    public function setMailTransactionCode(){
-        $year = now()->format('Y');
-
-        $lastTransaction = MailTransaction::whereYear('created_at', $year)
-                                             ->latest('id')
-                                             ->first();
-
-        if ($lastTransaction) {
-            $lastcode = explode('-', $lastTransaction->code);
-            $lastOrderNumber = isset($lastcode[1]) ? (int)substr($lastcode[1], 1) : 0;
-            $transactionNumber = $lastOrderNumber + 1;
+        if ($lastMailCode) {
+            $lastCodeParts = explode('-', $lastMailCode);
+            $lastOrderNumber = isset($lastCodeParts[1]) ? (int) substr($lastCodeParts[1], 1) : 0;
+            $mailCount = $lastOrderNumber + 1;
         } else {
-            $transactionNumber = 1;
+            $mailCount = 1;
         }
 
-        $newNumberFormatted = str_pad($transactionNumber, 7, '0', STR_PAD_LEFT);
-        return 'T' . $year . "-" . $newNumberFormatted;
+        $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
+        return 'M' . $year . '-' . $formattedMailCount;
     }
-
 
     public function show(int $id)
     {
-        $mailTransaction = MailTransaction::with([
-            'mail',
-            'documentType',
-            'userReceived',
-            'userSend',
-            'organisationReceived',
-            'organisationSend'
-        ])->findOrFail($id);
+        $mail = Mail::with([
+                            'action',
+                            'sender',
+                            'senderOrganisation',
+                            'recipient',
+                            'recipientOrganisation',
+                            'authors',
+                            'attachments'
+                        ])
+                    ->findOrFail($id);
 
-        return view('mails.received.show', compact('mailTransaction'));
+        return view('mails.received.show', compact('mail'));
     }
 
-
-
-    public function edit(INT $id)
+    public function edit(int $id)
     {
-        $mails = mail::all();
-        $users = User::where('id', '!=', auth()->id())->get();
-        $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
-        $receivedOrganisations = auth()->user()->organisation;
-        $documentTypes = documentType :: all();
-        $mailActions = MailAction :: all();
-        $mailTransaction = MailTransaction ::findOrFail($id);
-        return view('mails.received.edit', compact('mails','users','mailTransaction','receivedOrganisations','organisations','documentTypes','mailActions'));
+        $mail = Mail::with([
+                            'action',
+                            'sender',
+                            'senderOrganisation',
+                            'priority',
+                            'typology',
+                            'authors',
+                            'attachments'
+                        ])
+                    ->findOrFail($id);
+        $mailActions = MailAction::all();
+        $senderOrganisations = Organisation::whereNot('id', auth()->user()->current_organisation_id)->get();
+
+        return view('mails.received.edit', compact('mail', 'mailActions', 'senderOrganisations'));
     }
 
-
-
-    public function update(Request $request, INT $id)
+    public function update(Request $request, int $id)
     {
-        $mailTransaction = MailTransaction ::findOrFail($id);
+        $mail = Mail::findOrFail($id);
+
         $validatedData = $request->validate([
-            'code' => 'required',
-            'mail_id' => 'required|exists:mails,id',
-            'user_send_id' => 'required|exists:users,id',
-            'organisation_send_id' => 'required|exists:organisations,id',
-            'document_type_id' => 'required|exists:document_types,id',
-            'action_id' => 'required|exists:mail_actions,id',
+            'name' => 'required|max:150',
+            'date' => 'required|date',
             'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'action_id' => 'required|exists:mail_actions,id',
+            'sender_user_id' => 'required|exists:users,id',
+            'sender_organisation_id' => 'required|exists:organisations,id',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
         ]);
 
-        $validatedData['organisation_received_id'] = auth()->user()->organisation->id ;
-        $validatedData['user_received_id'] =  auth()->id();
-
-        $validatedData['date_creation'] = now();
-        $validatedData['mail_type_id'] = 1; // 1 Recevoir,  2 Emettre et 3 inprogress
-
-        $mailTransaction->update($validatedData);
+        $mail->update($validatedData);
 
         return redirect()->route('mail-received.index')
-            ->with('success', 'Mail Transaction updated successfully');
+                         ->with('success', 'Mail updated successfully');
     }
-
-
 
     public function destroy($id)
     {
-        $mailTransaction = MailTransaction::findOrFail($id);
-        $mailTransaction->delete();
-        return redirect()->route('mail-received.index')->with('success', 'MailTransaction deleted successfully');
+        $mail = Mail::findOrFail($id);
+        $mail->delete();
+
+        return redirect()->route('mail-received.index')->with('success', 'Mail deleted successfully');
     }
 }
-

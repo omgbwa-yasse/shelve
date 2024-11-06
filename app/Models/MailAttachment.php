@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class MailAttachment extends Model
 {
-protected $table="attachments";
     use HasFactory;
+
+    protected $table = "attachments";
 
     protected $fillable = [
         'path',
@@ -27,7 +28,8 @@ protected $table="attachments";
 
     public function mails()
     {
-        return $this->belongsToMany(Mail::class, 'mail_attachment', 'attachment_id', 'mail_id');
+        return $this->belongsToMany(Mail::class, 'mail_attachment', 'attachment_id', 'mail_id')
+                    ->withPivot('added_by') // Ajouté pour correspondre au schéma SQL
+                    ->withTimestamps();
     }
-
 }

@@ -1,35 +1,31 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\TypologyCategory;
-use App\Models\Mail;
 
 class MailTypology extends Model
 {
-
+    use HasFactory;
 
     protected $table = 'mail_typologies';
-
 
     protected $fillable = [
         'name',
         'description',
-        'activity_id', // activity_id
+        'activity_id',
     ];
 
+    public $timestamps = true; // Corrigé d'après le schéma SQL
 
-    public $timestamps = false;
-
-    public function class()
+    public function activity() // Nom de relation corrigé et convention de nommage respectée
     {
-        return $this->belongsTo(activity::class);
+        return $this->belongsTo(Activity::class); // 'activity_id' est implicite
     }
 
     public function mails()
     {
-        return $this->hasMany(mail::class);
+        return $this->hasMany(Mail::class); // 'typology_id' est implicite
     }
 }
-

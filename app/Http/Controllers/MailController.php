@@ -1,122 +1,80 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Http\Request;
+
 use App\Models\Mail;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
-use App\Models\MailType;
-use App\Models\Batch;
-use App\Models\documentType;
 use App\Models\Author;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class MailController extends Controller
 {
     public function index()
     {
         $priorities = MailPriority::all();
-        $types = MailType::all();
         $typologies = MailTypology::all();
         $authors = Author::all();
-        $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
-            ->paginate(15);
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
+        $mails = Mail::with(['priority', 'authors', 'typology', 'sender', 'recipient']) // Corrected relations
+                     ->paginate(15);
 
+        return view('mails.index', compact('mails', 'priorities', 'typologies', 'authors'));
     }
-
-
-    public function typologies()
-    {
-        $priorities = MailPriority::all();
-        $types = MailType::all();
-        $typologies = MailTypology::all();
-        $authors = Author::all();
-        $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
-            ->where('is_archived', true)
-            ->paginate(15);
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
-    }
-
-
 
     public function archived()
     {
         $priorities = MailPriority::all();
-        $types = MailType::all();
         $typologies = MailTypology::all();
         $authors = Author::all();
-        $mails = Mail::with(['priority','container','authors','typology','type','creator','updator','lastTransaction'])
-            ->paginate(15);
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
+        $mails = Mail::with(['priority', 'authors', 'typology', 'sender', 'recipient'])
+                     ->where('is_archived', true)
+                     ->paginate(15);
+
+        return view('mails.index', compact('mails', 'priorities', 'typologies', 'authors'));
     }
-
-
-
-
 
     public function create()
     {
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
-        $types = MailType::all();
-        $batches = Batch::all();
         $authors = Author::all();
-        $documentTypes = documentType ::all();
-        return view('mails.create', compact('priorities','typologies','types','batches','authors','documentTypes'));
 
+        return view('mails.create', compact('priorities', 'typologies', 'authors'));
     }
-
-
-
-    public function searchAuthors(Request $request)
-    {
-        $search = $request->input('search');
-        $authors = User::where('name', 'LIKE', "%$search%")->get();
-        return response()->json($authors);
-    }
-
-
-
 
     public function store(Request $request)
     {
-        $mailCode = $this->setMailCode();
-
-
-        $request->merge(['code' => $mailCode]);
+        $mailCode = $this->generateMailCode();
 
         $validatedData = $request->validate([
-            'code' => 'required|unique:mails|max:255',
-            'name' => 'nullable|max:255',
-            'author' => 'nullable|max:255',
-            'description' => 'nullable',
-            'address' => 'nullable',
+            'name' => 'required|max:150',
             'date' => 'required|date',
-            'author_id' => 'required|exists:authors,id',
-            'mail_priority_id' => 'required|exists:mail_priorities,id',
-            'mail_typology_id' => 'required|exists:mail_typologies,id',
-            'mail_type_id' => 'required|exists:mail_types,id',
-            'document_type_id' => 'required|exists:document_types,id',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy', // Validate document_type
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'sender_user_id' => 'required|exists:users,id',
+            'sender_organisation_id' => 'required|exists:organisations,id',
+            'recipient_user_id' => 'nullable|exists:users,id',
+            'recipient_organisation_id' => 'nullable|exists:organisations,id',
         ]);
-
-
 
         $mail = Mail::create($validatedData + [
-            'create_by' => auth()->id(),
-            'creator_organisation_id'=>Auth::user()->current_organisation_id
+            'code' => $mailCode,
+            'status' => 'draft', // Set initial status
         ]);
 
-        $mail->authors()->attach($validatedData['author_id']);
+        // Assuming you want to attach authors to the mail:
+        $authorIds = $request->input('author_ids', []); // Get author IDs from the request
+        $mail->authors()->sync($authorIds);
 
         return redirect()->route('mails.index')->with('success', 'Mail créé avec succès !');
     }
 
-
-    public function setMailCode(){
+    public function generateMailCode()
+    {
         $year = date('Y');
-
         $lastMailCode = Mail::whereYear('created_at', $year)
                             ->latest('created_at')
                             ->value('code');
@@ -130,62 +88,60 @@ class MailController extends Controller
         }
 
         $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
-
         return 'M' . $year . '-' . $formattedMailCount;
     }
 
-
-
-
-    public function show(INT $id)
+    public function show(int $id)
     {
-        $mail=mail::with('priority','typology','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
+        $mail = Mail::with(['priority', 'typology', 'action', 'sender', 'senderOrganisation',
+                            'recipient', 'recipientOrganisation', 'authors', 'attachments']) // Corrected relations
+                    ->findOrFail($id);
+
         return view('mails.show', compact('mail'));
     }
 
-
-
-
-    public function edit(INT $id)
+    public function edit(int $id)
     {
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
-        $types = MailType::all();
-        $batches = Batch::all();
-        $authors = user::all();
-        $mail=mail::with('priority','typology','send','transactions', 'received','type','batch','authors','updator','documentType')->findOrFail($id);
-        return view('mails.edit', compact('mail','authors', 'priorities', 'typologies', 'types',  'batches'));
+        $authors = Author::all();
+        $mail = Mail::with(['priority', 'typology', 'action', 'sender', 'senderOrganisation',
+                            'recipient', 'recipientOrganisation', 'authors', 'attachments'])
+                    ->findOrFail($id);
+
+        return view('mails.edit', compact('mail', 'authors', 'priorities', 'typologies'));
     }
-
-
-
 
     public function update(Request $request, Mail $mail)
     {
         $validatedData = $request->validate([
-            'code' => 'required|max:255',
-            'name' => 'required|max:255',
-            'address' => 'nullable',
+            'name' => 'required|max:150',
             'date' => 'required|date',
             'description' => 'nullable',
-            'author_id' => 'required|exists:authors,id',
-            'type_id' => 'required|exists:mail_types,id',
-            'document_id' => 'nullable',
-            'mail_priority_id' => 'required|exists:mail_priorities,id',
-            'mail_typology_id' => 'required|exists:mail_typologies,id',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'status' => 'required|in:draft,in_progress,transmitted,reject',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
+            'action_id' => 'required|exists:mail_actions,id',
+            'sender_user_id' => 'required|exists:users,id',
+            'sender_organisation_id' => 'required|exists:organisations,id',
+            'recipient_user_id' => 'nullable|exists:users,id',
+            'recipient_organisation_id' => 'nullable|exists:organisations,id',
         ]);
 
         $mail->update($validatedData);
 
+        $authorIds = $request->input('author_ids', []);
+        $mail->authors()->sync($authorIds);
+
         return redirect()->route('mails.index')->with('success', 'Mail updated successfully.');
     }
 
-
-
-    public function destroy(INT $id)
-    {   $mail = Mail::findOrFail($id);
+    public function destroy(int $id)
+    {
+        $mail = Mail::findOrFail($id);
         $mail->delete();
+
         return redirect()->route('mails.index')->with('success', 'Mail deleted successfully.');
     }
 }
-

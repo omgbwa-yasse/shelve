@@ -1,7 +1,7 @@
 <?php
 
-
 namespace App\Http\Controllers;
+
 use App\Models\MailAction;
 use Illuminate\Http\Request;
 
@@ -13,14 +13,10 @@ class MailActionController extends Controller
         return view('mails.actions.index', compact('mailActions'));
     }
 
-
-
     public function create()
     {
         return view('mails.actions.create');
     }
-
-
 
     public function store(Request $request)
     {
@@ -35,8 +31,6 @@ class MailActionController extends Controller
 
         return redirect()->route('mail-action.index')->with('success', 'Mail action created successfully.');
     }
-
-
 
     public function edit(MailAction $mailAction)
     {
@@ -57,14 +51,10 @@ class MailActionController extends Controller
         return redirect()->route('mail-action.index')->with('success', 'Mail action updated successfully.');
     }
 
-
-
     public function destroy(MailAction $mailAction)
     {
         $mailAction->delete();
 
         return redirect()->route('mail-action.index')->with('success', 'Mail action deleted successfully.');
     }
-
-
 }
