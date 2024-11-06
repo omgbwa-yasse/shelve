@@ -54,18 +54,19 @@ return new class extends Migration
 
             // Informations de base
             $table->string('code')->unique();
-            $table->string('subject', 255);
-            $table->string('author');
+            $table->string('name', 150);
             $table->text('description')->nullable();
-            $table->date('date');
+            $table->datetime('date');
 
-            // Type de transaction
-            $table->enum('type', ['outbound', 'inbound'])->default('inbound');
+            // Document type
+            $table->enum('document_type', ['original', 'duplicate', 'copy'])
+                ->default('original')
+                ->nullable(false);
 
             // Relations
-            $table->foreignId('mail_priority_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('mail_typology_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('document_type_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('priority_id')->constrained('mail_priorities')->cascadeOnDelete();
+            $table->foreignId('typology_id')->constrained('mail_typologies')->cascadeOnDelete();
+
 
             // Relations utilisateurs et organisations
             $table->foreignId('sender_user_id')->constrained('users')->cascadeOnDelete();
@@ -89,13 +90,12 @@ return new class extends Migration
             $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('mail_related_id')->constrained('mails')->cascadeOnDelete();
             $table->timestamps();
-
             $table->primary(['mail_id', 'mail_related_id']);
         });
 
 
 
-
+        //
         Schema::create('mail_organisation', function (Blueprint $table) {
             $table->foreignId('mail_id')->constrained()->cascadeOnDelete();
             $table->foreignId('organisation_id')->constrained()->cascadeOnDelete();
