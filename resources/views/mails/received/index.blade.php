@@ -3,169 +3,146 @@
 @section('content')
 <div id="mailList">
     <div class="container-fluid">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
 
-    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-        <div class="d-flex align-items-center">
-            <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
-                <i class="bi bi-cart me-1"></i>
-                Chariot
-              </a>
-            <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-download me-1"></i>
-                Exporter ***
-            </a>
-            <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-printer me-1"></i>
-                Imprimer ***
-            </a>
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+            <div class="d-flex align-items-center">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                    <i class="bi bi-cart me-1"></i>
+                    Chariot
+                </a>
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-download me-1"></i>
+                    Exporter
+                </a>
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-printer me-1"></i>
+                    Imprimer
+                </a>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                    <i class="bi bi-check-square me-1"></i>
+                    Tout cocher
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center">
 
+        <div id="mailList" class="mb-4">
+            @foreach ($mails as $mail)
+                <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                    <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" name="selected_mail[]" />
+                        </div>
 
+                        <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#mail-{{ $mail->id }}" aria-expanded="false" aria-controls="mail-{{ $mail->id }}">
+                            <i class="bi bi-chevron-down fs-5"></i>
+                        </button>
 
-            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
-                <i class="bi bi-check-square me-1"></i>
-                Tout cocher ***
-            </a>
-        </div>
-    </div>
-
-
-    <div id="transactionList" class="mb-4">
-        @foreach ($transactions as $transaction)
-            <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
-                <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
-                    <div class="form-check me-3">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               value="{{ $transaction->id }}"
-                               id="mail_{{ $transaction->id }}"
-                               name="selected_mail[]" />
+                        <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
+                            <a href="{{ route('mail-received.show', $mail) }}" class="text-decoration-none text-dark">
+                                <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
+                                <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
+                                <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
+                            </a>
+                        </h4>
                     </div>
 
-                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#transaction-{{ $transaction->id }}"
-                            aria-expanded="false"
-                            aria-controls="transaction-{{ $transaction->id }}">
-                        <i class="bi bi-chevron-down fs-5"></i>
-                    </button>
+                    <div class="collapse" id="mail-{{ $mail->id }}">
+                        <div class="card-body bg-white">
+                            @if($mail->description)
+                                <div class="mb-3">
+                                    <p class="mb-2">
+                                        <i class="bi bi-card-text me-2 text-primary"></i>
+                                        <strong>Description:</strong> {{ $mail->description }}
+                                    </p>
+                                </div>
+                            @endif
 
-                    <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $transaction->id }}">
-                        <a href="{{ route('mail-received.show', $transaction) }}"
-                           class="text-decoration-none text-dark">
-                            <span class="fs-5 fw-semibold">{{ $transaction->code ?? 'N/A' }}</span>
-                            <span class="fs-5"> - {{ $transaction->mail->name ?? 'N/A' }}</span>
-                            <span class="badge bg-danger ms-2">{{ $transaction->action->name }}</span>
-                        </a>
-                    </h4>
-                </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="mb-2">
+                                        <i class="bi bi-person-fill me-2 text-primary"></i>
+                                        <strong>Envoyé par:</strong>
+                                        {{ $mail->sender->name ?? 'N/A' }} ({{ $mail->senderOrganisation->name ?? 'N/A' }})
+                                        <br>
 
-                <div class="collapse" id="transaction-{{ $transaction->id }}">
-                    <div class="card-body bg-white">
-                        @if($transaction->description)
-                            <div class="mb-3">
-                                <p class="mb-2">
-                                    <i class="bi bi-card-text me-2 text-primary"></i>
-                                    <strong>Description:</strong> {{ $transaction->description }}
-                                </p>
-                            </div>
-                        @endif
+                                        <i class="bi bi-person-fill me-2 text-primary"></i>
+                                        <strong>Reçu par:</strong>
+                                        {{ $mail->recipient->name ?? 'N/A' }} ({{ $mail->recipientOrganisation->name ?? 'N/A' }})
+                                        <br>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <p class="mb-2">
-                                    <i class="bi bi-person-fill me-2 text-primary"></i>
-                                    <strong>Envoyé par:</strong>
-                                    {{ $transaction->userSend->name ?? 'N/A' }}
-                                    ({{ $transaction->organisationSend->name ?? 'N/A' }})
-                                    <br>
+                                        <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
+                                        <strong>Type de document:</strong>
+                                        {{ $mail->document_type ?? 'N/A' }}
+                                        <br>
 
-                                    <i class="bi bi-person-fill me-2 text-primary"></i>
-                                    <strong>Reçu par:</strong>
-                                    {{ $transaction->userReceived->name ?? 'N/A' }}
-                                    ({{ $transaction->organisationReceived->name ?? 'N/A' }})
-                                    <br>
-
-                                    <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
-                                    <strong>Type de document:</strong>
-                                    {{ $transaction->documentType->name ?? 'N/A' }}
-                                    <br>
-
-                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
-                                    <strong>Date:</strong>
-                                    {{ $transaction->date_creation ? \Carbon\Carbon::parse($transaction->date_creation)->format('d/m/Y') : 'N/A' }}
-                                </p>
+                                        <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                        <strong>Date:</strong>
+                                        {{ $mail->date->format('d/m/Y') }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        @endforeach
-    </div>
-
-
-    </div>
-
-
-<div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="dolliesModalLabel">Chariot</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="dolliesList">
-          @foreach ($dollies as $dolly)
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5 class="card-title">{{ $dolly->name }}</h5>
-                <p class="card-text">{{ $dolly->description }}</p>
-              </div>
-            </div>
-          @endforeach
+            @endforeach
         </div>
-        <div id="dollyForm" style="display: none;">
-          <form action="{{ route('dolly.create') }}" method="POST">
-            @csrf
-            <div class="mb-3">
-              <label for="name" class="form-label">Nom</label>
-              <input type="text" class="form-control" id="name" name="name" required>
-
-            </div>
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea class="form-control" id="description"
- name="description" rows="3" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="type_id"
- class="form-label">Type</label>
-              <select class="form-select" id="type_id" name="type_id" required>
-                @foreach ($types as $type)
-                  <option value="{{ $type->id }}" {{ $type->name == 'mail_transaction' ? 'selected' : '' }}>
-                    {{ $type->name }}
-                  </option>
-                @endforeach
-              </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Ajouter au chariot</button>
-          </form>
-          <button type="button" class="btn btn-secondary mt-2" id="backToListBtn">Retour à la liste</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-        <button type="button" class="btn btn-primary"
- id="addDollyBtn">Ajouter un Dolly</button>
-      </div>
     </div>
-  </div>
-</div>
 
+
+    <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dolliesModalLabel">Chariot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dolliesList">
+                        @foreach ($dollies as $dolly)
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ $dolly->name }}</h5>
+                                    <p class="card-text">{{ $dolly->description }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div id="dollyForm" style="display: none;">
+                        <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="type_id" class="form-label">Type</label>
+                                <select class="form-select" id="type_id" name="type_id" required>
+                                    @foreach ($types as $type)
+                                        <option value="{{ $type->id }}" {{ $type->name == 'mail' ? 'selected' : '' }}>
+                                            {{ $type->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Ajouter au chariot</button>
+                        </form>
+                        <button type="button" class="btn btn-secondary mt-2" id="backToListBtn">Retour à la liste</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">Ajouter un Dolly</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
         .card-header {
@@ -199,60 +176,113 @@
         [aria-expanded="true"] .bi-chevron-down {
             transform: rotate(180deg);
         }
-        </style>
-        <script>
+    </style>
+    <script>
 
-            document.addEventListener('DOMContentLoaded', function() {
-                const addDollyBtn = document.getElementById('addDollyBtn');
-                const dolliesList = document.getElementById('dolliesList');
-                const dollyForm = document.getElementById('dollyForm');
-                const dollyFormForm = dollyForm.querySelector('form');
-                const backToListBtn = document.getElementById('backToListBtn');
+        document.addEventListener('DOMContentLoaded', function() {
+            const addDollyBtn = document.getElementById('addDollyBtn');
+            const dolliesList = document.getElementById('dolliesList');
+            const dollyForm = document.getElementById('dollyForm');
+            const dollyFormForm = dollyForm.querySelector('form');
+            const backToListBtn = document.getElementById('backToListBtn');
 
-                addDollyBtn.addEventListener('click', function() {
-                dolliesList.style.display = 'none';
-                dollyForm.style.display = 'block';
-                });
+            addDollyBtn.addEventListener('click', function() {
+            dolliesList.style.display = 'none';
+            dollyForm.style.display = 'block';
+            });
 
-                backToListBtn.addEventListener('click', function() {
-                dolliesList.style.display = 'block';
-                dollyForm.style.display = 'none';
-                });
+            backToListBtn.addEventListener('click', function() {
+            dolliesList.style.display = 'block';
+            dollyForm.style.display = 'none';
+            });
 
-                dollyFormForm.addEventListener('submit', function(event) {
+            dollyFormForm.addEventListener('submit', function(event) {
                 event.preventDefault();
 
                 const formData = new FormData(this);
+                const selectedMailIds = [];
+                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                    selectedMailIds.push(checkbox.value);
+                });
+                formData.append('selectedIds', JSON.stringify(selectedMailIds));
 
                 fetch(this.action, {
                     method: 'POST',
                     body: formData
-
                 })
                 .then(response => response.json())
-
                 .then(data => {
-
+                    // Mettre à jour la liste des dollies dans la modale
                     const dolliesHTML = data.dollies.map(dolly => `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                        <h5 class="card-title">${dolly.name}</h5>
-                        <p class="card-text">${dolly.description}</p>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">${dolly.name}</h5>
+                                <p class="card-text">${dolly.description}</p>
+                            </div>
                         </div>
-                    </div>
                     `).join('');
-
                     dolliesList.innerHTML = dolliesHTML;
+
+                    // Afficher la liste des dollies et masquer le formulaire
                     dolliesList.style.display = 'block';
                     dollyForm.style.display = 'none';
+
+                    // Réinitialiser le formulaire
                     this.reset();
+
+                    // Afficher un message de succès (facultatif)
+                    // alert('Dolly créé avec succès !');
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
                 });
+            });
+
+
+            // Tout cocher / Décocher
+            const checkAllBtn = document.getElementById('checkAllBtn');
+            checkAllBtn.addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
                 });
             });
-            </script>
 
+            // Exporter les courriers cochés
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.addEventListener('click', function() {
+                const selectedIds = [];
+                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                    selectedIds.push(checkbox.value);
+                });
 
+                if (selectedIds.length === 0) {
+                    alert('Veuillez sélectionner au moins un courrier.');
+                    return;
+                }
+
+                // Construire l'URL avec les IDs sélectionnés
+                const url = '{{ route("mail-transaction.export") }}?selectedIds=' + selectedIds.join(',');
+                window.location.href = url;
+            });
+
+            // Imprimer les courriers cochés
+            const printBtn = document.getElementById('printBtn');
+            printBtn.addEventListener('click', function() {
+                const selectedIds = [];
+                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                    selectedIds.push(checkbox.value);
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Veuillez sélectionner au moins un courrier.');
+                    return;
+                }
+
+                // Construire l'URL avec les IDs sélectionnés
+                const url = '{{ route("mail-transaction.print") }}?selectedIds=' + selectedIds.join(',');
+                window.open(url, '_blank');
+            });
+        });
+    </script>
 @endsection

@@ -1,114 +1,100 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers sortants</h1>
+<div id="mailList">
+    <div class="container-fluid">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers sortants</h1>
 
-    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-        <div class="d-flex align-items-center">
-            <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-cart me-1"></i>
-                Chariot ***
-            </a>
-            <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-download me-1"></i>
-                Exporter ***
-            </a>
-            <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
-                <i class="bi bi-printer me-1"></i>
-                Imprimer ***
-            </a>
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+            <div class="d-flex align-items-center">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-cart me-1"></i>
+                    Chariot
+                </a>
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-download me-1"></i>
+                    Exporter
+                </a>
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-printer me-1"></i>
+                    Imprimer
+                </a>
+            </div>
+            <div class="d-flex align-items-center">
+
+                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                    <i class="bi bi-check-square me-1"></i>
+                    Tout cocher
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center">
 
-            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
-                <i class="bi bi-check-square me-1"></i>
-                Tout cocher ***
-            </a>
-        </div>
-    </div>
+        <div id="mailList" class="mb-4">
+            @foreach ($mails as $mail)
+                <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                    <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" name="selected_mail[]" />
+                        </div>
 
+                        <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#mail-{{ $mail->id }}" aria-expanded="false" aria-controls="mail-{{ $mail->id }}">
+                            <i class="bi bi-chevron-down fs-5"></i>
+                        </button>
 
-
-
-    <div id="transactionList" class="mb-4">
-        @foreach ($transactions as $transaction)
-            <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
-                <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
-                    <div class="form-check me-3">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               value="{{ $transaction->id }}"
-                               id="mail_{{ $transaction->id }}"
-                               name="selected_mail[]" />
+                        <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
+                            <a href="{{ route('mail-send.show', $mail) }}" class="text-decoration-none text-dark">
+                                <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
+                                <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
+                                <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
+                            </a>
+                        </h4>
                     </div>
 
-                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#transaction-{{ $transaction->id }}"
-                            aria-expanded="false"
-                            aria-controls="transaction-{{ $transaction->id }}">
-                        <i class="bi bi-chevron-down fs-5"></i>
-                    </button>
+                    <div class="collapse" id="mail-{{ $mail->id }}">
+                        <div class="card-body bg-white">
+                            @if($mail->description)
+                                <div class="mb-3">
+                                    <p class="mb-2">
+                                        <i class="bi bi-card-text me-2 text-primary"></i>
+                                        <strong>Description:</strong> {{ $mail->description }}
+                                    </p>
+                                </div>
+                            @endif
 
-                    <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $transaction->id }}">
-                        <a href="{{ route('mail-send.show', $transaction) }}"
-                           class="text-decoration-none text-dark">
-                            <span class="fs-5 fw-semibold">{{ $transaction->code ?? 'N/A' }}</span>
-                            <span class="fs-5"> - {{ $transaction->mail->name ?? 'N/A' }}</span>
-                            <span class="badge bg-danger ms-2">{{ $transaction->action->name }}</span>
-                        </a>
-                    </h4>
-                </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p class="mb-2">
+                                        <i class="bi bi-person-fill me-2 text-primary"></i>
+                                        <strong>Envoyé par:</strong>
+                                        {{ $mail->sender->name ?? 'N/A' }} ({{ $mail->senderOrganisation->name ?? 'N/A' }})
+                                        <br>
 
-                <div class="collapse" id="transaction-{{ $transaction->id }}">
-                    <div class="card-body bg-white">
-                        @if($transaction->description)
-                            <div class="mb-3">
-                                <p class="mb-2">
-                                    <i class="bi bi-card-text me-2 text-primary"></i>
-                                    <strong>Description:</strong> {{ $transaction->description }}
-                                </p>
-                            </div>
-                        @endif
+                                        <i class="bi bi-person-fill me-2 text-primary"></i>
+                                        <strong>Reçu par:</strong>
+                                        {{ $mail->recipient->name ?? 'N/A' }} ({{ $mail->recipientOrganisation->name ?? 'N/A' }})
+                                        <br>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <p class="mb-2">
+                                        <i class="bi bi-building me-2 text-primary"></i>
+                                        <strong>Organisation destinataire:</strong>
+                                        {{ $mail->recipientOrganisation->name ?? 'N/A' }}
+                                        <br>
 
-                                    <i class="bi bi-person-fill me-2 text-primary"></i>
-                                    <strong>Envoyé par:</strong>
-                                    {{ $transaction->userSend->name ?? 'N/A' }}
-                                    ({{ $transaction->organisationSend->name ?? 'N/A' }})
-                                    <br>
+                                        <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
+                                        <strong>Type de document:</strong>
+                                        {{ $mail->document_type ?? 'N/A' }}
+                                        <br>
 
-                                    <i class="bi bi-person-fill me-2 text-primary"></i>
-                                    <strong>Reçu par:</strong>
-                                    {{ $transaction->userReceived->name ?? 'N/A' }}
-                                    ({{ $transaction->organisationReceived->name ?? 'N/A' }})
-                                    <br>
-
-                                    <i class="bi bi-building me-2 text-primary"></i>
-                                    <strong>Poste destinataire:</strong>
-                                    {{ $transaction->organisationSend->name ?? 'N/A' }}
-                                    <br>
-
-                                    <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
-                                    <strong>Type de document:</strong>
-                                    {{ $transaction->documentType->name ?? 'N/A' }}
-                                    <br>
-
-                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
-                                    <strong>Date:</strong>
-                                    {{ $transaction->date_creation ? \Carbon\Carbon::parse($transaction->date_creation)->format('d/m/Y') : 'N/A' }}
-                                </p>
+                                        <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                        <strong>Date:</strong>
+                                        {{ $mail->date->format('d/m/Y') }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        @endforeach
+            @endforeach
+        </div>
     </div>
 
     <style>
@@ -143,6 +129,5 @@
         [aria-expanded="true"] .bi-chevron-down {
             transform: rotate(180deg);
         }
-        </style>
-
+    </style>
 @endsection
