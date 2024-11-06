@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\MailAction;
+use App\Models\Dolly;
+use App\Models\DollyType;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +19,9 @@ class MailReceivedController extends Controller
                      ->where('recipient_organisation_id', $organisationId)
                      ->where('status', '!=', 'draft')
                      ->get();
-
-        return view('mails.received.index', compact('mails'));
+        $dollies = Dolly::all();
+        $types = DollyType::all();
+        return view('mails.received.index', compact('mails','dollies', 'types'));
     }
 
     public function inprogress()

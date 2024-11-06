@@ -85,6 +85,7 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
+use App\Http\Controllers\MailArchiveController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
@@ -112,16 +113,14 @@ Route::group(['middleware' => 'auth'], function () {
     //Route::get('/switch-organisation/{organisation}', 'OrganisationController@switchOrganisation')->name('switch.organisation');
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/about-us', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-    Route::get('/', [mailController::class, 'index']);
+    Route::get('/', [mailReceivedController::class, 'index']);
 
 
     Route::prefix('mails')->group(function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
         Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
-
-        Route::resource('file', MailController::class)->names('mails');
         Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
-        Route::resource('archiving', MailArchivingController::class)->names('mail-archiving');
+        Route::resource('archives', MailArchiveController::class)->names('mail-archive');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
@@ -129,7 +128,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::resource('typologies', MailTypologyController::class);
-        Route::get('archived', [MailController::class, 'archived'])->name('mails.archived');
+        Route::get('archived', [MailArchiveController::class, 'archived'])->name('mails.archived');
         Route::resource('batch', BatchController::class)->names('batch');
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
 
