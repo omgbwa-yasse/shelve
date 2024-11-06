@@ -7,9 +7,6 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.index') }}"><i class="bi bi-inbox"></i> {{ __('my_mails') }}</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> {{ __('received_mails') }}</a>
                 </li>
                 <li class="nav-item">
@@ -66,9 +63,6 @@
         <div class="collapse show" id="creerMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.create') }}"><i class="bi bi-inbox"></i> {{ __('mail') }}</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('batch.create') }}"><i class="bi bi-bookmark-check"></i> {{ __('parapher') }}</a>
                 </li>
                 <li class="nav-item">
@@ -96,7 +90,7 @@
                     <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> {{ __('send') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-archiving.create') }}"><i class="bi bi-archive"></i> {{ __('archive') }} </a>
+                    <a class="nav-link text-dark" href="{{ route('mail-archive.create') }}"><i class="bi bi-archive"></i> {{ __('archive') }} </a>
                 </li>
             </ul>
         </div>

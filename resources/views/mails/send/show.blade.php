@@ -2,12 +2,11 @@
 
 @section('content')
     <div class="container-fluid py-3">
-        <!-- Header compact -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <h5 class="mb-1">{{ $mailTransaction->code }} - {{ $mailTransaction->mail->name }}</h5>
+                <h5 class="mb-1">{{ $mail->code }} - {{ $mail->name }}</h5>
                 <small class="text-muted">
-                    Créé le {{ $mailTransaction->date_creation ? date('d/m/Y H:i', strtotime($mailTransaction->date_creation)) : 'N/A' }}
+                    Créé le {{ $mail->created_at->format('d/m/Y H:i') }}
                 </small>
             </div>
             <div class="btn-group">
@@ -28,16 +27,17 @@
                         <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Exporter</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Partager</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <li>
+                            <button class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                                 <i class="bi bi-trash me-2"></i>Supprimer
-                            </button></li>
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div class="row g-3">
-            <!-- Informations principales -->
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-body p-3">
@@ -49,8 +49,8 @@
                                     </div>
                                     <div>
                                         <small class="text-muted d-block">Expéditeur</small>
-                                        <span class="text-body">{{ $mailTransaction->userSend->name ?? 'N/A' }}</span>
-                                        <small class="text-muted d-block">{{ $mailTransaction->organisationSend->name ?? 'N/A' }}</small>
+                                        <span class="text-body">{{ $mail->sender->name ?? 'N/A' }}</span>
+                                        <small class="text-muted d-block">{{ $mail->senderOrganisation->name ?? 'N/A' }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -61,8 +61,8 @@
                                     </div>
                                     <div>
                                         <small class="text-muted d-block">Destinataire</small>
-                                        <span class="text-body">{{ $mailTransaction->userReceived->name ?? 'N/A' }}</span>
-                                        <small class="text-muted d-block">{{ $mailTransaction->organisationReceived->name ?? 'N/A' }}</small>
+                                        <span class="text-body">{{ $mail->recipient->name ?? 'N/A' }}</span>
+                                        <small class="text-muted d-block">{{ $mail->recipientOrganisation->name ?? 'N/A' }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -73,37 +73,38 @@
                         <div class="row g-2">
                             <div class="col-md-4">
                                 <small class="text-muted d-block">Type de document</small>
-                                <span>{{ $mailTransaction->documentType->name ?? 'N/A' }}</span>
+                                <span>{{ $mail->document_type ?? 'N/A' }}</span>
                             </div>
                             <div class="col-md-4">
                                 <small class="text-muted d-block">Action requise</small>
-                                <span class="badge bg-primary">{{ $mailTransaction->action->name ?? 'N/A' }}</span>
+                                <span class="badge bg-primary">{{ $mail->action->name ?? 'N/A' }}</span>
                             </div>
                             <div class="col-md-4">
-                                <small class="text-muted d-block">Date création</small>
-                                <span>{{ $mailTransaction->date_creation ? date('d/m/Y', strtotime($mailTransaction->date_creation)) : 'N/A' }}</span>
+                                <small class="text-muted d-block">Date de création</small>
+                                <span>{{ $mail->created_at->format('d/m/Y') }}</span>
                             </div>
                         </div>
 
-                        @if($mailTransaction->description)
+                        @if($mail->description)
                             <div class="mt-2">
                                 <small class="text-muted d-block">Description</small>
-                                <p class="mb-0">{{ $mailTransaction->description }}</p>
+                                <p class="mb-0">{{ $mail->description }}</p>
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <!-- Pièces jointes -->
-                @if($mailTransaction->mail->attachments->count() > 0)
+                @if($mail->attachments->count() > 0)
                     <div class="card mt-3">
                         <div class="card-body p-2">
                             <div class="d-flex flex-wrap gap-2">
-                                @foreach($mailTransaction->mail->attachments as $attachment)
+                                @foreach($mail->attachments as $attachment)
                                     <div class="border rounded p-2 d-flex align-items-center">
                                         <i class="bi bi-paperclip me-2"></i>
                                         <span class="me-2">{{ $attachment->name }}</span>
-                                        <a href="#" class="text-primary"><i class="bi bi-download"></i></a>
+                                        <a href="{{ route('mail-attachment.download', $attachment->id) }}" class="text-primary">
+                                            <i class="bi bi-download"></i>
+                                        </a>
                                     </div>
                                 @endforeach
                             </div>
@@ -112,7 +113,6 @@
                 @endif
             </div>
 
-            <!-- Historique -->
             <div class="col-md-4">
                 <div class="card">
                     <div class="card-header py-2 px-3">
@@ -120,19 +120,19 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            @foreach($mailHistory as $history)
+                            @foreach($mail->history as $history)
                                 <div class="list-group-item py-2 px-3">
                                     <div class="d-flex align-items-center">
                                         <div class="rounded-circle bg-light p-1 me-2">
                                             <i class="bi bi-clock text-secondary small"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <small class="d-block">{{ $history->action->name }}</small>
+                                            <small class="d-block">{{ $history->action->name ?? 'N/A' }}</small>
                                             <small class="text-muted">
-                                                {{ $history->userSend->name }} → {{ $history->userReceived->name }}
+                                                {{ $history->sender->name ?? 'N/A' }} → {{ $history->recipient->name ?? 'N/A' }}
                                             </small>
                                             <small class="text-muted d-block">
-                                                {{ date('d/m/Y H:i', strtotime($history->created_at)) }}
+                                                {{ $history->created_at->format('d/m/Y H:i') }}
                                             </small>
                                         </div>
                                     </div>
@@ -145,7 +145,6 @@
         </div>
     </div>
 
-    <!-- Modal de transfert (version compacte) -->
     <div class="modal fade" id="transferModal" tabindex="-1">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -159,13 +158,13 @@
                             <label class="form-label small">Organisation</label>
                             <select class="form-select form-select-sm">
                                 <option value="">Sélectionner...</option>
-                            </select>
+                                 </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label small">Utilisateur</label>
                             <select class="form-select form-select-sm">
                                 <option value="">Sélectionner...</option>
-                            </select>
+                                 </select>
                         </div>
                         <div class="mb-2">
                             <label class="form-label small">Commentaire</label>
@@ -180,7 +179,7 @@
             </div>
         </div>
     </div>
-    <!-- Modal de suppression -->
+
     <div class="modal fade" id="deleteModal" tabindex="-1">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -193,7 +192,7 @@
                 </div>
                 <div class="modal-footer py-1">
                     <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal">Annuler</button>
-                    <form action="{{ route('mail-send.destroy', $mailTransaction->id) }}" method="POST" class="d-inline">
+                    <form action="{{ route('mail-send.destroy', $mail->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
@@ -202,6 +201,7 @@
             </div>
         </div>
     </div>
+
     @push('styles')
         <style>
             .btn-group .btn {

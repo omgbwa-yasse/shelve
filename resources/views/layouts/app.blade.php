@@ -213,7 +213,7 @@
             <div class="container-fluid">
                 <div class="navbar-nav w-100 justify-content-between">
                     <a class="nav-link @if (Request::segment(1) == 'mails') active fw-bold text-primary @endif"
-                       href="{{ route('mails.index') }}">
+                       href="{{ route('mail-received.index') }}">
                         <i class="bi bi-envelope"></i> {{ __('Mail') }}
                     </a>
                     <a class="nav-link @if (Request::segment(1) == 'repositories') active fw-bold text-primary @endif"

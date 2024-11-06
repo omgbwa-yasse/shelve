@@ -6,6 +6,8 @@ use App\Models\MailArchive; // Nom du modèle corrigé
 use Illuminate\Http\Request;
 use App\Models\MailContainer;
 use App\Models\Mail;
+use App\Models\Dolly;
+use App\Models\DollyType;
 use Illuminate\Support\Facades\Auth;
 
 class MailArchiveController extends Controller // Nom du contrôleur corrigé
@@ -17,6 +19,19 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
                                   ->get(); // Ajouté pour récupérer la collection
 
         return view('mails.archives.index', compact('mailArchives')); // Nom de la vue corrigé
+    }
+
+
+
+    public function archived()
+    {
+        $mailArchives = Mail::with(['priority', 'authors', 'typology', 'sender', 'recipient'])
+                     ->where('is_archived', true)
+                     ->paginate(15);
+
+        $dollies = Dolly::all();
+        $types = DollyType::all();
+        return view('mails.archives.index', compact('mailArchives'));
     }
 
     public function show(int $id)
