@@ -9,6 +9,7 @@ use App\Imports\SlipsImport;
 use App\Models\Dolly;
 use App\Models\SlipRecord;
 use App\Models\slipRecordAttachment;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\Organisation;
 use App\Models\MailContainer;
@@ -28,6 +29,38 @@ use Illuminate\Support\Facades\Validator;
 class SlipController extends Controller
 {
 
+    public function print(Slip $slip)
+    {
+        // Charger toutes les relations nécessaires
+        $slip->load([
+            'officerOrganisation',
+            'officer',
+            'userOrganisation',
+            'user',
+            'slipStatus',
+            'records.level',
+            'records.support',
+            'records.activity',
+            'records.containers',
+            'records.creator',
+            'records.attachments',
+            'receivedAgent',
+            'approvedAgent',
+            'integratedAgent'
+        ]);
+
+        // Générer le PDF
+        $pdf = PDF::loadView('slips.print', compact('slip'));
+
+        // Configurer le PDF
+        $pdf->setPaper('A4');
+
+        // Nom du fichier
+        $filename = 'bordereau_' . $slip->code . '.pdf';
+
+        // Retourner le PDF pour téléchargement
+        return $pdf->download($filename);
+    }
     public function index()
     {
         $slips = Slip::where('is_received', false)

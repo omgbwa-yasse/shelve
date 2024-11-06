@@ -113,24 +113,24 @@
             </div>
         </div>
 
-        <div class="row mt-1">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title mb-4">Ajouter des fichiers</h5>
-                        <form id="uploadForm" action="{{ route('slip-record-upload') }}?s_id={{$slip->id}}&r_id={{ $slipRecord->id }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            <div class="mb-3">
-                                <input type="file" name="file" id="fileInput" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
-                            </div>
-                            <canvas id="pdfThumbnail" style="display:none;"></canvas>
-                            <input type="hidden" name="thumbnail" id="thumbnailInput">
-                            <button type="submit" class="btn btn-primary">Enregistrer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+{{--        <div class="row mt-1">--}}
+{{--            <div class="col-md-12">--}}
+{{--                <div class="card">--}}
+{{--                    <div class="card-body">--}}
+{{--                        <h5 class="card-title mb-4">Ajouter des fichiers</h5>--}}
+{{--                        <form id="uploadForm" action="{{ route('slip-record-upload') }}?s_id={{$slip->id}}&r_id={{ $slipRecord->id }}" method="POST" enctype="multipart/form-data">--}}
+{{--                            @csrf--}}
+{{--                            <div class="mb-3">--}}
+{{--                                <input type="file" name="file" id="fileInput" class="form-control" accept=".pdf,.jpg,.jpeg,.png">--}}
+{{--                            </div>--}}
+{{--                            <canvas id="pdfThumbnail" style="display:none;"></canvas>--}}
+{{--                            <input type="hidden" name="thumbnail" id="thumbnailInput">--}}
+{{--                            <button type="submit" class="btn btn-primary">Enregistrer</button>--}}
+{{--                        </form>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        </div>--}}
 
 
 

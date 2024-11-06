@@ -135,9 +135,9 @@
                                     <a href="{{ route('slips.integrate') }}?id={{ $slip->id }}" class="btn btn-success">
                                         <i class="fas bi-folder-plus me-2"></i>Intégrer dans le repertoire
                                     </a>
-                                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == FALSE)
-                                    <a href="" class="btn btn-success">
-                                        <i class="fas bi-folder-plus me-2"></i>Imprimer le bordereau ***
+                                @elseif ($slip->is_received  == TRUE && $slip->is_approved  == TRUE && $slip->is_integrated  == true)
+                                    <a href="{{ route('slips.print', $slip) }}" class="btn btn-success" target="_blank">
+                                        <i class="fas fa-print me-2"></i>Imprimer le bordereau
                                     </a>
                                 @endif
 

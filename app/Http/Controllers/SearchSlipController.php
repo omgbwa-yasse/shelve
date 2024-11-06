@@ -18,113 +18,104 @@ use App\Models\SlipRecord;
 
 class SearchSlipController extends Controller
 {
+
     public function index(Request $request)
     {
-        $slips = '';
+        // Récupérer l'organisation de l'utilisateur connecté
+        $userOrganisationId = auth()->user()->current_organisation_id;
 
-        switch($request->input('categ')){
+        $query = Slip::query();
 
+        // Appliquer le filtre d'organisation de base
+        $query->where(function($q) use ($userOrganisationId) {
+            $q->where('officer_organisation_id', $userOrganisationId)
+                ->orWhere('user_organisation_id', $userOrganisationId);
+        });
+
+        switch($request->input('categ')) {
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
-                $query = Slip::query();
 
                 if ($exactDate) {
                     $query->whereDate('created_at', $exactDate);
                 }
-
                 if ($startDate && $endDate) {
                     $query->orWhere(function ($query) use ($startDate, $endDate) {
                         $query->whereDate('created_at', '>=', $startDate)
                             ->whereDate('created_at', '<=', $endDate);
                     });
                 }
-
-                $slips = $query->paginate(10);
                 break;
-
-
 
             case "code":
-                $slips = Slip::where('code', $request->input('value'))
-                    ->paginate(10);
+                $query->where('code', $request->input('value'));
                 break;
-
-
 
             case "officer":
-                $slips = Slip::where('operator_id', $request->input('id'))
-                    ->paginate(10);
+                $query->where('operator_id', $request->input('id'));
                 break;
-
-
 
             case "officer-organisation":
-                $slips = Slip::where('officer_organisation_id', $request->input('id'))
-                    ->paginate(10);
+                $query->where('officer_organisation_id', $request->input('id'))
+                    ->where('officer_organisation_id', $userOrganisationId); // Double vérification
                 break;
-
 
             case "user":
-                $slips = Slip::where('user_id', $request->input('id'))
-                    ->paginate(10);
+                $query->where('user_id', $request->input('id'));
                 break;
-
 
             case "user-organisation":
-                $slips = Slip::where('user_organisation_id', $request->input('id'))
-                    ->paginate(10);
-                break;
-
-
-            case "approved":
-                $slips = Slip::where([
-                    'is_approved' => true,
-                    'is_received' => false,
-                    'is_integrated' => false
-                ])->paginate(10);
+                $query->where('user_organisation_id', $request->input('id'))
+                    ->where('user_organisation_id', $userOrganisationId); // Double vérification
                 break;
 
             case "received":
-                $slips = Slip::where([
-                    'is_approved' => true,
+                $query->where([
+//                    'is_approved' => true,
                     'is_received' => true,
                     'is_integrated' => false
                 ])->paginate(10);
                 break;
 
+            case "approved":
+                $query->where([
+                    'is_approved' => true,
+                    'is_received' => true,
+                    'is_integrated' => false
+                ]);
+                break;
+
             case "integrated":
-                $slips = Slip::where([
+                $query->where([
                     'is_approved' => true,
                     'is_received' => true,
                     'is_integrated' => true
-                ])->paginate(10);
+                ]);
                 break;
-
 
             case "project":
             case "draft":
             case "brouillon":
-                        $slips = Slip::whereNotNull('created_at')
-                            ->whereNotNull('name')
-                            ->whereNotNull('code')
-                            ->where('is_approved', false)
-                            ->where('is_received', false)
-                            ->where('is_integrated', false)
-                            ->paginate(10);
-                        break;
+                $query->whereNotNull('created_at')
+                    ->whereNotNull('name')
+                    ->whereNotNull('code')
+                    ->where('is_approved', false)
+                    ->where('is_received', false)
+                    ->where('is_integrated', false);
+                break;
 
-
-                default:
-                $slips = Slip::take(5)->paginate(10);
+            default:
+                $query->take(5);
                 break;
         }
 
+        // Appliquer la pagination
+        $slips = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('slips.index', compact('slips'));
     }
-
 
     public function date()
     {

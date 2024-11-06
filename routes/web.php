@@ -237,6 +237,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('slips.records.containers', SlipRecordContainerController::class);
         Route::resource('containers', SlipContainerController::class)->names('slips.containers');
         Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
+        Route::get('/slips/{slip}/print', [SlipController::class, 'print'])->name('slips.print');
         Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
         Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
         Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
