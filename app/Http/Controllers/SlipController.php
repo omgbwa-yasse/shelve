@@ -454,21 +454,36 @@ class SlipController extends Controller
         }
     }
 
-    public function import(Request $request)
+    public function import($format, Request $request)
     {
+        // Validate the format parameter from the route
+        if (!in_array($format, ['excel', 'ead', 'seda'])) {
+            return redirect()->back()->with('error', 'Invalid import format');
+        }
+
+        // Validate the file upload
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xml',
-            'format' => 'required|in:excel,ead,seda',
+            'file' => [
+                'required',
+                'file',
+                function ($attribute, $value, $fail) use ($format) {
+                    $extension = strtolower($value->getClientOriginalExtension());
+                    if ($format === 'excel' && $extension !== 'xlsx') {
+                        $fail('The file must be an Excel file (.xlsx)');
+                    } elseif (($format === 'ead' || $format === 'seda') && $extension !== 'xml') {
+                        $fail('The file must be an XML file (.xml)');
+                    }
+                },
+            ],
         ]);
 
         $file = $request->file('file');
-        $format = $request->input('format');
 
         // Créer un nouveau Dolly
         $dolly = Dolly::create([
             'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
             'description' => 'Imported data',
-            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+            'type_id' => 1,
         ]);
 
         try {
@@ -483,9 +498,13 @@ class SlipController extends Controller
                     $this->importSEDA($file, $dolly);
                     break;
             }
-            return redirect()->route('slips.index')->with('success', 'Slips imported successfully and attached to new Dolly.');
+            return redirect()->route('slips.index')
+                ->with('success', 'Slips imported successfully and attached to new Dolly.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error importing slips: ' . $e->getMessage());
+            // Log the error for debugging
+            \Log::error('Import error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Error importing slips: ' . $e->getMessage());
         }
     }
 

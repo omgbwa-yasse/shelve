@@ -233,6 +233,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('slips/export', [SlipController::class, 'export'])->name('slips.export');
         Route::get('slips/import', [SlipController::class, 'importForm'])->name('slips.import.form');
         Route::post('slips/import/{format}', [SlipController::class, 'import'])->name('slips.import');
+
         Route::get('search', [SearchController::class, 'index'])->name('transferrings.search');
         Route::get('slips/reception', [SlipController::class, 'reception'])->name('slips.reception');
         Route::get('slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
