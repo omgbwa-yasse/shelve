@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1 class="mb-4">Archiver un courrier</h1>
-        <form action="{{ route('mail-archiving.store') }}" method="POST">
+        <form action="{{ route('mail-archive.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="container_id" class="form-label">Container</label>
@@ -97,11 +97,11 @@
                 <div class="modal-body">
                     <input type="text" id="documentTypeSearch" class="form-control mb-3" placeholder="Rechercher un type de document...">
                     <div id="documentTypeList" class="list-group">
-                        @foreach ($documentTypes as $documentType)
-                            <button type="button" class="list-group-item list-group-item-action" data-id="{{ $documentType->id }}" data-name="{{ $documentType->name }}">
-                                {{ $documentType->name }}
-                            </button>
-                        @endforeach
+                        <select name="document_type" id="document_type" class="form-select">
+                            <option value="original">Original</option>
+                            <option value="copy">Copie</option>
+                            <option value="duplicate">Duplicata</option>
+                        </select>
                     </div>
                 </div>
             </div>

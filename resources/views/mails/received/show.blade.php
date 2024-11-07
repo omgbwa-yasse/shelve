@@ -9,7 +9,7 @@
                     Courrier entrant : {{ $mail->name ?? 'N/A' }}
                 </h5>
                 <small class="text-muted">
-                    Reçu le {{ $mail->date->format('d/m/Y H:i') }}
+                    Reçu le {{ date('d/m/Y', strtotime($mail->date)) }}
                 </small>
             </div>
             <div class="btn-group">

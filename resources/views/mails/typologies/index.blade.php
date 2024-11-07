@@ -2,6 +2,7 @@
 @section('content')
     <div class="container">
         <h1>Typologie de Courrier</h1>
+        <a href="{{ route('mail-typology.create') }}" class="btn btn-primary mb-3">Ajouter une typology</a>
         <ul class="list-group">
             @foreach ($mailTypologies as $mailTypology)
                 <li class="list-group-item d-flex justify-content-between align-items-center mt-4" >

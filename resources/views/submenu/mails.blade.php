@@ -42,6 +42,29 @@
             </ul>
         </div>
 
+
+        <!-- Courrier -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#courrierMenu" aria-expanded="true"
+           aria-controls="courrierMenu" style="padding: 10px;">{{ __('mail') }}</a>
+
+        <div class="collapse show" id="courrierMenu">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-clock"></i>  {{ __('to_receive') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> {{ __('receive') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-send"></i> {{ __('send') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-archive.create') }}"><i class="bi bi-archive"></i> {{ __('archive') }} </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- enregistrement -->
         <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
            aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">{{ __('case_follow_up') }}</a>
 
@@ -74,26 +97,7 @@
             </ul>
         </div>
 
-        <!-- Courrier -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#courrierMenu" aria-expanded="true"
-           aria-controls="courrierMenu" style="padding: 10px;">{{ __('mail') }}</a>
 
-        <div class="collapse show" id="courrierMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-inbox"></i> {{ __('to_receive') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> {{ __('receive') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-envelope"></i> {{ __('send') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-archive.create') }}"><i class="bi bi-archive"></i> {{ __('archive') }} </a>
-                </li>
-            </ul>
-        </div>
 
         <!-- Parapheur -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"

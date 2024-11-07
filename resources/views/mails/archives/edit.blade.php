@@ -2,7 +2,7 @@
 
 @section('content')
 
-<form action="{{ route('mail-archiving.update', $mailArchiving->id) }}" method="POST">
+<form action="{{ route('mail-archive.update', $mailArchiving->id) }}" method="POST">
     @csrf
     @method('PUT')
     <div class="mb-3">

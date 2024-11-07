@@ -12,7 +12,7 @@ class MailTypologyController extends Controller
     public function index()
     {
         $mailTypologies = MailTypology::paginate(10);
-        $mailTypologies->load(['class','mails']);
+        $mailTypologies->load(['activity','mails']);
 
         return view('mails.typologies.index', compact('mailTypologies'));
     }

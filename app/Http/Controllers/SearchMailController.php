@@ -26,7 +26,6 @@ class SearchMailController extends Controller
     {
         $data = [
             'priorities' => MailPriority::all(),
-            'types' => MailType::all(),
             'typologies' => MailTypology::all(),
             'authors' => Author::all(),
             'documentTypes' => DocumentType::all(),
@@ -82,10 +81,6 @@ class SearchMailController extends Controller
         // Recherche par type
         if ($request->filled('mail_type_id')) {
             $query->where('mail_type_id', $request->mail_type_id);
-            $type = MailType::find($request->mail_type_id);
-            if ($type) {
-                $title .= ' - Type: ' . $type->name;
-            }
         }
 
         // Recherche par typologie
@@ -138,7 +133,6 @@ class SearchMailController extends Controller
         // Récupérer les données pour les select
         $data = [
             'priorities' => MailPriority::all(),
-            'types' => MailType::all(),
             'typologies' => MailTypology::all(),
             'authors' => Author::all(),
             'documentTypes' => DocumentType::all(),

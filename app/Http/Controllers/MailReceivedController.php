@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail;
+use App\Models\user;
 use App\Models\MailAction;
+use App\Models\MailPriority;
+use App\Models\MailTypology;
 use App\Models\Dolly;
 use App\Models\DollyType;
 use App\Models\Organisation;
@@ -21,8 +24,13 @@ class MailReceivedController extends Controller
                      ->get();
         $dollies = Dolly::all();
         $types = DollyType::all();
-        return view('mails.received.index', compact('mails','dollies', 'types'));
+        $users = User::all();
+
+        return view('mails.received.index', compact('mails','dollies', 'types','users'));
     }
+
+
+
 
     public function inprogress()
     {
@@ -31,9 +39,14 @@ class MailReceivedController extends Controller
                      ->where('recipient_user_id', $userId)
                      ->where('status', 'in_progress')
                      ->get();
-
-        return view('mails.received.index', compact('mails'));
+        $dollies = Dolly::all();
+        $types = DollyType::all();
+        $users = User::all();
+        return view('mails.received.index', compact('mails','dollies', 'types','users'));
     }
+
+
+
 
     public function approve(Request $request)
     {
@@ -52,15 +65,20 @@ class MailReceivedController extends Controller
                          ->with('success', 'Mail updated successfully');
     }
 
+
+
     public function create()
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
-
         $mailActions = MailAction::orderBy('name')->get();
         $senderOrganisations = Organisation::where('id', '!=', $currentOrganisationId)->orderBy('name')->get();
-
-        return view('mails.received.create', compact('mailActions', 'senderOrganisations'));
+        $users = User::all();
+        $priorities = MailPriority::all();
+        $typologies = MailTypology::all();
+        return view('mails.received.create', compact('mailActions', 'senderOrganisations','users', 'priorities','typologies' ));
     }
+
+
 
     public function store(Request $request)
     {
@@ -82,12 +100,14 @@ class MailReceivedController extends Controller
             'code' => $mailCode,
             'recipient_organisation_id' => auth()->user()->current_organisation_id,
             'recipient_user_id' => auth()->id(),
-            'status' => 'received',
+            'status' => 'in_progress',
         ]);
 
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail created successfully.');
     }
+
+
 
     public function generateMailCode()
     {
@@ -108,6 +128,8 @@ class MailReceivedController extends Controller
         return 'M' . $year . '-' . $formattedMailCount;
     }
 
+
+
     public function show(int $id)
     {
         $mail = Mail::with([
@@ -123,6 +145,8 @@ class MailReceivedController extends Controller
 
         return view('mails.received.show', compact('mail'));
     }
+
+
 
     public function edit(int $id)
     {
@@ -141,6 +165,8 @@ class MailReceivedController extends Controller
 
         return view('mails.received.edit', compact('mail', 'mailActions', 'senderOrganisations'));
     }
+
+
 
     public function update(Request $request, int $id)
     {
@@ -163,6 +189,8 @@ class MailReceivedController extends Controller
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail updated successfully');
     }
+
+
 
     public function destroy($id)
     {

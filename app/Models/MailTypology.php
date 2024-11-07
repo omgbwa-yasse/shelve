@@ -17,15 +17,15 @@ class MailTypology extends Model
         'activity_id',
     ];
 
-    public $timestamps = true; // Corrigé d'après le schéma SQL
+    public $timestamps = true;
 
-    public function activity() // Nom de relation corrigé et convention de nommage respectée
+    public function activity()
     {
-        return $this->belongsTo(Activity::class); // 'activity_id' est implicite
+        return $this->belongsTo(Activity::class, 'activity_id');
     }
 
     public function mails()
     {
-        return $this->hasMany(Mail::class); // 'typology_id' est implicite
+        return $this->hasMany(Mail::class, 'typology_id');
     }
 }

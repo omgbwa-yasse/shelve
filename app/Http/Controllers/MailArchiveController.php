@@ -34,12 +34,18 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
         return view('mails.archives.index', compact('mailArchives'));
     }
 
+
+
+
     public function show(int $id)
     {
         $mailArchive = MailArchive::with('container', 'mail', 'user')->findOrFail($id); // Relations corrigées
 
         return view('mails.archives.show', compact('mailArchive')); // Nom de la vue corrigé
     }
+
+
+
 
     public function create()
     {
@@ -51,8 +57,12 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
                     ->where('sender_organisation_id', Auth::user()->current_organisation_id) // Champ corrigé
                     ->get();
 
+
         return view('mails.archives.create', compact('mailContainers', 'mails')); // Nom de la vue corrigé
     }
+
+
+
 
     public function store(Request $request)
     {

@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail;
+use App\Models\Dolly;
+use App\Models\user;
+use App\Models\DollyType;
+use App\Models\MailPriority;
+use App\Models\MailTypology;
 use App\Models\MailAction;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
@@ -17,9 +22,13 @@ class MailSendController extends Controller
                      ->where('sender_organisation_id', $organisationId)
                      ->where('status', '!=', 'draft')
                      ->get();
-
-        return view('mails.send.index', compact('mails'));
+        $dollies = Dolly::all();
+        $types = DollyType::all();
+        $users = User::all();
+        return view('mails.send.index', compact('mails', 'dollies', 'types', 'users'));
     }
+
+
 
     public function create()
     {
@@ -27,9 +36,13 @@ class MailSendController extends Controller
 
         $mailActions = MailAction::orderBy('name')->get();
         $recipientOrganisations = Organisation::where('id', '!=', $currentOrganisationId)->orderBy('name')->get();
-
-        return view('mails.send.create', compact('mailActions', 'recipientOrganisations'));
+        $users = User::all();
+        $priorities = MailPriority::all();
+        $typologies = MailTypology::all();
+        return view('mails.send.create', compact('mailActions', 'recipientOrganisations','users', 'priorities','typologies'));
     }
+
+
 
     public function store(Request $request)
     {

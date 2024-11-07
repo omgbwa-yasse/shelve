@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
-use App\Http\Controllers\MailArchivingController;
+use App\Http\Controllers\MailArchiveController;
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
@@ -76,6 +76,7 @@ use App\Http\Controllers\SearchReservationController;
 use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
+use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SlipStatusController;
@@ -85,7 +86,6 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
-use App\Http\Controllers\MailArchiveController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
@@ -131,17 +131,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('archived', [MailArchiveController::class, 'archived'])->name('mails.archived');
         Route::resource('batch', BatchController::class)->names('batch');
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
-
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
-
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
-
-
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
-
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'index'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
@@ -157,11 +152,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::post('add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
         Route::get('export', [CommunicationController::class, 'export'])->name('communications.export');
-
         // Routes de recherche et tri pour les réservations (à placer AVANT les routes resource)
         Route::get('reservations/sort', [SearchReservationController::class, 'index'])->name('reservations-sort');
         Route::get('reservations/select', [SearchReservationController::class, 'date'])->name('reservations-select-date');
-//        Route::get('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
+        // Route::get('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
         Route::post('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
         // Routes resource
         Route::resource('transactions', CommunicationController::class);
@@ -265,6 +259,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('trolleys', BuildingController::class);
     });
 
+
     Route::prefix('settings')->group(function () {
         Route::get('users', [UserController::class, 'index'] );
         Route::resource('user-organisation-role', UserOrganisationRoleController::class);
@@ -273,6 +268,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('users', UserController::class);
         Route::resource('role_permissions', RolePermissionController::class);
         Route::resource('mail-typology', MailTypologyController::class);
+        Route::resource('mail-priority', MailPriorityController::class);
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);
         Route::resource('sorts', SortController::class);
@@ -333,7 +329,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('access', ContainerStatusController::class);
         Route::resource('terms', TermController::class);
         Route::get('barcode', [BarcodeController::class,'create'])->name('barcode.create');
-//        Route::post('barcode', [BarcodeController::class,'generate'])->name('barcode.generate');
+        //Route::post('barcode', [BarcodeController::class,'generate'])->name('barcode.generate');
         Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');
         Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');

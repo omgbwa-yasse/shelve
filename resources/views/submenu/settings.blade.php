@@ -59,6 +59,9 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('mail-action.index') }}"><i class="bi bi-gear"></i> {{ __('actions') }}</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('mail-priority.index') }}"><i class="bi bi-gear"></i> {{ __('actions') }}</a>
+                </li>
             </ul>
         </div>
 

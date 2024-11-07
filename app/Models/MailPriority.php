@@ -10,8 +10,8 @@ class MailPriority extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',  // Ajouté d'après le schéma SQL
-        'duration' // Ajouté d'après le schéma SQL
+        'name',
+        'duration'
     ];
 
     public function mails()
