@@ -152,35 +152,36 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
-
     Route::prefix('communications')->group(function () {
         Route::get('/', [CommunicationController::class, 'index']);
         Route::get('print', [CommunicationController::class, 'print'])->name('communications.print');
         Route::post('add-to-cart', [CommunicationController::class, 'addToCart'])->name('communications.addToCart');
         Route::get('export', [CommunicationController::class, 'export'])->name('communications.export');
-        // Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
-        // Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
-        // Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
 
-        Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
-
-        Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced');
+        // Routes de recherche et tri pour les réservations (à placer AVANT les routes resource)
+        Route::get('reservations/sort', [SearchReservationController::class, 'index'])->name('reservations-sort');
+        Route::get('reservations/select', [SearchReservationController::class, 'date'])->name('reservations-select-date');
+//        Route::get('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
+        Route::post('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
+        // Routes resource
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);
         Route::resource('reservations.records', ReservationRecordController::class);
+
         Route::get('transactions/return', [CommunicationController::class, 'returnEffective'])->name('return-effective');
         Route::get('transactions/cancel', [CommunicationController::class, 'returnCancel'])->name('return-cancel');
         Route::get('transmission', [CommunicationController::class, 'transmission'])->name('record-transmission');
         Route::get('transactions/record/return', [CommunicationRecordController::class, 'returnEffective'])->name('record-return-effective');
         Route::get('transactions/record/cancel', [CommunicationRecordController::class, 'returnCancel'])->name('record-return-cancel');
+
         Route::get('sort', [SearchCommunicationController::class, 'index'])->name('communications-sort');
         Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
-        Route::get('reservations/sort', [SearchReservationController::class, 'index'])->name('reservations-sort');
-        Route::get('reservations/select', [SearchReservationController::class, 'date'])->name('reservations-select-date');
-        Route::get('reservations/approved', [ReservationController::class, 'approved'])->name('reservations-approved');
-    });
 
+        // Advanced search routes
+        Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
+        Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced');
+    });
 
 
     Route::prefix('repositories')->group(function () {

@@ -33,13 +33,19 @@
         <div class="collapse show" id="reservationsMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations.index')}}"><i class="bi bi-inbox"></i> {{ __('view_all') }}</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations.index')}}">
+                        <i class="bi bi-inbox"></i> {{ __('view_all') }}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=InProgess"><i class="bi bi-inbox"></i> {{ __('under_review') }}</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations-sort', ['categ' => 'InProgress'])}}">
+                        <i class="bi bi-inbox"></i> {{ __('under_review') }}
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations-sort')}}?categ=approved"><i class="bi bi-inbox"></i> {{ __('approved') }}</a>
+                    <a class="nav-link text-dark" href="{{ route('reservations-sort', ['categ' => 'approved'])}}">
+                        <i class="bi bi-inbox"></i> {{ __('approved') }}** inutile
+                    </a>
                 </li>
             </ul>
         </div>

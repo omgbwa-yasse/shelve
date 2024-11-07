@@ -2,6 +2,7 @@
 
 @section('content')
     <div class="container">
+
         <h1>Fiche de réservation</h1>
             <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
                 <div class="d-flex align-items-center">
@@ -66,7 +67,15 @@
                 </div>
             </div>
         </div>
-
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <a href="{{ route('reservations.index') }}" class="btn btn-secondary">Back</a>
         <a href="{{ route('reservations.edit', $reservation->id) }}" class="btn btn-warning">Edit</a>
@@ -76,8 +85,13 @@
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reservation?')">Delete</button>
         </form>
         <a href="{{ route('reservations.records.create', $reservation->id) }}" class="btn btn-warning ">Ajouter des documents</a>
-        <a href="{{ route('reservations-approved') }}?id={{ $reservation->id }}" class="btn btn-success ">
-            <i class="bi bi-check me-1"></i> Approuver la réservation</a>
+        <form action="{{ route('reservations-approved') }}" method="POST" class="d-inline">
+            @csrf
+            <input type="hidden" name="id" value="{{ $reservation->id }}">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check me-1"></i> Approuver la réservation
+            </button>
+        </form>
     </div>
 
     <ul class="list-group list-group-none">

@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\communicationRecord;
+use App\Models\ReservationRecord;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use App\Models\Communication;
 use App\Models\ReservationStatus;
 use App\Models\User;
 use App\Models\Organisation;
-
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 
 class ReservationController extends Controller
@@ -30,29 +33,67 @@ class ReservationController extends Controller
 
     public function approved(Request $request)
     {
-        $reservation = reservation::findOrFail($request->input('id'));
-
-        $communication = Communication::create([
-            'code' => $reservation->code,
-            'name' => $reservation->name,
-            'content' => $reservation->input('content'),
-            'operator_id' => Auth()->user()->id,
-            'user_id' => $reservation->user_id,
-            'user_organisation_id' => $reservation->user_organisation_id,
-            'operator_organisation_id' => Auth()->user()->organisation->id,
-            'return_date' => date('y-m-d', strtotime("+14 days")),
-            'status_id' => 1,
+        $request->validate([
+            'id' => 'required|exists:reservations,id'
         ]);
 
-        foreach($reservation->records as $record){
-            $communication->records->attach($record->id);
-            $reservation->records->detach($record->id);
+        DB::beginTransaction();
+        try {
+            // Récupérer la réservation avec ses relations
+            $reservation = Reservation::with(['records', 'user', 'userOrganisation'])
+                ->findOrFail($request->input('id'));
+
+            // Créer la nouvelle communication
+            $communication = Communication::create([
+                'code' => $reservation->code,
+                'name' => $reservation->name,
+                'content' => $reservation->content,
+                'operator_id' => auth()->id(),
+                'user_id' => $reservation->user_id,
+                'user_organisation_id' => $reservation->user_organisation_id,
+                'operator_organisation_id' => auth()->user()->current_organisation_id,
+                'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
+                'status_id' => 1,
+            ]);
+
+            // Pour chaque record de la réservation
+            foreach ($reservation->records as $record) {
+                // Créer l'entrée dans communication_record
+                CommunicationRecord::create([
+                    'communication_id' => $communication->id,
+                    'record_id' => $record->id,
+                    'content' => null, // ou une valeur par défaut si nécessaire
+                    'is_original' => true, // ou false selon votre logique
+                    'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
+                    'return_effective' => null
+                ]);
+
+                // Supprimer l'entrée de reservation_record correspondante
+                ReservationRecord::where([
+                    'reservation_id' => $reservation->id,
+                    'record_id' => $record->id
+                ])->delete();
+            }
+
+            // Supprimer la réservation
+            $reservation->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('transactions.show', $communication->id)
+                ->with('success', 'La réservation a été approuvée et convertie en communication.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Erreur lors de l\'approbation de la réservation: ' . $e->getMessage());
+
+            return redirect()
+                ->back()
+                ->with('error', 'Une erreur est survenue lors de l\'approbation: ' . $e->getMessage());
         }
-
-        $reservation->delete();
-
-        return view('communications.show', compact('communication'));
     }
+
 
 
 
@@ -87,7 +128,7 @@ class ReservationController extends Controller
             'operator_id' => Auth()->user()->id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
-            'operator_organisation_id' => Auth()->user()->organisation->id,
+            'operator_organisation_id' => Auth()->user()->current_organisation_id,
             'return_date' => $request->return_date,
             'status_id' => 1, // Examen
         ]);
@@ -127,7 +168,7 @@ class ReservationController extends Controller
             'name' => $request->name,
             'content' => $request->input('content'),
             'operator_id' => Auth()->user()->id,
-            'operator_organisation_id' => Auth()->user()->organisation->id,
+            'operator_organisation_id' => Auth()->user()->current_organisation_id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'status_id' => 1,
