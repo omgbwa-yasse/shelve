@@ -6,6 +6,11 @@
         <div class="collapse show" id="rechercheMenu">
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('search.slips.advanced') }}">
+                        <i class="bi bi-search"></i> {{ __('advanced') }}
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i> {{ __('my_slips') }}</a>
                 </li>
                 <li class="nav-item">

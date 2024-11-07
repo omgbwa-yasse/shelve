@@ -226,6 +226,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('transferrings')->group(function () {
+        Route::get('/advanced', [SearchSlipController::class, 'form'])->name('slips.advanced.form');
+        Route::post('/advanced', [SearchSlipController::class, 'advanced'])->name('search.slips.advanced');
         Route::get('/', [SlipController::class, 'index']);
         Route::get('slips/export', [SlipController::class, 'exportForm'])->name('slips.export.form');
         Route::post('slips/export', [SlipController::class, 'export'])->name('slips.export');
