@@ -18,6 +18,11 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('communications-sort')}}?categ=not-return"><i class="bi bi-inbox"></i> {{ __('not_returned') }}</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('communications.advanced.form') }}">
+                        <i class="bi bi-search"></i> {{ __('advanced') }}
+                    </a>
+                </li>
             </ul>
         </div>
 

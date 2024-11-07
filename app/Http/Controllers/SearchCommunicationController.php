@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CommunicationStatus;
 use Illuminate\Http\Request;
 use App\Models\communication;
 use App\Models\Activity;
@@ -19,6 +20,155 @@ use App\Models\communicationRecord;
 
 class SearchCommunicationController extends Controller
 {
+
+    public function form()
+    {
+        $data = [
+            'statuses' => CommunicationStatus::select('id', 'name')->get(),
+            'operators' => User::select('id', 'name')->get(),
+            'users' => User::select('id', 'name')->get(),
+            'organisations' => Organisation::select('id', 'name')->get(),
+        ];
+
+        return view('search.communication.advanced', compact('data'));
+    }
+
+    public function advanced(Request $request)
+    {
+        $fields = $request->input('field');
+        $operators = $request->input('operator');
+        $values = $request->input('value');
+
+        $query = Communication::query();
+
+        if ($fields && $operators && $values) {
+            foreach ($fields as $index => $field) {
+                $operator = $operators[$index];
+                $value = $values[$index];
+
+                switch ($field) {
+                    case 'code':
+                    case 'name':
+                    case 'content':
+                        $this->applyTextSearch($query, $field, $operator, $value);
+                        break;
+
+                    case 'return_date':
+                    case 'return_effective':
+                        $this->applyDateSearch($query, $field, $operator, $value);
+                        break;
+
+                    case 'operator':
+                        $this->applyUserSearch($query, 'operator_id', $operator, $value);
+                        break;
+
+                    case 'user':
+                        $this->applyUserSearch($query, 'user_id', $operator, $value);
+                        break;
+
+                    case 'operator_organisation':
+                        $this->applyOrganisationSearch($query, 'operator_organisation_id', $operator, $value);
+                        break;
+
+                    case 'user_organisation':
+                        $this->applyOrganisationSearch($query, 'user_organisation_id', $operator, $value);
+                        break;
+
+                    case 'status':
+                        $this->applyStatusSearch($query, $operator, $value);
+                        break;
+
+                    case 'record':
+                        $this->applyRecordSearch($query, $operator, $value);
+                        break;
+                }
+            }
+        }
+
+        $communications = $query->with([
+            'operator',
+            'operatorOrganisation',
+            'user',
+            'userOrganisation',
+            'status',
+            'records.record'
+        ])->paginate(20);
+
+        return view('communications.index', compact('communications'));
+    }
+
+    private function applyTextSearch($query, $field, $operator, $value)
+    {
+        switch ($operator) {
+            case 'commence par':
+                $query->where($field, 'like', $value . '%');
+                break;
+            case 'contient':
+                $query->where($field, 'like', '%' . $value . '%');
+                break;
+            case 'ne contient pas':
+                $query->where($field, 'not like', '%' . $value . '%');
+                break;
+        }
+    }
+
+    private function applyDateSearch($query, $field, $operator, $value)
+    {
+        switch ($operator) {
+            case '=':
+                $query->whereDate($field, '=', $value);
+                break;
+            case '>':
+                $query->whereDate($field, '>', $value);
+                break;
+            case '<':
+                $query->whereDate($field, '<', $value);
+                break;
+        }
+    }
+
+    private function applyUserSearch($query, $field, $operator, $value)
+    {
+        if ($operator === 'avec') {
+            $query->where($field, $value);
+        } else {
+            $query->where($field, '!=', $value)
+                ->orWhereNull($field);
+        }
+    }
+
+    private function applyOrganisationSearch($query, $field, $operator, $value)
+    {
+        if ($operator === 'avec') {
+            $query->where($field, $value);
+        } else {
+            $query->where($field, '!=', $value)
+                ->orWhereNull($field);
+        }
+    }
+
+    private function applyStatusSearch($query, $operator, $value)
+    {
+        if ($operator === 'avec') {
+            $query->where('status_id', $value);
+        } else {
+            $query->where('status_id', '!=', $value)
+                ->orWhereNull('status_id');
+        }
+    }
+
+    private function applyRecordSearch($query, $operator, $value)
+    {
+        if ($operator === 'avec') {
+            $query->whereHas('records', function($q) use ($value) {
+                $q->where('record_id', $value);
+            });
+        } else {
+            $query->whereDoesntHave('records', function($q) use ($value) {
+                $q->where('record_id', $value);
+            });
+        }
+    }
     public function index(Request $request)
     {
         $communications = '';

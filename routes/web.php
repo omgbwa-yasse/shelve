@@ -161,6 +161,10 @@ Route::group(['middleware' => 'auth'], function () {
         // Route::get('/export/{id?}', [CommunicationController::class, 'export'])->name('communications.export');
         // Route::get('/print/{id?}', [CommunicationController::class, 'print'])->name('communications.print');
         // Route::post('/print', [CommunicationController::class, 'print'])->name('communications.print');
+
+        Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
+
+        Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced');
         Route::resource('transactions', CommunicationController::class);
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);
