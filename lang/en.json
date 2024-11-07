@@ -467,7 +467,39 @@
     "September": "September",
     "October": "October",
     "November": "November",
-    "December": "December"
+    "December": "December",
+
+    "relations": "Relations",
+
+    "advanced_search": "Advanced Search",
+
+
+    "operator_organisation": "Operator Organization",
+   
+    "user_organisation": "User Organization",
+
+    "return_effective": "Effective Return Date",
+
+
+    "received_date": "Reception Date",
+    "approved_date": "Approval Date",
+    "integrated_date": "Integration Date",
+    "officer": "Officer",
+    "officer_organisation": "Officer Organization",
+    "received_by": "Received By",
+    "approved_by": "Approved By",
+    "integrated_by": "Integrated By",
+
+    "record": "Record",
+
+
+    "add_criteria_warning": "Please add at least one search criterion",
+    "search_name_prompt": "Search name:",
+
+
+    "does_not_contain": "does not contain",
+
+    "select_placeholder": "-- Select --"
 
 
 }

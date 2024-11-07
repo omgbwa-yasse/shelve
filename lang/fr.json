@@ -462,6 +462,38 @@
     "September": "Septembre",
     "October": "Octobre",
     "November": "Novembre",
-    "December": "Décembre"
+    "December": "Décembre",
+
+    "relations": "Relations",
+
+    "advanced_search": "Recherche avancée",
+
+
+    "operator_organisation": "Organisation opérateur",
+
+    "user_organisation": "Organisation utilisateur",
+
+    "return_effective": "Date retour effective",
+
+    "received_date": "Date de réception",
+    "approved_date": "Date d'approbation",
+    "integrated_date": "Date d'intégration",
+    "officer": "Agent",
+    "officer_organisation": "Organisation agent",
+    "received_by": "Reçu par",
+    "approved_by": "Approuvé par",
+    "integrated_by": "Intégré par",
+
+    "record": "Article",
+
+
+
+    "add_criteria_warning": "Veuillez ajouter au moins un critère de recherche",
+    "search_name_prompt": "Nom de la recherche :",
+
+
+    "does_not_contain": "ne contient pas",
+
+    "select_placeholder": "-- Sélectionner --"
 
 }
