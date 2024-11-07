@@ -42,11 +42,11 @@
                         <i class="bi bi-inbox"></i> {{ __('under_review') }}
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservations-sort', ['categ' => 'approved'])}}">
-                        <i class="bi bi-inbox"></i> {{ __('approved') }}** inutile
-                    </a>
-                </li>
+{{--                <li class="nav-item">--}}
+{{--                    <a class="nav-link text-dark" href="{{ route('reservations-sort', ['categ' => 'approved'])}}">--}}
+{{--                        <i class="bi bi-inbox"></i> {{ __('approved') }}** inutile--}}
+{{--                    </a>--}}
+{{--                </li>--}}
             </ul>
         </div>
 
