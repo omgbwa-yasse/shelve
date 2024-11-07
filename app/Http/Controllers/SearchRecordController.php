@@ -5,68 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Record;
 use App\Models\Activity;
-use App\Models\recordPriority;
-use App\Models\recordTypology;
-use App\Models\recordType;
 use App\Models\Author;
-use App\Models\Batchrecord;
 use App\Models\Building;
 use App\Models\Room;
 use App\Models\Shelf;
-use App\Models\floor;
+use App\Models\Floor;
 use App\Models\Container;
-use App\Models\recordArchiving;
-use App\Models\recordContainer;
 use App\Models\RecordStatus;
 use App\Models\Term;
-use App\Models\Slip;
-use App\Models\SlipRecord;
-use App\Exports\RecordsExport;
-use App\Imports\RecordsImport;
 use App\Models\SlipStatus;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Attachment;
-use App\Models\Dolly;
 use App\Models\Organisation;
 use App\Models\RecordSupport;
 use App\Models\User;
-use App\Models\Accession;
 use App\Models\RecordLevel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
 
 class SearchRecordController extends Controller
 {
-
     public function form()
     {
-        $rooms = Room::all();
-        $shelve = Shelf::all();
-        $activities = Activity::all();
-        $terms = Term::all();
-        $authors = Author::all();
-        $creators = User::all();
-        $statues = RecordStatus::all();
-        $containers = Container::all();
-
         $data = [
-            'rooms' => $rooms,
-            'shelve' => $shelve,
-            'activities' => $activities,
-            'terms' => $terms,
-            'authors' => $authors,
-            'creators' => $creators,
-            'statues' => $statues,
-            'containers' => $containers,
+            'rooms' => Room::select('id', 'name', 'code')->get(),
+            'shelve' => Shelf::select('id', 'code')->get(),
+            'activities' => Activity::select('id', 'name')->get(),
+            'terms' => Term::select('id', 'name')->get(),
+            'authors' => Author::select('id', 'name')->get(),
+            'creators' => User::select('id', 'name')->get(),
+            'statues' => RecordStatus::select('id', 'name')->get(),
+            'containers' => Container::select('id', 'code')->get(),
         ];
 
-        return view('search.record.advanced', ['data' => json_encode($data)]);
+        return view('search.record.advanced', compact('data'));
     }
-
-
-
 
     public function advanced(Request $request)
     {
@@ -87,6 +57,7 @@ class SearchRecordController extends Controller
                     case 'content':
                         $this->applyTextSearch($query, $field, $operator, $value);
                         break;
+
                     case 'date_start':
                     case 'date_end':
                     case 'date_exact':
@@ -95,6 +66,7 @@ class SearchRecordController extends Controller
                     case 'dul':
                         $this->applyDateSearch($query, $field, $operator, $value);
                         break;
+
                     case 'room':
                     case 'shelf':
                     case 'activity':
@@ -105,22 +77,37 @@ class SearchRecordController extends Controller
                     case 'status':
                         $this->applyRelationSearch($query, $field, $operator, $value);
                         break;
+
                     default:
-                        // Handle any other fields not specifically covered
                         $query->where($field, '=', $value);
                         break;
                 }
             }
         }
 
-        $slipStatuses = SlipStatus::all();
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $users = User::select('id', 'name')->get();
-        $organisations = Organisation::select('id', 'name')->get();
+        // Chargement des données nécessaires pour la vue
+        $records = $query->with([
+            'status',
+            'support',
+            'level',
+            'activity',
+            'containers',
+            'user',
+            'authors',
+            'terms'
+        ])->paginate(20);
 
-        $records = $query->paginate(20);
-        return view('records.index', compact('records','statuses','slipStatuses','terms','users','organisations'));
+        // Données additionnelles pour la vue
+        $viewData = [
+            'records' => $records,
+            'statuses' => RecordStatus::all(),
+            'slipStatuses' => SlipStatus::all(),
+            'terms' => Term::all(),
+            'users' => User::select('id', 'name')->get(),
+            'organisations' => Organisation::select('id', 'name')->get(),
+        ];
+
+        return view('records.index', $viewData);
     }
 
     private function applyTextSearch($query, $field, $operator, $value)
@@ -155,40 +142,78 @@ class SearchRecordController extends Controller
 
     private function applyRelationSearch($query, $field, $operator, $value)
     {
-        $relation = $this->getRelationName($field);
+        switch ($field) {
+            case 'room':
+                if ($operator === 'avec') {
+                    $query->whereHas('containers.shelf.room', function ($q) use ($value) {
+                        $q->where('rooms.id', $value);
+                    });
+                } else {
+                    $query->whereDoesntHave('containers.shelf.room', function ($q) use ($value) {
+                        $q->where('rooms.id', $value);
+                    });
+                }
+                break;
 
-        if ($operator === 'avec') {
-            $query->whereHas($relation, function ($q) use ($value) {
-                $q->where('id', $value);
-            });
-        } else if ($operator === 'sauf') {
-            $query->whereDoesntHave($relation, function ($q) use ($value) {
-                $q->where('id', $value);
-            });
+            case 'shelf':
+                if ($operator === 'avec') {
+                    $query->whereHas('containers.shelf', function ($q) use ($value) {
+                        $q->where('shelves.id', $value);
+                    });
+                } else {
+                    $query->whereDoesntHave('containers.shelf', function ($q) use ($value) {
+                        $q->where('shelves.id', $value);
+                    });
+                }
+                break;
+
+            case 'container':
+                if ($operator === 'avec') {
+                    $query->whereHas('containers', function ($q) use ($value) {
+                        $q->where('containers.id', $value);
+                    });
+                } else {
+                    $query->whereDoesntHave('containers', function ($q) use ($value) {
+                        $q->where('containers.id', $value);
+                    });
+                }
+                break;
+
+            case 'creator':
+                $query->where('user_id', $operator === 'avec' ? '=' : '!=', $value);
+                break;
+
+            default:
+                $relation = $this->getRelationName($field);
+                if ($operator === 'avec') {
+                    $query->whereHas($relation, function ($q) use ($value) {
+                        $q->where('id', $value);
+                    });
+                } else {
+                    $query->whereDoesntHave($relation, function ($q) use ($value) {
+                        $q->where('id', $value);
+                    });
+                }
+                break;
         }
     }
 
     private function getRelationName($field)
     {
         $relationMap = [
-            'room' => 'room',
-            'shelf' => 'shelf',
             'activity' => 'activity',
             'term' => 'terms',
             'author' => 'authors',
-            'creator' => 'creator',
-            'container' => 'containers',
+            'creator' => 'user',
             'status' => 'status'
         ];
 
         return $relationMap[$field] ?? $field;
     }
 
-
-
     public function sort(Request $request)
     {
-        $records = Record::query(); // Initialisation de la requête de base
+        $query = Record::query();
 
         switch ($request->input('categ')) {
             case "dates":
@@ -197,154 +222,152 @@ class SearchRecordController extends Controller
                 $endDate = $request->input('date_end');
 
                 if ($exactDate) {
-                    $records->whereDate('date_exact', $exactDate);
+                    $query->whereDate('date_exact', $exactDate);
                 }
 
                 if ($startDate && $endDate) {
-                    $records->orWhere(function ($query) use ($startDate, $endDate) {
-                        $query->whereDate('date_start', '>=', $startDate)
-                              ->whereDate('date_end', '<=', $endDate);
+                    $query->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->whereDate('date_start', '>=', $startDate)
+                            ->whereDate('date_end', '<=', $endDate);
                     });
                 }
                 break;
 
-            case "typology":
-                $typologyId = $request->input('id');
-                $records->where('record_typology_id', $typologyId);
-                break;
-
             case "term":
                 $termId = $request->input('id');
-                $records->whereHas('terms', function ($query) use ($termId) {
-                    $query->where('id', $termId);
+                $query->whereHas('terms', function ($q) use ($termId) {
+                    $q->where('terms.id', $termId);
                 });
                 break;
 
             case "author":
                 $authorId = $request->input('id');
-                $records->join('record_author', 'records.id', '=', 'record_author.record_id')
-                        ->where('record_author.author_id', $authorId);
+                $query->whereHas('authors', function ($q) use ($authorId) {
+                    $q->where('authors.id', $authorId);
+                });
                 break;
 
             case "activity":
                 $activityId = $request->input('id');
-                $records->where('activity_id', $activityId);
+                $query->where('activity_id', $activityId);
                 break;
 
             case "container":
                 $containerId = $request->input('id');
-                $records->join('record_container', 'records.id', '=', 'record_container.record_id')
-                        ->where('record_container.container_id', $containerId);
-                break;
-
-            default:
-                $records->take(5); // Limite de résultats en cas de catégorie non définie
+                $query->whereHas('containers', function ($q) use ($containerId) {
+                    $q->where('containers.id', $containerId);
+                });
                 break;
         }
 
-        $records = $records->paginate(10);
+        $query->with([
+            'status',
+            'support',
+            'level',
+            'activity',
+            'containers',
+            'user',
+            'authors',
+            'terms'
+        ]);
 
-        // Récupération des données annexes pour la vue
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $supports = RecordSupport::all();
-        $activities = Activity::all();
-        $containers = Container::all();
-        $organisations = Organisation::all();
-        $slipStatuses = SlipStatus::all();
-        $users = User::all();
-        $levels = RecordLevel::all();
-        $authors = Author::with('authorType')->get();
+        $records = $query->paginate(10);
 
-        return view('records.index', compact('slipStatuses','organisations','users', 'records', 'terms', 'statuses', 'supports', 'activities', 'containers', 'levels', 'authors'));
+        $viewData = [
+            'records' => $records,
+            'statuses' => RecordStatus::all(),
+            'slipStatuses' => SlipStatus::all(),
+            'terms' => Term::all(),
+            'users' => User::select('id', 'name')->get(),
+            'organisations' => Organisation::select('id', 'name')->get(),
+            'supports' => RecordSupport::all(),
+            'activities' => Activity::all(),
+            'containers' => Container::all(),
+            'levels' => RecordLevel::all(),
+            'authors' => Author::with('authorType')->get()
+        ];
+
+        return view('records.index', $viewData);
     }
 
+    public function selectLast()
+    {
+        $records = Record::with([
+            'status',
+            'support',
+            'level',
+            'activity',
+            'containers',
+            'user',
+            'authors',
+            'terms'
+        ])
+            ->latest()
+            ->paginate(10);
 
+        $viewData = [
+            'records' => $records,
+            'statuses' => RecordStatus::all(),
+            'slipStatuses' => SlipStatus::all(),
+            'terms' => Term::all(),
+            'users' => User::select('id', 'name')->get(),
+            'organisations' => Organisation::select('id', 'name')->get()
+        ];
 
+        return view('records.index', $viewData);
+    }
+
+    public function selectBuilding()
+    {
+        return view('search.record.buildingSearch', [
+            'buildings' => Building::all()
+        ]);
+    }
+
+    public function selectFloor(Request $request)
+    {
+        return view('search.record.floorSearch', [
+            'floors' => Floor::where('building_id', $request->input('id'))->get()
+        ]);
+    }
+
+    public function selectRoom(Request $request)
+    {
+        return view('search.record.roomSearch', [
+            'rooms' => Room::where('floor_id', $request->input('id'))->get()
+        ]);
+    }
+
+    public function selectShelve(Request $request)
+    {
+        return view('search.record.shelveSearch', [
+            'shelves' => Shelf::where('room_id', $request->input('id'))->get()
+        ]);
+    }
+
+    public function selectContainer(Request $request)
+    {
+        return view('search.record.containerSearch', [
+            'containers' => Container::where('shelve_id', $request->input('id'))->get()
+        ]);
+    }
+
+    public function selectWord()
+    {
+        return view('search.record.wordSearch', [
+            'terms' => Term::with(['parent', 'children', 'language', 'category', 'records', 'equivalentType', 'type'])->get()
+        ]);
+    }
+
+    public function selectActivity()
+    {
+        return view('search.record.activitySearch', [
+            'activities' => Activity::all()
+        ]);
+    }
 
     public function date()
     {
         return view('search.record.dateSearch');
     }
-
-
-    public function selectWord()
-    {
-        $terms = Term::all();
-        $terms->load('parent','children','language','category','records','equivalentType','type');
-        return view('search.record.wordSearch', compact('terms'));
-    }
-
-
-    public function selectActivity()
-    {
-        $activities = activity::all();
-        return view('search.record.activitySearch', compact('activities'));
-    }
-
-    public function selectBuilding()
-    {
-        $buildings = Building::all();
-        return view('search.record.buildingSearch', compact('buildings'));
-    }
-
-    public function selectRoom(Request $request)
-    {
-        $id = $request->input('id');
-        $rooms = Room::where('floor_id', $id)->get();
-        return view('search.record.roomSearch', compact('rooms'));
-    }
-
-    public function selectFloor(Request $request)
-    {
-        $id = $request->input('id');
-        $floors = Floor::where('building_id', $id)->get();
-        return view('search.record.floorSearch', compact('floors'));
-    }
-
-    public function selectShelve(Request $request)
-    {
-        $id = $request->input('id');
-        $shelves = shelf::where('room_id', $id)->get();
-        return view('search.record.shelveSearch', compact('shelves'));
-    }
-
-    public function selectContainer(Request $request)
-    {
-        $id = $request->input('id');
-        $containers = container::where('shelve_id', $id)->get();
-        return view('search.record.containerSearch', compact('containers'));
-    }
-
-
-    public function selectLast()
-    {
-        $records = Record::with(['level', 'status', 'support', 'activity', 'parent', 'containers', 'user', 'authors', 'terms'])
-            ->latest()
-            ->paginate(10);
-
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $statuses = RecordStatus::all();
-        $terms = Term::all();
-        $users = User::select('id', 'name')->get();
-        $slipStatuses = SlipStatus::all();
-        $organisations = Organisation::select('id', 'name')->get();
-
-        return view('records.index', compact(
-            'records',
-            'statuses',
-            'slipStatuses',
-            'terms',
-            'users',
-            'organisations'
-        ));
-    }
-
-
-
-
-
-
 }
-

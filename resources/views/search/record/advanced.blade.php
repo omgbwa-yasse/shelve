@@ -214,8 +214,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Données de l'application
-            const data = @json($data);
+            const data = @json($data ?? []);
+            console.log('Données chargées:', data); // Pour déboguer
 
+            // Vérifiez que les données existent pour chaque select
+            console.log('Rooms:', data.rooms);
+            console.log('Shelves:', data.shelve);
             // Éléments du DOM
             const searchCriteriaContainer = document.getElementById('search-criteria-container');
             const searchCriteriaTemplate = document.getElementById('search-criteria-template');
@@ -303,14 +307,28 @@
                     selectElement.classList.add('form-select', 'form-select-sm');
                     selectElement.name = 'value[]';
 
-                    // Ajout des options
+                    // Ajout d'une option par défaut
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = '-- Sélectionner --';
+                    selectElement.appendChild(defaultOption);
+
+                    // Vérification et ajout des options
                     const items = selectFieldsData[field] || [];
-                    items.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.name || item.title || item.code;
-                        selectElement.appendChild(option);
-                    });
+                    if (Array.isArray(items) && items.length > 0) {
+                        items.forEach(item => {
+                            if (item && typeof item === 'object') {
+                                const option = document.createElement('option');
+                                option.value = item.id;
+                                // Gestion plus robuste du texte de l'option
+                                option.textContent = item.name || item.title || item.code ||
+                                    (typeof item.toString === 'function' ? item.toString() : '');
+                                selectElement.appendChild(option);
+                            }
+                        });
+                    } else {
+                        console.warn(`Aucune donnée trouvée pour le champ ${field}`);
+                    }
 
                     valueInput.replaceWith(selectElement);
                 }

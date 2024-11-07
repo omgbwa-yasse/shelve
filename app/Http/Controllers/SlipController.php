@@ -163,8 +163,6 @@ class SlipController extends Controller
 
 
 
-
-
     public function storetransfert(Request $request)
     {
 //        dd($request);
@@ -185,6 +183,9 @@ class SlipController extends Controller
 
         foreach ($request->input('selected_records') as $recordId) {
             $record = Record::findOrFail($recordId);
+
+            // Mettre à jour le statut du record à 0
+            $record->update(['status_id' => 0]);
 
             $slipRecord = SlipRecord::create([
                 'slip_id' => $slip->id,

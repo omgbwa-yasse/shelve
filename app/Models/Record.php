@@ -58,23 +58,59 @@ class Record extends Model
     ];
 
 
-
-    public function status()
+    // Relation avec Container via la table pivot
+    public function containers()
     {
-        return $this->belongsTo(RecordStatus::class);
+        return $this->belongsToMany(Container::class, 'record_container')
+            ->withPivot(['description', 'creator_id']);
     }
 
+    // Relation avec RecordContainer
+    public function recordContainers()
+    {
+        return $this->hasMany(RecordContainer::class);
+    }
+
+    // Relations pour accéder aux Shelf et Room via Container
+    public function shelves()
+    {
+        return $this->hasManyThrough(
+            Shelf::class,
+            Container::class,
+            'id', // Clé étrangère sur containers
+            'id', // Clé primaire sur shelves
+            'id', // Clé locale sur records
+            'shelve_id' // Clé locale sur containers
+        );
+    }
+
+    public function rooms()
+    {
+        return $this->hasManyThrough(
+            Room::class,
+            Shelf::class,
+            'id',
+            'id',
+            'id',
+            'room_id'
+        );
+    }
+
+    // Autres relations existantes...
+    public function status()
+    {
+        return $this->belongsTo(RecordStatus::class, 'status_id');
+    }
 
     public function support()
     {
-        return $this->belongsTo(RecordSupport::class);
+        return $this->belongsTo(RecordSupport::class, 'support_id');
     }
 
     public function level()
     {
         return $this->belongsTo(RecordLevel::class, 'level_id');
     }
-
 
     public function activity()
     {
@@ -83,36 +119,22 @@ class Record extends Model
 
     public function organisation()
     {
-        return $this->belongsToMany(Organisation::class, 'organisation_activity','organisation_id','activity_id');
+        return $this->belongsTo(Organisation::class, 'organisation_id');
     }
-
 
     public function parent()
     {
         return $this->belongsTo(Record::class, 'parent_id');
     }
 
-
-    public function containers()
+    public function children()
     {
-        return $this->belongsToMany(Container::class, 'record_container', 'record_id','container_id');
+        return $this->hasMany(Record::class, 'parent_id');
     }
-
-    public function recordContainers()
-    {
-        return $this->hasMany(RecordContainer::class, 'record_id');
-    }
-
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'record_author', 'record_id', 'author_id');
+        return $this->belongsToMany(Author::class, 'record_author');
     }
 
     public function terms()
@@ -122,12 +144,14 @@ class Record extends Model
 
     public function attachments()
     {
-        return $this->belongsToMany(Attachment::class, 'record_attachment', 'record_id', 'attachment_id');
+        return $this->belongsToMany(Attachment::class, 'record_attachment');
     }
-    public function children()
+
+    public function user()
     {
-        return $this->hasMany(Record::class, 'parent_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
+
     public function toSearchableArray()
     {
         return [
