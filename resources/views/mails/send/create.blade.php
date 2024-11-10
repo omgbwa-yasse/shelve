@@ -3,6 +3,15 @@
 @section('content')
     <div class="container">
         <h1 class="mb-4">Créer Courrier sortant</h1>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form action="{{ route('mail-send.store') }}" method="POST" class="needs-validation" novalidate>
             @csrf

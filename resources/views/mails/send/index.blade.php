@@ -86,7 +86,7 @@
 
                                         <i class="bi bi-calendar-event me-2 text-primary"></i>
                                         <strong>Date:</strong>
-                                        {{ $mail->date->format('d/m/Y') }}
+                                        {{ $mail->date }}
                                     </p>
                                 </div>
                             </div>
