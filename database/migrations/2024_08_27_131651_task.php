@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         /*
-     Modules taches
- */
+         * Modules taches
+         */
 
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
@@ -45,7 +45,6 @@ return new class extends Migration
         });
 
         // Affectation des tâches aux intervenants
-
         Schema::create('task_organisations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('task_id')->nullable(false);
@@ -64,9 +63,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
         // Association des taches aux ressources
-
         Schema::create('task_mail', function (Blueprint $table) {
             $table->unsignedBigInteger('task_id')->nullable(false);
             $table->unsignedBigInteger('mail_id')->nullable(false);
@@ -103,11 +100,10 @@ return new class extends Migration
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
 
-
         // Rappels
-
         Schema::create('task_remember', function (Blueprint $table) {
-            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
+            $table->id(); // Ajout d'une clé primaire
+            $table->unsignedBigInteger('task_id')->nullable(false); // Ajout de la colonne task_id
             $table->date('date_fix')->nullable();
             $table->enum('periode', ['before', 'after'])->nullable();
             $table->enum('date_trigger', ['start', 'end'])->nullable();
@@ -117,14 +113,13 @@ return new class extends Migration
             $table->enum('frequence_unit', ['year', 'month', 'day', 'hour'])->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
             $table->timestamps();
+            $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-
         // Supervision des activités
-
         Schema::create('task_supervision', function (Blueprint $table) {
+            $table->id(); // Ajout d'une clé primaire
             $table->unsignedBigInteger('task_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
             $table->boolean('task_assignation')->nullable();
@@ -136,7 +131,6 @@ return new class extends Migration
             $table->foreign('task_id')->references('id')->on('tasks')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-
     }
 
     /**
@@ -144,6 +138,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('task_supervision');
+        Schema::dropIfExists('task_remember');
+        Schema::dropIfExists('task_attachment');
+        Schema::dropIfExists('task_record');
+        Schema::dropIfExists('task_container');
+        Schema::dropIfExists('task_mail');
+        Schema::dropIfExists('task_users');
+        Schema::dropIfExists('task_organisations');
+        Schema::dropIfExists('task_statues');
+        Schema::dropIfExists('task_types');
+        Schema::dropIfExists('tasks');
     }
 };

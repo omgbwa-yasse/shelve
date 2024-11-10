@@ -52,21 +52,6 @@ return new class extends Migration
             $table->foreign('integrated_by')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-        Schema::create('slip_record_container', function (Blueprint $table) {
-            $table->unsignedBigInteger('slip_record_id')->nullable(false);
-            $table->unsignedBigInteger('container_id')->nullable(false);
-            $table->unsignedBigInteger('creator_id')->nullable(false);
-            $table->string('description', 200)->nullable(false);
-            $table->primary(['slip_record_id','container_id']);
-            $table->timestamps();
-            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
-            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
-            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-
-
         Schema::create('slip_records', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('slip_id')->nullable(false);
@@ -85,13 +70,24 @@ return new class extends Migration
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
+            $table->foreign('level_id')->references('id')->on('levels')->onDelete('cascade'); // Ajout de la clé étrangère manquante
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+        Schema::create('slip_record_container', function (Blueprint $table) {
+            $table->unsignedBigInteger('slip_record_id')->nullable(false);
+            $table->unsignedBigInteger('container_id')->nullable(false);
+            $table->unsignedBigInteger('creator_id')->nullable(false);
+            $table->string('description', 200)->nullable(false);
+            $table->primary(['slip_record_id', 'container_id']);
+            $table->timestamps();
+            $table->foreign('slip_record_id')->references('id')->on('slip_records')->onDelete('cascade'); // Correction de slip_id en slip_record_id
+            $table->foreign('container_id')->references('id')->on('containers')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
+        });
 
-        // A ajouter
         Schema::create('slip_record_attachment', function (Blueprint $table) {
             $table->unsignedBigInteger('slip_record_id')->nullable(false);
             $table->unsignedBigInteger('attachment_id')->nullable(false);
@@ -106,11 +102,9 @@ return new class extends Migration
             $table->unsignedBigInteger('attachment_id')->nullable(false);
             $table->timestamps();
             $table->primary(['slip_id', 'attachment_id']);
-            $table->foreign('slip_record_id')->references('id')->on('slips')->onDelete('cascade');
+            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade'); // Correction de slip_record_id en slip_id
             $table->foreign('attachment_id')->references('id')->on('attachments')->onDelete('cascade');
         });
-
-
     }
 
     /**
@@ -118,6 +112,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('transferring');
+        Schema::dropIfExists('slip_attachment');
+        Schema::dropIfExists('slip_record_attachment');
+        Schema::dropIfExists('slip_record_container');
+        Schema::dropIfExists('slip_records');
+        Schema::dropIfExists('slips');
+        Schema::dropIfExists('slip_statuses');
     }
 };

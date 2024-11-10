@@ -36,7 +36,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
-
+        Schema::create('sorts', function (Blueprint $table) {
+            $table->id();
+            $table->string('code', 10)->nullable(false);
+            $table->string('name', 45)->nullable(false);
+            $table->string('description', 100)->nullable();
+            $table->timestamps();
+        });
 
         Schema::create('retentions', function (Blueprint $table) {
             $table->id();
@@ -48,6 +54,12 @@ return new class extends Migration
             $table->foreign('sort_id')->references('id')->on('sorts')->onDelete('cascade');
         });
 
+        Schema::create('law_types', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 200)->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->timestamps();
+        });
 
         Schema::create('laws', function (Blueprint $table) {
             $table->id();
@@ -57,15 +69,7 @@ return new class extends Migration
             $table->date('publish_date')->nullable(false);
             $table->unsignedBigInteger('law_type_id')->nullable(false);
             $table->timestamps();
-            $table->foreign('law_id')->references('id')->on('law_types')->onDelete('cascade');
-        });
-
-
-        Schema::create('law_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 200)->nullable(false);
-            $table->text('description')->nullable(true);
-            $table->timestamps();
+            $table->foreign('law_type_id')->references('id')->on('law_types')->onDelete('cascade'); // Correction de law_id en law_type_id
         });
 
         Schema::create('law_articles', function (Blueprint $table) {
@@ -78,7 +82,6 @@ return new class extends Migration
             $table->foreign('law_id')->references('id')->on('laws')->onDelete('cascade');
         });
 
-
         Schema::create('retention_law_articles', function (Blueprint $table) {
             $table->unsignedBigInteger('retention_id')->nullable(false);
             $table->unsignedBigInteger('law_article_id')->nullable(false);
@@ -88,22 +91,12 @@ return new class extends Migration
             $table->foreign('law_article_id')->references('id')->on('law_articles')->onDelete('cascade');
         });
 
-
         Schema::create('retention_activity', function (Blueprint $table) {
             $table->unsignedBigInteger('retention_id')->nullable(false);
             $table->unsignedBigInteger('activity_id')->nullable(false);
             $table->primary(['retention_id', 'activity_id']);
             $table->foreign('retention_id')->references('id')->on('retentions')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
-        });
-
-
-        Schema::create('sorts', function (Blueprint $table) {
-            $table->id();
-            $table->string('code', 10)->nullable(false);
-            $table->string('name', 45)->nullable(false);
-            $table->string('description', 100)->nullable();
-            $table->timestamps();
         });
 
         Schema::create('organisations', function (Blueprint $table) {
@@ -126,9 +119,6 @@ return new class extends Migration
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-
-
     }
 
     /**
@@ -136,6 +126,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tool');
+        Schema::dropIfExists('organisation_activity');
+        Schema::dropIfExists('organisations');
+        Schema::dropIfExists('retention_activity');
+        Schema::dropIfExists('retention_law_articles');
+        Schema::dropIfExists('law_articles');
+        Schema::dropIfExists('laws');
+        Schema::dropIfExists('law_types');
+        Schema::dropIfExists('retentions');
+        Schema::dropIfExists('sorts');
+        Schema::dropIfExists('activities');
+        Schema::dropIfExists('communicabilities');
     }
 };
