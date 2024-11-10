@@ -13,7 +13,7 @@
             </div>
         @endif
 
-        <form action="{{ route('mail-send.store') }}" method="POST" class="needs-validation" novalidate>
+        <form action="{{ route('mail-send.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -101,11 +101,11 @@
                         <i class="bi bi-cloud-upload fs-3"></i>
                         <p class="mb-2">Glissez-déposez vos fichiers ici ou</p>
                         <input type="file"
-                            class="d-none"
-                            id="fileInput"
-                            name="attachments[]"
-                            multiple
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                               class="d-none"
+                               id="fileInput"
+                               name="attachments[]"
+                               multiple
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
                         <button type="button"
                                 class="btn btn-outline-primary btn-browse">
                             Parcourir
@@ -115,177 +115,192 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-send"></i> Créer le courrier sortant
-            </button>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-send"></i> Créer le courrier sortant
+                </button>
+            </div>
         </form>
     </div>
 @endsection
 
-
-
 @push('styles')
-<style>
-    .drop-zone {
-        min-height: 150px;
-        border: 2px dashed #ccc !important;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    .drop-zone.dragover {
-        background-color: #f8f9fa;
-        border-color: #0d6efd !important;
-    }
-    .file-item {
-        display: flex;
-        align-items: center;
-        padding: 5px;
-        margin: 5px 0;
-        background-color: #f8f9fa;
-        border-radius: 4px;
-    }
-    .file-item .delete-btn {
-        margin-left: auto;
-    }
-    .file-progress {
-        width: 100%;
-        height: 4px;
-        margin-top: 5px;
-        background-color: #e9ecef;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-    .file-progress-bar {
-        height: 100%;
-        background-color: #0d6efd;
-        transition: width 0.3s ease;
-    }
-</style>
+    <style>
+        .drop-zone {
+            min-height: 150px;
+            border: 2px dashed #ccc !important;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .drop-zone.dragover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd !important;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .file-item .delete-btn {
+            margin-left: auto;
+        }
+        .file-progress {
+            width: 100%;
+            height: 4px;
+            margin-top: 5px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .file-progress-bar {
+            height: 100%;
+            background-color: #0d6efd;
+            transition: width 0.3s ease;
+        }
+    </style>
 @endpush
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const btnBrowse = document.querySelector('.btn-browse');
-    const maxFileSize = 10 * 1024 * 1024; // 10MB en bytes
-    const maxFiles = 5; // Nombre maximum de fichiers
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const btnBrowse = document.querySelector('.btn-browse');
+            const maxFileSize = 10 * 1024 * 1024; // 10MB en bytes
+            const maxFiles = 5; // Nombre maximum de fichiers
 
-    // Event listeners
-    dropZone.addEventListener('drop', handleDrop);
-    dropZone.addEventListener('dragover', handleDragOver);
-    dropZone.addEventListener('dragleave', handleDragLeave);
-    fileInput.addEventListener('change', function() {
-        handleFiles(this.files);
-    });
-    btnBrowse.addEventListener('click', () => fileInput.click());
+            // Stockage des fichiers sélectionnés
+            let selectedFiles = new DataTransfer();
 
-    function handleDrop(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        dropZone.classList.remove('dragover');
-        handleFiles(files);
-    }
+            // Event listeners
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            btnBrowse.addEventListener('click', () => fileInput.click());
 
-    function handleDragOver(e) {
-        e.preventDefault();
-        dropZone.classList.add('dragover');
-    }
-
-    function handleDragLeave(e) {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-    }
-
-    function handleFiles(files) {
-        if (fileInput.files.length + files.length > maxFiles) {
-            alert(`Vous ne pouvez pas télécharger plus de ${maxFiles} fichiers.`);
-            return;
-        }
-
-        // Vérifier et ajouter les nouveaux fichiers
-        Array.from(files).forEach(file => {
-            if (file.size > maxFileSize) {
-                alert(`Le fichier "${file.name}" est trop volumineux. Taille maximum: 10MB`);
-                return;
+            function handleDrop(e) {
+                e.preventDefault();
+                const files = e.dataTransfer.files;
+                dropZone.classList.remove('dragover');
+                handleFiles(files);
             }
 
-            // Créer un nouvel élément de fichier et l'ajouter à la liste
-            const fileItem = createFileItem(file);
-            document.getElementById('fileList').appendChild(fileItem);
-        });
-    }
+            function handleDragOver(e) {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            }
 
-    function createFileItem(file) {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
+            function handleDragLeave(e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            }
 
-        const icon = getFileIcon(file.type);
-        const size = formatFileSize(file.size);
+            function handleFiles(files) {
+                if (selectedFiles.files.length + files.length > maxFiles) {
+                    alert(`Vous ne pouvez pas télécharger plus de ${maxFiles} fichiers.`);
+                    return;
+                }
 
-        fileItem.innerHTML = `
+                Array.from(files).forEach(file => {
+                    if (file.size > maxFileSize) {
+                        alert(`Le fichier "${file.name}" est trop volumineux. Taille maximum: 10MB`);
+                        return;
+                    }
+
+                    // Ajouter le fichier à notre DataTransfer
+                    selectedFiles.items.add(file);
+
+                    // Mettre à jour l'input file avec les fichiers sélectionnés
+                    fileInput.files = selectedFiles.files;
+
+                    // Créer un nouvel élément de fichier et l'ajouter à la liste
+                    const fileItem = createFileItem(file);
+                    document.getElementById('fileList').appendChild(fileItem);
+                });
+            }
+
+            function createFileItem(file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                const icon = getFileIcon(file.type);
+                const size = formatFileSize(file.size);
+
+                fileItem.innerHTML = `
             <i class="bi ${icon} me-2"></i>
             <span>${file.name}</span>
             <span class="text-muted ms-2">(${size})</span>
-            <button type="button" class="btn btn-link text-danger delete-btn p-0">
+            <button type="button" class="btn btn-link text-danger delete-btn p-0" data-filename="${file.name}">
                 <i class="bi bi-x-lg"></i>
             </button>
         `;
 
-        // Ajouter un écouteur d'événements pour supprimer le fichier
-        fileItem.querySelector('.delete-btn').addEventListener('click', () => {
-            fileItem.remove();
-        });
+                // Ajouter un écouteur d'événements pour supprimer le fichier
+                fileItem.querySelector('.delete-btn').addEventListener('click', function() {
+                    const fileName = this.dataset.filename;
+                    // Supprimer le fichier de notre DataTransfer
+                    const dt = new DataTransfer();
+                    for (let i = 0; i < selectedFiles.files.length; i++) {
+                        const f = selectedFiles.files[i];
+                        if (f.name !== fileName) {
+                            dt.items.add(f);
+                        }
+                    }
+                    selectedFiles = dt;
+                    fileInput.files = selectedFiles.files;
+                    fileItem.remove();
+                });
 
-        return fileItem;
-    }
-
-    function getFileIcon(fileType) {
-        if (fileType.startsWith('image/')) return 'bi-file-earmark-image';
-        if (fileType.includes('pdf')) return 'bi-file-earmark-pdf';
-        if (fileType.includes('word')) return 'bi-file-earmark-word';
-        if (fileType.includes('sheet')) return 'bi-file-earmark-excel';
-        return 'bi-file-earmark';
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    // Validation du formulaire avant soumission
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        let totalSize = 0;
-        const fileList = document.getElementById('fileList');
-        const fileItems = fileList.querySelectorAll('.file-item');
-
-        fileItems.forEach(item => {
-            // Extraire la taille du fichier depuis le texte de l'élément
-            const sizeText = item.querySelector('span.text-muted').textContent;
-            const sizeMatch = sizeText.match(/\((\d+\.?\d*)\s*(Bytes|KB|MB|GB)\)/);
-            if (sizeMatch) {
-                const size = parseFloat(sizeMatch[1]);
-                const unit = sizeMatch[2];
-                switch (unit) {
-                    case 'KB': totalSize += size * 1024; break;
-                    case 'MB': totalSize += size * 1024 * 1024; break;
-                    case 'GB': totalSize += size * 1024 * 1024 * 1024; break;
-                    default: totalSize += size;
-                }
+                return fileItem;
             }
-        });
 
-        if (totalSize > maxFileSize * maxFiles) {
-            e.preventDefault();
-            alert('La taille totale des fichiers dépasse la limite autorisée.');
-            return;
-        }
-    });
-});
-</script>
+            function getFileIcon(fileType) {
+                if (fileType.startsWith('image/')) return 'bi-file-earmark-image';
+                if (fileType.includes('pdf')) return 'bi-file-earmark-pdf';
+                if (fileType.includes('word')) return 'bi-file-earmark-word';
+                if (fileType.includes('sheet')) return 'bi-file-earmark-excel';
+                return 'bi-file-earmark';
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Validation du formulaire avant soumission
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                let totalSize = 0;
+                const fileList = document.getElementById('fileList');
+                const fileItems = fileList.querySelectorAll('.file-item');
+
+                if (fileItems.length === 0) {
+                    const confirmed = confirm('Aucun fichier n\'a été sélectionné. Voulez-vous continuer sans pièce jointe ?');
+                    if (!confirmed) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                Array.from(selectedFiles.files).forEach(file => {
+                    totalSize += file.size;
+                });
+
+                if (totalSize > maxFileSize * maxFiles) {
+                    e.preventDefault();
+                    alert('La taille totale des fichiers dépasse la limite autorisée.');
+                    return;
+                }
+            });
+        });
+    </script>
 @endpush
