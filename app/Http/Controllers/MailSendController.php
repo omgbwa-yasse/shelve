@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\Dolly;
+use App\Models\MailAttachment;
 use App\Models\user;
 use App\Models\DollyType;
 use App\Models\MailPriority;
@@ -12,6 +13,8 @@ use App\Models\MailAction;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MailSendController extends Controller
 {
@@ -43,7 +46,6 @@ class MailSendController extends Controller
     }
 
 
-
     public function store(Request $request)
     {
         $mailCode = $this->generateMailCode();
@@ -58,18 +60,116 @@ class MailSendController extends Controller
             'recipient_organisation_id' => 'required|exists:organisations,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
+            'attachments.*' => 'file|max:10240', // Validation des fichiers (max 10MB chacun)
         ]);
 
-        Mail::create($validatedData + [
-            'code' => $mailCode,
-            'sender_organisation_id' => auth()->user()->current_organisation_id,
-            'sender_user_id' => auth()->id(),
-            'status' => 'in_progress',
-        ]);
+        // Créer le mail
+        $mail = Mail::create($validatedData + [
+                'code' => $mailCode,
+                'sender_organisation_id' => auth()->user()->current_organisation_id,
+                'sender_user_id' => auth()->id(),
+                'status' => 'in_progress',
+            ]);
+
+        // Traiter les pièces jointes
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Générer un nom unique pour le fichier
+                $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+
+                // Stocker le fichier
+                $path = $file->storeAs('mail_attachments', $fileName, 'public');
+
+                // Créer l'enregistrement de la pièce jointe
+                $attachment = MailAttachment::create([
+                    'path' => $path,
+                    'name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'creator_id' => auth()->id(),
+                ]);
+
+                // Lier la pièce jointe au mail
+                $mail->attachments()->attach($attachment->id, [
+                    'added_by' => auth()->id(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+        }
 
         return redirect()->route('mail-send.index')
-                         ->with('success', 'Mail created successfully.');
+            ->with('success', 'Mail créé avec succès avec les pièces jointes.');
     }
+
+    public function update(Request $request, int $id)
+    {
+        $mail = Mail::findOrFail($id);
+
+        $validatedData = $request->validate([
+            'name' => 'required|max:150',
+            'date' => 'required|date',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'action_id' => 'required|exists:mail_actions,id',
+            'recipient_user_id' => 'exists:users,id',
+            'recipient_organisation_id' => 'required|exists:organisations,id',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
+            'attachments.*' => 'file|max:10240', // Validation des fichiers (max 10MB chacun)
+        ]);
+
+        $mail->update($validatedData);
+
+        // Traiter les nouvelles pièces jointes
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('mail_attachments', $fileName, 'public');
+
+                $attachment = MailAttachment::create([
+                    'path' => $path,
+                    'name' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'creator_id' => auth()->id(),
+                ]);
+
+                $mail->attachments()->attach($attachment->id, [
+                    'added_by' => auth()->id(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+            }
+        }
+
+        return redirect()->route('mail-send.index')
+            ->with('success', 'Mail mis à jour avec succès');
+    }
+
+    // Méthode pour supprimer une pièce jointe spécifique
+    public function removeAttachment($mailId, $attachmentId)
+    {
+        $mail = Mail::findOrFail($mailId);
+        $attachment = MailAttachment::findOrFail($attachmentId);
+
+        // Vérifier les permissions
+        if ($mail->sender_user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Supprimer le fichier physique
+        if (Storage::disk('public')->exists($attachment->path)) {
+            Storage::disk('public')->delete($attachment->path);
+        }
+
+        // Détacher la relation
+        $mail->attachments()->detach($attachmentId);
+
+        // Supprimer l'enregistrement de la pièce jointe
+        $attachment->delete();
+
+        return response()->json(['success' => true]);
+    }
+
 
     public function generateMailCode()
     {
@@ -125,27 +225,6 @@ class MailSendController extends Controller
         return view('mails.send.edit', compact('mail', 'mailActions', 'recipientOrganisations'));
     }
 
-    public function update(Request $request, int $id)
-    {
-        $mail = Mail::findOrFail($id);
-
-        $validatedData = $request->validate([
-            'name' => 'required|max:150',
-            'date' => 'required|date',
-            'description' => 'nullable',
-            'document_type' => 'required|in:original,duplicate,copy',
-            'action_id' => 'required|exists:mail_actions,id',
-            'recipient_user_id' => 'exists:users,id',
-            'recipient_organisation_id' => 'required|exists:organisations,id',
-            'priority_id' => 'required|exists:mail_priorities,id',
-            'typology_id' => 'required|exists:mail_typologies,id',
-        ]);
-
-        $mail->update($validatedData);
-
-        return redirect()->route('mail-send.index')
-                         ->with('success', 'Mail updated successfully');
-    }
 
     public function destroy($id)
     {
