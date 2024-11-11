@@ -98,14 +98,14 @@
             </div>
 
             <!-- Top 5 des organisations -->
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Top 5 des organisations</h5>
-                        <canvas id="topOrganisationsChart"></canvas>
-                    </div>
-                </div>
-            </div>
+{{--            <div class="col-md-6 mb-4">--}}
+{{--                <div class="card">--}}
+{{--                    <div class="card-body">--}}
+{{--                        <h5 class="card-title">Top 5 des organisations</h5>--}}
+{{--                        <canvas id="topOrganisationsChart"></canvas>--}}
+{{--                    </div>--}}
+{{--                </div>--}}
+{{--            </div>--}}
         </div>
 
         <div class="row">
@@ -188,10 +188,10 @@
             @json($monthlyDistributionData),
             { scales: { y: { beginAtZero: true } } }
         );
-        createChart('topOrganisationsChart', 'bar',
-            @json(array_map(function($id) use ($organisationNames) { return $organisationNames[$id] ?? 'Unknown'; }, array_keys($topOrganisations))),
-            @json(array_values($topOrganisations)),
-            { scales: { y: { beginAtZero: true } } }
-        );
+        {{--createChart('topOrganisationsChart', 'bar',--}}
+        {{--    @json(array_map(function($id) use ($organisationNames) { return $organisationNames[$id] ?? 'Unknown'; }, array_keys($topOrganisations))),--}}
+        {{--    @json(array_values($topOrganisations)),--}}
+        {{--    { scales: { y: { beginAtZero: true } } }--}}
+        {{--);--}}
     </script>
 @endsection

@@ -17,6 +17,8 @@ use App\Models\LawArticle;
 use App\Models\Mail;
 use App\Models\MailAction;
 use App\Models\MailAttachment;
+use App\Models\MailPriority;
+use App\Models\MailTypology;
 use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\RecordAttachment;
@@ -51,119 +53,155 @@ class ReportController extends Controller
     {
         // Statistiques générales
         $totalMails = Mail::count();
-        $sentMails = Mail::where('mail_type_id', 1)->count();
-        $receivedMails = Mail::where('mail_type_id', 2)->count();
-        $inProgressMails = Mail::where('mail_type_id', 3)->count();
 
-        // Courriers par priorité
-        $mailsPriorityData = Mail::select('priority_id', DB::raw('count(*) as count'))
+        // Pour les mails envoyés, utilisation du status
+        $sentMails = Mail::with(['action', 'sender', 'senderOrganisation'])
+            ->where('status', 'sent')
+            ->count();
+
+        // Pour les mails reçus
+        $receivedMails = Mail::with(['action', 'recipient', 'recipientOrganisation', 'attachments'])
+            ->where('status', 'received')
+            ->count();
+
+        // Pour les mails en cours
+        $inProgressMails = Mail::with(['action', 'sender', 'senderOrganisation'])
+            ->where('status', 'in_progress')
+            ->count();
+
+        // Courriers par priorité avec la relation priority
+        $mailsPriorityData = Mail::with(['action', 'priority'])
+            ->select('priority_id', DB::raw('count(*) as count'))
             ->groupBy('priority_id')
             ->pluck('count', 'priority_id')
             ->toArray();
-        $mailsPriorityLabels = DB::table('mail_priorities')
-            ->whereIn('id', array_keys($mailsPriorityData))
+
+        $mailsPriorityLabels = MailPriority::whereIn('id', array_keys($mailsPriorityData))
             ->pluck('name', 'id')
             ->toArray();
 
-        // Courriers par type
-        $mailsTypeData = Mail::select('mail_type_id', DB::raw('count(*) as count'))
-            ->groupBy('mail_type_id')
-            ->pluck('count', 'mail_type_id')
+        // Courriers par typologie avec la relation typology
+        $mailsTypologyData = Mail::with(['action', 'typology'])
+            ->select('typology_id', DB::raw('count(*) as count'))
+            ->groupBy('typology_id')
+            ->pluck('count', 'typology_id')
             ->toArray();
-        $mailsTypeLabels = DB::table('mail_types')
-            ->whereIn('id', array_keys($mailsTypeData))
+
+        $mailsTypologyLabels = MailTypology::whereIn('id', array_keys($mailsTypologyData))
             ->pluck('name', 'id')
             ->toArray();
 
         // Évolution du nombre de courriers
-        $mailsEvolution = Mail::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+        $mailsEvolution = Mail::with(['action'])
+            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('date')
             ->get();
+
         $mailsEvolutionLabels = $mailsEvolution->pluck('date');
         $mailsEvolutionData = $mailsEvolution->pluck('count');
 
-        // Top 5 des organisations
-        $topOrganisations = Mail::select('creator_organisation_id', DB::raw('count(*) as count'))
-            ->groupBy('creator_organisation_id')
+        // Top 5 des organisations expéditrices
+        $topOrganisations = Mail::with(['action', 'senderOrganisation'])
+            ->select('sender_organisation_id', DB::raw('count(*) as count'))
+            ->groupBy('sender_organisation_id')
             ->orderByDesc('count')
             ->limit(5)
             ->get();
-        $topOrganisationsLabels = Organisation::whereIn('id', $topOrganisations->pluck('creator_organisation_id'))
+
+        $topOrganisationsLabels = Organisation::whereIn('id', $topOrganisations->pluck('sender_organisation_id'))
             ->pluck('name', 'id')
             ->toArray();
+
         $topOrganisationsData = $topOrganisations->pluck('count')->toArray();
 
         // Temps moyen de traitement
-        $averageProcessingTime = Mail::whereNotNull('updated_at')
+        $averageProcessingTime = Mail::with(['action'])
+            ->whereNotNull('updated_at')
             ->selectRaw('AVG(DATEDIFF(updated_at, created_at)) as avg_time')
             ->value('avg_time');
 
-        $processingTimeByPriority = Mail::whereNotNull('updated_at')
+        $processingTimeByPriority = Mail::with(['action', 'priority'])
+            ->whereNotNull('updated_at')
             ->select('priority_id', DB::raw('AVG(DATEDIFF(updated_at, created_at)) as avg_time'))
             ->groupBy('priority_id')
             ->get();
+
         $processingTimeLabels = $mailsPriorityLabels;
         $processingTimeData = $processingTimeByPriority->pluck('avg_time')->toArray();
 
-
         // Statistiques des pièces jointes
-        $totalAttachments = MailAttachment::count();
-        $averageAttachmentSize = MailAttachment::avg('size') / 1024 / 1024; // Convertir en MB
+        $totalAttachments = Mail::with(['attachments'])
+            ->join('mail_attachment', 'mails.id', '=', 'mail_attachment.mail_id')
+            ->count();
 
-// Extraire l'extension du chemin et compter
-        $attachmentTypeData = MailAttachment::select(
-            DB::raw("SUBSTRING_INDEX(path, '.', -1) as extension"),
-            DB::raw('count(*) as count')
-        )
-            ->groupBy(DB::raw("SUBSTRING_INDEX(path, '.', -1)"))
+        $averageAttachmentSize = Mail::with(['attachments'])
+                ->join('mail_attachment', 'mails.id', '=', 'mail_attachment.mail_id')
+                ->join('attachments', 'mail_attachment.attachment_id', '=', 'attachments.id')
+                ->avg('attachments.size') / 1024 / 1024; // Convertir en MB
+
+        // Types de pièces jointes
+        $attachmentTypeData = Mail::with(['attachments'])
+            ->join('mail_attachment', 'mails.id', '=', 'mail_attachment.mail_id')
+            ->join('attachments', 'mail_attachment.attachment_id', '=', 'attachments.id')
+            ->select(
+                DB::raw("SUBSTRING_INDEX(attachments.path, '.', -1) as extension"),
+                DB::raw('count(*) as count')
+            )
+            ->groupBy(DB::raw("SUBSTRING_INDEX(attachments.path, '.', -1)"))
             ->pluck('count', 'extension')
             ->toArray();
 
         $attachmentTypeLabels = array_keys($attachmentTypeData);
 
         // Distribution mensuelle des courriers
-        $monthlyDistribution = Mail::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+        $monthlyDistribution = Mail::with(['action'])
+            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
             ->groupBy(DB::raw('MONTH(created_at)'))
             ->orderBy('month')
             ->get();
+
         $monthlyDistributionLabels = $monthlyDistribution->pluck('month')->map(function($month) {
             return Carbon::create()->month($month)->format('F');
         });
+
         $monthlyDistributionData = $monthlyDistribution->pluck('count');
 
-        // Top 10 des expéditeurs (utilisant le champ 'contacts' au lieu de 'author')
-        // Top 10 des auteurs de courriers
-        $topAuthors = Author::select('authors.id', 'authors.name', DB::raw('COUNT(mail_author.mail_id) as mail_count'))
-            ->join('mail_author', 'authors.id', '=', 'mail_author.author_id')
+        // Top 10 des auteurs
+        $topAuthors = Mail::with(['authors'])
+            ->join('mail_author', 'mails.id', '=', 'mail_author.mail_id')
+            ->join('authors', 'mail_author.author_id', '=', 'authors.id')
+            ->select('authors.id', 'authors.name', DB::raw('COUNT(*) as mail_count'))
             ->groupBy('authors.id', 'authors.name')
             ->orderByDesc('mail_count')
             ->limit(10)
             ->get();
 
-// Préparer les données pour la vue
         $topSendersLabels = $topAuthors->pluck('name');
         $topSendersData = $topAuthors->pluck('mail_count');
+
         // Actions sur les courriers
-        $mailActions = MailAction::select('name', DB::raw('count(*) as count'))
-            ->groupBy('name')
+        $mailActions = Mail::with(['action'])
+            ->join('mail_actions', 'mails.action_id', '=', 'mail_actions.id')
+            ->select('mail_actions.name', DB::raw('count(*) as count'))
+            ->groupBy('mail_actions.name')
             ->orderByDesc('count')
             ->get();
+
         $mailActionsLabels = $mailActions->pluck('name');
         $mailActionsData = $mailActions->pluck('count');
-
 
         return view('report.statistics.mails', compact(
             'totalMails', 'sentMails', 'receivedMails', 'inProgressMails',
             'mailsPriorityLabels', 'mailsPriorityData',
-            'mailsTypeLabels', 'mailsTypeData',
+            'mailsTypologyLabels', 'mailsTypologyData',
             'mailsEvolutionLabels', 'mailsEvolutionData',
             'topOrganisationsLabels', 'topOrganisationsData',
             'averageProcessingTime', 'processingTimeLabels', 'processingTimeData',
             'totalAttachments', 'averageAttachmentSize', 'attachmentTypeLabels', 'attachmentTypeData',
             'monthlyDistributionLabels', 'monthlyDistributionData',
             'mailActionsLabels', 'mailActionsData',
-            'topSendersLabels', 'topSendersData'  // Ajoutez ces deux variables ici
+            'topSendersLabels', 'topSendersData'
         ));
     }
 
@@ -238,13 +276,13 @@ class ReportController extends Controller
         $recordsWithTerms = Record::has('terms')->count();
         $recordsWithAttachments = Record::has('attachments')->count();
 
-        $topOrganisations = Record::select('organisation_id', DB::raw('count(*) as count'))
-            ->groupBy('organisation_id')
-            ->orderByDesc('count')
-            ->limit(5)
-            ->get()
-            ->pluck('count', 'organisation_id')
-            ->toArray();
+//        $topOrganisations = Record::select('organisation_id', DB::raw('count(*) as count'))
+//            ->groupBy('organisation_id')
+//            ->orderByDesc('count')
+//            ->limit(5)
+//            ->get()
+//            ->pluck('count', 'organisation_id')
+//            ->toArray();
 
         $recordsWithChildren = Record::has('children')->count();
         $averageChildrenPerRecord = 0;
@@ -254,7 +292,7 @@ class ReportController extends Controller
         $supportNames = RecordSupport::pluck('name', 'id')->toArray();
         $statusNames = RecordStatus::pluck('name', 'id')->toArray();
         $activityNames = Activity::pluck('name', 'id')->toArray();
-        $organisationNames = Organisation::whereIn('id', array_keys($topOrganisations))->pluck('name', 'id')->toArray();
+//        $organisationNames = Organisation::whereIn('id', array_keys($topOrganisations))->pluck('name', 'id')->toArray();
 
         return view('report.statistics.repositories', compact(
             'totalRecords', 'recordsWithContainer', 'recordsWithoutContainer',
@@ -263,8 +301,8 @@ class ReportController extends Controller
             'topActivities', 'totalAttachments', 'averageAttachmentSize',
             'attachmentTypes', 'monthlyDistributionLabels', 'monthlyDistributionData',
             'recordsWithAuthors', 'recordsWithTerms', 'recordsWithAttachments',
-            'topOrganisations', 'recordsWithChildren', 'averageChildrenPerRecord',
-            'levelNames', 'supportNames', 'statusNames', 'activityNames', 'organisationNames'
+             'recordsWithChildren', 'averageChildrenPerRecord',
+            'levelNames', 'supportNames', 'statusNames', 'activityNames',
         ));
     }
 
