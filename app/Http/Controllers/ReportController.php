@@ -56,9 +56,9 @@ class ReportController extends Controller
         $inProgressMails = Mail::where('mail_type_id', 3)->count();
 
         // Courriers par priorité
-        $mailsPriorityData = Mail::select('mail_priority_id', DB::raw('count(*) as count'))
-            ->groupBy('mail_priority_id')
-            ->pluck('count', 'mail_priority_id')
+        $mailsPriorityData = Mail::select('priority_id', DB::raw('count(*) as count'))
+            ->groupBy('priority_id')
+            ->pluck('count', 'priority_id')
             ->toArray();
         $mailsPriorityLabels = DB::table('mail_priorities')
             ->whereIn('id', array_keys($mailsPriorityData))
@@ -100,8 +100,8 @@ class ReportController extends Controller
             ->value('avg_time');
 
         $processingTimeByPriority = Mail::whereNotNull('updated_at')
-            ->select('mail_priority_id', DB::raw('AVG(DATEDIFF(updated_at, created_at)) as avg_time'))
-            ->groupBy('mail_priority_id')
+            ->select('priority_id', DB::raw('AVG(DATEDIFF(updated_at, created_at)) as avg_time'))
+            ->groupBy('priority_id')
             ->get();
         $processingTimeLabels = $mailsPriorityLabels;
         $processingTimeData = $processingTimeByPriority->pluck('avg_time')->toArray();
@@ -605,9 +605,9 @@ class ReportController extends Controller
         // Mails
         $totalMails = Mail::count();
         $mailsByPriority = Mail::query()
-            ->select('mail_priority_id', DB::raw('count(*) as count'))
-            ->groupBy('mail_priority_id')
-            ->pluck('count', 'mail_priority_id');
+            ->select('priority_id', DB::raw('count(*) as count'))
+            ->groupBy('priority_id')
+            ->pluck('count', 'priority_id');
 
         // Repository
         $totalRecords = Record::count();
@@ -646,13 +646,13 @@ class ReportController extends Controller
             ->pluck('count');
 
         $mailsLabels = Mail::query()
-            ->select('mail_priority_id', DB::raw('count(*) as count'))
-            ->groupBy('mail_priority_id')
-            ->pluck('mail_priority_id');
+            ->select('priority_id', DB::raw('count(*) as count'))
+            ->groupBy('priority_id')
+            ->pluck('priority_id');
 
         $mailsData = Mail::query()
-            ->select('mail_priority_id', DB::raw('count(*) as count'))
-            ->groupBy('mail_priority_id')
+            ->select('priority_id', DB::raw('count(*) as count'))
+            ->groupBy('priority_id')
             ->pluck('count');
 
         $slipsLabels = Slip::query()

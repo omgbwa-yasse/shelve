@@ -64,20 +64,20 @@
             </ul>
         </div>
 
-        <!-- enregistrement -->
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-           aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">{{ __('case_follow_up') }}</a>
+{{--        <!-- enregistrement -->--}}
+{{--        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"--}}
+{{--           aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">{{ __('case_follow_up') }}</a>--}}
 
-        <div class="collapse show" id="enregistrementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&?deadline=available"><i class="bi bi-inbox"></i> {{ __('expected_returns') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&deadline=exceeded"><i class="bi bi-bookmark-check"></i>{{ __('overdue_returns') }}</a>
-                </li>
-            </ul>
-        </div>
+{{--        <div class="collapse show" id="enregistrementMenu">--}}
+{{--            <ul class="list-unstyled pl-3">--}}
+{{--                <li class="nav-item">--}}
+{{--                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&?deadline=available"><i class="bi bi-inbox"></i> {{ __('expected_returns') }}    </a>--}}
+{{--                </li>--}}
+{{--                <li class="nav-item">--}}
+{{--                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&deadline=exceeded"><i class="bi bi-bookmark-check"></i>{{ __('overdue_returns') }}</a>--}}
+{{--                </li>--}}
+{{--            </ul>--}}
+{{--        </div>--}}
 
         <!-- Créer -->
         <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#creerMenu" aria-expanded="true"

@@ -521,4 +521,41 @@ class MailSendController extends Controller
             return false;
         }
     }
+
+
+
+public function inprogress()
+{
+    try {
+        $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
+            ->where('recipient_user_id', Auth::id())
+            ->where('status', 'in_progress')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('mails.received.index', compact('mails'));
+    } catch (Exception $e) {
+        Log::error('Erreur lors de la récupération des courriers en cours : ' . $e->getMessage());
+        return back()->with('error', 'Une erreur est survenue lors du chargement des courriers.');
+    }
+}
+
+public function approve(Request $request)
+{
+    try {
+        $validatedData = $request->validate(['id' => 'required|exists:mails,id']);
+        $mail = Mail::findOrFail($validatedData['id']);
+
+        $mail->update([
+            'recipient_user_id' => auth()->id(),
+            'status' => 'received'
+        ]);
+
+        return redirect()->route('mail-received.index')
+            ->with('success', 'Courrier approuvé avec succès');
+    } catch (Exception $e) {
+        Log::error('Erreur lors de l\'approbation du courrier : ' . $e->getMessage());
+        return back()->with('error', 'Une erreur est survenue lors de l\'approbation.');
+    }
+}
 }
