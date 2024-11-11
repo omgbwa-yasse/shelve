@@ -36,7 +36,7 @@ class RecordController extends Controller
     {
 
         $query = $request->input('query');
-        dd($query);
+//        dd($query);
         $results = Record::search($query)->paginate(10);
         return view('records.search', compact('results', 'query'));
     }
