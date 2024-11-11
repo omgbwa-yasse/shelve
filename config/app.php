@@ -124,7 +124,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    
+
 //    'providers' => [
 //
 //        TeamTNT\Scout\TNTSearchScoutServiceProvider::class,
