@@ -16,7 +16,6 @@ class Organisation extends Model
         'description',
         'parent_id',
     ];
-
     public function parent()
     {
         return $this->belongsTo(Organisation::class, 'parent_id');
@@ -26,6 +25,38 @@ class Organisation extends Model
     {
         return $this->hasMany(Organisation::class, 'parent_id');
     }
+
+    // Méthode helper pour obtenir tous les enfants récursivement
+    public function getAllChildren()
+    {
+        return $this->children()->with('getAllChildren');
+    }
+
+    // Méthode helper pour obtenir tous les parents récursivement
+    public function getAllParents()
+    {
+        return $this->parent()->with('getAllParents');
+    }
+
+    // Méthode pour vérifier si l'organisation est une racine (direction)
+    public function isRoot()
+    {
+        return is_null($this->parent_id);
+    }
+
+    // Méthode pour obtenir le niveau hiérarchique
+    public function getLevel()
+    {
+        $level = 0;
+        $parent = $this->parent;
+        while ($parent) {
+            $level++;
+            $parent = $parent->parent;
+        }
+        return $level;
+    }
+
+
 
     public function actives()
     {

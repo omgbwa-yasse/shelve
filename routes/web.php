@@ -261,6 +261,11 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('settings')->group(function () {
+        Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
+        Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
+        Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
+        Route::get('organisations/export/pdf', [OrganisationController::class, 'exportPdf'])->name('organisations.export.pdf');
+
         Route::get('users', [UserController::class, 'index'] );
         Route::resource('user-organisation-role', UserOrganisationRoleController::class);
         Route::resource('user-roles', UserRoleController::class);
