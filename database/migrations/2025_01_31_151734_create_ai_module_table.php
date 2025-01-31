@@ -18,7 +18,9 @@ class CreateAiModuleTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('instruction');
-            $table->boolean('is_public')->default(false);
+            $table->boolean('is_public')->default(true);
+            $table->boolean('is_draft')->default(true);
+            $table->boolean('is_archived')->default(false);
             $table->boolean('is_system')->default(false);
             $table->timestamps();
         });
@@ -43,7 +45,8 @@ class CreateAiModuleTable extends Migration
             // clé étrangères
             $table->foreignId('prompt_id')->constrained('prompts');
             $table->foreignId('user_id')->constrained('users');
-            $table->boolean('is_public')->default(false);
+            $table->boolean('is_public')->default(true);
+            $table->boolean('is_trained')->default(true);
             $table->timestamps();
         });
 
