@@ -39,6 +39,7 @@ class PromptController extends Controller
            'is_system' => 'boolean'
        ]);
 
+       $validated['user_id'] = Auth::id();
        $prompt = Prompt::create($validated);
 
        return redirect()

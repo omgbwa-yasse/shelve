@@ -10,7 +10,7 @@ class Prompt extends Model
     use HasFactory;
 
 
-    protected array $fillable = [
+    protected $fillable = [
         'name',
         'instruction',
         'is_public',
@@ -20,7 +20,7 @@ class Prompt extends Model
         'user_id',
     ];
 
-    protected array $casts = [
+    protected $casts = [
         'is_public' => 'boolean',
         'is_draft' => 'boolean',
         'is_archived' => 'boolean',
@@ -34,7 +34,7 @@ class Prompt extends Model
 
     public function agent()
     {
-        return $this->belongsTo(AiAgent::class, 'agent_id');
+        return $this->belongsTo(Agent::class, 'agent_id');
     }
 
 }

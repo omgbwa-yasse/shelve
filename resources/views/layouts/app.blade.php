@@ -215,12 +215,17 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
             <div class="container-fluid">
                 <div class="navbar-nav w-100 justify-content-between">
-                    <a class="nav-link @if (Request::segment(1) == 'ai') active fs-2 text-dark @endif" href="">
-                        <i class="bi bi-robot"></i> Intelligence Artificielle
+
+                    <a class="nav-link @if (Request::segment(1) == 'ai') active fw-bold text-primary @endif"
+                       href="{{ route('prompts.index') }}">
+                       <i class="bi bi-robot"></i> Intelligence Artificielle
                     </a>
-                    <a class="nav-link @if (Request::segment(1) == 'mails') active fs-2 text-dark @endif" href="{{ route('mail-received.index') }}">
+
+                    <a class="nav-link @if (Request::segment(1) == 'mails') active fw-bold text-primary @endif"
+                        href="{{ route('mail-received.index') }}">
                         <i class="bi bi-envelope"></i> {{ __('Mail') }}
                     </a>
+
                     <a class="nav-link @if (Request::segment(1) == 'repositories') active fw-bold text-primary @endif"
                        href="{{ route('records.index') }}">
                         <i class="bi bi-folder"></i> {{ __('Repository') }}
@@ -229,6 +234,7 @@
                        href="{{ route('transactions.index') }}">
                         <i class="bi bi-chat-dots"></i> {{ __('Request') }}
                     </a>
+
                     <a class="nav-link @if (Request::segment(1) == 'transferrings') active fw-bold text-primary @endif"
                        href="{{ route('slips.index') }}">
                         <i class="bi bi-arrow-left-right"></i> {{ __('Transfer') }}
