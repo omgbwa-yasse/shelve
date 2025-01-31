@@ -87,6 +87,8 @@ use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PromptController;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
 use App\Http\Controllers\DollyActionController;
@@ -112,9 +114,19 @@ Route::group(['middleware' => 'auth'], function () {
 
     //Route::get('/switch-organisation/{organisation}', 'OrganisationController@switchOrganisation')->name('switch.organisation');
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
-    Route::get('/about-us', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/', [mailReceivedController::class, 'index']);
 
+
+    Route::prefix('ai')->group(function () {
+        Route::get('/', [PromptController::class, 'index']);
+        Route::resource('prompts', PromptController::class);
+        Route::patch('prompts/{prompt}/archive', [PromptController::class, 'archive'])->name('prompts.archive');
+        Route::patch('prompts/{prompt}/toggle-draft', [PromptController::class, 'toggleDraft'])->name('prompts.toggle-draft');
+        Route::patch('prompts/{prompt}/toggle-public', [PromptController::class, 'togglePublic'])->name('prompts.toggle-public');
+        Route::resource('agents', AgentController::class);
+        Route::patch('agents/{agent}/toggle-status', [AgentController::class, 'toggleStatus'])->name('agents.toggle-status');
+        Route::patch('agents/{agent}/toggle-visibility', [AgentController::class, 'toggleVisibility'])->name('agents.toggle-visibility');
+    });
 
     Route::prefix('mails')->group(function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
@@ -304,7 +316,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('action', [DollyActionController::class, 'index'])->name('dollies.action');
         Route::get('sort', [SearchdollyController::class, 'index'])->name('dollies-sort');
-        Route::resource('dolly-mail-transactions', DollyMailTransactionController::class);
+        // A revoir *** Route::resource('dolly-mail-transactions', DollyMailTransactionController::class);
         Route::delete('{dolly}/remove-record/{record}', [DollyController::class, 'removeRecord'])->name('dolly.remove-record');
         Route::delete('{dolly}/remove-mail/{mail}', [DollyController::class, 'removeMail'])->name('dolly.remove-mail');
         Route::post('{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');

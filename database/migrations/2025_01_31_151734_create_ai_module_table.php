@@ -22,12 +22,13 @@ class CreateAiModuleTable extends Migration
             $table->boolean('is_draft')->default(true);
             $table->boolean('is_archived')->default(false);
             $table->boolean('is_system')->default(false);
+            $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
 
 
         // Agents AI
-        Schema::create('ai_agents', function (Blueprint $table) {
+        Schema::create('agents', function (Blueprint $table) {
             $table->id();
             $table->string('name', 150)->unique(true);
             $table->text('description');
@@ -51,7 +52,7 @@ class CreateAiModuleTable extends Migration
         });
 
 
-        Schema::create('ai_model_configs', function (Blueprint $table) {
+        Schema::create('model_configs', function (Blueprint $table) {
             $table->id();
             $table->string('model_name');
             $table->string('config_key');
