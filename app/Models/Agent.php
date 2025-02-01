@@ -10,7 +10,7 @@ class Agent extends Model
 {
    use HasFactory;
 
-   protected array $fillable = [
+   protected $fillable = [
        'name',
        'description',
        'date_start',
@@ -25,7 +25,7 @@ class Agent extends Model
        'is_trained'
    ];
 
-   protected array $casts = [
+   protected $casts = [
        'date_start' => 'date',
        'date_end' => 'date',
        'date_exact' => 'date',
@@ -34,7 +34,7 @@ class Agent extends Model
        'frequence_value' => 'integer'
    ];
 
-   protected array $enums = [
+   protected $enums = [
        'date_type' => ['start_only', 'exact', 'range'],
        'frequence_type' => ['day', 'heure', 'min']
    ];

@@ -1,7 +1,37 @@
 <div class="container" style="background-color: #f1f1f1;">
     <div class="row">
         <!-- Recherche -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#chatBot" aria-expanded="true"
+           aria-controls="chatBot" style="padding: 10px;"><i class="bi bi-search"></i>
+           ChatBot </a>
+
+        <div class="collapse show" id="chatBot">
+            <ul class="list-unstyled pl-3">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-plus-circle"></i> Nouveau </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-archive"></i> Historique </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href=""><i class="bi bi-tag"></i> Etiquettes</a>
+                </li>
+            </ul>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- Recherche -->
+        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#chatBot" aria-expanded="true"
            aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i>
            Prompts </a>
 
