@@ -27,10 +27,36 @@ class CreateAiModuleTable extends Migration
         });
 
 
+        // Input attachments table
+        Schema::create('prompt_input_attachments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('prompt_id')->constrained('prompts')->onDelete('cascade');
+            $table->string('name');
+            $table->enum('type', ['file', 'text', 'image', 'video', 'audio']); // file, text, image, etc.
+            $table->text('description')->nullable();
+            $table->string('path')->nullable();
+            $table->string('file_crypt')->nullable();
+            $table->boolean('is_required')->default(false);
+            $table->json('validation_rules')->nullable(); // Store validation rules as JSON
+            $table->integer('display_order')->default(0);
+            $table->timestamps();
+        });
 
 
 
-
+        // Output attachments table
+        Schema::create('prompt_output_attachments', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('prompt_id')->constrained('prompts')->onDelete('cascade');
+            $table->string('name');
+            $table->enum('type', ['file', 'text', 'image', 'video', 'audio']); // file, text, image, etc.
+            $table->text('description')->nullable();
+            $table->string('path')->nullable();
+            $table->string('file_crypt')->nullable();
+            $table->json('format_rules')->nullable(); // Store format specifications as JSON
+            $table->integer('display_order')->default(0);
+            $table->timestamps();
+        });
 
 
 
