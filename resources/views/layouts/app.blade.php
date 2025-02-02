@@ -215,7 +215,10 @@
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm mt-2">
             <div class="container-fluid">
                 <div class="navbar-nav w-100 justify-content-between">
-
+                    <a class="nav-link @if (Request::segment(1) == 'bulletin-board') active fw-bold text-primary @endif"
+                       href="{{ route('bulletin-boards.index') }}">
+                       <i class="bi bi-card-text"></i> Barbillard
+                    </a>
                     <a class="nav-link @if (Request::segment(1) == 'ai') active fw-bold text-primary @endif"
                        href="{{ route('prompts.index') }}">
                        <i class="bi bi-robot"></i> Intelligence Artificielle
@@ -247,6 +250,10 @@
                        href="{{ route('buildings.index') }}">
                         <i class="bi bi-building"></i> {{ __('Deposit') }}
                     </a>
+                    <a class="nav-link @if (Request::segment(1) == 'bulletin-board') active fw-bold text-primary @endif"
+                       href="{{ route('bulletin-boards.index') }}">
+                        <i class="bi bi-globe"></i> {{ __('Public Access Portal') }}
+                    </a>
                     <a class="nav-link @if (Request::segment(1) == 'dashboard') active fw-bold text-primary @endif"
                        href="{{ route('report.dashboard') }}">
                         <i class="bi bi-speedometer2"></i> {{ __('Report') }}
@@ -274,10 +281,15 @@
                         <div class="card">
                             <div class="card-body">
                                 @switch(Request::segment(1))
-                                    @case('ai')
+                                    @case('portal')
+                                        @include('submenu.portal')
+                                        @break
+                                    @case('bulletin-board')
+                                        @include('submenu.bulletinboard')
+                                        @break
+                                     @case('ai')
                                         @include('submenu.ai')
                                         @break
-
                                     @case('mails')
                                         @include('submenu.mails')
                                         @break

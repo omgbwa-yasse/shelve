@@ -46,7 +46,7 @@ return new class extends Migration
             // Workflow interventions table
             Schema::create('workflow_interventions', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('workflow_id')->constrained()->onDelete('cascade');
+                $table->foreignId('workflow_id')->constrained('workflows')->onDelete('cascade');
                 $table->foreignId('step_type_id')->nullable()->constrained('workflow_step_types');
                 $table->foreignId('operator_id')->nullable()->constrained('users')->onDelete('set null');
                 $table->foreignId('organization_id')->constrained('organizations');

@@ -99,16 +99,131 @@ use App\Http\Controllers\SearchSlipController;
 use App\Http\Controllers\UserRoleController;
 use App\Models\ContainerProperty;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\BulletinBoardController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupFileController;
 use App\Http\Controllers\BackupPlanningController;
-
 
 Auth::routes();
 //Route::post('/transferrings/slips/import', [SlipController::class, 'import'])->name('slips.import');
 //Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 //Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
+
+
+
+
+/*
+
+
+    <?php
+
+// Routes publiques (sans authentification)
+Route::prefix('archives')->group(function () {
+    Route::get('/', [PublicArchiveController::class, 'index'])->name('archives.index');
+    Route::get('records', [PublicRecordController::class, 'index'])->name('archives.records.index');
+    Route::get('records/{record}', [PublicRecordController::class, 'show'])->name('archives.records.show');
+    Route::get('pages', [PublicPageController::class, 'index'])->name('archives.pages.index');
+    Route::get('pages/{page}', [PublicPageController::class, 'show'])->name('archives.pages.show');
+    Route::get('news', [PublicNewsController::class, 'index'])->name('archives.news.index');
+    Route::get('news/{news}', [PublicNewsController::class, 'show'])->name('archives.news.show');
+    Route::get('events', [PublicEventController::class, 'index'])->name('archives.events.index');
+    Route::get('events/{event}', [PublicEventController::class, 'show'])->name('archives.events.show');
+
+    // Inscription utilisateur
+    Route::get('register', [PublicUserController::class, 'create'])->name('archives.register');
+    Route::post('register', [PublicUserController::class, 'store']);
+});
+
+// Routes pour utilisateurs connectés
+Route::middleware(['auth', 'verified'])->prefix('archives')->group(function () {
+    // Gestion du profil utilisateur
+    Route::get('profile', [UserProfileController::class, 'edit'])->name('archives.profile.edit');
+    Route::put('profile', [UserProfileController::class, 'update'])->name('archives.profile.update');
+
+    // Demandes de documents
+    Route::resource('requests', UserDocumentRequestController::class)
+        ->except(['edit', 'update', 'destroy'])
+        ->names([
+            'index' => 'archives.requests.index',
+            'create' => 'archives.requests.create',
+            'store' => 'archives.requests.store',
+            'show' => 'archives.requests.show'
+        ]);
+
+    // Réponses aux demandes
+    Route::get('responses', [UserResponseController::class, 'index'])->name('archives.responses.index');
+    Route::get('responses/{response}', [UserResponseController::class, 'show'])->name('archives.responses.show');
+
+    // Historique de navigation
+    Route::get('history', [UserBrowsingHistoryController::class, 'index'])->name('archives.history.index');
+    Route::delete('history', [UserBrowsingHistoryController::class, 'clear'])->name('archives.history.clear');
+});
+
+// Routes administration
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
+    Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Gestion des records
+    Route::resource('records', AdminRecordController::class)->names('admin.records');
+    Route::post('records/{record}/publish', [AdminRecordController::class, 'publish'])->name('admin.records.publish');
+    Route::post('records/{record}/unpublish', [AdminRecordController::class, 'unpublish'])->name('admin.records.unpublish');
+
+    // Gestion des réponses et pièces jointes
+    Route::resource('responses', AdminResponseController::class)->names('admin.responses');
+    Route::resource('responses.attachments', AdminResponseAttachmentController::class)
+        ->except(['index'])
+        ->names('admin.responses.attachments');
+
+    // Gestion des demandes
+    Route::resource('requests', AdminDocumentRequestController::class)->names('admin.requests');
+    Route::post('requests/{request}/approve', [AdminDocumentRequestController::class, 'approve'])->name('admin.requests.approve');
+    Route::post('requests/{request}/reject', [AdminDocumentRequestController::class, 'reject'])->name('admin.requests.reject');
+
+    // Gestion des templates
+    Route::resource('templates', AdminTemplateController::class)->names('admin.templates');
+    Route::post('templates/{template}/activate', [AdminTemplateController::class, 'activate'])->name('admin.templates.activate');
+    Route::post('templates/{template}/deactivate', [AdminTemplateController::class, 'deactivate'])->name('admin.templates.deactivate');
+
+    // Gestion des pages
+    Route::resource('pages', AdminPageController::class)->names('admin.pages');
+    Route::post('pages/reorder', [AdminPageController::class, 'reorder'])->name('admin.pages.reorder');
+    Route::post('pages/{page}/publish', [AdminPageController::class, 'publish'])->name('admin.pages.publish');
+
+    // Gestion des actualités
+    Route::resource('news', AdminNewsController::class)->names('admin.news');
+    Route::post('news/{news}/publish', [AdminNewsController::class, 'publish'])->name('admin.news.publish');
+
+    // Gestion des événements
+    Route::resource('events', AdminEventController::class)->names('admin.events');
+
+    // Gestion des utilisateurs
+    Route::resource('users', AdminUserController::class)->names('admin.users');
+    Route::post('users/{user}/approve', [AdminUserController::class, 'approve'])->name('admin.users.approve');
+    Route::post('users/{user}/block', [AdminUserController::class, 'block'])->name('admin.users.block');
+
+    // Statistiques et rapports
+    Route::get('statistics', [AdminStatisticsController::class, 'index'])->name('admin.statistics.index');
+    Route::get('reports/downloads', [AdminReportController::class, 'downloads'])->name('admin.reports.downloads');
+    Route::get('reports/requests', [AdminReportController::class, 'requests'])->name('admin.reports.requests');
+    Route::get('reports/users', [AdminReportController::class, 'users'])->name('admin.reports.users');
+});
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
 Route::group(['middleware' => 'auth'], function () {
 
 
@@ -127,6 +242,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::patch('agents/{agent}/toggle-status', [AgentController::class, 'toggleStatus'])->name('agents.toggle-status');
         Route::patch('agents/{agent}/toggle-visibility', [AgentController::class, 'toggleVisibility'])->name('agents.toggle-visibility');
     });
+
+
+    Route::prefix('bulletin-board')->group(function () {
+        Route::resource('/', BulletinBoardController::class)->names('bulletin-boards');
+        Route::resource('events', EventController::class)->except(['index']);
+        Route::resource('attachments', BulletinBoardController::class)->except(['index']);
+        Route::post('administrators/{user}', [BulletinBoardController::class, 'addAdministrator'])->name('bulletin-boards.administrators.add');
+        Route::delete('administrators/{user}', [BulletinBoardController::class, 'removeAdministrator'])->name('bulletin-boards.administrators.remove');
+        Route::post('organisations/{organisation}', [BulletinBoardController::class, 'addOrganisation'])->name('bulletin-boards.organisations.add');
+        Route::delete('organisations/{organisation}', [BulletinBoardController::class, 'removeOrganisation'])->name('bulletin-boards.organisations.remove');
+    });
+
+
 
     Route::prefix('mails')->group(function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
