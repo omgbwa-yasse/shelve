@@ -225,7 +225,11 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(functio
 
 
 Route::group(['middleware' => 'auth'], function () {
-
+    Route::prefix('api')->group(function () {
+        Route::get('/authors', [AuthorController::class, 'indexApi']);
+        Route::post('/authors', [AuthorController::class, 'storeApi']);
+        Route::get('/author-types', [AuthorController::class, 'authorTypesApi']);
+    });
 
     //Route::get('/switch-organisation/{organisation}', 'OrganisationController@switchOrganisation')->name('switch.organisation');
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
