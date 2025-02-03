@@ -527,6 +527,24 @@
     "none": "Aucun",
     "select_placeholder": "-- Sélectionner --",
     "select_entity_type": "Sélectionner le type d'entité",
-    "select_parent_entity": "Sélectionner l'entité parente"
+    "select_parent_entity": "Sélectionner l'entité parente",
+    "physical_legal_persons_list": "Liste des personnes physiques et morales",
+
+    "view_archives": "Voir les archives",
+    "edit": "Modifier",
+    "details": "Détails",
+    "no_authors_found": "Aucun auteur trouvé",
+    "parent": "Parent",
+    "author_details": "Détails de l'auteur",
+    "contact_information": "Informations de contact",
+    "add_contact": "Ajouter un contact",
+
+    "po_box": "Boîte postale",
+    "no_contacts_found": "Aucun contact trouvé",
+
+    "confirm_delete_author": "Êtes-vous sûr de vouloir supprimer cet auteur ?",
+    "main_information": "information Generale",
+    "back_to_authors": "Retour aux auteurs"
+
 
 }
