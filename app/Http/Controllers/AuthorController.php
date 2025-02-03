@@ -8,7 +8,45 @@ use Illuminate\Http\Request;
 
 class AuthorController extends Controller
 {
+    public function indexApi()
+    {
+        $authors = Author::with('authorType')->get()->map(function($author) {
+            return [
+                'id' => $author->id,
+                'name' => $author->name,
+                'type_name' => $author->authorType->name ?? '',
+                'type_id' => $author->type_id,
+            ];
+        });
+        return response()->json($authors);
+    }
 
+    public function storeApi(Request $request)
+    {
+        $validated = $request->validate([
+            'type_id' => 'required|exists:author_types,id',
+            'name' => 'required|string|max:255',
+            'parallel_name' => 'nullable|string|max:255',
+            'other_name' => 'nullable|string|max:255',
+            'lifespan' => 'nullable|string|max:255',
+            'locations' => 'nullable|string|max:255',
+        ]);
+
+        $author = Author::create($validated);
+        $author->load('authorType');
+
+        return response()->json([
+            'id' => $author->id,
+            'name' => $author->name,
+            'type_name' => $author->authorType->name ?? '',
+            'type_id' => $author->type_id,
+        ]);
+    }
+
+    public function authorTypesApi()
+    {
+        return response()->json(AuthorType::select('id', 'name')->get());
+    }
     public function index()
     {
         $authors = Author::all();
