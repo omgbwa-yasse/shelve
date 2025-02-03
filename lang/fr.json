@@ -518,6 +518,15 @@
     "search_parent": "Rechercher une entité parente...",
     "does_not_contain": "ne contient pas",
 
-    "select_placeholder": "-- Sélectionner --"
+    "type": "Type",
+    "parent_author": "Auteur parent",
+    "select_type": "Sélectionner un type",
+    "select_parent": "Sélectionner un parent",
+
+    "create_author": "Créer l'auteur",
+    "none": "Aucun",
+    "select_placeholder": "-- Sélectionner --",
+    "select_entity_type": "Sélectionner le type d'entité",
+    "select_parent_entity": "Sélectionner l'entité parente"
 
 }

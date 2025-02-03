@@ -523,7 +523,17 @@
 
     "does_not_contain": "does not contain",
 
-    "select_placeholder": "-- Select --"
+    "select_placeholder": "-- Select --",
 
+    "type": "Type",
 
+    "parent_author": "Parent Author",
+    "select_type": "Select Type",
+    "select_parent": "Select Parent",
+
+    "create_author": "Create Author",
+    "none": "None",
+
+    "select_entity_type": "Select Entity Type",
+    "select_parent_entity": "Select Parent Entity"
 }
