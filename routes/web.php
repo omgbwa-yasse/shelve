@@ -336,6 +336,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
+        Route::get('authors/list', [RecordAuthorController::class, 'list'])->name('record-author.list');
         Route::resource('records.child', RecordChildController::class)->names('record-child');
         Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
         Route::get('recordtosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');

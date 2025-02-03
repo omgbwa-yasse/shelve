@@ -16,6 +16,12 @@ class RecordAuthorController extends Controller
     }
 
 
+    public function list()
+    {
+        return response()->json(Author::select('id', 'name')->get());
+    }
+
+
     public function create()
     {
         $authorTypes = AuthorType::all();
@@ -24,6 +30,14 @@ class RecordAuthorController extends Controller
         return view('records.authors.create', compact('authorTypes','parents'));
     }
 
+
+    public function createFull()
+    {
+        $authorTypes = AuthorType::all();
+        $parents = author::all();
+        $parents->load('authorType');
+        return view('records.authors.createFull', compact('authorTypes','parents'));
+    }
 
     public function store(Request $request)
     {
