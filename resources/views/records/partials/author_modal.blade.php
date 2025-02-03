@@ -1,4 +1,4 @@
-<!-- Author Modal -->
+{{-- partials/author_modal.blade.php --}}
 <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -8,237 +8,192 @@
             </div>
             <div class="modal-body">
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="select-tab" data-bs-toggle="tab" data-bs-target="#select-authors" type="button" role="tab">
-                            <i class="bi bi-list-check me-2"></i>{{ __('select_authors') }}
-                        </button>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#select-authors">
+                            {{ __('select_authors') }}
+                        </a>
                     </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add-author" type="button" role="tab">
-                            <i class="bi bi-plus-circle me-2"></i>{{ __('add_new_author') }}
-                        </button>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#add-author">
+                            {{ __('add_new_author') }}
+                        </a>
                     </li>
                 </ul>
 
                 <!-- Tab content -->
-                <div class="tab-content">
+                <div class="tab-content mt-3">
                     <!-- Select Authors Tab -->
-                    <div class="tab-pane fade show active" id="select-authors" role="tabpanel">
-                        <!-- Alphabet Filter -->
-                        <div class="alphabet-filter mb-3 border-bottom pb-2">
-                            <div class="d-flex flex-wrap gap-1 mb-2" id="alphabet-buttons">
-                                <!-- Les boutons seront générés par JavaScript -->
-                            </div>
-                        </div>
-
-                        <!-- Search Bar -->
+                    <div class="tab-pane fade show active" id="select-authors">
                         <div class="mb-3">
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-search"></i>
-                                </span>
-                                <input type="text" id="author-search" class="form-control" placeholder="{{ __('search_authors') }}">
-                            </div>
+                            <input type="text" id="author-search" class="form-control" placeholder="{{ __('search_authors') }}">
                         </div>
-
-                        <!-- Authors List -->
-                        <div class="author-list-container" style="max-height: 400px; overflow-y: auto;">
-                            <div class="list-group" id="author-list">
-                                @foreach ($authors as $author)
-                                    <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                       data-id="{{ $author->id }}"
-                                       data-type="{{ $author->authorType->name ?? '' }}"
-                                       data-initial="{{ Str::upper(Str::substr($author->name, 0, 1)) }}">
-                                        <div>
-                                            <div class="fw-bold">{{ $author->name }}</div>
-                                            @if($author->authorType)
-                                                <small class="text-muted">{{ $author->authorType->name }}</small>
-                                            @endif
-                                        </div>
-                                        <span class="selection-indicator">
-                                            <i class="bi bi-check2-circle text-success d-none"></i>
-                                        </span>
-                                    </a>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <small class="text-muted">{{ __('selected_authors_count') }}: <span id="selected-count">0</span></small>
+                        <div class="list-group" id="author-list">
+                            <!-- Authors will be loaded here via AJAX -->
                         </div>
                     </div>
 
-                    <!-- Add Author Tab (reste inchangé) -->
-                    <div class="tab-pane fade" id="add-author" role="tabpanel">
-                        <!-- Le contenu du formulaire reste le même -->
+                    <!-- Add Author Tab -->
+                    <div class="tab-pane fade" id="add-author">
+                        <form id="add-author-form">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="author_type" class="form-label">{{ __('author_type') }}</label>
+                                <select class="form-select" id="author_type" name="type_id" required>
+                                    <!-- Author types will be loaded here via AJAX -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="author_name" class="form-label">{{ __('name') }}</label>
+                                <input type="text" class="form-control" id="author_name" name="name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">{{ __('add_author') }}</button>
+                        </form>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <small class="text-muted me-auto" id="selection-info"></small>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>{{ __('close') }}
-                </button>
-                <button type="button" class="btn btn-primary" id="save-authors">
-                    <i class="bi bi-check2-circle me-2"></i>{{ __('save_selection') }}
-                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
+                <button type="button" class="btn btn-primary" id="save-authors">{{ __('save') }}</button>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    initializeAuthorModal();
-});
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let selectedAuthors = new Set();
 
-function initializeAuthorModal() {
-    const modal = document.getElementById('authorModal');
-    const searchInput = document.getElementById('author-search');
-    const authorList = document.getElementById('author-list');
-    const selectedCountElement = document.getElementById('selected-count');
-    const selectionInfoElement = document.getElementById('selection-info');
-    const saveButton = document.getElementById('save-authors');
-    const alphabetContainer = document.getElementById('alphabet-buttons');
+            // Charge les auteurs au chargement du modal
+            async function loadAuthors() {
+                try {
+                    const response = await fetch('/api/authors');
+                    const authors = await response.json();
+                    renderAuthors(authors);
+                } catch (error) {
+                    console.error('Error loading authors:', error);
+                }
+            }
 
-    let selectedAuthors = new Set();
-    let currentLetter = null;
-    let searchTimeout = null;
+            // Charge les types d'auteurs
+            async function loadAuthorTypes() {
+                try {
+                    const response = await fetch('/api/author-types');
+                    const types = await response.json();
+                    const select = document.getElementById('author_type');
+                    types.forEach(type => {
+                        const option = new Option(type.name, type.id);
+                        select.add(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading author types:', error);
+                }
+            }
 
-    // Générer les boutons alphabétiques
-    function generateAlphabetButtons() {
-        const alphabet = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        const buttons = alphabet.map(letter => {
-            const isHash = letter === '#';
-            return `
-                <button type="button"
-                        class="btn btn-outline-primary btn-sm alphabet-btn ${currentLetter === letter ? 'active' : ''}"
-                        data-letter="${letter}">
-                    ${isHash ? __('other') : letter}
-                </button>
-            `;
-        });
-        alphabetContainer.innerHTML = buttons.join('');
+            // Rendu de la liste des auteurs
+            function renderAuthors(authors) {
+                const list = document.getElementById('author-list');
+                list.innerHTML = authors.map(author => `
+            <a href="#" class="list-group-item list-group-item-action" data-id="${author.id}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${author.name}</strong>
+                        <br>
+                        <small class="text-muted">${author.type_name}</small>
+                    </div>
+                    <div class="selected-indicator" style="display: none;">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                    </div>
+                </div>
+            </a>
+        `).join('');
 
-        // Ajouter les événements aux boutons
-        document.querySelectorAll('.alphabet-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.alphabet-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentLetter = btn.dataset.letter;
-                filterAuthors();
-            });
-        });
-    }
-
-    // Filtrer les auteurs avec délai
-    function filterAuthors() {
-        if (searchTimeout) {
-            clearTimeout(searchTimeout);
-        }
-
-        searchTimeout = setTimeout(() => {
-            const searchText = searchInput.value.toLowerCase();
-            const items = authorList.querySelectorAll('.list-group-item');
-
-            items.forEach(item => {
-                const authorName = item.querySelector('.fw-bold').textContent.toLowerCase();
-                const authorType = item.dataset.type.toLowerCase();
-                const initial = item.dataset.initial;
-
-                let shouldShow = true;
-
-                // Filtre par lettre
-                if (currentLetter) {
-                    if (currentLetter === '#') {
-                        shouldShow = !/^[A-Z]/.test(initial);
-                    } else {
-                        shouldShow = initial === currentLetter;
+                // Rétablir les sélections
+                document.querySelectorAll('#author-list .list-group-item').forEach(item => {
+                    if (selectedAuthors.has(item.dataset.id)) {
+                        item.classList.add('active');
+                        item.querySelector('.selected-indicator').style.display = 'block';
                     }
-                }
+                });
+            }
 
-                // Filtre par recherche
-                if (shouldShow && searchText) {
-                    shouldShow = authorName.includes(searchText) || authorType.includes(searchText);
-                }
-
-                item.style.display = shouldShow ? '' : 'none';
+            // Gestionnaire de recherche
+            document.getElementById('author-search').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                document.querySelectorAll('#author-list .list-group-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
             });
-        }, 200); // Délai de 200ms
-    }
 
-    // Initialiser les filtres
-    generateAlphabetButtons();
+            // Gestionnaire de sélection d'auteur
+            document.getElementById('author-list').addEventListener('click', function(e) {
+                const item = e.target.closest('.list-group-item');
+                if (!item) return;
 
-    // Event listeners
-    searchInput.addEventListener('input', filterAuthors);
+                e.preventDefault();
+                const authorId = item.dataset.id;
+                const indicator = item.querySelector('.selected-indicator');
 
-    function updateAuthorSelection(item) {
-        const authorId = item.dataset.id;
-        const indicator = item.querySelector('.selection-indicator i');
+                if (selectedAuthors.has(authorId)) {
+                    selectedAuthors.delete(authorId);
+                    item.classList.remove('active');
+                    indicator.style.display = 'none';
+                } else {
+                    selectedAuthors.add(authorId);
+                    item.classList.add('active');
+                    indicator.style.display = 'block';
+                }
+            });
 
-        if (selectedAuthors.has(authorId)) {
-            selectedAuthors.delete(authorId);
-            item.classList.remove('active');
-            indicator.classList.add('d-none');
-        } else {
-            selectedAuthors.add(authorId);
-            item.classList.add('active');
-            indicator.classList.remove('d-none');
-        }
+            // Gestionnaire d'ajout d'auteur
+            document.getElementById('add-author-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
 
-        updateSelectionInfo();
-    }
+                try {
+                    const formData = new FormData(this);
+                    const response = await fetch('/api/authors', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    });
 
-    function updateSelectionInfo() {
-        const count = selectedAuthors.size;
-        selectedCountElement.textContent = count;
+                    if (response.ok) {
+                        const author = await response.json();
+                        await loadAuthors();
+                        this.reset();
+                        // Basculer vers l'onglet de sélection
+                        const selectTab = document.querySelector('[href="#select-authors"]');
+                        bootstrap.Tab.getOrCreateInstance(selectTab).show();
+                    }
+                } catch (error) {
+                    console.error('Error adding author:', error);
+                }
+            });
 
-        if (count > 0) {
-            selectionInfoElement.textContent = `${count} ${count === 1 ? __('author_selected') : __('authors_selected')}`;
-            saveButton.disabled = false;
-        } else {
-            selectionInfoElement.textContent = __('no_authors_selected');
-            saveButton.disabled = true;
-        }
-    }
+            // Gestionnaire de sauvegarde
+            document.getElementById('save-authors').addEventListener('click', function() {
+                const selectedItems = document.querySelectorAll('#author-list .list-group-item.active');
+                const names = Array.from(selectedItems).map(item =>
+                    item.querySelector('strong').textContent
+                );
+                const ids = Array.from(selectedItems).map(item => item.dataset.id);
 
-    // Event listener pour la sélection des auteurs
-    authorList.addEventListener('click', (e) => {
-        const item = e.target.closest('.list-group-item');
-        if (item) {
-            e.preventDefault();
-            updateAuthorSelection(item);
-        }
-    });
+                document.getElementById('author-ids').value = ids.join(',');
+                document.getElementById('selected-authors-display').value = names.join('; ');
 
-    // Sauvegarde de la sélection
-    saveButton.addEventListener('click', () => {
-        const selectedItems = authorList.querySelectorAll('.list-group-item.active');
-        const displayInput = document.getElementById('selected-authors-display');
-        const idsInput = document.getElementById('author-ids');
+                bootstrap.Modal.getInstance(document.getElementById('authorModal')).hide();
+            });
 
-        const names = Array.from(selectedItems).map(item =>
-            item.querySelector('.fw-bold').textContent.trim()
-        );
-        const ids = Array.from(selectedItems).map(item => item.dataset.id);
-
-        displayInput.value = names.join('; ');
-        idsInput.value = ids.join(',');
-
-        bootstrap.Modal.getInstance(modal).hide();
-    });
-
-    // Réinitialiser les filtres lors de l'ouverture du modal
-    modal.addEventListener('shown.bs.modal', () => {
-        currentLetter = null;
-        searchInput.value = '';
-        document.querySelectorAll('.alphabet-btn').forEach(btn => btn.classList.remove('active'));
-        filterAuthors();
-    });
-}
-
-// Les fonctions showToast et refreshAuthorList restent inchangées
-</script>
-
+            // Chargement initial
+            document.getElementById('authorModal').addEventListener('show.bs.modal', function() {
+                loadAuthors();
+                loadAuthorTypes();
+            });
+        });
+    </script>
+@endpush
