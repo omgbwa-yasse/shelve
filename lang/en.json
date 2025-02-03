@@ -510,7 +510,12 @@
     "other_name": "Other Name",
     "lifespan": "Lifespan",
     "locations": "Locations",
+    "type_of_entity": "Type of Entity",
+    "equivalent_name": "Equivalent Name",
+    "entity_type": "Entity Type",
     "parent_entity": "Parent Entity",
+    "search_type": "Search type...",
+    "search_parent": "Search parent author...",
 
     "add_criteria_warning": "Please add at least one search criterion",
     "search_name_prompt": "Search name:",

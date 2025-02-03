@@ -1,142 +1,202 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="">
-                <div class="">
-                    <div class="card-header text-white">
-                        <h2 class="mb-0">Add New Author</h2>
+    <div class="container mt-4">
+        <div class="">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ __('add_new_author') }}</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('mail-author.store') }}" method="POST">
+                    @csrf
+                    <div class="row g-3">
+                        <!-- Type d'entité -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('type_of_entity') }}</label>
+                            <div class="input-group">
+                                <input type="hidden" name="type_id" id="selected_type_id" required>
+                                <input type="text" id="selected_type_name" class="form-control" readonly required>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#typeModal">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Nom -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('name') }}</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+
+                        <!-- Nom équivalent -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('equivalent_name') }}</label>
+                            <input type="text" name="parallel_name" class="form-control">
+                        </div>
+
+                        <!-- Autre nom -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('other_name') }}</label>
+                            <input type="text" name="other_name" class="form-control">
+                        </div>
+
+                        <!-- Période de vie -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('lifespan') }}</label>
+                            <input type="text" name="lifespan" class="form-control">
+                        </div>
+
+                        <!-- Résidence -->
+                        <div class="col-md-6">
+                            <label class="form-label">{{ __('locations') }}</label>
+                            <input type="text" name="locations" class="form-control">
+                        </div>
+
+                        <!-- Entité parente -->
+                        <div class="col-12">
+                            <label class="form-label">{{ __('parent_entity') }}</label>
+                            <div class="input-group">
+                                <input type="hidden" name="parent_id" id="selected_parent_id">
+                                <input type="text" id="selected_parent_name" class="form-control" readonly>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#parentModal">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form action="{{ route('mail-author.store') }}" method="POST" id="authorForm">
-                            @csrf
-                            <div class="mb-3">
-                                <label for="type_id" class="form-label">Type</label>
-                                <select id="type_id" name="type_id" class="form-select" required>
-                                    <option value="" disabled selected>Enter the type</option>
-                                    @foreach ($authorTypes as $type)
-                                        <option value="{{ $type->id }}">{{ $type->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
 
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Name</label>
-                                <input type="text" id="name" name="name" class="form-control" data-field="name" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="parallel_name" class="form-label">Parallel Name</label>
-                                <input type="text" id="parallel_name" name="parallel_name" class="form-control" data-field="parallel_name">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="other_name" class="form-label">Other Name</label>
-                                <input type="text" id="other_name" name="other_name" class="form-control" data-field="other_name">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="lifespan" class="form-label">Lifespan</label>
-                                <input type="text" id="lifespan" name="lifespan" class="form-control">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="locations" class="form-label">Locations</label>
-                                <input type="text" id="locations" name="locations" class="form-control" data-field="locations">
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="parent_id" class="form-label">Parent Author</label>
-                                <div class="input-group">
-                                    <input type="text" id="parent_name" class="form-control" readonly>
-                                    <input type="hidden" id="parent_id" name="parent_id">
-                                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="modal" data-bs-target="#authorModal">
-                                        Select Author
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary">Create Author</button>
-                        </form>
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary">{{ __('save') }}</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Author Selection Modal -->
-    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <!-- Modal Type d'entité -->
+    <div class="modal fade" id="typeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="authorModalLabel">Select Parent Author</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">{{ __('select_entity_type') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="authorSearch" class="form-control mb-3" placeholder="Search authors...">
-                    <ul id="authorList" class="list-group">
-                        @foreach ($parents as $parent)
-                            <li class="list-group-item" data-id="{{ $parent->id }}" data-name="{{ $parent->name }}">
-                                {{ $parent->name }} <small class="text-muted">({{ $parent->authorType->name }})</small>
-                            </li>
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="typeSearch"
+                               placeholder="{{ __('search_type') }}">
+                    </div>
+                    <div class="list-group" id="typesList">
+                        @foreach ($authorTypes as $type)
+                            <button type="button" class="list-group-item list-group-item-action type-item"
+                                    data-id="{{ $type->id }}"
+                                    data-name="{{ $type->name }}">
+                                {{ $type->name }}
+                            </button>
                         @endforeach
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveAuthor">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-@endsection
+    <!-- Modal Entité parente -->
+    <div class="modal fade" id="parentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('select_parent_entity') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="parentSearch"
+                               placeholder="{{ __('search_parent') }}">
+                    </div>
+                    <div class="list-group" id="parentsList">
+                        @foreach ($parents as $parent)
+                            <button type="button" class="list-group-item list-group-item-action parent-item"
+                                    data-id="{{ $parent->id }}"
+                                    data-name="{{ $parent->name }}"
+                                    data-type="{{ $parent->authorType->name }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>{{ $parent->name }}</strong>
+                                    <small class="text-muted">{{ $parent->authorType->name }}</small>
+                                </div>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const authorSearch = document.getElementById('authorSearch');
-            const authorList = document.getElementById('authorList');
-            const parentIdInput = document.getElementById('parent_id');
-            const parentNameInput = document.getElementById('parent_name');
-            const saveAuthorBtn = document.getElementById('saveAuthor');
-            const authorModal = new bootstrap.Modal(document.getElementById('authorModal'));
 
-            let selectedAuthor = null;
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Gestionnaire de recherche pour le type d'entité
+                const typeSearch = document.getElementById('typeSearch');
+                const typesList = document.getElementById('typesList');
+                const typeItems = typesList.querySelectorAll('.type-item');
 
-            authorSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const authors = authorList.querySelectorAll('li');
+                typeSearch?.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    typeItems.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        item.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
 
-                authors.forEach(author => {
-                    const authorName = author.textContent.toLowerCase();
-                    if (authorName.includes(searchTerm)) {
-                        author.style.display = '';
-                    } else {
-                        author.style.display = 'none';
-                    }
+                // Gestionnaire de recherche pour l'entité parente
+                const parentSearch = document.getElementById('parentSearch');
+                const parentsList = document.getElementById('parentsList');
+                const parentItems = parentsList.querySelectorAll('.parent-item');
+
+                parentSearch?.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    parentItems.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        item.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+
+                // Sélection du type
+                typeItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const name = this.dataset.name;
+                        document.getElementById('selected_type_id').value = id;
+                        document.getElementById('selected_type_name').value = name;
+                        bootstrap.Modal.getInstance(document.getElementById('typeModal')).hide();
+                    });
+                });
+
+                // Sélection du parent
+                parentItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const name = this.dataset.name;
+                        document.getElementById('selected_parent_id').value = id;
+                        document.getElementById('selected_parent_name').value = name;
+                        bootstrap.Modal.getInstance(document.getElementById('parentModal')).hide();
+                    });
+                });
+
+                // Réinitialisation de la recherche à la fermeture des modals
+                ['typeModal', 'parentModal'].forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    modal?.addEventListener('hidden.bs.modal', function() {
+                        const searchInput = modal.querySelector('input[type="text"]');
+                        if (searchInput) {
+                            searchInput.value = '';
+                            modal.querySelectorAll('.list-group-item').forEach(item => {
+                                item.style.display = '';
+                            });
+                        }
+                    });
                 });
             });
-
-            authorList.addEventListener('click', function(e) {
-                if (e.target.tagName === 'LI') {
-                    authorList.querySelectorAll('li').forEach(li => li.classList.remove('active'));
-                    e.target.classList.add('active');
-                    selectedAuthor = {
-                        id: e.target.dataset.id,
-                        name: e.target.dataset.name
-                    };
-                }
-            });
-
-            saveAuthorBtn.addEventListener('click', function() {
-                if (selectedAuthor) {
-                    parentIdInput.value = selectedAuthor.id;
-                    parentNameInput.value = selectedAuthor.name;
-                    authorModal.hide();
-                }
-            });
-        });
-    </script>
-@endpush
+        </script>
+    @endpush
+@endsection
