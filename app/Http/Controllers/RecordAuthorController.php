@@ -31,14 +31,6 @@ class RecordAuthorController extends Controller
     }
 
 
-    public function createFull()
-    {
-        $authorTypes = AuthorType::all();
-        $parents = author::all();
-        $parents->load('authorType');
-        return view('records.authors.createFull', compact('authorTypes','parents'));
-    }
-
     public function store(Request $request)
     {
         $request->validate([

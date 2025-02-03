@@ -96,6 +96,24 @@ class RecordController extends Controller
             return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
+
+    public function createFull()
+    {
+        $statuses = RecordStatus::all();
+            $supports = RecordSupport::all();
+            $activities = Activity::all();
+            $parents = Record::all();
+            $containers = Container::all();
+            $users = User::all();
+            $levels = RecordLevel::all();
+            $records = Record::all();
+            $authors = Author::with('authorType')->get();
+            $terms = Term::all();
+            $authorTypes = AuthorType::all();
+            $parents = Author::all();
+            return view('records.createFull', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+    }
+
     public function store(Request $request)
     {
 

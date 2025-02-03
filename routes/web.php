@@ -328,11 +328,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
         //Route::post('/records/export/{format}', [RecordController::class, 'export'])->name('records.export');
+
         Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
         Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
         Route::resource('records', RecordController::class);
+        Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
