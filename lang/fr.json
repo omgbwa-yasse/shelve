@@ -491,7 +491,26 @@
     "add_criteria_warning": "Veuillez ajouter au moins un critère de recherche",
     "search_name_prompt": "Nom de la recherche :",
 
-
+    "manage_authors": "Gérer les auteurs",
+    "add_new_author": "Ajouter un nouvel auteur",
+    "select_authors": "Sélectionner des auteurs",
+    "author_type": "Type d'auteur",
+    "search_authors": "Rechercher des auteurs",
+    "no_authors_selected": "Aucun auteur sélectionné",
+    "author_selected": "auteur sélectionné",
+    "authors_selected": "auteurs sélectionnés",
+    "selected_authors_count": "Nombre d'auteurs sélectionnés",
+    "save_selection": "Enregistrer la sélection",
+    "add_author": "Ajouter l'auteur",
+    "alphabet": "Alphabet",
+    "other": "Autre",
+    "author_added_success": "Auteur ajouté avec succès",
+    "error_adding_author": "Erreur lors de l'ajout de l'auteur",
+    "parallel_name": "Nom parallèle",
+    "other_name": "Autre nom",
+    "lifespan": "Période de vie",
+    "locations": "Localisations",
+    "parent_entity": "Entité parente",
     "does_not_contain": "ne contient pas",
 
     "select_placeholder": "-- Sélectionner --"
