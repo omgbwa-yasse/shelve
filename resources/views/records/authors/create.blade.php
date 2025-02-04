@@ -4,7 +4,8 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="">
-                <div class="shadow-sm">
+                <div class="pgp artisan serve
+                shadow-sm">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0">{{ __('add_new_author') }}</h5>
                     </div>
