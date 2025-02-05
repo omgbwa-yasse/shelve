@@ -2,80 +2,76 @@
 
 @section('content')
     <div class="container mt-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                <h5 class="card-title mb-0">{{ __('add_new_author') }}</h5>
-            </div>
-            <div class="card-body">
-                <form action="{{ route('record-author.store') }}" method="POST">
-                    @csrf
-                    <div class="row g-3">
-                        <!-- Type -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('type') }}</label>
-                            <div class="input-group">
-                                <input type="hidden" name="type_id" id="selected_type_id" required>
-                                <input type="text" id="selected_type_name" class="form-control" readonly
-                                       placeholder="{{ __('select_type') }}" required>
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#typeModal">
-                                    <i class="bi bi-search"></i>
+        <div class="row justify-content-center">
+            <div class="">
+                <div class="pgp artisan serve
+                shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">{{ __('add_new_author') }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ route('record-author.store') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('type') }}</label>
+                                <div class="input-group">
+                                    <input type="hidden" name="type_id" id="selected_type_id" required>
+                                    <input type="text" id="selected_type_name" class="form-control" readonly
+                                           placeholder="{{ __('select_type') }}" required>
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#typeModal">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('name') }}</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('parallel_name') }}</label>
+                                <input type="text" name="parallel_name" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('other_name') }}</label>
+                                <input type="text" name="other_name" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('lifespan') }}</label>
+                                <input type="text" name="lifespan" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('locations') }}</label>
+                                <input type="text" name="locations" class="form-control">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('parent_author') }}</label>
+                                <div class="input-group">
+                                    <input type="hidden" name="parent_id" id="selected_parent_id">
+                                    <input type="text" id="selected_parent_name" class="form-control" readonly
+                                           placeholder="{{ __('select_parent') }}">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#parentModal">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" id="clearParent">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    {{ __('create_author') }}
                                 </button>
                             </div>
-                        </div>
-
-                        <!-- Name -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('name') }}</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-
-                        <!-- Parallel Name -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('parallel_name') }}</label>
-                            <input type="text" name="parallel_name" class="form-control">
-                        </div>
-
-                        <!-- Other Name -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('other_name') }}</label>
-                            <input type="text" name="other_name" class="form-control">
-                        </div>
-
-                        <!-- Lifespan -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('lifespan') }}</label>
-                            <input type="text" name="lifespan" class="form-control">
-                        </div>
-
-                        <!-- Locations -->
-                        <div class="col-md-6">
-                            <label class="form-label">{{ __('locations') }}</label>
-                            <input type="text" name="locations" class="form-control">
-                        </div>
-
-                        <!-- Parent Author -->
-                        <div class="col-12">
-                            <label class="form-label">{{ __('parent_author') }}</label>
-                            <div class="input-group">
-                                <input type="hidden" name="parent_id" id="selected_parent_id">
-                                <input type="text" id="selected_parent_name" class="form-control" readonly
-                                       placeholder="{{ __('select_parent') }}">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#parentModal">
-                                    <i class="bi bi-search"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" id="clearParent">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                        </div>
+                        </form>
                     </div>
-
-                    <div class="mt-4 text-end">
-                        <button type="submit" class="btn btn-primary">
-                            {{ __('create_author') }}
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -91,9 +87,9 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-search"></i>
-                        </span>
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
                             <input type="text" class="form-control" id="typeSearch"
                                    placeholder="{{ __('search_type') }}">
                         </div>
@@ -123,9 +119,9 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-search"></i>
-                        </span>
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
                             <input type="text" class="form-control" id="parentSearch"
                                    placeholder="{{ __('search_parent') }}">
                         </div>
@@ -150,6 +146,9 @@
 
     @push('styles')
         <style>
+            .card {
+                border: 0;
+            }
             .modal-body {
                 max-height: calc(100vh - 200px);
                 overflow-y: auto;
@@ -159,7 +158,8 @@
                 overflow-y: auto;
             }
             .list-group-item:hover {
-                background-color: #f8f9fa;
+                background-color: var(--bs-gray-100);
+                cursor: pointer;
             }
             .list-group-item h6 {
                 margin-bottom: 0;
@@ -171,6 +171,14 @@
             }
             .input-group-text {
                 background-color: #fff;
+                border-right: 0;
+            }
+            .form-control:read-only {
+                background-color: var(--bs-gray-100);
+            }
+            .form-label {
+                color: var(--bs-gray-700);
+                font-weight: 500;
             }
         </style>
     @endpush
