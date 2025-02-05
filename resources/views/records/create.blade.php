@@ -25,8 +25,7 @@
             @endif
 
             <div class="row">
-                <!-- Left Column -->
-                <div class="col-md-8">
+                <div class="col-12">
                     <!-- Main Information Card -->
                     <div class="card mb-3">
                         <div class="card-header bg-primary text-white py-2">
@@ -124,10 +123,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Right Column -->
-                <div class="col-md-4">
                     <!-- Indexing Card -->
                     <div class="card mb-3">
                         <div class="card-header bg-primary text-white py-2">
@@ -178,6 +174,19 @@
             </div>
         </form>
     </div>
+
+    <!-- Modals -->
+    @include('records.partials.author_modal')
+    @include('records.partials.term_modal')
+    @include('records.partials.activity_modal')
+
+    <style>
+        .form-label { margin-bottom: 0.2rem; }
+        .card-body { padding: 1rem; }
+        .form-control-sm, .form-select-sm { padding: 0.25rem 0.5rem; }
+        .input-group-sm > .form-control { padding: 0.25rem 0.5rem; }
+        .btn-sm { padding: 0.25rem 0.5rem; }
+    </style>
 
     <!-- Modals -->
     @include('records.partials.author_modal')

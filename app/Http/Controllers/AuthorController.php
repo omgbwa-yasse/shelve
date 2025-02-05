@@ -43,10 +43,15 @@ class AuthorController extends Controller
         ]);
     }
 
+
     public function authorTypesApi()
     {
         return response()->json(AuthorType::select('id', 'name')->get());
     }
+
+
+
+
     public function index()
     {
         $authors = Author::all();
