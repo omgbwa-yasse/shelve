@@ -1,81 +1,41 @@
+<!-- resources/views/bulletin-boards/dashboard.blade.php -->
+
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid py-4">
-        <!-- Statistiques -->
+    <div class="container">
+        <h1>Tableau de Bord</h1>
         <div class="row">
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm">
+            <div class="col-md-4">
+                <div class="card">
                     <div class="card-body">
-                        <h6 class="text-muted mb-1">Publications totales</h6>
-                        <h3 class="mb-0">{{ $stats['total_posts'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted mb-1">Événements actifs</h6>
-                        <h3 class="mb-0">{{ $stats['active_events'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted mb-1">Mes publications</h6>
-                        <h3 class="mb-0">{{ $stats['my_posts'] }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Activités récentes et événements à venir -->
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Activités récentes</h5>
-                    </div>
-                    <div class="card-body">
-                        @foreach($stats['recent_activities'] as $activity)
-                            <div class="d-flex align-items-center py-2 border-bottom">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">{{ $activity->name }}</h6>
-                                    <small class="text-muted">
-                                        Par {{ $activity->user->name }} • {{ $activity->created_at->diffForHumans() }}
-                                    </small>
-                                </div>
-                                <a href="{{ route('bulletin-boards.show', $activity) }}" class="btn btn-sm btn-outline-primary">
-                                    Voir
-                                </a>
-                            </div>
-                        @endforeach
+                        <h5 class="card-title">Total des Babillards</h5>
+                        <p class="card-text">{{ $stats['total_posts'] }}</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">Événements à venir</h5>
-                    </div>
+                <div class="card">
                     <div class="card-body">
-                        @foreach($upcomingEvents as $event)
-                            <div class="d-flex align-items-center py-2 border-bottom">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">{{ $event->name }}</h6>
-                                    <small class="text-muted">
-                                        {{ $event->start_date->format('d/m/Y H:i') }}
-                                    </small>
-                                </div>
-                                <a href="{{ route('bulletin-boards.events.show', $event) }}" class="btn btn-sm btn-outline-primary">
-                                    Détails
-                                </a>
-                            </div>
-                        @endforeach
+                        <h5 class="card-title">Événements Actifs</h5>
+                        <p class="card-text">{{ $stats['active_events'] }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Mes Publications</h5>
+                        <p class="card-text">{{ $stats['my_posts'] }}</p>
                     </div>
                 </div>
             </div>
         </div>
+        <h2>Activités Récentes</h2>
+        <ul>
+            @foreach($stats['recent_activities'] as $activity)
+                <li>{{ $activity->name }} par {{ $activity->user->name }}</li>
+            @endforeach
+        </ul>
     </div>
 @endsection

@@ -1,22 +1,20 @@
 <?php
+
+// app/Models/Post.php
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Event extends Model
+class Post extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
-        'bulletin_board_id',
         'name',
         'description',
         'start_date',
         'end_date',
-        'location',
         'status',
-        'user_id'
+        'user_id',
+        'bulletin_board_id'
     ];
 
     protected $dates = [
@@ -34,4 +32,3 @@ class Event extends Model
         return $this->belongsTo(User::class);
     }
 }
-

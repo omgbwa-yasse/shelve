@@ -11,54 +11,42 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BulletinBoard extends Model
 {
-    use HasFactory, softDeletes;
-
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
         'description',
-        'user_id',
-        'type',
-        'status',
-        'start_date',
-        'end_date',
-        'location'
+        'user_id'
     ];
-
-
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
-
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
-
-
 
     public function events()
     {
-        return $this->hasMany(Event::class, 'events', 'bulletin_board_id');
+        return $this->hasMany(Event::class);
     }
 
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 
     public function attachments()
     {
-        return $this->hasMany(Attachment::class);
+        return $this->belongsToMany(Attachment::class, 'bulletin_board_attachment')
+            ->withPivot('user_id')
+            ->withTimestamps();
     }
-
-
 
     public function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'bulletin_board_organisation')
+            ->withPivot('user_id')
             ->withTimestamps();
     }
-
 
     public function administrators()
     {
@@ -66,24 +54,4 @@ class BulletinBoard extends Model
             ->withPivot(['role', 'permissions', 'assigned_by_id'])
             ->withTimestamps();
     }
-    public function comments()
-    {
-        return $this->hasMany(BulletinBoardComment::class);
-    }
-
-    public function scopeAccessibleByOrganisation($query, $organisationId)
-    {
-        return $query->whereHas('organisations', function($q) use ($organisationId) {
-            $q->where('organisation_id', $organisationId);
-        });
-    }
-
-
-    public function scopeWhereUserIsAdmin($query, $userId)
-    {
-        return $query->whereHas('administrators', function($q) use ($userId) {
-            $q->where('user_id', $userId);
-        });
-    }
-
 }

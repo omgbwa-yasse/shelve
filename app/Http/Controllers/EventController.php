@@ -1,21 +1,37 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Http\Controllers\Controller;
 use App\Models\BulletinBoard;
 use App\Models\Event;
-use Illuminate\Http\Request;
+use App\Models\Organisation;
+use Illuminate\Support\Facades\Request;
 
 class EventController extends Controller
 {
     public function index()
     {
-        $events = BulletinBoard::where('type', 'event')
-            ->with(['user', 'organisations'])
+        $events = Event::with(['bulletinBoard', 'user'])
+            ->when(request('period') === 'upcoming', function ($query) {
+                return $query->where('start_date', '>=', now());
+            })
+            ->when(request('organisation'), function ($query, $organisationId) {
+                return $query->whereHas('bulletinBoard.organisations', function ($q) use ($organisationId) {
+                    $q->where('organisations.id', $organisationId);
+                });
+            })
             ->orderBy('start_date')
             ->paginate(10);
 
-        return view('bulletin-boards.events.index', compact('events'));
+        $organisations = Organisation::all();
+
+        return view('bulletin-boards.events.index', compact('events', 'organisations'));
+    }
+
+    public function create()
+    {
+        $organisations = Organisation::all();
+        return view('bulletin-boards.events.create', compact('organisations'));
     }
 
     public function store(Request $request)
@@ -25,38 +41,33 @@ class EventController extends Controller
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'location' => 'nullable|string|max:255',
-            'organisations' => 'nullable|array',
-            'organisations.*' => 'exists:organisations,id'
+            'location' => 'nullable|string|max:255'
         ]);
 
-        $event = BulletinBoard::create([
+        $bulletinBoard = BulletinBoard::create([
             'name' => $validated['name'],
             'description' => $validated['description'],
-            'type' => 'event',
+            'user_id' => auth()->id()
+        ]);
+
+        $event = Event::create([
+            'bulletin_board_id' => $bulletinBoard->id,
+            'name' => $validated['name'],
+            'description' => $validated['description'],
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'location' => $validated['location'],
-            'user_id' => auth()->id(),
+            'status' => $request->status ?? 'draft',
+            'user_id' => auth()->id()
         ]);
 
-        if (!empty($validated['organisations'])) {
-            $event->organisations()->attach($validated['organisations']);
+        if ($request->has('organisations')) {
+            $bulletinBoard->organisations()->attach($request->organisations, [
+                'user_id' => auth()->id()
+            ]);
         }
 
         return redirect()->route('bulletin-boards.events.show', $event)
             ->with('success', 'Événement créé avec succès.');
-    }
-
-    public function register(Event $event)
-    {
-        $event->participants()->attach(auth()->id());
-        return back()->with('success', 'Inscription effectuée avec succès.');
-    }
-
-    public function unregister(Event $event)
-    {
-        $event->participants()->detach(auth()->id());
-        return back()->with('success', 'Désinscription effectuée avec succès.');
     }
 }

@@ -8,17 +8,22 @@
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('bulletin-boards.index') }}">
-                        <i class="bi bi-grid"></i> Tableau de bord
+                        <i class="bi bi-grid"></i> Babillards
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.posts.index') }}">
+                        <i class="bi bi-file-text"></i> Publications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.events.index') }}">
+                        <i class="bi bi-calendar-event"></i> Événements
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('bulletin-boards.my-posts') }}">
                         <i class="bi bi-person-badge"></i> Mes publications
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.events.index') }}">
-                        <i class="bi bi-calendar-event"></i> Évènements
                     </a>
                 </li>
                 <li class="nav-item">
@@ -37,17 +42,17 @@
             <ul class="list-unstyled pl-3">
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="{{ route('bulletin-boards.create') }}">
-                        <i class="bi bi-pin-angle"></i> Nouvelle publication
+                        <i class="bi bi-pin-angle"></i> Nouveau babillard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.create', ['type' => 'event']) }}">
-                        <i class="bi bi-calendar-plus"></i> Nouvel évènement
+                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.posts.create') }}">
+                        <i class="bi bi-file-earmark-plus"></i> Nouvelle publication
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.create', ['type' => 'announcement']) }}">
-                        <i class="bi bi-megaphone"></i> Nouvelle annonce
+                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.events.create') }}">
+                        <i class="bi bi-calendar-plus"></i> Nouvel événement
                     </a>
                 </li>
             </ul>
@@ -68,6 +73,11 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="{{ route('bulletin-boards.admin.settings') }}">
                             <i class="bi bi-sliders"></i> Paramètres
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="{{ route('bulletin-boards.admin.users') }}">
+                            <i class="bi bi-people"></i> Utilisateurs
                         </a>
                     </li>
                 </ul>

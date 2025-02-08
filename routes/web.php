@@ -252,13 +252,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     // Routes du babillard
-    Route::prefix('bulletin-board')->name('bulletin-boards.')->middleware(['auth'])->group(function () {
-        // Dashboard et pages principales
-        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('dashboard');
-        Route::get('/', [BulletinBoardController::class, 'index'])->name('index');
-        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('my-posts');
+// Dans routes/web.php
 
-        // CRUD Publications
+    Route::middleware(['auth'])->prefix('bulletin-board')->name('bulletin-boards.')->group(function () {
+        // Route principale (dashboard)
+        Route::get('/', [BulletinBoardController::class, 'index'])->name('index');
+        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('dashboard');
+
+        // Routes pour les babillards
         Route::get('/create', [BulletinBoardController::class, 'create'])->name('create');
         Route::post('/', [BulletinBoardController::class, 'store'])->name('store');
         Route::get('/{bulletinBoard}', [BulletinBoardController::class, 'show'])->name('show');
@@ -266,78 +267,58 @@ Route::group(['middleware' => 'auth'], function () {
         Route::put('/{bulletinBoard}', [BulletinBoardController::class, 'update'])->name('update');
         Route::delete('/{bulletinBoard}', [BulletinBoardController::class, 'destroy'])->name('destroy');
 
-        // Gestion des archives
-        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('archives');
-        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('toggle-archive');
-        Route::post('/{bulletinBoard}/restore', [BulletinBoardController::class, 'restore'])->name('restore');
-        Route::delete('/{bulletinBoard}/force', [BulletinBoardController::class, 'forceDelete'])->name('force-delete');
+        // Gestion des posts
+        Route::prefix('posts')->name('posts.')->group(function () {
+            Route::get('/', [PostController::class, 'index'])->name('index');
+            Route::get('/create', [PostController::class, 'create'])->name('create');
+            Route::post('/', [PostController::class, 'store'])->name('store');
+            Route::get('/{post}', [PostController::class, 'show'])->name('show');
+            Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
+            Route::put('/{post}', [PostController::class, 'update'])->name('update');
+            Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
+        });
 
-        // Événements
-        Route::resource('events', EventController::class)->except(['show']);
-        Route::post('/events/{event}/register', [EventController::class, 'register'])->name('events.register');
-        Route::post('/events/{event}/unregister', [EventController::class, 'unregister'])->name('events.unregister');
-        Route::get('/events/{event}/participants', [EventController::class, 'participants'])->name('events.participants');
-        Route::post('/events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+        // Gestion des événements
+        Route::prefix('events')->name('events.')->group(function () {
+            Route::get('/', [EventController::class, 'index'])->name('index');
+            Route::get('/create', [EventController::class, 'create'])->name('create');
+            Route::post('/', [EventController::class, 'store'])->name('store');
+            Route::get('/{event}', [EventController::class, 'show'])->name('show');
+            Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
+            Route::put('/{event}', [EventController::class, 'update'])->name('update');
+            Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+            Route::post('/{event}/register', [EventController::class, 'register'])->name('register');
+            Route::post('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
+        });
 
-        // Gestion des pièces jointes
+        // Routes pour les pièces jointes
         Route::prefix('attachments')->name('attachments.')->group(function () {
             Route::post('/{bulletinBoard}', [BulletinBoardAttachmentController::class, 'store'])->name('store');
             Route::delete('/{attachment}', [BulletinBoardAttachmentController::class, 'destroy'])->name('destroy');
             Route::get('/{attachment}/download', [BulletinBoardAttachmentController::class, 'download'])->name('download');
-            Route::get('/{attachment}/preview', [BulletinBoardAttachmentController::class, 'preview'])->name('preview');
-            Route::post('/{attachment}/thumbnail', [BulletinBoardAttachmentController::class, 'generateThumbnail'])->name('thumbnail');
         });
 
-        // Gestion des commentaires
-        Route::prefix('comments')->name('comments.')->group(function () {
-            Route::post('/{bulletinBoard}', [BulletinBoardCommentController::class, 'store'])->name('store');
-            Route::put('/{comment}', [BulletinBoardCommentController::class, 'update'])->name('update');
-            Route::delete('/{comment}', [BulletinBoardCommentController::class, 'destroy'])->name('destroy');
-            Route::post('/{comment}/approve', [BulletinBoardCommentController::class, 'approve'])->name('approve');
-            Route::post('/{comment}/reject', [BulletinBoardCommentController::class, 'reject'])->name('reject');
-        });
+        // Routes mes publications et archives
+        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('my-posts');
+        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('archives');
+        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('toggle-archive');
 
         // Gestion des organisations
         Route::prefix('organisations')->name('organisations.')->group(function () {
             Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('attach');
             Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('detach');
-            Route::get('/{bulletinBoard}/members', [BulletinBoardController::class, 'organisationMembers'])->name('members');
         });
 
-        // Administration
+        // Routes pour l'administration
         Route::middleware(['can:manage,App\Models\BulletinBoard'])->prefix('admin')->name('admin.')->group(function () {
-            // Tableau de bord admin
             Route::get('/', [BulletinBoardAdminController::class, 'index'])->name('index');
-
-            // Paramètres
             Route::get('/settings', [BulletinBoardAdminController::class, 'settings'])->name('settings');
             Route::put('/settings', [BulletinBoardAdminController::class, 'updateSettings'])->name('settings.update');
-
-            // Gestion des utilisateurs
             Route::get('/users', [BulletinBoardAdminController::class, 'users'])->name('users');
-            Route::post('/users/{user}/permissions', [BulletinBoardAdminController::class, 'updatePermissions'])->name('users.permissions');
-            Route::post('/users/{user}/block', [BulletinBoardAdminController::class, 'blockUser'])->name('users.block');
-            Route::post('/users/{user}/unblock', [BulletinBoardAdminController::class, 'unblockUser'])->name('users.unblock');
-
-            // Modération
-            Route::get('/moderation', [BulletinBoardAdminController::class, 'moderation'])->name('moderation');
-            Route::post('/moderation/bulk-approve', [BulletinBoardAdminController::class, 'bulkApprove'])->name('moderation.bulk-approve');
-            Route::post('/moderation/bulk-reject', [BulletinBoardAdminController::class, 'bulkReject'])->name('moderation.bulk-reject');
-
-            // Rapports et statistiques
-            Route::get('/reports', [BulletinBoardAdminController::class, 'reports'])->name('reports');
-            Route::get('/reports/export', [BulletinBoardAdminController::class, 'exportReports'])->name('reports.export');
-            Route::get('/statistics', [BulletinBoardAdminController::class, 'statistics'])->name('statistics');
-        });
-
-        // API interne pour les interactions AJAX
-        Route::prefix('api')->name('api.')->group(function () {
-            Route::get('/search', [BulletinBoardController::class, 'search'])->name('search');
-            Route::get('/notifications', [BulletinBoardController::class, 'notifications'])->name('notifications');
-            Route::post('/notifications/mark-read', [BulletinBoardController::class, 'markNotificationsRead'])->name('notifications.mark-read');
+            Route::post('/users/{user}/permissions', [BulletinBoardAdminController::class, 'updatePermissions'])
+                ->name('users.permissions');
         });
     });
-
 
     Route::prefix('mails')->group(function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
