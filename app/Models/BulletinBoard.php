@@ -18,6 +18,11 @@ class BulletinBoard extends Model
         'name',
         'description',
         'user_id',
+        'type',
+        'status',
+        'start_date',
+        'end_date',
+        'location'
     ];
 
 
@@ -47,21 +52,24 @@ class BulletinBoard extends Model
     }
 
 
-    public function organisations(): BelongsToMany
+
+    public function organisations()
     {
-        return $this->belongsToMany(Organisation::class)
-            ->withPivot('access_level')
+        return $this->belongsToMany(Organisation::class, 'bulletin_board_organisation')
             ->withTimestamps();
     }
 
 
-    public function administrators(): BelongsToMany
+    public function administrators()
     {
-        return $this->belongsToMany(User::class)
-            ->withPivot('role', 'permissions', 'assigned_by_id')
+        return $this->belongsToMany(User::class, 'bulletin_board_user')
+            ->withPivot(['role', 'permissions', 'assigned_by_id'])
             ->withTimestamps();
     }
-
+    public function comments()
+    {
+        return $this->hasMany(BulletinBoardComment::class);
+    }
 
     public function scopeAccessibleByOrganisation($query, $organisationId)
     {

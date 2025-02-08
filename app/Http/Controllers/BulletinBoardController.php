@@ -245,7 +245,82 @@ class BulletinBoardController extends Controller
             }
         }
 
+    public function dashboard()
+    {
+        $stats = [
+            'total_posts' => BulletinBoard::count(),
+            'active_events' => BulletinBoard::where('type', 'event')
+                ->where('start_date', '>=', now())
+                ->count(),
+            'my_posts' => BulletinBoard::where('user_id', auth()->id())->count(),
+            'recent_activities' => BulletinBoard::with('user')
+                ->latest()
+                ->take(5)
+                ->get()
+        ];
 
+        $upcomingEvents = BulletinBoard::where('type', 'event')
+            ->where('start_date', '>=', now())
+            ->orderBy('start_date')
+            ->take(5)
+            ->get();
+
+        return view('bulletin-boards.dashboard', compact('stats', 'upcomingEvents'));
+    }
+
+    public function myPosts()
+    {
+        $posts = BulletinBoard::where('user_id', auth()->id())
+            ->with(['user', 'organisations'])
+            ->latest()
+            ->paginate(10);
+
+        return view('bulletin-boards.my-posts', compact('posts'));
+    }
+
+    public function archives()
+    {
+        $archivedPosts = BulletinBoard::onlyTrashed()
+            ->with(['user', 'organisations'])
+            ->latest()
+            ->paginate(10);
+
+        return view('bulletin-boards.archives', compact('archivedPosts'));
+    }
+
+    public function toggleArchive(BulletinBoard $bulletinBoard)
+    {
+        if ($bulletinBoard->trashed()) {
+            $bulletinBoard->restore();
+            $message = 'Publication restaurée avec succès.';
+        } else {
+            $bulletinBoard->delete();
+            $message = 'Publication archivée avec succès.';
+        }
+
+        return back()->with('success', $message);
+    }
+
+
+
+
+    protected function handleAttachments(BulletinBoard $bulletinBoard, $attachments)
+    {
+        if (!$attachments) {
+            return;
+        }
+
+        foreach ($attachments as $attachment) {
+            $path = $attachment->store('bulletin-board-attachments', 'public');
+            $bulletinBoard->attachments()->create([
+                'name' => $attachment->getClientOriginalName(),
+                'path' => $path,
+                'mime_type' => $attachment->getMimeType(),
+                'size' => $attachment->getSize(),
+                'user_id' => auth()->id()
+            ]);
+        }
+    }
         private function checkManagementPermissions(BulletinBoard $bulletinBoard)
         {
             $userRole = $bulletinBoard->administrators()
