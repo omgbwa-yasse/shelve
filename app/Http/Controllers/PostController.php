@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\BulletinBoard;
 use App\Models\Post;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Image;
+use FFMpeg\FFMpeg;
+use FFMpeg\Coordinate\TimeCode;
 
 class PostController extends Controller
 {
@@ -45,7 +50,9 @@ class PostController extends Controller
             'end_date' => 'nullable|date|after:start_date',
             'organisations' => 'nullable|array',
             'organisations.*' => 'exists:organisations,id',
-            'status' => 'required|in:draft,published,cancelled'
+            'status' => 'required|in:draft,published,cancelled',
+            'attachments.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov,doc,docx,xls,xlsx|max:20480', // 20MB max
+            'thumbnails.*' => 'nullable|string'
         ]);
 
         // Création du bulletin board parent
@@ -73,20 +80,45 @@ class PostController extends Controller
             ]);
         }
 
-        // Gestion des pièces jointes
+        // Gestion des pièces jointes et vignettes
         if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
+            foreach ($request->file('attachments') as $key => $file) {
                 $path = $file->store('bulletin_board_attachments');
-                $bulletinBoard->attachments()->attach(
-                    Attachment::create([
-                        'path' => $path,
-                        'name' => $file->getClientOriginalName(),
-                        'mime_type' => $file->getMimeType(),
-                        'size' => $file->getSize(),
-                        'creator_id' => Auth::id()
-                    ])->id,
-                    ['user_id' => Auth::id()]
-                );
+
+                $mimeType = $file->getMimeType();
+                $fileType = explode('/', $mimeType)[0];
+
+                $attachment = Attachment::create([
+                    'path' => $path,
+                    'name' => $file->getClientOriginalName(),
+                    'crypt' => md5_file($file),
+                    'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                    'mime_type' => $mimeType,
+                    'size' => $file->getSize(),
+                    'creator_id' => Auth::id(),
+//                    'type' => 'board'
+                ]);
+
+                // Gestion de la vignette
+                if ($request->has('thumbnails') && isset($request->thumbnails[$key])) {
+                    $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnails[$key]));
+                    $thumbnailPath = 'thumbnails_bulletin_board/' . $attachment->id . '.jpg';
+                    $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
+
+                    if ($stored) {
+                        $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                    }
+                } else {
+                    // Génération automatique de vignette pour les images et vidéos
+                    if (in_array($fileType, ['image', 'video'])) {
+                        $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
+                        if ($thumbnailPath) {
+                            $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                        }
+                    }
+                }
+
+                $bulletinBoard->attachments()->attach($attachment->id, ['user_id' => Auth::id()]);
             }
         }
 
@@ -120,7 +152,9 @@ class PostController extends Controller
             'end_date' => 'nullable|date|after:start_date',
             'organisations' => 'nullable|array',
             'organisations.*' => 'exists:organisations,id',
-            'status' => 'required|in:draft,published,cancelled'
+            'status' => 'required|in:draft,published,cancelled',
+            'attachments.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov,doc,docx,xls,xlsx|max:20480',
+            'thumbnails.*' => 'nullable|string'
         ]);
 
         // Mise à jour du bulletin board parent
@@ -145,20 +179,45 @@ class PostController extends Controller
             ]);
         }
 
-        // Gestion des nouvelles pièces jointes
+        // Gestion des nouvelles pièces jointes et vignettes
         if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
+            foreach ($request->file('attachments') as $key => $file) {
                 $path = $file->store('bulletin_board_attachments');
-                $post->bulletinBoard->attachments()->attach(
-                    Attachment::create([
-                        'path' => $path,
-                        'name' => $file->getClientOriginalName(),
-                        'mime_type' => $file->getMimeType(),
-                        'size' => $file->getSize(),
-                        'creator_id' => Auth::id()
-                    ])->id,
-                    ['user_id' => Auth::id()]
-                );
+
+                $mimeType = $file->getMimeType();
+                $fileType = explode('/', $mimeType)[0];
+
+                $attachment = Attachment::create([
+                    'path' => $path,
+                    'name' => $file->getClientOriginalName(),
+                    'crypt' => md5_file($file),
+                    'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                    'mime_type' => $mimeType,
+                    'size' => $file->getSize(),
+                    'creator_id' => Auth::id(),
+                    'type' => 'bulletin_board'
+                ]);
+
+                // Gestion de la vignette
+                if ($request->has('thumbnails') && isset($request->thumbnails[$key])) {
+                    $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnails[$key]));
+                    $thumbnailPath = 'thumbnails_bulletin_board/' . $attachment->id . '.jpg';
+                    $stored = Storage::disk('public')->put($thumbnailPath, $thumbnailData);
+
+                    if ($stored) {
+                        $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                    }
+                } else {
+                    // Génération automatique de vignette pour les images et vidéos
+                    if (in_array($fileType, ['image', 'video'])) {
+                        $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
+                        if ($thumbnailPath) {
+                            $attachment->update(['thumbnail_path' => $thumbnailPath]);
+                        }
+                    }
+                }
+
+                $post->bulletinBoard->attachments()->attach($attachment->id, ['user_id' => Auth::id()]);
             }
         }
 
@@ -197,5 +256,61 @@ class PostController extends Controller
         $post->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Publication annulée avec succès.');
+    }
+
+    private function generateThumbnail($file, $attachmentId, $fileType)
+    {
+        $thumbnailPath = 'thumbnails_bulletin_board/' . $attachmentId . '.jpg';
+
+        try {
+            if ($fileType === 'image') {
+                $img = Image::make($file->getRealPath());
+                $img->fit(300, 300);
+                $img->save(storage_path('app/public/' . $thumbnailPath));
+            } elseif ($fileType === 'video') {
+                $ffmpeg = FFMpeg::create();
+                $video = $ffmpeg->open($file->getRealPath());
+                $frame = $video->frame(TimeCode::fromSeconds(1));
+                $frame->save(storage_path('app/public/' . $thumbnailPath));
+            } else {
+                return null;
+            }
+
+            return $thumbnailPath;
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la génération de la vignette: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getThumbnailUrl($attachment)
+    {
+        if ($attachment->thumbnail_path) {
+            return Storage::url($attachment->thumbnail_path);
+        }
+
+        // Icônes par défaut selon le type de fichier
+        $extension = pathinfo($attachment->name, PATHINFO_EXTENSION);
+        switch(strtolower($extension)) {
+            case 'pdf':
+                return asset('icons/pdf.png');
+            case 'doc':
+            case 'docx':
+                return asset('icons/word.png');
+            case 'xls':
+            case 'xlsx':
+                return asset('icons/excel.png');
+            case 'jpg':
+            case 'jpeg':
+            case 'png':
+            case 'gif':
+                return Storage::url($attachment->path);
+            case 'mp4':
+            case 'avi':
+            case 'mov':
+                return asset('icons/video.png');
+            default:
+                return asset('icons/file.png');
+        }
     }
 }

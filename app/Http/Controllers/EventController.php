@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BulletinBoard;
 use App\Models\Event;
 use App\Models\Organisation;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
@@ -70,4 +70,25 @@ class EventController extends Controller
         return redirect()->route('bulletin-boards.events.show', $event)
             ->with('success', 'Événement créé avec succès.');
     }
+    public function show(Event $event)
+    {
+        $event->load([
+            'bulletinBoard.organisations',
+            'bulletinBoard.attachments',
+            'user',
+//            'participants' => function($query) {
+//                $query->latest()->take(10);
+//            }
+        ]);
+
+//        $isRegistered = auth()->check() ? $event->participants->contains(auth()->id()) : false;
+//        $canRegister = $event->start_date->isFuture();
+
+        return view('bulletin-boards.events.show', compact(
+            'event',
+//            'isRegistered',
+//            'canRegister'
+        ));
+    }
+
 }

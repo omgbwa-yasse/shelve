@@ -4,6 +4,7 @@ use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\BulletinBoardAttachmentController;
 use App\Http\Controllers\BulletinBoardCommentController;
 use App\Http\Controllers\PDFController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
@@ -280,6 +281,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Gestion des événements
         Route::prefix('events')->name('events.')->group(function () {
+            Route::get('/{event}', [EventController::class, 'show'])->name('show');
             Route::get('/', [EventController::class, 'index'])->name('index');
             Route::get('/create', [EventController::class, 'create'])->name('create');
             Route::post('/', [EventController::class, 'store'])->name('store');
