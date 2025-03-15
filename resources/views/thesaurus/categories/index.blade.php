@@ -1,45 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1>Branches du thésaurus</h1>
-        <div class="mb-3">
-            <a href="{{ route('term-categories.create') }}" class="btn btn-primary btn-sm">Ajouter une branche</a>
-        </div>
-        <div class="mb-3">
-            <input type="text" id="search" class="form-control" placeholder="Rechercher...">
-        </div>
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="categories">
-                @foreach ($categories as $category)
-                    <tr>
-                        <td>{{ $category->name }}</td>
-                        <td>{{ $category->description ?? '' }}</td>
-                        <td>
-                            <a href="{{ route('term-categories.show', $category) }}" class="btn btn-primary btn-sm">Voir</a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+<div class="container">
+    <h1>{{ __('Thesaurus Branches') }}</h1>
+
+    <a href="{{ route('term-categories.create') }}" class="btn btn-primary btn-sm">{{ __('Add Branch') }}</a>
+
+    <div class="mt-3">
+        <input type="text" id="search" class="form-control" placeholder="{{ __('Search...') }}">
     </div>
+
+    <div class="mt-3">
+        <div id="tree">
+            @foreach($categories as $category)
+                @include('thesaurus.categories.partials.category-item', ['category' => $category])
+            @endforeach
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ __('Name') }}</th>
+                <th>{{ __('Description') }}</th>
+                <th>{{ __('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($categories as $category)
+                <tr>
+                    <td>{{ $category->name }}</td>
+                    <td>{{ $category->description }}</td>
+                    <td>
+                        <a href="{{ route('term-categories.show', $category) }}" class="btn btn-primary btn-sm">{{ __('View') }}</a>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
 @endsection
 
 @push('scripts')

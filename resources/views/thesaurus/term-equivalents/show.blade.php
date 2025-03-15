@@ -1,9 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>Term Equivalent Details</h1>
-    <p><strong>Term:</strong> {{ $termEquivalent->term->name }}</p>
-    <p><strong>Child Term:</strong> {{ $termEquivalent->child->name }}</p>
-    <p><strong>Equivalent Type:</strong> {{ $termEquivalent->relationType->name }}</p>
-    <a href="{{ route('terms.term-relations.index', $termEquivalent->term) }}" class="btn btn-secondary">Back</a>
+<div class="container">
+    <h1>{{ __('Term Equivalent Details') }}</h1>
+    <div class="mt-3">
+        <p><strong>{{ __('Term') }}:</strong> {{ $termEquivalent->term->name }}</p>
+        <p><strong>{{ __('Child Term') }}:</strong> {{ $termEquivalent->child->name }}</p>
+        <p><strong>{{ __('Equivalent Type') }}:</strong> {{ $termEquivalent->equivalentType->name }}</p>
+    </div>
+    <a href="{{ route('terms.term-relations.index', $termEquivalent->term) }}" class="btn btn-secondary">{{ __('Back') }}</a>
+</div>
 @endsection
