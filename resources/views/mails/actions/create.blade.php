@@ -6,11 +6,11 @@
     <form method="POST" action="{{ route('mail-actions.store') }}">
         @csrf
         <div class="form-group">
-            <label for="name">{{ __('Name') }}</label>
+            <label for="name">{{ __('mail_action.name') }}</label>
             <input type="text" name="name" id="name" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="duration">{{ __('Duration') }}</label>
+            <label for="duration">{{ __('mail_action.duration') }}</label>
             <input type="number" name="duration" id="duration" class="form-control" required>
         </div>
         <div class="form-group">
@@ -24,7 +24,7 @@
             <label for="description">{{ __('Description') }}</label>
             <textarea name="description" id="description" class="form-control"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+        <button type="submit" class="btn btn-primary">{{ __('mail_action.save') }}</button>
     </form>
 </div>
 @endsection
