@@ -1339,3 +1339,6 @@
     "type_of_entity": "Type d'entité",
     "equivalent_name": "Nom équivalent",
     "entity_type": "Type d'entité",
+    "search_type": "Rechercher un type...",
+    "search_parent": "Rechercher une entité parente...",
+    "does_not_contain
