@@ -50,8 +50,6 @@
     "Notes": "Notes",
     "Description Control": "Description Control",
     "Indexation": "Indexation",
-
-
     "Current Organization": "Current Organization",
     "Not defined": "Not defined",
     "Change Organization": "Change Organization",
@@ -81,10 +79,8 @@
     "communicate": "Communicate",
     "checkAll": "Check All",
     "uncheckAll": "Uncheck All",
-
     "descriptionLevel": "Description Level",
     "status": "Status",
-
     "activity": "Activity",
     "dates": "Dates",
     "container": "Container",
@@ -92,12 +88,10 @@
     "producer": "Producer",
     "headings": "Headings",
     "choosePrintFormat": "Choose export format",
-
     "createNewCommunication": "Create a new communication",
     "close": "Close",
     "save": "Save",
     "createNewSlip": "Create a new slip",
-
     "description": "Description",
     "officerOrganization": "Officer Organization",
     "userOrganization": "User Organization",
@@ -153,23 +147,16 @@
     "search_term": "Search for a term",
     "search_activity": "Search for an activity",
     "remove": "Remove",
-
     "records": "Records",
     "descriptive_sheet": "Descriptive Sheet",
     "edit_sheet": "Edit Sheet",
     "delete_sheet": "Delete Sheet",
     "in": "In",
-
     "title_analysis": "Title / Analysis",
-
     "to": "to",
-
     "not_containerized": "Not containerized",
     "created_by": "Created By",
-
-
     "terms": "Terms",
-
     "no_child_records": "No child records found.",
     "add_child_sheet": "Add Child Sheet",
     "archive_boxes": "Archive Boxes",
@@ -188,19 +175,15 @@
     "select_dolly": "Select Dolly (optional)",
     "all_records": "All Records",
     "export_format": "Export Format",
-
     "search": "Search",
     "my_archives": "My Archives",
     "holders": "Holders",
-
     "keywords": "Keywords",
-
     "premises": "Premises",
     "recent": "Recent",
     "advanced": "Advanced",
     "registration": "Registration",
     "new": "New",
-
     "life_cycle": "Life Cycle",
     "to_transfer": "To Transfer",
     "active_files": "Active Files",
@@ -210,31 +193,24 @@
     "to_sort": "To Sort",
     "import_export": "Import / Export",
     "import": "Import",
-
     "my_mails": "My Mails",
     "received_mails": "Received Mails",
     "sent_mails": "Sent Mails",
     "archived_mails": "Archived Mails",
-
     "typologies": "Typologies",
-
-
     "my_paraphers": "My Paraphers",
     "received_paraphers": "Received Paraphers",
     "sent_paraphers": "Sent Paraphers",
     "case_follow_up": "Case Follow-up",
     "expected_returns": "Expected Returns",
     "overdue_returns": "Overdue Returns",
-
     "mail": "Mail",
     "parapher": "Parapher",
-
     "box_chrono": "Box & Chrono",
     "to_receive": "To Receive",
     "receive": "Receive",
     "send": "Send",
     "archive": "Archive",
-
     "classification_plan": "Classification Plan",
     "all_classes": "All Classes",
     "add_class": "Add a Class",
@@ -249,17 +225,12 @@
     "add_word": "Add a Word",
     "toolbox": "Toolbox",
     "barcode": "Barcode",
-
-
     "my_slips": "My Slips",
-
     "organizations": "Organizations",
     "transfer_tracking": "Transfer Tracking",
     "projects": "Projects",
     "received": "Received",
-
     "integrated": "Integrated",
-
     "slip": "Slip",
     "communications": "Communications",
     "reservations": "Reservations",
@@ -278,17 +249,11 @@
     "archive_container": "Archive Container",
     "buildings": "Buildings",
     "rooms": "Rooms",
-
     "all_carts": "All Carts",
-
     "archives": "Archives",
     "communication": "Communication",
-
     "shelf": "Shelf",
-
     "archives_transfer": "Archives (Transfer)",
-
-
     "my_account": "My Account",
     "authorizations_and_positions": "Authorizations and Positions",
     "users": "Users",
@@ -299,12 +264,10 @@
     "tasks": "Tasks",
     "task_types": "Task Types",
     "task_statuses": "Task Statuses",
-
     "actions": "Actions",
     "directory": "Directory",
     "supports": "Supports",
     "statuses": "Statuses",
-
     "communication_status": "Communication Status",
     "reservation_status": "Reservation Status",
     "deposit": "Deposit",
@@ -320,35 +283,48 @@
     "my_backups": "My Backups",
     "new_backup": "New Backup",
     "ldap": "LDAP",
-
     "statistics": "Statistics",
-
     "request": "Request",
-
     "tool": "Tool",
     "carts": "Carts",
-
     "task": "Task",
     "task_tracking": "Task Tracking",
-    "ongoing_tasks": "Ongoing Tasks",
-    "completed_tasks": "Completed Tasks",
-    "my_tasks": "My Tasks",
+    "new task": "New Task",
+    "all task": "All Tasks",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "My tasks": "My Tasks",
     "supervision": "Supervision",
-
+    "Name": "Name",
+    "Type": "Type",
+    "Status": "Status",
+    "Duration": "Duration",
+    "Actions": "Actions",
+    "Instructions": "Instructions",
+    "Remember Date Fix": "Remember Date Fix",
+    "Remember Period": "Remember Period",
+    "Remember Date Trigger": "Remember Date Trigger",
+    "Remember Limit Number": "Remember Limit Number",
+    "Remember Limit Date": "Remember Limit Date",
+    "Remember User": "Remember User",
+    "Remember Frequency Value": "Remember Frequency Value",
+    "Remember Frequency Unit": "Remember Frequency Unit",
+    "Supervision User": "Supervision User",
+    "Task Assignation": "Task Assignation",
+    "Task Update": "Task Update",
+    "Task Parent Update": "Task Parent Update",
+    "Task Child Update": "Task Child Update",
+    "Task Close": "Task Close",
     "mails": "Mails",
-
     "check_all": "Check All",
     "uncheck_all": "Uncheck All",
-
     "author": "Author",
     "date": "Date",
     "priority": "Priority",
     "mail_type": "Mail Type",
     "typology": "Typology",
     "copy": "Copy",
-
     "add_to_cart": "Add to Cart",
-
     "confirm": "Confirm",
     "print_records": "Print Records",
     "select_at_least_one": "Please select at least one record.",
@@ -377,14 +353,10 @@
     "Select Organization": "Select Organization",
     "Search users": "Search users",
     "Search organizations": "Search organizations",
-
     "Communication Form": "Communication Form",
-
     "Check All": "Check All",
-
     "Return Date": "Return Date",
     "Effective Return Date": "Effective Return Date",
-
     "Back": "Back",
     "Edit": "Edit",
     "Delete": "Delete",
@@ -400,7 +372,6 @@
     "View": "View",
     "Return": "Return",
     "Cancel Return": "Cancel Return",
-
     "communication_sheets": "Communication Sheets",
     "requester": "Requester",
     "operator": "Operator",
@@ -411,7 +382,6 @@
     "yes": "Yes",
     "no": "No",
     "not_available": "N/A",
-
     "available_fields": "Available Fields",
     "search_criteria": "Search Criteria",
     "click_fields_to_add_criteria": "Click on fields on the left to add search criteria",
@@ -419,26 +389,20 @@
     "saved_searches": "Saved Searches",
     "no_saved_searches": "No saved searches",
     "clear": "Clear",
-
-
     "lifecycle": "Lifecycle",
     "location": "Location",
     "indexation": "Indexation",
     "others": "Others",
-
     "start_date": "Start Date",
     "end_date": "End Date",
     "exact_date": "Exact Date",
-
     "creation_date": "Creation Date",
     "communication_delay": "Communication Delay",
     "legal_delay": "Legal Delay",
     "archive_box": "Archive Box",
     "storage": "Storage",
     "term": "Term",
-
     "creator": "Creator",
-
     "starts_with": "starts with",
     "contains": "contains",
     "not_contains": "does not contain",
@@ -446,9 +410,7 @@
     "greater_than": "greater than",
     "less_than": "less than",
     "with": "with",
-
     "without": "without",
-
     "save_search_prompt": "Search name:",
     "search_saved_success": "Search saved successfully",
     "search_deleted_success": "Search deleted",
@@ -468,19 +430,11 @@
     "October": "October",
     "November": "November",
     "December": "December",
-
     "relations": "Relations",
-
     "advanced_search": "Advanced Search",
-
-
     "operator_organisation": "Operator Organization",
-
     "user_organisation": "User Organization",
-
     "return_effective": "Effective Return Date",
-
-
     "received_date": "Reception Date",
     "approved_date": "Approval Date",
     "integrated_date": "Integration Date",
@@ -489,7 +443,6 @@
     "received_by": "Received By",
     "approved_by": "Approved By",
     "integrated_by": "Integrated By",
-
     "record": "Record",
     "manage_authors": "Manage Authors",
     "add_new_author": "Add New Author",
@@ -516,28 +469,19 @@
     "parent_entity": "Parent Entity",
     "search_type": "Search type...",
     "search_parent": "Search parent author...",
-
     "add_criteria_warning": "Please add at least one search criterion",
     "search_name_prompt": "Search name:",
-
-
     "does_not_contain": "does not contain",
-
     "select_placeholder": "-- Select --",
-
     "type": "Type",
-
     "parent_author": "Parent Author",
     "select_type": "Select Type",
     "select_parent": "Select Parent",
-
     "create_author": "Create Author",
     "none": "None",
-
     "select_entity_type": "Select Entity Type",
     "select_parent_entity": "Select Parent Entity",
     "physical_legal_persons_list": "Physical and Legal Persons List",
-
     "view_archives": "View Archives",
     "edit": "Edit",
     "details": "Details",
@@ -549,12 +493,9 @@
     "author_details": "Author Details",
     "contact_information": "Contact Information",
     "add_contact": "Add Contact",
-
     "po_box": "P.O. Box",
     "no_contacts_found": "No contacts found",
-
     "confirm_delete_author": "Are you sure you want to delete this author?",
     "back_to_authors": "Back to Authors",
-
     "main_information": "main information"
 }

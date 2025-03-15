@@ -2,77 +2,75 @@
 
 @section('content')
     <div class="container">
-        <h1>Ajouter un terme</h1>
+        <h1>{{ __('Create Term') }}</h1>
         <form action="{{ route('terms.store') }}" method="POST">
             @csrf
             <div class="form-group">
-                <label for="name">Nom</label>
+                <label for="name">{{ __('Name') }}</label>
                 <input type="text" name="name" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="description">Description</label>
+                <label for="description">{{ __('Description') }}</label>
                 <textarea name="description" class="form-control"></textarea>
             </div>
             <div class="form-group">
-                <label for="parent_id">Parent</label>
+                <label for="parent_id">{{ __('Parent') }}</label>
                 <div class="select-with-search">
                     <div class="input-group mb-2">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search parent...">
+                        <input type="text" class="form-control search-input" placeholder="{{ __('Search parent...') }}">
                     </div>
                     <select name="parent_id" class="form-control">
-                        @foreach ($parents as $parent)
+                        @foreach($parents as $parent)
                             <option value="{{ $parent->id }}">{{ $parent->code }} - {{ $parent->name }}</option>
                         @endforeach
-                        <option value="">Créer une nouvelle branche</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label for="type_id">Type</label>
+                <label for="type_id">{{ __('Type') }}</label>
                 <div class="select-with-search">
                     <div class="input-group mb-2">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search type...">
+                        <input type="text" class="form-control search-input" placeholder="{{ __('Search type...') }}">
                     </div>
                     <select name="type_id" class="form-control" required>
-                        @foreach ($types as $type)
+                        @foreach($types as $type)
                             <option value="{{ $type->id }}">{{ $type->code }} - {{ $type->name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label for="category_id">Category</label>
+                <label for="category_id">{{ __('Category') }}</label>
                 <div class="select-with-search">
                     <div class="input-group mb-2">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search category...">
+                        <input type="text" class="form-control search-input" placeholder="{{ __('Search category...') }}">
                     </div>
                     <select name="category_id" class="form-control" required>
-                        @foreach ($categories as $category)
+                        @foreach($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label for="language_id">Langue</label>
+                <label for="language_id">{{ __('Language') }}</label>
                 <div class="select-with-search">
                     <div class="input-group mb-2">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search language...">
+                        <input type="text" class="form-control search-input" placeholder="{{ __('Search language...') }}">
                     </div>
                     <select name="language_id" class="form-control" required>
-                        <option value="">Select a lanquage</option>
-                        @foreach ($languages as $language)
+                        @foreach($languages as $language)
                             <option value="{{ $language->id }}">{{ $language->name }}</option>
                         @endforeach
                     </select>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-            <a href="{{ route('terms.index') }}" class="btn btn-secondary">Retour</a>
+            <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
+            <a href="{{ route('terms.index') }}" class="btn btn-secondary">{{ __('Back') }}</a>
         </form>
     </div>
 

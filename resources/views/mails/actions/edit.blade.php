@@ -2,12 +2,12 @@
 
 @section('content')
 <div class="container">
-    <h1>Modifier l'action</h1>
-    <form action="{{ route('mail-action.update', $mailAction) }}" method="POST">
+    <h1>{{ __('Edit Mail Action') }}</h1>
+    <form method="POST" action="{{ route('mail-actions.update', $mailAction->id) }}">
         @csrf
         @method('PUT')
-        <div class="mb-3">
-            <label for="name" class="form-label">Intitulé </label>
+        <div class="form-group">
+            <label for="name">{{ __('Name') }}</label>
             <input type="text" name="name" id="name" class="form-control" value="{{ $mailAction->name }}" required>
         </div>
         <div class="mb-3">
@@ -25,7 +25,7 @@
             <label for="description" class="form-label">Description </label>
             <textarea name="description" id="description" class="form-control" >{{ $mailAction->description }}</textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary">{{ __('Update') }}</button>
     </form>
 </div>
 @endsection
