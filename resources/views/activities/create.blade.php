@@ -3,39 +3,39 @@
 @section('content')
     <div class="container">
         <div class="">
-            <h1 class="mb-0">Create Activity</h1>
+            <h1 class="mb-0">{{ __('Add Activity') }}</h1>
         </div>
         <div class="card-body">
             <form action="{{ route('activities.store') }}" method="POST">
                 @csrf
                 <div class="form-group mb-4">
-                    <label for="code" class="form-label"><i class="bi bi-barcode"></i> Code</label>
+                    <label for="code" class="form-label"><i class="bi bi-barcode"></i> {{ __('Code') }}</label>
                     <input type="text" name="code" id="code" class="form-control form-control-lg" required>
                 </div>
                 <div class="form-group mb-4">
-                    <label for="name" class="form-label"><i class="bi bi-tag"></i> Name</label>
+                    <label for="name" class="form-label"><i class="bi bi-tag"></i> {{ __('Name') }}</label>
                     <input type="text" name="name" id="name" class="form-control form-control-lg" required>
                 </div>
                 <div class="form-group mb-4">
-                    <label for="observation" class="form-label"><i class="bi bi-chat-left-text"></i> Observation</label>
+                    <label for="observation" class="form-label"><i class="bi bi-chat-left-text"></i> {{ __('Observation') }}</label>
                     <textarea name="observation" id="observation" class="form-control form-control-lg"></textarea>
                 </div>
                 <div class="form-group mb-4">
-                    <label for="parent_id" class="form-label"><i class="bi bi-diagram-3"></i> Parent ID</label>
+                    <label for="parent_id" class="form-label"><i class="bi bi-diagram-3"></i> {{ __('Parent') }}</label>
                     <div class="select-with-search">
                         <div class="input-group mb-2">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control search-input" placeholder="Search parent...">
+                            <input type="text" class="form-control search-input" placeholder="{{ __('Search parent...') }}">
                         </div>
                         <select name="parent_id" id="parent_id" class="form-control form-control-lg">
-                            <option value="">None</option>
+                            <option value="">{{ __('None') }}</option>
                             @foreach ($parents as $parent)
                                 <option value="{{ $parent->id }}">{{ $parent->name }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg btn-block">Create</button>
+                <button type="submit" class="btn btn-primary btn-lg btn-block">{{ __('Create') }}</button>
             </form>
         </div>
     </div>
@@ -94,7 +94,7 @@
                     const noResultsOption = select.querySelector('option[data-no-results]');
                     if (!noResultsOption) {
                         const newNoResultsOption = document.createElement('option');
-                        newNoResultsOption.textContent = 'No results found';
+                        newNoResultsOption.textContent = '{{ __('No results found') }}';
                         newNoResultsOption.disabled = true;
                         newNoResultsOption.setAttribute('data-no-results', 'true');
                         select.appendChild(newNoResultsOption);

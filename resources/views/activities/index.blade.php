@@ -2,28 +2,27 @@
 
 @section('content')
     <div class="container-fluid">
-        <!-- En-tête avec boutons de vue -->
         <div class="row mb-4 align-items-center">
             <div class="col">
                 <h1 class="h2 mb-0">
-                    <i class="bi bi-diagram-3 me-2"></i>Plan de classement
+                    <i class="bi bi-diagram-3 me-2"></i>{{ __('Classification Plan') }}
                 </h1>
             </div>
             <div class="col-auto">
                 <div class="btn-group me-3" role="group" aria-label="Vue">
                     <input type="radio" class="btn-check" name="viewType" id="tableView" checked>
                     <label class="btn btn-outline-secondary" for="tableView">
-                        <i class="bi bi-table me-1"></i>Table
+                        <i class="bi bi-table me-1"></i>{{ __('Table') }}
                     </label>
 
                     <input type="radio" class="btn-check" name="viewType" id="chartView">
                     <label class="btn btn-outline-secondary" for="chartView">
-                        <i class="bi bi-diagram-2 me-1"></i>Organigramme
+                        <i class="bi bi-diagram-2 me-1"></i>{{ __('Chart') }}
                     </label>
                 </div>
 
                 <a href="{{ route('activities.create') }}" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-2"></i>Ajouter une activité
+                    <i class="bi bi-plus-circle me-2"></i>{{ __('Add Activity') }}
                 </a>
                 <div class="btn-group me-2">
                     <a href="{{ route('activities.export.excel') }}" class="btn btn-success">
@@ -44,11 +43,11 @@
                         <table class="table table-hover">
                             <thead class="table-light">
                             <tr>
-                                <th scope="col"><i class="bi bi-hash me-1"></i>Code</th>
-                                <th scope="col"><i class="bi bi-text-left me-1"></i>Nom</th>
-                                <th scope="col"><i class="bi bi-chat me-1"></i>Observation</th>
-                                <th scope="col"><i class="bi bi-diagram-2 me-1"></i>Parent</th>
-                                <th scope="col" class="text-end">Actions</th>
+                                <th scope="col"><i class="bi bi-hash me-1"></i>{{ __('Code') }}</th>
+                                <th scope="col"><i class="bi bi-text-left me-1"></i>{{ __('Name') }}</th>
+                                <th scope="col"><i class="bi bi-chat me-1"></i>{{ __('Observation') }}</th>
+                                <th scope="col"><i class="bi bi-diagram-2 me-1"></i>{{ __('Parent') }}</th>
+                                <th scope="col" class="text-end">{{ __('Actions') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -62,20 +61,20 @@
                                             <span class="badge bg-secondary">{{ $activity->parent->code }}</span>
                                             {{ $activity->parent->name }}
                                         @else
-                                            <span class="badge bg-primary">Mission</span>
+                                            <span class="badge bg-primary">{{ __('Mission') }}</span>
                                         @endif
                                     </td>
                                     <td class="text-end">
                                         <a href="{{ route('activities.show', $activity->id) }}"
                                            class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-gear me-1"></i>Paramètres
+                                            <i class="bi bi-gear me-1"></i>{{ __('Settings') }}
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="5" class="text-center py-4">
-                                        <p class="text-muted mb-0">Aucune activité trouvée.</p>
+                                        <p class="text-muted mb-0">{{ __('No activities found.') }}</p>
                                     </td>
                                 </tr>
                             @endforelse
@@ -93,10 +92,10 @@
                 <div class="d-flex justify-content-end p-3">
                     <div class="legend d-flex align-items-center gap-4">
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-primary me-2">■</span> Mission
+                            <span class="badge bg-primary me-2">■</span> {{ __('Mission') }}
                         </div>
                         <div class="d-flex align-items-center">
-                            <span class="badge bg-success me-2">■</span> Activité
+                            <span class="badge bg-success me-2">■</span> {{ __('Activity') }}
                         </div>
                     </div>
                 </div>

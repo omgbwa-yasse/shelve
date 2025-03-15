@@ -2,31 +2,31 @@
 
 @section('content')
     <div class="container">
-        <h1>Détails de l'activité</h1>
+        <h1>{{ __('Activity Details') }}</h1>
 
         <table class="table">
             <tr>
-                <th>Code</th>
+                <th>{{ __('Code') }}</th>
                 <td>{{ $activity->code }}</td>
             </tr>
             <tr>
-                <th>Name</th>
+                <th>{{ __('Name') }}</th>
                 <td>{{ $activity->name }}</td>
             </tr>
             <tr>
-                <th>Observation</th>
+                <th>{{ __('Observation') }}</th>
                 <td>{{ $activity->observation }}</td>
             </tr>
             @if ($activity->parent_id != NULL)
                 <tr>
-                    <th>Activité parent</th>
+                    <th>{{ __('Parent Activity') }}</th>
                     <td>{{ $activity->parent->code }} - {{ $activity->parent->name }}</td>
                 </tr>
             @endif
         </table>
 
         @if ($activity->communicability != NULL)
-            <h2>Durée de conservation dans les bureaux</h2>
+            <h2>{{ __('Office Retention Period') }}</h2>
             <table class="table">
                 <thead>
                     <tr>
