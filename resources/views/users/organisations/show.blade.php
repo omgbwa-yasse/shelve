@@ -7,23 +7,14 @@
             <tbody>
                 <tr>
                     <th>User</th>
-                    <td>{{ $userOrganisationRole->user->name }}</td>
-                </tr>
-                <tr>
-                    <th>Organisation</th>
-                    <td>{{ $userOrganisationRole->organisation->name }}</td>
-                </tr>
-                <tr>
-                    <th>Role</th>
-                    <td>{{ $userOrganisationRole->role->name }}</td>
-                </tr>
-                <tr>
-                    <th>Creator</th>
-                    <td>{{ $userOrganisationRole->creator->name }}</td>
+                    <td>{{ __('User Name') }}: {{ $userOrganisationRole->user->name }}</td>
+                    <td>{{ __('Organisation') }}: {{ $userOrganisationRole->organisation->name }}</td>
+                    <td>{{ __('Role') }}: {{ $userOrganisationRole->role->name }}</td>
+                    <td>{{ __('Creator') }}: {{ $userOrganisationRole->creator->name }}</td>
                 </tr>
             </tbody>
         </table>
-        <a href="{{ route('user-organisation-role.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('user-organisation-role.index') }}" class="btn btn-secondary">{{ __('Back') }}</a>
     </div>
 @endsection
 

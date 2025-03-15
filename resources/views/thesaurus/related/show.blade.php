@@ -7,14 +7,14 @@
         <tbody>
             <tr>
                 <th>ID</th>
-                <td>{{ $relatedTerm->relatedTerm->id }}</td>
+                <td>{{ __('ID') }}: {{ $relatedTerm->relatedTerm->id }}</td>
             </tr>
             <tr>
                 <th>Name</th>
-                <td>{{ $relatedTerm->relatedTerm->name }}</td>
+                <td>{{ __('Name') }}: {{ $relatedTerm->relatedTerm->name }}</td>
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('term-related.index', $term) }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('term-related.index', $term) }}" class="btn btn-secondary">{{ __('Back') }}</a>
 </div>
 @endsection

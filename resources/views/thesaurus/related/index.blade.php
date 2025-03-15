@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="container">
-    <h1>Related Terms for "{{ $term->name }}"</h1>
-    <a href="{{ route('term-related.create', $term) }}" class="btn btn-primary mb-3">Add Related Term</a>
+    <h1>{{ __('Related Terms for') }} "{{ $term->name }}"</h1>
+    <a href="{{ route('term-related.create', $term) }}" class="btn btn-primary mb-3">{{ __('Add Related Term') }}</a>
     <table class="table">
         <thead>
             <tr>
@@ -18,7 +18,7 @@
                 <td>{{ $relatedTerm->relatedTerm->id }}</td>
                 <td>{{ $relatedTerm->relatedTerm->name }}</td>
                 <td>
-                    <a href="{{ route('term-related.show', [$term, $relatedTerm]) }}" class="btn btn-sm btn-info">View</a>
+                    <a href="{{ route('term-related.show', [$term, $relatedTerm]) }}" class="btn btn-sm btn-info">{{ __('View') }}</a>
                     <form action="{{ route('term-related.destroy', [$term, $relatedTerm]) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')

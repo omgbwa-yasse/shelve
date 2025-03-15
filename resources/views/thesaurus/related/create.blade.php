@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h1>Add Related Term for "{{ $term->name }}"</h1>
+    <h1>{{ __('Add Related Term for') }} "{{ $term->name }}"</h1>
     <form action="{{ route('term-related.store', $term) }}" method="POST">
         @csrf
         <div class="mb-3">
@@ -14,7 +14,7 @@
                 @endforeach
             </select>
             @error('term_related_id')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">{{ __($message) }}</div>
             @enderror
         </div>
         <button type="submit" class="btn btn-primary">Add Related Term</button>
