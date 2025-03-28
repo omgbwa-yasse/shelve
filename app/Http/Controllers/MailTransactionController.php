@@ -18,14 +18,14 @@ class MailTransactionController extends Controller
     {
         $selectedIds = $request->validate([
             'selectedIds' => 'required|array',
-            'selectedIds.*' => 'integer|exists:mails,id' // Valider sur la table mails
+            'selectedIds.*' => 'integer|exists:mails,id'
         ])['selectedIds'];
 
         $mails = Mail::whereIn('id', $selectedIds)
                      ->with(['action', 'sender', 'recipient', 'senderOrganisation', 'recipientOrganisation']) // Relations adaptées
                      ->get();
 
-        $export = new MailsExport($mails); // Utiliser l'export pour les mails
+        $export = new MailsExport($mails);
         return Excel::download($export, 'courriers-' . date('Y-m-d') . '.xlsx');
     }
 

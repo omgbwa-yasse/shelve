@@ -179,110 +179,171 @@
     </style>
     <script>
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const addDollyBtn = document.getElementById('addDollyBtn');
-            const dolliesList = document.getElementById('dolliesList');
-            const dollyForm = document.getElementById('dollyForm');
-            const dollyFormForm = dollyForm.querySelector('form');
-            const backToListBtn = document.getElementById('backToListBtn');
+            document.addEventListener('DOMContentLoaded', function() {
+                const addDollyBtn = document.getElementById('addDollyBtn');
+                const dolliesList = document.getElementById('dolliesList');
+                const dollyForm = document.getElementById('dollyForm');
+                const dollyFormForm = dollyForm.querySelector('form');
+                const backToListBtn = document.getElementById('backToListBtn');
 
-            addDollyBtn.addEventListener('click', function() {
-            dolliesList.style.display = 'none';
-            dollyForm.style.display = 'block';
-            });
-
-            backToListBtn.addEventListener('click', function() {
-            dolliesList.style.display = 'block';
-            dollyForm.style.display = 'none';
-            });
-
-            dollyFormForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                const formData = new FormData(this);
-                const selectedMailIds = [];
-                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
-                    selectedMailIds.push(checkbox.value);
+                addDollyBtn.addEventListener('click', function() {
+                    dolliesList.style.display = 'none';
+                    dollyForm.style.display = 'block';
                 });
-                formData.append('selectedIds', JSON.stringify(selectedMailIds));
 
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Mettre à jour la liste des dollies dans la modale
-                    const dolliesHTML = data.dollies.map(dolly => `
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h5 class="card-title">${dolly.name}</h5>
-                                <p class="card-text">${dolly.description}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                    dolliesList.innerHTML = dolliesHTML;
-
-                    // Afficher la liste des dollies et masquer le formulaire
+                backToListBtn.addEventListener('click', function() {
                     dolliesList.style.display = 'block';
                     dollyForm.style.display = 'none';
+                });
 
-                    // Réinitialiser le formulaire
-                    this.reset();
+                dollyFormForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
 
-                    // Afficher un message de succès (facultatif)
-                    // alert('Dolly créé avec succès !');
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
+                    const formData = new FormData(this);
+                    const selectedMailIds = [];
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                        selectedMailIds.push(checkbox.value);
+                    });
+                    formData.append('selectedIds', JSON.stringify(selectedMailIds));
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Mettre à jour la liste des dollies dans la modale
+                        const dolliesHTML = data.dollies.map(dolly => `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                            <h5 class="card-title">${dolly.name}</h5>
+                            <p class="card-text">${dolly.description}</p>
+                            </div>
+                        </div>
+                        `).join('');
+                        dolliesList.innerHTML = dolliesHTML;
+
+                        // Afficher la liste des dollies et masquer le formulaire
+                        dolliesList.style.display = 'block';
+                        dollyForm.style.display = 'none';
+
+                        // Réinitialiser le formulaire
+                        this.reset();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+                });
+
+                // Tout cocher / Décocher
+                const checkAllBtn = document.getElementById('checkAllBtn');
+                checkAllBtn.addEventListener('click', function() {
+                    const checkboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+
+
+
+
+                // Exporter les courriers cochés avec POST et CSRF token
+                const exportBtn = document.getElementById('exportBtn');
+                exportBtn.addEventListener('click', function() {
+                    const selectedIds = [];
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                        selectedIds.push(checkbox.value);
+                    });
+
+                    if (selectedIds.length === 0) {
+                        alert('Veuillez sélectionner au moins un courrier.');
+                        return;
+                    }
+
+                    // Utiliser fetch avec méthode POST et CSRF token
+                    fetch('{{ route("mail-transaction.export") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ selectedIds: selectedIds })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau: ' + response.status);
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // Création du lien de téléchargement
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'export_courriers.csv'; // Ajustez le nom et l'extension selon vos besoins
+                        document.body.appendChild(a);
+                        a.click();
+
+                        // Nettoyage
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de l\'exportation:', error);
+                        alert('Une erreur est survenue lors de l\'exportation.');
+                    });
+                });
+
+                // Imprimer les courriers cochés
+                const printBtn = document.getElementById('printBtn');
+                printBtn.addEventListener('click', function() {
+                    const selectedIds = [];
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                        selectedIds.push(checkbox.value);
+                    });
+
+                    if (selectedIds.length === 0) {
+                        alert('Veuillez sélectionner au moins un courrier.');
+                        return;
+                    }
+
+                    // Version améliorée pour l'impression avec POST
+                    fetch('{{ route("mail-transaction.print") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ selectedIds: selectedIds })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau: ' + response.status);
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // Créer une URL pour le blob
+                        const url = window.URL.createObjectURL(blob);
+                        // Ouvrir dans une nouvelle fenêtre pour impression
+                        const printWindow = window.open(url, '_blank');
+                        // Déclencher l'impression automatiquement (facultatif)
+                        if (printWindow) {
+                            printWindow.addEventListener('load', function() {
+                                printWindow.print();
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de l\'impression:', error);
+                        alert('Une erreur est survenue lors de la préparation de l\'impression.');
+                    });
                 });
             });
 
 
-            // Tout cocher / Décocher
-            const checkAllBtn = document.getElementById('checkAllBtn');
-            checkAllBtn.addEventListener('click', function() {
-                const checkboxes = document.querySelectorAll('input[name="selected_mail[]"]');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-            });
-
-            // Exporter les courriers cochés
-            const exportBtn = document.getElementById('exportBtn');
-            exportBtn.addEventListener('click', function() {
-                const selectedIds = [];
-                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
-                    selectedIds.push(checkbox.value);
-                });
-
-                if (selectedIds.length === 0) {
-                    alert('Veuillez sélectionner au moins un courrier.');
-                    return;
-                }
-
-                // Construire l'URL avec les IDs sélectionnés
-                const url = '{{ route("mail-transaction.export") }}?selectedIds=' + selectedIds.join(',');
-                window.location.href = url;
-            });
-
-            // Imprimer les courriers cochés
-            const printBtn = document.getElementById('printBtn');
-            printBtn.addEventListener('click', function() {
-                const selectedIds = [];
-                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
-                    selectedIds.push(checkbox.value);
-                });
-
-                if (selectedIds.length === 0) {
-                    alert('Veuillez sélectionner au moins un courrier.');
-                    return;
-                }
-
-                // Construire l'URL avec les IDs sélectionnés
-                const url = '{{ route("mail-transaction.print") }}?selectedIds=' + selectedIds.join(',');
-                window.open(url, '_blank');
-            });
-        });
     </script>
 @endsection

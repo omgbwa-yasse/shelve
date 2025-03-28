@@ -110,56 +110,39 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/', [mailReceivedController::class, 'index']);
 
     Route::middleware(['auth'])->prefix('bulletin-board')->name('bulletin-boards.')->group(function () {
-        Route::get('/', [BulletinBoardController::class, 'index'])->name('index');
+        Route::resource('/', BulletinBoardController::class);
+        Route::resource('/posts', PostController::class)->names('posts');
+        Route::resource('/events', EventController::class)->names('events');
         Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('dashboard');
-        Route::get('/create', [BulletinBoardController::class, 'create'])->name('create');
-        Route::post('/', [BulletinBoardController::class, 'store'])->name('store');
-        Route::get('/{bulletinBoard}', [BulletinBoardController::class, 'show'])->name('show');
-        Route::get('/{bulletinBoard}/edit', [BulletinBoardController::class, 'edit'])->name('edit');
-        Route::put('/{bulletinBoard}', [BulletinBoardController::class, 'update'])->name('update');
-        Route::delete('/{bulletinBoard}', [BulletinBoardController::class, 'destroy'])->name('destroy');
-        Route::prefix('posts')->name('posts.')->group(function () {
-            Route::get('/', [PostController::class, 'index'])->name('index');
-            Route::get('/create', [PostController::class, 'create'])->name('create');
-            Route::post('/', [PostController::class, 'store'])->name('store');
-            Route::get('/{post}', [PostController::class, 'show'])->name('show');
-            Route::get('/{post}/edit', [PostController::class, 'edit'])->name('edit');
-            Route::put('/{post}', [PostController::class, 'update'])->name('update');
-            Route::delete('/{post}', [PostController::class, 'destroy'])->name('destroy');
-        });
-        Route::prefix('events')->name('events.')->group(function () {
-            Route::get('/{event}', [EventController::class, 'show'])->name('show');
-            Route::get('/', [EventController::class, 'index'])->name('index');
-            Route::get('/create', [EventController::class, 'create'])->name('create');
-            Route::post('/', [EventController::class, 'store'])->name('store');
-            Route::get('/{event}', [EventController::class, 'show'])->name('show');
-            Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
-            Route::put('/{event}', [EventController::class, 'update'])->name('update');
-            Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
-            Route::post('/{event}/register', [EventController::class, 'register'])->name('register');
-            Route::post('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
-        });
+        Route::post('events/{event}/register', [EventController::class, 'register'])->name('events.register');
+        Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('events.unregister');
+
         Route::prefix('attachments')->name('attachments.')->group(function () {
             Route::post('/{bulletinBoard}', [BulletinBoardAttachmentController::class, 'store'])->name('store');
             Route::delete('/{attachment}', [BulletinBoardAttachmentController::class, 'destroy'])->name('destroy');
             Route::get('/{attachment}/download', [BulletinBoardAttachmentController::class, 'download'])->name('download');
         });
+
         Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('my-posts');
         Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('archives');
+
         Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('toggle-archive');
-        Route::prefix('organisations')->name('organisations.')->group(function () {
+        Route::prefix('/organisations')->name('organisations.')->group(function () {
             Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('attach');
             Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('detach');
         });
+
         Route::middleware(['can:manage,App\Models\BulletinBoard'])->prefix('admin')->name('admin.')->group(function () {
             Route::get('/', [BulletinBoardAdminController::class, 'index'])->name('index');
             Route::get('/settings', [BulletinBoardAdminController::class, 'settings'])->name('settings');
             Route::put('/settings', [BulletinBoardAdminController::class, 'updateSettings'])->name('settings.update');
             Route::get('/users', [BulletinBoardAdminController::class, 'users'])->name('users');
-            Route::post('/users/{user}/permissions', [BulletinBoardAdminController::class, 'updatePermissions'])
-                ->name('users.permissions');
+            Route::post('/users/{user}/permissions', [BulletinBoardAdminController::class, 'updatePermissions'])->name('users.permissions');
         });
+
     });
+
+
 
 
     Route::prefix('mails')->group(function () {

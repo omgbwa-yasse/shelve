@@ -28,7 +28,8 @@ class BulletinBoardController extends Controller
                 ->count(),
             'drafts' => Post::where('user_id', auth()->id())
                 ->where('status', 'draft')
-                ->count()
+                ->count(),
+            'total_comments' => Post::where('user_id', auth()->id())->count()
         ];
 
         return view('bulletin-boards.my-posts', compact('posts', 'stats'));
@@ -116,6 +117,9 @@ class BulletinBoardController extends Controller
             ->with('success', 'Publication mise à jour avec succès.');
     }
 
+
+
+
     public function toggleArchive(BulletinBoard $bulletinBoard)
     {
         if ($bulletinBoard->trashed()) {
@@ -128,6 +132,14 @@ class BulletinBoardController extends Controller
 
         return back()->with('success', $message);
     }
+
+
+
+
+
+
+
+
     public function index(Request $request)
     {
         $bulletinBoards = BulletinBoard::with(['user', 'organisations'])
@@ -135,6 +147,63 @@ class BulletinBoardController extends Controller
             ->paginate(10);
         $organisations = Organisation::all();
         return view('bulletin-boards.index', compact('bulletinBoards', 'organisations'));
+    }
+
+
+
+
+
+
+
+
+    public function archives(Request $request)
+    {
+        $query = BulletinBoard::onlyTrashed()->where('user_id', Auth::id());
+
+        // Apply filters if provided
+        if ($request->filled('type')) {
+            switch ($request->type) {
+                case 'event':
+                    $query = Event::onlyTrashed()->where('user_id', Auth::id());
+                    break;
+                case 'post':
+                    $query = Post::onlyTrashed()->where('user_id', Auth::id());
+                    break;
+                default:
+                    $query = BulletinBoard::onlyTrashed()->where('user_id', Auth::id());
+                    break;
+            }
+        }
+
+        if ($request->filled('archived_date')) {
+            $query->whereDate('deleted_at', $request->archived_date);
+        }
+
+        if ($request->filled('organisation') && $request->type === null) {
+            $query->whereHas('organisations', function ($q) use ($request) {
+                $q->where('id', $request->organisation);
+            });
+        }
+
+        // Apply sorting if provided
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'date_asc':
+                    $query->orderBy('deleted_at', 'asc');
+                    break;
+                case 'date_desc':
+                    $query->orderBy('deleted_at', 'desc');
+                    break;
+                case 'name':
+                    $query->orderBy('name', 'asc');
+                    break;
+            }
+        }
+
+        $archivedPosts = $query->paginate(20);
+        $organisations = Organisation::all();
+
+        return view('bulletin-boards.archives', compact('archivedPosts', 'organisations'));
     }
 
 
