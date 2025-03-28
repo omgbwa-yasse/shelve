@@ -23,7 +23,7 @@ class LogUserAction
         if (auth()->check()) {
             Log::create([
                 'user_id' => auth()->id(),
-                'action' => $request->route()->getName(),
+                'action' => $request->route() ? $request->route()->getName() : $request->path(),
                 'description' => auth()->user()->name .' - action performed: ' . $request->method() . ' ' . $request->path(),
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),

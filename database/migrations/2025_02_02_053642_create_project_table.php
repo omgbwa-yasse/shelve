@@ -77,9 +77,6 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Index optimisé pour la recherche de ressources disponibles
-            $table->index(['is_available', 'resource_type_id']);
-            $table->check('max_allocation_percentage BETWEEN 0 AND 100');
         });
 
         Schema::create('project_tasks', function (Blueprint $table) {
@@ -116,8 +113,6 @@ return new class extends Migration
             $table->index(['status', 'priority', 'start_date']);
             $table->index(['project_id', 'status']);
 
-            // Contraintes de validation
-            $table->check('progress_percentage BETWEEN 0 AND 100');
         });
 
 
@@ -176,12 +171,6 @@ return new class extends Migration
 
             $table->unique(['task_id', 'resource_id', 'start_date', 'end_date'], 'task_resource_period_unique');
             $table->index(['resource_id', 'start_date', 'end_date'], 'resource_period_index');
-
-            // Contraintes de validation
-            $table->check('start_date <= end_date');
-            $table->check('allocated_percentage BETWEEN 0 AND 100');
-            $table->check('allocated_hours >= 0');
-            $table->check('cost_override >= 0');
         });
 
 
@@ -206,9 +195,6 @@ return new class extends Migration
             $table->index(['task_id', 'work_date']);
             $table->index(['resource_id', 'work_date']);
 
-            // Contraintes de validation
-            $table->check('hours_spent > 0');
-            $table->check('progress_percentage BETWEEN 0 AND 100');
         });
 
     }
