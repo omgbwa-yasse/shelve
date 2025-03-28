@@ -223,16 +223,10 @@
                        href="{{ route('bulletin-boards.index') }}">
                        <i class="bi bi-card-text"></i> Barbillard
                     </a>
-                    <a class="nav-link @if (Request::segment(1) == 'ai') active fw-bold text-primary @endif"
-                       href="{{ route('prompts.index') }}">
-                       <i class="bi bi-robot"></i> Intelligence Artificielle
-                    </a>
-
                     <a class="nav-link @if (Request::segment(1) == 'mails') active fw-bold text-primary @endif"
                         href="{{ route('mail-received.index') }}">
                         <i class="bi bi-envelope"></i> {{ __('Mail') }}
                     </a>
-
                     <a class="nav-link @if (Request::segment(1) == 'repositories') active fw-bold text-primary @endif"
                        href="{{ route('records.index') }}">
                         <i class="bi bi-folder"></i> {{ __('Repository') }}
@@ -246,21 +240,9 @@
                        href="{{ route('slips.index') }}">
                         <i class="bi bi-arrow-left-right"></i> {{ __('Transfer') }}
                     </a>
-                    <a class="nav-link @if (Request::segment(1) == 'tasks') active fw-bold text-primary @endif"
-                       href="{{ route('tasks.index') }}">
-                        <i class="bi bi-clipboard-check"></i> {{ __('Tasks') }}
-                    </a>
                     <a class="nav-link @if (Request::segment(1) == 'deposits') active fw-bold text-primary @endif"
                        href="{{ route('buildings.index') }}">
                         <i class="bi bi-building"></i> {{ __('Deposit') }}
-                    </a>
-                    <a class="nav-link @if (Request::segment(1) == 'bulletin-board') active fw-bold text-primary @endif"
-                       href="{{ route('bulletin-boards.index') }}">
-                        <i class="bi bi-globe"></i> {{ __('Public Access Portal') }}
-                    </a>
-                    <a class="nav-link @if (Request::segment(1) == 'dashboard') active fw-bold text-primary @endif"
-                       href="{{ route('report.dashboard') }}">
-                        <i class="bi bi-speedometer2"></i> {{ __('Report') }}
                     </a>
                     <a class="nav-link @if (Request::segment(1) == 'tools') active fw-bold text-primary @endif"
                        href="{{ route('activities.index') }}">
@@ -291,57 +273,36 @@
                                     @case('bulletin-board')
                                         @include('submenu.bulletinboard')
                                         @break
-                                     @case('ai')
-                                        @include('submenu.ai')
-                                        @break
                                     @case('mails')
                                         @include('submenu.mails')
                                         @break
-
                                     @case('repositories')
                                         @include('submenu.repositories')
                                         @break
-
                                     @case('communications')
                                         @include('submenu.communications')
                                         @break
-
                                     @case('accessions')
                                         @include('submenu.accessions')
                                         @break
-
                                     @case('monitorings')
                                         @include('submenu.monitorings')
                                         @break
-
                                     @case('settings')
                                         @include('submenu.settings')
                                         @break
-
                                     @case('deposits')
                                         @include('submenu.deposits')
                                         @break
-
                                     @case('tools')
                                         @include('submenu.tools')
                                         @break
-
                                     @case('transferrings')
                                         @include('submenu.transferrings')
                                         @break
-
                                     @case('dollies')
                                         @include('submenu.dollies')
                                         @break
-
-                                    @case('tasks')
-                                        @include('submenu.tasks')
-                                        @break
-
-                                    @case('dashboard')
-                                        @include('submenu.report')
-                                        @break
-
                                     @default
                                         @include('submenu.mails')
                                 @endswitch
