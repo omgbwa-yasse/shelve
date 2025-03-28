@@ -99,8 +99,6 @@ Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 
-
-
 Route::group(['middleware' => 'auth'], function () {
     Route::prefix('api')->group(function () {
         Route::get('/authors', [AuthorController::class, 'indexApi']);
