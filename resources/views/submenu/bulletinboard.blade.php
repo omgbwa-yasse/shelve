@@ -11,26 +11,6 @@
                         <i class="bi bi-grid"></i> Babillards
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.posts.index') }}">
-                        <i class="bi bi-file-text"></i> Publications
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.events.index') }}">
-                        <i class="bi bi-calendar-event"></i> Événements
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.my-posts') }}">
-                        <i class="bi bi-person-badge"></i> Mes publications
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.archives') }}">
-                        <i class="bi bi-archive"></i> Archives
-                    </a>
-                </li>
             </ul>
         </div>
 
@@ -45,20 +25,10 @@
                         <i class="bi bi-pin-angle"></i> Nouveau babillard
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.posts.create') }}">
-                        <i class="bi bi-file-earmark-plus"></i> Nouvelle publication
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('bulletin-boards.events.create') }}">
-                        <i class="bi bi-calendar-plus"></i> Nouvel événement
-                    </a>
-                </li>
             </ul>
         </div>
 
-        @can('manage', App\Models\BulletinBoard::class)
+
             <!-- Administration -->
             <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#bulletinboardadmin" aria-expanded="true" aria-controls="bulletinboardadmin" style="padding: 10px;">
                 <i class="bi bi-gear"></i> Administration
@@ -82,6 +52,6 @@
                     </li>
                 </ul>
             </div>
-        @endcan
+
     </div>
 </div>

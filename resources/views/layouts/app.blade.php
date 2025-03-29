@@ -242,7 +242,7 @@
                     </a>
                     <a class="nav-link @if (Request::segment(1) == 'deposits') active fw-bold text-primary @endif"
                        href="{{ route('buildings.index') }}">
-                        <i class="bi bi-building"></i> {{ __('Deposit') }}
+                        <i class="bi bi-building"></i> {{ __('building') }}
                     </a>
                     <a class="nav-link @if (Request::segment(1) == 'tools') active fw-bold text-primary @endif"
                        href="{{ route('activities.index') }}">

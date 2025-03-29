@@ -109,6 +109,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [mailReceivedController::class, 'index']);
 
+
+
+
+
     Route::middleware(['auth'])->prefix('bulletin-board')->name('bulletin-boards.')->group(function () {
         Route::resource('/', BulletinBoardController::class);
         Route::resource('/posts', PostController::class)->names('posts');

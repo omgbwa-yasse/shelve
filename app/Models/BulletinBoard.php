@@ -5,23 +5,36 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BulletinBoard extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'bulletin_boards';
 
     protected $fillable = [
         'name',
         'description',
-        'user_id'
+        'created_by',
     ];
 
-    public function user()
+    public function creator()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function organisations()
+    {
+        return $this->belongsToMany(Organisation::class, 'bulletin_board_organisation')
+            ->withPivot('assigned_by')
+            ->withTimestamps();
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'bulletin_board_user')
+            ->withPivot('role', 'permissions', 'assigned_by')
+            ->withTimestamps();
     }
 
     public function events()
@@ -34,24 +47,33 @@ class BulletinBoard extends Model
         return $this->hasMany(Post::class);
     }
 
-    public function attachments()
+    public function isUserAdmin($userId)
     {
-        return $this->belongsToMany(Attachment::class, 'bulletin_board_attachment')
-            ->withPivot('user_id')
-            ->withTimestamps();
+        $user = $this->users()->where('user_id', $userId)->first();
+        return $user && in_array($user->pivot->role, ['super_admin', 'admin']);
     }
 
-    public function organisations()
+    public function isUserModerator($userId)
     {
-        return $this->belongsToMany(Organisation::class, 'bulletin_board_organisation')
-            ->withPivot('user_id')
-            ->withTimestamps();
+        $user = $this->users()->where('user_id', $userId)->first();
+        return $user && in_array($user->pivot->role, ['super_admin', 'admin', 'moderator']);
     }
 
-    public function administrators()
+    public function hasDeletePermission($userId)
     {
-        return $this->belongsToMany(User::class, 'bulletin_board_user')
-            ->withPivot(['role', 'permissions', 'assigned_by_id'])
-            ->withTimestamps();
+        $user = $this->users()->where('user_id', $userId)->first();
+        return $user && ($user->pivot->permissions === 'delete' || $user->pivot->role === 'super_admin');
+    }
+
+    public function hasEditPermission($userId)
+    {
+        $user = $this->users()->where('user_id', $userId)->first();
+        return $user && (in_array($user->pivot->permissions, ['edit', 'delete']) || $user->pivot->role === 'super_admin');
+    }
+
+    public function hasWritePermission($userId)
+    {
+        $user = $this->users()->where('user_id', $userId)->first();
+        return $user && $user->pivot->permissions !== null;
     }
 }
