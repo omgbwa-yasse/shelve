@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\BulletinBoardAdminController;
-use App\Http\Controllers\BulletinBoardAttachmentController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TaskStatusController;
@@ -121,12 +120,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('events/{event}/register', [EventController::class, 'register'])->name('events.register');
         Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('events.unregister');
 
-        Route::prefix('attachments')->name('attachments.')->group(function () {
-            Route::post('/{bulletinBoard}', [BulletinBoardAttachmentController::class, 'store'])->name('store');
-            Route::delete('/{attachment}', [BulletinBoardAttachmentController::class, 'destroy'])->name('destroy');
-            Route::get('/{attachment}/download', [BulletinBoardAttachmentController::class, 'download'])->name('download');
-        });
-
         Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('my-posts');
         Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('archives');
 
@@ -134,14 +127,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::prefix('/organisations')->name('organisations.')->group(function () {
             Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('attach');
             Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('detach');
-        });
-
-        Route::middleware(['can:manage,App\Models\BulletinBoard'])->prefix('admin')->name('admin.')->group(function () {
-            Route::get('/', [BulletinBoardAdminController::class, 'index'])->name('index');
-            Route::get('/settings', [BulletinBoardAdminController::class, 'settings'])->name('settings');
-            Route::put('/settings', [BulletinBoardAdminController::class, 'updateSettings'])->name('settings.update');
-            Route::get('/users', [BulletinBoardAdminController::class, 'users'])->name('users');
-            Route::post('/users/{user}/permissions', [BulletinBoardAdminController::class, 'updatePermissions'])->name('users.permissions');
         });
 
     });

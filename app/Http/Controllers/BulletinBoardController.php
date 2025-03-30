@@ -39,12 +39,6 @@ class BulletinBoardController extends Controller
         $bulletinBoard->created_by = Auth::id();
         $bulletinBoard->save();
 
-        $bulletinBoard->users()->attach(Auth::id(), [
-            'role' => 'super_admin',
-            'permissions' => 'write',
-            'assigned_by' => Auth::id()
-        ]);
-
         if ($request->has('organisations')) {
             foreach ($request->organisations as $organisationId) {
                 $bulletinBoard->organisations()->attach($organisationId, [
@@ -58,6 +52,7 @@ class BulletinBoardController extends Controller
     }
 
 
+
     public function show(int $id)
     {
         $bulletinBoard = BulletinBoard::findOrFail($id)
@@ -69,12 +64,14 @@ class BulletinBoardController extends Controller
     }
 
 
+
     public function edit(BulletinBoard $bulletinBoard)
     {
         $this->authorize('update', $bulletinBoard);
 
         return view('bulletin-boards.edit', compact('bulletinBoard'));
     }
+
 
 
     public function update(Request $request, BulletinBoard $bulletinBoard)
@@ -86,7 +83,6 @@ class BulletinBoardController extends Controller
         $bulletinBoard->description = $request->description;
         $bulletinBoard->save();
 
-
         if ($request->has('organisations')) {
 
             $existingIds = $bulletinBoard->organisations->pluck('id')->toArray();
@@ -96,9 +92,7 @@ class BulletinBoardController extends Controller
             $toAdd = array_diff($newIds, $existingIds);
             $toRemove = array_diff($existingIds, $newIds);
 
-
             $bulletinBoard->organisations()->detach($toRemove);
-
 
             foreach ($toAdd as $organisationId) {
                 $bulletinBoard->organisations()->attach($organisationId, [
@@ -110,6 +104,8 @@ class BulletinBoardController extends Controller
         return redirect()->route('bulletin-boards.show', $bulletinBoard->id)
             ->with('success', 'Bulletin board updated successfully.');
     }
+
+
 
 
     public function destroy(BulletinBoard $bulletinBoard)
@@ -124,55 +120,6 @@ class BulletinBoardController extends Controller
     }
 
 
-    public function manageUsers(BulletinBoard $bulletinBoard)
-    {
-        $this->authorize('manageUsers', $bulletinBoard);
-        $bulletinBoard->load('users');
-        return view('bulletin-boards.manage-users', compact('bulletinBoard'));
-    }
 
 
-    public function addUser(Request $request, BulletinBoard $bulletinBoard)
-    {
-        $this->authorize('manageUsers', $bulletinBoard);
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'role' => 'required|in:super_admin,admin,moderator',
-            'permissions' => 'required|in:write,delete,edit'
-        ]);
-        $bulletinBoard->users()->syncWithoutDetaching([
-            $request->user_id => [
-                'role' => $request->role,
-                'permissions' => $request->permissions,
-                'assigned_by' => Auth::id()
-            ]
-        ]);
-        return redirect()->route('bulletin-boards.manage-users', $bulletinBoard->id)
-            ->with('success', 'User added successfully.');
-    }
-
-
-
-
-    public function removeUser(BulletinBoard $bulletinBoard, $userId)
-    {
-
-        $this->authorize('manageUsers', $bulletinBoard);
-
-        if ($userId == Auth::id()) {
-            $superAdmins = $bulletinBoard->users()
-                ->wherePivot('role', 'super_admin')
-                ->count();
-
-            if ($superAdmins <= 1) {
-                return redirect()->route('bulletin-boards.manage-users', $bulletinBoard->id)
-                    ->with('error', 'Cannot remove the last super admin.');
-            }
-        }
-
-        $bulletinBoard->users()->detach($userId);
-
-        return redirect()->route('bulletin-boards.manage-users', $bulletinBoard->id)
-            ->with('success', 'User removed successfully.');
-    }
 }

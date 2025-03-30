@@ -28,30 +28,5 @@
             </ul>
         </div>
 
-
-            <!-- Administration -->
-            <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#bulletinboardadmin" aria-expanded="true" aria-controls="bulletinboardadmin" style="padding: 10px;">
-                <i class="bi bi-gear"></i> Administration
-            </a>
-            <div class="collapse show" id="bulletinboardadmin">
-                <ul class="list-unstyled pl-3">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="{{ route('bulletin-boards.admin.index') }}">
-                            <i class="bi bi-speedometer2"></i> Tableau de bord
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="{{ route('bulletin-boards.admin.settings') }}">
-                            <i class="bi bi-sliders"></i> Paramètres
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="{{ route('bulletin-boards.admin.users') }}">
-                            <i class="bi bi-people"></i> Utilisateurs
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
     </div>
 </div>
