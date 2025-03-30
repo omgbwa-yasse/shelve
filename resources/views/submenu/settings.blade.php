@@ -1,155 +1,302 @@
-<div class="container" style="background-color: #f1f1f1;">
-    <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#accountMenu" aria-expanded="true"
-           aria-controls="accountMenu" style="padding: 10px;"><i class="bi bi-people"></i> {{ __('my_account') }}</a>
-        <div class="collapse show" id="accountMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('users.show', auth()->user()->id) }}"><i class="bi bi-gear"></i> {{ __('my_account') }}</a>
-                </li>
-            </ul>
-        </div>
+<div class="submenu-container py-3">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        .submenu-container {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .submenu-heading {
+            background-color: #4285f4;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .submenu-heading:hover {
+            background-color: #3367d6;
+        }
+        
+        .submenu-heading i {
+            margin-right: 10px;
+        }
+        
+        .submenu-content {
+            padding: 0 0 16px 16px;
+            margin-bottom: 16px;
+        }
+        
+        .submenu-item {
+            margin-bottom: 6px;
+        }
+        
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: #202124;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .submenu-link:hover {
+            background-color: #f1f3f4;
+            color: #4285f4;
+            text-decoration: none;
+        }
+        
+        .submenu-link i {
+            margin-right: 10px;
+            color: #5f6368;
+        }
+        
+        .submenu-link:hover i {
+            color: #4285f4;
+        }
+        
+        .add-section .submenu-heading {
+            background-color: #34a853;
+        }
+        
+        .add-section .submenu-heading:hover {
+            background-color: #188038;
+        }
+    </style>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#authorizationsMenu" aria-expanded="true"
-           aria-controls="authorizationsMenu" style="padding: 10px;"><i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}</a>
-        <div class="collapse show" id="authorizationsMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('users.index') }}"><i class="bi bi-gear"></i> {{ __('users') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('user-organisation-role.index') }}"><i class="bi bi-gear"></i> {{ __('assigned_positions') }}</a>
-                </li>
-            </ul>
+    <!-- Mon Compte Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#accountMenu" aria-expanded="true" aria-controls="accountMenu">
+            <i class="bi bi-person-circle"></i> {{ __('my_account') }}
         </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rightsMenu" aria-expanded="true"
-           aria-controls="rightsMenu" style="padding: 10px;"><i class="bi bi-people"></i> {{ __('rights_and_permissions') }}</a>
-        <div class="collapse show" id="rightsMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('roles.index') }}"><i class="bi bi-gear"></i> {{ __('roles') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('role_permissions.index') }}"><i class="bi bi-gear"></i> {{ __('assign_permissions') }}</a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="accountMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('users.show', auth()->user()->id) }}">
+                    <i class="bi bi-gear"></i> {{ __('my_account') }}
+                </a>
+            </div>
         </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#tasksMenu" aria-expanded="true"
-           aria-controls="tasksMenu" style="padding: 10px;"><i class="bi bi-people"></i> {{ __('tasks') }}</a>
-        <div class="collapse show" id="tasksMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('taskstatus.index') }}"><i class="bi bi-gear"></i> {{ __('task_types') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('tasktype.index') }}"><i class="bi bi-gear"></i> {{ __('task_statuses') }}</a>
-                </li>
-            </ul>
+    <!-- Autorisations et postes Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#authorizationsMenu" aria-expanded="true" aria-controls="authorizationsMenu">
+            <i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}
         </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#mailMenu" aria-expanded="true"
-           aria-controls="mailMenu" style="padding: 10px;"><i class="bi bi-envelope"></i> {{ __('mail') }}</a>
-        <div class="collapse show" id="mailMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-typology.index') }}"><i class="bi bi-gear"></i> {{ __('typologies') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-action.index') }}"><i class="bi bi-gear"></i> {{ __('actions') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-priority.index') }}"><i class="bi bi-gear"></i> {{ __('actions') }}</a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="authorizationsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('users.index') }}">
+                    <i class="bi bi-person"></i> {{ __('users') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('user-organisation-role.index') }}">
+                    <i class="bi bi-diagram-3"></i> {{ __('assigned_positions') }}
+                </a>
+            </div>
         </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#directoryMenu" aria-expanded="true"
-           aria-controls="directoryMenu" style="padding: 10px;"><i class="bi bi-file-text"></i> {{ __('directory') }}</a>
-        <div class="collapse show" id="directoryMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-supports.index') }}"><i class="bi bi-gear"></i> {{ __('supports') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('record-statuses.index') }}"><i class="bi bi-gear"></i> {{ __('statuses') }}</a>
-                </li>
-            </ul>
+    <!-- Droits et permissions Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#rightsMenu" aria-expanded="true" aria-controls="rightsMenu">
+            <i class="bi bi-shield-lock"></i> {{ __('rights_and_permissions') }}
         </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#transferMenu" aria-expanded="true"
-           aria-controls="transferMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> {{ __('transfer') }}</a>
-        <div class="collapse show" id="transferMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('transferring-status.index') }}"><i class="bi bi-gear"></i> {{ __('statuses') }}</a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="rightsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('roles.index') }}">
+                    <i class="bi bi-person-badge"></i> {{ __('roles') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('role_permissions.index') }}">
+                    <i class="bi bi-key"></i> {{ __('assign_permissions') }}
+                </a>
+            </div>
         </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#communicationMenu" aria-expanded="true"
-           aria-controls="communicationMenu" style="padding: 10px;"><i class="bi bi-newspaper"></i> {{ __('communication') }}</a>
-        <div class="collapse show" id="communicationMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('communication-status.index') }}"><i class="bi bi-gear"></i> {{ __('communication_status') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('reservation-status.index') }}"><i class="bi bi-gear"></i> {{ __('reservation_status') }}</a>
-                </li>
-            </ul>
+    <!-- Tâches Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#tasksMenu" aria-expanded="true" aria-controls="tasksMenu">
+            <i class="bi bi-list-task"></i> {{ __('tasks') }}
         </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#depositMenu" aria-expanded="true"
-           aria-controls="depositMenu" style="padding: 10px;"><i class="bi bi-building"></i> {{ __('deposit') }}</a>
-        <div class="collapse show" id="depositMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('container-status.index') }}"><i class="bi bi-gear"></i> {{ __('container_statuses') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('container-property.index') }}"><i class="bi bi-gear"></i> {{ __('container_property') }}</a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="tasksMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('taskstatus.index') }}">
+                    <i class="bi bi-tag"></i> {{ __('task_types') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('tasktype.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('task_statuses') }}
+                </a>
+            </div>
         </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#managementMenu" aria-expanded="true"
-           aria-controls="managementMenu" style="padding: 10px;"><i class="bi bi-gear"></i> {{ __('management_tools') }}</a>
-        <div class="collapse show" id="managementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('sorts.index') }}"><i class="bi bi-gear"></i> {{ __('retention_final_sorts') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('languages.index') }}"><i class="bi bi-gear"></i> {{ __('thesaurus_languages') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('term-categories.index') }}"><i class="bi bi-gear"></i> {{ __('thesaurus_categories') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('term-equivalent-types.index') }}"><i class="bi bi-gear"></i> {{ __('thesaurus_equivalents') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('term-types.index') }}"><i class="bi bi-gear"></i> {{ __('thesaurus_types') }}</a>
-                </li>
-            </ul>
+    <!-- Courrier Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#mailMenu" aria-expanded="true" aria-controls="mailMenu">
+            <i class="bi bi-envelope"></i> {{ __('mail') }}
         </div>
+        <div class="collapse show submenu-content" id="mailMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-typology.index') }}">
+                    <i class="bi bi-tags"></i> {{ __('typologies') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-action.index') }}">
+                    <i class="bi bi-play-circle"></i> {{ __('actions') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-priority.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('actions') }}
+                </a>
+            </div>
+        </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#systemMenu" aria-expanded="true"
-           aria-controls="systemMenu" style="padding: 10px;"><i class="bi bi-gear"></i> {{ __('system') }}</a>
-        <div class="collapse show" id="systemMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('backups.index')}}"><i class="bi bi-gear"></i> {{ __('my_backups') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('backups.create')}}"><i class="bi bi-gear"></i> {{ __('new_backup') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href=""><i class="bi bi-gear"></i> {{ __('ldap') }}</a>
-                </li>
-            </ul>
+    <!-- Répertoire Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#directoryMenu" aria-expanded="true" aria-controls="directoryMenu">
+            <i class="bi bi-file-text"></i> {{ __('directory') }}
+        </div>
+        <div class="collapse show submenu-content" id="directoryMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('record-supports.index') }}">
+                    <i class="bi bi-hdd"></i> {{ __('supports') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('record-statuses.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('statuses') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfert Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#transferMenu" aria-expanded="true" aria-controls="transferMenu">
+            <i class="bi bi-arrow-right-circle"></i> {{ __('transfer') }}
+        </div>
+        <div class="collapse show submenu-content" id="transferMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('transferring-status.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('statuses') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Communication Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#communicationMenu" aria-expanded="true" aria-controls="communicationMenu">
+            <i class="bi bi-chat-dots"></i> {{ __('communication') }}
+        </div>
+        <div class="collapse show submenu-content" id="communicationMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communication-status.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('communication_status') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('reservation-status.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('reservation_status') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dépôt Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#depositMenu" aria-expanded="true" aria-controls="depositMenu">
+            <i class="bi bi-building"></i> {{ __('deposit') }}
+        </div>
+        <div class="collapse show submenu-content" id="depositMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('container-status.index') }}">
+                    <i class="bi bi-flag"></i> {{ __('container_statuses') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('container-property.index') }}">
+                    <i class="bi bi-list-check"></i> {{ __('container_property') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outils de gestion Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#managementMenu" aria-expanded="true" aria-controls="managementMenu">
+            <i class="bi bi-gear"></i> {{ __('management_tools') }}
+        </div>
+        <div class="collapse show submenu-content" id="managementMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('sorts.index') }}">
+                    <i class="bi bi-sort-alpha-down"></i> {{ __('retention_final_sorts') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('languages.index') }}">
+                    <i class="bi bi-translate"></i> {{ __('thesaurus_languages') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('term-categories.index') }}">
+                    <i class="bi bi-bookmark"></i> {{ __('thesaurus_categories') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('term-equivalent-types.index') }}">
+                    <i class="bi bi-arrows-angle-expand"></i> {{ __('thesaurus_equivalents') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('term-types.index') }}">
+                    <i class="bi bi-type"></i> {{ __('thesaurus_types') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Système Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#systemMenu" aria-expanded="true" aria-controls="systemMenu">
+            <i class="bi bi-cpu"></i> {{ __('system') }}
+        </div>
+        <div class="collapse show submenu-content" id="systemMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('backups.index')}}">
+                    <i class="bi bi-save"></i> {{ __('my_backups') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('backups.create')}}">
+                    <i class="bi bi-plus-square"></i> {{ __('new_backup') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="">
+                    <i class="bi bi-people"></i> {{ __('ldap') }}
+                </a>
+            </div>
         </div>
     </div>
 </div>

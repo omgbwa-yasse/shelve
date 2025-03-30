@@ -1,117 +1,214 @@
-<div class="container" style="background-color: #f1f1f1;">
-    <div class="row">
-        <!-- Recherche -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-           aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i> {{ __('search') }}</a>
+<div class="submenu-container py-3">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        .submenu-container {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .submenu-heading {
+            background-color: #4285f4;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .submenu-heading:hover {
+            background-color: #3367d6;
+        }
+        
+        .submenu-heading i {
+            margin-right: 10px;
+        }
+        
+        .submenu-content {
+            padding: 0 0 16px 16px;
+            margin-bottom: 16px;
+        }
+        
+        .submenu-item {
+            margin-bottom: 6px;
+        }
+        
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: #202124;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .submenu-link:hover {
+            background-color: #f1f3f4;
+            color: #4285f4;
+            text-decoration: none;
+        }
+        
+        .submenu-link i {
+            margin-right: 10px;
+            color: #5f6368;
+        }
+        
+        .submenu-link:hover i {
+            color: #4285f4;
+        }
+        
+        .add-section .submenu-heading {
+            background-color: #34a853;
+        }
+        
+        .add-section .submenu-heading:hover {
+            background-color: #188038;
+        }
+    </style>
 
-        <div class="collapse show" id="rechercheMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-received.index') }}"><i class="bi bi-inbox"></i> {{ __('received_mails') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-send.index') }}"><i class="bi bi-envelope"></i> {{ __('sent_mails') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.archived') }}"><i class="bi bi-inbox"></i> {{ __('archived_mails') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-author.index') }}"><i class="bi bi-envelope"></i> {{ __('producers') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('typologies.index') }}"><i class="bi bi-tags"></i> {{ __('typologies') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-select-date')}}"><i class="bi bi-calendar"></i> {{ __('dates') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-container.index') }}"><i class="bi bi-archive"></i> {{ __('archive_boxes') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch.index') }}"><i class="bi bi-inbox"></i> {{ __('my_paraphers') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.index') }}"><i class="bi bi-inbox"></i> {{ __('received_paraphers') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.index') }}"><i class="bi bi-inbox"></i> {{ __('sent_paraphers') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.advanced.form') }}"><i class="bi bi-inbox"></i> Advanced </a>
-                </li>
-            </ul>
+    <!-- Recherche Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true" aria-controls="rechercheMenu">
+            <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-
-
-        <!-- Courrier -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#courrierMenu" aria-expanded="true"
-           aria-controls="courrierMenu" style="padding: 10px;">{{ __('mail') }}</a>
-
-        <div class="collapse show" id="courrierMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mails.inprogress') }}"><i class="bi bi-clock"></i>  {{ __('to_receive') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-received.create') }}"><i class="bi bi-inbox"></i> {{ __('receive') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-send.create') }}"><i class="bi bi-send"></i> {{ __('send') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-archive.create') }}"><i class="bi bi-archive"></i> {{ __('archive') }} </a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="rechercheMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.index') }}">
+                    <i class="bi bi-inbox"></i> {{ __('received_mails') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-send.index') }}">
+                    <i class="bi bi-envelope"></i> {{ __('sent_mails') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.archived') }}">
+                    <i class="bi bi-inbox"></i> {{ __('archived_mails') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-author.index') }}">
+                    <i class="bi bi-envelope"></i> {{ __('producers') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('typologies.index') }}">
+                    <i class="bi bi-tags"></i> {{ __('typologies') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-select-date')}}">
+                    <i class="bi bi-calendar"></i> {{ __('dates') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-container.index') }}">
+                    <i class="bi bi-archive"></i> {{ __('archive_boxes') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch.index') }}">
+                    <i class="bi bi-inbox"></i> {{ __('my_paraphers') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch-received.index') }}">
+                    <i class="bi bi-inbox"></i> {{ __('received_paraphers') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch-send.index') }}">
+                    <i class="bi bi-inbox"></i> {{ __('sent_paraphers') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.advanced.form') }}">
+                    <i class="bi bi-inbox"></i> Advanced
+                </a>
+            </div>
         </div>
+    </div>
 
-{{--        <!-- enregistrement -->--}}
-{{--        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"--}}
-{{--           aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">{{ __('case_follow_up') }}</a>--}}
-
-{{--        <div class="collapse show" id="enregistrementMenu">--}}
-{{--            <ul class="list-unstyled pl-3">--}}
-{{--                <li class="nav-item">--}}
-{{--                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&?deadline=available"><i class="bi bi-inbox"></i> {{ __('expected_returns') }}    </a>--}}
-{{--                </li>--}}
-{{--                <li class="nav-item">--}}
-{{--                    <a class="nav-link text-dark" href="{{ route('mails.feedback')}}?type=true&deadline=exceeded"><i class="bi bi-bookmark-check"></i>{{ __('overdue_returns') }}</a>--}}
-{{--                </li>--}}
-{{--            </ul>--}}
-{{--        </div>--}}
-
-        <!-- Créer -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#creerMenu" aria-expanded="true"
-           aria-controls="creerMenu" style="padding: 10px;">{{ __('create') }}</a>
-
-        <div class="collapse show" id="creerMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch.create') }}"><i class="bi bi-bookmark-check"></i> {{ __('parapher') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-author.create') }}"><i class="bi bi-people"></i> {{ __('producer') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('mail-container.create') }}"><i class="bi bi-archive"></i> {{ __('box_chrono') }}</a>
-                </li>
-            </ul>
+    <!-- Courrier Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#courrierMenu" aria-expanded="true" aria-controls="courrierMenu">
+            <i class="bi bi-envelope"></i> {{ __('mail') }}
         </div>
+        <div class="collapse show submenu-content" id="courrierMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.inprogress') }}">
+                    <i class="bi bi-clock"></i> {{ __('to_receive') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.create') }}">
+                    <i class="bi bi-inbox"></i> {{ __('receive') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-send.create') }}">
+                    <i class="bi bi-send"></i> {{ __('send') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-archive.create') }}">
+                    <i class="bi bi-archive"></i> {{ __('archive') }}
+                </a>
+            </div>
+        </div>
+    </div>
 
+    <!-- Créer Section -->
+    <div class="submenu-section add-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#creerMenu" aria-expanded="true" aria-controls="creerMenu">
+            <i class="bi bi-plus-circle"></i> {{ __('create') }}
+        </div>
+        <div class="collapse show submenu-content" id="creerMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch.create') }}">
+                    <i class="bi bi-bookmark-check"></i> {{ __('parapher') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-author.create') }}">
+                    <i class="bi bi-people"></i> {{ __('producer') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-container.create') }}">
+                    <i class="bi bi-archive"></i> {{ __('box_chrono') }}
+                </a>
+            </div>
+        </div>
+    </div>
 
-
-        <!-- Parapheur -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true"
-           aria-controls="parapheurMenu" style="padding: 10px;">{{ __('parapher') }}</a>
-
-        <div class="collapse show" id="parapheurMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-send.create') }}"><i class="bi bi-inbox"></i> {{ __('send') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('batch-received.create') }}"><i class="bi bi-inbox"></i> {{ __('receive') }}</a>
-                </li>
-            </ul>
+    <!-- Parapheur Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true" aria-controls="parapheurMenu">
+            <i class="bi bi-journal-check"></i> {{ __('parapher') }}
+        </div>
+        <div class="collapse show submenu-content" id="parapheurMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch-send.create') }}">
+                    <i class="bi bi-inbox"></i> {{ __('send') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('batch-received.create') }}">
+                    <i class="bi bi-inbox"></i> {{ __('receive') }}
+                </a>
+            </div>
         </div>
     </div>
 </div>

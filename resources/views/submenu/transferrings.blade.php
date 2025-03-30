@@ -1,73 +1,174 @@
-<div class="container" style="background-color: #f1f1f1;">
-    <div class="row">
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true"
-           aria-controls="rechercheMenu" style="padding: 10px;"><i class="bi bi-search"></i> {{ __('search') }}</a>
+<div class="submenu-container py-3">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        .submenu-container {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .submenu-heading {
+            background-color: #4285f4;
+            color: white;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .submenu-heading:hover {
+            background-color: #3367d6;
+        }
+        
+        .submenu-heading i {
+            margin-right: 10px;
+        }
+        
+        .submenu-content {
+            padding: 0 0 16px 16px;
+            margin-bottom: 16px;
+        }
+        
+        .submenu-item {
+            margin-bottom: 6px;
+        }
+        
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: #202124;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .submenu-link:hover {
+            background-color: #f1f3f4;
+            color: #4285f4;
+            text-decoration: none;
+        }
+        
+        .submenu-link i {
+            margin-right: 10px;
+            color: #5f6368;
+        }
+        
+        .submenu-link:hover i {
+            color: #4285f4;
+        }
+        
+        .add-section .submenu-heading {
+            background-color: #34a853;
+        }
+        
+        .add-section .submenu-heading:hover {
+            background-color: #188038;
+        }
+    </style>
 
-        <div class="collapse show" id="rechercheMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('search.slips.advanced') }}">
-                        <i class="bi bi-search"></i> {{ __('advanced') }}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.index') }}"><i class="bi bi-building"></i> {{ __('my_slips') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-select-date') }}"><i class="bi bi-list"></i> {{ __('dates') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-select-organisation') }}?categ=organisation"><i class="bi bi-list"></i> {{ __('organizations') }}</a>
-                </li>
-            </ul>
+    <!-- Recherche Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true" aria-controls="rechercheMenu">
+            <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#suiviTransfertMenu" aria-expanded="true"
-           aria-controls="suiviTransfertMenu" style="padding: 10px;"><i class="bi bi-search"></i> {{ __('transfer_tracking') }}</a>
-
-        <div class="collapse show" id="suiviTransfertMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=project"><i class="bi bi-folder"></i> {{ __('projects') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=received"><i class="bi bi-envelope-check"></i> {{ __('received') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=approved"><i class="bi bi-check-circle"></i> {{ __('approved') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips-sort') }}?categ=integrated"><i class="bi bi-folder-plus"></i> {{ __('integrated') }}</a>
-                </li>
-            </ul>
+        <div class="collapse show submenu-content" id="rechercheMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('search.slips.advanced') }}">
+                    <i class="bi bi-search"></i> {{ __('advanced') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips.index') }}">
+                    <i class="bi bi-building"></i> {{ __('my_slips') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-select-date') }}">
+                    <i class="bi bi-list"></i> {{ __('dates') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-select-organisation') }}?categ=organisation">
+                    <i class="bi bi-list"></i> {{ __('organizations') }}
+                </a>
+            </div>
         </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#enregistrementMenu"
-           aria-expanded="true" aria-controls="enregistrementMenu" style="padding: 10px;">{{ __('create') }}</a>
-        <div class="collapse show" id="enregistrementMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.create') }}"><i class="bi bi-building"></i> {{ __('slip') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.containers.index') }}"><i class="bi bi-archive"></i> {{ __('box_chrono') }}</a>
-                </li>
-            </ul>
+    <!-- Suivi de transfert Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#suiviTransfertMenu" aria-expanded="true" aria-controls="suiviTransfertMenu">
+            <i class="bi bi-arrow-right-circle"></i> {{ __('transfer_tracking') }}
         </div>
+        <div class="collapse show submenu-content" id="suiviTransfertMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-sort') }}?categ=project">
+                    <i class="bi bi-folder"></i> {{ __('projects') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-sort') }}?categ=received">
+                    <i class="bi bi-envelope-check"></i> {{ __('received') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-sort') }}?categ=approved">
+                    <i class="bi bi-check-circle"></i> {{ __('approved') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips-sort') }}?categ=integrated">
+                    <i class="bi bi-folder-plus"></i> {{ __('integrated') }}
+                </a>
+            </div>
+        </div>
+    </div>
 
-        <a class="nav-link active bg-primary rounded-2 text-white" data-toggle="collapse" href="#importExportMenu" aria-expanded="false"
-           aria-controls="importExportMenu" style="padding: 10px;">
-            <i class="bi bi-cart"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
-        </a>
-        <div class="collapse show" id="importExportMenu">
-            <ul class="list-unstyled pl-3">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('slips.import.form') }}"><i class="bi bi-folder-check"></i> {{ __('import') }}</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('slips.export.form') }}" class="nav-link text-dark"><i class="bi bi-folder-check"></i> {{ __('export') }}</a>
-                </li>
-            </ul>
+    <!-- Création Section -->
+    <div class="submenu-section add-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true" aria-controls="enregistrementMenu">
+            <i class="bi bi-plus-circle"></i> {{ __('create') }}
+        </div>
+        <div class="collapse show submenu-content" id="enregistrementMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips.create') }}">
+                    <i class="bi bi-building"></i> {{ __('slip') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips.containers.index') }}">
+                    <i class="bi bi-archive"></i> {{ __('box_chrono') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import / Export Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" data-toggle="collapse" href="#importExportMenu" aria-expanded="true" aria-controls="importExportMenu">
+            <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
+        </div>
+        <div class="collapse show submenu-content" id="importExportMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips.import.form') }}">
+                    <i class="bi bi-download"></i> {{ __('import') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('slips.export.form') }}">
+                    <i class="bi bi-upload"></i> {{ __('export') }}
+                </a>
+            </div>
         </div>
     </div>
 </div>
