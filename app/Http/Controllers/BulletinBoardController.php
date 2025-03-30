@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use Illuminate\Http\Request;
+Use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -15,7 +16,7 @@ class BulletinBoardController extends Controller
     {
         $bulletinBoards = BulletinBoard::with(['creator', 'organisations'])
             ->whereHas('organisations', function($query) {
-                $query->where('organisations.id', auth()->user()->current_organisation_id);
+                $query->where('organisations.id', Auth::currentOrganisationId());
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -45,10 +46,15 @@ class BulletinBoardController extends Controller
                     'assigned_by' => Auth::id()
                 ]);
             }
+        }else{
+            $bulletinBoard->organisations()->attach(Auth::currentOrganisationId(), [
+                'assigned_by' => Auth::id()
+            ]);
         }
 
-        return redirect()->route('bulletin-boards.show', $bulletinBoard->id)
-            ->with('success', 'Bulletin board created successfully.');
+        $bulletinBoards=BulletinBoard::paginate(50);
+
+        return view('bulletin-boards.index', compact('bulletinBoards'));
     }
 
 
@@ -57,10 +63,7 @@ class BulletinBoardController extends Controller
     {
         $bulletinBoard = BulletinBoard::findOrFail($id)
             ->load(['creator', 'organisations', 'events', 'posts', 'users']);
-        $userRole = $bulletinBoard->users()
-            ->where('user_id', Auth::id())
-            ->first()?->pivot?->role;
-        return view('bulletin-boards.show', compact('bulletinBoard', 'userRole'));
+        return view('bulletin-boards.show', compact('bulletinBoard'));
     }
 
 

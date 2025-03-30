@@ -53,7 +53,7 @@
                             <a href="{{ route('bulletin-boards.show', $board->id) }}" class="btn btn-sm btn-outline-primary">
                                 Voir les détails
                             </a>
-                            @if($board->created_by == Auth::id() || $board->isUserAdmin(Auth::id()))
+
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                         Actions
@@ -62,11 +62,6 @@
                                         <li>
                                             <a class="dropdown-item" href="{{ route('bulletin-boards.edit', $board->id) }}">
                                                 <i class="fas fa-edit fa-fw me-1"></i> Modifier
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('bulletin-boards.manage-users', $board->id) }}">
-                                                <i class="fas fa-users fa-fw me-1"></i> Gérer les utilisateurs
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
@@ -81,7 +76,7 @@
                                         </li>
                                     </ul>
                                 </div>
-                            @endif
+
                         </div>
                     </div>
                 </div>
@@ -95,8 +90,35 @@
         @endforelse
     </div>
 
-    <div class="d-flex justify-content-center mt-4">
-        {{ $bulletinBoards->links() }}
-    </div>
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+          @if ($bulletinBoards->onFirstPage())
+            <li class="page-item disabled">
+              <span class="page-link">Précédent</span>
+            </li>
+          @else
+            <li class="page-item">
+              <a class="page-link" href="{{ $bulletinBoards->previousPageUrl() }}" rel="prev">Précédent</a>
+            </li>
+          @endif
+
+          @foreach ($bulletinBoards->getUrlRange(1, $bulletinBoards->lastPage()) as $page => $url)
+            <li class="page-item {{ $page == $bulletinBoards->currentPage() ? 'active' : '' }}">
+              <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+            </li>
+          @endforeach
+
+          @if ($bulletinBoards->hasMorePages())
+            <li class="page-item">
+              <a class="page-link" href="{{ $bulletinBoards->nextPageUrl() }}" rel="next">Suivant</a>
+            </li>
+          @else
+            <li class="page-item disabled">
+              <span class="page-link">Suivant</span>
+            </li>
+          @endif
+        </ul>
+      </nav>
+
 </div>
 @endsection

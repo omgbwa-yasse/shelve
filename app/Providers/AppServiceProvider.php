@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Record;
@@ -36,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
 
         // Add the SetLocale middleware to the web group
         Route::pushMiddlewareToGroup('web', \App\Http\Middleware\SetLocale::class);
+
+        Auth::macro('currentOrganisationId', function () {
+            return auth()->check() ? auth()->user()->currentOrganisationId() : null;
+        });
     }
     protected function handleLocale(): void
     {
@@ -43,4 +47,10 @@ class AppServiceProvider extends ServiceProvider
             App::setLocale(session()->get('locale'));
         }
     }
+
+
+
+
+
+
 }

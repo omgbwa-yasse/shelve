@@ -112,21 +112,24 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
-    Route::middleware(['auth'])->prefix('bulletin-board')->name('bulletin-boards.')->group(function () {
-        Route::resource('/', BulletinBoardController::class);
-        Route::resource('/posts', PostController::class)->names('posts');
-        Route::resource('/events', EventController::class)->names('events');
-        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('dashboard');
-        Route::post('events/{event}/register', [EventController::class, 'register'])->name('events.register');
-        Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('events.unregister');
+    Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
+        Route::resource('/bulletin-board', BulletinBoardController::class)->names('bulletin-boards');
+        Route::resource('bulletin-board.posts', PostController::class)->names('bulletin-boards.posts');
+        Route::resource('bulletin-board.events', EventController::class)->names('bulletin-boards.events');
 
-        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('my-posts');
-        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('archives');
+        Route::post('bulletin-board/{BulletinBoard}/events/{event}',[EventController::class, 'updateStatus'] )->name('bulletin-boards.events.updateStatus');
 
-        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('toggle-archive');
+        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
+        Route::post('events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
+        Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
+
+        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('bulletin-boards.my-posts');
+        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('bulletin-boards.archives');
+
+        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('bulletin-boards.toggle-archive');
         Route::prefix('/organisations')->name('organisations.')->group(function () {
-            Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('attach');
-            Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('detach');
+            Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('bulletin-boards.attach');
+            Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('bulletin-boards.detach');
         });
 
     });

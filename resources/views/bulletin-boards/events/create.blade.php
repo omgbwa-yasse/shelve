@@ -7,8 +7,8 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.index') }}">Tableaux d'affichage</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard->id) }}">{{ $bulletinBoard->name }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.index', $bulletinBoard->id) }}">Événements</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $BulletinBoard['id']) }}">{{ $BulletinBoard->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.index', $BulletinBoard['id']) }}">Événements</a></li>
                     <li class="breadcrumb-item active">Créer</li>
                 </ol>
             </nav>
@@ -18,7 +18,7 @@
                     <h4 class="mb-0">Créer un nouvel événement</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('bulletin-boards.events.store', $bulletinBoard->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('bulletin-boards.events.store', $BulletinBoard['id']) }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div class="mb-3">
@@ -76,16 +76,16 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="attachments" class="form-label">Pièces jointes (optionnel)</label>
-                            <input type="file" class="form-control @error('attachments.*') is-invalid @enderror" id="attachments" name="attachments[]" multiple>
+                            <label for="files" class="form-label">Pièces jointes (optionnel)</label>
+                            <input type="file" class="form-control @error('files.*') is-invalid @enderror" id="files" name="files[]" multiple>
                             <div class="form-text">Vous pouvez sélectionner plusieurs fichiers (maximum 10MB par fichier).</div>
-                            @error('attachments.*')
+                            @error('files.*')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('bulletin-boards.events.index', $bulletinBoard->id) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('bulletin-boards.events.index', $BulletinBoard['id']) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary">

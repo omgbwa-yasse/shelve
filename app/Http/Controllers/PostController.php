@@ -15,7 +15,7 @@ use FFMpeg\Coordinate\TimeCode;
 
 class PostController extends Controller
 {
-    public function index()
+    public function index(BulletinBoard $BulletinBoard)
     {
         $posts = Post::with(['bulletinBoard', 'user'])
             ->when(request('search'), function($query, $search) {
@@ -35,13 +35,13 @@ class PostController extends Controller
         return view('bulletin-boards.posts.index', compact('posts', 'organisations'));
     }
 
-    public function create()
+    public function create(BulletinBoard $BulletinBoard)
     {
         $organisations = Organisation::all();
         return view('bulletin-boards.posts.create', compact('organisations'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, BulletinBoard $BulletinBoard)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -127,13 +127,13 @@ class PostController extends Controller
             ->with('success', 'Publication créée avec succès.');
     }
 
-    public function show(Post $post)
+    public function show( BulletinBoard $BulletinBoard, Post $post)
     {
         $post->load(['bulletinBoard.organisations', 'bulletinBoard.attachments', 'user']);
         return view('bulletin-boards.posts.show', compact('post'));
     }
 
-    public function edit(Post $post)
+    public function edit(BulletinBoard $BulletinBoard, Post $post)
     {
         $this->authorize('update', $post->bulletinBoard);
 
@@ -141,7 +141,7 @@ class PostController extends Controller
         return view('bulletin-boards.posts.edit', compact('post', 'organisations'));
     }
 
-    public function update(Request $request, Post $post)
+    public function update(BulletinBoard $BulletinBoard, Request $request, Post $post)
     {
         $this->authorize('update', $post->bulletinBoard);
 
@@ -226,7 +226,7 @@ class PostController extends Controller
             ->with('success', 'Publication mise à jour avec succès.');
     }
 
-    public function destroy(Post $post)
+    public function destroy(BulletinBoard $BulletinBoard, Post $post)
     {
         $this->authorize('delete', $post->bulletinBoard);
 
@@ -238,7 +238,7 @@ class PostController extends Controller
             ->with('success', 'Publication supprimée avec succès.');
     }
 
-    public function toggleStatus(Post $post)
+    public function toggleStatus(BulletinBoard $BulletinBoard, Post $post)
     {
         $this->authorize('update', $post->bulletinBoard);
 
@@ -249,7 +249,7 @@ class PostController extends Controller
         return back()->with('success', 'Statut de la publication mis à jour avec succès.');
     }
 
-    public function cancel(Post $post)
+    public function cancel(BulletinBoard $BulletinBoard, Post $post)
     {
         $this->authorize('update', $post->bulletinBoard);
 

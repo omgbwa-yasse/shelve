@@ -38,11 +38,10 @@ class User extends Authenticatable
 
 
 
-    public function currentOrganisation()
+    public function currentOrganisationId()
     {
-        return $this->belongsTo(Organisation::class, 'current_organisation_id');
+        return $this->current_organisation_id;
     }
-
 
 
     public function organisations()

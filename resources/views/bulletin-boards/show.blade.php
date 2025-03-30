@@ -20,27 +20,23 @@
         </div>
         <div class="col-md-4">
             <div class="d-flex justify-content-end">
-                @if($bulletinBoard->hasWritePermission(Auth::id()))
                     <div class="dropdown me-2">
                         <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-plus me-1"></i> Créer
                         </button>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="{{ route('bulletin-boards.events.create', $bulletinBoard->id) }}">
+                                <a class="dropdown-item" href="{{ route('bulletin-boards.events.create', $bulletinBoard) }}">
                                     <i class="fas fa-calendar-plus fa-fw me-1"></i> Nouvel événement
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('bulletin-boards.posts.create', $bulletinBoard->id) }}">
+                                <a class="dropdown-item" href="{{ route('bulletin-boards.posts.create', $bulletinBoard) }}">
                                     <i class="fas fa-file-alt fa-fw me-1"></i> Nouvelle publication
                                 </a>
                             </li>
                         </ul>
                     </div>
-                @endif
-
-                @if($bulletinBoard->created_by == Auth::id() || $bulletinBoard->isUserAdmin(Auth::id()))
                     <div class="dropdown">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-cog me-1"></i> Actions
@@ -49,11 +45,6 @@
                             <li>
                                 <a class="dropdown-item" href="{{ route('bulletin-boards.edit', $bulletinBoard->id) }}">
                                     <i class="fas fa-edit fa-fw me-1"></i> Modifier
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('bulletin-boards.manage-users', $bulletinBoard->id) }}">
-                                    <i class="fas fa-users fa-fw me-1"></i> Gérer les utilisateurs
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -68,7 +59,6 @@
                             </li>
                         </ul>
                     </div>
-                @endif
             </div>
         </div>
     </div>
