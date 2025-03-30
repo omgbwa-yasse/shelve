@@ -26,7 +26,21 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
     <style>
-    
+    :root {
+            --primary: #0178d4;
+            --primary-dark: #0052b3;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --success: #10b981;
+            --info: #06b6d4;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --white: #ffffff;
+            --body-bg: #f1f5f9;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
             background-color: var(--body-bg);
