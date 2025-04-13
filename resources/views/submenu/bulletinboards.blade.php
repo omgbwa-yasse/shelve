@@ -1,4 +1,4 @@
-<div class="submenu-container py-3">
+<div class="submenu-container py-2">
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7,21 +7,22 @@
     <style>
         .submenu-container {
             font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
         }
 
         .submenu-heading {
             background-color: #4285f4;
             color: white;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 12px;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
             font-weight: 500;
-            font-size: 15px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .submenu-heading:hover {
@@ -29,27 +30,28 @@
         }
 
         .submenu-heading i {
-            margin-right: 10px;
+            margin-right: 8px;
+            font-size: 14px;
         }
 
         .submenu-content {
-            padding: 0 0 16px 16px;
-            margin-bottom: 16px;
+            padding: 0 0 8px 12px;
+            margin-bottom: 8px;
         }
 
         .submenu-item {
-            margin-bottom: 6px;
+            margin-bottom: 2px;
         }
 
         .submenu-link {
             display: flex;
             align-items: center;
-            padding: 8px 12px;
+            padding: 4px 8px;
             color: #202124;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 4px;
             transition: all 0.2s ease;
-            font-size: 14px;
+            font-size: 12.5px;
         }
 
         .submenu-link:hover {
@@ -59,8 +61,9 @@
         }
 
         .submenu-link i {
-            margin-right: 10px;
+            margin-right: 8px;
             color: #5f6368;
+            font-size: 13px;
         }
 
         .submenu-link:hover i {
