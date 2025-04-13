@@ -7,7 +7,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.index') }}">Tableaux d'affichage</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard->id) }}">{{ $bulletinBoard->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard['id']) }}">{{ $bulletinBoard->name }}</a></li>
                     <li class="breadcrumb-item active">Publications</li>
                 </ol>
             </nav>
@@ -16,7 +16,7 @@
         </div>
         <div class="col-lg-4 text-lg-end d-flex justify-content-lg-end align-items-center">
             @if($bulletinBoard->hasWritePermission(Auth::id()))
-                <a href="{{ route('bulletin-boards.posts.create', $bulletinBoard->id) }}" class="btn btn-primary">
+                <a href="{{ route('bulletin-boards.posts.create', $bulletinBoard['id']) }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i> Créer une publication
                 </a>
             @endif
@@ -79,7 +79,7 @@
                                 @forelse($activePosts as $post)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="fw-bold text-decoration-none">
+                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="fw-bold text-decoration-none">
                                                 {{ $post->name }}
                                             </a>
                                         </td>
@@ -97,11 +97,11 @@
                                         <td>{{ $post->creator->name }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-primary">
+                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 @if($post->canBeEditedBy(Auth::user()))
-                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -145,7 +145,7 @@
                                 @forelse($scheduledPosts as $post)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="fw-bold text-decoration-none">
+                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="fw-bold text-decoration-none">
                                                 {{ $post->name }}
                                             </a>
                                         </td>
@@ -163,11 +163,11 @@
                                         <td>{{ $post->creator->name }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-primary">
+                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 @if($post->canBeEditedBy(Auth::user()))
-                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -211,7 +211,7 @@
                                 @forelse($expiredPosts as $post)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="fw-bold text-decoration-none">
+                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="fw-bold text-decoration-none">
                                                 {{ $post->name }}
                                             </a>
                                         </td>
@@ -227,11 +227,11 @@
                                         <td>{{ $post->creator->name }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-primary">
+                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 @if($post->canBeEditedBy(Auth::user()))
-                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -269,7 +269,7 @@
                                 @forelse($posts as $post)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="fw-bold text-decoration-none">
+                                            <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="fw-bold text-decoration-none">
                                                 {{ $post->name }}
                                             </a>
                                         </td>
@@ -287,11 +287,11 @@
                                         <td>{{ $post->creator->name }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-primary">
+                                                <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-primary">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 @if($post->canBeEditedBy(Auth::user()))
-                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 @endif
@@ -321,7 +321,7 @@
     </div>
 
     <div class="mt-4">
-        <a href="{{ route('bulletin-boards.show', $bulletinBoard->id) }}" class="btn btn-outline-secondary">
+        <a href="{{ route('bulletin-boards.show', $bulletinBoard['id']) }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Retour au tableau d'affichage
         </a>
     </div>

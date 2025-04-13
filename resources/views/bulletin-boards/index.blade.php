@@ -44,7 +44,7 @@
                             </div>
                             <div>
                                 <span class="small text-muted d-block">Utilisateurs</span>
-                                <span class="fw-bold">{{ $board->users->count() }}</span>
+                                <span class="fw-bold">{{ $board->organisations->count() }}</span>
                             </div>
                         </div>
                     </div>

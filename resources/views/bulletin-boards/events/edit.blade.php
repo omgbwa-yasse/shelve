@@ -7,9 +7,9 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.index') }}">Tableaux d'affichage</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard->id) }}">{{ $bulletinBoard->name }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.index', $bulletinBoard->id) }}">Événements</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.show', [$bulletinBoard->id, $event->id]) }}">{{ $event->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard['id']) }}">{{ $bulletinBoard->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.index', $bulletinBoard['id']) }}">Événements</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.show', [$bulletinBoard['id'], $event->id]) }}">{{ $event->name }}</a></li>
                     <li class="breadcrumb-item active">Modifier</li>
                 </ol>
             </nav>
@@ -19,7 +19,7 @@
                     <h4 class="mb-0">Modifier l'événement</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('bulletin-boards.events.update', [$bulletinBoard->id, $event->id]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('bulletin-boards.events.update', [$bulletinBoard['id'], $event->id]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -135,7 +135,7 @@
                         @endif
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('bulletin-boards.events.show', [$bulletinBoard->id, $event->id]) }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('bulletin-boards.events.show', [$bulletinBoard['id'], $event->id]) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Annuler
                             </a>
                             <button type="submit" class="btn btn-primary">

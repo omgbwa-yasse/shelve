@@ -15,9 +15,9 @@ use FFMpeg\Coordinate\TimeCode;
 
 class PostController extends Controller
 {
-    public function index(BulletinBoard $BulletinBoard)
+    public function index(BulletinBoard $bulletinBoard)
     {
-        $posts = Post::with(['bulletinBoard', 'user'])
+        $posts = Post::with(['bulletinBoard', 'creator'])
             ->when(request('search'), function($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
@@ -32,16 +32,21 @@ class PostController extends Controller
 
         $organisations = Organisation::all();
 
-        return view('bulletin-boards.posts.index', compact('posts', 'organisations'));
+        return view('bulletin-boards.posts.index', compact('posts','bulletinBoard', 'organisations'));
     }
 
-    public function create(BulletinBoard $BulletinBoard)
+
+
+
+    public function create(BulletinBoard $bulletinBoard)
     {
         $organisations = Organisation::all();
-        return view('bulletin-boards.posts.create', compact('organisations'));
+        return view('bulletin-boards.posts.create', compact('bulletinBoard','organisations'));
     }
 
-    public function store(Request $request, BulletinBoard $BulletinBoard)
+
+
+    public function store(Request $request, BulletinBoard $bulletinBoard)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -55,14 +60,6 @@ class PostController extends Controller
             'thumbnails.*' => 'nullable|string'
         ]);
 
-        // Création du bulletin board parent
-        $bulletinBoard = BulletinBoard::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'user_id' => Auth::id(),
-        ]);
-
-        // Création du post
         $post = Post::create([
             'bulletin_board_id' => $bulletinBoard->id,
             'name' => $validated['name'],
@@ -70,17 +67,15 @@ class PostController extends Controller
             'start_date' => $validated['start_date'] ?? now(),
             'end_date' => $validated['end_date'],
             'status' => $validated['status'],
-            'user_id' => Auth::id()
+            'created_by' => Auth::id()
         ]);
 
-        // Gestion des organisations
         if (!empty($validated['organisations'])) {
             $bulletinBoard->organisations()->attach($validated['organisations'], [
                 'user_id' => Auth::id()
             ]);
         }
 
-        // Gestion des pièces jointes et vignettes
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $key => $file) {
                 $path = $file->store('bulletin_board_attachments');
@@ -96,7 +91,7 @@ class PostController extends Controller
                     'mime_type' => $mimeType,
                     'size' => $file->getSize(),
                     'creator_id' => Auth::id(),
-//                    'type' => 'board'
+                    'type' => 'bulletinboardpost'
                 ]);
 
                 // Gestion de la vignette
@@ -123,25 +118,25 @@ class PostController extends Controller
         }
 
         return redirect()
-            ->route('bulletin-boards.posts.show', $post)
+            ->route('bulletin-boards.posts.show', [$bulletinBoard, $post])
             ->with('success', 'Publication créée avec succès.');
     }
 
-    public function show( BulletinBoard $BulletinBoard, Post $post)
+
+    public function show( BulletinBoard $bulletinBoard, Post $post)
     {
-        $post->load(['bulletinBoard.organisations', 'bulletinBoard.attachments', 'user']);
-        return view('bulletin-boards.posts.show', compact('post'));
+        $post->load(['bulletinBoard', 'attachments', 'creator']);
+
+        return view('bulletin-boards.posts.show', compact('post', 'bulletinBoard'));
     }
 
-    public function edit(BulletinBoard $BulletinBoard, Post $post)
+    public function edit(BulletinBoard $bulletinBoard, Post $post)
     {
-        $this->authorize('update', $post->bulletinBoard);
-
         $organisations = Organisation::all();
         return view('bulletin-boards.posts.edit', compact('post', 'organisations'));
     }
 
-    public function update(BulletinBoard $BulletinBoard, Request $request, Post $post)
+    public function update(BulletinBoard $bulletinBoard, Request $request, Post $post)
     {
         $this->authorize('update', $post->bulletinBoard);
 
@@ -195,7 +190,7 @@ class PostController extends Controller
                     'mime_type' => $mimeType,
                     'size' => $file->getSize(),
                     'creator_id' => Auth::id(),
-                    'type' => 'bulletin_board'
+                    'type' => 'bulletinboardpost'
                 ]);
 
                 // Gestion de la vignette
@@ -226,21 +221,38 @@ class PostController extends Controller
             ->with('success', 'Publication mise à jour avec succès.');
     }
 
-    public function destroy(BulletinBoard $BulletinBoard, Post $post)
-    {
-        $this->authorize('delete', $post->bulletinBoard);
 
-        // Suppression du bulletin board parent (va supprimer le post via la cascade)
-        $post->bulletinBoard->delete();
+
+
+
+
+    public function destroy(BulletinBoard $bulletinBoard, Post $post)
+    {
+        $post->load('attachments');
+
+        foreach ($post->attachments as $attachment) {
+            if (Storage::exists($attachment->path)) {
+                Storage::delete($attachment->path);
+            }
+            if ($attachment->thumbnail_path && Storage::exists('public/' . $attachment->thumbnail_path)) {
+                Storage::delete('public/' . $attachment->thumbnail_path);
+            }
+
+            $post->attachments()->detach($attachment->id);
+        }
+
+        $post->delete();
 
         return redirect()
-            ->route('bulletin-boards.posts.index')
+            ->route('bulletin-board.show', $bulletinBoard)
             ->with('success', 'Publication supprimée avec succès.');
     }
 
-    public function toggleStatus(BulletinBoard $BulletinBoard, Post $post)
+
+
+
+    public function toggleStatus(BulletinBoard $bulletinBoard, Post $post)
     {
-        $this->authorize('update', $post->bulletinBoard);
 
         $post->update([
             'status' => $post->status === 'published' ? 'draft' : 'published'
@@ -249,39 +261,42 @@ class PostController extends Controller
         return back()->with('success', 'Statut de la publication mis à jour avec succès.');
     }
 
-    public function cancel(BulletinBoard $BulletinBoard, Post $post)
+    public function cancel(BulletinBoard $bulletinBoard, Post $post)
     {
-        $this->authorize('update', $post->bulletinBoard);
 
         $post->update(['status' => 'cancelled']);
 
         return back()->with('success', 'Publication annulée avec succès.');
     }
 
+
+
     private function generateThumbnail($file, $attachmentId, $fileType)
-    {
-        $thumbnailPath = 'thumbnails_bulletin_board/' . $attachmentId . '.jpg';
+{
+    $thumbnailPath = 'thumbnails_bulletin_board/' . $attachmentId . '.jpg';
 
-        try {
-            if ($fileType === 'image') {
-                $img = Image::make($file->getRealPath());
-                $img->fit(300, 300);
-                $img->save(storage_path('app/public/' . $thumbnailPath));
-            } elseif ($fileType === 'video') {
-                $ffmpeg = FFMpeg::create();
-                $video = $ffmpeg->open($file->getRealPath());
-                $frame = $video->frame(TimeCode::fromSeconds(1));
-                $frame->save(storage_path('app/public/' . $thumbnailPath));
-            } else {
-                return null;
-            }
-
-            return $thumbnailPath;
-        } catch (\Exception $e) {
-            \Log::error('Erreur lors de la génération de la vignette: ' . $e->getMessage());
+    try {
+        if ($fileType === 'image') {
+            // Utilisez la façade Image correctement
+            $img = \Intervention\Image\Facades\Image::make($file->getRealPath());
+            $img->fit(300, 300);
+            $img->save(storage_path('app/public/' . $thumbnailPath));
+        } elseif ($fileType === 'video') {
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open($file->getRealPath());
+            $frame = $video->frame(TimeCode::fromSeconds(1));
+            $frame->save(storage_path('app/public/' . $thumbnailPath));
+        } else {
             return null;
         }
+
+        return $thumbnailPath;
+    } catch (\Exception $e) {
+        \Log::error('Erreur lors de la génération de la vignette: ' . $e->getMessage());
+        return null;
     }
+}
+
 
     public function getThumbnailUrl($attachment)
     {

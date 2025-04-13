@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('thumbnail_path', 150)->nullable(false);
             $table->integer('size')->nullable(false);
             $table->string('crypt_sha512')->nullable(false);
-            $table->enum('type', ['mail','record','communication','transferting'])->nullable(false);
+            $table->enum('type', ['mail','record','communication','transferting','bulletinboardpost','bulletinboard','bulletinboardevent'])->nullable(false);
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');

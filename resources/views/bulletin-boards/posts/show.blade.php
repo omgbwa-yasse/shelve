@@ -7,8 +7,8 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.index') }}">Tableaux d'affichage</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard->id) }}">{{ $bulletinBoard->name }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.posts.index', $bulletinBoard->id) }}">Publications</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $bulletinBoard['id']) }}">{{ $bulletinBoard->name }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.posts.index', $bulletinBoard['id']) }}">Publications</a></li>
                     <li class="breadcrumb-item active">{{ $post->name }}</li>
                 </ol>
             </nav>
@@ -36,7 +36,7 @@
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}">
+                                    <a class="dropdown-item" href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}">
                                         <i class="fas fa-edit fa-fw me-1"></i> Modifier
                                     </a>
                                 </li>
@@ -47,7 +47,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <form action="{{ route('bulletin-boards.posts.destroy', [$bulletinBoard->id, $post->id]) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('bulletin-boards.posts.destroy', [$bulletinBoard['id'], $post->id]) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette publication ?')">
@@ -160,12 +160,12 @@
                 </div>
                 <div class="card-footer bg-transparent">
                     <div class="d-flex justify-content-between">
-                        <a href="{{ route('bulletin-boards.posts.index', $bulletinBoard->id) }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('bulletin-boards.posts.index', $bulletinBoard['id']) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-1"></i> Retour aux publications
                         </a>
 
                         @if($post->canBeEditedBy(Auth::user()))
-                            <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard->id, $post->id]) }}" class="btn btn-primary">
+                            <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard['id'], $post->id]) }}" class="btn btn-primary">
                                 <i class="fas fa-edit me-1"></i> Modifier
                             </a>
                         @endif
@@ -184,7 +184,7 @@
                 <h5 class="modal-title" id="changeStatusModalLabel">Changer le statut de la publication</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('bulletin-boards.posts.change-status', [$bulletinBoard->id, $post->id]) }}" method="POST">
+            <form action="{{ route('bulletin-boards.posts.change-status', [$bulletinBoard['id'], $post->id]) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">

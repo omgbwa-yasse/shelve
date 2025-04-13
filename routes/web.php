@@ -118,6 +118,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('bulletin-board.events', EventController::class)->names('bulletin-boards.events');
 
         Route::post('bulletin-board/{BulletinBoard}/events/{event}',[EventController::class, 'updateStatus'] )->name('bulletin-boards.events.updateStatus');
+        Route::post('bulletin-board/{BulletinBoard}/events/{post}',[PostController::class, 'toggleStatus'] )->name('bulletin-boards.posts.change-status');
 
         Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
         Route::post('events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');

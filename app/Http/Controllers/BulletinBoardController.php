@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 Use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -114,14 +116,46 @@ class BulletinBoardController extends Controller
     public function destroy(BulletinBoard $bulletinBoard)
     {
 
-        $this->authorize('delete', $bulletinBoard);
+        $bulletinBoard->load(['posts', 'events', 'organisations', 'attachments']);
 
-        $bulletinBoard->delete();
 
-        return redirect()->route('bulletin-boards.index')
-            ->with('success', 'Bulletin board deleted successfully.');
+        if ($bulletinBoard->posts->count() > 0 || $bulletinBoard->events->count() > 0) {
+            return redirect()->route('bulletin-boards.show', $bulletinBoard)
+                ->with('error', 'Impossible de supprimer ce tableau d\'affichage car il contient des publications ou événements.');
+        }
+
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($bulletinBoard->attachments as $attachment) {
+                if (Storage::exists($attachment->path)) {
+                    Storage::delete($attachment->path);
+                }
+                if ($attachment->thumbnail_path && Storage::exists('public/' . $attachment->thumbnail_path)) {
+                    Storage::delete('public/' . $attachment->thumbnail_path);
+                }
+                $bulletinBoard->attachments()->detach($attachment->id);
+                if ($attachment->bulletinBoards()->count() === 0 &&
+                    $attachment->posts()->count() === 0 &&
+                    $attachment->events()->count() === 0) {
+                    $attachment->delete();
+                }
+            }
+
+            $bulletinBoard->organisations()->detach();
+            $bulletinBoard->delete();
+            DB::commit();
+
+            return redirect()->route('bulletin-boards.index')
+                ->with('success', 'Tableau d\'affichage supprimé avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('bulletin-boards.show', $bulletinBoard)
+                ->with('error', 'Une erreur est survenue lors de la suppression : ' . $e->getMessage());
+        }
     }
-
 
 
 

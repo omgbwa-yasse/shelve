@@ -194,32 +194,32 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($bulletinBoard->users as $user)
+                        @forelse($bulletinBoard->organisations as $organisation)
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm me-2">
                                             <div class="avatar-circle bg-primary text-white">
-                                                {{ substr($user->name, 0, 1) }}
+                                                {{ substr($organisation->name, 0, 1) }}
                                             </div>
                                         </div>
                                         <div>
-                                            {{ $user->name }}
-                                            @if($user->id == $bulletinBoard->created_by)
+                                            {{ $organisation->name }}
+                                            @if($organisation->id == $bulletinBoard->created_by)
                                                 <span class="badge bg-info ms-1">Créateur</span>
                                             @endif
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ $user->pivot->role == 'super_admin' ? 'danger' : ($user->pivot->role == 'admin' ? 'primary' : 'success') }}">
-                                        {{ ucfirst($user->pivot->role) }}
+                                    <span class="badge bg-{{ $organisation->pivot->role == 'super_admin' ? 'danger' : ($organisation->pivot->role == 'admin' ? 'primary' : 'success') }}">
+                                        {{ ucfirst($organisation->pivot->role) }}
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">{{ ucfirst($user->pivot->permissions) }}</span>
+                                    <span class="badge bg-secondary">{{ ucfirst($organisation->pivot->permissions) }}</span>
                                 </td>
-                                <td>{{ $user->pivot->created_at->format('d/m/Y') }}</td>
+                                <td>{{ $organisation->pivot->created_at->format('d/m/Y') }}</td>
                             </tr>
                         @empty
                             <tr>
