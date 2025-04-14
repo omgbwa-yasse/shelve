@@ -89,6 +89,8 @@ use App\Http\Controllers\SearchSlipController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\BulletinBoardController;
+use App\Http\Controllers\EventAttachmentController;
+use App\Http\Controllers\PostAttachmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupFileController;
@@ -119,6 +121,30 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::post('bulletin-board/{BulletinBoard}/events/{event}',[EventController::class, 'updateStatus'] )->name('bulletin-boards.events.updateStatus');
         Route::post('bulletin-board/{BulletinBoard}/events/{post}',[PostController::class, 'toggleStatus'] )->name('bulletin-boards.posts.change-status');
+
+        Route::get('/events/{event}/attachments', [EventAttachmentController::class, 'index'])->name('events.attachments.index');
+        Route::get('/events/{event}/attachments/create', [EventAttachmentController::class, 'create'])->name('events.attachments.create');
+        Route::post('/events/{event}/attachments', [EventAttachmentController::class, 'store'])->name('events.attachments.store');
+        Route::get('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'show'])->name('events.attachments.show');
+        Route::delete('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'destroy'])->name('events.attachments.destroy');
+        Route::get('/events/{id}/preview', [EventAttachmentController::class, 'preview'])->name('events.attachments.preview');
+        Route::get('/events/{id}/download', [EventAttachmentController::class, 'download'])->name('events.attachments.download');
+
+        Route::get('/posts/{post}/attachments', [PostAttachmentController::class, 'index'])->name('posts.attachments.index');
+        Route::get('/posts/{post}/attachments/create', [PostAttachmentController::class, 'create'])->name('posts.attachments.create');
+        Route::post('/posts/{post}/attachments', [PostAttachmentController::class, 'store'])->name('posts.attachments.store');
+        Route::get('/posts/{post}/attachments/{attachment}', [PostAttachmentController::class, 'show'])->name('posts.attachments.show');
+        Route::delete('/posts/{post}/attachments/{attachment}', [PostAttachmentController::class, 'destroy'])->name('posts.attachments.destroy');
+        Route::get('/posts/{id}/preview', [PostAttachmentController::class, 'preview'])->name('posts.attachments.preview');
+        Route::get('/posts/{id}/download', [PostAttachmentController::class, 'download'])->name('posts.attachments.download');
+
+        Route::get('/events/{event}/attachments/list', [EventAttachmentController::class, 'getAttachmentsList'])->name('events.attachments.list');
+        Route::post('/events/{event}/attachments', [EventAttachmentController::class, 'ajaxStore'])->name('events.attachments.ajax.store');
+        Route::delete('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'ajaxDestroy'])->name('events.attachments.ajax.destroy');
+
+        Route::get('/posts/{post}/attachments/list', [PostAttachmentController::class, 'getAttachmentsList'])->name('posts.attachments.list');
+        Route::post('/posts/{post}/attachments', [PostAttachmentController::class, 'ajaxStore'])->name('posts.attachments.ajax.store');
+        Route::delete('/posts/{post}/attachments/{attachment}', [PostAttachmentController::class, 'ajaxDestroy'])->name('posts.attachments.ajax.destroy');
 
         Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
         Route::post('events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');

@@ -19,7 +19,7 @@
                     <h4 class="mb-0">Modifier la publication</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('bulletin-boards.posts.update', [$bulletinBoard->id, $post->id]) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('bulletin-boards.posts.update', [$bulletinBoard->id, $post->id]) }}" method="POST">
                         @csrf
                         @method('PUT')
 
@@ -69,19 +69,18 @@
                             @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label for="attachments" class="form-label">Ajouter des pièces jointes</label>
-                            <input type="file" class="form-control @error('attachments.*') is-invalid @enderror" id="attachments" name="attachments[]" multiple>
-                            <div class="form-text">Vous pouvez sélectionner plusieurs fichiers (maximum 10MB par fichier).</div>
-                            @error('attachments.*')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="add_attachments" name="add_attachments" {{ old('add_attachments') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="add_attachments">Ajouter des pièces jointes après la mise à jour</label>
                         </div>
 
                         @if($post->attachments->isNotEmpty())
                             <div class="card mb-3">
-                                <div class="card-header">
+                                <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Pièces jointes existantes</h5>
+                                    <a href="{{ route('posts.attachments.index', $post->id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-paperclip me-1"></i> Gérer les pièces jointes
+                                    </a>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -91,7 +90,7 @@
                                                     <th>Fichier</th>
                                                     <th>Type</th>
                                                     <th>Taille</th>
-                                                    <th>Supprimer</th>
+                                                    <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -99,22 +98,21 @@
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex align-items-center">
-                                                                <div class="me-2">
-                                                                    <i class="fas {{ $attachment->getIconClass() }} fa-lg text-muted"></i>
-                                                                </div>
                                                                 <div>
-                                                                    {{ $attachment->file_name }}
+                                                                    {{ $attachment->name }}
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>{{ Str::upper(pathinfo($attachment->file_name, PATHINFO_EXTENSION)) }}</td>
-                                                        <td>{{ $attachment->getHumanReadableSize() }}</td>
+                                                        <td>{{ Str::upper(pathinfo($attachment->name, PATHINFO_EXTENSION)) }}</td>
+                                                        <td>{{ number_format($attachment->size / 1024, 2) }} KB</td>
                                                         <td>
-                                                            <div class="form-check">
-                                                                <input class="form-check-input" type="checkbox" name="remove_attachments[]" value="{{ $attachment->id }}" id="attachment-{{ $attachment->id }}">
-                                                                <label class="form-check-label" for="attachment-{{ $attachment->id }}">
-                                                                    Supprimer
-                                                                </label>
+                                                            <div class="btn-group btn-group-sm">
+                                                                <a href="{{ route('attachments.download', $attachment->id) }}" class="btn btn-outline-primary" target="_blank">
+                                                                    <i class="fas fa-download"></i>
+                                                                </a>
+                                                                <a href="{{ route('attachments.preview', $attachment->id) }}" class="btn btn-outline-info" target="_blank">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -123,6 +121,11 @@
                                         </table>
                                     </div>
                                 </div>
+                            </div>
+                        @else
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle me-2"></i> Aucune pièce jointe n'est associée à cette publication.
+                                <a href="{{ route('posts.attachments.create', $post->id) }}" class="alert-link">Ajouter des pièces jointes</a>
                             </div>
                         @endif
 

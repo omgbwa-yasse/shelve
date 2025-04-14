@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\BulletinBoard;
-use App\Models\Attachment;
 use App\Models\Event;
 use App\Models\Organisation;
-use ArrayObject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -36,7 +35,6 @@ class EventController extends Controller
         return view('bulletin-boards.events.create', compact('organisations', 'BulletinBoard'));
     }
 
-
     public function edit(BulletinBoard $BulletinBoard, Event $event)
     {
         $bulletinBoard = BulletinBoard::findOrFail($BulletinBoard['id']);
@@ -51,12 +49,9 @@ class EventController extends Controller
             return abort(404);
         }
 
-
-
         $organisations = Organisation::all();
         return view('bulletin-boards.events.edit', compact('organisations', 'bulletinBoard', 'event'));
     }
-
 
     public function store(BulletinBoard $BulletinBoard, Request $request)
     {
@@ -66,8 +61,6 @@ class EventController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
             'location' => 'nullable|string|max:255',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf|max:10240'
         ]);
 
         $event = Event::create([
@@ -81,32 +74,15 @@ class EventController extends Controller
             'created_by' => auth()->id()
         ]);
 
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('attachments/events');
-
-                $attachment = Attachment::create([
-                    'path' => $path,
-                    'name' => $file->getClientOriginalName(),
-                    'crypt' => $crypt,
-                    'size' => $file->getSize(),
-                    'creator_id' => auth()->id(),
-                    'type' => $file->getClientMimeType(),
-                    'crypt_sha512' => $cryptSha512,
-                    'thumbnail_path' => null // Remplir si besoin de générer une vignette
-                ]);
-
-                $event->attachments()->attach($attachment->id, [
-                    'created_by' => auth()->id()
-                ]);
-            }
+        // Redirection vers la page d'ajout de pièces jointes si "add_attachments" est coché
+        if ($request->has('add_attachments')) {
+            return redirect()->route('events.attachments.create', $event->id)
+                ->with('success', 'Événement créé avec succès. Vous pouvez maintenant ajouter des pièces jointes.');
         }
 
         return redirect()->route('bulletin-boards.events.show', [$BulletinBoard, $event])
             ->with('success', 'Événement créé avec succès.');
     }
-
-
 
     public function show(BulletinBoard $BulletinBoard, Event $event)
     {
@@ -115,9 +91,8 @@ class EventController extends Controller
             'attachments',
             'creator',
         ]);
-        return view('bulletin-boards.events.show', compact('BulletinBoard',        'event'));
+        return view('bulletin-boards.events.show', compact('BulletinBoard', 'event'));
     }
-
 
     public function updateStatus(BulletinBoard $BulletinBoard, Event $event, Request $request)
     {
@@ -134,11 +109,9 @@ class EventController extends Controller
         $event->status = $request->status;
         $event->save();
 
-
         return redirect()->route('bulletin-boards.events.show', [$BulletinBoard, $event])
             ->with('success', 'Statut de l\'événement mis à jour avec succès.');
     }
-
 
     public function update(BulletinBoard $BulletinBoard, Event $event, Request $request)
     {
@@ -148,8 +121,6 @@ class EventController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
             'location' => 'nullable|string|max:255',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf|max:10240'
         ]);
 
         $event->update([
@@ -162,33 +133,22 @@ class EventController extends Controller
             'updated_by' => auth()->id()
         ]);
 
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('attachments/events');
-
-                // Générer les valeurs pour crypt et cryptSha512
-                $crypt = md5(uniqid(rand(), true));
-                $cryptSha512 = hash('sha512', $file->get());
-
-                $attachment = Attachment::create([
-                    'path' => $path,
-                    'name' => $file->getClientOriginalName(),
-                    'crypt' => $crypt,
-                    'size' => $file->getSize(),
-                    'creator_id' => auth()->id(),
-                    'type' => $file->getClientMimeType(),
-                    'crypt_sha512' => $cryptSha512,
-                    'thumbnail_path' => null // Remplir si besoin de générer une vignette
-                ]);
-
-                $event->attachments()->attach($attachment->id, [
-                    'created_by' => auth()->id()
-                ]);
-            }
+        // Redirection vers la page d'ajout de pièces jointes si "add_attachments" est coché
+        if ($request->has('add_attachments')) {
+            return redirect()->route('events.attachments.create', $event->id)
+                ->with('success', 'Événement mis à jour avec succès. Vous pouvez maintenant ajouter des pièces jointes.');
         }
 
         return redirect()->route('bulletin-boards.events.show', [$BulletinBoard, $event])
             ->with('success', 'Événement mis à jour avec succès.');
     }
 
+    public function destroy(BulletinBoard $bulletinBoard, Event $event)
+    {
+
+        $event->delete();
+
+        return redirect()->route('bulletin-boards.show', $bulletinBoard)
+            ->with('success', 'Événement supprimé avec succès.');
+    }
 }

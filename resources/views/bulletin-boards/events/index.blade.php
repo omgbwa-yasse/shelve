@@ -95,11 +95,11 @@
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ route('bulletin-boards.events.show', [$bulletinBoard['id'], $event->id]) }}" class="btn btn-outline-primary">
-                                                    <i class="fas fa-eye"></i>
+                                                    <i class="fas fa-eye"> </i> Voir
                                                 </a>
                                                 @if($event->canBeEditedBy(Auth::user()))
                                                     <a href="{{ route('bulletin-boards.events.edit', [$bulletinBoard['id'], $event->id]) }}" class="btn btn-outline-secondary">
-                                                        <i class="fas fa-edit"></i>
+                                                        <i class="fas fa-edit"> </i> Modifier
                                                     </a>
                                                 @endif
                                             </div>

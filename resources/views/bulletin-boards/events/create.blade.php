@@ -18,7 +18,7 @@
                     <h4 class="mb-0">Créer un nouvel événement</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('bulletin-boards.events.store', $BulletinBoard['id']) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('bulletin-boards.events.store', $BulletinBoard['id']) }}" method="POST">
                         @csrf
 
                         <div class="mb-3">
@@ -75,13 +75,9 @@
                             @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label for="files" class="form-label">Pièces jointes (optionnel)</label>
-                            <input type="file" class="form-control @error('files.*') is-invalid @enderror" id="files" name="files[]" multiple>
-                            <div class="form-text">Vous pouvez sélectionner plusieurs fichiers (maximum 10MB par fichier).</div>
-                            @error('files.*')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="add_attachments" name="add_attachments" {{ old('add_attachments') ? 'checked' : '' }}>
+                            <label class="form-check-label" for="add_attachments">Ajouter des pièces jointes après la création</label>
                         </div>
 
                         <div class="d-flex justify-content-between">

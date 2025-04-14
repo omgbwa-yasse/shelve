@@ -119,7 +119,8 @@ class BulletinBoardController extends Controller
     public function destroy(BulletinBoard $bulletinBoard)
     {
 
-        $bulletinBoard->load(['posts', 'events', 'organisations', 'attachments']);
+        $bulletinBoard->load(['posts', 'events', 'organisations']);
+
 
 
         if ($bulletinBoard->posts->count() > 0 || $bulletinBoard->events->count() > 0) {
@@ -128,36 +129,12 @@ class BulletinBoardController extends Controller
         }
 
 
-        DB::beginTransaction();
+        $bulletinBoard->organisations()->detach();
+        $bulletinBoard->delete();
 
-        try {
-            foreach ($bulletinBoard->attachments as $attachment) {
-                if (Storage::exists($attachment->path)) {
-                    Storage::delete($attachment->path);
-                }
-                if ($attachment->thumbnail_path && Storage::exists('public/' . $attachment->thumbnail_path)) {
-                    Storage::delete('public/' . $attachment->thumbnail_path);
-                }
-                $bulletinBoard->attachments()->detach($attachment->id);
-                if ($attachment->bulletinBoards()->count() === 0 &&
-                    $attachment->posts()->count() === 0 &&
-                    $attachment->events()->count() === 0) {
-                    $attachment->delete();
-                }
-            }
-
-            $bulletinBoard->organisations()->detach();
-            $bulletinBoard->delete();
-            DB::commit();
-
-            return redirect()->route('bulletin-boards.index')
+        return redirect()->route('bulletin-boards.index')
                 ->with('success', 'Tableau d\'affichage supprimé avec succès.');
-        } catch (\Exception $e) {
-            DB::rollBack();
 
-            return redirect()->route('bulletin-boards.show', $bulletinBoard)
-                ->with('error', 'Une erreur est survenue lors de la suppression : ' . $e->getMessage());
-        }
     }
 
 
