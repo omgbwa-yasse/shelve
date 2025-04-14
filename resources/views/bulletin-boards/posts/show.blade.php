@@ -134,7 +134,7 @@
                                                     <td>
                                                         <div class="d-flex align-items-center">
                                                             <div class="me-2">
-                                                                <i class="fas {{ $attachment->getIconClass() }} fa-lg text-muted"></i>
+
                                                             </div>
                                                             <div>
                                                                 {{ $attachment->file_name }}
@@ -142,11 +142,11 @@
                                                         </div>
                                                     </td>
                                                     <td>{{ Str::upper(pathinfo($attachment->file_name, PATHINFO_EXTENSION)) }}</td>
-                                                    <td>{{ $attachment->getHumanReadableSize() }}</td>
+                                                    <td></td>
                                                     <td>{{ $attachment->creator->name }}</td>
                                                     <td>
-                                                        <a href="{{ Storage::url($attachment->file_path) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                                                            <i class="fas fa-download me-1"></i> Télécharger
+                                                        <a href="" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                            <i class="fas fa-download me-1"></i> Télécharger ***
                                                         </a>
                                                     </td>
                                                 </tr>

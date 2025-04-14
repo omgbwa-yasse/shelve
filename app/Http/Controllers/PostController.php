@@ -70,11 +70,6 @@ class PostController extends Controller
             'created_by' => Auth::id()
         ]);
 
-        if (!empty($validated['organisations'])) {
-            $bulletinBoard->organisations()->attach($validated['organisations'], [
-                'user_id' => Auth::id()
-            ]);
-        }
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $key => $file) {
@@ -94,7 +89,8 @@ class PostController extends Controller
                     'type' => 'bulletinboardpost'
                 ]);
 
-                // Gestion de la vignette
+                $post->attachments()->attach($attachment->id, ['created_by' => Auth::id()]);
+
                 if ($request->has('thumbnails') && isset($request->thumbnails[$key])) {
                     $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnails[$key]));
                     $thumbnailPath = 'thumbnails_bulletin_board/' . $attachment->id . '.jpg';
@@ -113,7 +109,7 @@ class PostController extends Controller
                     }
                 }
 
-                $bulletinBoard->attachments()->attach($attachment->id, ['user_id' => Auth::id()]);
+                $post->attachments()->attach($attachment->id, ['created_by' => Auth::id()]);
             }
         }
 
@@ -121,6 +117,8 @@ class PostController extends Controller
             ->route('bulletin-boards.posts.show', [$bulletinBoard, $post])
             ->with('success', 'Publication créée avec succès.');
     }
+
+
 
 
     public function show( BulletinBoard $bulletinBoard, Post $post)
@@ -212,7 +210,7 @@ class PostController extends Controller
                     }
                 }
 
-                $post->bulletinBoard->attachments()->attach($attachment->id, ['user_id' => Auth::id()]);
+                $post->attachments()->attach($attachment->id, ['user_id' => Auth::id()]);
             }
         }
 
@@ -228,6 +226,7 @@ class PostController extends Controller
 
     public function destroy(BulletinBoard $bulletinBoard, Post $post)
     {
+
         $post->load('attachments');
 
         foreach ($post->attachments as $attachment) {
@@ -243,8 +242,10 @@ class PostController extends Controller
 
         $post->delete();
 
+        
+
         return redirect()
-            ->route('bulletin-board.show', $bulletinBoard)
+            ->route('bulletin-boards.index')
             ->with('success', 'Publication supprimée avec succès.');
     }
 
@@ -260,6 +261,9 @@ class PostController extends Controller
 
         return back()->with('success', 'Statut de la publication mis à jour avec succès.');
     }
+
+
+
 
     public function cancel(BulletinBoard $bulletinBoard, Post $post)
     {

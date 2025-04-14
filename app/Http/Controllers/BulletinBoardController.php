@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
+use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +31,8 @@ class BulletinBoardController extends Controller
 
     public function create()
     {
-        return view('bulletin-boards.create');
+        $organisations = Organisation::all();
+        return view('bulletin-boards.create', compact('organisations'));
     }
 
 
@@ -54,7 +56,11 @@ class BulletinBoardController extends Controller
             ]);
         }
 
-        $bulletinBoards=BulletinBoard::paginate(50);
+        $bulletinBoards = BulletinBoard::whereHas('organisations', function($query) {
+            $query->where('organisations.id', Auth::currentOrganisationId());
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
 
         return view('bulletin-boards.index', compact('bulletinBoards'));
     }
@@ -72,8 +78,6 @@ class BulletinBoardController extends Controller
 
     public function edit(BulletinBoard $bulletinBoard)
     {
-        $this->authorize('update', $bulletinBoard);
-
         return view('bulletin-boards.edit', compact('bulletinBoard'));
     }
 
@@ -82,7 +86,6 @@ class BulletinBoardController extends Controller
     public function update(Request $request, BulletinBoard $bulletinBoard)
     {
 
-        $this->authorize('update', $bulletinBoard);
 
         $bulletinBoard->name = $request->name;
         $bulletinBoard->description = $request->description;
