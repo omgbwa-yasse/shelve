@@ -23,17 +23,6 @@
             @if (!empty($record))
                 <input type="hidden" name="parent_id" value="{{$record->id}}">
             @endif
-
-<<<<<<< HEAD
-            <div class="row">
-                <div class="col-12">
-                    <!-- Main Information Card -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white py-2">
-                            <h5 class="card-title mb-0 small">{{ __('identification') }}</h5>
-                        </div>
-                        <div class="card-body">
-=======
             <div class="accordion" id="formAccordion">
                 <!-- Identification Panel - Open by default (contains required fields) -->
                 <div class="accordion-item">
@@ -44,7 +33,7 @@
                     </h2>
                     <div id="identificationCollapse" class="accordion-collapse collapse show" aria-labelledby="identificationHeader" data-bs-parent="">
                         <div class="accordion-body">
->>>>>>> a94a0af86b352f9de2eb26f9584fdfffa701bb82
+
                             <div class="row g-2">
                                 <div class="col-md-2">
                                     <label class="form-label small">{{ __('level') }} *</label>
@@ -119,7 +108,7 @@
                             {{ __('context') }}
                         </button>
                     </h2>
-                    <div id="contextCollapse" class="accordion-collapse collapse" aria-labelledby="contextHeader" data-bs-parent="">
+                    <div id="contextCollapse" class="accordion-collapse collapse show" aria-labelledby="contextHeader" data-bs-parent="">
                         <div class="accordion-body">
                             <div class="row g-2">
                                 <div class="col-12">
@@ -141,15 +130,8 @@
                         </div>
                     </div>
 
-<<<<<<< HEAD
-                    <!-- Indexing Card -->
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white py-2">
-                            <h5 class="card-title mb-0 small">{{ __('indexing') }}</h5>
-                        </div>
-                        <div class="card-body">
-=======
-                <!-- Indexing Panel - Open by default (contains required fields) -->
+
+
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="indexingHeader">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#indexingCollapse" aria-expanded="true" aria-controls="indexingCollapse">
@@ -158,7 +140,7 @@
                     </h2>
                     <div id="indexingCollapse" class="accordion-collapse collapse show" aria-labelledby="indexingHeader" data-bs-parent="">
                         <div class="accordion-body">
->>>>>>> a94a0af86b352f9de2eb26f9584fdfffa701bb82
+
                             <div class="mb-2">
                                 <label class="form-label small">{{ __('thesaurus') }} *</label>
                                 <div class="input-group input-group-sm">
