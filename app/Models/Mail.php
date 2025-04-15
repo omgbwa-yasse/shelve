@@ -95,4 +95,10 @@ class Mail extends Model
                     ->withPivot('archived_by', 'document_type')
                     ->withTimestamps();
     }
+
+    public function dollies()
+    {
+        return $this->belongsToMany(Dolly::class, 'dolly_mail_transactions', 'mail_transaction_id', 'dolly_id')
+            ->withTimestamps();
+    }
 }

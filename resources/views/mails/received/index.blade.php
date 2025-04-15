@@ -11,6 +11,10 @@
                     <i class="bi bi-cart me-1"></i>
                     Chariot
                 </a>
+                <a href="#" id="cartBtnWindow" class="btn btn-light btn-sm me-2">
+                    <i class="bi bi-cart me-1"></i>
+                    Chariot
+                </a>
                 <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
                     Exporter
@@ -190,6 +194,30 @@
                     dolliesList.style.display = 'none';
                     dollyForm.style.display = 'block';
                 });
+
+
+
+
+                document.getElementById('cartBtnWindow').addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Collecte des IDs sélectionnés
+                    const selectedIds = [];
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                        selectedIds.push(checkbox.value);
+                    });
+
+                    // Créer une URL avec les IDs comme paramètres de requête
+                    const idsParam = encodeURIComponent(JSON.stringify(selectedIds));
+                    const url = `/mails/chart?ids=${idsParam}`;
+
+                    window.open(url, 'Chariot', 'width=300,height=500,resizable=yes');
+                });
+
+
+
+
+                // Afficher le formulaire de création de dolly
 
                 backToListBtn.addEventListener('click', function() {
                     dolliesList.style.display = 'block';

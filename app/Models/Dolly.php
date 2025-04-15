@@ -24,6 +24,11 @@ class Dolly extends Model
         return $this->belongsToMany(mail::class, 'dolly_mails', 'dolly_id', 'mail_id');
     }
 
+    public function mailTransactions()
+    {
+        return $this->belongsToMany(MailTransaction::class, 'dolly_mail_transactions');
+    }
+
     public function records()
     {
         return $this->belongsToMany(record::class, 'dolly_records', 'dolly_id', 'record_id');

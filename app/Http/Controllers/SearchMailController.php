@@ -174,4 +174,13 @@ class SearchMailController extends Controller
     {
         return view('search.mail.dateSearch');
     }
+
+
+    public function chart(Request $request)
+    {
+        $ids = json_decode($request->query('ids', '[]'));
+        return view('search.chart', compact('ids'));
+    }
+
+
 }

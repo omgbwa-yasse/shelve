@@ -71,6 +71,7 @@ use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
+use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SlipStatusController;
 use App\Http\Controllers\SlipRecordController;
@@ -192,7 +193,21 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('approve', [MailReceivedController::class, 'approve'])->name('mails.approve');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
         Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
+
+        Route::get('chart', [SearchMailController::class, 'chart'])->name('mails.chart');
     });
+
+
+    Route::get('/api/dollies', [DollyController::class, 'apiList']);
+    Route::post('/api/dollies', [DollyController::class, 'apiCreate']);
+
+    Route::get('/api/dollies/{dolly}/mail-transactions', [DollyMailTransactionController::class, 'apiList']);
+    Route::post('/api/dolly-mail-transactions', [DollyMailTransactionController::class, 'apiStore']);
+    Route::delete('/api/dolly-mail-transactions/{dolly}/{mailTransaction}', [DollyMailTransactionController::class, 'apiDestroy']);
+    Route::delete('/api/dollies/{dolly}/empty-mail-transactions', [DollyMailTransactionController::class, 'apiEmptyDolly']);
+
+    Route::get('/dollies/{dolly}/mail-transactions/process', [DollyMailTransactionController::class, 'process'])
+        ->name('dollies.mail-transactions.process');
 
 
     Route::prefix('communications')->group(function () {
@@ -215,7 +230,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('sort', [SearchCommunicationController::class, 'index'])->name('communications-sort');
         Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
         Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
-        Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced')
+        Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced');
 
     });
 

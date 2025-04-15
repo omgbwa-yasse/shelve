@@ -68,6 +68,9 @@ class DollyController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+
+
     public function createWithMail(Request $request)
     {
         $recordIds = $request->input('records');
@@ -84,6 +87,9 @@ class DollyController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+
+
     public function createWithCommunications(Request $request)
     {
         // Valider la requête
@@ -116,6 +122,9 @@ class DollyController extends Controller
             'dolly_id' => $dolly->id
         ]);
     }
+
+
+
     public function edit(Dolly $dolly)
     {
         return view('dollies.edit', compact('dolly'));
@@ -204,6 +213,34 @@ class DollyController extends Controller
     {
         $dolly->mails()->detach($mail->id);
         return redirect()->route('dolly.show', $dolly);
+    }
+
+    public function apiList()
+    {
+
+        $dollies = Dolly::whereHas('type', function($query){
+            $query->where('name', 'mail_transaction');
+        })->get();
+        return response()->json($dollies);
+    }
+
+
+    public function apiCreate(Request $request)
+    {
+        dd($request);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type_id' => 'required|exists:dolly_types,id',
+        ]);
+
+        $dolly = Dolly::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chariot créé avec succès',
+            'data' => $dolly
+        ]);
     }
 }
 
