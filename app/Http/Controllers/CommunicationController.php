@@ -179,13 +179,9 @@ class CommunicationController extends Controller
 
     public function export(Request $request)
     {
-        $id = $request->route('id');
-        if ($id) {
-            $communications = Communication::where('id', $id)->get();
-        } else {
-            $communicationIds = explode(',', $request->query('communications', ''));
-            $communications = Communication::whereIn('id', $communicationIds)->get();
-        }
+        $id = $request->id;
+
+        $communications = Communication::where('id', $id)->get();
 
         if ($communications->isEmpty()) {
             return redirect()->back()->with('error', 'No communications found to export.');
@@ -196,13 +192,8 @@ class CommunicationController extends Controller
 
     public function print(Request $request)
     {
-        $id = $request->route('id');
-        if ($id) {
-            $communications = Communication::where('id', $id)->get();
-        } else {
-            $communicationIds = explode(',', $request->query('communications', ''));
-            $communications = Communication::whereIn('id', $communicationIds)->get();
-        }
+
+        $communications = Communication::where('id', $request->id)->get();
 
         if ($communications->isEmpty()) {
             return redirect()->back()->with('error', 'No communications found to print.');

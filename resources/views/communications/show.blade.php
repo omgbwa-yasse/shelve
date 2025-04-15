@@ -102,16 +102,25 @@
 
 @push('scripts')
     <script>
-            document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('exportBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = "{{ route('communications.export', $communication->id) }}";
-            });
+        document.addEventListener('DOMContentLoaded', function() {
 
-            document.getElementById('printBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = "{{ route('communications.print', $communication->id) }}";
-        });
+            const exportBtn = document.getElementById('exportBtn');
+            const printBtn = document.getElementById('printBtn');
+
+
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = "{{ route('communications.export') }}?id={{ $communication->id }}";
+                });
+            }
+
+            if (printBtn) {
+                printBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = "{{ route('communications.print') }}?id={{ $communication->id }}";
+                });
+            }
         });
     </script>
 
