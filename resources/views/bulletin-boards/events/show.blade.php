@@ -50,6 +50,11 @@
                                         <i class="fas fa-toggle-on fa-fw me-1"></i> Changer le statut
                                     </a>
                                 </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" id="export-event">
+                                        <i class="fas fa-file-export fa-fw me-1"></i> Exporter (iCal)
+                                    </a>
+                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form action="{{ route('bulletin-boards.events.destroy', [$BulletinBoard['id'], $event->id]) }}" method="POST" class="d-inline">
@@ -81,6 +86,27 @@
                                     <strong>Date de fin:</strong>
                                     {{ $event->end_date->format('d/m/Y à H:i') }}
                                 </div>
+
+                                <div class="mb-3">
+                                    <i class="fas fa-hourglass-half fa-fw text-muted me-2"></i>
+                                    <strong>Durée:</strong>
+                                    @php
+                                        $duration = $event->start_date->diff($event->end_date);
+                                        $durationText = [];
+
+                                        if ($duration->d > 0) {
+                                            $durationText[] = $duration->d . ' jour' . ($duration->d > 1 ? 's' : '');
+                                        }
+                                        if ($duration->h > 0) {
+                                            $durationText[] = $duration->h . ' heure' . ($duration->h > 1 ? 's' : '');
+                                        }
+                                        if ($duration->i > 0) {
+                                            $durationText[] = $duration->i . ' minute' . ($duration->i > 1 ? 's' : '');
+                                        }
+
+                                        echo implode(', ', $durationText);
+                                    @endphp
+                                </div>
                             @endif
 
                             @if($event->location)
@@ -109,6 +135,14 @@
                                 <i class="fas fa-edit fa-fw text-muted me-2"></i>
                                 <strong>Dernière modification:</strong>
                                 {{ $event->updated_at->format('d/m/Y à H:i') }}
+                            </div>
+
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-day fa-fw text-muted me-2"></i>
+                                <strong>Statut actuel:</strong>
+                                <span class="badge bg-{{ $event->status == 'published' ? 'success' : ($event->status == 'draft' ? 'warning' : 'secondary') }}">
+                                    {{ ucfirst($event->status) }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -196,9 +230,18 @@
                 </div>
                 <div class="card-footer bg-transparent">
                     <div class="d-flex justify-content-between">
-                        <a href="{{ route('bulletin-boards.events.index', $BulletinBoard['id']) }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Retour aux événements
-                        </a>
+
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-share-alt me-1"></i> Partager
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" id="copy-link"><i class="fas fa-link me-2"></i> Copier le lien</a></li>
+                                <li><a class="dropdown-item" href="mailto:?subject={{ urlencode($event->name) }}&body={{ urlencode(route('bulletin-boards.events.show', [$BulletinBoard['id'], $event->id])) }}"><i class="fas fa-envelope me-2"></i> Email</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="add-to-calendar"><i class="fas fa-calendar-plus me-2"></i> Ajouter au calendrier</a></li>
+                            </ul>
+                        </div>
 
                         @if($event->canBeEditedBy(Auth::user()))
                             <a href="{{ route('bulletin-boards.events.edit', [$BulletinBoard['id'], $event->id]) }}" class="btn btn-primary">
@@ -225,11 +268,26 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="status" class="form-label">Nouveau statut</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="draft" {{ $event->status == 'draft' ? 'selected' : '' }}>Brouillon</option>
-                            <option value="published" {{ $event->status == 'published' ? 'selected' : '' }}>Publié</option>
-                            <option value="cancelled" {{ $event->status == 'cancelled' ? 'selected' : '' }}>Annulé</option>
-                        </select>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="status" id="modal-status-draft" value="draft" {{ $event->status == 'draft' ? 'checked' : '' }}>
+                            <label class="btn btn-outline-warning" for="modal-status-draft">
+                                <i class="fas fa-pencil-alt me-1"></i> Brouillon
+                            </label>
+
+                            <input type="radio" class="btn-check" name="status" id="modal-status-published" value="published" {{ $event->status == 'published' ? 'checked' : '' }}>
+                            <label class="btn btn-outline-success" for="modal-status-published">
+                                <i class="fas fa-check-circle me-1"></i> Publié
+                            </label>
+
+                            <input type="radio" class="btn-check" name="status" id="modal-status-cancelled" value="cancelled" {{ $event->status == 'cancelled' ? 'checked' : '' }}>
+                            <label class="btn btn-outline-secondary" for="modal-status-cancelled">
+                                <i class="fas fa-ban me-1"></i> Annulé
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-text text-muted mb-3">
+                        <i class="fas fa-info-circle me-1"></i> Changer le statut affectera la visibilité de l'événement pour les autres utilisateurs.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -316,12 +374,30 @@
         font-size: 2rem;
         margin-bottom: 0.5rem;
     }
+
+    .btn-link {
+        text-decoration: none;
+    }
+    .btn-link:hover {
+        text-decoration: underline;
+    }
+
+    .event-description {
+        white-space: pre-line;
+    }
+
+    @media (max-width: 767.98px) {
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+    }
 </style>
 @endsection
 
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const eventId = {{ $event->id }};
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('file-input');
     const browseFilesBtn = document.getElementById('browse-files');
@@ -331,9 +407,78 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadProgress = document.getElementById('upload-progress');
     const uploadFeedback = document.getElementById('upload-feedback');
     const attachmentName = document.getElementById('attachment-name');
-    const eventId = {{ $event->id }};
 
-    let filesToUpload = [];
+    // Copier le lien
+    document.getElementById('copy-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(function() {
+            alert('Lien copié dans le presse-papiers!');
+        }, function() {
+            alert('Impossible de copier le lien.');
+        });
+    });
+
+    // Exporter l'événement (iCal)
+    document.getElementById('export-event').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const event = {
+            title: '{{ $event->name }}',
+            description: '{{ str_replace("\r\n", "\\n", $event->description) }}',
+            location: '{{ $event->location }}',
+            startTime: '{{ $event->start_date->format("Y-m-d\TH:i:s") }}',
+            endTime: '{{ $event->end_date ? $event->end_date->format("Y-m-d\TH:i:s") : $event->start_date->addHours(1)->format("Y-m-d\TH:i:s") }}'
+        };
+
+        // Créer le fichier iCal
+        const icsContent =
+            'BEGIN:VCALENDAR\r\n' +
+            'VERSION:2.0\r\n' +
+            'PRODID:-//{{ config("app.name") }}//FR\r\n' +
+            'CALSCALE:GREGORIAN\r\n' +
+            'BEGIN:VEVENT\r\n' +
+            'SUMMARY:' + event.title + '\r\n' +
+            'DESCRIPTION:' + event.description.replace(/\n/g, '\\n') + '\r\n' +
+            'LOCATION:' + event.location + '\r\n' +
+            'DTSTART:' + new Date(event.startTime).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '') + '\r\n' +
+            'DTEND:' + new Date(event.endTime).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '') + '\r\n' +
+            'UID:' + Date.now() + '@{{ config("app.url") }}\r\n' +
+            'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '') + '\r\n' +
+            'END:VEVENT\r\n' +
+            'END:VCALENDAR';
+
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = event.title.replace(/\s+/g, '_') + '.ics';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+
+    // Ajouter au calendrier
+    document.getElementById('add-to-calendar').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const event = {
+            title: '{{ $event->name }}',
+            description: '{{ str_replace("\r\n", " ", $event->description) }}',
+            location: '{{ $event->location }}',
+            startTime: '{{ $event->start_date->format("Y-m-d\TH:i:s") }}',
+            endTime: '{{ $event->end_date ? $event->end_date->format("Y-m-d\TH:i:s") : $event->start_date->addHours(1)->format("Y-m-d\TH:i:s") }}'
+        };
+
+        // Format pour Google Calendar
+        const googleCalendarUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+            '&text=' + encodeURIComponent(event.title) +
+            '&details=' + encodeURIComponent(event.description) +
+            '&location=' + encodeURIComponent(event.location) +
+            '&dates=' + new Date(event.startTime).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '') +
+            '/' + new Date(event.endTime).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/g, '');
+
+        window.open(googleCalendarUrl, '_blank');
+    });
 
     // Événements du dropzone
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -386,6 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Traitement des fichiers sélectionnés
+    let filesToUpload = [];
     function handleFiles(files) {
         if (files.length === 0) return;
 

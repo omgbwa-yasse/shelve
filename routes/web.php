@@ -120,7 +120,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('bulletin-board.events', EventController::class)->names('bulletin-boards.events');
 
         Route::post('bulletin-board/{BulletinBoard}/events/{event}',[EventController::class, 'updateStatus'] )->name('bulletin-boards.events.updateStatus');
-        Route::post('bulletin-board/{BulletinBoard}/events/{post}',[PostController::class, 'toggleStatus'] )->name('bulletin-boards.posts.change-status');
+        Route::post('bulletin-board/{BulletinBoard}/events/{post}',[PostController::class, 'toggleStatus'] )->name('bulletin-boards.posts.toggleStatus');
 
         Route::get('/events/{event}/attachments', [EventAttachmentController::class, 'index'])->name('events.attachments.index');
         Route::get('/events/{event}/attachments/create', [EventAttachmentController::class, 'create'])->name('events.attachments.create');

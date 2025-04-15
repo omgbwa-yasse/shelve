@@ -65,13 +65,24 @@
 
                         <div class="mb-3">
                             <label for="status" class="form-label">Statut</label>
-                            <select class="form-select @error('status') is-invalid @enderror" id="status" name="status">
-                                <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Brouillon</option>
-                                <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>Publié</option>
-                                <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Annulé</option>
-                            </select>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="status" id="status-draft" value="draft" {{ old('status') == 'draft' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-warning" for="status-draft">
+                                    <i class="fas fa-pencil-alt me-1"></i> Brouillon
+                                </label>
+
+                                <input type="radio" class="btn-check" name="status" id="status-published" value="published" {{ old('status', 'published') == 'published' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-success" for="status-published">
+                                    <i class="fas fa-check-circle me-1"></i> Publié
+                                </label>
+
+                                <input type="radio" class="btn-check" name="status" id="status-cancelled" value="cancelled" {{ old('status') == 'cancelled' ? 'checked' : '' }}>
+                                <label class="btn btn-outline-secondary" for="status-cancelled">
+                                    <i class="fas fa-ban me-1"></i> Annulé
+                                </label>
+                            </div>
                             @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
