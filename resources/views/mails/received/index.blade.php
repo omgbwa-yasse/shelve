@@ -208,8 +208,8 @@
                     });
 
                     // Créer une URL avec les IDs comme paramètres de requête
-                    const idsParam = encodeURIComponent(JSON.stringify(selectedIds));
-                    const url = `/mails/chart?ids=${idsParam}`;
+                    const ids = encodeURIComponent(JSON.stringify(selectedIds));
+                    const url = `/mails/chart?ids=${ids}`;
 
                     window.open(url, 'Chariot', 'width=300,height=500,resizable=yes');
                 });

@@ -43,9 +43,14 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             const addToCartButton = document.getElementById('addToCart');
             const emptyCartButton = document.getElementById('emptyCart');
             const listGroup = document.getElementById('listGroup');
+
+           var  mailTransactionIds = @json($ids);
+
+
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -112,9 +117,10 @@
                 let errorCount = 0;
                 let processedCount = 0;
 
+            mailTransactionIds.forEach(function(id) {
                 checkboxes.forEach(function(checkbox) {
-                    const dollyId = checkbox.getAttribute('data-dolly-id');
-                    const mailTransactionId = checkbox.getAttribute('data-mail-transaction-id');
+                    const dolly_id = checkbox.getAttribute('data-dolly-id');
+                    const mailTransactionId = id;
 
                     if (!dollyId || !mailTransactionId) {
                         errorCount++;
@@ -157,8 +163,7 @@
                     }));
                 });
 
-
-
+            });
                 function checkIfComplete() {
                     if (processedCount === checkboxes.length) {
                         if (errorCount === 0) {
