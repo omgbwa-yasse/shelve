@@ -7,7 +7,7 @@
     <style>
         .submenu-container {
             font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
+            /*font-size: 0.1rem;*/
         }
 
         .submenu-heading {
@@ -17,7 +17,7 @@
             padding: 8px 12px;
             margin-bottom: 6px;
             font-weight: 500;
-            font-size: 13px;
+            font-size: 10px;
             display: flex;
             align-items: center;
             cursor: pointer;
