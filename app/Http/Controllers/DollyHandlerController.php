@@ -45,7 +45,7 @@ class DollyHandlerController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|exists:dollies,category',
+            'category' => 'required|string',
         ]);
 
         $validatedData['is_public'] = false;
