@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Route::pushMiddlewareToGroup('web', \App\Http\Middleware\SetLocale::class);
 
         Auth::macro('currentOrganisationId', function () {
-            return auth()->user() ? auth()->user()->current_organisation_id : null;
+            return Auth::check() ? Auth::user()->current_organisation_id : null;
         });
 
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Communication;
 use App\Models\Container;
 use App\Models\DollyCommunication;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Mail;
 use App\Models\Record;
 use App\Models\Room;
@@ -43,7 +44,8 @@ class DollyController extends Controller
 
         $validatedData['is_public'] = false;
         $validatedData['category'] = 'mail';
-        $validatedData['created_by'] = auth()->id();
+        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly = Dolly::create($validatedData);
         return redirect()->route('dolly.index')->with('success', 'Dolly created successfully.');
@@ -87,10 +89,11 @@ class DollyController extends Controller
             'description' => 'required',
             'type_id' => 'required|exists:dolly_types,id',
         ]);
-        
+
         $validatedData['is_public'] = false;
         $validatedData['category'] = 'mail';
-        $validatedData['created_by'] = auth()->id();
+        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly->update($validatedData);
         return redirect()->route('dolly.index')->with('success', 'Dolly updated successfully.');
@@ -124,7 +127,7 @@ class DollyController extends Controller
                 $query->where('name', 'mail_transaction');
             })
             ->where('is_public', true )
-            ->orWhere('created_by', auth()->id())->get();
+            ->orWhere('created_by', Auth::user()->getAuthIdentifier)->get();
         return response()->json($dollies);
     }
 
@@ -138,10 +141,11 @@ class DollyController extends Controller
             'description' => 'nullable|string',
             'type_id' => 'required|exists:dolly_types,id',
         ]);
-        
+
         $validatedData['is_public'] = false;
         $validatedData['category'] = 'mail';
-        $validatedData['created_by'] = auth()->id();
+        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly = Dolly::create($validatedData);
 

@@ -79,5 +79,8 @@ class Dolly extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function ownerOrganisation(){
+        return $this->belongsTo(Organisation::class, 'owner_organisation_id');
+    }
 
 }
