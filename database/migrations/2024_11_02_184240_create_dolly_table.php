@@ -105,8 +105,12 @@ return new class extends Migration
             $table->id();
             $table->string('name', 70)->unique(true)->nullable(false);
             $table->string('description', 100)->nullable();
+            $table->enum('category', ['mail', 'transaction', 'record', 'slip', 'building', 'shelf', 'container', 'communication', 'room']);
+            $table->boolean('is_public')->default(false);
+            $table->unsignedBigInteger('created_by')->nullable(false);
             $table->timestamps();
             $table->unsignedBigInteger('type_id')->nullable(false);
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('type_id')->references('id')->on('dolly_types')->onDelete('cascade');
         });
 

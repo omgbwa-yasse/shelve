@@ -12,7 +12,11 @@ class Dolly extends Model
     protected $fillable = [
         'name',
         'description',
+        'is_public',
+        'category',
+        'is_public',
         'type_id',
+        'created_by',
     ];
     public function type()
     {
@@ -69,6 +73,10 @@ class Dolly extends Model
     public function containers()
     {
         return $this->belongsToMany(Shelf::class, 'dolly_containers', 'dolly_id', 'container_id');
+    }
+
+    public function creator(){
+        return $this->belongsTo(User::class, 'created_by');
     }
 
 

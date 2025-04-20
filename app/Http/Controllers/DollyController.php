@@ -22,22 +22,35 @@ class DollyController extends Controller
         return view('dollies.index', compact('dollies'));
     }
 
+
+
+
+
     public function create()
     {
        return view('dollies.create');
     }
 
+
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
             'type_id' => 'required|exists:dolly_types,id',
         ]);
 
-        $dolly = Dolly::create($request->all());
+        $validatedData['is_public'] = false;
+        $validatedData['category'] = 'mail';
+        $validatedData['created_by'] = auth()->id();
+
+        $dolly = Dolly::create($validatedData);
         return redirect()->route('dolly.index')->with('success', 'Dolly created successfully.');
     }
+
+
+
 
 
     public function show(Dolly $dolly)
@@ -54,6 +67,9 @@ class DollyController extends Controller
     }
 
 
+
+
+
     public function edit(Dolly $dolly)
     {
         return view('dollies.edit', compact('dolly'));
@@ -61,17 +77,28 @@ class DollyController extends Controller
 
 
 
+
+
+
     public function update(Request $request, Dolly $dolly)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required',
             'description' => 'required',
             'type_id' => 'required|exists:dolly_types,id',
         ]);
+        
+        $validatedData['is_public'] = false;
+        $validatedData['category'] = 'mail';
+        $validatedData['created_by'] = auth()->id();
 
-        $dolly->update($request->all());
+        $dolly->update($validatedData);
         return redirect()->route('dolly.index')->with('success', 'Dolly updated successfully.');
     }
+
+
+
+
 
 
 
@@ -87,26 +114,36 @@ class DollyController extends Controller
 
 
 
+
+
+
     public function apiList()
     {
 
         $dollies = Dolly::whereHas('type', function($query){
-            $query->where('name', 'mail_transaction');
-        })->get();
+                $query->where('name', 'mail_transaction');
+            })
+            ->where('is_public', true )
+            ->orWhere('created_by', auth()->id())->get();
         return response()->json($dollies);
     }
 
 
+
+
     public function apiCreate(Request $request)
     {
-        dd($request);
-        $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type_id' => 'required|exists:dolly_types,id',
         ]);
+        
+        $validatedData['is_public'] = false;
+        $validatedData['category'] = 'mail';
+        $validatedData['created_by'] = auth()->id();
 
-        $dolly = Dolly::create($request->all());
+        $dolly = Dolly::create($validatedData);
 
         return response()->json([
             'success' => true,
@@ -114,6 +151,8 @@ class DollyController extends Controller
             'data' => $dolly
         ]);
     }
+
+
 }
 
 
