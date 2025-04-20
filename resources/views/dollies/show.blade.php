@@ -59,6 +59,12 @@
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce chariot ?')">Supprimer</button>
                     </form>
+                    
+                    <button class="btn btn-secondary btnCleanDolly" 
+                            onclick="cleanDolly({{ $dolly->id }}, '{{ $type ?? ($dolly->type ? $dolly->type->name : '') }}')">
+                        <i class="fas fa-print"></i> Vider le chariot
+                    </button>
+
                 </div>
             </div>
         </div>
@@ -257,6 +263,46 @@
 
     <script>
 
+        function cleanDolly(dollyId, type) {
+            if (confirm('Êtes-vous sûr de vouloir vider le chariot ?')) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+                const data = {
+                    dolly_id: dollyId,
+                    type: type
+                };
+
+                fetch('/dolly-handler/clean', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors du nettoyage');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur s\'est produite lors du nettoyage du chariot');
+                });
+            }
+        }
+
+
+
+
+
+        // Fonction pour retirer un élément du chariot
         function removeItemFromDolly(dollyId, itemId, itemType) {
             if (confirm('Êtes-vous sûr de vouloir retirer cet élément du chariot ?')) {
 
