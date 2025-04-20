@@ -23,9 +23,8 @@ class MailReceivedController extends Controller
                      ->where('status', '!=', 'draft')
                      ->get();
         $dollies = Dolly::all();
-        $categories = Dolly::pluck('category');
+        $categories = Dolly::categories();
         $users = User::all();
-
         return view('mails.received.index', compact('mails','dollies', 'categories','users'));
     }
 
@@ -57,7 +56,7 @@ class MailReceivedController extends Controller
         $mail = Mail::findOrFail($validatedData['id']);
 
         $mail->update([
-            'recipient_user_id' => auth()->id(),
+            'recipient_user_id' => auth::user()->id,
             'status' => 'received',
         ]);
 

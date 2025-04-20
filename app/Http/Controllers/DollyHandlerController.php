@@ -18,7 +18,7 @@ class DollyHandlerController extends Controller
             'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
         ]);
 
-        $dollies = Dolly::where('category', $request->type)
+        $dollies = Dolly::where('category', $request->category)
             ->where('owner_organisation_id', Auth::user()->current_organisation_id)
             ->get();
 
@@ -26,10 +26,10 @@ class DollyHandlerController extends Controller
             return response()->json(['message' => 'No dollies found'], 404);
         }
 
-        if($request->type == 'shelve'){
+        if($request->category == 'shelve'){
             $dollies->load('shelve');
         }else{
-            $relation = $request->type . 's';
+            $relation = $request->category . 's';
             $dollies->load($relation);
         }
 
@@ -77,7 +77,7 @@ class DollyHandlerController extends Controller
             if($dolly->owner_organisation_id != Auth::user()->current_organisation_id){
                 return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
             }
-            switch($request->type) {
+            switch($request->category) {
                 case 'mail':
                     foreach($request->items as $item) {
                         $item = (int)$item;
@@ -186,28 +186,28 @@ class DollyHandlerController extends Controller
                 return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
             }
             switch(true){
-                case $request->type == 'mail':
+                case $request->category == 'mail':
                     $dolly->mails()->detach($request->items);
                     break;
-                case $request->type == 'communication':
+                case $request->category == 'communication':
                     $dolly->communications()->detach($request->items);
                     break;
-                case $request->type == 'building':
+                case $request->category == 'building':
                     $dolly->buildings()->detach($request->items);
                     break;
-                case $request->type == 'room':
+                case $request->category == 'room':
                     $dolly->rooms()->detach($request->items);
                     break;
-                case $request->type == 'record':
+                case $request->category == 'record':
                     $dolly->records()->detach($request->items);
                     break;
-                case $request->type == 'slip':
+                case $request->category == 'slip':
                     $dolly->slips()->detach($request->items);
                     break;
-                case $request->type == 'shelf':
+                case $request->category == 'shelf':
                     $dolly->shelves()->detach($request->items);
                     break;
-                case $request->type == 'container':
+                case $request->category == 'container':
                     $dolly->containers()->detach($request->items);
                     break;
                 default :
@@ -234,28 +234,28 @@ class DollyHandlerController extends Controller
                 return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
             }
             switch(true){
-                case $request->type == 'mail':
+                case $request->category == 'mail':
                     $dolly->mails()->detach();
                     break;
-                case $request->type == 'communication':
+                case $request->category == 'communication':
                     $dolly->communications()->detach();
                     break;
-                case $request->type == 'building':
+                case $request->category == 'building':
                     $dolly->buildings()->detach();
                     break;
-                case $request->type == 'room':
+                case $request->category == 'room':
                     $dolly->rooms()->detach();
                     break;
-                case $request->type == 'record':
+                case $request->category == 'record':
                     $dolly->records()->detach();
                     break;
-                case $request->type == 'slip':
+                case $request->category == 'slip':
                     $dolly->slips()->detach();
                     break;
-                case $request->type == 'shelf':
+                case $request->category == 'shelf':
                     $dolly->shelves()->detach();
                     break;
-                case $request->type == 'container':
+                case $request->category == 'container':
                     $dolly->containers()->detach();
                     break;
                 default :

@@ -83,4 +83,22 @@ class Dolly extends Model
         return $this->belongsTo(Organisation::class, 'owner_organisation_id');
     }
 
+
+
+    public static function categories()
+    {
+        return [
+            'mail',
+            'communication',
+            'building',
+            'transferring',
+            'room',
+            'record',
+            'slip',
+            'slipRecord',
+            'container',
+            'shelf'
+        ];
+    }
+
 }
