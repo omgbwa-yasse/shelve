@@ -300,6 +300,7 @@
                         }
                     })
                     .then(response => {
+                        console.log('retour de la connexion');
                         if (!response.ok) {
                             throw new Error('Erreur réseau: ' + response.status);
                         }
