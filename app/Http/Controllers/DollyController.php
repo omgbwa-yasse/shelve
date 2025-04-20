@@ -149,7 +149,7 @@ class DollyController extends Controller
     public function destroy(Dolly $dolly)
     {
 
-        if ($dolly->mail()->exists() || $dolly->record()->exists() || $dolly->communication()->exists() || $dolly->slip()->exists() || $dolly->slipRecord()->exists() || $dolly->building()->exists() || $dolly->room()->exists() || $dolly->shelf()->exists()) {
+        if ($dolly->mails()->exists() || $dolly->records()->exists() || $dolly->communications()->exists() || $dolly->slips()->exists() || $dolly->slipRecords()->exists() || $dolly->buildings()->exists() || $dolly->rooms()->exists() || $dolly->shelve()->exists()) {
            return redirect()->route('dolly.index')->with('error', 'Cannot delete Dolly because it has related records in other tables.');
         }
         $dolly->delete();
