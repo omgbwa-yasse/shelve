@@ -214,12 +214,9 @@
                 })
                 .then(data => {
                     alert('Chariot créé avec succès!');
-
                     createDollyForm.reset();
-
                     document.getElementById('dolliesList').style.display = 'block';
                     document.getElementById('dollyForm').style.display = 'none';
-
                     refreshDolliesList();
                 })
                 .catch(error => {
