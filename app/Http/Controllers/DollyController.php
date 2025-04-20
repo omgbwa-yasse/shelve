@@ -62,7 +62,7 @@ class DollyController extends Controller
         $containers = Container::all();
         $shelves = Shelf::all();
         $slip_records = SlipRecord::all();
-        $dolly->load('type');
+        $dolly->load('type','creator');
         return view('dollies.show', compact('dolly', 'records', 'mails', 'communications', 'rooms', 'containers', 'shelves', 'slip_records'));
     }
 
