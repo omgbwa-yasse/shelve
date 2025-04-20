@@ -180,6 +180,113 @@
                 const backToListBtn = document.getElementById('backToListBtn');
                 const fillDolly = document.getElementById('fillDollybtn');
 
+                const createDollyForm = document.getElementById('createDollyForm');
+
+
+
+                createDollyForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Empêcher la soumission normale du formulaire
+                
+                // Récupérer les valeurs du formulaire
+                const name = document.getElementById('name').value;
+                const description = document.getElementById('description').value;
+                const type_id = document.getElementById('type_id').value;
+                
+                // Créer l'objet de données à envoyer
+                const formData = {
+                    name: name,
+                    description: description,
+                    type_id: type_id
+                };
+                
+                // Envoyer les données via AJAX
+                fetch('/dolly-handler/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur réseau: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Gestion de la réponse réussie
+                    alert('Chariot créé avec succès!');
+                    
+                    // Réinitialiser le formulaire
+                    createDollyForm.reset();
+                    
+                    // Retourner à la liste des chariots et la rafraîchir
+                    document.getElementById('dolliesList').style.display = 'block';
+                    document.getElementById('dollyForm').style.display = 'none';
+                    
+                    // Recharger la liste des chariots pour afficher le nouveau
+                    refreshDolliesList();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de la création du chariot.');
+                });
+            });
+
+
+                // Fonction pour rafraîchir la liste des chariots
+                function refreshDolliesList() {
+                    fetch('/dolly-handler/list?type=mail', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const dollies = data.dollies;
+                        const dolliesList = document.getElementById('dolliesList');
+                        
+                        if (dollies.length === 0) {
+                            dolliesList.innerHTML = '<p>Aucun chariot chargé</p>';
+                            return;
+                        }
+                        
+                        let dolliesListHTML = '';
+                        dollies.forEach(dolly => {
+                            dolliesListHTML += `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${dolly.name}</h5>
+                                        <p class="card-text">${dolly.description}</p>
+                                        <p class="card-text">Nombre de courrier : ${dolly.mails.length}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}">Remplir</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        dolliesList.innerHTML = dolliesListHTML;
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        dolliesList.innerHTML = '<p>Erreur lors du chargement des chariots</p>';
+                    });
+                }
+
+
+
+
+
+
 
 
                 fetch('/dolly-handler/list?type=mail', {
@@ -259,7 +366,7 @@
                                 })
                                 .then(data => {
                                     alert('Les courriers ont été ajoutés au chariot avec succès.');
-                                    $('#dolliesModal').modal('hide');
+                                    refreshDolliesList();
                                 })
                                 .catch(error => {
                                     console.error('Erreur:', error);
@@ -268,9 +375,6 @@
 
                             }
                         });
-
-
-
 
 
                     })

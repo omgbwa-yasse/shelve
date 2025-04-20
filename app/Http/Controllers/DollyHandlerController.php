@@ -37,6 +37,28 @@ class DollyHandlerController extends Controller
         return response()->json(['dollies' => $dollies], 200);
     }
 
+
+
+    public function addDolly(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'type_id' => 'required|exists:dolly_types,id',
+        ]);
+
+        $dolly = Dolly::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Chariot créé avec succès',
+            'data' => $dolly
+        ]);
+    }
+
+
+
+
     public function addItems(Request $request) : JsonResponse
     {
         $request->validate([
