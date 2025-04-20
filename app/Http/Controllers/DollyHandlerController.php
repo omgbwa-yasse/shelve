@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\Dolly;
-
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -15,12 +15,11 @@ class DollyHandlerController extends Controller
     {
 
         $request->validate([
-            'type' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
         ]);
 
-        $dollies = Dolly::WhereHas('type', function($query) use ($request) {
-                $query->where('name', $request->type);
-            })
+        $dollies = Dolly::where('category', $request->type)
+            ->where('owner_organisation_id', Auth::user()->current_organisation_id)
             ->get();
 
         if(count($dollies) == 0){
@@ -44,18 +43,18 @@ class DollyHandlerController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type_id' => 'required|exists:dolly_types,id',
+            'category' => 'required|exists:dollies,category',
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['category'] = 'mail';
-        $validatedData['created_by'] = auth()->id();
-   
+        $validatedData['created_by'] = auth::user()->id;
+        $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
+
         $dolly = Dolly::create($validatedData);
 
         return response()->json([
             'success' => true,
-            'message' => 'Chariot créé avec succès',
+            'message' => 'Dolly created successfully',
             'data' => $dolly
         ]);
     }
@@ -67,19 +66,18 @@ class DollyHandlerController extends Controller
     {
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'type' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
             'items' => 'required|array',
         ]);
-
 
         $dolly = Dolly::find($request->dolly_id);
         if(!$dolly){
             return response()->json(['message' => 'Dolly not found'], 404);
         }else{
-
+            if($dolly->owner_organisation_id != Auth::user()->current_organisation_id){
+                return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
+            }
             switch($request->type) {
-
-
                 case 'mail':
                     foreach($request->items as $item) {
                         $item = (int)$item;
@@ -168,7 +166,7 @@ class DollyHandlerController extends Controller
             }
         }
             return response()->json(['message' => 'Éléments ajoutés avec succès'], 200);
-            
+
     }
 
 
@@ -184,6 +182,9 @@ class DollyHandlerController extends Controller
         if(!$dolly){
             return response()->json(['message' => 'Dolly not found'], 404);
         }else{
+            if($dolly->owner_organisation_id != Auth::user()->current_organisation_id){
+                return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
+            }
             switch(true){
                 case $request->type == 'mail':
                     $dolly->mails()->detach($request->items);
@@ -229,6 +230,9 @@ class DollyHandlerController extends Controller
         if(!$dolly){
             return response()->json(['message' => 'Dolly not found'], 404);
         }else{
+            if($dolly->owner_organisation_id != Auth::user()->current_organisation_id){
+                return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
+            }
             switch(true){
                 case $request->type == 'mail':
                     $dolly->mails()->detach();
@@ -271,7 +275,9 @@ class DollyHandlerController extends Controller
         if(!$dolly){
             return response()->json(['message' => 'Dolly not found'], 404);
         } else {
-            // Detach all related items
+            if($dolly->owner_organisation_id != Auth::user()->current_organisation_id){
+                return response()->json(['message' => 'Unauthorized access to this dolly'], 403);
+            }
             $dolly->mails()->detach();
             $dolly->communications()->detach();
             $dolly->buildings()->detach();

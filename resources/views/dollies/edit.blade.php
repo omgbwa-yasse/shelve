@@ -15,30 +15,45 @@
             <textarea name="description" id="description" class="form-control" required>{{ $dolly->description }}</textarea>
         </div>
         <div class="mb-3">
-            <label for="type_id" class="form-label">Type</label>
-            <select name="type_id" id="type_id" class="form-select" required>
-                @foreach (\App\Models\DollyType::all() as $type)
-                <option value="{{ $type->id }}" {{ $type->id == $dolly->type_id ? 'selected' : '' }}>
-                    @if($type->name == 'record')
-                        Description des archives
-                    @elseif($type->name == 'mail')
-                        Courrier
-                    @elseif($type->name == 'communication')
-                        Communication des archives
-                    @elseif($type->name == 'room')
-                        Salle d'archives
-                    @elseif($type->name == 'building')
-                        Bâtiments d'archives
-                    @elseif($type->name == 'container')
-                        Boites d'archives et chronos
-                    @elseif($type->name == 'shelve')
-                        Etagère
-                    @elseif($type->name == 'slip')
-                        Versement
-                    @elseif($type->name == 'slip_record')
-                        Description de versement
-                    @endif
-                </option>
+            <label for="category" class="form-label">Type</label>
+
+
+            <select name="category" id="category" class="form-select" required>
+                @foreach ($categories as $category)
+                    <option value="{{ $category }}" {{ $dolly->category == $category ? 'selected' : '' }}>
+                        @switch($category)
+                            @case('record')
+                                Description des archives
+                                @break
+                            @case('mail')
+                                Courrier
+                                @break
+                            @case('communication')
+                                Communication des archives
+                                @break
+                            @case('room')
+                                Salle d'archives
+                                @break
+                            @case('building')
+                                Bâtiments d'archives
+                                @break
+                            @case('container')
+                                Boites d'archives et chronos
+                                @break
+                            @case('shelve')
+                                Etagère
+                                @break
+                            @case('slip')
+                                Versement
+                                @break
+                            @case('slip_record')
+                                Description de versement
+                                @break
+                        @endswitch
+                    </option>
+
+
+                @endforeach
                 @endforeach
             </select>
         </div>

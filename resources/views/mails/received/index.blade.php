@@ -115,11 +115,11 @@
                                 <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="type_id" class="form-label">Type</label>
-                                <select class="form-select" id="type_id" name="type_id" required>
-                                    @foreach ($types as $type)
-                                        <option value="{{ $type->id }}" {{ $type->name == 'mail' ? 'selected' : '' }}>
-                                            {{ $type->name }}
+                                <label for="category" class="form-label"> Categories </label>
+                                <select class="form-select" id="category" name="category" required>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category }}" {{ $category == 'mail' ? 'selected' : '' }}>
+                                            {{ $category }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -186,19 +186,19 @@
 
                 createDollyForm.addEventListener('submit', function(event) {
                 event.preventDefault(); // Empêcher la soumission normale du formulaire
-                
+
                 // Récupérer les valeurs du formulaire
                 const name = document.getElementById('name').value;
                 const description = document.getElementById('description').value;
-                const type_id = document.getElementById('type_id').value;
-                
+                const category = document.getElementById('category').value;
+
                 // Créer l'objet de données à envoyer
                 const formData = {
                     name: name,
                     description: description,
-                    type_id: type_id
+                    category: category
                 };
-                
+
                 // Envoyer les données via AJAX
                 fetch('/dolly-handler/create', {
                     method: 'POST',
@@ -216,12 +216,12 @@
                 })
                 .then(data => {
                     alert('Chariot créé avec succès!');
-                    
+
                     createDollyForm.reset();
-                    
+
                     document.getElementById('dolliesList').style.display = 'block';
                     document.getElementById('dollyForm').style.display = 'none';
-                    
+
                     refreshDolliesList();
                 })
                 .catch(error => {
@@ -248,12 +248,12 @@
                     .then(data => {
                         const dollies = data.dollies;
                         const dolliesList = document.getElementById('dolliesList');
-                        
+
                         if (dollies.length === 0) {
                             dolliesList.innerHTML = '<p>Aucun chariot chargé</p>';
                             return;
                         }
-                        
+
                         let dolliesListHTML = '';
 
                         let baseUrl = window.location.origin;
@@ -283,7 +283,7 @@
                                     </div>
                                 `;
                         });
-                        
+
                         dolliesList.innerHTML = dolliesListHTML;
                     })
                     .catch(error => {
@@ -319,7 +319,7 @@
                             dolliesList.innerHTML = '<p> Aucun chariot chargé </p>';
                             return;
                         }
-                        
+
                         let dolliesListHTML = '';
 
 

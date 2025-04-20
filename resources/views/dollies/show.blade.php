@@ -27,7 +27,7 @@
                 <p class="card-text">
                     Type :
                     <span class="badge bg-primary">
-                    @switch($dolly->type->name??'mail')
+                    @switch($dolly->category ??'mail')
                             @case('record')
                                 Archives
                                 @break
@@ -59,10 +59,10 @@
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce chariot ?')">Supprimer</button>
                     </form>
-                    
-                    <button class="btn btn-secondary btnCleanDolly" 
-                            onclick="cleanDolly({{ $dolly->id }}, '{{ $type ?? ($dolly->type ? $dolly->type->name : '') }}')">
-                        <i class="fas fa-print"></i> Vider le chariot
+
+                    <button class="btn btn-secondary btnCleanDolly"
+                            onclick="cleanDolly({{ $dolly->id }}, '{{ $dolly->category ?? '' }}')">
+                        <i class="fas fa-trash-alt"></i> Vider le chariot
                     </button>
 
                 </div>
@@ -70,14 +70,14 @@
         </div>
 
         <h2 class="mb-4">Actions disponibles</h2>
-      @if(isset($dolly->type->name))
-            @include("dollies.partials.{$dolly->type->name}")
+      @if(isset($dolly->category))
+            @include("dollies.partials.{$dolly->category}")
       @endif
 
 
 
         <h2 class="mt-5 mb-4">Contenu du chariot</h2>
-        @if($dolly->type->name === 'record' && $dolly->records->isNotEmpty())
+        @if($dolly->category === 'record' && $dolly->records->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead class="table-white">
@@ -110,7 +110,8 @@
                     </tbody>
                 </table>
             </div>
-        @elseif($dolly->type->name === 'mail' && $dolly->mails->isNotEmpty())
+
+        @elseif($dolly->category === 'mail' && $dolly->mails->isNotEmpty())
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead class="table-white bg-dark">
@@ -133,7 +134,7 @@
                                 @if($mail->senderOrganisation->id == Auth()->currentOrganisationId())
                                     <a href="{{ route('mail-received.show', $mail) }}" class="btn btn-sm btn-info">Voir</a>
                                     <a href="{{ route('mail-received.edit', $mail) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}" 
+                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}"
                                         onclick="removeItemFromDolly({{ $dolly->id }}, {{ $mail->id }}, 'mail')">
                                         Retirer
                                     </button>
@@ -141,12 +142,12 @@
                                 @elseif($mail->recipientOrganisation->id == Auth()->currentOrganisationId())
                                     <a href="{{ route('mail-send.show', $mail) }}" class="btn btn-sm btn-info">Voir </a>
                                     <a href="{{ route('mail-send.edit', $mail) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}" 
+                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}"
                                             onclick="removeItemFromDolly({{ $dolly->id }}, {{ $mail->id }}, 'mail')">
                                         Retirer
                                     </button>
                                 @endif
-                                
+
                             </td>
                         </tr>
                     @endforeach
@@ -158,7 +159,7 @@
         @endif
 
         <h2 class="mt-5 mb-4">Ajouter des éléments</h2>
-        @switch($dolly->type->name)
+        @switch($dolly->category)
             @case('record')
                 <form action="{{ route('dolly.add-record', $dolly) }}" method="POST">
                     @csrf
@@ -263,13 +264,13 @@
 
     <script>
 
-        function cleanDolly(dollyId, type) {
+        function cleanDolly(dollyId, category) {
             if (confirm('Êtes-vous sûr de vouloir vider le chariot ?')) {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
                 const data = {
                     dolly_id: dollyId,
-                    type: type
+                    category: category
                 };
 
                 fetch('/dolly-handler/clean', {
@@ -303,22 +304,22 @@
 
 
         // Fonction pour retirer un élément du chariot
-        function removeItemFromDolly(dollyId, itemId, itemType) {
+        function removeItemFromDolly(dollyId, itemId, category) {
             if (confirm('Êtes-vous sûr de vouloir retirer cet élément du chariot ?')) {
 
 
                 const data = {
                     dolly_id: dollyId,
-                    type: itemType,
+                    category : category,
                     items: [itemId]
                 };
 
-                
+
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
 
                 fetch('/dolly-handler/remove-items', {
-                    method: 'DELETE',  
+                    method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': csrfToken,
@@ -334,7 +335,7 @@
                 })
                 .then(data => {
 
-                    document.getElementById(`item-${itemType}-${itemId}`).remove();
+                    document.getElementById(`item-${category}-${itemId}`).remove();
                     alert(data.message);
                 })
                 .catch(error => {

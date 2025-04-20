@@ -16,25 +16,25 @@
         <div class="mb-3">
             <label for="type_id" class="form-label">Type</label>
             <select name="type_id" id="type_id" class="form-select" required>
-                @foreach (\App\Models\DollyType::all() as $type)
+                @foreach ($categories as $category)
                 <option value="{{ $type->id }}">
-                    @if($type->name == 'record')
+                    @if($category == 'record')
                         Description des archives
-                    @elseif($type->name == 'mail')
+                    @elseif($category == 'mail')
                         Courrier
-                    @elseif($type->name == 'communication')
+                    @elseif($category == 'communication')
                         Communication des archives
-                    @elseif($type->name == 'room')
+                    @elseif($category == 'room')
                         Salle d'archives
-                    @elseif($type->name == 'building')
+                    @elseif($category == 'building')
                         Bâtiments d'archives
-                    @elseif($type->name == 'container')
+                    @elseif($category == 'container')
                         Boites et chronos
-                    @elseif($type->name == 'shelf')
+                    @elseif($category == 'shelf')
                         Etagère
-                    @elseif($type->name == 'slip')
+                    @elseif($category == 'slip')
                         Versement
-                    @elseif($type->name == 'slip_record')
+                    @elseif($category == 'slip_record')
                         Description de versement
                     @endif
                 </option>

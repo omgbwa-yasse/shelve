@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Communication;
 use App\Models\Container;
 use App\Models\DollyCommunication;
@@ -19,7 +18,8 @@ class DollyController extends Controller
 {
     public function index()
     {
-        $dollies = Dolly::with('type')->get();
+        $dollies = Dolly::where('owner_organisation_id', Auth::user()->current_organisation_id)
+            ->get();
         return view('dollies.index', compact('dollies'));
     }
 
@@ -39,11 +39,9 @@ class DollyController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
-            'type_id' => 'required|exists:dolly_types,id',
+            'category' => 'required|exists:dollies,category',
         ]);
-
         $validatedData['is_public'] = false;
-        $validatedData['category'] = 'mail';
         $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
@@ -64,7 +62,7 @@ class DollyController extends Controller
         $containers = Container::all();
         $shelves = Shelf::all();
         $slip_records = SlipRecord::all();
-        $dolly->load('type','creator');
+        $dolly->load('creator','ownerOrganisation');
         return view('dollies.show', compact('dolly', 'records', 'mails', 'communications', 'rooms', 'containers', 'shelves', 'slip_records'));
     }
 
@@ -74,7 +72,8 @@ class DollyController extends Controller
 
     public function edit(Dolly $dolly)
     {
-        return view('dollies.edit', compact('dolly'));
+        $categories = Dolly::all()->pluck('category');
+        return view('dollies.edit', compact('dolly', 'categories'));
     }
 
 
@@ -87,11 +86,10 @@ class DollyController extends Controller
         $validatedData = $request->validate([
             'name' => 'required',
             'description' => 'required',
-            'type_id' => 'required|exists:dolly_types,id',
+            'category' => 'required|exists:dollies,category',
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['category'] = 'mail';
         $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
@@ -122,7 +120,6 @@ class DollyController extends Controller
 
     public function apiList()
     {
-
         $dollies = Dolly::whereHas('type', function($query){
                 $query->where('name', 'mail_transaction');
             })
@@ -139,11 +136,10 @@ class DollyController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'type_id' => 'required|exists:dolly_types,id',
+            'category' => 'required|exists:category,id',
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['category'] = 'mail';
         $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 

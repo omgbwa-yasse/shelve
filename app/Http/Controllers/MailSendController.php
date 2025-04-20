@@ -48,9 +48,9 @@ class MailSendController extends Controller
             ->get();
 
         $dollies = Dolly::all();
-        $types = DollyType::all();
+        $categories = Dolly::pluck('category');
         $users = User::all();
-        return view('mails.send.index', compact('mails', 'dollies', 'types', 'users'));
+        return view('mails.send.index', compact('mails', 'dollies', 'categories', 'users'));
     }
 
     public function create()
