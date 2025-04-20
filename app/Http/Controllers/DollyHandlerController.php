@@ -13,13 +13,15 @@ class DollyHandlerController extends Controller
 {
     public function list(Request $request)  : JsonResponse
     {
-
         $request->validate([
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,slipRecord,container,shelf',
         ]);
 
         $dollies = Dolly::where('category', $request->category)
-            ->where('owner_organisation_id', Auth::user()->current_organisation_id)
+            ->where(function ($query) {
+            $query->where('owner_organisation_id', Auth::user()->current_organisation_id)
+                  ->orWhere('is_public', true);
+            })
             ->get();
 
         if(count($dollies) == 0){

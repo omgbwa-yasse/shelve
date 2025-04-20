@@ -205,7 +205,7 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Gestion des chariots en AJAX, les routes
     Route::post('/dolly-handler/create', [DollyHandlerController::class, 'addDolly']);
-    Route::get('/dolly-handler/{type}', [DollyHandlerController::class, 'list']);
+    Route::get('/dolly-handler/list', [DollyHandlerController::class, 'list']);
     Route::post('/dolly-handler/add-items', [DollyHandlerController::class, 'addItems']);
     Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
     Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);

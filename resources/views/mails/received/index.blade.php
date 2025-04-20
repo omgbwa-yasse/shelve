@@ -172,7 +172,7 @@
     </style>
     <script>
 
-            document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
                 const addDollyBtn = document.getElementById('addDollyBtn');
                 const dolliesList = document.getElementById('dolliesList');
                 const dollyForm = document.getElementById('dollyForm');
@@ -184,21 +184,19 @@
 
 
 
-                createDollyForm.addEventListener('submit', function(event) {
-                event.preventDefault(); // Empêcher la soumission normale du formulaire
-
+        createDollyForm.addEventListener('submit', function(event) {
+                event.preventDefault(); 
+                // Empêcher la soumission normale du formulaire
                 // Récupérer les valeurs du formulaire
                 const name = document.getElementById('name').value;
                 const description = document.getElementById('description').value;
                 const category = document.getElementById('category').value;
-
                 // Créer l'objet de données à envoyer
                 const formData = {
                     name: name,
                     description: description,
                     category: category
                 };
-
                 // Envoyer les données via AJAX
                 fetch('/dolly-handler/create', {
                     method: 'POST',
@@ -231,9 +229,13 @@
             });
 
 
-                // Fonction pour rafraîchir la liste des chariots
-                function refreshDolliesList() {
-                    fetch('/dolly-handler/list?type=mail', {
+
+
+
+
+            // Fonction pour rafraîchir la liste des chariots
+            function refreshDolliesList() {
+                    fetch('/dolly-handler/list?category=mail', {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -253,11 +255,8 @@
                             dolliesList.innerHTML = '<p>Aucun chariot chargé</p>';
                             return;
                         }
-
                         let dolliesListHTML = '';
-
                         let baseUrl = window.location.origin;
-
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
                                     <div class="card mb-2 shadow-sm border-0 rounded-3">
@@ -283,7 +282,6 @@
                                     </div>
                                 `;
                         });
-
                         dolliesList.innerHTML = dolliesListHTML;
                     })
                     .catch(error => {
@@ -294,12 +292,8 @@
 
 
 
-
-
-
-
-
-                fetch('/dolly-handler/list?type=mail', {
+                // Recuperer la liste des categories
+                fetch('/dolly-handler/list?category=mail', {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -312,19 +306,13 @@
                         return response.json();
                     })
                     .then(data => {
-
                         const dollies = data.dollies;
-
                         if (dollies.length === 0) {
                             dolliesList.innerHTML = '<p> Aucun chariot chargé </p>';
                             return;
                         }
-
                         let dolliesListHTML = '';
-
-
                         let baseUrl = window.location.origin;
-
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
                                     <div class="card mb-2 shadow-sm border-0 rounded-3">
@@ -378,7 +366,7 @@
                                     'Content-Type': 'application/json',
                                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                                 },
-                                body: JSON.stringify({ items: selectedIds, 'type' : 'mail', dolly_id: dollyId })
+                                body: JSON.stringify({ items: selectedIds, 'category' : 'mail', dolly_id: dollyId })
                                 })
                                 .then(response => {
                                     if (!response.ok) {
@@ -438,13 +426,10 @@
                     document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
                         selectedIds.push(checkbox.value);
                     });
-
                     if (selectedIds.length === 0) {
                         alert('Veuillez sélectionner au moins un courrier.');
                         return;
                     }
-
-                    // Utiliser fetch avec méthode POST et CSRF token
                     fetch('{{ route("mail-transaction.export") }}', {
                         method: 'POST',
                         headers: {
