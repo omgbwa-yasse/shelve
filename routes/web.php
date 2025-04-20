@@ -71,6 +71,7 @@ use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
+use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\SlipStatusController;
@@ -201,13 +202,14 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/api/dollies', [DollyController::class, 'apiList']);
     Route::post('/api/dollies', [DollyController::class, 'apiCreate']);
 
-    Route::get('/api/dollies/{dolly}/mail-transactions', [DollyMailTransactionController::class, 'apiList']);
-    Route::post('/api/dolly-mail-transactions', [DollyMailTransactionController::class, 'apiStore']);
-    Route::delete('/api/dolly-mail-transactions/{dolly}/{mailTransaction}', [DollyMailTransactionController::class, 'apiDestroy']);
-    Route::delete('/api/dollies/{dolly}/empty-mail-transactions', [DollyMailTransactionController::class, 'apiEmptyDolly']);
 
-    Route::get('/dollies/{dolly}/mail-transactions/process', [DollyMailTransactionController::class, 'process'])
-        ->name('dollies.mail-transactions.process');
+    // Gestion des chariots en AJAX, les routes
+    Route::get('/dolly-handler/{type}', [DollyHandlerController::class, 'list']);
+    Route::post('/dolly-handler/add-items', [DollyHandlerController::class, 'addItems']);
+    Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
+    Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);
+    Route::delete('/dolly-handler/{dolly_id}', [DollyHandlerController::class, 'deleteDolly']);
+
 
 
     Route::prefix('communications')->group(function () {

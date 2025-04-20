@@ -9,11 +9,7 @@
             <div class="d-flex align-items-center">
                 <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
                     <i class="bi bi-cart me-1"></i>
-                    Chariot
-                </a>
-                <a href="#" id="cartBtnWindow" class="btn btn-light btn-sm me-2">
-                    <i class="bi bi-cart me-1"></i>
-                    Chariot
+                    Chariot **
                 </a>
                 <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-download me-1"></i>
@@ -105,14 +101,7 @@
                 </div>
                 <div class="modal-body">
                     <div id="dolliesList">
-                        @foreach ($dollies as $dolly)
-                            <div class="card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ $dolly->name }}</h5>
-                                    <p class="card-text">{{ $dolly->description }}</p>
-                                </div>
-                            </div>
-                        @endforeach
+                        <p>Aucun chariot chargé</p>
                     </div>
                     <div id="dollyForm" style="display: none;">
                         <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
@@ -189,6 +178,106 @@
                 const dollyForm = document.getElementById('dollyForm');
                 const dollyFormForm = dollyForm.querySelector('form');
                 const backToListBtn = document.getElementById('backToListBtn');
+                const fillDolly = document.getElementById('fillDollybtn');
+
+
+
+                fetch('/dolly-handler/list?type=mail', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur réseau: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+
+                        const dollies = data.dollies;
+
+                        if (dollies.length === 0) {
+                            dolliesList.innerHTML = '<p> Aucun chariot chargé </p>';
+                            return;
+                        }
+                        
+                        let dolliesListHTML = '';
+
+                        console.log(dollies);
+
+                        dollies.forEach(dolly => {
+                            dolliesListHTML += `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${dolly.name}</h5>
+                                        <p class="card-text">${dolly.description}</p>
+                                        <p class="card-text"> Nombre de courrier : ${dolly.mails.length} </p>
+                                        <div class="d-flex justify-content-between">
+                                            <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}"> Remplir </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        document.getElementById('dolliesList').innerHTML = dolliesListHTML;
+
+
+
+                        document.addEventListener('click', function(event) {
+                            if (event.target.classList.contains('fillDollyBtn')) {
+                                const dollyId = event.target.getAttribute('data-id');
+                                console.log('ID du dolly:', dollyId);
+
+                                // Selctionner les ids des éléments cochés
+                                const selectedIds = [];
+                                document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
+                                    selectedIds.push(checkbox.value);
+                                });
+
+                                if (selectedIds.length === 0) {
+                                    alert('Veuillez sélectionner au moins un courrier.');
+                                    return;
+                                }
+
+                                // Utiliser fetch avec méthode POST et CSRF token
+                                fetch(`/dolly-handler/add-items`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ items: selectedIds, 'type' : 'mail', dolly_id: dollyId })
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Erreur réseau: ' + response.status);
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    alert('Les courriers ont été ajoutés au chariot avec succès.');
+                                    $('#dolliesModal').modal('hide');
+                                })
+                                .catch(error => {
+                                    console.error('Erreur:', error);
+                                    alert('Une erreur est survenue lors de l\'ajout des courriers au chariot.');
+                                });
+
+                            }
+                        });
+
+
+
+
+
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                    });
+
 
                 addDollyBtn.addEventListener('click', function() {
                     dolliesList.style.display = 'none';
@@ -196,75 +285,13 @@
                 });
 
 
-
-
-                document.getElementById('cartBtnWindow').addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    // Collecte des IDs sélectionnés
-                    const selectedIds = [];
-                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
-                        selectedIds.push(checkbox.value);
-                    });
-
-                    // Créer une URL avec les IDs comme paramètres de requête
-                    const ids = encodeURIComponent(JSON.stringify(selectedIds));
-                    const url = `/mails/chart?ids=${ids}`;
-
-                    window.open(url, 'Chariot', 'width=300,height=500,resizable=yes');
-                });
-
-
-
-
                 // Afficher le formulaire de création de dolly
-
                 backToListBtn.addEventListener('click', function() {
                     dolliesList.style.display = 'block';
                     dollyForm.style.display = 'none';
                 });
 
-                dollyFormForm.addEventListener('submit', function(event) {
-                    event.preventDefault();
 
-                    const formData = new FormData(this);
-                    const selectedMailIds = [];
-                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
-                        selectedMailIds.push(checkbox.value);
-                    });
-                    formData.append('selectedIds', JSON.stringify(selectedMailIds));
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Mettre à jour la liste des dollies dans la modale
-                        const dolliesHTML = data.dollies.map(dolly => `
-                        <div class="card mb-3">
-                            <div class="card-body">
-                            <h5 class="card-title">${dolly.name}</h5>
-                            <p class="card-text">${dolly.description}</p>
-                            </div>
-                        </div>
-                        `).join('');
-                        dolliesList.innerHTML = dolliesHTML;
-
-                        // Afficher la liste des dollies et masquer le formulaire
-                        dolliesList.style.display = 'block';
-                        dollyForm.style.display = 'none';
-
-                        // Réinitialiser le formulaire
-                        this.reset();
-                    })
-                    .catch(error => {
-                        console.error('Erreur:', error);
-                    });
-                });
 
                 // Tout cocher / Décocher
                 const checkAllBtn = document.getElementById('checkAllBtn');
@@ -324,6 +351,8 @@
                         alert('Une erreur est survenue lors de l\'exportation.');
                     });
                 });
+
+
 
                 // Imprimer les courriers cochés
                 const printBtn = document.getElementById('printBtn');
