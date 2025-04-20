@@ -97,6 +97,7 @@
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir retirer cet enregistrement du chariot ?')">Retirer</button>
                                 </form>
+
                             </td>
                         </tr>
                     @endforeach
@@ -123,13 +124,23 @@
                             <td>{{ $mail->date }}</td>
                             <td>{{ $mail->priority->name ?? 'N/A'}}</td>
                             <td>
-                                <a href="{{ route('mails.show', $mail) }}" class="btn btn-sm btn-info">Voir</a>
-                                <a href="{{ route('mails.edit', $mail) }}" class="btn btn-sm btn-warning">Modifier</a>
-                                <form action="{{ route('dolly.remove-mail', [$dolly, $mail]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir retirer ce courrier du chariot ?')">Retirer</button>
-                                </form>
+                                @if($mail->senderOrganisation->id == Auth()->currentOrganisationId())
+                                    <a href="{{ route('mail-received.show', $mail) }}" class="btn btn-sm btn-info">Voir</a>
+                                    <a href="{{ route('mail-received.edit', $mail) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}" 
+                                        onclick="removeItemFromDolly({{ $dolly->id }}, {{ $mail->id }}, 'mail')">
+                                        Retirer
+                                    </button>
+
+                                @elseif($mail->recipientOrganisation->id == Auth()->currentOrganisationId())
+                                    <a href="{{ route('mail-send.show', $mail) }}" class="btn btn-sm btn-info">Voir </a>
+                                    <a href="{{ route('mail-send.edit', $mail) }}" class="btn btn-sm btn-warning">Modifier</a>
+                                    <button type="button" class="btn btn-sm btn-danger" id="item-mail-{{ $mail->id }}" 
+                                            onclick="removeItemFromDolly({{ $dolly->id }}, {{ $mail->id }}, 'mail')">
+                                        Retirer
+                                    </button>
+                                @endif
+                                
                             </td>
                         </tr>
                     @endforeach
@@ -242,4 +253,52 @@
                 @break
         @endswitch
     </div>
+
+
+    <script>
+
+        function removeItemFromDolly(dollyId, itemId, itemType) {
+            if (confirm('Êtes-vous sûr de vouloir retirer cet élément du chariot ?')) {
+
+
+                const data = {
+                    dolly_id: dollyId,
+                    type: itemType,
+                    items: [itemId]
+                };
+
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+
+                fetch('/dolly-handler/remove-items', {
+                    method: 'DELETE',  
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors de la suppression');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+
+                    document.getElementById(`item-${itemType}-${itemId}`).remove();
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur s\'est produite lors de la suppression de l\'élément');
+                });
+            }
+        }
+
+    </script>
+
+
 @endsection

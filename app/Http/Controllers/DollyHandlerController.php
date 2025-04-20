@@ -152,7 +152,6 @@ class DollyHandlerController extends Controller
             'dolly_id' => 'required|integer|exists:dollies,id',
             'type' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
             'items' => 'required|array',
-            'items.*' => 'required|integer|exists:mail,id,communication,id,building,id,room,id,record,id,slip,id,container,id,shelf,id',
         ]);
 
         $dolly = Dolly::find($request->dolly_id);
