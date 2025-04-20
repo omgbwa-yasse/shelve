@@ -197,6 +197,7 @@
                     description: description,
                     category: category
                 };
+
                 // Envoyer les données via AJAX
                 fetch('/dolly-handler/create', {
                     method: 'POST',
