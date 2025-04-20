@@ -260,23 +260,24 @@
 
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
-                                    <div class="card mb-3 shadow-sm border-0 rounded-3">
+                                    <div class="card mb-2 shadow-sm border-0 rounded-3">
                                         <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-3">${dolly.name}</h5>
-                                            <p class="card-text text-muted mb-2">${dolly.description}</p>
-                                            <p class="card-text mb-3">
-                                                <span class="badge bg-info text-dark rounded-pill px-3 py-2">
-                                                    <i class="bi bi-envelope me-1"></i>
-                                                    ${dolly.mails.length} courrier(s)
-                                                </span>
-                                            </p>
-                                            <div class="d-flex gap-2 mt-3">
-                                                <button class="btn btn-success btn-sm fillDollyBtn flex-grow-1" data-id="${dolly.id}">
-                                                    <i class="bi bi-plus-circle me-1"></i> Remplir
-                                                </button>
-                                                <a href="${baseUrl}/dollies/show/${dolly.id}" class="btn btn-primary btn-sm flex-grow-1">
-                                                    <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir
-                                                </a>
+                                            <div class="d-flex flex-column">
+                                                <h5 class="card-title fw-bold mb-2">${dolly.name}</h5>
+                                                <p class="card-text text-muted mb-1">${dolly.description}</p>
+                                                <p class="card-text mb-2">
+                                                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                                                        ${dolly.mails.length} élement(s)
+                                                    </span>
+                                                </p>
+                                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                                    <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}">
+                                                        <i class="bi bi-plus-circle me-1"></i> Remplir
+                                                    </button>
+                                                    <a href="${baseUrl}/dollies/dolly/${dolly.id}" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -326,23 +327,24 @@
 
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
-                                    <div class="card mb-3 shadow-sm border-0 rounded-3">
+                                    <div class="card mb-2 shadow-sm border-0 rounded-3">
                                         <div class="card-body p-4">
-                                            <h5 class="card-title fw-bold mb-3">${dolly.name}</h5>
-                                            <p class="card-text text-muted mb-2">${dolly.description}</p>
-                                            <p class="card-text mb-3">
-                                                <span class="badge bg-info text-dark rounded-pill px-3 py-2">
-                                                    <i class="bi bi-envelope me-1"></i>
-                                                    ${dolly.mails.length} courrier(s)
-                                                </span>
-                                            </p>
-                                            <div class="d-flex gap-2 mt-3">
-                                                <button class="btn btn-success btn-sm fillDollyBtn flex-grow-1" data-id="${dolly.id}">
-                                                    <i class="bi bi-plus-circle me-1"></i> Remplir
-                                                </button>
-                                                <a href="${baseUrl}/dollies/dolly/${dolly.id}" class="btn btn-primary btn-sm flex-grow-1">
-                                                    <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir
-                                                </a>
+                                            <div class="d-flex flex-column">
+                                                <h5 class="card-title fw-bold mb-2">${dolly.name}</h5>
+                                                <p class="card-text text-muted mb-1">${dolly.description}</p>
+                                                <p class="card-text mb-2">
+                                                    <span class="badge bg-info text-dark rounded-pill px-3 py-2">
+                                                        ${dolly.mails.length} élement(s)
+                                                    </span>
+                                                </p>
+                                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                                    <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}">
+                                                        <i class="bi bi-plus-circle me-1"></i> Remplir
+                                                    </button>
+                                                    <a href="${baseUrl}/dollies/dolly/${dolly.id}" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-box-arrow-in-right me-1"></i> Ouvrir
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

@@ -18,21 +18,29 @@
                 <td>{{ $dolly->name }}</td>
                 <td>{{ $dolly->description }}</td>
                 <td>
-                    @if($dolly->type->name??'' == 'record')
-                        Archives
-                    @elseif($dolly->type->name??''== 'mail')
-                        Courrier
-                    @elseif($dolly->type->name??'' == 'communication')
-                        Communication des archives
-                    @elseif($dolly->type->name??'' == 'room')
-                        Salle d'archives
-                    @elseif($dolly->type->name??'' == 'container')
-                        Boites d'archives et chronos
-                    @elseif($dolly->type->name??'' == 'shelf')
-                        Etagère
-                    @elseif($dolly->type->name??''== 'slip_record')
-                        Archives (versement)
-                    @endif
+                    @switch($dolly->type->name ?? '')
+                        @case('record')
+                            Archives
+                            @break
+                        @case('mail')
+                            Courrier
+                            @break
+                        @case('communication')
+                            Communication des archives
+                            @break
+                        @case('room')
+                            Salle d'archives
+                            @break
+                        @case('container')
+                            Boites d'archives et chronos
+                            @break
+                        @case('shelf')
+                            Etagère
+                            @break
+                        @case('slip_record')
+                            Archives (versement)
+                            @break
+                    @endswitch
 
                 </td>
                 <td>
