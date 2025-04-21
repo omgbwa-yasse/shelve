@@ -103,6 +103,7 @@ function initCheckAllButton() {
  * Récupère les IDs des bordereaux sélectionnés
  * @returns {Array} Tableau d'IDs
  */
+
 function getSelectedSlipIds() {
     return Array.from(document.querySelectorAll('input[name="selected_slip[]"]:checked'))
         .map(checkbox => checkbox.value);

@@ -126,16 +126,6 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('batch-received.index') }}">
-                    <i class="bi bi-inbox"></i> {{ __('received_paraphers') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('batch-send.index') }}">
-                    <i class="bi bi-inbox"></i> {{ __('sent_paraphers') }}
-                </a>
-            </div>
-            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.advanced.form') }}">
                     <i class="bi bi-inbox"></i> Advanced
                 </a>

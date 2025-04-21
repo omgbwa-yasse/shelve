@@ -69,56 +69,55 @@
 
                 <!-- Organisation (cliquable pour modal) -->
                 <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
-                    <i class="bi bi-building"></i>
-                    <span>{{ Auth::user()->currentOrganisation->name ?? __('Not defined') }}</span>
+                    <span><strong>({{ Auth::user()->currentOrganisation->code }})  {{ Str::limit(Auth::user()->currentOrganisation->name, 20, '...') }}</strong></span>
                 </a>
 
                 <!-- Navigation principale -->
                 <nav class="header-nav">
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
-                            <i class="bi bi-card-text"></i> <span>{{ __('Bulletin') }}</span>
+                            <i class="bi bi-card-text" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
-                            <i class="bi bi-envelope"></i> <span>{{ __('Mail') }}</span>
-                            <span class="badge">5</span>
+                            <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
+                            
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
-                            <i class="bi bi-folder"></i> <span>{{ __('Repository') }}</span>
+                            <i class="bi bi-folder" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('transactions.index') }}">
-                            <i class="bi bi-chat-dots"></i> <span>{{ __('Request') }}</span>
+                            <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}">
-                            <i class="bi bi-arrow-left-right"></i> <span>{{ __('Transfer') }}</span>
+                            <i class="bi bi-arrow-left-right" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}">
-                            <i class="bi bi-building"></i> <span>{{ __('Building') }}</span>
+                            <i class="bi bi-building" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}">
-                            <i class="bi bi-tools"></i> <span>{{ __('Tool') }}</span>
+                            <i class="bi bi-tools" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
-                            <i class="bi bi-cart3"></i> <span>{{ __('Dolly') }}</span>
+                            <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('mail-typology.index') }}">
-                            <i class="bi bi-gear"></i> <span>{{ __('Setting') }}</span>
+                            <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                 </nav>
@@ -127,7 +126,7 @@
                 <div class="header-search">
                     <form class="header-search-form" action="{{ route('records.search') }}">
                         <input type="hidden" name="advanced" value="false">
-                        <input class="header-search-input" name="query" type="search" placeholder="{{ __('Search...') }}"
+                        <input class="header-search-input"  name="query" type="search" placeholder="{{ __('Search...') }}"
                                value="@if (isset($_GET['query'])) {{ preg_replace('/\s+/', ' ', trim($_GET['query'])) }} @endif">
                         <select class="header-search-select" name="search_type">
                             <option value="">{{ __('All') }}</option>
@@ -197,13 +196,12 @@
                     <!-- Utilisateur -->
                     <div class="header-action-item">
                         <a href="#" class="header-action-btn" id="userBtn" role="button" data-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i>
-                            <span>{{ Auth::user()->name }}</span>
+                            <i class="bi bi-person-circle">  </i>
                             <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userBtn">
                             <a class="dropdown-item" href="#">
-                                <i class="bi bi-person mr-2"></i> {{ __('Profile') }}
+                                <i class="bi bi-person mr-2"></i>{{ Str::limit(Auth::user()->name, 12, '...') }}
                             </a>
                             <a class="dropdown-item" href="#">
                                 <i class="bi bi-gear mr-2"></i> {{ __('Account Settings') }}

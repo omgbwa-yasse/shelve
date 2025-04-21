@@ -2,31 +2,88 @@
 
 @section('content')
 <div id="mailList">
-    <div class="container-fluid">
-        <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
 
-        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-            <div class="d-flex align-items-center">
-                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
-                    <i class="bi bi-cart me-1"></i>
-                    Chariot 
-                </a>
-                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('mail-transaction.export') }}">
-                    <i class="bi bi-download me-1"></i>
-                    Exporter
-                </a>
-                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('mail-transaction.print') }}">
-                    <i class="bi bi-printer me-1"></i>
-                    Imprimer
-                </a>
-            </div>
-            <div class="d-flex align-items-center">
-                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
-                    <i class="bi bi-check-square me-1"></i>
-                    Tout cocher
-                </a>
-            </div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
+
+    <!-- Bandeau de recherche avec icônes -->
+    <div class="d-flex justify-content-start align-items-center bg-light p-2 mb-2 rounded overflow-auto">
+        <div class="d-flex align-items-center gap-3 px-2">
+            <a href="{{ route('mail-received.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers reçus">
+                <i class="bi bi-inbox fs-5 text-primary"></i>
+                <span class="small">Reçus</span>
+            </a>
+            <a href="{{ route('mail-send.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers envoyés">
+                <i class="bi bi-envelope fs-5 text-primary"></i>
+                <span class="small">Envoyés</span>
+            </a>
+            <a href="{{ route('mails.archived') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers archivés">
+                <i class="bi bi-archive fs-5 text-primary"></i>
+                <span class="small">Archives</span>
+            </a>
+            <div class="vr mx-1"></div>
+            <a href="{{ route('mail-select-date') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche par dates">
+                <i class="bi bi-calendar fs-5 text-primary"></i>
+                <span class="small">Dates</span>
+            </a>
+            <a href="{{ route('mail-container.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Boîtes d'archives">
+                <i class="bi bi-box fs-5 text-primary"></i>
+                <span class="small">Boîtes</span>
+            </a>
+            <div class="vr mx-1"></div>
+            <a href="{{ route('batch.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Mes parapheurs">
+                <i class="bi bi-folder fs-5 text-primary"></i>
+                <span class="small">Mes parapheurs</span>
+            </a>
+            <a href="{{ route('batch-received.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Parapheurs reçus">
+                <i class="bi bi-folder-check fs-5 text-primary"></i>
+                <span class="small">Reçus</span>
+            </a>
+            <a href="{{ route('batch-send.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Parapheurs envoyés">
+                <i class="bi bi-folder-symlink fs-5 text-primary"></i>
+                <span class="small">Envoyés</span>
+            </a>
+            <div class="vr mx-1"></div>
+            <a href="{{ route('mails.advanced.form') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche avancée">
+                <i class="bi bi-sliders fs-5 text-primary"></i>
+                <span class="small">Avancée</span>
+            </a>
         </div>
+        
+        <div class="ms-auto pe-2">
+            <form class="d-flex" action="{{ route('mails.search') }}" method="GET">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm" placeholder="Recherche rapide..." name="q" aria-label="Recherche">
+                    <button class="btn btn-outline-secondary" type="submit" title="Rechercher">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bandeau d'actions -->
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3 rounded">
+        <div class="d-flex align-items-center gap-2">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                <i class="bi bi-cart me-1"></i>
+                Chariot
+            </a>
+            <a href="#" id="exportBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.export') }}">
+                <i class="bi bi-download me-1"></i>
+                Exporter
+            </a>
+            <a href="#" id="printBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.print') }}">
+                <i class="bi bi-printer me-1"></i>
+                Imprimer
+            </a>
+        </div>
+        <div class="d-flex align-items-center">
+            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                <i class="bi bi-check-square me-1"></i>
+                Tout cocher
+            </a>
+        </div>
+    </div>
 
         <div id="mailList" class="mb-4">
             @foreach ($mails as $mail)

@@ -43,7 +43,15 @@ class User extends Authenticatable
         return $this->current_organisation_id;
     }
 
+    
 
+    public function currentOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'current_organisation_id');
+    }
+
+
+    
     public function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')
