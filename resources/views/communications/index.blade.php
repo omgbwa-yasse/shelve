@@ -9,15 +9,15 @@
 
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
-                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
                     <i class="bi bi-cart me-1"></i>
                     {{ __('Cart') }}
                 </a>
-                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.export') }}">
                     <i class="bi bi-download me-1"></i>
                     {{ __('Export') }}
                 </a>
-                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.print') }}">
                     <i class="bi bi-printer me-1"></i>
                     {{ __('Print') }}
                 </a>
@@ -35,7 +35,7 @@
                     <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
                         <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
                             <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" value="{{ $communication->id }}" id="communication-{{ $communication->id }}" />
+                                <input class="form-check-input" type="checkbox" value="{{ $communication->id }}" id="communication-{{ $communication->id }}" name="selected_communication[]" />
                             </div>
                             <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $communication->id }}" aria-expanded="false" aria-controls="details-{{ $communication->id }}">
                                 <i class="bi bi-chevron-down fs-5"></i>
@@ -109,110 +109,65 @@
             </nav>
         </div>
     </footer>
+
+    <!-- Modal pour les chariots (dollies) -->
+    <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dolliesModalLabel">{{ __('Cart') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dolliesList">
+                        <p>{{ __('No cart loaded') }}</p>
+                    </div>
+                    <div id="dollyForm" style="display: none;">
+                        <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="name" class="form-label">{{ __('Name') }}</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">{{ __('Description') }}</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">{{ __('Categories') }}</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    @foreach ($categories ?? ['communication'] as $category)
+                                        <option value="{{ $category }}" {{ $category == 'communication' ? 'selected' : '' }}>
+                                            {{ $category }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> {{ __('Add to cart') }}
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="backToListBtn">
+                                    <i class="bi bi-arrow-left-circle me-1"></i> {{ __('Back to list') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> {{ __('Close') }}
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">
+                        <i class="bi bi-plus-circle me-1"></i> {{ __('New cart') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
 @push('scripts')
-    <script>
-        document.getElementById('cartBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value);
-
-            if (checkedCommunications.length === 0) {
-                alert("{{ __('Please select at least one communication to add to the cart.') }}");
-                return;
-            }
-
-            fetch('{{ route('dolly.createWithCommunications') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ communications: checkedCommunications })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        // Optionnel : rediriger vers la page du chariot nouvellement créé
-                        // window.location.href = '/dolly/' + data.dolly_id;
-                    } else {
-                        alert("{{ __('An error occurred while creating the cart.') }}");
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert("{{ __('An error occurred while creating the cart.') }}");
-                });
-        });
-        document.getElementById('exportBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value);
-
-            if (checkedCommunications.length === 0) {
-                alert("{{ __('Please select at least one communication to export.') }}");
-                return;
-            }
-
-            window.location.href = `{{ route('communications.export') }}?communications=${checkedCommunications.join(',')}`;
-        });
-
-        document.getElementById('printBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            let checkedCommunications = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                .map(checkbox => checkbox.value);
-
-            if (checkedCommunications.length === 0) {
-                alert("{{ __('Please select at least one communication to print.') }}");
-                return;
-            }
-
-            // Rediriger vers la route d'impression avec les IDs des communications sélectionnées
-            window.location.href = `{{ route('communications.print') }}?communications=${checkedCommunications.join(',')}`;
-        });
-        document.getElementById('checkAllBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-
-            checkboxes.forEach(function(checkbox) {
-                checkbox.checked = !allChecked;
-            });
-
-            this.innerHTML = allChecked ? '<i class="bi bi-check-square me-1"></i>{{ __("Check all") }}' : '<i class="bi bi-square me-1"></i>{{ __("Uncheck all") }}';
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const collapseElements = document.querySelectorAll('.collapse');
-            collapseElements.forEach(collapse => {
-                collapse.addEventListener('show.bs.collapse', function () {
-                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
-                });
-                collapse.addEventListener('hide.bs.collapse', function () {
-                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
-                });
-            });
-
-            // Gestion du "voir plus / voir moins" pour le contenu
-            document.querySelectorAll('.content-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('data-target');
-                    const targetElement = document.getElementById(targetId);
-                    const fullText = this.getAttribute('data-full-text');
-
-                    if (this.textContent === "{{ __('See more') }}") {
-                        targetElement.textContent = fullText;
-                        this.textContent = "{{ __('See less') }}";
-                    } else {
-                        targetElement.textContent = fullText.substr(0, 200) + '...';
-                        this.textContent = "{{ __('See more') }}";
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="{{ asset('js/dollies.js') }}"></script>
+    <script src="{{ asset('js/communications.js') }}"></script>
 @endpush

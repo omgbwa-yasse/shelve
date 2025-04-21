@@ -15,12 +15,40 @@
             </div>
         </div>
 
+        <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
+            <div class="d-flex align-items-center">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                    <i class="bi bi-cart me-1"></i>
+                    Chariot
+                </a>
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('slips.export') }}">
+                    <i class="bi bi-download me-1"></i>
+                    Exporter
+                </a>
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="">
+                    <i class="bi bi-printer me-1"></i>
+                    Imprimer
+                </a>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                    <i class="bi bi-check-square me-1"></i>
+                    Tout cocher
+                </a>
+            </div>
+        </div>
+
         <div id="slipList">
             @foreach ($slips as $slip)
                 <div class="card mb-3 shadow-sm hover-shadow transition">
                     <div class="card-body">
                         <div class="row align-items-center">
-                            <div class="col-md-8">
+                            <div class="col-auto">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ $slip->id }}" id="slip-{{ $slip->id }}" name="selected_slip[]">
+                                </div>
+                            </div>
+                            <div class="col-md-7">
                                 <h5 class="card-title mb-2">
                                     <a href="{{ route('slips.show', $slip->id) }}" class="text-decoration-none text-dark" title="View">
                                         <strong>{{ $slip->code }} : {{ $slip->name }}</strong>
@@ -79,8 +107,75 @@
         </nav>
     </div>
 
+    <!-- Modal pour les chariots (dollies) -->
+    <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dolliesModalLabel">Chariot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dolliesList">
+                        <p>Aucun chariot chargé</p>
+                    </div>
+                    <div id="dollyForm" style="display: none;">
+                        <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Catégories</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    @foreach ($categories ?? ['slip'] as $category)
+                                        <option value="{{ $category }}" {{ $category == 'slip' ? 'selected' : '' }}>
+                                            {{ $category }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> Ajouter au chariot
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="backToListBtn">
+                                    <i class="bi bi-arrow-left-circle me-1"></i> Retour à la liste
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">
+                        <i class="bi bi-plus-circle me-1"></i> Nouveau chariot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .transition {
+        transition: all 0.3s ease;
+    }
+</style>
+@endpush
 
+@push('scripts')
+    <script src="{{ asset('js/dollies.js') }}"></script>
+    <script src="{{ asset('js/slip.js') }}"></script>
 @endpush

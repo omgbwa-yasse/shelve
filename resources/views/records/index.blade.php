@@ -5,7 +5,7 @@
         <h1 class="mb-4"><i class="bi bi-list-ul me-2"></i>{{ __('inventory') }} {{ $title ?? ''}}</h1>
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
-                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
                     <i class="bi bi-cart me-1"></i>
                     {{ __('cart') }}
                 </a>
@@ -17,7 +17,6 @@
                     <i class="bi bi-printer me-1"></i>
                     {{ __('print') }}
                 </a>
-
                 <a href="#" id="transferBtn" class="btn btn-light btn-sm me-2">
                     <i class="bi bi-arrow-repeat me-1"></i>
                     {{ __('transfer') }}
@@ -35,15 +34,15 @@
 
         <div id="recordList" class="mb-4">
             @foreach ($records as $record)
-                <div class=" mb-3 " style="transition: all 0.3s ease; transform: translateZ(0);">
+                <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
                     <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
                         <div class="form-check me-3">
-                            <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" />
+                            <input class="form-check-input" type="checkbox" value="{{$record->id}}" id="record-{{$record->id}}" name="selected_record[]" />
                         </div>
                         <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{$record->id}}" aria-expanded="false" aria-controls="details-{{$record->id}}">
                             <i class="bi bi-chevron-down fs-5"></i>
                         </button>
-                        <h4  class="card-title flex-grow-1 m-0 text-primary" for="record-{{$record->id}}">
+                        <h4 class="card-title flex-grow-1 m-0 text-primary" for="record-{{$record->id}}">
                             <a href="{{ route('records.show', $record) }}" class="text-decoration-none text-dark">
                                 <span class="fs-5 fw-semibold">{{ $record->code }}</span>
                                 <span class="fs-5"> : {{ $record->name }}</span>
@@ -92,7 +91,6 @@
                 </div>
             @endforeach
         </div>
-
     </div>
 
     <footer class="bg-light py-3">
@@ -119,7 +117,7 @@
         </div>
     </footer>
 
-    <!-- Modal d'export avec une meilleure mise en page -->
+    <!-- Modal d'export -->
     <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -162,7 +160,7 @@
         </div>
     </div>
 
-    <!-- Modal de communication avec mise en page améliorée -->
+    <!-- Modal de communication -->
     <div class="modal fade" id="communicationModal" tabindex="-1" aria-labelledby="communicationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
@@ -219,7 +217,7 @@
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0">{{ __('selectedRecords') }}</h6>
                                     </div>
-                                    <div class="card-body" id="selectedRecords">
+                                    <div class="card-body" id="communicationSelectedRecords">
                                         <!-- Le contenu sera injecté dynamiquement -->
                                     </div>
                                 </div>
@@ -237,7 +235,7 @@
         </div>
     </div>
 
-    <!-- Modal de transfert avec mise en page améliorée -->
+    <!-- Modal de transfert -->
     <div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
@@ -308,7 +306,7 @@
                                     <div class="card-header bg-light">
                                         <h6 class="mb-0">{{ __('selectedRecords') }}</h6>
                                     </div>
-                                    <div class="card-body" id="selectedRecords">
+                                    <div class="card-body" id="transferSelectedRecords">
                                         <!-- Le contenu sera injecté dynamiquement -->
                                     </div>
                                 </div>
@@ -325,264 +323,99 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal pour les chariots (dollies) -->
+    <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dolliesModalLabel">{{ __('cart') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dolliesList">
+                        <p>{{ __('noCartLoaded') }}</p>
+                    </div>
+                    <div id="dollyForm" style="display: none;">
+                        <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="name" class="form-label">{{ __('name') }}</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">{{ __('description') }}</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">{{ __('categories') }}</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    @foreach ($categories ?? ['record'] as $category)
+                                        <option value="{{ $category }}" {{ $category == 'record' ? 'selected' : '' }}>
+                                            {{ $category }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> {{ __('addToCart') }}
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="backToListBtn">
+                                    <i class="bi bi-arrow-left-circle me-1"></i> {{ __('backToList') }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> {{ __('close') }}
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">
+                        <i class="bi bi-plus-circle me-1"></i> {{ __('newCart') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .card-header {
+            transition: background-color 0.2s ease;
+        }
+
+        .card-header:hover {
+            background-color: #f8f9fa !important;
+        }
+
+        .bi {
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .collapse {
+            transition: all 0.3s ease-out;
+        }
+
+        .btn-link:focus {
+            box-shadow: none;
+        }
+
+        .bi-chevron-down {
+            transition: transform 0.3s ease;
+        }
+
+        [aria-expanded="true"] .bi-chevron-down {
+            transform: rotate(180deg);
+        }
+    </style>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Gestionnaire pour le bouton Panier (Cart)
-            document.getElementById('cartBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.value);
-
-                if (checkedRecords.length === 0) {
-                    alert("{{ __('pleaseSelectAtLeastOneRecord') }}");
-                    return;
-                }
-
-                fetch('{{ route("dolly.createWithRecords") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ records: checkedRecords })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert("{{ __('newCartCreatedWithSelectedRecords') }}");
-                        } else {
-                            alert("{{ __('errorOccurredCreatingCart') }}");
-                        }
-                    });
-            });
-
-            // Gestionnaire pour le bouton Export
-            document.getElementById('exportBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.value);
-
-                if (checkedRecords.length === 0) {
-                    alert("{{ __('pleaseSelectAtLeastOneRecordToExport') }}");
-                    return;
-                }
-
-                var exportModal = new bootstrap.Modal(document.getElementById('exportModal'));
-                exportModal.show();
-            });
-
-            // Gestionnaire pour le bouton Print
-            document.getElementById('printBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.value);
-
-                if (checkedRecords.length === 0) {
-                    alert("{{ __('pleaseSelectAtLeastOneRecordToPrint') }}");
-                    return;
-                }
-
-                fetch('{{ route("records.print") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ records: checkedRecords })
-                })
-                    .then(response => response.blob())
-                    .then(blob => {
-                        let url = window.URL.createObjectURL(blob);
-                        let a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'records_print.pdf';
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    });
-            });
-
-            // Gestionnaire pour le bouton Check All
-            let checkAllBtn = document.getElementById('checkAllBtn');
-            checkAllBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-
-                checkboxes.forEach(function(checkbox) {
-                    checkbox.checked = !allChecked;
-                });
-
-                this.innerHTML = allChecked ?
-                    '<i class="bi bi-check-square me-1"></i>{{ __("checkAll") }}' :
-                    '<i class="bi bi-square me-1"></i>{{ __("uncheckAll") }}';
-            });
-
-            // Gestionnaire pour la confirmation d'export
-            document.getElementById('confirmExport').addEventListener('click', function() {
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.value);
-                let format = document.querySelector('input[name="exportFormat"]:checked').value;
-
-                fetch(`{{ route("records.exportButton") }}?records=${checkedRecords.join(',')}&format=${format}`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                    .then(response => {
-                        if (!response.ok) throw new Error("{{ __('networkError') }}");
-
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json().then(data => {
-                                throw new Error(data.error || "{{ __('anErrorOccurred') }}");
-                            });
-                        }
-
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-
-                        let extension;
-                        switch (format) {
-                            case 'excel':
-                                extension = 'xlsx';
-                                break;
-                            case 'ead':
-                                extension = 'xml';
-                                break;
-                            case 'seda':
-                                extension = 'zip';
-                                break;
-                            default:
-                                extension = 'txt';
-                        }
-
-                        a.download = `records_export.${extension}`;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                    })
-                    .catch(error => {
-                        console.error("{{ __('error') }}:", error);
-                        alert(error.message || "{{ __('errorOccurredDuringExport') }}");
-                    });
-
-                bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
-            });
-
-            // Gestionnaire pour le bouton Transfer
-            document.getElementById('transferBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
-
-                if (checkedRecords.length === 0) {
-                    alert("{{ __('pleaseSelectAtLeastOneRecord') }}");
-                    return;
-                }
-
-                let selectedRecordsContainer = document.querySelector('#transferModal #selectedRecords');
-                selectedRecordsContainer.innerHTML = '';
-
-                checkedRecords.forEach(checkbox => {
-                    const recordCard = checkbox.closest('.card-header');
-                    const titleElement = recordCard.querySelector('.card-title');
-                    const recordName = titleElement ? titleElement.textContent.trim() : `Record ${checkbox.value}`;
-
-                    selectedRecordsContainer.innerHTML += `
-                <div class="mb-3 p-3 border rounded">
-                    <h6 class="mb-2">${recordName}</h6>
-                    <input type="hidden" name="selected_records[]" value="${checkbox.value}">
-                </div>
-            `;
-                });
-
-                var transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
-                transferModal.show();
-            });
-
-            // Gestionnaire pour le bouton Communicate
-            document.getElementById('communicateBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'));
-
-                if (checkedRecords.length === 0) {
-                    alert("{{ __('pleaseSelectAtLeastOneRecord') }}");
-                    return;
-                }
-
-                let selectedRecordsContainer = document.querySelector('#communicationModal #selectedRecords');
-                selectedRecordsContainer.innerHTML = '';
-
-                checkedRecords.forEach(checkbox => {
-                    const recordCard = checkbox.closest('.card-header');
-                    const titleElement = recordCard.querySelector('.card-title');
-                    const recordName = titleElement ? titleElement.textContent.trim() : `Record ${checkbox.value}`;
-
-                    selectedRecordsContainer.innerHTML += `
-            <div class="mb-3 p-3 border rounded">
-                <h6 class="mb-2">${recordName}</h6>
-                <input type="hidden" name="selected_records[]" value="${checkbox.value}">
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" id="original-${checkbox.value}"
-                           name="original[${checkbox.value}]" value="1">
-                    <label class="form-check-label" for="original-${checkbox.value}">
-                        {{ __('original') }}
-                    </label>
-                </div>
-                <div class="mb-2">
-                    <label for="content-${checkbox.value}" class="form-label">{{ __('content') }}</label>
-                    <textarea class="form-control" id="content-${checkbox.value}"
-                              name="content[${checkbox.value}]" rows="2"></textarea>
-                </div>
-            </div>
-        `;
-                });
-
-                var communicationModal = new bootstrap.Modal(document.getElementById('communicationModal'));
-                communicationModal.show();
-            });
-
-            // Gestionnaire pour les boutons collapse
-            document.querySelectorAll('.collapse').forEach(collapse => {
-                collapse.addEventListener('show.bs.collapse', function() {
-                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
-                });
-
-                collapse.addEventListener('hide.bs.collapse', function() {
-                    const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
-                });
-            });
-
-            // Gestionnaire pour le "voir plus / voir moins"
-            document.querySelectorAll('.content-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('data-target');
-                    const targetElement = document.getElementById(targetId);
-                    const fullText = this.getAttribute('data-full-text');
-
-                    if (this.textContent === 'Voir plus') {
-                        targetElement.textContent = fullText;
-                        this.textContent = 'Voir moins';
-                    } else {
-                        targetElement.textContent = fullText.substr(0, 200) + '...';
-                        this.textContent = 'Voir plus';
-                    }
-                });
-
-                
-            });
-        });
-    </script>
+    <script src="{{ asset('js/dollies.js') }}"></script>
+    <script src="{{ asset('js/records.js') }}"></script>
 @endpush

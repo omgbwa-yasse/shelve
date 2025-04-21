@@ -7,21 +7,20 @@
 
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
-                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
                     <i class="bi bi-cart me-1"></i>
                     Chariot
                 </a>
-                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('mail-transaction.export') }}">
                     <i class="bi bi-download me-1"></i>
                     Exporter
                 </a>
-                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('mail-transaction.print') }}">
                     <i class="bi bi-printer me-1"></i>
                     Imprimer
                 </a>
             </div>
             <div class="d-flex align-items-center">
-
                 <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                     <i class="bi bi-check-square me-1"></i>
                     Tout cocher
@@ -97,6 +96,62 @@
         </div>
     </div>
 
+    <!-- Modal pour les chariots (dollies) -->
+    <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dolliesModalLabel">Chariot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="dolliesList">
+                        <p>Aucun chariot chargé</p>
+                    </div>
+                    <div id="dollyForm" style="display: none;">
+                        <form id="createDollyForm" action="{{ route('dolly.create') }}" method="POST">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label"> Categories </label>
+                                <select class="form-select" id="category" name="category" required>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category }}" {{ $category == 'mail' ? 'selected' : '' }}>
+                                            {{ $category }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> Ajouter au chariot
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="backToListBtn">
+                                    <i class="bi bi-arrow-left-circle me-1"></i> Retour à la liste
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">
+                        <i class="bi bi-plus-circle me-1"></i> Nouveau chariot
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .card-header {
             transition: background-color 0.2s ease;
@@ -130,4 +185,8 @@
             transform: rotate(180deg);
         }
     </style>
+    
+    <!-- Référence aux fichiers JavaScript séparés -->
+    <script src="{{ asset('js/mails.js') }}"></script>
+    <script src="{{ asset('js/dollies.js') }}"></script>
 @endsection
