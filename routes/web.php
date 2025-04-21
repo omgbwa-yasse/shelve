@@ -112,17 +112,14 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [mailReceivedController::class, 'index']);
 
-
-
-
-
+    
     Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
         Route::resource('/bulletin-board', BulletinBoardController::class)->names('bulletin-boards');
         Route::resource('bulletin-board.posts', PostController::class)->names('bulletin-boards.posts');
         Route::resource('bulletin-board.events', EventController::class)->names('bulletin-boards.events');
-
         Route::post('bulletin-board/{BulletinBoard}/events/{event}',[EventController::class, 'updateStatus'] )->name('bulletin-boards.events.updateStatus');
         Route::post('bulletin-board/{BulletinBoard}/events/{post}',[PostController::class, 'toggleStatus'] )->name('bulletin-boards.posts.toggleStatus');
+
 
         Route::get('/events/{event}/attachments', [EventAttachmentController::class, 'index'])->name('events.attachments.index');
         Route::get('/events/{event}/attachments/create', [EventAttachmentController::class, 'create'])->name('events.attachments.create');
@@ -131,6 +128,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'destroy'])->name('events.attachments.destroy');
         Route::get('/events/{id}/preview', [EventAttachmentController::class, 'preview'])->name('events.attachments.preview');
         Route::get('/events/{id}/download', [EventAttachmentController::class, 'download'])->name('events.attachments.download');
+        Route::get('/events/{event}/attachments/list', [EventAttachmentController::class, 'getAttachmentsList'])->name('events.attachments.list');
+        Route::post('/events/{event}/attachments', [EventAttachmentController::class, 'ajaxStore'])->name('events.attachments.ajax.store');
+        Route::delete('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'ajaxDestroy'])->name('events.attachments.ajax.destroy');
+        Route::post('events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
+        Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
+
 
         Route::get('/posts/{post}/attachments', [PostAttachmentController::class, 'index'])->name('posts.attachments.index');
         Route::get('/posts/{post}/attachments/create', [PostAttachmentController::class, 'create'])->name('posts.attachments.create');
@@ -139,22 +142,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('/posts/{post}/attachments/{attachment}', [PostAttachmentController::class, 'destroy'])->name('posts.attachments.destroy');
         Route::get('/posts/{id}/preview', [PostAttachmentController::class, 'preview'])->name('posts.attachments.preview');
         Route::get('/posts/{id}/download', [PostAttachmentController::class, 'download'])->name('posts.attachments.download');
-
-        Route::get('/events/{event}/attachments/list', [EventAttachmentController::class, 'getAttachmentsList'])->name('events.attachments.list');
-        Route::post('/events/{event}/attachments', [EventAttachmentController::class, 'ajaxStore'])->name('events.attachments.ajax.store');
-        Route::delete('/events/{event}/attachments/{attachment}', [EventAttachmentController::class, 'ajaxDestroy'])->name('events.attachments.ajax.destroy');
-
         Route::get('/posts/{post}/attachments/list', [PostAttachmentController::class, 'getAttachmentsList'])->name('posts.attachments.list');
         Route::post('/posts/{post}/attachments', [PostAttachmentController::class, 'ajaxStore'])->name('posts.attachments.ajax.store');
         Route::delete('/posts/{post}/attachments/{attachment}', [PostAttachmentController::class, 'ajaxDestroy'])->name('posts.attachments.ajax.destroy');
 
-        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
-        Route::post('events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
-        Route::post('events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
 
+        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
         Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('bulletin-boards.my-posts');
         Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('bulletin-boards.archives');
-
         Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('bulletin-boards.toggle-archive');
         Route::prefix('/organisations')->name('organisations.')->group(function () {
             Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('bulletin-boards.attach');
