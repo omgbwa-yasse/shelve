@@ -110,19 +110,9 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable(false);
             $table->unsignedBigInteger('owner_organisation_id')->nullable(false);
             $table->timestamps();
-            $table->unsignedBigInteger('type_id')->nullable(false);
             $table->foreign('owner_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('type_id')->references('id')->on('dolly_types')->onDelete('cascade');
         });
-
-        Schema::create('dolly_types', function(Blueprint $table){
-            $table->id();
-            $table->string('name', 50)->nullable(false);
-            $table->text('description')->nullable();
-            $table->timestamps();
-        });
-
 
     }
 

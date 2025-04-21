@@ -12,16 +12,11 @@ class Dolly extends Model
     protected $fillable = [
         'name',
         'description',
-        'is_public',
         'category',
         'is_public',
-        'type_id',
         'created_by',
+        'owner_organisation_id',
     ];
-    public function type()
-    {
-        return $this->belongsTo(DollyType::class, 'type_id');
-    }
 
     public function mails()
     {
@@ -52,8 +47,6 @@ class Dolly extends Model
     {
         return $this->belongsToMany(Record::class, 'dolly_slip_records', 'dolly_id', 'record_id');
     }
-
-
 
     public function buildings()
     {
@@ -87,7 +80,7 @@ class Dolly extends Model
 
     public static function categories()
     {
-        return [
+        $list = array(
             'mail',
             'communication',
             'building',
@@ -98,7 +91,9 @@ class Dolly extends Model
             'slipRecord',
             'container',
             'shelf'
-        ];
+        );
+
+        return collect($list);
     }
 
 }

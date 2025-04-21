@@ -25,32 +25,7 @@
                 <h1 class="card-title">{{ $dolly->name }}</h1>
                 <p class="card-text">{{ $dolly->description }}</p>
                 <p class="card-text">
-                    Type :
-                    <span class="badge bg-primary">
-                    @switch($dolly->category ??'mail')
-                            @case('record')
-                                Archives
-                                @break
-                            @case('mail')
-                                Courrier
-                                @break
-                            @case('communication')
-                                Communication des archives
-                                @break
-                            @case('room')
-                                Salle d'archives
-                                @break
-                            @case('container')
-                                Boites d'archives et chronos
-                                @break
-                            @case('shelve')
-                                Etagère
-                                @break
-                            @case('slip_record')
-                                Archives (versement)
-                                @break
-                        @endswitch
-                </span>
+                    Type : <span class="badge bg-secondary"> {{ $dolly->category }}</span>
                 </p>
                 <div class="mt-3">
                     <a href="{{ route('dolly.edit', $dolly) }}" class="btn btn-warning">Modifier</a>
@@ -159,7 +134,7 @@
         @endif
 
         <h2 class="mt-5 mb-4">Ajouter des éléments</h2>
-        @switch($dolly->category)
+        @switch($dolly->categories())
             @case('record')
                 <form action="{{ route('dolly.add-record', $dolly) }}" method="POST">
                     @csrf
@@ -307,16 +282,13 @@
         function removeItemFromDolly(dollyId, itemId, category) {
             if (confirm('Êtes-vous sûr de vouloir retirer cet élément du chariot ?')) {
 
-
                 const data = {
                     dolly_id: dollyId,
                     category : category,
                     items: [itemId]
                 };
 
-
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-
 
                 fetch('/dolly-handler/remove-items', {
                     method: 'DELETE',

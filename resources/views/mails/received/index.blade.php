@@ -124,14 +124,25 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary">Ajouter au chariot</button>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i> Ajouter au chariot
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="backToListBtn">
+                                    <i class="bi bi-arrow-left-circle me-1"></i> Retour à la liste
+                                </button>
+                            </div>
                         </form>
-                        <button type="button" class="btn btn-secondary mt-2" id="backToListBtn">Retour à la liste</button>
+                        
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="button" class="btn btn-primary" id="addDollyBtn">Ajouter un Dolly</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary" id="addDollyBtn">
+                        <i class="bi bi-plus-circle me-1"></i> Nouveau chariot
+                    </button>
                 </div>
             </div>
         </div>
@@ -257,17 +268,17 @@
                         let baseUrl = window.location.origin;
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
-                                    <div class="card mb-2 shadow-sm border-0 rounded-3">
+                                    <div class="card mb-1 shadow-sm border-0 rounded-3">
                                         <div class="card-body p-4">
                                             <div class="d-flex flex-column">
-                                                <h5 class="card-title fw-bold mb-2">${dolly.name}</h5>
+                                                <h5 class="card-title fw-bold mb-1">${dolly.name}</h5>
                                                 <p class="card-text text-muted mb-1">${dolly.description}</p>
-                                                <p class="card-text mb-2">
+                                                <div class="d-flex flex-wrap gap-1 mb-1">
                                                     <span class="badge bg-info text-dark rounded-pill px-3 py-2">
                                                         ${dolly.mails.length} élement(s)
                                                     </span>
-                                                </p>
-                                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                                </div>
+                                                <div class="d-flex justify-content-end gap-2 mt-1">
                                                     <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}">
                                                         <i class="bi bi-plus-circle me-1"></i> Remplir
                                                     </button>
@@ -279,6 +290,7 @@
                                         </div>
                                     </div>
                                 `;
+
                         });
                         dolliesList.innerHTML = dolliesListHTML;
                     })
@@ -314,17 +326,17 @@
                         let baseUrl = window.location.origin;
                         dollies.forEach(dolly => {
                             dolliesListHTML += `
-                                    <div class="card mb-2 shadow-sm border-0 rounded-3">
+                                    <div class="card mb-1 shadow-sm border-0 rounded-3">
                                         <div class="card-body p-4">
                                             <div class="d-flex flex-column">
-                                                <h5 class="card-title fw-bold mb-2">${dolly.name}</h5>
+                                                <h5 class="card-title fw-bold mb-1">${dolly.name}</h5>
                                                 <p class="card-text text-muted mb-1">${dolly.description}</p>
-                                                <p class="card-text mb-2">
+                                                <div class="d-flex flex-wrap gap-1 mb-1">
                                                     <span class="badge bg-info text-dark rounded-pill px-3 py-2">
                                                         ${dolly.mails.length} élement(s)
                                                     </span>
-                                                </p>
-                                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                                </div>
+                                                <div class="d-flex justify-content-end gap-2 mt-1">
                                                     <button class="btn btn-success btn-sm fillDollyBtn" data-id="${dolly.id}">
                                                         <i class="bi bi-plus-circle me-1"></i> Remplir
                                                     </button>
@@ -425,6 +437,7 @@
                     document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(checkbox => {
                         selectedIds.push(checkbox.value);
                     });
+                    
                     if (selectedIds.length === 0) {
                         alert('Veuillez sélectionner au moins un courrier.');
                         return;

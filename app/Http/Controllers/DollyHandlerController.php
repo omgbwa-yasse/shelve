@@ -14,7 +14,7 @@ class DollyHandlerController extends Controller
     public function list(Request $request)  : JsonResponse
     {
         $request->validate([
-            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,slipRecord,container,shelf',
+            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf'
         ]);
 
         $dollies = Dolly::where('category', $request->category)
@@ -40,16 +40,17 @@ class DollyHandlerController extends Controller
 
 
 
+
     public function addDolly(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category' => 'required|string',
+            'name' => 'required|string|max:70', 
+            'description' => 'nullable|string|max:100',
+            'category' => 'required|string|in:mail,transaction,record,slip,building,shelf,container,communication,room', 
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['created_by'] = auth::user()->id;
+        $validatedData['created_by'] = Auth::user()->id;
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly = Dolly::create($validatedData);
@@ -176,7 +177,7 @@ class DollyHandlerController extends Controller
     public function removeItems(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'type' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
             'items' => 'required|array',
         ]);
 
@@ -225,7 +226,7 @@ class DollyHandlerController extends Controller
     public function clean(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'type' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
         ]);
 
         $dolly = Dolly::find($request->dolly_id);

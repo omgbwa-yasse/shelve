@@ -16,18 +16,23 @@ class MailTransactionController extends Controller
 {
     public function export(Request $request)
     {
-        $selectedIds = $request->validate([
+        $validatedData = $request->validate([
             'selectedIds' => 'required|array',
             'selectedIds.*' => 'integer|exists:mails,id'
-        ])['selectedIds'];
+        ]);
+
+        $selectedIds = $validatedData['selectedIds'];
 
         $mails = Mail::whereIn('id', $selectedIds)
-                     ->with(['action', 'sender', 'recipient', 'senderOrganisation', 'recipientOrganisation']) // Relations adaptées
+                     ->with(['action', 'sender', 'recipient', 'senderOrganisation', 'recipientOrganisation'])
                      ->get();
 
         $export = new MailsExport($mails);
-        return Excel::download($export, 'courriers-' . date('Y-m-d') . '.xlsx');
+
+        return Excel::download($export, 'courriers-' . now()->format('Y-m-d') . '.xlsx');
     }
+
+
 
     public function print(Request $request)
     {
@@ -64,38 +69,4 @@ class MailTransactionController extends Controller
         ])->render();
     }
 
-    public function createDolly(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'description' => 'required',
-            'type_id' => 'required|exists:dolly_types,id',
-        ]);
-
-        $dolly = Dolly::create([
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'type_id' => $request->input('type_id'),
-            'user_id' => Auth::id(),
-        ]);
-
-        return response()->json(['dolly_id' => $dolly->id]);
-    }
-
-    public function addRecordToDolly(Request $request)
-    {
-        $request->validate([
-            'dolly_id' => 'required|integer|exists:dollies,id',
-            'selectedIds' => 'required|array',
-            'selectedIds.*' => 'integer|exists:mails,id' // Valider sur la table mails
-        ]);
-
-        $dollyId = $request->input('dolly_id');
-        $selectedIds = $request->input('selectedIds');
-
-        $dolly = Dolly::findOrFail($dollyId);
-        $dolly->mails()->sync($selectedIds); // Assumer une relation "mails" dans le modèle Dolly
-
-        return response()->json(['message' => 'Mails ajoutés au dolly avec succès.']);
-    }
 }
