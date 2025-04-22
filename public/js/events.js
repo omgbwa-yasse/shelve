@@ -4,6 +4,11 @@ const formImport = document.getElementById('import-form');
 const showImport = document.getElementById('show-import-form-alt');
 
 
+const bulletinBoardId = document.querySelector('meta[name="bulletin-board-id"]').content;
+const eventId = document.querySelector('meta[name="event-id"]').content;
+
+
+
 
 
 
@@ -11,7 +16,7 @@ saveFile.addEventListener('click', (event) => {
     event.preventDefault();
     
     // Récupérer les fichiers du champ d'entrée
-    const fileInput = document.getElementById('file-input'); // Assurez-vous que cet ID existe
+    const fileInput = document.getElementById('attachment-files'); // ID mis à jour
     if (!fileInput || !fileInput.files.length) {
         console.error("Aucun fichier sélectionné");
         return;
@@ -20,8 +25,8 @@ saveFile.addEventListener('click', (event) => {
     const formData = new FormData();
     
     // Ajouter chaque fichier
-    for (let i = 0; i < fileInput.files.length; i++) {
-        formData.append('files[]', fileInput.files[i]);
+    for (const file of fileInput.files) {
+        formData.append('attachments[]', file);
     }
     
     // Ajouter le nom personnalisé si fourni
@@ -38,9 +43,15 @@ saveFile.addEventListener('click', (event) => {
         uploadProgress.classList.remove('d-none');
         progressBar.style.width = '0%';
     }
+
+    formData.append('event_id', eventId);
+
     
-    // Envoyer la requête
-    fetch(`/events/${eventId}/attachments`, {
+
+    const uploadUrl = `/bulletin-boards/bulletin-board/${bulletinBoardId}/events/${eventId}/attachments`;
+
+
+    fetch(uploadUrl, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,

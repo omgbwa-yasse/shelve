@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BulletinBoard;
 use App\Models\Event;
 use App\Models\Attachment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use FFMpeg\FFMpeg;
 use Illuminate\Support\Facades\File;
@@ -29,7 +31,10 @@ class EventAttachmentController extends Controller
         return view('bulletin-boards.events.attachments.create', compact('event'));
     }
 
-    public function store(Request $request, $id)
+
+
+    
+    public function store(Request $request, INT $id)
     {
         $event = Event::findOrFail($id);
 
@@ -87,7 +92,9 @@ class EventAttachmentController extends Controller
         }
     }
 
-    private function generateThumbnail($file, $attachmentId, $fileType)
+
+
+    private function generateThumbnail(INT $file, INT  $attachmentId, INT $fileType)
     {
         $thumbnailPath = 'thumbnails_event/' . $attachmentId . '.jpg';
 
@@ -112,12 +119,16 @@ class EventAttachmentController extends Controller
         return $thumbnailPath;
     }
 
+
+
     public function show(int $eventId, int $attachmentId)
     {
         $event = Event::findOrFail($eventId);
         $attachment = Attachment::findOrFail($attachmentId);
         return view('bulletin-boards.events.attachments.show', compact('event', 'attachment'));
     }
+
+
 
     public function destroy(int $eventId, int $attachmentId)
     {
@@ -139,6 +150,10 @@ class EventAttachmentController extends Controller
         return redirect()->route('events.show', $event->id)->with('success', 'Pièce jointe supprimée avec succès.');
     }
 
+
+
+
+
     public function download($id)
     {
         $attachment = Attachment::findOrFail($id);
@@ -152,6 +167,9 @@ class EventAttachmentController extends Controller
 
         return abort(404);
     }
+
+
+
 
     public function preview($id)
     {
@@ -172,82 +190,83 @@ class EventAttachmentController extends Controller
     }
 
 
-                /**
-             * Retourne la liste partielle des pièces jointes pour les requêtes AJAX
-             */
-            public function getAttachmentsList($eventId)
-            {
-                $event = Event::findOrFail($eventId);
-                $attachments = $event->attachments;
+    /**
+     * Retourne la liste partielle des pièces jointes pour les requêtes AJAX
+     */
+    public function getAttachmentsList($eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        $attachments = $event->attachments;
 
-                if (request()->ajax()) {
-                    return response()->view('bulletin-boards.events.attachments.partials.list', compact('event', 'attachments'));
-                }
+        if (request()->ajax()) {
+            return response()->view('bulletin-boards.events.attachments.partials.list', compact('event', 'attachments'));
+        }
 
-                return redirect()->route('events.attachments.index', $eventId);
-            }
+        return redirect()->route('events.attachments.index', $eventId);
+    }
 
-            /**
-             * Gestion AJAX pour l'upload de fichiers
-             */
-            public function ajaxStore(Request $request, $eventId)
-            {
-                $event = Event::findOrFail($eventId);
+    /**
+     * Gestion AJAX pour l'upload de fichiers
+     */
+    public function ajaxStore(BulletinBoard $bulletinboard, Event $event, Request $request)
+    {
+        $event = Event::findOrFail($request->event_id);
 
-                $request->validate([
-                    'files.*' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov,doc,docx,xls,xlsx|max:20480',
-                    'name' => 'nullable|string|max:100',
+        $request->validate([
+            'files.*' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov,doc,docx,xls,xlsx|max:10480',
+            'name' => 'nullable|string|max:100',
+            'event_id' => 'require|events,id'
+        ]);
+
+        $results = [];
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('event_attachments');
+
+                $mimeType = $file->getMimeType();
+                $fileType = explode('/', $mimeType)[0];
+
+                $name = $request->input('name') ?: $file->getClientOriginalName();
+
+                $attachment = Attachment::create([
+                    'path' => $path,
+                    'name' => $name,
+                    'crypt' => md5_file($file),
+                    'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                    'size' => $file->getSize(),
+                    'creator_id' => Auth::user()->id,
+                    'mime_type' => $mimeType,
+                    'type' => 'event',
                 ]);
 
-                $results = [];
-
-                if ($request->hasFile('files')) {
-                    foreach ($request->file('files') as $file) {
-                        $path = $file->store('event_attachments');
-
-                        $mimeType = $file->getMimeType();
-                        $fileType = explode('/', $mimeType)[0];
-
-                        $name = $request->input('name') ?: $file->getClientOriginalName();
-
-                        $attachment = Attachment::create([
-                            'path' => $path,
-                            'name' => $name,
-                            'crypt' => md5_file($file),
-                            'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
-                            'size' => $file->getSize(),
-                            'creator_id' => auth()->id(),
-                            'mime_type' => $mimeType,
-                            'type' => 'event',
-                        ]);
-
-                        // Générer une vignette si nécessaire
-                        if (in_array($fileType, ['image', 'video'])) {
-                            $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
-                            if ($thumbnailPath) {
-                                $attachment->thumbnail_path = $thumbnailPath;
-                                $attachment->save();
-                            }
-                        }
-
-                        $event->attachments()->attach($attachment->id, ['created_by' => auth()->id()]);
-
-                        $results[] = [
-                            'id' => $attachment->id,
-                            'name' => $attachment->name,
-                            'size' => $attachment->size,
-                            'type' => $mimeType,
-                            'success' => true
-                        ];
+                // Générer une vignette si nécessaire
+                if (in_array($fileType, ['image', 'video'])) {
+                    $thumbnailPath = $this->generateThumbnail($file, $attachment->id, $fileType);
+                    if ($thumbnailPath) {
+                        $attachment->thumbnail_path = $thumbnailPath;
+                        $attachment->save();
                     }
                 }
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Fichiers téléversés avec succès',
-                    'files' => $results
-                ]);
+                $event->attachments()->attach($attachment->id, ['created_by' => auth()->id()]);
+
+                $results[] = [
+                    'id' => $attachment->id,
+                    'name' => $attachment->name,
+                    'size' => $attachment->size,
+                    'type' => $mimeType,
+                    'success' => true
+                ];
             }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Fichiers téléversés avec succès',
+            'files' => $results
+        ]);
+    }
 
             /**
              * Supprimer une pièce jointe via AJAX

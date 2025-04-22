@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <div class="container">
     <div class="row">
         <div class="col-md-10 offset-md-1">
@@ -176,8 +177,8 @@
                                     <div id="upload-feedback" class="mb-3"></div>
                                     
                                     <div class="mb-3">
-                                        <label for="attachment-file" class="form-label">Fichier à importer</label>
-                                        <input type="file" class="form-control" id="attachment-file">
+                                        <label for="attachment-files" class="form-label">Fichiers à importer</label>
+                                        <input type="file" class="form-control" id="attachment-files" name="attachments[]" multiple>
                                     </div>
                                     <div class="mb-3">
                                         <label for="attachment-name" class="form-label">Nom du fichier (optionnel)</label>
@@ -239,11 +240,11 @@
                                 @else
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i> Aucune pièce jointe n'est associée à cet événement.
-                                        @if($event->canBeEditedBy(Auth::user()))
+                                
                                             <button type="button" class="btn btn-link p-0 alert-link" id="show-import-form-empty">
                                                 Ajouter des pièces jointes
                                             </button>
-                                        @endif
+                                       
                                     </div>
                                 @endif
                             </div>
@@ -320,7 +321,12 @@
         </div>
     </div>
 </div>
+<script>
+    // Ajoutez ceci avant d'inclure events.js
+    <meta name="bulletin-board-id" content="19">
+    <meta name="event-id" content="9">
 
+</script>
 <script src="{{ asset('js/events.js') }}"></script>
 
 @endsection
