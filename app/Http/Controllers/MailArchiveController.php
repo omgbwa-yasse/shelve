@@ -48,11 +48,11 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
         $mailContainers = MailContainer::where('creator_organisation_id', auth::user()->current_organisation_id)
                                       ->get();
 
-        $mails = Mail::where('sender_user_id', Auth::id()) // Champ corrigé
-                    ->where('is_archived', false) // Condition ajoutée d'après la logique métier
-                    ->where('sender_organisation_id', Auth::user()->current_organisation_id) // Champ corrigé
+        $mails = Mail::where('recipient_user_id', Auth::id())
+                    ->where('is_archived', false)
+                    ->where('recipient_organisation_id', Auth::user()->current_organisation_id)
+                    ->where('status', '!=', 'transmitted') 
                     ->get();
-
 
         return view('mails.archives.create', compact('mailContainers', 'mails')); // Nom de la vue corrigé
     }
@@ -72,11 +72,18 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
         $mailsArchived = 0;
         
         foreach ($request->mails as $mail) {
+            // Créer l'enregistrement d'archivage
             MailArchive::create([
                 'container_id' => $request->container_id,
                 'mail_id' => $mail['id'],
                 'archived_by' => Auth::id(),
                 'document_type' => $mail['document_type'],
+            ]);
+            
+            // Mettre à jour le statut is_archived du mail
+            Mail::where('id', $mail['id'])->update([
+                'is_archived' => true,
+                'updated_at' => now(), // Enregistre la mise à jour avec un horodatage
             ]);
             
             $mailsArchived++;
