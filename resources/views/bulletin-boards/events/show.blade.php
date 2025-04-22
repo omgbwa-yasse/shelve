@@ -13,13 +13,13 @@
         <div class="col-md-4 text-end">
             <div class="btn-group">
                 <a href="{{ route('bulletin-boards.events.edit', [$bulletinBoard, $event]) }}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Modifier
+                    <i class="bi bi-edit"></i> Modifier
                 </a>
                 <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="fas fa-trash"></i> Supprimer
+                    <i class="bi bi-trash"></i> Supprimer
                 </button>
                 <a href="{{ route('bulletin-boards.events.index', $bulletinBoard) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> Retour
+                    <i class="bi bi-arrow-left"></i> Retour
                 </a>
             </div>
         </div>
@@ -89,7 +89,7 @@
                                 <form action="{{ route('bulletin-boards.events.register', [$bulletinBoard, $event]) }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-user-plus"></i> S'inscrire
+                                        <i class="bi bi-user-plus"></i> S'inscrire
                                     </button>
                                 </form>
                             @endif
@@ -108,7 +108,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Pièces jointes ({{ $event->attachments->count() }})</span>
                     <a href="{{ route('bulletin-boards.events.attachments.create', [$bulletinBoard, $event]) }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> Ajouter
+                        <i class="bi bi-plus"></i> Ajouter
                     </a>
                 </div>
                 <div class="card-body" id="attachments-container">
@@ -120,17 +120,17 @@
                                         @if($attachment->thumbnail_path)
                                             <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Vignette" width="40" class="me-2">
                                         @else
-                                            <i class="fas fa-file me-2"></i>
+                                            <i class="bi bi-file me-2"></i>
                                         @endif
                                         <a href="{{ route('attachments.preview', $attachment) }}" target="_blank">{{ $attachment->name }}</a>
                                         <small class="text-muted d-block">{{$attachment->size }}</small>
                                     </div>
                                     <div class="btn-group">
                                         <a href="{{ route('attachments.download', $attachment) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download"></i>
+                                            <i class="bi bi-download"> </i> Télécharger
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger delete-attachment" data-attachment-id="{{ $attachment->id }}">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="bi bi-trash"></i> Supprimer
                                         </button>
                                     </div>
                                 </li>

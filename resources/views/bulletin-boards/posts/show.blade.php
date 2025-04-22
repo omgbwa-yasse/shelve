@@ -102,14 +102,14 @@
                                             <i class="fas fa-file me-2"></i>
                                         @endif
                                         <a href="{{ route('attachments.preview', $attachment) }}" target="_blank">{{ $attachment->name }}</a>
-                                        <small class="text-muted d-block">{{ human_filesize($attachment->size) }}</small>
+                                        <small class="text-muted d-block">{{ $attachment->size }}</small>
                                     </div>
                                     <div class="btn-group">
                                         <a href="{{ route('attachments.download', $attachment) }}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-download"></i>
+                                            <i class="fas fa-download"> </i> Télécharger
                                         </a>
                                         <button type="button" class="btn btn-sm btn-outline-danger delete-attachment" data-attachment-id="{{ $attachment->id }}">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fas fa-trash"> </i> Supprimer
                                         </button>
                                     </div>
                                 </li>
@@ -197,12 +197,16 @@
             button.addEventListener('click', function() {
                 const attachmentId = this.getAttribute('data-attachment-id');
                 const form = document.getElementById('delete-attachment-form');
-                form.action = `{{ route('bulletin-boards.posts.attachments.destroy', [$bulletinBoard, $post]) }}/${attachmentId}`;
-
+                form.action = "{{ route('bulletin-boards.posts.attachments.destroy', [$bulletinBoard, $post, ':attachment']) }}".replace(':attachment', attachmentId);
+                
                 const modal = new bootstrap.Modal(document.getElementById('deleteAttachmentModal'));
                 modal.show();
             });
         });
+
+
+
+
     });
 </script>
 @endsection
