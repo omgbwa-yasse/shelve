@@ -129,9 +129,13 @@
                                         <a href="{{ route('attachments.download', $attachment) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-download"> </i> Télécharger
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger delete-attachment" data-attachment-id="{{ $attachment->id }}">
-                                            <i class="bi bi-trash"></i> Supprimer
-                                        </button>
+                                        <form action="{{ route('bulletin-boards.events.attachments.destroy', [$bulletinBoard, $event, $attachment->id]) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Supprimer
+                                            </button>
+                                        </form>
                                     </div>
                                 </li>
                             @endforeach
@@ -145,51 +149,6 @@
     </div>
 </div>
 
-<!-- Delete Event Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer l'événement "{{ $event->name }}" ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form action="{{ route('bulletin-boards.events.destroy', [$bulletinBoard, $event]) }}" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Attachment Modal -->
-<div class="modal fade" id="deleteAttachmentModal" tabindex="-1" aria-labelledby="deleteAttachmentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteAttachmentModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer cette pièce jointe ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form id="delete-attachment-form" action="" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
@@ -211,19 +170,5 @@
         } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
         return bytes.toFixed(dp) + ' ' + units[u];
     }
-
-    // Gestion de la suppression des pièces jointes
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.delete-attachment').forEach(button => {
-            button.addEventListener('click', function() {
-                const attachmentId = this.getAttribute('data-attachment-id');
-                const form = document.getElementById('delete-attachment-form');
-                form.action = `{{ route('bulletin-boards.events.attachments.destroy', [$bulletinBoard, $event, ':attachment']) }}`.replace(':attachment', attachmentId);
-
-                const modal = new bootstrap.Modal(document.getElementById('deleteAttachmentModal'));
-                modal.show();
-            });
-        });
-    });
 </script>
 @endsection

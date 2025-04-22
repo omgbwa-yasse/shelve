@@ -28,9 +28,6 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
         $mailArchives = Mail::with(['priority', 'authors', 'typology', 'sender', 'recipient'])
                      ->where('is_archived', true)
                      ->paginate(15);
-
-        $dollies = Dolly::all();
-        $types = DollyType::all();
         return view('mails.archives.index', compact('mailArchives'));
     }
 

@@ -93,6 +93,7 @@
                         <i class="bi bi-clipboard"></i> Mes barbillards
                     </a>
                 </div>
+                
                 <div class="submenu-item">
                     <a class="submenu-link" href="{{ route('bulletin-boards.create') }}">
                         <i class="bi bi-clipboard-plus"></i> Nouveau

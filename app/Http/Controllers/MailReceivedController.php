@@ -39,9 +39,9 @@ class MailReceivedController extends Controller
                      ->where('status', 'in_progress')
                      ->get();
         $dollies = Dolly::all();
-        $types = DollyType::all();
+        $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.received.index', compact('mails','dollies', 'types','users'));
+        return view('mails.received.index', compact('mails','dollies', 'categories','users'));
     }
 
 

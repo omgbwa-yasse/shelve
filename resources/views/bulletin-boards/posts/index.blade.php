@@ -43,7 +43,7 @@
                 </div>
                 <div class="col-md-1">
                     <button type="submit" class="btn btn-primary w-100">
-                        <i class="fas fa-search"></i>
+                        <i class="bi bi-search"> </i>
                     </button>
                 </div>
             </form>
@@ -85,13 +85,13 @@
                                     <td>
                                         <div class="btn-group">
                                             <a href="{{ route('bulletin-boards.posts.show', [$bulletinBoard, $post]) }}" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i>
+                                                <i class="bi bi-eye"></i>
                                             </a>
                                             <a href="{{ route('bulletin-boards.posts.edit', [$bulletinBoard, $post]) }}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="bi bi-pencil"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $post->id }}">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </td>
