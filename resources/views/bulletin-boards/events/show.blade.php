@@ -1,332 +1,229 @@
 @extends('layouts.app')
 
 @section('content')
-
 <div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ $event->name }}</h1>
+            <p class="text-muted">
+                Tableau d'affichage:
+                <a href="{{ route('bulletin-boards.show', $bulletinBoard) }}">{{ $bulletinBoard->name }}</a>
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{{ route('bulletin-boards.events.edit', [$bulletinBoard, $event]) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                <a href="{{ route('bulletin-boards.events.index', $bulletinBoard) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.index') }}">Tableaux d'affichage</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.show', $BulletinBoard['id']) }}">{{ $BulletinBoard['name'] }}</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('bulletin-boards.events.index', $BulletinBoard['id']) }}">Événements</a></li>
-                    <li class="breadcrumb-item active">{{ $event->name }}</li>
-                </ol>
-            </nav>
-
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
+        <div class="col-md-8">
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
-                        <span class="badge bg-{{ $event->status == 'published' ? 'success' : ($event->status == 'draft' ? 'warning' : 'secondary') }} me-2">
-                            {{ ucfirst($event->status) }}
-                        </span>
-                        <span class="text-muted">Événement</span>
+                        Détails de l'événement
+                        @if($event->status == 'published')
+                            <span class="badge bg-success ms-2">Publié</span>
+                        @elseif($event->status == 'draft')
+                            <span class="badge bg-warning ms-2">Brouillon</span>
+                        @elseif($event->status == 'cancelled')
+                            <span class="badge bg-danger ms-2">Annulé</span>
+                        @endif
                     </div>
-
-                    
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-cog me-1"></i> Actions
+                    <div>
+                        <form action="{{ route('bulletin-boards.events.update-status', [$bulletinBoard, $event]) }}" method="POST" class="d-inline">
+                            @csrf
+                            <input type="hidden" name="status" value="{{ $event->status == 'published' ? 'draft' : 'published' }}">
+                            <button type="submit" class="btn btn-sm {{ $event->status == 'published' ? 'btn-outline-warning' : 'btn-outline-success' }}">
+                                {{ $event->status == 'published' ? 'Passer en brouillon' : 'Publier' }}
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('bulletin-boards.events.edit', [$BulletinBoard['id'], $event->id]) }}">
-                                        <i class="fas fa-edit fa-fw me-1"></i> Modifier
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" id="show-import-form">
-                                        <i class="fas fa-paperclip fa-fw me-1"></i> Ajouter des pièces jointes
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changeStatusModal">
-                                        <i class="fas fa-toggle-on fa-fw me-1"></i> Changer le statut
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" id="export-event">
-                                        <i class="fas fa-file-export fa-fw me-1"></i> Exporter (iCal)
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form action="{{ route('bulletin-boards.events.destroy', [$BulletinBoard['id'], $event->id]) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
-                                            <i class="fas fa-trash fa-fw me-1"></i> Supprimer
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title mb-3">{{ $event->name }}</h1>
-
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <i class="fas fa-calendar-alt fa-fw text-muted me-2"></i>
-                                <strong>Date de début:</strong>
-                                {{ $event->start_date->format('d/m/Y à H:i') }}
-                            </div>
-
-                            @if($event->end_date)
-                                <div class="mb-3">
-                                    <i class="fas fa-calendar-check fa-fw text-muted me-2"></i>
-                                    <strong>Date de fin:</strong>
-                                    {{ $event->end_date->format('d/m/Y à H:i') }}
-                                </div>
-
-                                <div class="mb-3">
-                                    <i class="fas fa-hourglass-half fa-fw text-muted me-2"></i>
-                                    <strong>Durée:</strong>
-                                    @php
-                                        $duration = $event->start_date->diff($event->end_date);
-                                        $durationText = [];
-
-                                        if ($duration->d > 0) {
-                                            $durationText[] = $duration->d . ' jour' . ($duration->d > 1 ? 's' : '');
-                                        }
-                                        if ($duration->h > 0) {
-                                            $durationText[] = $duration->h . ' heure' . ($duration->h > 1 ? 's' : '');
-                                        }
-                                        if ($duration->i > 0) {
-                                            $durationText[] = $duration->i . ' minute' . ($duration->i > 1 ? 's' : '');
-                                        }
-
-                                        echo implode(', ', $durationText);
-                                    @endphp
-                                </div>
-                            @endif
-
-                            @if($event->location)
-                                <div class="mb-3">
-                                    <i class="fas fa-map-marker-alt fa-fw text-muted me-2"></i>
-                                    <strong>Lieu:</strong>
-                                    {{ $event->location }}
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <i class="fas fa-user fa-fw text-muted me-2"></i>
-                                <strong>Créé par:</strong>
-                                {{ $event->creator->name }}
-                            </div>
-
-                            <div class="mb-3">
-                                <i class="fas fa-clock fa-fw text-muted me-2"></i>
-                                <strong>Créé le:</strong>
-                                {{ $event->created_at->format('d/m/Y à H:i') }}
-                            </div>
-
-                            <div class="mb-3">
-                                <i class="fas fa-edit fa-fw text-muted me-2"></i>
-                                <strong>Dernière modification:</strong>
-                                {{ $event->updated_at->format('d/m/Y à H:i') }}
-                            </div>
-
-                            <div class="mb-3">
-                                <i class="fas fa-calendar-day fa-fw text-muted me-2"></i>
-                                <strong>Statut actuel:</strong>
-                                <span class="badge bg-{{ $event->status == 'published' ? 'success' : ($event->status == 'draft' ? 'warning' : 'secondary') }}">
-                                    {{ ucfirst($event->status) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Description</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="event-description">
-                                {!! nl2br(e($event->description)) !!}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">Pièces jointes</h5>
-                            @if($event->canBeEditedBy(Auth::user()))
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="show-import-form-alt">
-                                    <i class="fas fa-paperclip me-1"></i> Ajouter des pièces jointes
-                                </button>
-                            @endif
-                        </div>
-                        <div class="card-body">
-                            <div id="import-form" class="card mb-3 d-none">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Importer des pièces jointes</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div id="upload-feedback" class="mb-3"></div>
-                                    
-                                    <div class="mb-3">
-                                        <label for="attachment-files" class="form-label">Fichiers à importer</label>
-                                        <input type="file" class="form-control" id="attachment-files" name="attachments[]" multiple>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="attachment-name" class="form-label">Nom du fichier (optionnel)</label>
-                                        <input type="text" class="form-control" id="attachment-name" placeholder="Nom personnalisé">
-                                        <div class="form-text">Si laissé vide, le nom original du fichier sera utilisé.</div>
-                                    </div>
-                                    
-                                </div>
-                                <div class="card-footer">
-                                    <button type="button" class="btn btn-secondary" id="cancel-import">Annuler</button>
-                                    <button type="button" class="btn btn-primary" id="import-button">Importer</button>
-                                </div>
-                            </div>
-
-                            <div id="attachments-list">
-                                @if($event->attachments->isNotEmpty())
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <th>Fichier</th>
-                                                    <th>Type</th>
-                                                    <th>Taille</th>
-                                                    <th>Ajouté par</th>
-                                                    <th>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($event->attachments as $attachment)
-                                                    <tr id="attachment-{{ $attachment->id }}" class="attachment-row">
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <div>
-                                                                    {{ $attachment->name }}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>{{ Str::upper(pathinfo($attachment->name, PATHINFO_EXTENSION)) }}</td>
-                                                        <td>{{ number_format($attachment->size / 1024, 2) }} KB</td>
-                                                        <td>{{ $attachment->creator->name }}</td>
-                                                        <td>
-                                                            <div class="btn-group btn-group-sm">
-                                                                <a href="{{ route('events.attachments.download', [$BulletinBoard['id'], $event->id, $attachment->id]) }}" class="btn btn-outline-primary" target="_blank">
-                                                                    <i class="fas fa-download"></i> Télécharger
-                                                                </a>
-                                                                <a href="{{ route('events.attachments.preview', [$BulletinBoard['id'], $event->id, $attachment->id]) }}" class="btn btn-outline-info" target="_blank">
-                                                                    <i class="fas fa-eye"></i> Lire
-                                                                </a>
-                                                                    <button type="button" class="btn btn-outline-danger delete-attachment" data-attachment-id="{{ $attachment->id }}">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @else
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i> Aucune pièce jointe n'est associée à cet événement.
-                                
-                                            <button type="button" class="btn btn-link p-0 alert-link" id="show-import-form-empty">
-                                                Ajouter des pièces jointes
-                                            </button>
-                                       
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <div class="d-flex justify-content-between">
-
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-share-alt me-1"></i> Partager
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#" id="copy-link"><i class="fas fa-link me-2"></i> Copier le lien</a></li>
-                                <li><a class="dropdown-item" href="mailto:?subject={{ urlencode($event->name) }}&body={{ urlencode(route('bulletin-boards.events.show', [$BulletinBoard['id'], $event->id])) }}"><i class="fas fa-envelope me-2"></i> Email</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#" id="add-to-calendar"><i class="fas fa-calendar-plus me-2"></i> Ajouter au calendrier</a></li>
-                            </ul>
-                        </div>
-
-                        @if($event->canBeEditedBy(Auth::user()))
-                            <a href="{{ route('bulletin-boards.events.edit', [$BulletinBoard['id'], $event->id]) }}" class="btn btn-primary">
-                                <i class="fas fa-edit me-1"></i> Modifier
-                            </a>
+                        </form>
+                        @if($event->status != 'cancelled')
+                            <form action="{{ route('bulletin-boards.events.update-status', [$bulletinBoard, $event]) }}" method="POST" class="d-inline">
+                                @csrf
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Annuler</button>
+                            </form>
                         @endif
                     </div>
                 </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Date de début:</strong> {{ $event->start_date->format('d/m/Y H:i') }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date de fin:</strong> {{ $event->end_date ? $event->end_date->format('d/m/Y H:i') : 'Non définie' }}</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Lieu:</strong> {{ $event->location ?: 'Non défini' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Créé par:</strong> {{ $event->creator->name }}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5>Description</h5>
+                            <div class="border rounded p-3 bg-light">
+                                {!! $event->description !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if($event->isUpcoming())
+                                <form action="{{ route('bulletin-boards.events.register', [$bulletinBoard, $event]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-user-plus"></i> S'inscrire
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="text-muted">
+                                Créé le {{ $event->created_at->format('d/m/Y H:i') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Pièces jointes ({{ $event->attachments->count() }})</span>
+                    <a href="{{ route('bulletin-boards.events.attachments.create', [$bulletinBoard, $event]) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </a>
+                </div>
+                <div class="card-body" id="attachments-container">
+                    @if($event->attachments->count() > 0)
+                        <ul class="list-group">
+                            @foreach($event->attachments as $attachment)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        @if($attachment->thumbnail_path)
+                                            <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" alt="Vignette" width="40" class="me-2">
+                                        @else
+                                            <i class="fas fa-file me-2"></i>
+                                        @endif
+                                        <a href="{{ route('attachments.preview', $attachment) }}" target="_blank">{{ $attachment->name }}</a>
+                                        <small class="text-muted d-block">{{ human_filesize($attachment->size) }}</small>
+                                    </div>
+                                    <div class="btn-group">
+                                        <a href="{{ route('attachments.download', $attachment) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-attachment" data-attachment-id="{{ $attachment->id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-center">Aucune pièce jointe</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal de changement de statut -->
-<div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="changeStatusModalLabel">Changer le statut de l'événement</h5>
+                <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('bulletin-boards.events.updateStatus', [$BulletinBoard['id'], $event->id]) }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Nouveau statut</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="status" id="modal-status-draft" value="draft" {{ $event->status == 'draft' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-warning" for="modal-status-draft">
-                                <i class="fas fa-pencil-alt me-1"></i> Brouillon
-                            </label>
-
-                            <input type="radio" class="btn-check" name="status" id="modal-status-published" value="published" {{ $event->status == 'published' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-success" for="modal-status-published">
-                                <i class="fas fa-check-circle me-1"></i> Publié
-                            </label>
-
-                            <input type="radio" class="btn-check" name="status" id="modal-status-cancelled" value="cancelled" {{ $event->status == 'cancelled' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-secondary" for="modal-status-cancelled">
-                                <i class="fas fa-ban me-1"></i> Annulé
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="form-text text-muted mb-3">
-                        <i class="fas fa-info-circle me-1"></i> Changer le statut affectera la visibilité de l'événement pour les autres utilisateurs.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Changer le statut</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer l'événement "{{ $event->name }}" ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form action="{{ route('bulletin-boards.events.destroy', [$bulletinBoard, $event]) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Delete Attachment Modal -->
+<div class="modal fade" id="deleteAttachmentModal" tabindex="-1" aria-labelledby="deleteAttachmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAttachmentModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette pièce jointe ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form id="delete-attachment-form" action="" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
 <script>
-    // Ajoutez ceci avant d'inclure events.js
-    <meta name="bulletin-board-id" content="19">
-    <meta name="event-id" content="9">
+    // Fonction helper pour formater la taille de fichier
+    function human_filesize(bytes, si=false, dp=1) {
+        const thresh = si ? 1000 : 1024;
+        if (Math.abs(bytes) < thresh) {
+            return bytes + ' B';
+        }
+        const units = si
+            ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+            : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+        let u = -1;
+        const r = 10**dp;
+        do {
+            bytes /= thresh;
+            ++u;
+        } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+        return bytes.toFixed(dp) + ' ' + units[u];
+    }
 
+    // Gestion de la suppression des pièces jointes
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.delete-attachment').forEach(button => {
+            button.addEventListener('click', function() {
+                const attachmentId = this.getAttribute('data-attachment-id');
+                const form = document.getElementById('delete-attachment-form');
+                form.action = `{{ route('bulletin-boards.events.attachments.destroy', [$bulletinBoard, $event, ':attachment']) }}`.replace(':attachment', attachmentId);
+
+                const modal = new bootstrap.Modal(document.getElementById('deleteAttachmentModal'));
+                modal.show();
+            });
+        });
+    });
 </script>
-<script src="{{ asset('js/events.js') }}"></script>
-
 @endsection
