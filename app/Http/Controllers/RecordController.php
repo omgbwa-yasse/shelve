@@ -36,7 +36,6 @@ class RecordController extends Controller
     {
 
         $query = $request->input('query');
-//        dd($query);
         $results = Record::search($query)->paginate(10);
         return view('records.search', compact('results', 'query'));
     }
@@ -50,7 +49,7 @@ class RecordController extends Controller
             ])->paginate(10);
         } else {
             // L'utilisateur ne peut voir que les records associés aux activités de son organisation actuelle
-            $currentOrganisationId = auth()->user()->current_organisation_id;
+            $currentOrganisationId = auth::user()->current_organisation_id;
 
             $records = Record::with([
                 'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
@@ -125,7 +124,7 @@ class RecordController extends Controller
         $request->merge([
             'date_format' => $dateFormat,
             'user_id' => Auth::id(),
-//            'organisation_id' => Auth::user()->current_organisation_id // Ajout de l'organisation_id
+            'organisation_id' => Auth::user()->current_organisation_id,
         ]);
 
         $validatedData = $request->validate([

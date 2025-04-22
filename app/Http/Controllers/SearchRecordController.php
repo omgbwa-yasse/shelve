@@ -302,8 +302,11 @@ class SearchRecordController extends Controller
             'authors',
             'terms'
         ])
-            ->latest()
-            ->paginate(10);
+        ->whereHas('activity.organisations', function($query) {
+            $query->where('organisations.id', Auth::user()->current_organisation_id);
+        })
+        ->latest()
+        ->paginate(10);
 
         $viewData = [
             'records' => $records,

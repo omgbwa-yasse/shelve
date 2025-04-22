@@ -122,6 +122,15 @@ class Record extends Model
         return $this->belongsTo(Organisation::class, 'organisation_id');
     }
 
+    public function ownerOrganisation()
+    {
+        return $this->belongsToMany(Organisation::class, 'organisation_activity', 'activity_id', 'organisation_id')
+                ->withPivot('activity_id')
+                ->whereHas('activities', function($query) {
+                    $query->where('activities.id', $this->activity_id);
+                });
+    }
+
     public function parent()
     {
         return $this->belongsTo(Record::class, 'parent_id');
