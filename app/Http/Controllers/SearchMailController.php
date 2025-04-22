@@ -105,8 +105,8 @@ class SearchMailController extends Controller
 
         // Recherche par conteneur
         if ($request->filled('container_id')) {
-            $query->whereHas('archivings', function ($q) use ($request) {
-                $q->where('container_id', $request->container_id);
+            $query->whereHas('containers', function ($q) use ($request) {
+                $q->where('containers.id', $request->container_id);
             });
             $container = MailContainer::find($request->container_id);
             if ($container) {
@@ -122,6 +122,9 @@ class SearchMailController extends Controller
                     break;
                 case "batch":
                     $this->handleBatchSearch($query, $request, $title);
+                    break;
+                case "container":
+                    $this->handleContainerSearch($query, $request, $title);
                     break;
                 // Autres cas existants si nécessaire...
             }
@@ -169,6 +172,21 @@ class SearchMailController extends Controller
             }
         }
     }
+
+    private function handleContainerSearch($query, $request, &$title)
+    {
+        if ($request->filled('id')) {
+            $container = MailContainer::find($request->id);
+            if ($container) {
+                $query->whereHas('mails', function ($q) use ($request) {
+                    $q->where('container_id', $request->id);
+                });
+                $title .= " - Conteneur: " . $container->name;
+            }
+        }
+    }
+
+
 
     public function date()
     {

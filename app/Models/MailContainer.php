@@ -42,5 +42,7 @@ class MailContainer extends Model
         return $this->belongsTo(Organisation::class, 'creator_organisation_id');
     }
 
+    
+
     public $timestamps = true;
 }

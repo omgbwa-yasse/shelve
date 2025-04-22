@@ -43,10 +43,9 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
 
 
 
-
     public function create()
     {
-        $mailContainers = MailContainer::where('creator_organisation_id', auth()->user()->current_organisation_id)
+        $mailContainers = MailContainer::where('creator_organisation_id', auth::user()->current_organisation_id)
                                       ->get();
 
         $mails = Mail::where('sender_user_id', Auth::id()) // Champ corrigé
@@ -65,23 +64,38 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
     {
         $request->validate([
             'container_id' => 'required|exists:mail_containers,id',
-            'mail_id' => 'required|exists:mails,id',
-            'document_type' => 'required|in:original,duplicate,copy', // Validation du type de document
+            'mails' => 'required|array',
+            'mails.*.id' => 'required|exists:mails,id',
+            'mails.*.document_type' => 'required|in:original,duplicate,copy',
         ]);
 
-        MailArchive::create([
-            'container_id' => $request->container_id,
-            'mail_id' => $request->mail_id,
-            'archived_by' => Auth::id(), // Ajouté pour enregistrer l'utilisateur qui archive
-            'document_type' => $request->document_type,
-        ]);
+        $mailsArchived = 0;
+        
+        foreach ($request->mails as $mail) {
+            MailArchive::create([
+                'container_id' => $request->container_id,
+                'mail_id' => $mail['id'],
+                'archived_by' => Auth::id(),
+                'document_type' => $mail['document_type'],
+            ]);
+            
+            $mailsArchived++;
+        }
 
-        return redirect()->route('mail-container.index')->with('success', 'Mail archived successfully.');
+        $message = $mailsArchived === 1 
+            ? 'Un mail a été archivé avec succès.' 
+            : $mailsArchived . ' mails ont été archivés avec succès.';
+        
+        return redirect()->route('mail-container.index')->with('success', $message);
     }
+
+
+
+
 
     public function edit(MailArchive $mailArchive) // Nom de la variable corrigé
     {
-        $mailContainers = MailContainer::where('creator_organisation_id', auth()->user()->current_organisation_id)
+        $mailContainers = MailContainer::where('creator_organisation_id', auth::user()->current_organisation_id)
                                       ->get();
 
         $mails = Mail::where('sender_user_id', Auth::id())
@@ -90,6 +104,8 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
 
         return view('mails.archives.edit', compact('mailArchive', 'mailContainers', 'mails')); // Nom de la vue corrigé
     }
+
+
 
     public function update(Request $request, MailArchive $mailArchive) // Nom de la variable corrigé
     {
@@ -107,6 +123,8 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
 
         return redirect()->route('mail-archive.index')->with('success', 'Mail archive updated successfully.'); // Route corrigée
     }
+
+
 
     public function destroy(MailArchive $mailArchive) // Nom de la variable corrigé
     {

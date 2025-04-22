@@ -234,8 +234,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
+    
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
-        Route::get('sort', [SearchMailController::class, 'index'])->name('mails.sort');
+        Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
         Route::get('InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
         Route::get('approve', [MailReceivedController::class, 'approve'])->name('mails.approve');

@@ -144,10 +144,10 @@
                                                 <i class="bi bi-gear me-1"></i>
                                                 Paramètres
                                             </a>
-                                            <a href="{{ route('mails.sort') }}?categ=container&id={{ $mailContainer->id }}"
+                                            <a href="{{ route('mails.sort') }}?container_id={{ $mailContainer->id }}"
                                                class="btn btn-success btn-sm">
                                             <span class="badge bg-white text-success me-1">
-                                                {{ $mailContainer->mailArchivings->count() }}
+                                                {{ $mailContainer->mails->count() }}
                                             </span>
                                                 Courriers
                                             </a>
