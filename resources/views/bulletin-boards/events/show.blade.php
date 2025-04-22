@@ -123,7 +123,7 @@
                                             <i class="fas fa-file me-2"></i>
                                         @endif
                                         <a href="{{ route('attachments.preview', $attachment) }}" target="_blank">{{ $attachment->name }}</a>
-                                        <small class="text-muted d-block">{{ human_filesize($attachment->size) }}</small>
+                                        <small class="text-muted d-block">{{$attachment->size }}</small>
                                     </div>
                                     <div class="btn-group">
                                         <a href="{{ route('attachments.download', $attachment) }}" class="btn btn-sm btn-outline-primary">

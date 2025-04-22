@@ -112,57 +112,105 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [mailReceivedController::class, 'index']);
 
-
-
-        Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
-            // Routes principales pour les publications
-            Route::get('/{bulletinBoard}/posts', [PostController::class, 'index'])
-                ->name('bulletin-boards.posts.index');
-            Route::get('/{bulletinBoard}/posts/create', [PostController::class, 'create'])
-                ->name('bulletin-boards.posts.create');
-            Route::post('/{bulletinBoard}/posts', [PostController::class, 'store'])
-                ->name('bulletin-boards.posts.store');
-            Route::get('/{bulletinBoard}/posts/{post}', [PostController::class, 'show'])
-                ->name('bulletin-boards.posts.show');
-            Route::get('/{bulletinBoard}/posts/{post}/edit', [PostController::class, 'edit'])
-                ->name('bulletin-boards.posts.edit');
-            Route::put('/{bulletinBoard}/posts/{post}', [PostController::class, 'update'])
-                ->name('bulletin-boards.posts.update');
-            Route::delete('/{bulletinBoard}/posts/{post}', [PostController::class, 'destroy'])
-                ->name('bulletin-boards.posts.destroy');
-            Route::post('/{bulletinBoard}/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])
-                ->name('bulletin-boards.posts.toggle-status');
-            Route::post('/{bulletinBoard}/posts/{post}/cancel', [PostController::class, 'cancel'])
-                ->name('bulletin-boards.posts.cancel');
-
-            // Routes pour les pièces jointes des publications
-            Route::get('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsIndex'])
-                ->name('bulletin-boards.posts.attachments.index');
-            Route::get('/{bulletinBoard}/posts/{post}/attachments/create', [PostController::class, 'attachmentsCreate'])
-                ->name('bulletin-boards.posts.attachments.create');
-            Route::post('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsStore'])
-                ->name('bulletin-boards.posts.attachments.store');
-            Route::get('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsShow'])
-                ->name('bulletin-boards.posts.attachments.show');
-            Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsDestroy'])
-                ->name('bulletin-boards.posts.attachments.destroy');
-
-            // Routes utilitaires pour les pièces jointes des publications
-            Route::get('/posts/attachments/{attachment}/preview', [PostController::class, 'attachmentsPreview'])
-                ->name('posts.attachments.preview');
-            Route::get('/posts/attachments/{attachment}/download', [PostController::class, 'attachmentsDownload'])
-                ->name('posts.attachments.download');
-
-            // Routes AJAX pour les pièces jointes des publications
-            Route::get('/{bulletinBoard}/posts/{post}/attachments/list', [PostController::class, 'attachmentsList'])
-                ->name('bulletin-boards.posts.attachments.list');
-            Route::post('/{bulletinBoard}/posts/{post}/attachments/ajax', [PostController::class, 'attachmentsAjaxStore'])
-                ->name('bulletin-boards.posts.attachments.ajax.store');
-            Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}/ajax', [PostController::class, 'attachmentsAjaxDestroy'])
-                ->name('bulletin-boards.posts.attachments.ajax.destroy');
-
+    // Routes avec authentification pour les bulletin boards
+    Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
+        // Routes principales des bulletin boards
+        Route::get('/', [BulletinBoardController::class, 'index'])->name('bulletin-boards.index');
+        Route::get('/create', [BulletinBoardController::class, 'create'])->name('bulletin-boards.create');
+        Route::post('/', [BulletinBoardController::class, 'store'])->name('bulletin-boards.store');
+        Route::get('/{bulletinBoard}', [BulletinBoardController::class, 'show'])->name('bulletin-boards.show');
+        Route::get('/{bulletinBoard}/edit', [BulletinBoardController::class, 'edit'])->name('bulletin-boards.edit');
+        Route::put('/{bulletinBoard}', [BulletinBoardController::class, 'update'])->name('bulletin-boards.update');
+        Route::delete('/{bulletinBoard}', [BulletinBoardController::class, 'destroy'])->name('bulletin-boards.destroy');
+        
+        // Routes additionnelles des bulletin boards
+        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
+        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('bulletin-boards.my-posts');
+        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('bulletin-boards.archives');
+        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('bulletin-boards.toggle-archive');
+        
+        // Routes pour les organisations
+        Route::prefix('/organisations')->name('organisations.')->group(function () {
+            Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('bulletin-boards.attach');
+            Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('bulletin-boards.detach');
         });
+        
+        // Routes pour les Events
+        Route::get('/{bulletinBoard}/events', [EventController::class, 'index'])->name('bulletin-boards.events.index');
+        Route::get('/{bulletinBoard}/events/create', [EventController::class, 'create'])->name('bulletin-boards.events.create');
+        Route::post('/{bulletinBoard}/events', [EventController::class, 'store'])->name('bulletin-boards.events.store');
+        Route::get('/{bulletinBoard}/events/{event}', [EventController::class, 'show'])->name('bulletin-boards.events.show');
+        Route::get('/{bulletinBoard}/events/{event}/edit', [EventController::class, 'edit'])->name('bulletin-boards.events.edit');
+        Route::put('/{bulletinBoard}/events/{event}', [EventController::class, 'update'])->name('bulletin-boards.events.update');
+        Route::delete('/{bulletinBoard}/events/{event}', [EventController::class, 'destroy'])->name('bulletin-boards.events.destroy');
+        Route::post('/{bulletinBoard}/events/{event}/update-status', [EventController::class, 'updateStatus'])->name('bulletin-boards.events.update-status');
+        Route::post('/{bulletinBoard}/events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
+        Route::post('/{bulletinBoard}/events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
+        
+        // Routes pour les pièces jointes des Events
+        Route::get('/{bulletinBoard}/events/{event}/attachments', [EventController::class, 'attachmentsIndex'])->name('bulletin-boards.events.attachments.index');
+        Route::get('/{bulletinBoard}/events/{event}/attachments/create', [EventController::class, 'attachmentsCreate'])->name('bulletin-boards.events.attachments.create');
+        Route::post('/{bulletinBoard}/events/{event}/attachments', [EventController::class, 'attachmentsStore'])->name('bulletin-boards.events.attachments.store');
+        Route::get('/{bulletinBoard}/events/{event}/attachments/{attachment}', [EventController::class, 'attachmentsShow'])->name('bulletin-boards.events.attachments.show');
+        Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}', [EventController::class, 'attachmentsDestroy'])->name('bulletin-boards.events.attachments.destroy');
+        Route::get('/events/{id}/preview', [EventController::class, 'attachmentsPreview'])->name('events.attachments.preview');
+        Route::get('/events/{id}/download', [EventController::class, 'attachmentsDownload'])->name('events.attachments.download');
+        Route::get('/{bulletinBoard}/events/{event}/attachments/list', [EventController::class, 'attachmentsList'])->name('bulletin-boards.events.attachments.list');
+        Route::post('/{bulletinBoard}/events/{event}/attachments/ajax', [EventController::class, 'attachmentsAjaxStore'])->name('bulletin-boards.events.attachments.ajax.store');
+        Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}/ajax', [EventController::class, 'attachmentsAjaxDestroy'])->name('bulletin-boards.events.attachments.ajax.destroy');
+        
+        // Routes principales pour les publications (existantes)
+        Route::get('/{bulletinBoard}/posts', [PostController::class, 'index'])
+            ->name('bulletin-boards.posts.index');
+        Route::get('/{bulletinBoard}/posts/create', [PostController::class, 'create'])
+            ->name('bulletin-boards.posts.create');
+        Route::post('/{bulletinBoard}/posts', [PostController::class, 'store'])
+            ->name('bulletin-boards.posts.store');
+        Route::get('/{bulletinBoard}/posts/{post}', [PostController::class, 'show'])
+            ->name('bulletin-boards.posts.show');
+        Route::get('/{bulletinBoard}/posts/{post}/edit', [PostController::class, 'edit'])
+            ->name('bulletin-boards.posts.edit');
+        Route::put('/{bulletinBoard}/posts/{post}', [PostController::class, 'update'])
+            ->name('bulletin-boards.posts.update');
+        Route::delete('/{bulletinBoard}/posts/{post}', [PostController::class, 'destroy'])
+            ->name('bulletin-boards.posts.destroy');
+        Route::post('/{bulletinBoard}/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])
+            ->name('bulletin-boards.posts.toggle-status');
+        Route::post('/{bulletinBoard}/posts/{post}/cancel', [PostController::class, 'cancel'])
+            ->name('bulletin-boards.posts.cancel');
 
+        // Routes pour les pièces jointes des publications (existantes)
+        Route::get('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsIndex'])
+            ->name('bulletin-boards.posts.attachments.index');
+        Route::get('/{bulletinBoard}/posts/{post}/attachments/create', [PostController::class, 'attachmentsCreate'])
+            ->name('bulletin-boards.posts.attachments.create');
+        Route::post('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsStore'])
+            ->name('bulletin-boards.posts.attachments.store');
+        Route::get('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsShow'])
+            ->name('bulletin-boards.posts.attachments.show');
+        Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsDestroy'])
+            ->name('bulletin-boards.posts.attachments.destroy');
+
+        // Routes utilitaires pour les pièces jointes des publications (existantes)
+        Route::get('/posts/attachments/{attachment}/preview', [PostController::class, 'attachmentsPreview'])
+            ->name('posts.attachments.preview');
+        Route::get('/posts/attachments/{attachment}/download', [PostController::class, 'attachmentsDownload'])
+            ->name('posts.attachments.download');
+
+        // Routes AJAX pour les pièces jointes des publications (existantes)
+        Route::get('/{bulletinBoard}/posts/{post}/attachments/list', [PostController::class, 'attachmentsList'])
+            ->name('bulletin-boards.posts.attachments.list');
+        Route::post('/{bulletinBoard}/posts/{post}/attachments/ajax', [PostController::class, 'attachmentsAjaxStore'])
+            ->name('bulletin-boards.posts.attachments.ajax.store');
+        Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}/ajax', [PostController::class, 'attachmentsAjaxDestroy'])
+            ->name('bulletin-boards.posts.attachments.ajax.destroy');
+    });
+
+    // Routes utilitaires pour les pièces jointes générales
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/attachments/{attachment}/preview', [EventController::class, 'attachmentsPreview'])->name('attachments.preview');
+        Route::get('/attachments/{attachment}/download', [EventController::class, 'attachmentsDownload'])->name('attachments.download');
+    });
 
 
     Route::prefix('mails')->group(function () {
