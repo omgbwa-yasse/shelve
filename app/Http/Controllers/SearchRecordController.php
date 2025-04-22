@@ -284,7 +284,7 @@ class SearchRecordController extends Controller
             'activities' => Activity::all(),
             'containers' => Container::all(),
             'levels' => RecordLevel::all(),
-            'authors' => Author::with('authorType')->get()
+            'authors' => Author::with('type')->get()
         ];
 
         return view('records.index', $viewData);

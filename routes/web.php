@@ -122,19 +122,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/{bulletinBoard}/edit', [BulletinBoardController::class, 'edit'])->name('bulletin-boards.edit');
         Route::put('/{bulletinBoard}', [BulletinBoardController::class, 'update'])->name('bulletin-boards.update');
         Route::delete('/{bulletinBoard}', [BulletinBoardController::class, 'destroy'])->name('bulletin-boards.destroy');
-        
+
         // Routes additionnelles des bulletin boards
         Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
         Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('bulletin-boards.my-posts');
         Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('bulletin-boards.archives');
         Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('bulletin-boards.toggle-archive');
-        
+
         // Routes pour les organisations
         Route::prefix('/organisations')->name('organisations.')->group(function () {
             Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('bulletin-boards.attach');
             Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('bulletin-boards.detach');
         });
-        
+
         // Routes pour les Events
         Route::get('/{bulletinBoard}/events', [EventController::class, 'index'])->name('bulletin-boards.events.index');
         Route::get('/{bulletinBoard}/events/create', [EventController::class, 'create'])->name('bulletin-boards.events.create');
@@ -146,7 +146,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/{bulletinBoard}/events/{event}/update-status', [EventController::class, 'updateStatus'])->name('bulletin-boards.events.update-status');
         Route::post('/{bulletinBoard}/events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
         Route::post('/{bulletinBoard}/events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
-        
+
         // Routes pour les pièces jointes des Events
         Route::get('/{bulletinBoard}/events/{event}/attachments', [EventController::class, 'attachmentsIndex'])->name('bulletin-boards.events.attachments.index');
         Route::get('/{bulletinBoard}/events/{event}/attachments/create', [EventController::class, 'attachmentsCreate'])->name('bulletin-boards.events.attachments.create');
@@ -158,7 +158,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/{bulletinBoard}/events/{event}/attachments/list', [EventController::class, 'attachmentsList'])->name('bulletin-boards.events.attachments.list');
         Route::post('/{bulletinBoard}/events/{event}/attachments/ajax', [EventController::class, 'attachmentsAjaxStore'])->name('bulletin-boards.events.attachments.ajax.store');
         Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}/ajax', [EventController::class, 'attachmentsAjaxDestroy'])->name('bulletin-boards.events.attachments.ajax.destroy');
-        
+
         // Routes principales pour les publications (existantes)
         Route::get('/{bulletinBoard}/posts', [PostController::class, 'index'])
             ->name('bulletin-boards.posts.index');
@@ -234,7 +234,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
-    
+
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
@@ -303,8 +303,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
+
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::get('authors/list', [RecordAuthorController::class, 'list'])->name('record-author.list');
+
         Route::resource('records.child', RecordChildController::class)->names('record-child');
         Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
         Route::get('recordtosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');
@@ -325,6 +327,20 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('container', [SearchRecordController::class, 'selectContainer'])->name('record-select-container');
         Route::get('room', [SearchRecordController::class, 'selectRoom'])->name('record-select-room');
     });
+
+
+
+
+
+
+    Route::prefix('author-handler')->group(function () {
+            Route::resource('/', RecordAuthorController::class)->names('author-handler.index');
+            Route::get('list', [RecordAuthorController::class, 'list'])->name('author-handler.list');
+            Route::get('list/types', [RecordAuthorController::class, 'getAuthorTypes'])->name('author-handler.types');
+            Route::post('store', [RecordAuthorController::class, 'storeAjax'])->name('author-handler.store');
+            Route::get('select-modal', [RecordAuthorController::class, 'selectModal'])->name('author-handler.select-modal');
+        });
+
 
 
     Route::prefix('transferrings')->group(function () {

@@ -19,7 +19,7 @@ class Author extends Model
         'parent_id',
     ];
 
-    public function authorType()
+    public function type()
     {
         return $this->belongsTo(AuthorType::class, 'type_id');
     }

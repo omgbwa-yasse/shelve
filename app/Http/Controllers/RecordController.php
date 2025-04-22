@@ -88,7 +88,7 @@ class RecordController extends Controller
             $users = User::all();
             $levels = RecordLevel::all();
             $records = Record::all();
-            $authors = Author::with('authorType')->get();
+            $authors = Author::with('type')->get();
             $terms = Term::all();
             $authorTypes = AuthorType::all();
             $parents = Author::all();
@@ -106,7 +106,7 @@ class RecordController extends Controller
             $users = User::all();
             $levels = RecordLevel::all();
             $records = Record::all();
-            $authors = Author::with('authorType')->get();
+            $authors = Author::with('type')->get();
             $terms = Term::all();
             $authorTypes = AuthorType::all();
             $parents = Author::all();

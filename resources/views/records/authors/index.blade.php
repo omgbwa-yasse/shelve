@@ -45,7 +45,7 @@
                                     <div class="d-flex align-items-center">
                                         <span class="fw-medium">{{ $author->name }}</span>
                                         <span class="badge bg-secondary ms-2 text-white">
-                                        {{ $author->authorType->name }}
+                                        {{ $author->type->name }}
                                     </span>
                                     </div>
                                     @if($author->parent)
