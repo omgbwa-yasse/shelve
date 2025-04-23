@@ -129,7 +129,7 @@
                                     <div class="col-md-3">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-building me-2 text-muted"></i>
-                                            <span class="text-truncate">{{ $mailContainer->creatorOrganisation->name }}</span>
+                                            <span class="text-truncate">{{ $mailContainer->organisation->name }}</span>
                                         </div>
                                     </div>
                                     <div class="col-md-2">

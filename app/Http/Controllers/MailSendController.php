@@ -45,7 +45,11 @@ class MailSendController extends Controller
             ->where('sender_organisation_id', $organisationId)
             ->where('status', '!=', 'draft')
             ->orderBy('created_at', 'desc')
+            ->withWhereHas('containers', function($q) {
+                $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
+            })
             ->get();
+
 
         $dollies = Dolly::all();
         $categories = Dolly::categories();

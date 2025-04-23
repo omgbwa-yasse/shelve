@@ -14,7 +14,7 @@ class MailContainer extends Model
         'code',
         'name',
         'type_id',
-        'created_by', 
+        'created_by',
         'creator_organisation_id'
     ];
 
@@ -37,12 +37,12 @@ class MailContainer extends Model
         return $this->belongsTo(User::class, 'created_by'); // Clé étrangère corrigée
     }
 
-    public function creatorOrganisation()
+    public function organisation()
     {
         return $this->belongsTo(Organisation::class, 'creator_organisation_id');
     }
 
-    
+
 
     public $timestamps = true;
 }

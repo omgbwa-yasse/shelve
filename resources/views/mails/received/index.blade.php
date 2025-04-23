@@ -48,7 +48,7 @@
                 <span class="small">Avancée</span>
             </a>
         </div>
-        
+
         <div class="ms-auto pe-2">
             <form class="d-flex" action="{{ route('mails.search') }}" method="GET">
                 <div class="input-group input-group-sm">
@@ -104,8 +104,17 @@
                         <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
                             <a href="{{ route('mail-received.show', $mail) }}" class="text-decoration-none text-dark">
                                 <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
-                                <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
+                                <span class="fs-5"> - {{ $mail->name ?? 'N/A' }} </span>
                                 <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
+                                    @if ( $mail->containers->count()>1)
+                                    <span class="badge bg-primary ms-2">
+                                        copies {{ $mail->containers->count() }} archivées
+                                    </span>
+                                    @elseif ($mail->containers->count() == 1)
+                                    <span class="badge bg-primary ms-2">
+                                        copie {{ $mail->containers->count() }} archivée
+                                    </span>
+                                    @endif
                             </a>
                         </h4>
                     </div>
@@ -234,7 +243,7 @@
                                 </button>
                             </div>
                         </form>
-                        
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -282,7 +291,7 @@
             transform: rotate(180deg);
         }
     </style>
-    
+
     <script src="{{ asset('js/mails.js') }}"></script>
     <script src="{{ asset('js/dollies.js') }}"></script>
 
@@ -293,20 +302,20 @@
             console.log("Chargement des containers ...");
 
             const containerSelect = document.getElementById('containerId');
-            
+
             // Vider le select sauf la première option
             while (containerSelect.options.length > 1) {
                 containerSelect.remove(1);
             }
-            
+
             // Ajouter un indicateur de chargement
             const loadingOption = document.createElement('option');
             loadingOption.textContent = 'Chargement...';
             loadingOption.disabled = true;
             containerSelect.appendChild(loadingOption);
-            
+
             // Récupérer les conteneurs via une requête AJAX
-            fetch('/mails/container/list', {
+            fetch('/mails/containers/list', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -317,7 +326,7 @@
             .then(data => {
                 // Supprimer l'option de chargement
                 containerSelect.remove(containerSelect.options.length - 1);
-                
+
                 // Ajouter les conteneurs au select
                 data.forEach(container => {
                     const option = document.createElement('option');
@@ -329,7 +338,7 @@
             .catch(error => {
                 console.error('Erreur:', error);
                 containerSelect.remove(containerSelect.options.length - 1);
-                
+
                 const errorOption = document.createElement('option');
                 errorOption.textContent = 'Erreur de chargement';
                 errorOption.disabled = true;
@@ -347,11 +356,11 @@
             checkAllBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 allChecked = !allChecked;
-                
+
                 mailCheckboxes.forEach(checkbox => {
                     checkbox.checked = allChecked;
                 });
-                
+
                 // Mise à jour du texte du bouton
                 if (allChecked) {
                     checkAllBtn.innerHTML = '<i class="bi bi-square me-1"></i> Tout décocher';
@@ -359,27 +368,49 @@
                     checkAllBtn.innerHTML = '<i class="bi bi-check-square me-1"></i> Tout cocher';
                 }
             });
-            
+
             // Gestion du modal d'archivage
             const archiveBtn = document.getElementById('archiveBtn');
             const confirmArchiveBtn = document.getElementById('confirmArchiveBtn');
-            
+
+            console.log("Debut du chargement des containers ...");
+
+            if(archiveBtn){
+                loadContainers();
+            }
+
             // Empêcher l'ouverture du modal si aucun mail n'est sélectionné
             archiveBtn.addEventListener('click', function(e) {
                 const selectedMails = Array.from(mailCheckboxes).filter(checkbox => checkbox.checked);
-                
+
                 if (selectedMails.length === 0) {
                     e.preventDefault(); // Empêcher l'ouverture du modal
                     alert('Veuillez sélectionner au moins un mail à archiver.');
                 }
             });
-            
+
             // Ajouter l'événement de clic sur le bouton de confirmation
             confirmArchiveBtn.addEventListener('click', archiveMails);
-            
+
+
+
+
+
+
+
             // Fonction pour archiver les mails
             function archiveMails() {
+                const containerSelect = document.getElementById('containerId');
+                const containerId = containerSelect.value;
+
+                if (!containerId) {
+                    alert('Veuillez sélectionner un conteneur d\'archives.');
+                    return;
+                }
+
                 const documentTypeSelect = document.getElementById('documentType');
+                const mailCheckboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+
                 const selectedMails = Array.from(mailCheckboxes)
                     .filter(checkbox => checkbox.checked)
                     .map(checkbox => {
@@ -388,24 +419,14 @@
                             document_type: documentTypeSelect.value
                         };
                     });
-                
+
                 if (selectedMails.length === 0) {
                     alert('Veuillez sélectionner au moins un mail à archiver.');
                     return;
                 }
 
-                const mailCheckboxes = document.querySelectorAll('input[name="selected_mail[]"]');
-                const selectedMails = Array.from(mailCheckboxes).filter(checkbox => checkbox.checked);
-                
-                if (selectedMails.length > 0) {
-                    loadContainers();
-                }
-                            
-                
-
-
                 // Envoyer les données au serveur
-                fetch(`{{ route('mail-archive.add-mails', ${containerId})}}`, {
+                fetch(`/mails/archives/${containerId}/add-mails`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -418,16 +439,11 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Fermer le modal
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('archiveModal'));
-                        modal.hide();
-                        
-                        // Afficher un message de succès
+                        const modalElement = document.getElementById('archiveModal');
+                        const modalInstance = new bootstrap.Modal(modalElement);
+                        modalInstance.hide();
                         alert('Les mails ont été archivés avec succès !');
-                        
-                        // Optionnel : recharger la page ou mettre à jour l'interface
                         window.location.reload();
-
                     } else {
                         alert('Une erreur est survenue lors de l\'archivage.');
                     }
@@ -437,10 +453,14 @@
                     alert('Une erreur est survenue lors de l\'archivage.');
                 });
             }
+
+
+
+
         });
 
 
 
     </script>
-    
+
 @endsection

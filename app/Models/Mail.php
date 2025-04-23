@@ -35,7 +35,7 @@ class Mail extends Model
         return $this->belongsTo(MailPriority::class); // 'priority_id' est implicite
     }
 
-    
+
     public function typology()
     {
         return $this->belongsTo(MailTypology::class); // 'typology_id' est implicite
@@ -87,12 +87,12 @@ class Mail extends Model
 
     public function archives()
     {
-        return $this->hasMany(MailArchive::class); // 'mail_id' est implicite
+        return $this->hasMany(MailArchive::class, 'mail_id');
     }
 
     public function containers()
     {
-        return $this->belongsToMany(container::class, 'mail_archives', 'mail_id', 'container_id')
+        return $this->belongsToMany(MailContainer::class, 'mail_archives', 'mail_id', 'container_id')
                     ->withPivot('archived_by', 'document_type')
                     ->withTimestamps();
     }

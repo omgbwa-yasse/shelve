@@ -219,7 +219,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
 
         Route::resource('container', MailContainerController::class)->names('mail-container');
-        Route::get('container/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
+
+        Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
 
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');

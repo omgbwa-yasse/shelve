@@ -19,9 +19,12 @@ class MailReceivedController extends Controller
     {
         $organisationId = Auth::user()->current_organisation_id;
         $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
-                     ->where('recipient_organisation_id', $organisationId)
-                     ->where('status', '!=', 'draft')
-                     ->get();
+                ->where('recipient_organisation_id', $organisationId)
+                ->where('status', '!=', 'draft')
+                ->withWhereHas('containers', function($q) {
+                    $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
+                })
+                ->get();
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
