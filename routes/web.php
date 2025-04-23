@@ -226,6 +226,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
+        Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
+        Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
 
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
 
@@ -250,10 +252,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
         Route::get('InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
-
-        Route::get('received/approve', [MailReceivedController::class, 'approve'])->name('mails.received.approve');
-        Route::get('received/reject', [MailReceivedController::class, 'reject'])->name('mails.received.reject');
-
 
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
         Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');

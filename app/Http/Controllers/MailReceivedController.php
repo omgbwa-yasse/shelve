@@ -21,7 +21,7 @@ class MailReceivedController extends Controller
         $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
                 ->where('recipient_organisation_id', $organisationId)
                 ->where('status', '!=', ['draft','reject'])
-                ->withWhereHas('containers', function($q) {
+                ->OrWhereHas('containers', function($q) {
                     $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
                 })
                 ->get();
@@ -50,19 +50,14 @@ class MailReceivedController extends Controller
 
 
 
-    public function approve(Request $request)
+    public function approve(Mail $mail)
     {
-        $validatedData = $request->validate([
-            'id' => 'required|exists:mails,id',
-        ]);
-
-        $mail = Mail::findOrFail($validatedData['id']);
 
         $mail->update([
             'recipient_user_id' => Auth::id(),
-            'status' => 'approved',
+            'status' => 'transmitted',
         ]);
-        dd($mail);
+
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail approved successfully.');
     }

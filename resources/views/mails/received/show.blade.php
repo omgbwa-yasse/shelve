@@ -380,7 +380,7 @@
                             </div>
                         </button>
                         @if($mail->status == 'in_progress')
-                            <a href="{{ route('mails.received.approve')}}?id={{ $mail->id }}"
+                            <a href="{{ route('mail-received.approve', $mail)}}"
                             class="list-group-item list-group-item-action py-2">
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-check-circle text-success me-3"></i>
@@ -388,7 +388,7 @@
                                 </div>
                             </a>
 
-                            <a href="{{ route('mails.received.reject') }}?id={{ $mail->id }}"
+                            <a href="{{ route('mail-received.reject', $mail) }}"
                             class="list-group-item list-group-item-action py-2">
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-x-circle text-danger me-3"></i>
