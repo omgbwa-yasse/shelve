@@ -15,22 +15,66 @@
     <tbody>
         @foreach ($mailArchives as $mailArchive)
             <tr>
-                <td>{{ $mailArchive->container->name }}</td>
+                <td>{{ $mailArchive->container->code }}</td>
                 <td>{{ $mailArchive->mail->name }}</td>
                 <td>{{ $mailArchive->document_type }}</td>
                 <td>{{ $mailArchive->user->name }}</td>
                 <td>
-                    <a href="{{ route('mail-archive.show', $mailArchive->id) }}" class="btn btn-primary">Afficher</a>
-                    <a href="{{ route('mail-archive.edit', $mailArchive->id) }}" class="btn btn-secondary">Modifier</a>
-                    <form action="{{ route('mail-archive.destroy', $mailArchive->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette archive ?')">Supprimer</button>
-                    </form>
+                    <button type="button" 
+                            class="btn btn-primary remove-mail-btn" 
+                            data-archive-mail-id="{{ $mailArchive->id }}"
+                            data-container-id="{{ $mailArchive->container->id }}" 
+                            data-mail-id="{{ $mailArchive->mail->id }}"
+                            data-remove-url="{{ route('mail-archive.remove-mails', $mailArchive->container->id) }}">
+                        Remove
+                    </button>
                 </td>
             </tr>
         @endforeach
     </tbody>
 </table>
+<script>
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sélectionner tous les boutons de suppression
+        const removeButtons = document.querySelectorAll('.remove-mail-btn');
+
+        // Ajouter un gestionnaire d'événement à chaque bouton
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const containerId = this.dataset.containerId;
+                const archiveMailId = this.dataset.archiveMailId;
+                const removeUrl = this.dataset.removeUrl;
+
+                if (confirm('Êtes-vous sûr de vouloir retirer ce mail de l\'archive ?')) {
+                    // Utiliser fetch pour envoyer une requête AJAX
+                    fetch(removeUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            archive_mail_id: archiveMailId,
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            
+                            window.location.reload();
+                        } else {
+                            alert('Une erreur est survenue');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        alert('Une erreur est survenue');
+                    });
+                }
+            });
+        });
+    });
+
+</script>
 @endsection

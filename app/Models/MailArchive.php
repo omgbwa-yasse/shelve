@@ -14,8 +14,8 @@ class MailArchive extends Model
     protected $fillable = [
         'container_id',
         'mail_id',
-        'archived_by', // Ajouté d'après le schéma SQL
-        'document_type', // Corrigé d'après le schéma SQL
+        'archived_by',
+        'document_type',
     ];
 
     public function container()
@@ -36,7 +36,6 @@ class MailArchive extends Model
     {
         return $this->belongsTo(User::class, 'archived_by');
     }
-
 
 
 }

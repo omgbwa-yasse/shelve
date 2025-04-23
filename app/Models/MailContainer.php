@@ -14,7 +14,7 @@ class MailContainer extends Model
         'code',
         'name',
         'type_id',
-        'created_by', // Corrigé d'après le schéma SQL
+        'created_by', 
         'creator_organisation_id'
     ];
 

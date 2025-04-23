@@ -217,7 +217,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
         Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
         Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
-        Route::resource('archives', MailArchiveController::class)->names('mail-archive');
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
@@ -234,7 +233,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
-
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
@@ -244,6 +242,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
 
         Route::get('chart', [SearchMailController::class, 'chart'])->name('mails.chart');
+
+
+        Route::resource('archives', MailArchiveController::class)->names('mail-archive');
+
+        Route::post('archives/{containerId}/add-mails', [MailArchiveController::class, 'addMails'])->name('mail-archive.add-mails');
+        Route::post('archives/{containerId}/remove-mails', [MailArchiveController::class, 'removeMails'])->name('mail-archive.remove-mails');
     });
 
 
