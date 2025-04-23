@@ -224,7 +224,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
-        Route::resource('received', MailReceivedController::class)->names('mail-received');
+        Route::resource('received', MailReceivedController::class)->names('mail-received');  
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::resource('typologies', MailTypologyController::class);

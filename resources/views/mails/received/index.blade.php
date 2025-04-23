@@ -102,7 +102,7 @@
                         </button>
 
                         <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
-                            <a href="{{ route('mail-received.show', $mail) }}" class="text-decoration-none text-dark">
+                            <a href="{{ route('mail-received.show', $mail->id) }}" class="text-decoration-none text-dark">
                                 <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
                                 <span class="fs-5"> - {{ $mail->name ?? 'N/A' }} </span>
                                 <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>

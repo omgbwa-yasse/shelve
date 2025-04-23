@@ -62,7 +62,7 @@ class MailReceivedController extends Controller
             'recipient_user_id' => Auth::id(),
             'status' => 'approved',
         ]);
-
+        dd($mail);
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail approved successfully.');
     }
@@ -151,9 +151,9 @@ class MailReceivedController extends Controller
 
 
 
-    public function show(int $id)
+    public function show(Mail $mail)
     {
-        $mail = Mail::with([
+        $mail->load([
                             'action',
                             'sender',
                             'senderOrganisation',
@@ -161,30 +161,29 @@ class MailReceivedController extends Controller
                             'recipientOrganisation',
                             'authors',
                             'attachments'
-                        ])
-                    ->findOrFail($id);
+                        ]);
 
         return view('mails.received.show', compact('mail'));
     }
 
 
 
-    public function edit(int $id)
+    public function edit(Mail $received)
     {
-        $mail = Mail::with([
-                            'action',
-                            'sender',
-                            'senderOrganisation',
-                            'priority',
-                            'typology',
-                            'authors',
-                            'attachments'
-                        ])
-                    ->findOrFail($id);
+        $received->load([
+            'action',
+            'sender',
+            'senderOrganisation',
+            'recipient',
+            'recipientOrganisation',
+            'authors',
+            'attachments'
+        ]);
+        
         $mailActions = MailAction::all();
         $senderOrganisations = Organisation::whereNot('id', auth()->user()->current_organisation_id)->get();
 
-        return view('mails.received.edit', compact('mail', 'mailActions', 'senderOrganisations'));
+        return view('mails.received.edit', compact('received', 'mailActions', 'senderOrganisations'));
     }
 
 
