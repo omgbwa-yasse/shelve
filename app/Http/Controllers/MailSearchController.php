@@ -56,15 +56,14 @@ class MailSearchController extends Controller
             });
         }
 
-        $mails = $query->with(['priority', 'authors', 'typology', 'type', 'creator', 'updator', 'lastTransaction'])
+        $mails = $query->with(['priority', 'authors', 'typology', 'creator', 'updator', 'lastTransaction'])
             ->paginate(15);
 
         $priorities = MailPriority::all();
-        $types = MailType::all();
         $typologies = MailTypology::all();
         $authors = Author::all();
 
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
+        return view('mails.index', compact('mails', 'priorities',  'typologies', 'authors'));
     }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MailContainer;
 use App\Models\ContainerType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class MailContainerController extends Controller
@@ -13,10 +14,10 @@ class MailContainerController extends Controller
         $mailContainers = MailContainer::with(['containerType', 'creator', 'organisation']) // Removed 'mailArchivings'
                                       ->where('creator_organisation_id', auth()->user()->current_organisation_id) // Corrected field name
                                       ->paginate(10);
+        dd($mailContainers);
 
         return view('mails.containers.index', compact('mailContainers'));
     }
-
 
 
     public function create()
@@ -104,7 +105,11 @@ class MailContainerController extends Controller
 
     public function getContainers()
     {
-        $containers = MailContainer::select('id', 'code', 'name')->get();
+        $containers = MailContainer::select('id', 'code', 'name')
+            ->whereHas('organisation',function($query){
+                $query->where('id', Auth::user()->current_organisation_id);
+            })
+            ->get();
         return response()->json($containers);
     }
 

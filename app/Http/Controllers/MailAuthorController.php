@@ -18,10 +18,10 @@ class MailAuthorController extends Controller
 
     public function create()
     {
-        $authorTypes = AuthorType::all();
+        $types = AuthorType::all();
         $parents = author::all();
-        $parents->load('authorType');
-        return view('mails.authors.create', compact('authorTypes','parents'));
+        $parents->load('type');
+        return view('mails.authors.create', compact('types','parents'));
     }
 
 

@@ -87,7 +87,7 @@
                                placeholder="{{ __('search_type') }}">
                     </div>
                     <div class="list-group" id="typesList">
-                        @foreach ($authorTypes as $type)
+                        @foreach ($types as $type)
                             <button type="button" class="list-group-item list-group-item-action type-item"
                                     data-id="{{ $type->id }}"
                                     data-name="{{ $type->name }}">
@@ -118,10 +118,10 @@
                             <button type="button" class="list-group-item list-group-item-action parent-item"
                                     data-id="{{ $parent->id }}"
                                     data-name="{{ $parent->name }}"
-                                    data-type="{{ $parent->authorType->name }}">
+                                    data-type="{{ $parent->type->name }}">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <strong>{{ $parent->name }}</strong>
-                                    <small class="text-muted">{{ $parent->authorType->name }}</small>
+                                    <small class="text-muted">{{ $parent->type->name }}</small>
                                 </div>
                             </button>
                         @endforeach
