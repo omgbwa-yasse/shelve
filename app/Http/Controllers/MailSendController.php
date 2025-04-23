@@ -544,6 +544,31 @@ public function inprogress()
     }
 }
 
+
+
+
+
+public function rejected()
+{
+    try {
+            $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'attachments'])
+                ->where('recipient_user_id', Auth::id())
+                ->where('status', 'reject')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('mails.send.index', compact('mails'));
+
+        } catch (Exception $e) {
+
+            Log::error('Erreur lors de la récupération des courriers en cours : ' . $e->getMessage());
+            return back()->with('error', 'Une erreur est survenue lors du chargement des courriers.');
+            
+        }
+}
+
+
+
+
 public function approve(Request $request)
 {
     try {
@@ -562,4 +587,9 @@ public function approve(Request $request)
         return back()->with('error', 'Une erreur est survenue lors de l\'approbation.');
     }
 }
+
+
+
+
+
 }
