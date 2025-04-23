@@ -90,4 +90,50 @@
         <button type="submit" class="btn btn-primary">Modifier</button>
     </form>
 </div>
+
+
+<script>
+
+    const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
+    const recipientUserSelect = document.getElementById('recipient_user_id');
+
+        recipientUserSelect.disabled = true;
+
+        recipientOrganisationSelect.addEventListener('change', function() {
+            const organisationId = this.value;
+
+            if (!organisationId) {
+                recipientUserSelect.disabled = true;
+                recipientUserSelect.innerHTML = '<option value="">Select a user</option>';
+                return;
+            }
+
+            recipientUserSelect.disabled = false;
+
+            recipientUserSelect.innerHTML = '<option value="">Loading...</option>';
+
+            fetch(`/mails/organizations/${organisationId}/users`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error while retrieving users');
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name;
+                        recipientUserSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    recipientUserSelect.innerHTML = '<option value="">Error loading</option>';
+                });
+        });
+
+<script/>
+
 @endsection

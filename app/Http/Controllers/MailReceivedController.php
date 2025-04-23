@@ -79,7 +79,7 @@ class MailReceivedController extends Controller
         $mail->update([
             'recipient_user_id' => auth::user()->id,
             'status' => 'reject',
-            
+
         ]);
 
         return redirect()->route('mail-received.index')
@@ -151,9 +151,9 @@ class MailReceivedController extends Controller
 
 
 
-    public function show(Mail $mail)
+    public function show(INT $mail_id)
     {
-        $mail->load([
+        $mail=Mail::findOrFail($mail_id)->load([
                             'action',
                             'sender',
                             'senderOrganisation',
@@ -162,7 +162,6 @@ class MailReceivedController extends Controller
                             'authors',
                             'attachments'
                         ]);
-
         return view('mails.received.show', compact('mail'));
     }
 
@@ -179,7 +178,7 @@ class MailReceivedController extends Controller
             'authors',
             'attachments'
         ]);
-        
+
         $mailActions = MailAction::all();
         $senderOrganisations = Organisation::whereNot('id', auth()->user()->current_organisation_id)->get();
 
