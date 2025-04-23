@@ -78,7 +78,7 @@
             </a>
             <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
                 <i class="bi bi-archive me-1"></i>
-                Archiver
+                Archiver ***
             </a>
         </div>
         <div class="d-flex align-items-center">
@@ -403,7 +403,7 @@
                             
                 
 
-                
+
                 // Envoyer les données au serveur
                 fetch(`{{ route('mail-archive.add-mails', ${containerId})}}`, {
                     method: 'POST',
