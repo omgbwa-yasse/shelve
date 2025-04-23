@@ -17,11 +17,15 @@ class MailContainerController extends Controller
         return view('mails.containers.index', compact('mailContainers'));
     }
 
+
+
     public function create()
     {
         $containerTypes = ContainerType::all();
         return view('mails.containers.create', compact('containerTypes')); // Removed 'mails'
     }
+
+
 
     public function store(Request $request)
     {
@@ -43,11 +47,16 @@ class MailContainerController extends Controller
                         ->with('success','Mail Container created successfully.');
     }
 
+
+
     public function show(int $id)
     {
         $mailContainer = MailContainer::with('containerType', 'creator')->findOrFail($id);
         return view('mails.containers.show', compact('mailContainer'));
     }
+
+
+
 
     public function edit(int $id)
     {
@@ -55,6 +64,8 @@ class MailContainerController extends Controller
         $mailContainer = MailContainer::with('containerType')->findOrFail($id);
         return view('mails.containers.edit', compact('mailContainer', 'containerTypes'));
     }
+
+
 
     public function update(Request $request, MailContainer $mailContainer)
     {
@@ -74,6 +85,8 @@ class MailContainerController extends Controller
                         ->with('success','Mail Container updated successfully');
     }
 
+
+
     public function destroy(int $id)
     {
         $mailContainer = MailContainer::findOrFail($id);
@@ -87,4 +100,15 @@ class MailContainerController extends Controller
                             ->with('error', 'Mail Container cannot be deleted because it has associated mail archives.');
         }
     }
+
+
+    public function getContainers()
+    {
+        $containers = MailContainer::select('id', 'code', 'name')->get();
+        return response()->json($containers);
+    }
+
+
+
+
 }

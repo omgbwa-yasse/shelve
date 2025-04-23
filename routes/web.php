@@ -217,7 +217,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
         Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
         Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
+
         Route::resource('container', MailContainerController::class)->names('mail-container');
+        Route::get('container/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
+
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
         Route::resource('received', MailReceivedController::class)->names('mail-received');

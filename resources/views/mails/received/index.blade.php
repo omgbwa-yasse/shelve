@@ -76,6 +76,10 @@
                 <i class="bi bi-printer me-1"></i>
                 Imprimer
             </a>
+            <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
+                <i class="bi bi-archive me-1"></i>
+                Archiver
+            </a>
         </div>
         <div class="d-flex align-items-center">
             <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
@@ -147,6 +151,46 @@
             @endforeach
         </div>
     </div>
+
+
+
+    <!-- Modal d'archivage -->
+    <div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archiver les documents</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="archiveForm">
+                        <div class="mb-3">
+                            <label for="containerId" class="form-label">Conteneur d'archives</label>
+                            <select class="form-select" id="containerId" required>
+                                <option value="" selected disabled>Sélectionner un conteneur</option>
+                                <!-- Les conteneurs seront chargés dynamiquement ici -->
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="documentType" class="form-label">Type de document</label>
+                            <select class="form-select" id="documentType" required>
+                                <option value="duplicata"> Duplicata </option>
+                                <option value="original"> original </option>
+                                <option value="copy"> copie </option>
+                            </select>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmArchiveBtn" >Confirmer l'archivage</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <div class="modal fade" id="dolliesModal" tabindex="-1" aria-labelledby="dolliesModalLabel" aria-hidden="true">
@@ -241,5 +285,162 @@
     
     <script src="{{ asset('js/mails.js') }}"></script>
     <script src="{{ asset('js/dollies.js') }}"></script>
+
+    <script>
+
+        // Fonction pour charger les conteneurs
+        function loadContainers() {
+            console.log("Chargement des containers ...");
+
+            const containerSelect = document.getElementById('containerId');
+            
+            // Vider le select sauf la première option
+            while (containerSelect.options.length > 1) {
+                containerSelect.remove(1);
+            }
+            
+            // Ajouter un indicateur de chargement
+            const loadingOption = document.createElement('option');
+            loadingOption.textContent = 'Chargement...';
+            loadingOption.disabled = true;
+            containerSelect.appendChild(loadingOption);
+            
+            // Récupérer les conteneurs via une requête AJAX
+            fetch('/mails/container/list', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Supprimer l'option de chargement
+                containerSelect.remove(containerSelect.options.length - 1);
+                
+                // Ajouter les conteneurs au select
+                data.forEach(container => {
+                    const option = document.createElement('option');
+                    option.value = container.id;
+                    option.textContent = `${container.code} - ${container.name}`;
+                    containerSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                containerSelect.remove(containerSelect.options.length - 1);
+                
+                const errorOption = document.createElement('option');
+                errorOption.textContent = 'Erreur de chargement';
+                errorOption.disabled = true;
+                containerSelect.appendChild(errorOption);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du bouton "Tout cocher"
+            const checkAllBtn = document.getElementById('checkAllBtn');
+            const mailCheckboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+
+            let allChecked = false;
+            checkAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                allChecked = !allChecked;
+                
+                mailCheckboxes.forEach(checkbox => {
+                    checkbox.checked = allChecked;
+                });
+                
+                // Mise à jour du texte du bouton
+                if (allChecked) {
+                    checkAllBtn.innerHTML = '<i class="bi bi-square me-1"></i> Tout décocher';
+                } else {
+                    checkAllBtn.innerHTML = '<i class="bi bi-check-square me-1"></i> Tout cocher';
+                }
+            });
+            
+            // Gestion du modal d'archivage
+            const archiveBtn = document.getElementById('archiveBtn');
+            const confirmArchiveBtn = document.getElementById('confirmArchiveBtn');
+            
+            // Empêcher l'ouverture du modal si aucun mail n'est sélectionné
+            archiveBtn.addEventListener('click', function(e) {
+                const selectedMails = Array.from(mailCheckboxes).filter(checkbox => checkbox.checked);
+                
+                if (selectedMails.length === 0) {
+                    e.preventDefault(); // Empêcher l'ouverture du modal
+                    alert('Veuillez sélectionner au moins un mail à archiver.');
+                }
+            });
+            
+            // Ajouter l'événement de clic sur le bouton de confirmation
+            confirmArchiveBtn.addEventListener('click', archiveMails);
+            
+            // Fonction pour archiver les mails
+            function archiveMails() {
+                const documentTypeSelect = document.getElementById('documentType');
+                const selectedMails = Array.from(mailCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => {
+                        return {
+                            id: checkbox.value,
+                            document_type: documentTypeSelect.value
+                        };
+                    });
+                
+                if (selectedMails.length === 0) {
+                    alert('Veuillez sélectionner au moins un mail à archiver.');
+                    return;
+                }
+
+                const mailCheckboxes = document.querySelectorAll('input[name="selected_mail[]"]');
+                const selectedMails = Array.from(mailCheckboxes).filter(checkbox => checkbox.checked);
+                
+                if (selectedMails.length > 0) {
+                    loadContainers();
+                }
+                            
+                
+
+                
+                // Envoyer les données au serveur
+                fetch(`{{ route('mail-archive.add-mails', ${containerId})}}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        mails: selectedMails
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Fermer le modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('archiveModal'));
+                        modal.hide();
+                        
+                        // Afficher un message de succès
+                        alert('Les mails ont été archivés avec succès !');
+                        
+                        // Optionnel : recharger la page ou mettre à jour l'interface
+                        window.location.reload();
+
+                    } else {
+                        alert('Une erreur est survenue lors de l\'archivage.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de l\'archivage.');
+                });
+            }
+        });
+
+
+
+    </script>
     
 @endsection
