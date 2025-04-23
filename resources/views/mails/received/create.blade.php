@@ -78,11 +78,7 @@
                             <label for="sender_user_id" class="form-label">Utilisateur expéditeur</label>
                             <select name="sender_user_id" id="sender_user_id" class="form-select" required>
                                 <option value="">Sélectionner un utilisateur</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('sender_user_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
+                                <!--  Ici se charge automatique les utilisateurs  -->
                             </select>
                         </div>
                     </div>
@@ -334,7 +330,50 @@
 
                     form.classList.add('was-validated');
                 });
-            });
+
+
+
+                const senderOrganisationSelect = document.getElementById('sender_organisation_id');
+                const senderUserSelect = document.getElementById('sender_user_id');
+
+                    senderUserSelect.disabled = true;
+
+                    senderOrganisationSelect.addEventListener('change', function() {
+                        const organisationId = this.value;
+
+                        if (!organisationId) {
+                            senderUserSelect.disabled = true;
+                            senderUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                            return;
+                        }
+
+                        senderUserSelect.disabled = false;
+
+                        senderUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+
+                        fetch(`/mails/organisations/${organisationId}/users`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Erreur lors de la récupération des utilisateurs');
+                                }
+                                return response.json();
+                            })
+                            .then(users => {
+                                senderUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                                users.forEach(user => {
+                                    const option = document.createElement('option');
+                                    option.value = user.id;
+                                    option.textContent = user.name;
+                                    senderUserSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Erreur:', error);
+                                senderUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                            });
+                    });
+                });
+
         </script>
     @endpush
 @endsection

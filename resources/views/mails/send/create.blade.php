@@ -301,6 +301,56 @@
                     return;
                 }
             });
+
+
+
+
+
+
+
+
+                const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
+                const recipientUserSelect = document.getElementById('recipient_user_id');
+
+                    recipientUserSelect.disabled = true;
+
+                    recipientOrganisationSelect.addEventListener('change', function() {
+                        const organisationId = this.value;
+
+                        if (!organisationId) {
+                            recipientUserSelect.disabled = true;
+                            recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                            return;
+                        }
+
+                        recipientUserSelect.disabled = false;
+
+                        recipientUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+
+                        fetch(`/mails/organisations/${organisationId}/users`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Erreur lors de la récupération des utilisateurs');
+                                }
+                                return response.json();
+                            })
+                            .then(users => {
+                                recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                                users.forEach(user => {
+                                    const option = document.createElement('option');
+                                    option.value = user.id;
+                                    option.textContent = user.name;
+                                    recipientUserSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Erreur:', error);
+                                recipientUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                            });
+                    });
+
+
+
         });
     </script>
 @endpush

@@ -57,6 +57,11 @@ class Organisation extends Model
     }
 
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_organisation_role', 'organisation_id', 'user_id');
+    }
+
 
     public function actives()
     {

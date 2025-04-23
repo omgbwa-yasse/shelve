@@ -387,7 +387,7 @@
                                     <div>Approuver la réception du mail</div>
                                 </div>
                             </a>
-                            
+
                             <a href="{{ route('mails.received.reject') }}?id={{ $mail->id }}"
                             class="list-group-item list-group-item-action py-2">
                                 <div class="d-flex align-items-center">
@@ -397,7 +397,7 @@
                             </a>
                         @endif
                     </div>
-                </div>       
+                </div>
         </div>
     </div>
 

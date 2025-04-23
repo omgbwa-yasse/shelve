@@ -224,10 +224,15 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
-        
-        Route::resource('received', MailReceivedController::class)->names('mail-received');  
-        
+
+        Route::resource('received', MailReceivedController::class)->names('mail-received');
+
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
+
+        Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
+            return $organisation->users;
+        });
+
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::resource('typologies', MailTypologyController::class);
         Route::get('archived', [MailArchiveController::class, 'archived'])->name('mails.archived');
@@ -235,8 +240,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
-        
-        
+
+
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
@@ -245,7 +250,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
         Route::get('InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
-        
+
         Route::get('received/approve', [MailReceivedController::class, 'approve'])->name('mails.received.approve');
         Route::get('received/reject', [MailReceivedController::class, 'reject'])->name('mails.received.reject');
 
