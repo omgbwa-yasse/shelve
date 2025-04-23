@@ -230,12 +230,10 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
                 'container_id' => $containerId,
                 'mail_id' => $mail['id'],
                 'archived_by' => Auth::user()->id,
-                'organisation_id' => Auth::user()->current_organisation_id,
                 'document_type' => $mail['document_type'],
             ]);
         }
-
-
+        
         return response()->json([
             'success' => true,
         ], 200);

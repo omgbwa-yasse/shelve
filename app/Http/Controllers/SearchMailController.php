@@ -106,7 +106,7 @@ class SearchMailController extends Controller
         // Recherche par conteneur
         if ($request->filled('container_id')) {
             $query->whereHas('containers', function ($q) use ($request) {
-                $q->where('containers.id', $request->container_id);
+                $q->where('container_id', $request->container_id);
             });
             $container = MailContainer::find($request->container_id);
             if ($container) {

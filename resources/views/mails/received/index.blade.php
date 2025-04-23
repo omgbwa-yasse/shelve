@@ -106,15 +106,20 @@
                                 <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
                                 <span class="fs-5"> - {{ $mail->name ?? 'N/A' }} </span>
                                 <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
-                                    @if ( $mail->containers->count()>1)
+                                
+                                @if ($mail->status == 'in_progress')
+                                    <span class="badge bg-warning ms-2">À recevoir</span>
+                                @endif
+                                
+                                @if ($mail->containers->count() > 1)
                                     <span class="badge bg-primary ms-2">
                                         copies {{ $mail->containers->count() }} archivées
                                     </span>
-                                    @elseif ($mail->containers->count() == 1)
+                                @elseif ($mail->containers->count() == 1)
                                     <span class="badge bg-primary ms-2">
                                         copie {{ $mail->containers->count() }} archivée
                                     </span>
-                                    @endif
+                                @endif
                             </a>
                         </h4>
                     </div>

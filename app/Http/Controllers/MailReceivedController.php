@@ -20,7 +20,7 @@ class MailReceivedController extends Controller
         $organisationId = Auth::user()->current_organisation_id;
         $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
                 ->where('recipient_organisation_id', $organisationId)
-                ->where('status', '!=', 'draft')
+                ->where('status', '!=', ['draft','reject'])
                 ->withWhereHas('containers', function($q) {
                     $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
                 })
@@ -59,8 +59,27 @@ class MailReceivedController extends Controller
         $mail = Mail::findOrFail($validatedData['id']);
 
         $mail->update([
+            'recipient_user_id' => Auth::id(),
+            'status' => 'approved',
+        ]);
+
+        return redirect()->route('mail-received.index')
+                         ->with('success', 'Mail approved successfully.');
+    }
+
+
+    public function reject(Request $request)
+    {
+        $validatedData = $request->validate([
+            'id' => 'required|exists:mails,id',
+        ]);
+
+        $mail = Mail::findOrFail($validatedData['id']);
+
+        $mail->update([
             'recipient_user_id' => auth::user()->id,
-            'status' => 'received',
+            'status' => 'reject',
+            
         ]);
 
         return redirect()->route('mail-received.index')
