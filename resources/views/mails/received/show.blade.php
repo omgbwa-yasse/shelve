@@ -52,23 +52,23 @@
                                         </div>
                                         <div>
                                             <small class="text-muted">Expéditeur</small>
-                                            <div class="fw-bold">{{ $mail->sender->name ?? 'N/A' }}</div>
+                                            <div class="fw-bold">{{ $mail->recipient->name ?? 'N/A' }}</div>
                                         </div>
                                     </div>
                                     <div class="small">
-                                        <div class="text-muted mb-1">{{ $mail->senderOrganisation->name ?? 'N/A' }}</div>
-                                        @if($mail->sender_address)
-                                            <div><i class="bi bi-geo-alt me-1"></i>{{ $mail->sender_address }}</div>
+                                        <div class="text-muted mb-1">{{ $mail->recipientOrganisation->name ?? 'N/A' }}</div>
+                                        @if($mail->recipient_address)
+                                            <div><i class="bi bi-geo-alt me-1"></i>{{ $mail->recipient_address }}</div>
                                         @endif
-                                        @if($mail->sender_email)
-                                            <div><i class="bi bi-envelope me-1"></i>{{ $mail->sender_email }}</div>
+                                        @if($mail->recipient_email)
+                                            <div><i class="bi bi-envelope me-1"></i>{{ $mail->recipient_email }}</div>
                                         @endif
-                                        @if($mail->sender_phone)
-                                            <div><i class="bi bi-telephone me-1"></i>{{ $mail->sender_phone }}</div>
+                                        @if($mail->recipient_phone)
+                                            <div><i class="bi bi-telephone me-1"></i>{{ $mail->recipient_phone }}</div>
                                         @endif
-                                        @if($mail->sender_reference)
+                                        @if($mail->recipient_reference)
                                             <div class="mt-1">
-                                                <span class="badge bg-light text-dark">Réf: {{ $mail->sender_reference }}</span>
+                                                <span class="badge bg-light text-dark">Réf: {{ $mail->recipient_reference }}</span>
                                             </div>
                                         @endif
                                     </div>
@@ -358,13 +358,12 @@
                     </div>
                     <div class="list-group list-group-flush">
 
-                        <a href=""
-                           class="list-group-item list-group-item-action py-2">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-forward text-success me-3"></i>
-                                <div>Transférer</div>
-                            </div>
+                        <a href="#" id="transfertBtn" class="list-group-item list-group-item-action py-2" 
+                            data-bs-toggle="modal" data-bs-target="#transfertModal">
+                            <i class="bi bi-archive me-1"></i>
+                            Transférer le courrier
                         </a>
+
                         <a href=""
                            class="list-group-item list-group-item-action py-2">
                             <div class="d-flex align-items-center">
@@ -401,6 +400,52 @@
         </div>
     </div>
 
+
+
+
+
+    <!-- Modal de transfert -->
+
+    <div class="modal fade" id="transfertModal" tabindex="-1" aria-labelledby="transfertModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transfertModalLabel">Transférer le courrier</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transfertForm">
+                        <input type="hidden" name="mail_id" id="mail_id" value="{{ $mail->id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="recipient_organisation_id" class="form-label">Organisation destinataire</label>
+                                <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select" required>
+                                    <option value="">Sélectionner une organisation</option>
+                                    <!-- Sera chargé via JavaScript -->
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="recipient_user_id" class="form-label">Utilisateur destinataire</label>
+                                <select name="recipient_user_id" id="recipient_user_id" class="form-select" required>
+                                    <option value="">Sélectionner un utilisateur</option>
+                                    <!-- Sera chargé via JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transfer_comment" class="form-label">Commentaire (optionnel)</label>
+                            <textarea name="transfer_comment" id="transfer_comment" class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confTransfertBtn">Confirmer le transfert</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Modal de suppression --}}
     <div class="modal fade" id="deleteModal" tabindex="-1">
         <div class="modal-dialog modal-sm">
@@ -423,6 +468,159 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Référence aux éléments du DOM
+            const transfertBtn = document.getElementById('transfertBtn');
+            const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
+            const recipientUserSelect = document.getElementById('recipient_user_id');
+            const confTransfertBtn = document.getElementById('confTransfertBtn');
+            const mailId = document.getElementById('mail_id').value;
+            
+            // Désactiver le select d'utilisateurs initialement
+            recipientUserSelect.disabled = true;
+            
+            // Charger les organisations quand on ouvre le modal
+            transfertBtn.addEventListener('click', function() {
+                loadOrganisations();
+            });
+            
+            // Fonction pour charger les organisations
+            function loadOrganisations() {
+                recipientOrganisationSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+                
+                fetch('/mails/organisations/list')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la récupération des organisations');
+                        }
+                        return response.json();
+                    })
+                    .then(organisations => {
+                        recipientOrganisationSelect.innerHTML = '<option value="">Sélectionner une organisation</option>';
+                        organisations.forEach(org => {
+                            const option = document.createElement('option');
+                            option.value = org.id;
+                            option.textContent = org.name;
+                            recipientOrganisationSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        recipientOrganisationSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    });
+            }
+            
+            // Charger les utilisateurs lorsqu'une organisation est sélectionnée
+            recipientOrganisationSelect.addEventListener('change', function() {
+                const organisationId = this.value;
+                
+                if (!organisationId) {
+                    recipientUserSelect.disabled = true;
+                    recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                    return;
+                }
+                
+                recipientUserSelect.disabled = false;
+                recipientUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+                
+                fetch(`/mails/organisations/${organisationId}/users`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la récupération des utilisateurs');
+                        }
+                        return response.json();
+                    })
+                    .then(users => {
+                        recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                        users.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.name;
+                            recipientUserSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        recipientUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    });
+            });
+            
+            // Gérer la soumission du formulaire de transfert
+            confTransfertBtn.addEventListener('click', function() {
+                const organisationId = recipientOrganisationSelect.value;
+                const userId = recipientUserSelect.value;
+                const comment = document.getElementById('transfer_comment').value;
+                
+                // Validation
+                if (!organisationId) {
+                    alert('Veuillez sélectionner une organisation');
+                    return;
+                }
+                
+                if (!userId) {
+                    alert('Veuillez sélectionner un utilisateur');
+                    return;
+                }
+                
+                // Préparation des données pour l'envoi
+                const data = {
+                    mail_id: mailId,
+                    recipient_user_id: userId,
+                    recipient_organisation_id: organisationId,
+                    comment: comment
+                };
+                
+                // Envoi de la requête AJAX
+                transferMail(data);
+            });
+            
+            // Fonction pour transférer le mail
+            function transferMail(data) {
+                // Afficher un indicateur de chargement
+                confTransfertBtn.disabled = true;
+                confTransfertBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Transfert en cours...';
+                
+                fetch('/mails/transfert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors du transfert');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    // Fermer le modal
+                    const transfertModal = bootstrap.Modal.getInstance(document.getElementById('transfertModal'));
+                    transfertModal.hide();
+                    
+                    // Afficher un message de succès
+                    alert('Le courrier a été transféré avec succès');
+                    
+                    // Recharger la page pour refléter les changements
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors du transfert du courrier');
+                    
+                    // Réactiver le bouton
+                    confTransfertBtn.disabled = false;
+                    confTransfertBtn.innerHTML = 'Confirmer le transfert';
+                });
+            }
+        });
+
+    </script>
+
+    </script>
 
     @push('styles')
         <style>

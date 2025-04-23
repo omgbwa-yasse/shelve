@@ -63,20 +63,16 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="sender_organisation_id" class="form-label">Organisation d'envoi</label>
-                            <select name="sender_organisation_id" id="sender_organisation_id" class="form-select" required>
+                            <label for="recipient_organisation_id" class="form-label">Organisation d'envoi</label>
+                            <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select" required>
                                 <option value="">Sélectionner une organisation</option>
-                                @foreach($senderOrganisations as $organisation)
-                                    <option value="{{ $organisation->id }}" {{ old('sender_organisation_id') == $organisation->id ? 'selected' : '' }}>
-                                        {{ $organisation->name }}
-                                    </option>
-                                @endforeach
+                                <!--  Ici se charge automatique les organisations  -->
                             </select>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label for="sender_user_id" class="form-label">Utilisateur expéditeur</label>
-                            <select name="sender_user_id" id="sender_user_id" class="form-select" required>
+                            <label for="recipient_user_id" class="form-label">Utilisateur expéditeur</label>
+                            <select name="recipient_user_id" id="recipient_user_id" class="form-select" required>
                                 <option value="">Sélectionner un utilisateur</option>
                                 <!--  Ici se charge automatique les utilisateurs  -->
                             </select>
@@ -120,6 +116,7 @@
                             </select>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -333,46 +330,88 @@
 
 
 
-                const senderOrganisationSelect = document.getElementById('sender_organisation_id');
-                const senderUserSelect = document.getElementById('sender_user_id');
 
-                    senderUserSelect.disabled = true;
 
-                    senderOrganisationSelect.addEventListener('change', function() {
-                        const organisationId = this.value;
-
-                        if (!organisationId) {
-                            senderUserSelect.disabled = true;
-                            senderUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
-                            return;
+            /*
+            
+                Chargement des organisations
+            
+            */
+            const recipientOrganisationSelect = document.getElementById('recipient_organisation_id');
+            console.log(recipientOrganisationSelect);
+            fetch(`/mails/organisations`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la récupération des organisations');
                         }
+                        return response.json();
+                    })
+                    .then(organisations => {
+                        recipientOrganisationSelect.innerHTML = '<option value="">Sélectionner une organisation </option>';
+                        
+                        organisations.forEach(organisation => {
+                            const option = document.createElement('option');
+                            option.value = organisation.id;
+                            option.textContent = organisation.name;
+                            recipientOrganisationSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        recipientOrganisationSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    });
 
-                        senderUserSelect.disabled = false;
 
-                        senderUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
 
-                        fetch(`/mails/organisations/${organisationId}/users`)
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Erreur lors de la récupération des utilisateurs');
-                                }
-                                return response.json();
-                            })
-                            .then(users => {
-                                senderUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
-                                users.forEach(user => {
-                                    const option = document.createElement('option');
-                                    option.value = user.id;
-                                    option.textContent = user.name;
-                                    senderUserSelect.appendChild(option);
-                                });
-                            })
-                            .catch(error => {
-                                console.error('Erreur:', error);
-                                senderUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
-                            });
+
+
+
+
+            /*
+            
+                Chargement des utilisateurs
+            
+            */
+
+            const recipientUserSelect = document.getElementById('recipient_user_id');
+
+            recipientUserSelect.disabled = true;
+
+            recipientOrganisationSelect.addEventListener('change', function() {
+                const organisationId = this.value;
+
+                if (!organisationId) {
+                    recipientUserSelect.disabled = true;
+                    recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                    return;
+                }
+
+                recipientUserSelect.disabled = false;
+
+                recipientUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+
+                fetch(`/mails/organisations/${organisationId}/users`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur lors de la récupération des utilisateurs');
+                        }
+                        return response.json();
+                    })
+                    .then(users => {
+                        recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
+                        users.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.name;
+                            recipientUserSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        recipientUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
                     });
                 });
+            });
 
         </script>
     @endpush

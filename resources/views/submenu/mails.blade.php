@@ -169,11 +169,6 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-author.create') }}">
-                    <i class="bi bi-people"></i> {{ __('producer') }}
-                </a>
-            </div>
-            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-container.create') }}">
                     <i class="bi bi-archive"></i> {{ __('box_chrono') }}
                 </a>

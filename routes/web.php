@@ -226,8 +226,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
+        
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users;
+        });
+
+        Route::get('/organisations/list', function() {
+            return App\Models\Organisation::all();
         });
 
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
