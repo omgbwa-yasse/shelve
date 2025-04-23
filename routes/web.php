@@ -224,7 +224,9 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
+        
         Route::resource('received', MailReceivedController::class)->names('mail-received');  
+        
         Route::resource('authors', MailAuthorController::class)->names('mail-author');
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::resource('typologies', MailTypologyController::class);
@@ -233,6 +235,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
+        
+        
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
