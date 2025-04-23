@@ -149,8 +149,15 @@
                                             <span class="badge bg-white text-success me-1">
                                                 {{ $mailContainer->mails->count() }}
                                             </span>
-                                                Courriers
+                                                émis
                                             </a>
+                                            <a href="{{ route('mails.sort') }}?container_id={{ $mailContainer->id }}"
+                                                class="btn btn-success btn-sm">
+                                             <span class="badge bg-white text-success me-1">
+                                                 {{ $mailContainer->mails->count() }}
+                                             </span>
+                                                 Reçus
+                                             </a>
                                         </div>
                                     </div>
                                 </div>

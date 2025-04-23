@@ -105,8 +105,8 @@ class SearchMailController extends Controller
 
         // Recherche par conteneur
         if ($request->filled('container_id')) {
-            $query->whereHas('containers', function ($q) use ($request) {
-                $q->where('container_id', $request->container_id);
+            $query->whereHas('containers', function($q) use ($request) {
+                $q->where('mail_containers.id', $request->container_id);
             });
             $container = MailContainer::find($request->container_id);
             if ($container) {
@@ -131,7 +131,13 @@ class SearchMailController extends Controller
         }
 
         // Appliquer la pagination
-        $mails = $query->orderBy('created_at', 'desc')->paginate(10);
+        $mails = $query->with('archives','containers',
+                'attachments', 'recipientOrganisation','recipient',
+                'senderOrganisation', 'sender','action',
+                'typology', 'priority')
+            ->orderBy('created_at', 'desc')->paginate(10);
+
+
 
         // Récupérer les données pour les select
         $data = [
@@ -142,10 +148,15 @@ class SearchMailController extends Controller
             'containers' => MailContainer::all(),
         ];
 
-        return view('mails.index', compact('mails', 'title', 'data'));
+        if($request->type == 'send'){
+            return view('mails.send.index', compact('mails', 'title', 'data'));
+        }elseif($request->type == 'received'){
+            return view('mails.received.index', compact('mails', 'title', 'data'));
+        }
+
     }
 
-    // Méthodes auxiliaires pour la clarté du code
+
     private function handleDateSearch($query, $request, &$title)
     {
         if ($request->filled('date_exact')) {

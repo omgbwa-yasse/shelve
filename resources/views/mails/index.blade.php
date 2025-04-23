@@ -59,9 +59,7 @@
                                     <div class="col-md-9">
                                         <p class="mb-2">
                                             <i class="bi bi-person-fill me-2 text-primary"></i><strong>{{ __('author') }}:</strong>
-                                            @foreach ($mail->authors as $index => $author)
-                                                <a href="{{ route('mails.sort') }}?categ=author&value={{ $author->id }}">{{ $author->name }}</a>@if(!$loop->last),@endif
-                                            @endforeach
+
                                             <br>
                                             <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('date') }}:</strong> <a href="{{ route('mails.sort') }}?categ=dates&date_exact={{ $mail->date }}">{{ $mail->date }}</a>
 

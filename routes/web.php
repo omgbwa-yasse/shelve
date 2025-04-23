@@ -206,6 +206,10 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('bulletin-boards.posts.attachments.ajax.destroy');
     });
 
+
+
+
+
     // Routes utilitaires pour les pièces jointes générales
     Route::middleware(['auth'])->group(function () {
         Route::get('/attachments/{attachment}/preview', [EventController::class, 'attachmentsPreview'])->name('attachments.preview');
@@ -214,23 +218,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('mails')->group(function () {
-        Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
-        Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
-        Route::resource('authors.contacts', MailAuthorContactController::class)->names('author-contact');
 
         Route::resource('container', MailContainerController::class)->names('mail-container');
-
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
-
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
-
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
-
-        Route::resource('authors', MailAuthorController::class)->names('mail-author');
-
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users;
         });
@@ -248,6 +243,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
+
+        /*
+
+            Recherche du module mail
+
+        */
+        Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
+        Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');

@@ -154,7 +154,6 @@ class MailReceivedController extends Controller
                             'senderOrganisation',
                             'recipient',
                             'recipientOrganisation',
-                            'authors',
                             'attachments'
                         ]);
         return view('mails.received.show', compact('mail'));
@@ -170,7 +169,6 @@ class MailReceivedController extends Controller
             'senderOrganisation',
             'recipient',
             'recipientOrganisation',
-            'authors',
             'attachments'
         ]);
 

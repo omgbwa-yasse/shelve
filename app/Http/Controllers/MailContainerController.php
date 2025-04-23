@@ -14,7 +14,6 @@ class MailContainerController extends Controller
         $mailContainers = MailContainer::with(['containerType', 'creator', 'organisation']) // Removed 'mailArchivings'
                                       ->where('creator_organisation_id', auth()->user()->current_organisation_id) // Corrected field name
                                       ->paginate(10);
-        dd($mailContainers);
 
         return view('mails.containers.index', compact('mailContainers'));
     }

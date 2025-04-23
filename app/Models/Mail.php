@@ -73,12 +73,6 @@ class Mail extends Model
                     ->withTimestamps();
     }
 
-    public function authors()
-    {
-        return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id')
-                    ->withTimestamps();
-    }
-
     public function relatedMails()
     {
         return $this->belongsToMany(Mail::class, 'mail_related', 'mail_id', 'mail_related_id')
@@ -99,7 +93,7 @@ class Mail extends Model
 
     public function dollies()
     {
-        return $this->belongsToMany(Dolly::class, 'dolly_mail_transactions', 'mail_transaction_id', 'dolly_id')
+        return $this->belongsToMany(Dolly::class, 'dolly_mails', 'mail_id', 'dolly_id')
             ->withTimestamps();
     }
 }
