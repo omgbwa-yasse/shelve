@@ -57,6 +57,8 @@ class MailSendController extends Controller
         return view('mails.send.index', compact('mails', 'dollies', 'categories', 'users'));
     }
 
+
+
     public function create()
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
@@ -76,6 +78,8 @@ class MailSendController extends Controller
             'typologies'
         ));
     }
+
+
     protected function handleFileUpload($file, $mail)
     {
         try {
@@ -88,7 +92,6 @@ class MailSendController extends Controller
             $mimeType = $file->getMimeType();
             $fileType = explode('/', $mimeType)[0];
 
-            // Créer l'enregistrement de la pièce jointe
             $attachment = MailAttachment::create([
                 'path' => $path,
                 'name' => $file->getClientOriginalName(),
@@ -108,7 +111,6 @@ class MailSendController extends Controller
                 }
             }
 
-            // Lier la pièce jointe au mail
             $mail->attachments()->attach($attachment->id, [
                 'added_by' => auth()->id(),
                 'created_at' => now(),
@@ -122,6 +124,7 @@ class MailSendController extends Controller
             throw $e;
         }
     }
+
 
     protected function generateThumbnail($file, $attachmentId, $fileType)
     {
@@ -240,6 +243,61 @@ class MailSendController extends Controller
                 ->with('error', 'Une erreur est survenue lors de la création du mail.');
         }
     }
+
+
+
+    public function transfert(Request $request)
+    {
+        \Log::info('Début de la méthode transfert');
+        \Log::info('Données reçues :', $request->all());
+    
+        $validatedData = $request->validate([
+            'mail_id' => 'required|exists:mails,id',
+            'recipient_user_id' => 'required|exists:users,id',
+            'recipient_organisation_id' => 'required|exists:organisations,id',
+        ]);
+
+        $originalMail = Mail::findOrFail($request->mail_id);
+        
+        $transferredMail = new Mail();
+
+        $transferredMail->fill([
+            'code' => $originalMail->code,
+            'name' => "TR: " . $originalMail->name,
+            'date' => now(),
+            'description' => $originalMail->description . "\n" .  
+                    Auth::user()->name . " : " . now() . " : " . $request->comment,
+            'document_type' => $originalMail->document_type,
+            'status' => 'in_progress',
+            'priority_id' => $originalMail->priority_id,
+            'typology_id' => $originalMail->typology_id,
+            'action_id' => $originalMail->action_id,
+            'sender_user_id' => auth()->id(),
+            'sender_organisation_id' => auth()->user()->current_organisation_id,
+            'recipient_user_id' => $request->recipient_user_id,
+            'recipient_organisation_id' => $request->recipient_organisation_id,
+            'is_archived' => false
+        ]);
+
+        $transferredMail->save();
+        
+        // Copier les pièces jointes
+        if ($originalMail->attachments && $originalMail->attachments->count() > 0) {
+            foreach ($originalMail->attachments as $attachment) {
+                $transferredMail->attachments()->attach($attachment->id, ['added_by' => auth()->id()]);
+            }
+        }
+        
+        return response()->json([
+            'success' => true, 
+            'message' => 'Courrier transféré avec succès',
+        ]);
+       
+    }
+
+
+
+
 
 
 

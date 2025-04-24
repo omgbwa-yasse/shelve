@@ -582,7 +582,7 @@
                 confTransfertBtn.disabled = true;
                 confTransfertBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Transfert en cours...';
                 
-                fetch('/mails/transfert', {
+                fetch('{{ route("mail-send.transfert")}}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
