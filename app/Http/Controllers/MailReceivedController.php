@@ -114,7 +114,7 @@ class MailReceivedController extends Controller
 
 
         if (!isset($validatedData['code']) || empty($validatedData['code'])) {
-            $validatedData['code'] = $this->generateMailCode($validatedData['mail_typology_id']);
+            $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
         } else {
             $existingMail = Mail::where('code', $validatedData['code'])->first();
             if (!$existingMail) {
@@ -141,7 +141,7 @@ class MailReceivedController extends Controller
         $year = date('Y');
 
         $count = Mail::whereYear('created_at', $year)
-                ->where('mail_typology_id', $typologie_id)
+                ->where('typology_id', $typologie_id)
                 ->count();
 
         $nextNumber = $count + 1;

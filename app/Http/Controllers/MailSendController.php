@@ -308,7 +308,7 @@ class MailSendController extends Controller
             'senderOrganisation',
             'recipient',
             'recipientOrganisation',
-            'authors',
+
             'attachments'
         ])->findOrFail($id);
 
@@ -323,7 +323,6 @@ class MailSendController extends Controller
             'recipientOrganisation',
             'priority',
             'typology',
-            'authors',
             'attachments'
         ])->findOrFail($id);
 
