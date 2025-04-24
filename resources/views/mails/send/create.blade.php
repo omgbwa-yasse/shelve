@@ -27,6 +27,11 @@
             </div>
 
             <div class="mb-3">
+                <label for="name" class="form-label">Nom du courrier</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+            </div>
+
+            <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description" name="description" class="form-control" rows="3"></textarea>
             </div>

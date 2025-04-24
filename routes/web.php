@@ -221,15 +221,16 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
+
         Route::resource('send', MailSendController::class)->names('mail-send');
-        
-        Route::post('send/transfert', [MailSendController::class, 'transfert'])->name('mail-send.transfert');
-        
+
+        Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
+
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
         Route::resource('received', MailReceivedController::class)->names('mail-received');
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
-        
+
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users;
         });

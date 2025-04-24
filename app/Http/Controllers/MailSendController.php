@@ -246,53 +246,59 @@ class MailSendController extends Controller
 
 
 
-    public function transfert(Request $request)
+
+
+    public function transfer(Request $request)
     {
-        \Log::info('Début de la méthode transfert');
-        \Log::info('Données reçues :', $request->all());
-    
-        $validatedData = $request->validate([
-            'mail_id' => 'required|exists:mails,id',
-            'recipient_user_id' => 'required|exists:users,id',
-            'recipient_organisation_id' => 'required|exists:organisations,id',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'mail_id' => 'required|exists:mails,id',
+                'recipient_user_id' => 'required|exists:users,id',
+                'recipient_organisation_id' => 'required|exists:organisations,id',
+                'comment' => 'nullable|string|max:1000',
+            ]);
 
-        $originalMail = Mail::findOrFail($request->mail_id);
-        
-        $transferredMail = new Mail();
+            $originalMail = Mail::findOrFail($validatedData['mail_id']);
 
-        $transferredMail->fill([
-            'code' => $originalMail->code,
-            'name' => "TR: " . $originalMail->name,
-            'date' => now(),
-            'description' => $originalMail->description . "\n" .  
-                    Auth::user()->name . " : " . now() . " : " . $request->comment,
-            'document_type' => $originalMail->document_type,
-            'status' => 'in_progress',
-            'priority_id' => $originalMail->priority_id,
-            'typology_id' => $originalMail->typology_id,
-            'action_id' => $originalMail->action_id,
-            'sender_user_id' => auth()->id(),
-            'sender_organisation_id' => auth()->user()->current_organisation_id,
-            'recipient_user_id' => $request->recipient_user_id,
-            'recipient_organisation_id' => $request->recipient_organisation_id,
-            'is_archived' => false
-        ]);
+            $transferredMail = new Mail();
 
-        $transferredMail->save();
-        
-        // Copier les pièces jointes
-        if ($originalMail->attachments && $originalMail->attachments->count() > 0) {
-            foreach ($originalMail->attachments as $attachment) {
-                $transferredMail->attachments()->attach($attachment->id, ['added_by' => auth()->id()]);
+            $transferredMail->fill([
+                'code' => $originalMail->code,
+                'name' => $originalMail->name,
+                'date' => now(),
+                'description' => $originalMail->description . "\n" .
+                    Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
+                'document_type' => $originalMail->document_type,
+                'status' => 'in_progress',
+                'priority_id' => $originalMail->priority_id,
+                'typology_id' => $originalMail->typology_id,
+                'action_id' => $originalMail->action_id,
+                'sender_user_id' => auth()->id(),
+                'sender_organisation_id' => auth()->user()->current_organisation_id,
+                'recipient_user_id' => $validatedData['recipient_user_id'],
+                'recipient_organisation_id' => $validatedData['recipient_organisation_id'],
+                'is_archived' => false
+            ]);
+
+            $transferredMail->save();
+
+            if ($originalMail->attachments && $originalMail->attachments->count() > 0) {
+                foreach ($originalMail->attachments as $attachment) {
+                    $transferredMail->attachments()->attach($attachment->id, ['added_by' => auth()->id()]);
+                }
             }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Courrier transféré avec succès',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur',
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true, 
-            'message' => 'Courrier transféré avec succès',
-        ]);
-       
     }
 
 

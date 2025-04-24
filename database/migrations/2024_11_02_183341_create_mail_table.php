@@ -48,7 +48,7 @@ return new class extends Migration
 
         Schema::create('mails', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 25)->unique(true);
+            $table->string('code', 30);
             $table->string('name', 150);
             $table->datetime('date');
             $table->text('description')->nullable();

@@ -358,7 +358,7 @@
                     </div>
                     <div class="list-group list-group-flush">
 
-                        <a href="#" id="transfertBtn" class="list-group-item list-group-item-action py-2" 
+                        <a href="#" id="transfertBtn" class="list-group-item list-group-item-action py-2"
                             data-bs-toggle="modal" data-bs-target="#transfertModal">
                             <i class="bi bi-archive me-1"></i>
                             Transférer le courrier
@@ -477,19 +477,19 @@
             const recipientUserSelect = document.getElementById('recipient_user_id');
             const confTransfertBtn = document.getElementById('confTransfertBtn');
             const mailId = document.getElementById('mail_id').value;
-            
+
             // Désactiver le select d'utilisateurs initialement
             recipientUserSelect.disabled = true;
-            
+
             // Charger les organisations quand on ouvre le modal
             transfertBtn.addEventListener('click', function() {
                 loadOrganisations();
             });
-            
+
             // Fonction pour charger les organisations
             function loadOrganisations() {
                 recipientOrganisationSelect.innerHTML = '<option value="">Chargement en cours...</option>';
-                
+
                 fetch('/mails/organisations/list')
                     .then(response => {
                         if (!response.ok) {
@@ -511,20 +511,20 @@
                         recipientOrganisationSelect.innerHTML = '<option value="">Erreur de chargement</option>';
                     });
             }
-            
+
             // Charger les utilisateurs lorsqu'une organisation est sélectionnée
             recipientOrganisationSelect.addEventListener('change', function() {
                 const organisationId = this.value;
-                
+
                 if (!organisationId) {
                     recipientUserSelect.disabled = true;
                     recipientUserSelect.innerHTML = '<option value="">Sélectionner un utilisateur</option>';
                     return;
                 }
-                
+
                 recipientUserSelect.disabled = false;
                 recipientUserSelect.innerHTML = '<option value="">Chargement en cours...</option>';
-                
+
                 fetch(`/mails/organisations/${organisationId}/users`)
                     .then(response => {
                         if (!response.ok) {
@@ -546,24 +546,24 @@
                         recipientUserSelect.innerHTML = '<option value="">Erreur de chargement</option>';
                     });
             });
-            
+
             // Gérer la soumission du formulaire de transfert
             confTransfertBtn.addEventListener('click', function() {
                 const organisationId = recipientOrganisationSelect.value;
                 const userId = recipientUserSelect.value;
                 const comment = document.getElementById('transfer_comment').value;
-                
+
                 // Validation
                 if (!organisationId) {
                     alert('Veuillez sélectionner une organisation');
                     return;
                 }
-                
+
                 if (!userId) {
                     alert('Veuillez sélectionner un utilisateur');
                     return;
                 }
-                
+
                 // Préparation des données pour l'envoi
                 const data = {
                     mail_id: mailId,
@@ -571,18 +571,18 @@
                     recipient_organisation_id: organisationId,
                     comment: comment
                 };
-                
+
                 // Envoi de la requête AJAX
                 transferMail(data);
             });
-            
+
             // Fonction pour transférer le mail
             function transferMail(data) {
                 // Afficher un indicateur de chargement
                 confTransfertBtn.disabled = true;
                 confTransfertBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Transfert en cours...';
-                
-                fetch('{{ route("mail-send.transfert")}}', {
+
+                fetch(`{{ route("mail-send.transfer")}}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -600,22 +600,26 @@
                     // Fermer le modal
                     const transfertModal = bootstrap.Modal.getInstance(document.getElementById('transfertModal'));
                     transfertModal.hide();
-                    
+
                     // Afficher un message de succès
                     alert('Le courrier a été transféré avec succès');
-                    
+
                     // Recharger la page pour refléter les changements
                     window.location.reload();
                 })
                 .catch(error => {
                     console.error('Erreur:', error);
                     alert('Une erreur est survenue lors du transfert du courrier');
-                    
+
                     // Réactiver le bouton
                     confTransfertBtn.disabled = false;
                     confTransfertBtn.innerHTML = 'Confirmer le transfert';
                 });
             }
+
+
+
+
         });
 
     </script>
