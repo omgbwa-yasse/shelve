@@ -154,6 +154,20 @@
                     <i class="bi bi-archive"></i> {{ __('archive') }}
                 </a>
             </div>
+
+
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.IncomingMail') }}">
+                    <i class="bi bi-archive"></i> Recevoir mail externe
+                </a>
+            </div>
+
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-send.OutgoingMail') }}">
+                    <i class="bi bi-archive"></i> Envoyer mail externe
+                </a>
+            </div>
+
         </div>
     </div>
 

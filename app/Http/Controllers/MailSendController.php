@@ -200,6 +200,60 @@ class MailSendController extends Controller
             return back()->with('error', 'Erreur lors de la prévisualisation du fichier');
         }
     }
+
+
+
+
+
+
+    public function OutgoingMail(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'action_id' => 'required|exists:mail_actions,id',
+                'priority_id' => 'required|exists:mail_priorities,id',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ]);
+
+            $mailCode = $this->generateMailCode( $validatedData['typology_id']);
+
+            $mail = Mail::create($validatedData + [
+                    'code' => $mailCode,
+                    'sender_organisation_id' => auth()->user()->current_organisation_id,
+                    'sender_user_id' => auth()->id(),
+                    'status' => 'in_progress',
+                ]);
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $this->handleFileUpload($file, $mail);
+                }
+            }
+
+            return redirect()->route('mail-send.index')
+                ->with('success', 'Mail créé avec succès avec les pièces jointes.');
+
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la création du mail : ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Une erreur est survenue lors de la création du mail.');
+        }
+    }
+
+
+
+
+
+
+
+
+
     public function store(Request $request)
     {
         try {
@@ -241,6 +295,8 @@ class MailSendController extends Controller
                 ->with('error', 'Une erreur est survenue lors de la création du mail.');
         }
     }
+
+
 
 
 

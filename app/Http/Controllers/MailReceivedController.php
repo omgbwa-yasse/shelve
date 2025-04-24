@@ -98,8 +98,6 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
-
-
         $validatedData = $request->validate([
             'name' => 'required|max:150',
             'date' => 'required|date',
@@ -112,7 +110,6 @@ class MailReceivedController extends Controller
             'typology_id' => 'required|exists:mail_typologies,id',
         ]);
 
-
         if (!isset($validatedData['code']) || empty($validatedData['code'])) {
             $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
         } else {
@@ -121,7 +118,6 @@ class MailReceivedController extends Controller
                 return back()->withErrors(['code' => 'Aucun mail trouvé avec ce code.'])->withInput();
             }
         }
-
 
         Mail::create($validatedData + [
             'recipient_organisation_id' => auth()->user()->current_organisation_id,
@@ -132,6 +128,42 @@ class MailReceivedController extends Controller
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail created successfully.');
     }
+
+
+
+
+
+    public function IncomingMail(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|max:150',
+            'date' => 'required|date',
+            'description' => 'nullable',
+            'document_type' => 'required|in:original,duplicate,copy',
+            'action_id' => 'required|exists:mail_actions,id',
+            'priority_id' => 'required|exists:mail_priorities,id',
+            'typology_id' => 'required|exists:mail_typologies,id',
+        ]);
+
+        if (!isset($validatedData['code']) || empty($validatedData['code'])) {
+            $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
+        } else {
+            $existingMail = Mail::where('code', $validatedData['code'])->first();
+            if (!$existingMail) {
+                return back()->withErrors(['code' => 'Aucun mail trouvé avec ce code.'])->withInput();
+            }
+        }
+
+        Mail::create($validatedData + [
+            'recipient_organisation_id' => auth()->user()->current_organisation_id,
+            'recipient_user_id' => auth()->id(),
+            'status' => 'in_progress',
+        ]);
+
+        return redirect()->route('mail-received.index')
+                         ->with('success', 'Mail created successfully.');
+    }
+
 
 
 
