@@ -203,8 +203,6 @@ class MailSendController extends Controller
     public function store(Request $request)
     {
         try {
-            $mailCode = $this->generateMailCode();
-
             $validatedData = $request->validate([
                 'name' => 'required|max:150',
                 'date' => 'required|date',
@@ -218,7 +216,8 @@ class MailSendController extends Controller
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
-            // Créer le mail
+            $mailCode = $this->generateMailCode( $validatedData['typology_id']);
+
             $mail = Mail::create($validatedData + [
                     'code' => $mailCode,
                     'sender_organisation_id' => auth()->user()->current_organisation_id,
@@ -226,7 +225,6 @@ class MailSendController extends Controller
                     'status' => 'in_progress',
                 ]);
 
-            // Traiter les pièces jointes
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     $this->handleFileUpload($file, $mail);
@@ -300,11 +298,6 @@ class MailSendController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
 
 
     public function show(int $id)
@@ -448,24 +441,34 @@ class MailSendController extends Controller
         }
     }
 
-    protected function generateMailCode()
-    {
-        $year = date('Y');
-        $lastMailCode = Mail::whereYear('created_at', $year)
-            ->latest('created_at')
-            ->value('code');
 
-        if ($lastMailCode) {
-            $lastCodeParts = explode('-', $lastMailCode);
-            $lastOrderNumber = isset($lastCodeParts[1]) ? (int) substr($lastCodeParts[1], 1) : 0;
-            $mailCount = $lastOrderNumber + 1;
-        } else {
-            $mailCount =$mailCount = 1;
+
+    public function generateMailCode(int $typologie_id)
+    {
+        $typology = MailTypology::findOrFail($typologie_id);
+        $year = date('Y');
+
+        $count = Mail::whereYear('created_at', $year)
+                ->where('mail_typology_id', $typologie_id)
+                ->count();
+
+        $nextNumber = $count + 1;
+        $codeExists = true;
+
+        while ($codeExists) {
+            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
+            $codeExists = Mail::where('code', $candidateCode)->exists();
+            if ($codeExists) {
+                $nextNumber++;
+            }
         }
 
-        $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
-        return 'M' . $year . '-' . $formattedMailCount;
+        return $candidateCode;
     }
+
+
+
 
     protected function canAccessAttachment($mail)
     {

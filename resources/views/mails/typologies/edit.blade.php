@@ -6,6 +6,10 @@
         @csrf
         @method('PUT')
         <div class="mb-3">
+            <label for="code" class="form-label">code</label>
+            <input type="text" class="form-control" id="code" code="code" value="{{ $mailTypology->code }}" required>
+        </div>
+        <div class="mb-3">
             <label for="name" class="form-label">Name</label>
             <input type="text" class="form-control" id="name" name="name" value="{{ $mailTypology->name }}" required>
         </div>

@@ -12,6 +12,7 @@ class MailTypology extends Model
     protected $table = 'mail_typologies';
 
     protected $fillable = [
+        'code',
         'name',
         'description',
         'activity_id',

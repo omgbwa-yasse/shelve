@@ -7,7 +7,7 @@
             @foreach ($mailTypologies as $mailTypology)
                 <li class="list-group-item d-flex justify-content-between align-items-center mt-4" >
                     <a href="{{ route('mails.sort', ['categ' => 'typology', 'id' => $mailTypology->id]) }} ">
-                        <strong>{{ $mailTypology->name }}</strong> <small class="text-muted d-block">{{ $mailTypology->class->name ?? 'NAN' }}</small>
+                        <strong>{{ $mailTypology->name }}</strong> <small class="text-muted d-block"> {{ $mailTypology->code ?? 'NAN' }} - {{ $mailTypology->class->name ?? 'NAN' }}</small>
                     </a>
                 </li>
             @endforeach

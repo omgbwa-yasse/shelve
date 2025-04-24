@@ -98,7 +98,7 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
-        $mailCode = $this->generateMailCode();
+
 
         $validatedData = $request->validate([
             'name' => 'required|max:150',
@@ -112,8 +112,18 @@ class MailReceivedController extends Controller
             'typology_id' => 'required|exists:mail_typologies,id',
         ]);
 
+
+        if (!isset($validatedData['code']) || empty($validatedData['code'])) {
+            $validatedData['code'] = $this->generateMailCode($validatedData['mail_typology_id']);
+        } else {
+            $existingMail = Mail::where('code', $validatedData['code'])->first();
+            if (!$existingMail) {
+                return back()->withErrors(['code' => 'Aucun mail trouvé avec ce code.'])->withInput();
+            }
+        }
+
+
         Mail::create($validatedData + [
-            'code' => $mailCode,
             'recipient_organisation_id' => auth()->user()->current_organisation_id,
             'recipient_user_id' => auth()->id(),
             'status' => 'in_progress',
@@ -125,23 +135,28 @@ class MailReceivedController extends Controller
 
 
 
-    public function generateMailCode()
+    public function generateMailCode(int $typologie_id)
     {
+        $typology = MailTypology::findOrFail($typologie_id);
         $year = date('Y');
-        $lastMailCode = Mail::whereYear('created_at', $year)
-                            ->latest('created_at')
-                            ->value('code');
 
-        if ($lastMailCode) {
-            $lastCodeParts = explode('-', $lastMailCode);
-            $lastOrderNumber = isset($lastCodeParts[1]) ? (int) substr($lastCodeParts[1], 1) : 0;
-            $mailCount = $lastOrderNumber + 1;
-        } else {
-            $mailCount = 1;
+        $count = Mail::whereYear('created_at', $year)
+                ->where('mail_typology_id', $typologie_id)
+                ->count();
+
+        $nextNumber = $count + 1;
+        $codeExists = true;
+
+        while ($codeExists) {
+            $formattedNumber = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            $candidateCode = $year . "/" . $typology->code . "/" . $formattedNumber;
+            $codeExists = Mail::where('code', $candidateCode)->exists();
+            if ($codeExists) {
+                $nextNumber++;
+            }
         }
 
-        $formattedMailCount = str_pad($mailCount, 6, '0', STR_PAD_LEFT);
-        return 'M' . $year . '-' . $formattedMailCount;
+        return $candidateCode;
     }
 
 

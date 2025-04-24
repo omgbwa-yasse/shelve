@@ -6,6 +6,10 @@
     <table class="table">
         <tbody>
             <tr>
+                <th>Code</th>
+                <td>{{ $mailTypology->code }}</td>
+            </tr>
+            <tr>
                 <th>Name</th>
                 <td>{{ $mailTypology->name }}</td>
             </tr>

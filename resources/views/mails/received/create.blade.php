@@ -22,24 +22,17 @@
                     <h5 class="card-title mb-4">Informations générales</h5>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="reference" class="form-label">Référence courrier</label>
                             <input type="text" id="reference" name="reference" class="form-control" value="{{ old('reference') }}" required>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Nom du courrier</label>
-                            <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="date" class="form-label">Date du courrier</label>
                             <input type="date" id="date" name="date" class="form-control" value="{{ old('date') }}" required>
                         </div>
 
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label for="document_type" class="form-label">Type de document</label>
                             <select name="document_type" id="document_type" class="form-select" required>
                                 <option value="">Choisir le type de document</option>
@@ -47,6 +40,14 @@
                                 <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
                                 <option value="copy" {{ old('document_type') == 'copy' ? 'selected' : '' }}>Copie</option>
                             </select>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Nom du courrier</label>
+                            <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
                         </div>
                     </div>
 

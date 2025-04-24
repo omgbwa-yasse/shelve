@@ -6,6 +6,10 @@
         <form action="{{ route('mail-typology.store') }}" method="POST">
             @csrf
             <div class="mb-3">
+                <label for="code" class="form-label">code</label>
+                <input type="text" class="form-control" id="code" code="code" required>
+            </div>
+            <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>
             </div>
