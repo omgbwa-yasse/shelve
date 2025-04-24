@@ -19,6 +19,7 @@
 
             <div class="card mb-4">
                 <div class="card-body">
+
                     <h5 class="card-title mb-4">Informations générales</h5>
 
                     <div class="row">
@@ -33,14 +34,17 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="document_type" class="form-label">Type de document</label>
-                            <select name="document_type" id="document_type" class="form-select" required>
-                                <option value="">Choisir le type de document</option>
-                                <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
-                                <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
-                                <option value="copy" {{ old('document_type') == 'copy' ? 'selected' : '' }}>Copie</option>
+                            <label for="typology_id" class="form-label">Typologie</label>
+                            <select name="typology_id" id="typology_id" class="form-select" required>
+                                <option value="">Sélectionner une typologie</option>
+                                @foreach($typologies as $typology)
+                                    <option value="{{ $typology->id }}" {{ old('typology_id') == $typology->id ? 'selected' : '' }}>
+                                        {{ $typology->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
+
 
                     </div>
 
@@ -106,16 +110,16 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="typology_id" class="form-label">Typologie</label>
-                            <select name="typology_id" id="typology_id" class="form-select" required>
-                                <option value="">Sélectionner une typologie</option>
-                                @foreach($typologies as $typology)
-                                    <option value="{{ $typology->id }}" {{ old('typology_id') == $typology->id ? 'selected' : '' }}>
-                                        {{ $typology->name }}
-                                    </option>
-                                @endforeach
+                            <label for="document_type" class="form-label">Type de document</label>
+                            <select name="document_type" id="document_type" class="form-select" required>
+                                <option value="">Choisir le type de document</option>
+                                <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
+                                <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
+                                <option value="copy" {{ old('document_type') == 'copy' ? 'selected' : '' }}>Copie</option>
                             </select>
                         </div>
+
+
                     </div>
 
                 </div>

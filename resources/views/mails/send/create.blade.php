@@ -16,13 +16,25 @@
         <form action="{{ route('mail-send.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="name" class="form-label">Nom du courrier</label>
-                    <input type="text" id="name" name="name" class="form-control" required>
+
+                <h5 class="card-title mb-4">Informations générales</h5>
+
+                <div class="col-md-4 mb-3">
+                    <label for="code" class="form-label">Code</label>
+                    <input type="text" id="code" name="code" class="form-control" required>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
                     <input type="date" id="date" name="date" class="form-control" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="typology_id" class="form-label">Typologie</label>
+                    <select name="typology_id" id="typology_id" class="form-select" required>
+                        <option value="">Choisir une typologie</option>
+                        @foreach($typologies as $typology)
+                            <option value="{{ $typology->id }}">{{ $typology->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 
@@ -37,7 +49,7 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
                     <select name="document_type" id="document_type" class="form-select" required>
                         <option value="">Choisir le type de document</option>
@@ -46,7 +58,8 @@
                         <option value="copy">Copie</option>
                     </select>
                 </div>
-                <div class="col-md-6 mb-3">
+
+                <div class="col-md-4 mb-3">
                     <label for="action_id" class="form-label">Action</label>
                     <select name="action_id" id="action_id" class="form-select" required>
                         <option value="">Choisir une action</option>
@@ -55,6 +68,19 @@
                         @endforeach
                     </select>
                 </div>
+
+                <div class="col-md-4 mb-3">
+                    <label for="priority_id" class="form-label">Priorité</label>
+                    <select name="priority_id" id="priority_id" class="form-select" required>
+                        <option value="">Choisir une priorité</option>
+                        @foreach($priorities as $priority)
+                            <option value="{{ $priority->id }}">{{ $priority->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+
+
             </div>
 
             <div class="row">
@@ -79,24 +105,8 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="priority_id" class="form-label">Priorité</label>
-                    <select name="priority_id" id="priority_id" class="form-select" required>
-                        <option value="">Choisir une priorité</option>
-                        @foreach($priorities as $priority)
-                            <option value="{{ $priority->id }}">{{ $priority->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="typology_id" class="form-label">Typologie</label>
-                    <select name="typology_id" id="typology_id" class="form-select" required>
-                        <option value="">Choisir une typologie</option>
-                        @foreach($typologies as $typology)
-                            <option value="{{ $typology->id }}">{{ $typology->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
+
             </div>
 
             <div class="mb-12">
