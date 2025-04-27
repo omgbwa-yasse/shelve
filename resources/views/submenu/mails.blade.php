@@ -131,7 +131,7 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="">
+                <a class="submenu-link" href="{{ route('mail-incoming.index') }}">
                     <i class="bi bi-box-arrow-in-left"></i> Externe entrant
                 </a>
             </div>
@@ -168,13 +168,13 @@
 
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-incoming.create') }}">
-                    <i class="bi bi-archive"></i> Recevoir mail externe
+                    <i class="bi bi-box-arrow-in-down"></i> Recevoir externe
                 </a>
             </div>
 
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-outgoing.create') }}">
-                    <i class="bi bi-archive"></i> Envoyer mail externe
+                    <i class="bi bi-box-arrow-up"></i> Envoyer externe
                 </a>
             </div>
 

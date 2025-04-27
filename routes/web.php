@@ -82,6 +82,7 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
+use App\Http\Controllers\MailIncomingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
@@ -230,7 +231,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
 
-        Route::resource('incoming', [MailReceivedController::class, 'incoming'])->names('mail-incoming');
+        Route::resource('incoming', MailIncomingController::class)->names('mail-incoming');
 
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');

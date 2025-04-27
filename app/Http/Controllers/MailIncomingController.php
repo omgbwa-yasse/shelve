@@ -41,12 +41,12 @@ class MailIncomingController extends Controller
         $mails = Mail::where('recipient_organisation_id', $organisationId)
             ->where('mail_type', 'incoming')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(20);
 
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.index', compact('mails', 'dollies', 'categories', 'users'));
+        return view('mails.received.index', compact('mails', 'dollies', 'categories', 'users'));
     }
 
     /**
@@ -64,6 +64,7 @@ class MailIncomingController extends Controller
      */
     public function store(Request $request)
     {
+
         try {
             $validatedData = $request->validate([
                 'name' => 'required|max:150',

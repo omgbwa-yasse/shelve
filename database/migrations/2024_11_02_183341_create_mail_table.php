@@ -55,13 +55,13 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->enum('document_type', ['original', 'duplicate', 'copy'])->default('original');
             $table->enum('status', ['draft', 'in_progress', 'transmitted', 'reject'])->default('draft'); // Correction orthographique
-            $table->foreignId('priority_id')->constrained('mail_priorities')->cascadeOnDelete();
-            $table->foreignId('typology_id')->constrained('mail_typologies')->cascadeOnDelete();
-            $table->foreignId('action_id')->constrained('mail_actions')->cascadeOnDelete();
-            $table->foreignId('sender_user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('sender_organisation_id')->constrained('organisations')->cascadeOnDelete();
-            $table->foreignId('recipient_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('recipient_organisation_id')->nullable()->constrained('organisations')->nullOnDelete();
+            $table->foreignId('priority_id')->nullable(true)->constrained('mail_priorities')->nullOnDelete();
+            $table->foreignId('typology_id')->nullable(false)->constrained('mail_typologies')->nullOnDelete();
+            $table->foreignId('action_id')->nullable(true)->constrained('mail_actions')->nullOnDelete();
+            $table->foreignId('sender_user_id')->nullable(true)->constrained('users')->nullOnDelete();
+            $table->foreignId('sender_organisation_id')->nullable(true)->constrained('organisations')->nullOnDelete();
+            $table->foreignId('recipient_user_id')->nullable(true)->constrained('users')->nullOnDelete();
+            $table->foreignId('recipient_organisation_id')->nullable(true)->constrained('organisations')->nullOnDelete();
             $table->enum('mail_type', ['internal','incoming', 'outgoing'])->default('internal');
             $table->boolean('is_archived')->default(false);
             $table->timestamps();

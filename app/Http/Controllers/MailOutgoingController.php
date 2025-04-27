@@ -43,12 +43,12 @@ class MailOutgoingController extends Controller
         $mails = Mail::where('sender_organisation_id', $organisationId)
             ->where('mail_type', 'outgoing')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(20);
 
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.index', compact('mails', 'dollies', 'categories', 'users'));
+        return view('mails.send.index', compact('mails', 'dollies', 'categories', 'users'));
     }
 
     /**
@@ -57,7 +57,7 @@ class MailOutgoingController extends Controller
     public function create()
     {
         $typologies = MailTypology::orderBy('name')->get();
-        return view('mails.outgoing.create', compact('typologies', 'priorities', 'mailActions', 'recipientOrganisations', 'users'));
+        return view('mails.outgoing.create', compact('typologies'));
     }
 
 
@@ -70,6 +70,7 @@ class MailOutgoingController extends Controller
 
     public function store(Request $request)
     {
+
         try {
             $validatedData = $request->validate([
                 'name' => 'required|max:150',
@@ -82,13 +83,16 @@ class MailOutgoingController extends Controller
 
             $mailCode = $this->generateMailCode($validatedData['typology_id']);
 
+
+
             $mail = Mail::create($validatedData + [
                 'code' => $mailCode,
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
-                'status' => 'in_progress',
+                'status' => 'transmitted',
                 'mail_type' => 'outgoing',
             ]);
+
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {

@@ -13,10 +13,9 @@
             </div>
         @endif
 
-        <form action="{{ route('mail-send.outgoing') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+        <form action="{{ route('mail-outgoing.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
             <div class="row">
-
                 <h5 class="card-title mb-4">Informations générales</h5>
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>

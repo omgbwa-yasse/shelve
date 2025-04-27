@@ -13,7 +13,7 @@
             </div>
         @endif
 
-        <form action="{{ route('mail-send.outgoing') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+        <form action="{{ route('mail-outgoing.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
             <div class="row">
 
