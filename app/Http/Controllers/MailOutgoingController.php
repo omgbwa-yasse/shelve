@@ -60,9 +60,6 @@ class MailOutgoingController extends Controller
         return view('mails.outgoing.create', compact('typologies'));
     }
 
-
-
-
     /**
      * Store a newly created resource in storage.
      */
@@ -81,12 +78,16 @@ class MailOutgoingController extends Controller
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
-            $mailCode = $this->generateMailCode($validatedData['typology_id']);
 
+            if(!isset($validatedData['code'])) {
+                $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
+            }
+            if (empty($validatedData['code']) || !preg_match('/^\d{4}\/[A-Z]+\/\d{4}$/', $validatedData['code'])) {
+                $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
+            }
 
 
             $mail = Mail::create($validatedData + [
-                'code' => $mailCode,
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
                 'status' => 'transmitted',

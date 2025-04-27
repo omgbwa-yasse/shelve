@@ -15,9 +15,15 @@
 
         <form action="{{ route('mail-outgoing.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
-            <div class="row">
+            <h5 class="card-title mb-4">Informations générales</h5>
 
-                <h5 class="card-title mb-4">Informations générales</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="date" class="form-label">Référence </label>
+                    <input type="code" id="code" name="code" class="form-control" value="{{ old('code') }}" >
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
                     <input type="date" id="date" name="date" class="form-control" required>

@@ -205,54 +205,6 @@ class MailSendController extends Controller
 
 
 
-
-    public function outgoing(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'name' => 'required|max:150',
-                'date' => 'required|date',
-                'description' => 'nullable',
-                'document_type' => 'required|in:original,duplicate,copy',
-                'typology_id' => 'required|exists:mail_typologies,id',
-            ]);
-
-            $mailCode = $this->generateMailCode( $validatedData['typology_id']);
-
-            $mail = Mail::create($validatedData + [
-                    'code' => $mailCode,
-                    'sender_organisation_id' => auth()->user()->current_organisation_id,
-                    'sender_user_id' => auth()->id(),
-                    'status' => 'in_progress',
-                    'mail_type' => 'outgoing',
-                ]);
-
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $this->handleFileUpload($file, $mail);
-                }
-            }
-
-            return redirect()->route('mail-send.index')
-                ->with('success', 'Mail créé avec succès avec les pièces jointes.');
-
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la création du mail : ' . $e->getMessage());
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Une erreur est survenue lors de la création du mail.');
-        }
-    }
-
-
-    public function createOutgoing()
-    {
-        $typologies = MailTypology::orderBy('name')->get();
-        return view('mails.send.createOutgoing', compact('typologies'));
-    }
-
-
-
     public function store(Request $request)
     {
         try {
@@ -311,7 +263,7 @@ class MailSendController extends Controller
                 'comment' => 'nullable|string|max:1000',
             ]);
 
-            $originalMail = Mail::findOrFail($validatedData['mail_id']);
+            $originalMail = Mail::with('attachments')->findOrFail($validatedData['mail_id']);
 
             $transferredMail = new Mail();
 
@@ -319,13 +271,14 @@ class MailSendController extends Controller
                 'code' => $originalMail->code,
                 'name' => $originalMail->name,
                 'date' => now(),
-                'description' => $originalMail->description . "\n" .
-                    Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
+                'description' => $originalMail->description . "\n" . Auth::user()->name . " : " . now() . " : " . $validatedData['comment'],
                 'document_type' => $originalMail->document_type,
                 'status' => 'in_progress',
-                'priority_id' => $originalMail->priority_id,
                 'typology_id' => $originalMail->typology_id,
-                'action_id' => $originalMail->action_id,
+
+                'priority_id' => $originalMail->priority_id ?? null,
+                'action_id' => $originalMail->action_id ?? null,
+
                 'sender_user_id' => auth()->id(),
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'recipient_user_id' => $validatedData['recipient_user_id'],
@@ -349,7 +302,7 @@ class MailSendController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur serveur',
+                'message' => 'Erreur serveur : ' . $e->getMessage(),
             ], 500);
         }
     }

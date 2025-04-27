@@ -81,9 +81,10 @@ class MailIncomingController extends Controller
                 'code' => $mailCode,
                 'recipient_organisation_id' => auth()->user()->current_organisation_id,
                 'recipient_user_id' => auth()->id(),
-                'status' => 'received',
+                'status' => 'transmitted',
                 'mail_type' => 'incoming',
             ]);
+
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
