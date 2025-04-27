@@ -54,6 +54,32 @@
             <div class="row">
             </div>
 
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Pièces jointes</h5>
+
+                    <div class="drop-zone border rounded p-3" id="dropZone">
+                        <div class="text-center">
+                            <i class="bi bi-cloud-upload fs-3"></i>
+                            <p class="mb-2">Glissez-déposez vos fichiers ici ou</p>
+                            <input type="file"
+                                   class="d-none"
+                                   id="fileInput"
+                                   name="attachments[]"
+                                   multiple
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                            <button type="button" class="btn btn-outline-primary btn-browse">
+                                Parcourir
+                            </button>
+                        </div>
+                        <div id="fileList" class="mt-3"></div>
+                    </div>
+                    <small class="text-muted mt-2">
+                        Formats acceptés: PDF, Word, Excel, Images (JPG, PNG) - Max 10MB par fichier, 5 fichiers maximum
+                    </small>
+                </div>
+            </div>
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-send"></i> Créer le courrier sortant

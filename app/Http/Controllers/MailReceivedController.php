@@ -130,9 +130,6 @@ class MailReceivedController extends Controller
     }
 
 
-
-
-
     public function incoming(Request $request)
     {
         $validatedData = $request->validate([
@@ -167,13 +164,8 @@ class MailReceivedController extends Controller
 
     public function createIncoming()
     {
-        $currentOrganisationId = Auth::user()->current_organisation_id;
-        $mailActions = MailAction::orderBy('name')->get();
-        $senderOrganisations = Organisation::where('id', '!=', $currentOrganisationId)->orderBy('name')->get();
-        $users = User::all();
-        $priorities = MailPriority::all();
         $typologies = MailTypology::all();
-        return view('mails.received.createIncomingMail', compact('mailActions', 'senderOrganisations','users', 'priorities','typologies' ));
+        return view('mails.received.createIncoming', compact('typologies' ));
     }
 
 

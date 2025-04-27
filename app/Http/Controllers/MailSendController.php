@@ -224,6 +224,7 @@ class MailSendController extends Controller
                     'sender_organisation_id' => auth()->user()->current_organisation_id,
                     'sender_user_id' => auth()->id(),
                     'status' => 'in_progress',
+                    'mail_type' => 'outgoing',
                 ]);
 
             if ($request->hasFile('attachments')) {
@@ -246,22 +247,8 @@ class MailSendController extends Controller
 
     public function createOutgoing()
     {
-        $currentOrganisationId = Auth::user()->current_organisation_id;
-        $mailActions = MailAction::orderBy('name')->get();
-        $recipientOrganisations = Organisation::where('id', '!=', $currentOrganisationId)
-            ->orderBy('name')
-            ->get();
-        $users = User::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('name')->get();
         $typologies = MailTypology::orderBy('name')->get();
-
-        return view('mails.send.createOutgoing', compact(
-            'mailActions',
-            'recipientOrganisations',
-            'users',
-            'priorities',
-            'typologies'
-        ));
+        return view('mails.send.createOutgoing', compact('typologies'));
     }
 
 

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailArchiveController;
+use App\Http\Controllers\MailOutgoingController;
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
@@ -225,12 +226,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
 
-        Route::post('OutgoingMail', [MailSendController::class, 'outgoing'])->name('mail-send.outgoing');
-        Route::get('OutgoingMail/create', [MailSendController::class, 'createOutgoing'])->name('mail-send.outgoing.create');
+        Route::resource('outgoing', MailOutgoingController::class)->names('mail-outgoing');
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
-        Route::post('IncomingMail', [MailReceivedController::class, 'incoming'])->name('mail-received.incoming');
-        Route::get('IncomingMail/create', [MailReceivedController::class, 'createIcoming'])->name('mail-received.incoming.create');
+
+        Route::resource('incoming', [MailReceivedController::class, 'incoming'])->names('mail-incoming');
 
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');

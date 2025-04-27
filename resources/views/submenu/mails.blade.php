@@ -125,6 +125,16 @@
                     <i class="bi bi-inbox"></i> Advanced
                 </a>
             </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-outgoing.index') }}">
+                    <i class="bi bi-box-arrow-right"></i> Externe sortant
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="">
+                    <i class="bi bi-box-arrow-in-left"></i> Externe entrant
+                </a>
+            </div>
         </div>
     </div>
 
@@ -157,13 +167,13 @@
 
 
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-received.incomingmail.create') }}">
+                <a class="submenu-link" href="{{ route('mail-incoming.create') }}">
                     <i class="bi bi-archive"></i> Recevoir mail externe
                 </a>
             </div>
 
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-send.outgoingmail.create') }}">
+                <a class="submenu-link" href="{{ route('mail-outgoing.create') }}">
                     <i class="bi bi-archive"></i> Envoyer mail externe
                 </a>
             </div>

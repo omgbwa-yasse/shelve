@@ -24,13 +24,18 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="reference" class="form-label">Référence courrier</label>
-                            <input type="text" id="reference" name="reference" class="form-control" value="{{ old('reference') }}" required>
+                            <label for="date" class="form-label">Date du courrier</label>
+                            <input type="date" id="date" name="date" class="form-control" value="{{ old('date') }}" required>
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="date" class="form-label">Date du courrier</label>
-                            <input type="date" id="date" name="date" class="form-control" value="{{ old('date') }}" required>
+                            <label for="document_type" class="form-label">Type de document</label>
+                            <select name="document_type" id="document_type" class="form-select" required>
+                                <option value="">Choisir le type de document</option>
+                                <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
+                                <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
+                                <option value="copy" {{ old('document_type') == 'copy' ? 'selected' : '' }}>Copie</option>
+                            </select>
                         </div>
 
                         <div class="col-md-4 mb-3">
@@ -62,68 +67,6 @@
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Expéditeur et classification</h5>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="sender_organisation_id" class="form-label">Organisation d'envoi</label>
-                            <select name="sender_organisation_id" id="sender_organisation_id" class="form-select" required>
-                                <option value="">Sélectionner une organisation</option>
-                                <!--  Ici se charge automatique les organisations  -->
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="sender_user_id" class="form-label">Utilisateur expéditeur</label>
-                            <select name="sender_user_id" id="sender_user_id" class="form-select" required>
-                                <option value="">Sélectionner un utilisateur</option>
-                                <!--  Ici se charge automatique les utilisateurs  -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="action_id" class="form-label">Action requise</label>
-                            <select name="action_id" id="action_id" class="form-select" required>
-                                <option value="">Sélectionner une action</option>
-                                @foreach($mailActions as $action)
-                                    <option value="{{ $action->id }}" {{ old('action_id') == $action->id ? 'selected' : '' }}>
-                                        {{ $action->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label for="priority_id" class="form-label">Priorité</label>
-                            <select name="priority_id" id="priority_id" class="form-select" required>
-                                <option value="">Sélectionner une priorité</option>
-                                @foreach($priorities as $priority)
-                                    <option value="{{ $priority->id }}" {{ old('priority_id') == $priority->id ? 'selected' : '' }}>
-                                        {{ $priority->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label for="document_type" class="form-label">Type de document</label>
-                            <select name="document_type" id="document_type" class="form-select" required>
-                                <option value="">Choisir le type de document</option>
-                                <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
-                                <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
-                                <option value="copy" {{ old('document_type') == 'copy' ? 'selected' : '' }}>Copie</option>
-                            </select>
-                        </div>
-
-
-                    </div>
-
-                </div>
-            </div>
 
             <div class="card mb-4">
                 <div class="card-body">
