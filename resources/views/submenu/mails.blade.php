@@ -157,13 +157,13 @@
 
 
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-received.IncomingMail') }}">
+                <a class="submenu-link" href="{{ route('mail-received.incomingmail.create') }}">
                     <i class="bi bi-archive"></i> Recevoir mail externe
                 </a>
             </div>
 
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-send.OutgoingMail') }}">
+                <a class="submenu-link" href="{{ route('mail-send.outgoingmail.create') }}">
                     <i class="bi bi-archive"></i> Envoyer mail externe
                 </a>
             </div>

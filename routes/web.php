@@ -224,10 +224,14 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
-        Route::get('send/OutgoingMail', [MailSendController::class, 'OutgoingMail'])->name('mail-send.OutgoingMail');
+
+        Route::post('OutgoingMail', [MailSendController::class, 'outgoing'])->name('mail-send.outgoing');
+        Route::get('OutgoingMail/create', [MailSendController::class, 'createOutgoing'])->name('mail-send.outgoing.create');
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
-        Route::get('send/IncomingMail', [MailReceivedController::class, 'IncomingMail'])->name('mail-received.IncomingMail');
+        Route::post('IncomingMail', [MailReceivedController::class, 'incoming'])->name('mail-received.incoming');
+        Route::get('IncomingMail/create', [MailReceivedController::class, 'createIcoming'])->name('mail-received.incoming.create');
+
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
 

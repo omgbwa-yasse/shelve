@@ -206,7 +206,7 @@ class MailSendController extends Controller
 
 
 
-    public function OutgoingMail(Request $request)
+    public function outgoing(Request $request)
     {
         try {
             $validatedData = $request->validate([
@@ -214,10 +214,7 @@ class MailSendController extends Controller
                 'date' => 'required|date',
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
-                'action_id' => 'required|exists:mail_actions,id',
-                'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
-                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
             $mailCode = $this->generateMailCode( $validatedData['typology_id']);
@@ -247,10 +244,25 @@ class MailSendController extends Controller
     }
 
 
+    public function createOutgoing()
+    {
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+        $mailActions = MailAction::orderBy('name')->get();
+        $recipientOrganisations = Organisation::where('id', '!=', $currentOrganisationId)
+            ->orderBy('name')
+            ->get();
+        $users = User::orderBy('name')->get();
+        $priorities = MailPriority::orderBy('name')->get();
+        $typologies = MailTypology::orderBy('name')->get();
 
-
-
-
+        return view('mails.send.createOutgoing', compact(
+            'mailActions',
+            'recipientOrganisations',
+            'users',
+            'priorities',
+            'typologies'
+        ));
+    }
 
 
 
