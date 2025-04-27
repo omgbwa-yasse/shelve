@@ -62,6 +62,7 @@ return new class extends Migration
             $table->foreignId('sender_organisation_id')->constrained('organisations')->cascadeOnDelete();
             $table->foreignId('recipient_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('recipient_organisation_id')->nullable()->constrained('organisations')->nullOnDelete();
+            $table->enum('mail_type', ['internal','incoming', 'outgoing'])->default('internal');
             $table->boolean('is_archived')->default(false);
             $table->timestamps();
         });
