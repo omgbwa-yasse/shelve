@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>{{ __('Edit Mail Action') }}</h1>
-    <form method="POST" action="{{ route('mail-actions.update', $mailAction->id) }}">
+    <form method="POST" action="{{ route('mail-action.update', $mailAction->id) }}">
         @csrf
         @method('PUT')
         <div class="form-group">

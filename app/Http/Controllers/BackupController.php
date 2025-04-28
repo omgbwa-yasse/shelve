@@ -50,7 +50,7 @@ class BackupController extends Controller
 
 
     public function store(Request $request)
-    {   dd($request); // Attention boucle infini
+    {
         $timestamp = date('Y-m-d_H-i-s');
         $filename = 'backup_' . $timestamp . '.sql';
         $backupDir = storage_path('app/backups/' . $timestamp);

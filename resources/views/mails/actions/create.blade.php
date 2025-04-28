@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>{{ __('Create New Mail Action') }}</h1>
-    <form method="POST" action="{{ route('mail-actions.store') }}">
+    <form method="POST" action="{{ route('mail-action.store') }}">
         @csrf
         <div class="form-group">
             <label for="name">{{ __('mail_action.name') }}</label>

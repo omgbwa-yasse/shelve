@@ -14,14 +14,14 @@ class SlipStatusController extends Controller
     public function index()
     {
         $statuses = SlipStatus::all();
-        return view('transferrings.statuses.index', compact('statuses'));
+        return view('slips.statuses.index', compact('statuses'));
     }
 
 
 
     public function create()
     {
-        return view('transferrings.statuses.create');
+        return view('slips.statuses.create');
     }
 
 
@@ -43,14 +43,14 @@ class SlipStatusController extends Controller
 
     public function show(SlipStatus $transferringStatus)
     {
-        return view('transferrings.statuses.show', compact('transferringStatus'));
+        return view('slips.statuses.show', compact('transferringStatus'));
     }
 
 
 
     public function edit(SlipStatus $transferringStatus)
     {
-        return view('transferrings.statuses.edit', compact('transferringStatus'));
+        return view('slips.statuses.edit', compact('transferringStatus'));
     }
 
 

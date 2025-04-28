@@ -154,44 +154,7 @@
                         </div>
                     </div>
 
-                    <!-- Notifications -->
-                    <div class="header-action-item">
-                        <a href="#" class="header-action-btn position-relative" id="notifBtn" role="button" data-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-bell-fill"></i>
-                            <span class="badge">3</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right p-0" aria-labelledby="notifBtn" style="width: 320px">
-                            <div class="p-2 border-bottom">
-                                <h6 class="mb-0">Notifications (coming soon)</h6>
-                            </div>
-                            <div class="list-group list-group-flush">
-                                <a href="#" class="list-group-item list-group-item-action p-3">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-1">New mail received</h6>
-                                        <small>3 mins ago</small>
-                                    </div>
-                                    <p class="mb-1 small text-secondary">From: Department of Finance</p>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action p-3">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-1">Transfer request approved</h6>
-                                        <small>1 hour ago</small>
-                                    </div>
-                                    <p class="mb-1 small text-secondary">Transfer #TRF-2023-045</p>
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action p-3">
-                                    <div class="d-flex w-100 justify-content-between align-items-center">
-                                        <h6 class="mb-1">System maintenance</h6>
-                                        <small>5 hours ago</small>
-                                    </div>
-                                    <p class="mb-1 small text-secondary">Scheduled for tomorrow at 2:00 AM</p>
-                                </a>
-                            </div>
-                            <div class="p-2 border-top text-center">
-                                <a href="#" class="small text-primary">View all notifications</a>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Utilisateur -->
                     <div class="header-action-item">

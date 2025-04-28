@@ -19,7 +19,6 @@
 
         <div class="d-flex justify-content-start">
             <a href="{{ route('backups.index') }}" class="btn btn-sm btn-secondary me-2">Retour</a>
-            <a href="{{ route('backups.edit', $backup->id) }}" class="btn btn-sm btn-warning me-2">Éditer</a>
             <form action="{{ route('backups.destroy', $backup->id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce backup ?');" class="d-inline">
                 @csrf
                 @method('DELETE')
