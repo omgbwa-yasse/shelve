@@ -48,7 +48,7 @@
                 <span class="small">Avancée</span>
             </a>
         </div>
-        
+
         <div class="ms-auto pe-2">
             <form class="d-flex" action="{{ route('mails.search') }}" method="GET">
                 <div class="input-group input-group-sm">
@@ -78,7 +78,7 @@
             </a>
             <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
                 <i class="bi bi-archive me-1"></i>
-                Archiver ***
+                Archiver
             </a>
         </div>
         <div class="d-flex align-items-center">
@@ -103,9 +103,9 @@
 
                     <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
                         <a href="{{ route('mail-send.show', $mail) }}" class="text-decoration-none text-dark">
-                            <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
+                            <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }} [{{ $mail->recipientOrganisation->code ?? 'Entrant' }}]</span>
                             <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
-                            <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
+                            <span class="badge bg-danger ms-2">{{ $mail->action->name ?? '' }}</span>
                             @if ( $mail->containers->count()>1)
                             <span class="badge bg-primary ms-2">
                                 copies {{ $mail->containers->count() }} archivées
@@ -285,7 +285,7 @@
             transform: rotate(180deg);
         }
     </style>
-    
+
     <script src="{{ asset('js/mails.js') }}"></script>
     <script src="{{ asset('js/dollies.js') }}"></script>
 

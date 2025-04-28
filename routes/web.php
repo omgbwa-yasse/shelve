@@ -99,6 +99,9 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupFileController;
 use App\Http\Controllers\BackupPlanningController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SettingValueController;
+use App\Http\Controllers\SettingCategoryController;
 
 Auth::routes();
 
@@ -310,11 +313,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('transactions.records', CommunicationRecordController::class);
         Route::resource('reservations', ReservationController::class);
         Route::resource('reservations.records', ReservationRecordController::class);
-        Route::get('transactions/return', [CommunicationController::class, 'returnEffective'])->name('return-effective');
-        Route::get('transactions/cancel', [CommunicationController::class, 'returnCancel'])->name('return-cancel');
+        Route::get('return', [CommunicationController::class, 'returnEffective'])->name('return-effective');
+        Route::get('cancel', [CommunicationController::class, 'returnCancel'])->name('return-cancel');
         Route::get('transmission', [CommunicationController::class, 'transmission'])->name('record-transmission');
-        Route::get('transactions/record/return', [CommunicationRecordController::class, 'returnEffective'])->name('record-return-effective');
-        Route::get('transactions/record/cancel', [CommunicationRecordController::class, 'returnCancel'])->name('record-return-cancel');
+        Route::get('record/return', [CommunicationRecordController::class, 'returnEffective'])->name('record-return-effective');
+        Route::get('record/cancel', [CommunicationRecordController::class, 'returnCancel'])->name('record-return-cancel');
         Route::get('sort', [SearchCommunicationController::class, 'index'])->name('communications-sort');
         Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
         Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
@@ -419,6 +422,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('settings')->group(function () {
+        Route::get('', [SettingController::class, 'home'])->name('settings.home');
+
+        Route::resource('definitions', SettingController::class)->names('settings.definitions');
+        Route::resource('values', SettingValueController::class)->names('settings.values');
+        Route::resource('categories', SettingCategoryController::class)->names('settings.categories');
+
+        Route::get('categories/{id}/settings', [SettingCategoryController::class, 'getSettings'])->name('settings.categories.settings');
+
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
         Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');

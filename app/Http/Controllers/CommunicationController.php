@@ -112,6 +112,9 @@ class CommunicationController extends Controller
 
     public function returnEffective(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:communications,id',
+        ]);
         $communication = Communication::findOrFail($request->input('id'));
         if($communication->return_effective == NULL){
             $communication->update([

@@ -103,14 +103,14 @@
 
                         <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
                             <a href="{{ route('mail-received.show', $mail->id) }}" class="text-decoration-none text-dark">
-                                <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
+                                <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }} [{{ $mail->senderOrganisation->code ?? 'Sortant' }}] </span>
                                 <span class="fs-5"> - {{ $mail->name ?? 'N/A' }} </span>
-                                <span class="badge bg-danger ms-2">{{ $mail->action->name ?? 'N/A' }}</span>
-                                
+                                <span class="badge bg-danger ms-2">{{ $mail->action->name ?? '' }}</span>
+
                                 @if ($mail->status == 'in_progress')
                                     <span class="badge bg-warning ms-2">À recevoir</span>
                                 @endif
-                                
+
                                 @if ($mail->containers->count() > 1)
                                     <span class="badge bg-primary ms-2">
                                         copies {{ $mail->containers->count() }} archivées

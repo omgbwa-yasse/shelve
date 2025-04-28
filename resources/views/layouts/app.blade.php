@@ -82,7 +82,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
                             <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
-                            
+
                         </a>
                     </div>
                     <div class="header-nav-item">
@@ -116,7 +116,7 @@
                         </a>
                     </div>
                     <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('mail-typology.index') }}">
+                        <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>

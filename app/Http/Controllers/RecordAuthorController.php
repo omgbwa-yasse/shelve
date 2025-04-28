@@ -18,7 +18,7 @@ class RecordAuthorController extends Controller
 
     /**
      * Return a paginated and filtered list of authors
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -32,7 +32,7 @@ class RecordAuthorController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
-        
+
         // Apply alphabet filter
         if ($request->has('filter') && $request->filter !== 'all') {
             $letter = $request->filter;
@@ -43,7 +43,7 @@ class RecordAuthorController extends Controller
                 ->orWhere('name', 'like', '% ' . $letter . '%');
             });
         }
-        
+
         // Paginate results
         $perPage = 10; // Number of authors per page
         $authors = $query->orderBy('name')->paginate($perPage);
@@ -54,7 +54,7 @@ class RecordAuthorController extends Controller
             }
             return $author;
         });
-        
+
         return response()->json([
             'data' => $authors->items(),
             'pagination' => [
@@ -118,10 +118,10 @@ class RecordAuthorController extends Controller
 
     public function create()
     {
-        $authorTypes = AuthorType::all();
+        $types = AuthorType::all();
         $parents = author::all();
-        $parents->load('authorType');
-        return view('records.authors.create', compact('authorTypes','parents'));
+        $parents->load('type');
+        return view('records.authors.create', compact('types','parents'));
     }
 
 
