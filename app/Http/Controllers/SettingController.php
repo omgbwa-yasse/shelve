@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class SettingController extends Controller
 {
-    public function home()
-    {
-        return view('settings.home', );
-    }
 
     /**
      * Affiche la liste des paramètres
