@@ -221,14 +221,18 @@ class MailSendController extends Controller
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
-            $mailCode = $this->generateMailCode( $validatedData['typology_id']);
+
+            $mailCode = $this->generateMailCode($validatedData['typology_id']);
+
+
+            // Assign the generated mail code to the validated data
+            $validatedData['code'] = $mailCode;
 
             $mail = Mail::create($validatedData + [
-                    'code' => $mailCode,
-                    'sender_organisation_id' => auth()->user()->current_organisation_id,
-                    'sender_user_id' => auth()->id(),
-                    'status' => 'in_progress',
-                ]);
+                'sender_organisation_id' => auth()->user()->current_organisation_id,
+                'sender_user_id' => auth()->id(),
+                'status' => 'in_progress',
+            ]);
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
@@ -456,7 +460,7 @@ class MailSendController extends Controller
         $year = date('Y');
 
         $count = Mail::whereYear('created_at', $year)
-                ->where('mail_typology_id', $typologie_id)
+                ->where('typology_id', $typologie_id)
                 ->count();
 
         $nextNumber = $count + 1;
