@@ -40,18 +40,18 @@ class Mail extends Model
 
     public function priority()
     {
-        return $this->belongsTo(MailPriority::class); // 'priority_id' est implicite
+        return $this->belongsTo(MailPriority::class, 'priority_id'); // 'priority_id' est implicite
     }
 
 
     public function typology()
     {
-        return $this->belongsTo(MailTypology::class); // 'typology_id' est implicite
+        return $this->belongsTo(MailTypology::class, 'typology_id'); // 'typology_id' est implicite
     }
 
     public function action()
     {
-        return $this->belongsTo(MailAction::class); // 'action_id' est implicite
+        return $this->belongsTo(MailAction::class, 'action_id'); // 'action_id' est implicite
     }
 
     public function sender()

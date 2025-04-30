@@ -70,23 +70,29 @@ class SearchMailController extends Controller
         }
 
         // Recherche par priorité
-        if ($request->filled('mail_priority_id')) {
-            $query->where('mail_priority_id', $request->mail_priority_id);
-            $priority = MailPriority::find($request->mail_priority_id);
+        if ($request->filled('priority_id')) {
+
+            $query->whereHas('priority', function ($q) use ($request) {
+                $q->where('id', $request->priority_id);
+            });
+
+            $priority = MailPriority::find($request->priority_id);
             if ($priority) {
                 $title .= ' - Priorité: ' . $priority->name;
             }
         }
 
         // Recherche par type
-        if ($request->filled('mail_type_id')) {
-            $query->where('mail_type_id', $request->mail_type_id);
+        if ($request->filled('mail_type')) {
+            $query->where('mail_type', $request->mail_type);
         }
 
         // Recherche par typologie
-        if ($request->filled('mail_typology_id')) {
-            $query->where('mail_typology_id', $request->mail_typology_id);
-            $typology = MailTypology::find($request->mail_typology_id);
+        if ($request->filled('typology_id')) {
+                $query->whereHas('typology', function ($q) use ($request) {
+                    $q->where('mail_typologies.id', $request->typology_id);
+                });
+            $typology = MailTypology::find($request->typology_id);
             if ($typology) {
                 $title .= ' - Typologie: ' . $typology->name;
             }
@@ -156,6 +162,12 @@ class SearchMailController extends Controller
 
     }
 
+
+    public function mailTypologies(Request $request)
+    {
+        $typologies = MailTypology::paginate(20);
+        return view('search.mail.typology', compact('typologies'));
+    }
 
     private function handleDateSearch($query, $request, &$title)
     {

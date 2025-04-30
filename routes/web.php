@@ -249,7 +249,6 @@ Route::group(['middleware' => 'auth'], function () {
         });
 
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
-        Route::resource('typologies', MailTypologyController::class);
         Route::get('archived', [MailArchiveController::class, 'archived'])->name('mails.archived');
         Route::resource('batch', BatchController::class)->names('batch');
         Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
@@ -268,6 +267,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         */
         Route::post('advanced', [SearchMailController::class, 'advanced'])->name('mails.advanced');
+        Route::get('mail-typologies', [SearchMailController::class, 'mailTypologies'])->name('mail-select-typologies');
         Route::get('advanced/form', [SearchMailController::class, 'form'])->name('mails.advanced.form');
         Route::get('search', [SearchController::class, 'index'])->name('mails.search');
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');

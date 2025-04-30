@@ -5,10 +5,13 @@
         <a href="{{ route('mail-typology.create') }}" class="btn btn-primary mb-3">Ajouter une typology</a>
         <ul class="list-group">
             @foreach ($mailTypologies as $mailTypology)
-                <li class="list-group-item d-flex justify-content-between align-items-center mt-4" >
-                    <a href="{{ route('mails.sort', ['categ' => 'typology', 'id' => $mailTypology->id]) }} ">
-                        <strong>{{ $mailTypology->name }}</strong> <small class="text-muted d-block"> {{ $mailTypology->code ?? 'NAN' }} - {{ $mailTypology->class->name ?? 'NAN' }}</small>
-                    </a>
+                <li class="list-group-item d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <h5 class="mb-1">{{ $mailTypology->name }}</h5>
+                        <p class="mb-1 text-muted">{{ $mailTypology->description }}</p>
+                        <small class="text-muted">{{ $mailTypology->code ?? 'NAN' }} - {{ $mailTypology->class->name ?? 'NAN' }}</small>
+                    </div>
+                    <a href="{{ route('mail-typology.edit', $mailTypology->id) }}" class="btn btn-sm btn-outline-secondary">Modifier</a>
                 </li>
             @endforeach
         </ul>

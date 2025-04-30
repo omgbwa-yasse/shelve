@@ -101,7 +101,7 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('typologies.index') }}">
+                <a class="submenu-link" href="{{ route('mail-select-typologies') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
                 </a>
             </div>
