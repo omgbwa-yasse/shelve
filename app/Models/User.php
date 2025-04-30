@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Organisation;
 use App\Models\Role;
 use App\Models\Permission;
@@ -43,7 +44,7 @@ class User extends Authenticatable
         return $this->current_organisation_id;
     }
 
-    
+
 
     public function currentOrganisation()
     {
@@ -51,7 +52,7 @@ class User extends Authenticatable
     }
 
 
-    
+
     public function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')
@@ -70,7 +71,10 @@ class User extends Authenticatable
 
     public function checkUserPermission($permissionName, $organisationId = null)
     {
-        $permission = Permission::where('name', $permissionName)->first();
+        // Utiliser un cache pour les permissions fréquemment vérifiées
+        $permission = Cache::remember('permission:'.$permissionName, 3600, function() use ($permissionName) {
+            return Permission::where('name', $permissionName)->select('id')->first();
+        });
 
         if (!$permission) {
             return false;
@@ -78,11 +82,11 @@ class User extends Authenticatable
 
         $organisationId = $organisationId ?? $this->current_organisation_id;
 
+        // Requête optimisée avec jointure directe plutôt que whereHas
         return $this->roles()
-            ->wherePivot('organisation_id', $organisationId)
-            ->whereHas('permissions', function ($query) use ($permission) {
-                $query->where('permissions.id', $permission->id);
-            })
+            ->join('role_permission', 'roles.id', '=', 'role_permission.role_id')
+            ->where('role_permission.permission_id', $permission->id)
+            ->where('roles.organisation_id', $organisationId)
             ->exists();
     }
 
