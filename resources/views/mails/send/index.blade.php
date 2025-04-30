@@ -221,6 +221,9 @@
                             </div>
                             <div class="mb-3">
                                 <label for="category" class="form-label"> Categories </label>
+                                @php
+                                    $categories = \App\Models\Dolly::categories();
+                                @endphp
                                 <select class="form-select" id="category" name="category" required>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category }}" {{ $category == 'mail' ? 'selected' : '' }}>

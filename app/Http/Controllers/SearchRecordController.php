@@ -358,7 +358,7 @@ class SearchRecordController extends Controller
     public function selectWord()
     {
         return view('search.record.wordSearch', [
-            'terms' => Term::with(['parent', 'children', 'language', 'category', 'records', 'equivalentType', 'type'])->get()
+            'terms' => Term::with(['parent', 'children', 'language', 'category', 'records', 'equivalentType', 'type'])->paginate(50)
         ]);
     }
 

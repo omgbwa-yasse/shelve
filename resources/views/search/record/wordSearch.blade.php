@@ -35,5 +35,26 @@
         </tbody>
     </table>
 
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item {{ $terms->onFirstPage() ? 'disabled' : '' }}">
+                <a class="page-link" href="{{ $terms->previousPageUrl() }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            @for ($i = 1; $i <= $terms->lastPage(); $i++)
+                <li class="page-item {{ $terms->currentPage() == $i ? 'active' : '' }}">
+                    <a class="page-link" href="{{ $terms->url($i) }}">{{ $i }}</a>
+                </li>
+            @endfor
+            <li class="page-item {{ $terms->hasMorePages() ? '' : 'disabled' }}">
+                <a class="page-link" href="{{ $terms->nextPageUrl() }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
 </div>
 @endsection

@@ -5,10 +5,15 @@
 
         <ul class="list-group">
             @foreach ($typologies as $typology)
-                <li class="list-group-item d-flex justify-content-between align-items-center mt-4" >
-                    <a href="{{ route('mails.sort',['typology_id' => $typology->id]) }} ">
-                        <strong>{{ $typology->name }}</strong> <small class="text-muted d-block"> {{ $typology->code ?? 'NAN' }} - {{ $typology->class->name ?? 'NAN' }}</small>
-                    </a>
+                <li class="list-group-item d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                        <strong>{{ $typology->name }}</strong>
+                        <small class="text-muted d-block">{{ $typology->code ?? 'NAN' }} - {{ $typology->class->name ?? 'NAN' }}</small>
+                    </div>
+                    <div>
+                        <a href="{{ route('mails.sort', ['typology_id' => $typology->id, 'type' => 'received']) }}" class="btn btn-sm btn-primary">Courrier Reçu</a>
+                        <a href="{{ route('mails.sort', ['typology_id' => $typology->id, 'type' => 'send']) }}" class="btn btn-sm btn-secondary">Courrier Émis</a>
+                    </div>
                 </li>
             @endforeach
         </ul>

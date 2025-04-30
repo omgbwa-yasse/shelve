@@ -96,6 +96,31 @@
                         </div>
                     @endforelse
                 </div>
+
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item {{ $authors->onFirstPage() ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ $authors->previousPageUrl() }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        @for ($i = 1; $i <= $authors->lastPage(); $i++)
+                            <li class="page-item {{ $authors->currentPage() == $i ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $authors->url($i) }}">{{ $i }}</a>
+                            </li>
+                        @endfor
+                        <li class="page-item {{ $authors->hasMorePages() ? '' : 'disabled' }}">
+                            <a class="page-link" href="{{ $authors->nextPageUrl() }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+
+
+
+
             </div>
         </div>
     </div>

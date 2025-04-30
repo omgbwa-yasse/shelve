@@ -11,7 +11,7 @@ class RecordAuthorController extends Controller
 
     public function index()
     {
-        $authors = Author::all();
+        $authors = Author::paginate(50);
         return view('records.authors.index', compact('authors'));
     }
 
