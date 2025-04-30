@@ -21,7 +21,6 @@ use App\Models\SlipRecord;
 
 class SearchMailController extends Controller
 {
-
     public function form()
     {
         $data = [
@@ -35,117 +34,113 @@ class SearchMailController extends Controller
         return view('search.mail.advanced', compact('data'));
     }
 
-
-
     public function advanced(Request $request)
     {
         $query = Mail::query();
         $title = 'Recherche avancée';
+        $filters = [];
 
-        // Recherche par code
-        if ($request->filled('code')) {
-            $query->where('code', 'like', '%' . $request->code . '%');
-            $title .= ' - Code: ' . $request->code;
+        // Appliquer les filtres basés sur les attributs directs
+        $directFilters = [
+            'code' => ['label' => 'Code', 'type' => 'like'],
+            'name' => ['label' => 'Objet', 'type' => 'like'],
+            'mail_type' => ['label' => 'Type', 'type' => 'exact'],
+            'date' => ['label' => 'Date', 'type' => 'date'],
+        ];
+
+        foreach ($directFilters as $field => $options) {
+            if ($request->filled($field)) {
+                if ($options['type'] === 'like') {
+                    $query->where($field, 'like', '%' . $request->input($field) . '%');
+                } elseif ($options['type'] === 'date') {
+                    $query->whereDate($field, $request->input($field));
+                } else {
+                    $query->where($field, $request->input($field));
+                }
+                $filters[$options['label']] = $request->input($field);
+            }
         }
 
-        // Recherche par nom/objet
-        if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
-            $title .= ' - Objet: ' . $request->name;
+        // Filtres basés sur les relations
+        $relationFilters = [
+            'priority_id' => ['relation' => 'priority', 'model' => MailPriority::class, 'label' => 'Priorité'],
+            'typology_id' => ['relation' => 'typology', 'model' => MailTypology::class, 'label' => 'Typologie'],
+            'container_id' => ['relation' => 'containers', 'model' => MailContainer::class, 'label' => 'Conteneur', 'foreign_key' => 'mail_containers.id'],
+            'document_type_id' => ['relation' => 'documents', 'model' => DocumentType::class, 'label' => 'Type de document', 'foreign_key' => 'document_type'],
+        ];
+
+        foreach ($relationFilters as $field => $options) {
+            if ($request->filled($field)) {
+                $query->whereHas($options['relation'], function ($q) use ($request, $field, $options) {
+                    $foreignKey = $options['foreign_key'] ?? 'id';
+                    $q->where($foreignKey, $request->input($field));
+                });
+
+                // Récupérer le nom pour le titre
+                if (isset($options['model'])) {
+                    $model = $options['model']::find($request->input($field));
+                    if ($model) {
+                        $filters[$options['label']] = $model->name;
+                    }
+                }
+            }
         }
 
-        // Recherche par auteurs
+        // Recherche par auteurs (cas spécial avec explode)
         if ($request->filled('author_ids')) {
             $authorIds = explode(',', $request->author_ids);
             $query->whereHas('authors', function ($q) use ($authorIds) {
                 $q->whereIn('authors.id', $authorIds);
             });
-            $title .= ' - Auteurs sélectionnés';
+            $filters['Auteurs'] = 'sélectionnés';
         }
 
-        // Recherche par date
-        if ($request->filled('date')) {
-            $query->whereDate('date', $request->date);
-            $title .= ' - Date: ' . $request->date;
-        }
-
-        // Recherche par priorité
-        if ($request->filled('priority_id')) {
-
-            $query->whereHas('priority', function ($q) use ($request) {
-                $q->where('id', $request->priority_id);
-            });
-
-            $priority = MailPriority::find($request->priority_id);
-            if ($priority) {
-                $title .= ' - Priorité: ' . $priority->name;
+        // Utiliser les scopes du modèle si besoin
+        if ($request->filled('archived')) {
+            if ($request->boolean('archived')) {
+                $query->archived();
+                $filters['Statut'] = 'Archivé';
+            } else {
+                $query->notArchived();
+                $filters['Statut'] = 'Non archivé';
             }
         }
 
-        // Recherche par type
-        if ($request->filled('mail_type')) {
-            $query->where('mail_type', $request->mail_type);
-        }
-
-        // Recherche par typologie
-        if ($request->filled('typology_id')) {
-                $query->whereHas('typology', function ($q) use ($request) {
-                    $q->where('mail_typologies.id', $request->typology_id);
-                });
-            $typology = MailTypology::find($request->typology_id);
-            if ($typology) {
-                $title .= ' - Typologie: ' . $typology->name;
-            }
-        }
-
-        // Recherche par type de document
-        if ($request->filled('document_type_id')) {
-            $query->whereHas('documents', function ($q) use ($request) {
-                $q->where('document_type_id', $request->document_type_id);
-            });
-            $documentType = DocumentType::find($request->document_type_id);
-            if ($documentType) {
-                $title .= ' - Type de document: ' . $documentType->name;
-            }
-        }
-
-        // Recherche par conteneur
-        if ($request->filled('container_id')) {
-            $query->whereHas('containers', function($q) use ($request) {
-                $q->where('mail_containers.id', $request->container_id);
-            });
-            $container = MailContainer::find($request->container_id);
-            if ($container) {
-                $title .= ' - Conteneur: ' . $container->name;
-            }
-        }
-
-        // Gérer la recherche par catégorie existante si nécessaire
+        // Gérer les recherches par catégorie
         if ($request->filled('categ')) {
-            switch($request->categ) {
+            $category = $request->categ;
+            switch ($category) {
                 case "dates":
-                    $this->handleDateSearch($query, $request, $title);
+                    $this->handleDateSearch($query, $request, $filters);
                     break;
                 case "batch":
-                    $this->handleBatchSearch($query, $request, $title);
+                    $this->handleBatchSearch($query, $request, $filters);
                     break;
                 case "container":
-                    $this->handleContainerSearch($query, $request, $title);
+                    $this->handleContainerSearch($query, $request, $filters);
                     break;
-                // Autres cas existants si nécessaire...
             }
         }
 
-        // Appliquer la pagination
-        $mails = $query->with('archives','containers',
-                'attachments', 'recipientOrganisation','recipient',
-                'senderOrganisation', 'sender','action',
-                'typology', 'priority')
-            ->orderBy('created_at', 'desc')->paginate(10);
+        // Construction du titre avec les filtres
+        foreach ($filters as $key => $value) {
+            $title .= " - {$key}: {$value}";
+        }
 
+        // Relations à précharger (eager loading)
+        $with = [
+            'archives', 'containers', 'attachments',
+            'recipientOrganisation', 'recipient',
+            'senderOrganisation', 'sender', 'action',
+            'typology', 'priority'
+        ];
 
+        // Appliquer la pagination avec les relations préchargées
+        $mails = $query->with($with)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        // Récupérer les données pour les select
+        // Données pour les listes déroulantes
         $data = [
             'priorities' => MailPriority::all(),
             'typologies' => MailTypology::all(),
@@ -154,13 +149,12 @@ class SearchMailController extends Controller
             'containers' => MailContainer::all(),
         ];
 
-        if($request->type == 'send'){
-            return view('mails.send.index', compact('mails', 'title', 'data'));
-        }elseif($request->type == 'received'){
-            return view('mails.received.index', compact('mails', 'title', 'data'));
-        }
+        // Déterminer la vue en fonction du type de courrier
+        $viewType = in_array($request->type, ['send', 'received']) ? $request->type : 'received';
 
+        return view("mails.{$viewType}.index", compact('mails', 'title', 'data'));
     }
+
 
 
     public function mailTypologies(Request $request)
@@ -169,59 +163,82 @@ class SearchMailController extends Controller
         return view('search.mail.typology', compact('typologies'));
     }
 
-    private function handleDateSearch($query, $request, &$title)
+    /**
+     * Gère la recherche par date
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Http\Request $request
+     * @param array $filters tableau associatif pour les filtres appliqués
+     * @return void
+     */
+    private function handleDateSearch($query, $request, &$filters)
     {
         if ($request->filled('date_exact')) {
             $query->whereDate('date', $request->date_exact);
-            $title .= " - Date exacte: " . $request->date_exact;
+            $filters['Date exacte'] = $request->date_exact;
         } elseif ($request->filled('date_start') && $request->filled('date_end')) {
             $query->whereBetween('date', [$request->date_start, $request->date_end]);
-            $title .= " - Période: du " . $request->date_start . " au " . $request->date_end;
+            $filters['Période'] = "du {$request->date_start} au {$request->date_end}";
         } elseif ($request->filled('date_start')) {
             $query->where('date', '>=', $request->date_start);
-            $title .= " - À partir du: " . $request->date_start;
+            $filters['À partir du'] = $request->date_start;
         }
     }
 
-    private function handleBatchSearch($query, $request, &$title)
+    /**
+     * Gère la recherche par parapheur
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Http\Request $request
+     * @param array $filters tableau associatif pour les filtres appliqués
+     * @return void
+     */
+    private function handleBatchSearch($query, $request, &$filters)
     {
-        if ($request->filled('id')) {
-            $batch = Batch::find($request->id);
+        if ($request->filled('batch_id')) {
+            $batchId = $request->batch_id;
+            $batch = Batch::find($batchId);
+
             if ($batch) {
-                $query->whereHas('batches', function ($q) use ($request) {
-                    $q->where('batch_id', $request->id);
+                $query->whereHas('batches', function ($q) use ($batchId) {
+                    $q->where('batch_id', $batchId);
                 });
-                $title .= " - Parapheur: " . $batch->code . " - " . $batch->name;
+                $filters['Parapheur'] = "{$batch->code} - {$batch->name}";
             }
         }
     }
 
-    private function handleContainerSearch($query, $request, &$title)
+    /**
+     * Gère la recherche par conteneur
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Http\Request $request
+     * @param array $filters tableau associatif pour les filtres appliqués
+     * @return void
+     */
+    private function handleContainerSearch($query, $request, &$filters)
     {
-        if ($request->filled('id')) {
-            $container = MailContainer::find($request->id);
+        if ($request->filled('container_id')) {
+            $containerId = $request->container_id;
+            $container = MailContainer::find($containerId);
+
             if ($container) {
-                $query->whereHas('mails', function ($q) use ($request) {
-                    $q->where('container_id', $request->id);
+                $query->whereHas('containers', function ($q) use ($containerId) {
+                    $q->where('mail_containers.id', $containerId);
                 });
-                $title .= " - Conteneur: " . $container->name;
+                $filters['Conteneur'] = $container->name;
             }
         }
     }
-
-
 
     public function date()
     {
         return view('search.mail.dateSearch');
     }
 
-
     public function chart(Request $request)
     {
-        $ids = json_decode($request->query('ids', '[]'));
+        $ids = json_decode($request->query('ids', '[]'), true);
         return view('search.chart', compact('ids'));
     }
-
-
 }
