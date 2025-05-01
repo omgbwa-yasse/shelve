@@ -54,7 +54,7 @@ class ContainerController extends Controller
 
     public function show(Container $container)
     {
-        return view('containers.show', compact('container'));
+        return view('containers.show', compact('container',''));
     }
 
 
