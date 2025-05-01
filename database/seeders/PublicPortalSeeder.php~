@@ -21,7 +21,7 @@ class PublicPortalSeeder extends Seeder
                 'name' => 'Dupont',
                 'first_name' => 'Jean',
                 'phone1' => '0123456789',
-                'phone2' => '', // Empty string instead of NULL
+                'phone2' => null,
                 'address' => '1 rue de la Paix, 75001 Paris',
                 'email' => 'jean.dupont@example.com',
                 'email_verified_at' => $now,
@@ -37,7 +37,7 @@ class PublicPortalSeeder extends Seeder
                 'name' => 'Martin',
                 'first_name' => 'Sophie',
                 'phone1' => '0234567890',
-                'phone2' => '', // Empty string instead of NULL
+                'phone2' => null,
                 'address' => '15 avenue Victor Hugo, 69002 Lyon',
                 'email' => 'sophie.martin@example.com',
                 'email_verified_at' => $now,
@@ -53,7 +53,7 @@ class PublicPortalSeeder extends Seeder
                 'name' => 'Bernard',
                 'first_name' => 'Pierre',
                 'phone1' => '0345678901',
-                'phone2' => '0678901234', // Include second phone
+                'phone2' => '0678901234',
                 'address' => '8 rue de la République, 13001 Marseille',
                 'email' => 'pierre.bernard@example.com',
                 'email_verified_at' => $now,
@@ -69,7 +69,7 @@ class PublicPortalSeeder extends Seeder
                 'name' => 'Robert',
                 'first_name' => 'Marie',
                 'phone1' => '0456789012',
-                'phone2' => '', // Empty string instead of NULL
+                'phone2' => null,
                 'address' => '25 boulevard Pasteur, 33000 Bordeaux',
                 'email' => 'marie.robert@example.com',
                 'email_verified_at' => $now,
@@ -85,7 +85,7 @@ class PublicPortalSeeder extends Seeder
                 'name' => 'Petit',
                 'first_name' => 'Thomas',
                 'phone1' => '0567890123',
-                'phone2' => '', // Empty string instead of NULL
+                'phone2' => null,
                 'address' => '12 rue du Château, 44000 Nantes',
                 'email' => 'thomas.petit@example.com',
                 'email_verified_at' => null,
@@ -97,9 +97,6 @@ class PublicPortalSeeder extends Seeder
                 'deleted_at' => null,
             ],
         ];
-
-        // Continue with the rest of the seeder...
-        // (include the rest of your PublicPortalSeeder code here)
 
         // Public templates
         $publicTemplates = [

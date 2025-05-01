@@ -101,13 +101,9 @@ class CommunicationSeeder extends Seeder
 
             $status = $i <= 5 ? 4 : ($i <= 10 ? 5 : ($i <= 12 ? 2 : ($i <= 14 ? 1 : 3)));
 
-            // Fix the code to be shorter
-            $codeNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
-            $code = 'C' . $codeNumber;
-
             $communications[] = [
                 'id' => $i,
-                'code' => $code,
+                'code' => 'COM-' . date('Y') . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'name' => 'Demande de consultation ' . $i,
                 'content' => 'Demande de consultation de documents d\'archives pour recherche administrative',
                 'operator_id' => $operatorId,
@@ -155,13 +151,9 @@ class CommunicationSeeder extends Seeder
             $requestDate = Carbon::now()->subDays(rand(1, 15));
             $status = $i <= 6 ? 2 : ($i <= 8 ? 1 : ($i <= 9 ? 3 : 4));
 
-            // Fix the code to be shorter
-            $codeNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
-            $code = 'R' . $codeNumber;
-
             $reservations[] = [
                 'id' => $i,
-                'code' => $code,
+                'code' => 'RES-' . date('Y') . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
                 'name' => 'Réservation ' . $i,
                 'content' => 'Réservation de documents pour consultation programmée',
                 'operator_id' => $operatorId,

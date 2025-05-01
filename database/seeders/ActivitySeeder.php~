@@ -342,44 +342,44 @@ class ActivitySeeder extends Seeder
         // Organisation-Activity relationships
         $organisationActivities = [
             // Direction - across all main departments
-            ['organisation_id' => 1, 'activity_id' => 1, 'creator_id' => 1, ],
-            ['organisation_id' => 2, 'activity_id' => 1, 'creator_id' => 1, ],
-            ['organisation_id' => 3, 'activity_id' => 1, 'creator_id' => 1, ],
-            ['organisation_id' => 4, 'activity_id' => 1, 'creator_id' => 1, ],
-            ['organisation_id' => 5, 'activity_id' => 1, 'creator_id' => 1, ],
+            ['organisation_id' => 1, 'activity_id' => 1, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 2, 'activity_id' => 1, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 3, 'activity_id' => 1, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 4, 'activity_id' => 1, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 5, 'activity_id' => 1, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
 
             // Finances - main finance department and sub-departments
-            ['organisation_id' => 2, 'activity_id' => 2, 'creator_id' => 2, ],
-            ['organisation_id' => 6, 'activity_id' => 2, 'creator_id' => 2, ],
-            ['organisation_id' => 7, 'activity_id' => 2, 'creator_id' => 2, ],
-            ['organisation_id' => 6, 'activity_id' => 10, 'creator_id' => 2, ],
-            ['organisation_id' => 7, 'activity_id' => 9, 'creator_id' => 2, ],
+            ['organisation_id' => 2, 'activity_id' => 2, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 6, 'activity_id' => 2, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 7, 'activity_id' => 2, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 6, 'activity_id' => 10, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 7, 'activity_id' => 9, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
 
             // RH - main HR department and sub-departments
-            ['organisation_id' => 3, 'activity_id' => 3, 'creator_id' => 3, ],
-            ['organisation_id' => 8, 'activity_id' => 3, 'creator_id' => 3, ],
-            ['organisation_id' => 9, 'activity_id' => 3, 'creator_id' => 3, ],
-            ['organisation_id' => 8, 'activity_id' => 11, 'creator_id' => 3, ],
-            ['organisation_id' => 9, 'activity_id' => 12, 'creator_id' => 3, ],
+            ['organisation_id' => 3, 'activity_id' => 3, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 8, 'activity_id' => 3, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 9, 'activity_id' => 3, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 8, 'activity_id' => 11, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 9, 'activity_id' => 12, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
 
             // Technical - main technical department and sub-departments
-            ['organisation_id' => 4, 'activity_id' => 4, 'creator_id' => 4, ],
-            ['organisation_id' => 10, 'activity_id' => 4, 'creator_id' => 4, ],
-            ['organisation_id' => 11, 'activity_id' => 4, 'creator_id' => 4, ],
-            ['organisation_id' => 10, 'activity_id' => 13, 'creator_id' => 4, ],
-            ['organisation_id' => 11, 'activity_id' => 14, 'creator_id' => 4, ],
+            ['organisation_id' => 4, 'activity_id' => 4, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 10, 'activity_id' => 4, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 11, 'activity_id' => 4, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 10, 'activity_id' => 13, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 11, 'activity_id' => 14, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
 
             // Archives - archive activities
-            ['organisation_id' => 5, 'activity_id' => 6, 'creator_id' => 5, ],
-            ['organisation_id' => 12, 'activity_id' => 17, 'creator_id' => 5, ],
-            ['organisation_id' => 13, 'activity_id' => 18, 'creator_id' => 5, ],
+            ['organisation_id' => 5, 'activity_id' => 6, 'creator_id' => 5, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 12, 'activity_id' => 17, 'creator_id' => 5, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 13, 'activity_id' => 18, 'creator_id' => 5, 'created_at' => $now, 'updated_at' => $now],
 
             // Legal - across multiple departments
-            ['organisation_id' => 1, 'activity_id' => 5, 'creator_id' => 1, ],
-            ['organisation_id' => 2, 'activity_id' => 15, 'creator_id' => 2, ],
-            ['organisation_id' => 3, 'activity_id' => 15, 'creator_id' => 3, ],
-            ['organisation_id' => 4, 'activity_id' => 15, 'creator_id' => 4, ],
-            ['organisation_id' => 1, 'activity_id' => 16, 'creator_id' => 1, ],
+            ['organisation_id' => 1, 'activity_id' => 5, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 2, 'activity_id' => 15, 'creator_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 3, 'activity_id' => 15, 'creator_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 4, 'activity_id' => 15, 'creator_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['organisation_id' => 1, 'activity_id' => 16, 'creator_id' => 1, 'created_at' => $now, 'updated_at' => $now],
         ];
 
         // Insert the data
@@ -392,34 +392,34 @@ class ActivitySeeder extends Seeder
         // Setup retention-activity relationships
         $retentionActivities = [
             // Direction activities
-            ['retention_id' => 5, 'activity_id' => 1, ],
-            ['retention_id' => 5, 'activity_id' => 7, ],
-            ['retention_id' => 5, 'activity_id' => 8, ],
+            ['retention_id' => 5, 'activity_id' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 5, 'activity_id' => 7, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 5, 'activity_id' => 8, 'created_at' => $now, 'updated_at' => $now],
 
             // Finance activities
-            ['retention_id' => 3, 'activity_id' => 2, ],
-            ['retention_id' => 3, 'activity_id' => 9, ],
-            ['retention_id' => 4, 'activity_id' => 10, ],
+            ['retention_id' => 3, 'activity_id' => 2, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 3, 'activity_id' => 9, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 4, 'activity_id' => 10, 'created_at' => $now, 'updated_at' => $now],
 
             // HR activities
-            ['retention_id' => 6, 'activity_id' => 3, ],
-            ['retention_id' => 6, 'activity_id' => 11, ],
-            ['retention_id' => 2, 'activity_id' => 12, ],
+            ['retention_id' => 6, 'activity_id' => 3, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 6, 'activity_id' => 11, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 2, 'activity_id' => 12, 'created_at' => $now, 'updated_at' => $now],
 
             // Technical activities
-            ['retention_id' => 5, 'activity_id' => 4, ],
-            ['retention_id' => 5, 'activity_id' => 13, ],
-            ['retention_id' => 3, 'activity_id' => 14, ],
+            ['retention_id' => 5, 'activity_id' => 4, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 5, 'activity_id' => 13, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 3, 'activity_id' => 14, 'created_at' => $now, 'updated_at' => $now],
 
             // Legal activities
-            ['retention_id' => 4, 'activity_id' => 5, ],
-            ['retention_id' => 4, 'activity_id' => 15, ],
-            ['retention_id' => 5, 'activity_id' => 16, ],
+            ['retention_id' => 4, 'activity_id' => 5, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 4, 'activity_id' => 15, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 5, 'activity_id' => 16, 'created_at' => $now, 'updated_at' => $now],
 
             // Project activities
-            ['retention_id' => 3, 'activity_id' => 6, ],
-            ['retention_id' => 3, 'activity_id' => 17, ],
-            ['retention_id' => 5, 'activity_id' => 18, ],
+            ['retention_id' => 3, 'activity_id' => 6, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 3, 'activity_id' => 17, 'created_at' => $now, 'updated_at' => $now],
+            ['retention_id' => 5, 'activity_id' => 18, 'created_at' => $now, 'updated_at' => $now],
         ];
 
         DB::table('retention_activity')->insert($retentionActivities);

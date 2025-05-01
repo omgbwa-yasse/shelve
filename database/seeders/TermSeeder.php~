@@ -197,7 +197,7 @@ class TermSeeder extends Seeder
                     'language_id' => 1, // French
                     'category_id' => $categoryId,
                     'type_id' => 1, // Main term
-                    'parent_id' => 0, // Use 0 instead of null for top-level terms
+                    'parent_id' => null,
                 ];
 
                 // Add English translation
@@ -209,7 +209,7 @@ class TermSeeder extends Seeder
                     'language_id' => 2, // English
                     'category_id' => $categoryId,
                     'type_id' => 1, // Main term
-                    'parent_id' => 0, // Use 0 instead of null for top-level terms
+                    'parent_id' => null,
                 ];
 
                 $termTranslations[] = [
