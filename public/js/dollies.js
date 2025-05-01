@@ -55,16 +55,16 @@ function initDolliesManager() {
 
 function handleDollyFormSubmit(event) {
     event.preventDefault();
-    
-    const name = document.getElementById('name').value;
-    const description = document.getElementById('description').value;
     const category = document.getElementById('category') ? document.getElementById('category').value : detectCategory();
-    
+    const name = dollyForm.querySelector('input[name="name"]').value;
+    const description = dollyForm.querySelector('textarea[name="description"]').value;
+
     const formData = {
         name: name,
         description: description,
         category: category
     };
+
 
     fetch('/dolly-handler/create', {
         method: 'POST',
@@ -105,7 +105,7 @@ function handleDollyFormSubmit(event) {
 
 function refreshDolliesList() {
     const category = detectCategory();
-    
+
     fetch(`/dolly-handler/list?category=${category}`, {
         method: 'GET',
         headers: {
@@ -128,12 +128,12 @@ function refreshDolliesList() {
             dolliesList.innerHTML = '<p>Aucun chariot chargé</p>';
             return;
         }
-        
+
         let dolliesListHTML = '';
         let baseUrl = window.location.origin;
         dollies.forEach(dolly => {
             const itemCount = getItemCount(dolly, category);
-            
+
             dolliesListHTML += `
                 <div class="card mb-1 shadow-sm border-0 rounded-3">
                     <div class="card-body p-4">
@@ -158,7 +158,7 @@ function refreshDolliesList() {
                 </div>
             `;
         });
-        
+
         dolliesList.innerHTML = dolliesListHTML;
     })
     .catch(error => {
@@ -177,7 +177,7 @@ function refreshDolliesList() {
 function fillDolly(dollyId) {
     const category = detectCategory();
     const selectedIds = getSelectedIds();
-    
+
     if (selectedIds.length === 0) {
         alert(`Veuillez sélectionner au moins un ${getItemLabel(category)}.`);
         return;
@@ -190,8 +190,8 @@ function fillDolly(dollyId) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify({
-            items: selectedIds, 
-            'category': category, 
+            items: selectedIds,
+            'category': category,
             dolly_id: dollyId
         })
     })
@@ -234,13 +234,13 @@ function detectCategory() {
     } else if (document.querySelector('input[name="selected_communication[]"]')) {
         return 'communication';
     }
-    
+
     // Vérifier le champ select s'il existe
     const categorySelect = document.getElementById('category');
     if (categorySelect && categorySelect.value) {
         return categorySelect.value;
     }
-    
+
     // Vérifier l'URL de la page
     const url = window.location.pathname.toLowerCase();
     if (url.includes('mail')) {
@@ -250,7 +250,7 @@ function detectCategory() {
     } else if (url.includes('communication') || url.includes('transaction')) {
         return 'communication';
     }
-    
+
     // Valeur par défaut
     return 'mail';
 }
@@ -298,13 +298,13 @@ function detectCategory() {
     } else if (document.querySelector('input[name="selected_slip[]"]')) {
         return 'slip';
     }
-    
+
     // Vérifier le champ select s'il existe
     const categorySelect = document.getElementById('category');
     if (categorySelect && categorySelect.value) {
         return categorySelect.value;
     }
-    
+
     // Vérifier l'URL de la page
     const url = window.location.pathname.toLowerCase();
     if (url.includes('mail')) {
@@ -316,7 +316,7 @@ function detectCategory() {
     } else if (url.includes('slip') || url.includes('bordereau')) {
         return 'slip';
     }
-    
+
     // Valeur par défaut
     return 'mail';
 }
@@ -338,7 +338,7 @@ function getItemCount(dolly, category) {
 // Mise à jour de la fonction getSelectedIds
 function getSelectedIds() {
     const category = detectCategory();
-    
+
     if (category === 'mail') {
         if (window.getSelectedMailIds) {
             return window.getSelectedMailIds();
@@ -364,7 +364,7 @@ function getSelectedIds() {
         return Array.from(document.querySelectorAll('input[name="selected_slip[]"]:checked'))
             .map(checkbox => checkbox.value);
     }
-    
+
     return [];
 }
 
