@@ -583,63 +583,38 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     // Portal
-    Route::prefix('public')->middleware(['auth', 'admin'])->group(function () {
-        // User related routes
-        Route::resource('users', PublicUserController::class)->names('portal.users');
+    Route::prefix('portal')->middleware(['auth', 'admin'])->group(function () {
 
-        // Chat related routes
-        Route::resource('chats', PublicChatController::class)->names('portal.chats');
-        Route::resource('chats.messages', PublicChatMessageController::class)->shallow();
-        Route::resource('chat-participants', PublicChatParticipantController::class);
-
-        // Events related routes
-        Route::resource('events', PublicEventController::class);
-        Route::resource('event-registrations', PublicEventRegistrationController::class);
-
-        // Content related routes
-        Route::resource('news', PublicNewsController::class);
-        Route::resource('pages', PublicPageController::class);
-        Route::resource('templates', PublicTemplateController::class);
-
-        // Document related routes
-        Route::resource('document-requests', PublicDocumentRequestController::class);
-        Route::resource('records', PublicRecordController::class);
-        Route::resource('responses', PublicResponseController::class);
-        Route::resource('response-attachments', PublicResponseAttachmentController::class);
-
-        // Feedback and search
-        Route::resource('feedback', PublicFeedbackController::class);
-        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show']);
     });
 
 
-    Route::prefix('portal')->middleware(['auth', 'admin'])->group(function () {
+    Route::prefix('public')->group(function () {
         // User related routes
-        Route::resource('users', PublicUserController::class)->names('portal.users');
+        Route::resource('users', PublicUserController::class)->names('public.users');
 
         // Chat related routes
-        Route::resource('chats', PublicChatController::class)->names('portal.chats');
+        Route::resource('chats', PublicChatController::class)->names('public.chats');
         Route::resource('chats.messages', PublicChatMessageController::class)->shallow();
         Route::resource('chat-participants', PublicChatParticipantController::class);
 
         // Events related routes
-        Route::resource('events', PublicEventController::class);
-        Route::resource('event-registrations', PublicEventRegistrationController::class);
+        Route::resource('events', PublicEventController::class)->names('public.events');
+        Route::resource('event-registrations', PublicEventRegistrationController::class)->names('public.event-registrations');
 
         // Content related routes
-        Route::resource('news', PublicNewsController::class);
-        Route::resource('pages', PublicPageController::class);
-        Route::resource('templates', PublicTemplateController::class);
+        Route::resource('news', PublicNewsController::class)->names('public.news');
+        Route::resource('pages', PublicPageController::class)->names('public.pages');
+        Route::resource('templates', PublicTemplateController::class)->names('public.templates');
 
         // Document related routes
-        Route::resource('document-requests', PublicDocumentRequestController::class);
-        Route::resource('records', PublicRecordController::class);
-        Route::resource('responses', PublicResponseController::class);
-        Route::resource('response-attachments', PublicResponseAttachmentController::class);
+        Route::resource('document-requests', PublicDocumentRequestController::class)->names('public.document-requests');
+        Route::resource('records', PublicRecordController::class)->names('public.records');
+        Route::resource('responses', PublicResponseController::class)->names('public.responses');
+        Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('public.response-attachments');
 
         // Feedback and search
-        Route::resource('feedback', PublicFeedbackController::class);
-        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show']);
+        Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
+        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
     });
 
 

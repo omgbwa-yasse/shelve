@@ -69,6 +69,23 @@ return new class extends Migration
             $table->index('is_online');
         });
 
+        Schema::create('public_event_registrations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('event_id')->constrained('public_events')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->enum('status', ['registered', 'confirmed', 'cancelled', 'attended'])->default('registered');
+            $table->timestamp('registered_at')->useCurrent();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['event_id', 'user_id']);
+            $table->index('event_id');
+            $table->index('user_id');
+            $table->index('status');
+        });
+
+
+
         Schema::create('public_pages', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable(false);

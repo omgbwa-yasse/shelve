@@ -16,8 +16,8 @@ class PublicUserController extends Controller
      */
     public function index()
     {
-        $users = PublicUser::all();
-        return view('public-users.index', compact('users'));
+        $users = PublicUser::paginate(10);
+        return view('public.users.index', compact('users'));
     }
 
     /**
@@ -27,7 +27,7 @@ class PublicUserController extends Controller
      */
     public function create()
     {
-        return view('public-users.create');
+        return view('public.users.create');
     }
 
     /**
@@ -55,7 +55,7 @@ class PublicUserController extends Controller
         // Create the user
         $user = PublicUser::create($validated);
 
-        return redirect()->route('public-users.index')
+        return redirect()->route('public.users.index')
             ->with('success', 'User created successfully.');
     }
 
@@ -67,7 +67,7 @@ class PublicUserController extends Controller
      */
     public function show(PublicUser $publicUser)
     {
-        return view('public-users.show', compact('publicUser'));
+        return view('public.users.show', compact('publicUser'));
     }
 
     /**
@@ -78,7 +78,7 @@ class PublicUserController extends Controller
      */
     public function edit(PublicUser $publicUser)
     {
-        return view('public-users.edit', compact('publicUser'));
+        return view('public.users.edit', compact('publicUser'));
     }
 
     /**
@@ -110,7 +110,7 @@ class PublicUserController extends Controller
 
         $publicUser->update($validated);
 
-        return redirect()->route('public-users.index')
+        return redirect()->route('public.users.index')
             ->with('success', 'User updated successfully');
     }
 
@@ -124,7 +124,7 @@ class PublicUserController extends Controller
     {
         $publicUser->delete();
 
-        return redirect()->route('public-users.index')
+        return redirect()->route('public.users.index')
             ->with('success', 'User deleted successfully');
     }
 }

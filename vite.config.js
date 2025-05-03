@@ -5,7 +5,10 @@ import laravel from 'laravel-vite-plugin';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/opac/index.jsx'],
+            input: [
+                'resources/sass/app.scss',
+                'resources/js/app.js'
+            ],
             refresh: true,
         }),
         react()
@@ -20,7 +23,7 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': '/resources/js/opac'
+            '@': '/resources/js'
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx']
     }

@@ -26,7 +26,41 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <style>
+        /* Styles pour le menu latéral */
+        .submenu-card {
+            background-color: #f8f9fa;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
+        .submenu-card .nav-link {
+            color: #495057;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .submenu-card .nav-link:hover {
+            background-color: #e9ecef;
+            color: #212529;
+        }
+
+        .submenu-card .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .submenu-card .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* Animation sur hover */
+        .submenu-card .nav-link:hover i {
+            transform: translateX(3px);
+            transition: transform 0.2s ease-in-out;
+        }
     </style>
 </head>
 
@@ -234,6 +268,9 @@
                                             @break
                                         @case('public-admin')
                                             @include('submenu.public-admin')
+                                            @break
+                                        @case('public')
+                                            @include('submenu.portal')
                                             @break
                                         @default
                                             @include('submenu.mails')
