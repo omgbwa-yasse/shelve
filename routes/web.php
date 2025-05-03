@@ -103,6 +103,38 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingValueController;
 use App\Http\Controllers\SettingCategoryController;
 
+use App\Http\Controllers\PublicUserController;
+use App\Http\Controllers\PublicChatController;
+use App\Http\Controllers\PublicChatMessageController;
+use App\Http\Controllers\PublicChatParticipantController;
+use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\PublicEventRegistrationController;
+use App\Http\Controllers\PublicNewsController;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\PublicTemplateController;
+use App\Http\Controllers\PublicDocumentRequestController;
+use App\Http\Controllers\PublicRecordController;
+use App\Http\Controllers\PublicResponseController;
+use App\Http\Controllers\PublicResponseAttachmentController;
+use App\Http\Controllers\PublicFeedbackController;
+use App\Http\Controllers\PublicSearchLogController;
+
+
+// AI related controllers
+use App\Http\Controllers\AiActionController;
+use App\Http\Controllers\AiActionBatchController;
+use App\Http\Controllers\AiActionTypeController;
+use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiChatMessageController;
+use App\Http\Controllers\AiFeedbackController;
+use App\Http\Controllers\AiIntegrationController;
+use App\Http\Controllers\AiInteractionController;
+use App\Http\Controllers\AiJobController;
+use App\Http\Controllers\AiModelController;
+use App\Http\Controllers\AiPromptTemplateController;
+use App\Http\Controllers\AiResourceController;
+use App\Http\Controllers\AiTrainingDataController;
+
 Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
@@ -523,6 +555,62 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+
+
+
+    // Admin routes
+    Route::prefix('admin/ai')->middleware(['auth', 'admin'])->group(function () {
+        Route::resource('modules', AiModuleController::class);
+        Route::resource('models', AiModelController::class);
+        Route::resource('action-types', AiActionTypeController::class);
+        Route::resource('prompt-templates', AiPromptTemplateController::class);
+        Route::resource('integrations', AiIntegrationController::class);
+        Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy']);
+        Route::resource('training-data', AiTrainingDataController::class);
+    });
+
+    // User accessible routes
+    Route::prefix('ai')->middleware(['auth'])->group(function () {
+        Route::resource('chats', AiChatController::class);
+        Route::resource('chats.messages', AiChatMessageController::class)->shallow();
+        Route::resource('interactions', AiInteractionController::class)->only(['index', 'show']);
+        Route::resource('actions', AiActionController::class)->only(['index', 'show', 'update']);
+        Route::resource('action-batches', AiActionBatchController::class);
+        Route::resource('feedback', AiFeedbackController::class)->only(['store', 'update']);
+        Route::resource('resources', AiResourceController::class)->only(['index', 'show']);
+    });
+
+
+    Route::prefix('public')->middleware(['auth'])->group(function () {
+        // User related routes
+        Route::resource('users', PublicUserController::class);
+
+        // Chat related routes
+        Route::resource('chats', PublicChatController::class);
+        Route::resource('chats.messages', PublicChatMessageController::class)->shallow();
+        Route::resource('chat-participants', PublicChatParticipantController::class);
+
+        // Events related routes
+        Route::resource('events', PublicEventController::class);
+        Route::resource('event-registrations', PublicEventRegistrationController::class);
+
+        // Content related routes
+        Route::resource('news', PublicNewsController::class);
+        Route::resource('pages', PublicPageController::class);
+        Route::resource('templates', PublicTemplateController::class);
+
+        // Document related routes
+        Route::resource('document-requests', PublicDocumentRequestController::class);
+        Route::resource('records', PublicRecordController::class);
+        Route::resource('responses', PublicResponseController::class);
+        Route::resource('response-attachments', PublicResponseAttachmentController::class);
+
+        // Feedback and search
+        Route::resource('feedback', PublicFeedbackController::class);
+        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show']);
+    });
+
+
 
 });
 
