@@ -1,8 +1,12 @@
+@php
+    $currentRoute = request()->route()->getName();
+@endphp
+
 <div class="container p-2" style="background-color: #f1f1f1; font-size: 0.9rem;">
     <div class="row">
         <!-- Utilisateurs -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#usersMenu" aria-expanded="true"
-        aria-controls="usersMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-people"></i> Utilisateurs </a>
+        <a href="{{ route('public.users.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.users.') ? 'active' : '' }}" data-toggle="collapse" href="#usersMenu" aria-expanded="true"
+        aria-controls="usersMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-people"></i> {{ __('Users') }} </a>
 
         <div class="collapse show" id="usersMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -19,8 +23,8 @@
         </div>
 
         <!-- Templates -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#templatesMenu" aria-expanded="true"
-        aria-controls="templatesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-layout-text-window-reverse"></i> Templates </a>
+        <a href="{{ route('public.templates.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.templates.') ? 'active' : '' }}" data-toggle="collapse" href="#templatesMenu" aria-expanded="true"
+        aria-controls="templatesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-layout-text-window-reverse"></i> {{ __('Templates') }} </a>
 
         <div class="collapse show" id="templatesMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -37,8 +41,8 @@
         </div>
 
         <!-- Enregistrements -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#recordsMenu" aria-expanded="true"
-        aria-controls="recordsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-file-earmark"></i> Enregistrements </a>
+        <a href="{{ route('public.records.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.records.') ? 'active' : '' }}" data-toggle="collapse" href="#recordsMenu" aria-expanded="true"
+        aria-controls="recordsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-file-earmark"></i> {{ __('Records') }} </a>
 
         <div class="collapse show" id="recordsMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -56,8 +60,8 @@
 
 
         <!-- Événements -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#eventsMenu" aria-expanded="true"
-        aria-controls="eventsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-calendar-event"></i> Événements </a>
+        <a href="{{ route('public.events.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.events.') ? 'active' : '' }}" data-toggle="collapse" href="#eventsMenu" aria-expanded="true"
+        aria-controls="eventsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-calendar-event"></i> {{ __('Events') }} </a>
 
         <div class="collapse show" id="eventsMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -75,8 +79,8 @@
 
 
         <!-- Pages -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#pagesMenu" aria-expanded="true"
-        aria-controls="pagesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-file-text"></i> Pages </a>
+        <a href="{{ route('public.pages.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.pages.') ? 'active' : '' }}" data-toggle="collapse" href="#pagesMenu" aria-expanded="true"
+        aria-controls="pagesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-file-text"></i> {{ __('Pages') }} </a>
 
         <div class="collapse show" id="pagesMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -94,8 +98,8 @@
 
 
         <!-- Actualités -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#newsMenu" aria-expanded="true"
-        aria-controls="newsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-newspaper"></i> Actualités </a>
+        <a href="{{ route('public.news.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.news.') ? 'active' : '' }}" data-toggle="collapse" href="#newsMenu" aria-expanded="true"
+        aria-controls="newsMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-newspaper"></i> {{ __('News') }} </a>
 
         <div class="collapse show" id="newsMenu">
             <ul class="list-unstyled pl-2 mb-2">
@@ -114,8 +118,8 @@
 
 
         <!-- Réponses -->
-        <a class="nav-link active bg-primary text-white" data-toggle="collapse" href="#responsesMenu" aria-expanded="true"
-        aria-controls="responsesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-reply"></i> Réponses </a>
+        <a href="{{ route('public.feedback.index') }}" class="nav-link {{ str_starts_with($currentRoute, 'public.feedback.') ? 'active' : '' }}" data-toggle="collapse" href="#responsesMenu" aria-expanded="true"
+        aria-controls="responsesMenu" style="padding: 6px 8px; font-size: 13px; border-radius: 4px; margin-bottom: 4px;"><i class="bi bi-reply"></i> {{ __('Feedback') }} </a>
 
         <div class="collapse show" id="responsesMenu">
             <ul class="list-unstyled pl-2 mb-2">

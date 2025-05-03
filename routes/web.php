@@ -135,6 +135,10 @@ use App\Http\Controllers\AiPromptTemplateController;
 use App\Http\Controllers\AiResourceController;
 use App\Http\Controllers\AiTrainingDataController;
 
+use App\Http\Controllers\PortalEventController;
+use App\Http\Controllers\PortalNewsController;
+use App\Http\Controllers\PortalPageController;
+
 Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
@@ -388,7 +392,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('recordtostore', [lifeCycleController::class, 'recordToStore'])->name('records.tostore');
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
         Route::get('advanced/form', [SearchRecordController::class, 'form'])->name('records.advanced.form');
-        Route::get('search', [SearchController::class, 'index'])->name('records.search');
         Route::get('sort', [SearchRecordController::class, 'sort'])->name('records.sort');
         Route::get('select', [SearchRecordController::class, 'date'])->name('record-select-date');
         Route::get('word', [SearchRecordController::class, 'selectWord'])->name('record-select-word');
@@ -560,7 +563,6 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Admin routes
     Route::prefix('admin/ai')->middleware(['auth', 'admin'])->group(function () {
-        Route::resource('modules', AiModuleController::class);
         Route::resource('models', AiModelController::class);
         Route::resource('action-types', AiActionTypeController::class);
         Route::resource('prompt-templates', AiPromptTemplateController::class);
@@ -580,13 +582,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('resources', AiResourceController::class)->only(['index', 'show']);
     });
 
-
-    Route::prefix('public')->middleware(['auth'])->group(function () {
+    // Portal Admin routes
+    Route::prefix('portal-admin')->middleware(['auth', 'admin'])->group(function () {
         // User related routes
-        Route::resource('users', PublicUserController::class);
+        Route::resource('users', PublicUserController::class)->names('portal.users');
 
         // Chat related routes
-        Route::resource('chats', PublicChatController::class);
+        Route::resource('chats', PublicChatController::class)->names('portal.chats');
         Route::resource('chats.messages', PublicChatMessageController::class)->shallow();
         Route::resource('chat-participants', PublicChatParticipantController::class);
 
@@ -608,6 +610,75 @@ Route::group(['middleware' => 'auth'], function () {
         // Feedback and search
         Route::resource('feedback', PublicFeedbackController::class);
         Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show']);
+    });
+
+    // Portal API routes
+    Route::prefix('portal/api')->middleware(['auth'])->group(function () {
+        // Events
+        Route::get('events', [PortalEventController::class, 'index']);
+        Route::get('events/upcoming', [PortalEventController::class, 'upcoming']);
+        Route::get('events/past', [PortalEventController::class, 'past']);
+        Route::get('events/search', [PortalEventController::class, 'search']);
+        Route::get('events/{event}', [PortalEventController::class, 'show']);
+        Route::post('events/{event}/register', [PortalEventController::class, 'register']);
+
+        // News
+        Route::get('news', [PortalNewsController::class, 'index']);
+        Route::get('news/latest', [PortalNewsController::class, 'latest']);
+        Route::get('news/search', [PortalNewsController::class, 'search']);
+        Route::get('news/{news}', [PortalNewsController::class, 'show']);
+
+        // Pages
+        Route::get('pages', [PortalPageController::class, 'index']);
+        Route::get('pages/search', [PortalPageController::class, 'search']);
+        Route::get('pages/{page}', [PortalPageController::class, 'show']);
+        Route::get('pages/slug/{slug}', [PortalPageController::class, 'bySlug']);
+
+        // Document Requests
+        Route::get('document-requests', [PublicDocumentRequestController::class, 'apiIndex']);
+        Route::post('document-requests', [PublicDocumentRequestController::class, 'apiStore']);
+        Route::get('document-requests/{request}', [PublicDocumentRequestController::class, 'apiShow']);
+
+        // Records
+        Route::get('records', [PublicRecordController::class, 'apiIndex']);
+        Route::get('records/{record}', [PublicRecordController::class, 'apiShow']);
+
+        // Feedback
+        Route::post('feedback', [PublicFeedbackController::class, 'apiStore']);
+
+        // Search
+        Route::get('search', [PublicSearchLogController::class, 'apiSearch']);
+    });
+
+    // Portal routes (accessible to all authenticated users)
+    Route::prefix('portal')->middleware(['auth'])->group(function () {
+        // Events
+        Route::get('events', [PortalEventController::class, 'index'])->name('portal.events.index');
+        Route::get('events/{event}', [PortalEventController::class, 'show'])->name('portal.events.show');
+        Route::post('events/{event}/register', [PortalEventController::class, 'register'])->name('portal.events.register');
+
+        // News
+        Route::get('news', [PortalNewsController::class, 'index'])->name('portal.news.index');
+        Route::get('news/{news}', [PortalNewsController::class, 'show'])->name('portal.news.show');
+
+        // Pages
+        Route::get('pages', [PortalPageController::class, 'index'])->name('portal.pages.index');
+        Route::get('pages/{page}', [PortalPageController::class, 'show'])->name('portal.pages.show');
+        Route::get('pages/slug/{slug}', [PortalPageController::class, 'bySlug'])->name('portal.pages.by-slug');
+
+        // Document Requests
+        Route::get('document-requests', [PublicDocumentRequestController::class, 'publicIndex'])->name('portal.document-requests.index');
+        Route::get('document-requests/create', [PublicDocumentRequestController::class, 'create'])->name('portal.document-requests.create');
+        Route::post('document-requests', [PublicDocumentRequestController::class, 'store'])->name('portal.document-requests.store');
+        Route::get('document-requests/{request}', [PublicDocumentRequestController::class, 'show'])->name('portal.document-requests.show');
+
+        // Records
+        Route::get('records', [PublicRecordController::class, 'publicIndex'])->name('portal.records.index');
+        Route::get('records/{record}', [PublicRecordController::class, 'publicShow'])->name('portal.records.show');
+
+        // Feedback
+        Route::get('feedback/create', [PublicFeedbackController::class, 'create'])->name('portal.feedback.create');
+        Route::post('feedback', [PublicFeedbackController::class, 'store'])->name('portal.feedback.store');
     });
 
 

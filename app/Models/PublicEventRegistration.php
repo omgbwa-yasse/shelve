@@ -10,27 +10,58 @@ class PublicEventRegistration extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'public_event_registrations';
-
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'event_id',
         'user_id',
-        'status',
-        'registered_at',
+        'full_name',
+        'email',
+        'phone',
         'notes',
+        'status',
     ];
 
-    protected $casts = [
-        'registered_at' => 'datetime',
-    ];
-
+    /**
+     * Get the event that the registration belongs to.
+     */
     public function event()
     {
         return $this->belongsTo(PublicEvent::class, 'event_id');
     }
 
+    /**
+     * Get the user that made the registration.
+     */
     public function user()
     {
-        return $this->belongsTo(PublicUser::class, 'user_id');
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Scope a query to only include confirmed registrations.
+     */
+    public function scopeConfirmed($query)
+    {
+        return $query->where('status', 'confirmed');
+    }
+
+    /**
+     * Scope a query to only include pending registrations.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope a query to only include cancelled registrations.
+     */
+    public function scopeCancelled($query)
+    {
+        return $query->where('status', 'cancelled');
     }
 }

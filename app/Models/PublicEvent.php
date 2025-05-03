@@ -10,33 +10,111 @@ class PublicEvent extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'public_events';
-
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'name',
+        'title',
+        'slug',
         'description',
         'start_date',
         'end_date',
         'location',
-        'is_online',
-        'online_link',
+        'status',
+        'max_participants',
+        'featured_image',
+        'author_id',
+        'category',
+        'tags',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'is_online' => 'boolean',
+        'tags' => 'array',
+        'max_participants' => 'integer',
     ];
 
-    public function registrations()
+    /**
+     * Get the author of the event.
+     */
+    public function author()
     {
-        return $this->hasMany(PublicEventRegistration::class, 'event_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 
-    public function registeredUsers()
+    /**
+     * Get the registrations for the event.
+     */
+    public function registrations()
     {
-        return $this->belongsToMany(PublicUser::class, 'public_event_registrations', 'event_id', 'user_id')
-            ->withPivot('status', 'registered_at', 'notes')
-            ->withTimestamps();
+        return $this->hasMany(PublicEventRegistration::class);
+    }
+
+    /**
+     * Scope a query to only include published events.
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
+
+    /**
+     * Scope a query to only include upcoming events.
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('start_date', '>', now());
+    }
+
+    /**
+     * Scope a query to only include past events.
+     */
+    public function scopePast($query)
+    {
+        return $query->where('end_date', '<', now());
+    }
+
+    /**
+     * Scope a query to search events.
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($query) use ($search) {
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('location', 'like', "%{$search}%");
+        });
+    }
+
+    /**
+     * Check if the event is full.
+     */
+    public function isFull(): bool
+    {
+        if (!$this->max_participants) {
+            return false;
+        }
+
+        return $this->registrations()->count() >= $this->max_participants;
+    }
+
+    /**
+     * Get the number of available spots.
+     */
+    public function getAvailableSpotsAttribute(): ?int
+    {
+        if (!$this->max_participants) {
+            return null;
+        }
+
+        return max(0, $this->max_participants - $this->registrations()->count());
     }
 }
