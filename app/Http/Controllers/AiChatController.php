@@ -15,7 +15,7 @@ class AiChatController extends Controller
     public function index()
     {
         $chats = AiChat::with(['user', 'aiModel'])->paginate(15);
-        return view('ai.chat.index', compact('chats'));
+        return view('ai.chats.index', compact('chats'));
     }
 
     /**
@@ -25,7 +25,7 @@ class AiChatController extends Controller
      */
     public function create()
     {
-        return view('ai.chat.create');
+        return view('ai.chats.create');
     }
 
     /**
@@ -45,7 +45,7 @@ class AiChatController extends Controller
 
         AiChat::create($validated);
 
-        return redirect()->route('ai.chat.index')->with('success', 'AI Chat created successfully');
+        return redirect()->route('ai.chats.index')->with('success', 'AI Chat created successfully');
     }
 
     /**
@@ -57,7 +57,7 @@ class AiChatController extends Controller
     public function show(AiChat $aiChat)
     {
         $aiChat->load(['messages', 'resources']);
-        return view('ai.chat.show', compact('aiChat'));
+        return view('ai.chats.show', compact('aiChat'));
     }
 
     /**
@@ -68,7 +68,7 @@ class AiChatController extends Controller
      */
     public function edit(AiChat $aiChat)
     {
-        return view('ai.chat.edit', compact('aiChat'));
+        return view('ai.chats.edit', compact('aiChat'));
     }
 
     /**

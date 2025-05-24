@@ -582,10 +582,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('resources', AiResourceController::class)->only(['index', 'show']);
     });
 
-    // Portal
-    Route::prefix('portal')->middleware(['auth', 'admin'])->group(function () {
-
-    });
 
 
     Route::prefix('public')->group(function () {
@@ -617,14 +613,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
     });
 
-
-
 });
 
-// OPAC Route - SPA React Application
-Route::get('/opac{any}', function () {
-    return view('opac');
-})->where('any', '.*');
 
 
 

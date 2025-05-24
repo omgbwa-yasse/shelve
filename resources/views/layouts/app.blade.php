@@ -149,7 +149,11 @@
                             <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
-
+                    <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
+                            <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
