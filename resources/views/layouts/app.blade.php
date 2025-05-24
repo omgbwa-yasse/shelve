@@ -149,11 +149,7 @@
                             <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
-                            <i class="bi bi-globe" style="font-size: 1.5rem;"></i>
-                        </a>
-                    </div>
+
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
@@ -268,9 +264,6 @@
                                             @break
                                         @case('public-admin')
                                             @include('submenu.public-admin')
-                                            @break
-                                        @case('public')
-                                            @include('submenu.portal')
                                             @break
                                         @default
                                             @include('submenu.mails')

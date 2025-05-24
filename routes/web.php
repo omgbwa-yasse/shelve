@@ -120,22 +120,6 @@ use App\Http\Controllers\PublicFeedbackController;
 use App\Http\Controllers\PublicSearchLogController;
 
 
-use App\Http\Controllers\Opac\OpacUserController;
-use App\Http\Controllers\Opac\OpacChatController;
-use App\Http\Controllers\Opac\OpacChatMessageController;
-use App\Http\Controllers\Opac\OpacChatParticipantController;
-use App\Http\Controllers\Opac\OpacEventController;
-use App\Http\Controllers\Opac\OpacEventRegistrationController;
-use App\Http\Controllers\Opac\OpacNewsController;
-use App\Http\Controllers\Opac\OpacPageController;
-use App\Http\Controllers\Opac\OpacTemplateController;
-use App\Http\Controllers\Opac\OpacDocumentRequestController;
-use App\Http\Controllers\Opac\OpacRecordController;
-use App\Http\Controllers\Opac\OpacResponseController;
-use App\Http\Controllers\Opac\OpacResponseAttachmentController;
-use App\Http\Controllers\Opac\OpacFeedbackController;
-use App\Http\Controllers\Opac\OpacSearchLogController;
-
 // AI related controllers
 use App\Http\Controllers\AiActionController;
 use App\Http\Controllers\AiActionBatchController;
@@ -632,29 +616,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
         Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
     });
-
-
-
-
-
-    Route::prefix('opac')->group(function () {
-        Route::resource('users', OpacUserController::class)->names('opac.users');
-        Route::resource('chats', OpacChatController::class)->names('opac.chats');
-        Route::resource('chats.messages', OpacChatMessageController::class)->shallow();
-        Route::resource('chat-participants', OpacChatParticipantController::class);
-        Route::resource('events', OpacEventController::class)->names('opac.events');
-        Route::resource('event-registrations', OpacEventRegistrationController::class)->names('opac.event-registrations');
-        Route::resource('news', OpacNewsController::class)->names('opac.news');
-        Route::resource('pages', OpacPageController::class)->names('opac.pages');
-        Route::resource('templates', OpacTemplateController::class)->names('opac.templates');
-        Route::resource('document-requests', OpacDocumentRequestController::class)->names('opac.document-requests');
-        Route::resource('records', OpacRecordController::class)->names('opac.records');
-        Route::resource('responses', OpacResponseController::class)->names('opac.responses');
-        Route::resource('response-attachments', OpacResponseAttachmentController::class)->names('opac.response-attachments');
-        Route::resource('feedback', OpacFeedbackController::class)->names('opac.feedback');
-        Route::resource('search-logs', OpacSearchLogController::class)->only(['index', 'show'])->names('opac.search-logs');
-    });
-
 
 
 
