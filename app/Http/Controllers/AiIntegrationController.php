@@ -15,7 +15,9 @@ class AiIntegrationController extends Controller
     public function index()
     {
         $integrations = AiIntegration::with(['actionType', 'promptTemplate'])->paginate(15);
-        return view('ai.integration.index', compact('integrations'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        $promptTemplates = \App\Models\AiPromptTemplate::where('is_active', true)->get();
+        return view('ai.integrations.index', compact('integrations', 'actionTypes', 'promptTemplates'));
     }
 
     /**
@@ -25,7 +27,9 @@ class AiIntegrationController extends Controller
      */
     public function create()
     {
-        return view('ai.integration.create');
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        $promptTemplates = \App\Models\AiPromptTemplate::where('is_active', true)->get();
+        return view('ai.integrations.create', compact('actionTypes', 'promptTemplates'));
     }
 
     /**
@@ -49,7 +53,8 @@ class AiIntegrationController extends Controller
 
         AiIntegration::create($validated);
 
-        return redirect()->route('ai.integration.index')->with('success', 'AI Integration created successfully');
+        return redirect()->route('ai.integrations.index')
+            ->with('success', __('integration_created_successfully'));
     }
 
     /**
@@ -60,7 +65,7 @@ class AiIntegrationController extends Controller
      */
     public function show(AiIntegration $aiIntegration)
     {
-        return view('ai.integration.show', compact('aiIntegration'));
+        return view('ai.integrations.show', compact('aiIntegration'));
     }
 
     /**
@@ -71,7 +76,9 @@ class AiIntegrationController extends Controller
      */
     public function edit(AiIntegration $aiIntegration)
     {
-        return view('ai.integration.edit', compact('aiIntegration'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        $promptTemplates = \App\Models\AiPromptTemplate::where('is_active', true)->get();
+        return view('ai.integrations.edit', compact('aiIntegration', 'actionTypes', 'promptTemplates'));
     }
 
     /**
@@ -96,7 +103,8 @@ class AiIntegrationController extends Controller
 
         $aiIntegration->update($validated);
 
-        return redirect()->route('ai.integration.index')->with('success', 'AI Integration updated successfully');
+        return redirect()->route('ai.integrations.index')
+            ->with('success', __('integration_updated_successfully'));
     }
 
     /**
@@ -109,6 +117,7 @@ class AiIntegrationController extends Controller
     {
         $aiIntegration->delete();
 
-        return redirect()->route('ai.integration.index')->with('success', 'AI Integration deleted successfully');
+        return redirect()->route('ai.integrations.index')
+            ->with('success', __('integration_deleted_successfully'));
     }
 }

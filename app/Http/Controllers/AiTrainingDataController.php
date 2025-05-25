@@ -15,7 +15,8 @@ class AiTrainingDataController extends Controller
     public function index()
     {
         $trainingData = AiTrainingData::with(['actionType', 'creator', 'validator'])->paginate(15);
-        return view('ai.trainingdata.index', compact('trainingData'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.training-data.index', compact('trainingData', 'actionTypes'));
     }
 
     /**
@@ -25,7 +26,8 @@ class AiTrainingDataController extends Controller
      */
     public function create()
     {
-        return view('ai.trainingdata.create');
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.training-data.create', compact('actionTypes'));
     }
 
     /**
@@ -41,13 +43,16 @@ class AiTrainingDataController extends Controller
             'input' => 'required|string',
             'expected_output' => 'required|string',
             'is_validated' => 'boolean',
-            'created_by' => 'required|exists:users,id',
             'validated_by' => 'nullable|exists:users,id',
         ]);
 
+        $validated['created_by'] = auth()->id();
+        $validated['is_validated'] = $request->boolean('is_validated', false);
+
         AiTrainingData::create($validated);
 
-        return redirect()->route('ai.trainingdata.index')->with('success', 'AI Training Data created successfully');
+        return redirect()->route('ai.training-data.index')
+            ->with('success', __('training_data_created_successfully'));
     }
 
     /**
@@ -58,7 +63,7 @@ class AiTrainingDataController extends Controller
      */
     public function show(AiTrainingData $aiTrainingData)
     {
-        return view('ai.trainingdata.show', compact('aiTrainingData'));
+        return view('ai.training-data.show', compact('aiTrainingData'));
     }
 
     /**
@@ -69,7 +74,8 @@ class AiTrainingDataController extends Controller
      */
     public function edit(AiTrainingData $aiTrainingData)
     {
-        return view('ai.trainingdata.edit', compact('aiTrainingData'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.training-data.edit', compact('aiTrainingData', 'actionTypes'));
     }
 
     /**
@@ -86,13 +92,17 @@ class AiTrainingDataController extends Controller
             'input' => 'required|string',
             'expected_output' => 'required|string',
             'is_validated' => 'boolean',
-            'created_by' => 'required|exists:users,id',
-            'validated_by' => 'nullable|exists:users,id',
         ]);
+
+        // Si la validation est activée et n'était pas déjà validée
+        if ($request->boolean('is_validated') && !$aiTrainingData->is_validated) {
+            $validated['validated_by'] = auth()->id();
+        }
 
         $aiTrainingData->update($validated);
 
-        return redirect()->route('ai.trainingdata.index')->with('success', 'AI Training Data updated successfully');
+        return redirect()->route('ai.training-data.index')
+            ->with('success', __('training_data_updated_successfully'));
     }
 
     /**
@@ -105,6 +115,7 @@ class AiTrainingDataController extends Controller
     {
         $aiTrainingData->delete();
 
-        return redirect()->route('ai.trainingdata.index')->with('success', 'AI Training Data deleted successfully');
+        return redirect()->route('ai.training-data.index')
+            ->with('success', __('training_data_deleted_successfully'));
     }
 }

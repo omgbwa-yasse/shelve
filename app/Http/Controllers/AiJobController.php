@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AiJob;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Queue;
+use App\Services\OllamaService;
+
 
 class AiJobController extends Controller
 {
@@ -15,7 +19,7 @@ class AiJobController extends Controller
     public function index()
     {
         $jobs = AiJob::with(['aiModel'])->paginate(15);
-        return view('ai.job.index', compact('jobs'));
+        return view('ai.jobs.index', compact('jobs'));
     }
 
     /**
@@ -25,7 +29,7 @@ class AiJobController extends Controller
      */
     public function create()
     {
-        return view('ai.job.create');
+        return view('ai.jobs.create');
     }
 
     /**
@@ -48,7 +52,7 @@ class AiJobController extends Controller
 
         AiJob::create($validated);
 
-        return redirect()->route('ai.job.index')->with('success', 'AI Job created successfully');
+        return redirect()->route('ai.jobs.index')->with('success', 'AI Job created successfully');
     }
 
     /**
@@ -59,7 +63,7 @@ class AiJobController extends Controller
      */
     public function show(AiJob $aiJob)
     {
-        return view('ai.job.show', compact('aiJob'));
+        return view('ai.jobs.show', compact('aiJob'));
     }
 
     /**
@@ -70,13 +74,17 @@ class AiJobController extends Controller
      */
     public function edit(AiJob $aiJob)
     {
-        return view('ai.job.edit', compact('aiJob'));
+        return view('ai.jobs.edit', compact('aiJob'));
     }
 
-
-
-
-     public function update(Request $request, AiJob $aiJob)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\AiJob  $aiJob
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, AiJob $aiJob)
     {
         $validated = $request->validate([
             'job_type' => 'required|string|max:255',
@@ -90,7 +98,7 @@ class AiJobController extends Controller
 
         $aiJob->update($validated);
 
-        return redirect()->route('ai.job.index')->with('success', 'AI Job updated successfully');
+        return redirect()->route('ai.jobs.index')->with('success', 'AI Job updated successfully');
     }
 
     /**
@@ -103,6 +111,69 @@ class AiJobController extends Controller
     {
         $aiJob->delete();
 
-        return redirect()->route('ai.job.index')->with('success', 'AI Job deleted successfully');
+        return redirect()->route('ai.jobs.index')->with('success', 'AI Job deleted successfully');
     }
+
+
+    protected OllamaService $ollamaService;
+
+    public function __construct(OllamaService $ollamaService)
+    {
+        $this->ollamaService = $ollamaService;
+    }
+
+    /**
+     * Créer un job de traitement par lot
+     */
+    public function createBatch(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'job_type' => 'required|string',
+            'ai_model_id' => 'required|exists:ai_models,id',
+            'inputs' => 'required|array',
+            'parameters' => 'nullable|array'
+        ]);
+
+        try {
+            $job = $this->ollamaService->createBatchJob(
+                $validated['job_type'],
+                $validated['ai_model_id'],
+                $validated['inputs'],
+                $validated['parameters'] ?? []
+            );
+
+            // Traitement en arrière-plan
+            Queue::push(function () use ($job) {
+                $this->ollamaService->processBatchJob($job);
+            });
+
+            return response()->json([
+                'success' => true,
+                'job_id' => $job->id,
+                'status' => 'queued'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtenir le statut d'un job
+     */
+    public function getJobStatus(AiJob $job): JsonResponse
+    {
+        return response()->json([
+            'job_id' => $job->id,
+            'status' => $job->status,
+            'created_at' => $job->created_at,
+            'updated_at' => $job->updated_at,
+            'result' => $job->result ? json_decode($job->result, true) : null,
+            'error' => $job->error
+        ]);
+    }
+
+
 }

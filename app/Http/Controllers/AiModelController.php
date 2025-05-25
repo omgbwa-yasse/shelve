@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AiModel;
 use Illuminate\Http\Request;
+use App\Services\OllamaService;
+use Illuminate\Http\JsonResponse;
 
 class AiModelController extends Controller
 {
@@ -15,7 +17,7 @@ class AiModelController extends Controller
     public function index()
     {
         $models = AiModel::paginate(15);
-        return view('ai.model.index', compact('models'));
+        return view('ai.models.index', compact('models'));
     }
 
     /**
@@ -25,7 +27,7 @@ class AiModelController extends Controller
      */
     public function create()
     {
-        return view('ai.model.create');
+        return view('ai.models.create');
     }
 
     /**
@@ -47,7 +49,7 @@ class AiModelController extends Controller
 
         AiModel::create($validated);
 
-        return redirect()->route('ai.model.index')->with('success', 'AI Model created successfully');
+        return redirect()->route('ai.models.index')->with('success', 'AI Model created successfully');
     }
 
     /**
@@ -58,7 +60,7 @@ class AiModelController extends Controller
      */
     public function show(AiModel $aiModel)
     {
-        return view('ai.model.show', compact('aiModel'));
+        return view('ai.models.show', compact('aiModel'));
     }
 
     /**
@@ -69,7 +71,7 @@ class AiModelController extends Controller
      */
     public function edit(AiModel $aiModel)
     {
-        return view('ai.model.edit', compact('aiModel'));
+        return view('ai.models.edit', compact('aiModel'));
     }
 
     /**
@@ -92,7 +94,7 @@ class AiModelController extends Controller
 
         $aiModel->update($validated);
 
-        return redirect()->route('ai.model.index')->with('success', 'AI Model updated successfully');
+        return redirect()->route('ai.models.index')->with('success', 'AI Model updated successfully');
     }
 
     /**
@@ -105,6 +107,68 @@ class AiModelController extends Controller
     {
         $aiModel->delete();
 
-        return redirect()->route('ai.model.index')->with('success', 'AI Model deleted successfully');
+        return redirect()->route('ai.models.index')->with('success', 'AI Model deleted successfully');
+    }
+
+
+
+
+
+    protected OllamaService $ollamaService;
+
+    public function __construct(OllamaService $ollamaService)
+    {
+        $this->ollamaService = $ollamaService;
+    }
+
+    /**
+     * Synchroniser les modèles Ollama
+     */
+    public function syncOllamaModels(): JsonResponse
+    {
+        try {
+            $synced = $this->ollamaService->syncModels();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully synced {$synced} models from Ollama",
+                'synced_count' => $synced
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to sync models: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Vérifier l'état de santé d'Ollama
+     */
+    public function healthCheck(): JsonResponse
+    {
+        $health = $this->ollamaService->healthCheck();
+
+        return response()->json($health, $health['status'] === 'healthy' ? 200 : 503);
+    }
+
+    /**
+     * Obtenir les modèles disponibles sur Ollama
+     */
+    public function getOllamaModels(): JsonResponse
+    {
+        try {
+            $models = $this->ollamaService->getAvailableModels();
+
+            return response()->json([
+                'success' => true,
+                'models' => $models
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

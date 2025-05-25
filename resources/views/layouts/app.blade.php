@@ -230,8 +230,8 @@
                             <div class="card-body p-3">
                                 <div class="nav flex-column nav-pills">
                                     @switch(Request::segment(1))
-                                        @case('portal')
-                                            @include('submenu.portal')
+                                        @case('ai')
+                                            @include('submenu.ai')
                                             @break
                                         @case('bulletin-boards')
                                             @include('submenu.bulletinboards')

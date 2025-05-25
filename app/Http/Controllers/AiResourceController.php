@@ -15,7 +15,7 @@ class AiResourceController extends Controller
     public function index()
     {
         $resources = AiResource::with(['chat'])->paginate(15);
-        return view('ai.resource.index', compact('resources'));
+        return view('ai.resources.index', compact('resources'));
     }
 
     /**
@@ -25,7 +25,7 @@ class AiResourceController extends Controller
      */
     public function create()
     {
-        return view('ai.resource.create');
+        return view('ai.resources.create');
     }
 
     /**
@@ -45,7 +45,7 @@ class AiResourceController extends Controller
 
         AiResource::create($validated);
 
-        return redirect()->route('ai.resource.index')->with('success', 'AI Resource created successfully');
+        return redirect()->route('ai.resources.index')->with('success', 'AI Resource created successfully');
     }
 
     /**
@@ -56,7 +56,7 @@ class AiResourceController extends Controller
      */
     public function show(AiResource $aiResource)
     {
-        return view('ai.resource.show', compact('aiResource'));
+        return view('ai.resources.show', compact('aiResource'));
     }
 
     /**
@@ -67,7 +67,7 @@ class AiResourceController extends Controller
      */
     public function edit(AiResource $aiResource)
     {
-        return view('ai.resource.edit', compact('aiResource'));
+        return view('ai.resources.edit', compact('aiResource'));
     }
 
     /**
@@ -88,7 +88,7 @@ class AiResourceController extends Controller
 
         $aiResource->update($validated);
 
-        return redirect()->route('ai.resource.index')->with('success', 'AI Resource updated successfully');
+        return redirect()->route('ai.resources.index')->with('success', 'AI Resource updated successfully');
     }
 
     /**
@@ -101,6 +101,6 @@ class AiResourceController extends Controller
     {
         $aiResource->delete();
 
-        return redirect()->route('ai.resource.index')->with('success', 'AI Resource deleted successfully');
+        return redirect()->route('ai.resources.index')->with('success', 'AI Resource deleted successfully');
     }
 }

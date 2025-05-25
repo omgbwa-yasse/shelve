@@ -15,7 +15,8 @@ class AiActionController extends Controller
     public function index()
     {
         $actions = AiAction::with(['interaction', 'reviewer', 'target', 'actionType'])->paginate(15);
-        return view('ai.action.index', compact('actions'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.actions.index', compact('actions', 'actionTypes'));
     }
 
     /**
@@ -25,7 +26,7 @@ class AiActionController extends Controller
      */
     public function create()
     {
-        return view('ai.action.create');
+        return view('ai.actions.create');
     }
 
     /**
@@ -51,7 +52,7 @@ class AiActionController extends Controller
 
         AiAction::create($validated);
 
-        return redirect()->route('ai.action.index')->with('success', 'AI Action created successfully');
+        return redirect()->route('ai.actions.index')->with('success', 'AI Action created successfully');
     }
 
     /**
@@ -62,7 +63,7 @@ class AiActionController extends Controller
      */
     public function show(AiAction $aiAction)
     {
-        return view('ai.action.show', compact('aiAction'));
+        return view('ai.actions.show', compact('aiAction'));
     }
 
     /**
@@ -73,7 +74,7 @@ class AiActionController extends Controller
      */
     public function edit(AiAction $aiAction)
     {
-        return view('ai.action.edit', compact('aiAction'));
+        return view('ai.actions.edit', compact('aiAction'));
     }
 
     /**
@@ -100,7 +101,7 @@ class AiActionController extends Controller
 
         $aiAction->update($validated);
 
-        return redirect()->route('ai.action.index')->with('success', 'AI Action updated successfully');
+        return redirect()->route('ai.actions.index')->with('success', 'AI Action updated successfully');
     }
 
     /**
@@ -113,6 +114,6 @@ class AiActionController extends Controller
     {
         $aiAction->delete();
 
-        return redirect()->route('ai.action.index')->with('success', 'AI Action deleted successfully');
+        return redirect()->route('ai.actions.index')->with('success', 'AI Action deleted successfully');
     }
 }

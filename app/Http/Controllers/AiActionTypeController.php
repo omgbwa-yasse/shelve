@@ -15,7 +15,7 @@ class AiActionTypeController extends Controller
     public function index()
     {
         $actionTypes = AiActionType::paginate(15);
-        return view('ai.actiontype.index', compact('actionTypes'));
+        return view('ai.action-types.index', compact('actionTypes'));
     }
 
     /**
@@ -25,7 +25,7 @@ class AiActionTypeController extends Controller
      */
     public function create()
     {
-        return view('ai.actiontype.create');
+        return view('ai.action-types.create');
     }
 
     /**
@@ -48,7 +48,7 @@ class AiActionTypeController extends Controller
 
         AiActionType::create($validated);
 
-        return redirect()->route('ai.actiontype.index')->with('success', 'AI Action Type created successfully');
+        return redirect()->route('ai.action-types.index')->with('success', 'AI Action Type created successfully');
     }
 
     /**
@@ -59,7 +59,7 @@ class AiActionTypeController extends Controller
      */
     public function show(AiActionType $aiActionType)
     {
-        return view('ai.actiontype.show', compact('aiActionType'));
+        return view('ai.action-types.show', compact('aiActionType'));
     }
 
     /**
@@ -70,7 +70,7 @@ class AiActionTypeController extends Controller
      */
     public function edit(AiActionType $aiActionType)
     {
-        return view('ai.actiontype.edit', compact('aiActionType'));
+        return view('ai.action-types.edit', compact('aiActionType'));
     }
 
     /**
@@ -94,7 +94,7 @@ class AiActionTypeController extends Controller
 
         $aiActionType->update($validated);
 
-        return redirect()->route('ai.actiontype.index')->with('success', 'AI Action Type updated successfully');
+        return redirect()->route('ai.action-types.index')->with('success', 'AI Action Type updated successfully');
     }
 
     /**
@@ -107,6 +107,6 @@ class AiActionTypeController extends Controller
     {
         $aiActionType->delete();
 
-        return redirect()->route('ai.actiontype.index')->with('success', 'AI Action Type deleted successfully');
+        return redirect()->route('ai.action-types.index')->with('success', 'AI Action Type deleted successfully');
     }
 }

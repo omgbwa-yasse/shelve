@@ -139,6 +139,9 @@ use App\Http\Controllers\PortalEventController;
 use App\Http\Controllers\PortalNewsController;
 use App\Http\Controllers\PortalPageController;
 
+use App\Http\Controllers\OllamaController;
+
+
 Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
@@ -546,40 +549,23 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
-    Route::prefix('dashboard')->group(function () {
-        Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
-        Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
-        Route::get('repositories', [ReportController::class, 'statisticsRepositories'])->name('report.statistics.repositories');
-        Route::get('communications', [ReportController::class, 'statisticsCommunications'])->name('report.statistics.communications');
-        Route::get('transferrings', [ReportController::class, 'statisticsTransferrings'])->name('report.statistics.transferrings');
-        Route::get('deposits', [ReportController::class, 'statisticsDeposits'])->name('report.statistics.deposits');
-        Route::get('tools', [ReportController::class, 'statisticsTools'])->name('report.statistics.tools');
-        Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
-    });
-
-    Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
-
-
-
-    // Admin routes
-    Route::prefix('admin/ai')->middleware(['auth', 'admin'])->group(function () {
-        Route::resource('models', AiModelController::class);
-        Route::resource('action-types', AiActionTypeController::class);
-        Route::resource('prompt-templates', AiPromptTemplateController::class);
-        Route::resource('integrations', AiIntegrationController::class);
-        Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy']);
-        Route::resource('training-data', AiTrainingDataController::class);
-    });
-
     // User accessible routes
     Route::prefix('ai')->middleware(['auth'])->group(function () {
-        Route::resource('chats', AiChatController::class);
-        Route::resource('chats.messages', AiChatMessageController::class)->shallow();
-        Route::resource('interactions', AiInteractionController::class)->only(['index', 'show']);
-        Route::resource('actions', AiActionController::class)->only(['index', 'show', 'update']);
-        Route::resource('action-batches', AiActionBatchController::class);
-        Route::resource('feedback', AiFeedbackController::class)->only(['store', 'update']);
-        Route::resource('resources', AiResourceController::class)->only(['index', 'show']);
+        Route::resource('chats', AiChatController::class)->names('ai.chats');
+        Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
+        Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
+        Route::resource('actions', AiActionController::class)->names('ai.actions');
+        Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
+        Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
+        Route::resource('resources', AiResourceController::class)->names('ai.resources')   ;
+
+        Route::resource('models', AiModelController::class)->names('ai.models');
+        Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
+        Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
+        Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
+        Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
+        Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
+
     });
 
 
@@ -590,8 +576,8 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Chat related routes
         Route::resource('chats', PublicChatController::class)->names('public.chats');
-        Route::resource('chats.messages', PublicChatMessageController::class)->shallow();
-        Route::resource('chat-participants', PublicChatParticipantController::class);
+        Route::resource('chats.messages', PublicChatMessageController::class)->shallow()->names('public.chats.messages');
+        Route::resource('chat-participants', PublicChatParticipantController::class)->names('public.chat-participants');
 
         // Events related routes
         Route::resource('events', PublicEventController::class)->names('public.events');
@@ -612,6 +598,32 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
         Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
     });
+
+
+
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
+        Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
+        Route::get('repositories', [ReportController::class, 'statisticsRepositories'])->name('report.statistics.repositories');
+        Route::get('communications', [ReportController::class, 'statisticsCommunications'])->name('report.statistics.communications');
+        Route::get('transferrings', [ReportController::class, 'statisticsTransferrings'])->name('report.statistics.transferrings');
+        Route::get('deposits', [ReportController::class, 'statisticsDeposits'])->name('report.statistics.deposits');
+        Route::get('tools', [ReportController::class, 'statisticsTools'])->name('report.statistics.tools');
+        Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
+    });
+
+    Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
+
+
+    // routes/web.php - Ajouter ces routes
+    Route::prefix('ai/ollama')->name('ai.ollama.')->group(function () {
+        Route::get('/', [OllamaController::class, 'index'])->name('index');
+        Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
+        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
+        Route::get('chat', [OllamaController::class, 'chat'])->name('chat');
+    });
+
 
 });
 

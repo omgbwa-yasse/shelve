@@ -15,7 +15,7 @@ class AiChatMessageController extends Controller
     public function index()
     {
         $messages = AiChatMessage::with(['chat'])->paginate(15);
-        return view('ai.chatmessage.index', compact('messages'));
+        return view('ai.chats.messages.index', compact('messages'));
     }
 
     /**
@@ -25,7 +25,7 @@ class AiChatMessageController extends Controller
      */
     public function create()
     {
-        return view('ai.chatmessage.create');
+        return view('ai.chats.messages.create');
     }
 
     /**
@@ -45,7 +45,7 @@ class AiChatMessageController extends Controller
 
         AiChatMessage::create($validated);
 
-        return redirect()->route('ai.chatmessage.index')->with('success', 'AI Chat Message created successfully');
+        return redirect()->route('ai.chats.messages.index')->with('success', 'AI Chat Message created successfully');
     }
 
     /**
@@ -56,7 +56,7 @@ class AiChatMessageController extends Controller
      */
     public function show(AiChatMessage $aiChatMessage)
     {
-        return view('ai.chatmessage.show', compact('aiChatMessage'));
+        return view('ai.chats.messages.show', compact('aiChatMessage'));
     }
 
     /**
@@ -67,7 +67,7 @@ class AiChatMessageController extends Controller
      */
     public function edit(AiChatMessage $aiChatMessage)
     {
-        return view('ai.chatmessage.edit', compact('aiChatMessage'));
+        return view('ai.chats.messages.edit', compact('aiChatMessage'));
     }
 
     /**
@@ -88,7 +88,7 @@ class AiChatMessageController extends Controller
 
         $aiChatMessage->update($validated);
 
-        return redirect()->route('ai.chatmessage.index')->with('success', 'AI Chat Message updated successfully');
+        return redirect()->route('ai.chats.messages.index')->with('success', 'AI Chat Message updated successfully');
     }
 
     /**
@@ -101,6 +101,6 @@ class AiChatMessageController extends Controller
     {
         $aiChatMessage->delete();
 
-        return redirect()->route('ai.chatmessage.index')->with('success', 'AI Chat Message deleted successfully');
+        return redirect()->route('ai.chats.messages.index')->with('success', 'AI Chat Message deleted successfully');
     }
 }

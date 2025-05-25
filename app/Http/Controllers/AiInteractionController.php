@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AiInteraction;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Queue;
+use App\Services\OllamaService;
 
 class AiInteractionController extends Controller
 {
@@ -15,7 +19,8 @@ class AiInteractionController extends Controller
     public function index()
     {
         $interactions = AiInteraction::with(['user', 'aiModel', 'actions', 'feedback'])->paginate(15);
-        return view('ai.interaction.index', compact('interactions'));
+        $models = \App\Models\AiModel::where('is_active', true)->get();
+        return view('ai.interactions.index', compact('interactions', 'models'));
     }
 
     /**
@@ -25,7 +30,7 @@ class AiInteractionController extends Controller
      */
     public function create()
     {
-        return view('ai.interaction.create');
+        return view('ai.interactions.create');
     }
 
     /**
@@ -51,7 +56,7 @@ class AiInteractionController extends Controller
 
         AiInteraction::create($validated);
 
-        return redirect()->route('ai.interaction.index')->with('success', 'AI Interaction created successfully');
+        return redirect()->route('ai.interactions.index')->with('success', 'AI Interaction created successfully');
     }
 
     /**
@@ -62,7 +67,7 @@ class AiInteractionController extends Controller
      */
     public function show(AiInteraction $aiInteraction)
     {
-        return view('ai.interaction.show', compact('aiInteraction'));
+        return view('ai.interactions.show', compact('aiInteraction'));
     }
 
     /**
@@ -73,7 +78,7 @@ class AiInteractionController extends Controller
      */
     public function edit(AiInteraction $aiInteraction)
     {
-        return view('ai.interaction.edit', compact('aiInteraction'));
+        return view('ai.interactions.edit', compact('aiInteraction'));
     }
 
     /**
@@ -100,7 +105,7 @@ class AiInteractionController extends Controller
 
         $aiInteraction->update($validated);
 
-        return redirect()->route('ai.interaction.index')->with('success', 'AI Interaction updated successfully');
+        return redirect()->route('ai.interactions.index')->with('success', 'AI Interaction updated successfully');
     }
 
     /**
@@ -113,6 +118,133 @@ class AiInteractionController extends Controller
     {
         $aiInteraction->delete();
 
-        return redirect()->route('ai.interaction.index')->with('success', 'AI Interaction deleted successfully');
+        return redirect()->route('ai.interactions.index')->with('success', 'AI Interaction deleted successfully');
     }
+
+
+
+    protected OllamaService $ollamaService;
+
+    public function __construct(OllamaService $ollamaService)
+    {
+        $this->ollamaService = $ollamaService;
+    }
+
+    /**
+     * Créer et traiter une nouvelle interaction
+     */
+    public function createAndProcess(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ai_model_id' => 'required|exists:ai_models,id',
+            'input' => 'required|string',
+            'parameters' => 'nullable|array',
+            'module_type' => 'nullable|string',
+            'module_id' => 'nullable|integer',
+            'session_id' => 'nullable|string',
+            'async' => 'boolean'
+        ]);
+
+        try {
+            // Créer l'interaction
+            $interaction = $this->ollamaService->createInteraction(
+                Auth::id(),
+                $validated['ai_model_id'],
+                $validated['input'],
+                $validated['parameters'] ?? [],
+                $validated['module_type'] ?? null,
+                $validated['module_id'] ?? null,
+                $validated['session_id'] ?? null
+            );
+
+            // Traitement asynchrone ou synchrone
+            if ($validated['async'] ?? false) {
+                // Traitement en arrière-plan
+                Queue::push(function () use ($interaction) {
+                    $this->ollamaService->processInteraction($interaction);
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'interaction_id' => $interaction->id,
+                    'status' => 'queued',
+                    'message' => 'Interaction queued for processing'
+                ]);
+            } else {
+                // Traitement immédiat
+                $processedInteraction = $this->ollamaService->processInteraction($interaction);
+
+                return response()->json([
+                    'success' => true,
+                    'interaction' => $processedInteraction,
+                    'status' => $processedInteraction->status
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Streaming pour les interactions en temps réel
+     */
+    public function stream(Request $request)
+    {
+        $validated = $request->validate([
+            'model' => 'required|string',
+            'prompt' => 'required|string',
+            'options' => 'nullable|array'
+        ]);
+
+        $response = response()->stream(function () use ($validated) {
+            foreach ($this->ollamaService->generateStream(
+                $validated['model'],
+                $validated['prompt'],
+                $validated['options'] ?? []
+            ) as $chunk) {
+                echo "data: " . json_encode($chunk) . "\n\n";
+                ob_flush();
+                flush();
+            }
+        }, 200, [
+            'Content-Type' => 'text/plain',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Chat avec contexte
+     */
+    public function chat(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'model' => 'required|string',
+            'messages' => 'required|array',
+            'messages.*.role' => 'required|in:system,user,assistant',
+            'messages.*.content' => 'required|string',
+            'options' => 'nullable|array'
+        ]);
+
+        try {
+            $result = $this->ollamaService->chat(
+                $validated['model'],
+                $validated['messages'],
+                $validated['options'] ?? []
+            );
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

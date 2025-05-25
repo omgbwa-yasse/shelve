@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AiChat;
+use App\Models\AiModel;
 use Illuminate\Http\Request;
 
 class AiChatController extends Controller
@@ -25,7 +26,9 @@ class AiChatController extends Controller
      */
     public function create()
     {
-        return view('ai.chats.create');
+        return view('ai.chats.create', [
+            'aiModels' => AiModel::all(),
+        ]);
     }
 
     /**
@@ -68,7 +71,10 @@ class AiChatController extends Controller
      */
     public function edit(AiChat $aiChat)
     {
-        return view('ai.chats.edit', compact('aiChat'));
+        return view('ai.chats.edit', [
+            'aiChat' => $aiChat,
+            'aiModels' => AiModel::all(),
+        ]);
     }
 
     /**
@@ -89,7 +95,7 @@ class AiChatController extends Controller
 
         $aiChat->update($validated);
 
-        return redirect()->route('ai.chat.index')->with('success', 'AI Chat updated successfully');
+        return redirect()->route('ai.chats.index')->with('success', 'AI Chat updated successfully');
     }
 
     /**
@@ -102,6 +108,6 @@ class AiChatController extends Controller
     {
         $aiChat->delete();
 
-        return redirect()->route('ai.chat.index')->with('success', 'AI Chat deleted successfully');
+        return redirect()->route('ai.chats.index')->with('success', 'AI Chat deleted successfully');
     }
 }

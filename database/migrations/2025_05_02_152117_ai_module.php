@@ -33,6 +33,22 @@ return new class extends Migration
             $table->softDeletes();
             $table->index('is_active');
             $table->index('provider');
+
+             // Ajout de champs spécifiques à Ollama
+            $table->string('model_family')->nullable()->after('version');
+            $table->bigInteger('parameter_size')->nullable()->after('model_family');
+            $table->bigInteger('file_size')->nullable()->after('parameter_size');
+            $table->string('quantization')->nullable()->after('file_size');
+            $table->timestamp('model_modified_at')->nullable()->after('quantization');
+            $table->string('digest', 100)->nullable()->after('model_modified_at');
+            $table->json('model_details')->nullable()->after('digest');
+            $table->boolean('supports_streaming')->default(true)->after('model_details');
+            $table->integer('max_context_length')->nullable()->after('supports_streaming');
+            $table->decimal('default_temperature', 3, 2)->default(0.70)->after('max_context_length');
+
+            // Index pour les requêtes fréquentes
+            $table->index(['provider', 'is_active']);
+            $table->index(['model_family', 'parameter_size']);
         });
 
         // Table pour les interactions IA (historique des requêtes)
@@ -53,7 +69,60 @@ return new class extends Migration
             $table->index('ai_model_id');
             $table->index(['module_type', 'module_id']);
             $table->index('session_id');
+
+
+            // Statistiques spécifiques à Ollama
+            $table->bigInteger('total_duration')->nullable()->after('tokens_used');
+            $table->bigInteger('load_duration')->nullable()->after('total_duration');
+            $table->bigInteger('prompt_eval_duration')->nullable()->after('load_duration');
+            $table->bigInteger('eval_duration')->nullable()->after('prompt_eval_duration');
+            $table->integer('prompt_eval_count')->nullable()->after('eval_duration');
+            $table->integer('eval_count')->nullable()->after('prompt_eval_count');
+            $table->json('context_data')->nullable()->after('eval_count');
+            $table->boolean('was_streamed')->default(false)->after('context_data');
+            $table->decimal('temperature_used', 3, 2)->nullable()->after('was_streamed');
+            $table->text('error_message')->nullable()->after('temperature_used');
+
+            // Index pour les statistiques et performances
+            $table->index(['status', 'created_at']);
+            $table->index(['ai_model_id', 'status']);
         });
+
+
+        Schema::create('ai_model_metrics', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('ai_model_id')->constrained()->onDelete('cascade');
+            $table->date('metric_date');
+            $table->integer('total_interactions')->default(0);
+            $table->integer('successful_interactions')->default(0);
+            $table->integer('failed_interactions')->default(0);
+            $table->bigInteger('total_tokens')->default(0);
+            $table->bigInteger('average_response_time')->nullable(); // en millisecondes
+            $table->decimal('average_temperature', 3, 2)->nullable();
+            $table->json('performance_stats')->nullable();
+            $table->timestamps();
+
+            $table->unique(['ai_model_id', 'metric_date']);
+            $table->index(['metric_date', 'ai_model_id']);
+        });
+
+
+
+        Schema::create('ai_conversation_contexts', function (Blueprint $table) {
+            $table->id();
+            $table->string('session_id', 100)->index();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('ai_model_id')->constrained()->onDelete('cascade');
+            $table->json('context_data'); // Stockage du contexte Ollama
+            $table->integer('message_count')->default(0);
+            $table->timestamp('last_used_at');
+            $table->timestamp('expires_at')->nullable();
+            $table->timestamps();
+
+            $table->index(['session_id', 'user_id']);
+            $table->index(['expires_at']);
+        });
+
 
         // Table pour les chats avec l'IA
         Schema::create('ai_chats', function (Blueprint $table) {

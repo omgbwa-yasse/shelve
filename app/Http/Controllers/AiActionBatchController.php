@@ -15,7 +15,7 @@ class AiActionBatchController extends Controller
     public function index()
     {
         $batches = AiActionBatch::with(['user', 'actions'])->paginate(15);
-        return view('ai.actionbatch.index', compact('batches'));
+        return view('ai.action-batches.index', compact('batches'));
     }
 
     /**
@@ -25,7 +25,7 @@ class AiActionBatchController extends Controller
      */
     public function create()
     {
-        return view('ai.actionbatch.create');
+        return view('ai.action-batches.create');
     }
 
     /**
@@ -45,7 +45,7 @@ class AiActionBatchController extends Controller
 
         AiActionBatch::create($validated);
 
-        return redirect()->route('ai.actionbatch.index')->with('success', 'AI Action Batch created successfully');
+        return redirect()->route('ai.action-batches.index')->with('success', 'AI Action Batch created successfully');
     }
 
     /**
@@ -56,7 +56,7 @@ class AiActionBatchController extends Controller
      */
     public function show(AiActionBatch $aiActionBatch)
     {
-        return view('ai.actionbatch.show', compact('aiActionBatch'));
+        return view('ai.action-batches.show', compact('aiActionBatch'));
     }
 
     /**
@@ -67,7 +67,7 @@ class AiActionBatchController extends Controller
      */
     public function edit(AiActionBatch $aiActionBatch)
     {
-        return view('ai.actionbatch.edit', compact('aiActionBatch'));
+        return view('ai.action-batches.edit', compact('aiActionBatch'));
     }
 
     /**
@@ -88,7 +88,7 @@ class AiActionBatchController extends Controller
 
         $aiActionBatch->update($validated);
 
-        return redirect()->route('ai.actionbatch.index')->with('success', 'AI Action Batch updated successfully');
+        return redirect()->route('ai.action-batches.index')->with('success', 'AI Action Batch updated successfully');
     }
 
     /**
@@ -101,6 +101,6 @@ class AiActionBatchController extends Controller
     {
         $aiActionBatch->delete();
 
-        return redirect()->route('ai.actionbatch.index')->with('success', 'AI Action Batch deleted successfully');
+        return redirect()->route('ai.action-batches.index')->with('success', 'AI Action Batch deleted successfully');
     }
 }

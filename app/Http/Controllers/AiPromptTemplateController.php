@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AiPromptTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AiPromptTemplateController extends Controller
 {
@@ -15,7 +16,8 @@ class AiPromptTemplateController extends Controller
     public function index()
     {
         $promptTemplates = AiPromptTemplate::with(['actionType', 'creator'])->paginate(15);
-        return view('ai.prompttemplate.index', compact('promptTemplates'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.prompt-templates.index', compact('promptTemplates', 'actionTypes'));
     }
 
     /**
@@ -25,7 +27,8 @@ class AiPromptTemplateController extends Controller
      */
     public function create()
     {
-        return view('ai.prompttemplate.create');
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.prompt-templates.create', compact('actionTypes'));
     }
 
     /**
@@ -39,16 +42,19 @@ class AiPromptTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'template_content' => 'required|string',
+            'template' => 'required|string',
             'action_type_id' => 'required|exists:ai_action_types,id',
             'variables' => 'nullable|json',
-            'created_by' => 'required|exists:users,id',
-            'is_active' => 'boolean',
+            'category' => 'required|in:text,image,code,data',
+            'status' => 'required|in:active,inactive',
+            'is_system' => 'boolean',
         ]);
 
+        $validated['created_by'] = Auth::id();
         AiPromptTemplate::create($validated);
 
-        return redirect()->route('ai.prompttemplate.index')->with('success', 'AI Prompt Template created successfully');
+        return redirect()->route('ai.prompt-templates.index')
+            ->with('success', __('template_created_successfully'));
     }
 
     /**
@@ -57,9 +63,9 @@ class AiPromptTemplateController extends Controller
      * @param  \App\Models\AiPromptTemplate  $aiPromptTemplate
      * @return \Illuminate\Http\Response
      */
-    public function show(AiPromptTemplate $aiPromptTemplate)
+    public function show(AiPromptTemplate $promptTemplate)
     {
-        return view('ai.prompttemplate.show', compact('aiPromptTemplate'));
+        return view('ai.prompt-templates.show', compact('promptTemplate'));
     }
 
     /**
@@ -68,9 +74,10 @@ class AiPromptTemplateController extends Controller
      * @param  \App\Models\AiPromptTemplate  $aiPromptTemplate
      * @return \Illuminate\Http\Response
      */
-    public function edit(AiPromptTemplate $aiPromptTemplate)
+    public function edit(AiPromptTemplate $promptTemplate)
     {
-        return view('ai.prompttemplate.edit', compact('aiPromptTemplate'));
+        $actionTypes = \App\Models\AiActionType::where('is_active', true)->get();
+        return view('ai.prompt-templates.edit', compact('promptTemplate', 'actionTypes'));
     }
 
     /**
@@ -80,21 +87,23 @@ class AiPromptTemplateController extends Controller
      * @param  \App\Models\AiPromptTemplate  $aiPromptTemplate
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, AiPromptTemplate $aiPromptTemplate)
+    public function update(Request $request, AiPromptTemplate $promptTemplate)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'template_content' => 'required|string',
+            'template' => 'required|string',
             'action_type_id' => 'required|exists:ai_action_types,id',
             'variables' => 'nullable|json',
-            'created_by' => 'required|exists:users,id',
-            'is_active' => 'boolean',
+            'category' => 'required|in:text,image,code,data',
+            'status' => 'required|in:active,inactive',
+            'is_system' => 'boolean',
         ]);
 
-        $aiPromptTemplate->update($validated);
+        $promptTemplate->update($validated);
 
-        return redirect()->route('ai.prompttemplate.index')->with('success', 'AI Prompt Template updated successfully');
+        return redirect()->route('ai.prompt-templates.index')
+            ->with('success', __('template_updated_successfully'));
     }
 
     /**
@@ -103,10 +112,11 @@ class AiPromptTemplateController extends Controller
      * @param  \App\Models\AiPromptTemplate  $aiPromptTemplate
      * @return \Illuminate\Http\Response
      */
-    public function destroy(AiPromptTemplate $aiPromptTemplate)
+    public function destroy(AiPromptTemplate $promptTemplate)
     {
-        $aiPromptTemplate->delete();
+        $promptTemplate->delete();
 
-        return redirect()->route('ai.prompttemplate.index')->with('success', 'AI Prompt Template deleted successfully');
+        return redirect()->route('ai.prompt-templates.index')
+            ->with('success', __('template_deleted_successfully'));
     }
 }
