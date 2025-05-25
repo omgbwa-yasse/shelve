@@ -26,27 +26,27 @@ return new class extends Migration
             $table->string('name');
             $table->string('provider'); // OpenAI, Anthropic, etc.
             $table->string('version');
+            // Champs spécifiques à Ollama - placés directement sans after()
+            $table->string('model_family')->nullable();
+            $table->bigInteger('parameter_size')->nullable();
+            $table->bigInteger('file_size')->nullable();
+            $table->string('quantization')->nullable();
+            $table->timestamp('model_modified_at')->nullable();
+            $table->string('digest', 100)->nullable();
+            $table->json('model_details')->nullable();
+            $table->boolean('supports_streaming')->default(true);
+            $table->integer('max_context_length')->nullable();
+            $table->decimal('default_temperature', 3, 2)->default(0.70);
+
             $table->string('api_type'); // chat, embedding, etc.
             $table->json('capabilities'); // Ce que le modèle peut faire
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            // Index
             $table->index('is_active');
             $table->index('provider');
-
-             // Ajout de champs spécifiques à Ollama
-            $table->string('model_family')->nullable()->after('version');
-            $table->bigInteger('parameter_size')->nullable()->after('model_family');
-            $table->bigInteger('file_size')->nullable()->after('parameter_size');
-            $table->string('quantization')->nullable()->after('file_size');
-            $table->timestamp('model_modified_at')->nullable()->after('quantization');
-            $table->string('digest', 100)->nullable()->after('model_modified_at');
-            $table->json('model_details')->nullable()->after('digest');
-            $table->boolean('supports_streaming')->default(true)->after('model_details');
-            $table->integer('max_context_length')->nullable()->after('supports_streaming');
-            $table->decimal('default_temperature', 3, 2)->default(0.70)->after('max_context_length');
-
-            // Index pour les requêtes fréquentes
             $table->index(['provider', 'is_active']);
             $table->index(['model_family', 'parameter_size']);
         });
@@ -60,34 +60,33 @@ return new class extends Migration
             $table->text('output');
             $table->json('parameters')->nullable();
             $table->float('tokens_used')->nullable();
+
+            // Statistiques spécifiques à Ollama - placées directement
+            $table->bigInteger('total_duration')->nullable();
+            $table->bigInteger('load_duration')->nullable();
+            $table->bigInteger('prompt_eval_duration')->nullable();
+            $table->bigInteger('eval_duration')->nullable();
+            $table->integer('prompt_eval_count')->nullable();
+            $table->integer('eval_count')->nullable();
+            $table->json('context_data')->nullable();
+            $table->boolean('was_streamed')->default(false);
+            $table->decimal('temperature_used', 3, 2)->nullable();
+            $table->text('error_message')->nullable();
+
             $table->string('module_type')->nullable(); // records, slip, communication, mail
             $table->unsignedBigInteger('module_id')->nullable(); // ID spécifique au module
             $table->string('status')->default('completed');
             $table->string('session_id')->nullable();
             $table->timestamps();
+
+            // Index
             $table->index('user_id');
             $table->index('ai_model_id');
             $table->index(['module_type', 'module_id']);
             $table->index('session_id');
-
-
-            // Statistiques spécifiques à Ollama
-            $table->bigInteger('total_duration')->nullable()->after('tokens_used');
-            $table->bigInteger('load_duration')->nullable()->after('total_duration');
-            $table->bigInteger('prompt_eval_duration')->nullable()->after('load_duration');
-            $table->bigInteger('eval_duration')->nullable()->after('prompt_eval_duration');
-            $table->integer('prompt_eval_count')->nullable()->after('eval_duration');
-            $table->integer('eval_count')->nullable()->after('prompt_eval_count');
-            $table->json('context_data')->nullable()->after('eval_count');
-            $table->boolean('was_streamed')->default(false)->after('context_data');
-            $table->decimal('temperature_used', 3, 2)->nullable()->after('was_streamed');
-            $table->text('error_message')->nullable()->after('temperature_used');
-
-            // Index pour les statistiques et performances
             $table->index(['status', 'created_at']);
             $table->index(['ai_model_id', 'status']);
         });
-
 
         Schema::create('ai_model_metrics', function (Blueprint $table) {
             $table->id();
@@ -106,8 +105,6 @@ return new class extends Migration
             $table->index(['metric_date', 'ai_model_id']);
         });
 
-
-
         Schema::create('ai_conversation_contexts', function (Blueprint $table) {
             $table->id();
             $table->string('session_id', 100)->index();
@@ -122,7 +119,6 @@ return new class extends Migration
             $table->index(['session_id', 'user_id']);
             $table->index(['expires_at']);
         });
-
 
         // Table pour les chats avec l'IA
         Schema::create('ai_chats', function (Blueprint $table) {
@@ -322,6 +318,8 @@ return new class extends Migration
         Schema::dropIfExists('ai_resources');
         Schema::dropIfExists('ai_chat_messages');
         Schema::dropIfExists('ai_chats');
+        Schema::dropIfExists('ai_conversation_contexts');
+        Schema::dropIfExists('ai_model_metrics');
         Schema::dropIfExists('ai_interactions');
         Schema::dropIfExists('ai_models');
         Schema::dropIfExists('ai_module');
