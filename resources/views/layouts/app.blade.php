@@ -26,7 +26,41 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <style>
+        /* Styles pour le menu latéral */
+        .submenu-card {
+            background-color: #f8f9fa;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
+        .submenu-card .nav-link {
+            color: #495057;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .submenu-card .nav-link:hover {
+            background-color: #e9ecef;
+            color: #212529;
+        }
+
+        .submenu-card .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .submenu-card .nav-link i {
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* Animation sur hover */
+        .submenu-card .nav-link:hover i {
+            transform: translateX(3px);
+            transition: transform 0.2s ease-in-out;
+        }
     </style>
 </head>
 
@@ -116,6 +150,11 @@
                         </a>
                     </div>
                     <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
+                            <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
+                    <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
                         </a>
@@ -191,8 +230,8 @@
                             <div class="card-body p-3">
                                 <div class="nav flex-column nav-pills">
                                     @switch(Request::segment(1))
-                                        @case('portal')
-                                            @include('submenu.portal')
+                                        @case('ai')
+                                            @include('submenu.ai')
                                             @break
                                         @case('bulletin-boards')
                                             @include('submenu.bulletinboards')
@@ -226,6 +265,9 @@
                                             @break
                                         @case('dollies')
                                             @include('submenu.dollies')
+                                            @break
+                                        @case('public-admin')
+                                            @include('submenu.public-admin')
                                             @break
                                         @default
                                             @include('submenu.mails')

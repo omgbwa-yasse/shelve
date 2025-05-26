@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-
     public function up(): void
     {
         Schema::create('public_users', function (Blueprint $table) {
@@ -47,6 +46,7 @@ return new class extends Migration
             $table->foreignId('published_by')->constrained('users')->nullable(false);
             $table->text('publication_notes')->nullable();
             $table->timestamps();
+            $table->softDeletes(); // Ajout de softDeletes manquant
             $table->index('record_id');
             $table->index('published_by');
             $table->index('published_at');
@@ -68,6 +68,23 @@ return new class extends Migration
             $table->index('end_date');
             $table->index('is_online');
         });
+
+        Schema::create('public_event_registrations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('event_id')->constrained('public_events')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->enum('status', ['registered', 'confirmed', 'cancelled', 'attended'])->default('registered');
+            $table->timestamp('registered_at')->useCurrent();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['event_id', 'user_id']);
+            $table->index('event_id');
+            $table->index('user_id');
+            $table->index('status');
+        });
+
+
 
         Schema::create('public_pages', function (Blueprint $table) {
             $table->id();
@@ -160,6 +177,73 @@ return new class extends Migration
             $table->index('uploaded_by');
         });
 
+
+
+        Schema::create('public_feedbacks', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->string('subject');
+            $table->text('content');
+            $table->enum('status', ['pending', 'reviewed', 'responded'])->default('pending');
+            $table->foreignId('related_id')->nullable();
+            $table->string('related_type')->nullable();
+            $table->integer('rating')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->index('user_id');
+            $table->index('status');
+        });
+
+        Schema::create('public_chats', function (Blueprint $table) {
+            $table->id();
+            $table->string('title')->nullable();
+            $table->boolean('is_group')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+            $table->index('is_active');
+        });
+
+        Schema::create('public_chat_messages', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('chat_id')->constrained('public_chats')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->text('message');
+            $table->boolean('is_read')->default(false);
+            $table->timestamps();
+            $table->softDeletes();
+            $table->index('chat_id');
+            $table->index('user_id');
+            $table->index('is_read');
+        });
+
+        Schema::create('public_chat_participants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('chat_id')->constrained('public_chats')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->boolean('is_admin')->default(false);
+            $table->timestamp('last_read_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['chat_id', 'user_id']);
+            $table->index('chat_id');
+            $table->index('user_id');
+        });
+
+        Schema::create('public_event_registrations', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('event_id')->constrained('public_events')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
+            $table->enum('status', ['registered', 'confirmed', 'cancelled', 'attended'])->default('registered');
+            $table->timestamp('registered_at')->useCurrent();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->unique(['event_id', 'user_id']);
+            $table->index('event_id');
+            $table->index('user_id');
+            $table->index('status');
+        });
     }
 
     /**
@@ -167,14 +251,23 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Suppression des tables dans l'ordre inverse pour respecter les contraintes de clés étrangères
+        Schema::dropIfExists('public_event_registrations');
+        Schema::dropIfExists('public_chat_participants');
+        Schema::dropIfExists('public_chat_messages');
+        Schema::dropIfExists('public_chats');
+        Schema::dropIfExists('public_feedbacks');
+        Schema::dropIfExists('public_response_attachments');
+        Schema::dropIfExists('public_responses');
         Schema::dropIfExists('public_document_requests');
-        Schema::dropIfExists('public_search_histories');
+        Schema::dropIfExists('public_search_logs');
         Schema::dropIfExists('public_news');
         Schema::dropIfExists('public_pages');
         Schema::dropIfExists('public_events');
         Schema::dropIfExists('public_records');
         Schema::dropIfExists('public_templates');
         Schema::dropIfExists('public_users');
-    }
 
+        // Ne pas supprimer la table attachments car elle pourrait être utilisée par d'autres modules
+    }
 };

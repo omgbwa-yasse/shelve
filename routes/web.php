@@ -103,6 +103,45 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingValueController;
 use App\Http\Controllers\SettingCategoryController;
 
+use App\Http\Controllers\PublicUserController;
+use App\Http\Controllers\PublicChatController;
+use App\Http\Controllers\PublicChatMessageController;
+use App\Http\Controllers\PublicChatParticipantController;
+use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\PublicEventRegistrationController;
+use App\Http\Controllers\PublicNewsController;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\PublicTemplateController;
+use App\Http\Controllers\PublicDocumentRequestController;
+use App\Http\Controllers\PublicRecordController;
+use App\Http\Controllers\PublicResponseController;
+use App\Http\Controllers\PublicResponseAttachmentController;
+use App\Http\Controllers\PublicFeedbackController;
+use App\Http\Controllers\PublicSearchLogController;
+
+
+// AI related controllers
+use App\Http\Controllers\AiActionController;
+use App\Http\Controllers\AiActionBatchController;
+use App\Http\Controllers\AiActionTypeController;
+use App\Http\Controllers\AiChatController;
+use App\Http\Controllers\AiChatMessageController;
+use App\Http\Controllers\AiFeedbackController;
+use App\Http\Controllers\AiIntegrationController;
+use App\Http\Controllers\AiInteractionController;
+use App\Http\Controllers\AiJobController;
+use App\Http\Controllers\AiModelController;
+use App\Http\Controllers\AiPromptTemplateController;
+use App\Http\Controllers\AiResourceController;
+use App\Http\Controllers\AiTrainingDataController;
+
+use App\Http\Controllers\PortalEventController;
+use App\Http\Controllers\PortalNewsController;
+use App\Http\Controllers\PortalPageController;
+
+use App\Http\Controllers\OllamaController;
+
+
 Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
@@ -356,7 +395,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('recordtostore', [lifeCycleController::class, 'recordToStore'])->name('records.tostore');
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
         Route::get('advanced/form', [SearchRecordController::class, 'form'])->name('records.advanced.form');
-        Route::get('search', [SearchController::class, 'index'])->name('records.search');
         Route::get('sort', [SearchRecordController::class, 'sort'])->name('records.sort');
         Route::get('select', [SearchRecordController::class, 'date'])->name('record-select-date');
         Route::get('word', [SearchRecordController::class, 'selectWord'])->name('record-select-word');
@@ -511,6 +549,59 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
+    // User accessible routes
+    Route::prefix('ai')->middleware(['auth'])->group(function () {
+        Route::resource('chats', AiChatController::class)->names('ai.chats');
+        Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
+        Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
+        Route::resource('actions', AiActionController::class)->names('ai.actions');
+        Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
+        Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
+        Route::resource('resources', AiResourceController::class)->names('ai.resources')   ;
+
+        Route::resource('models', AiModelController::class)->names('ai.models');
+        Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
+        Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
+        Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
+        Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
+        Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
+
+    });
+
+
+
+    Route::prefix('public')->group(function () {
+        // User related routes
+        Route::resource('users', PublicUserController::class)->names('public.users');
+
+        // Chat related routes
+        Route::resource('chats', PublicChatController::class)->names('public.chats');
+        Route::resource('chats.messages', PublicChatMessageController::class)->shallow()->names('public.chats.messages');
+        Route::resource('chat-participants', PublicChatParticipantController::class)->names('public.chat-participants');
+
+        // Events related routes
+        Route::resource('events', PublicEventController::class)->names('public.events');
+        Route::resource('event-registrations', PublicEventRegistrationController::class)->names('public.event-registrations');
+
+        // Content related routes
+        Route::resource('news', PublicNewsController::class)->names('public.news');
+        Route::resource('pages', PublicPageController::class)->names('public.pages');
+        Route::resource('templates', PublicTemplateController::class)->names('public.templates');
+
+        // Document related routes
+        Route::resource('document-requests', PublicDocumentRequestController::class)->names('public.document-requests');
+        Route::resource('records', PublicRecordController::class)->names('public.records');
+        Route::resource('responses', PublicResponseController::class)->names('public.responses');
+        Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('public.response-attachments');
+
+        // Feedback and search
+        Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
+        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
+    });
+
+
+
+
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
         Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
@@ -524,7 +615,18 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
+
+    // routes/web.php - Ajouter ces routes
+    Route::prefix('ai/ollama')->name('ai.ollama.')->group(function () {
+        Route::get('/', [OllamaController::class, 'index'])->name('index');
+        Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
+        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
+        Route::get('chat', [OllamaController::class, 'chat'])->name('chat');
+    });
+
+
 });
+
 
 
 
