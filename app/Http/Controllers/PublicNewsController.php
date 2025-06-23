@@ -140,4 +140,100 @@ class PublicNewsController extends Controller
         return redirect()->back()
             ->with('success', 'Status updated successfully.');
     }
+
+    // ========================================
+    // API METHODS pour l'interface React
+    // ========================================
+
+    /**
+     * API: Get paginated news for React frontend
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = PublicNews::with(['author'])
+            ->where('status', 'published');
+
+        // Filtres
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('content', 'like', "%{$search}%")
+                  ->orWhere('summary', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('featured')) {
+            $query->where('featured', $request->boolean('featured'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('published_at', '>=', $request->get('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('published_at', '<=', $request->get('date_to'));
+        }
+
+        // Tri
+        $sortBy = $request->get('sort_by', 'published_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $query->orderBy($sortBy, $sortDir);
+
+        // Pagination
+        $perPage = min($request->get('per_page', 10), 50);
+        $news = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $news->items(),
+            'pagination' => [
+                'current_page' => $news->currentPage(),
+                'last_page' => $news->lastPage(),
+                'per_page' => $news->perPage(),
+                'total' => $news->total(),
+                'from' => $news->firstItem(),
+                'to' => $news->lastItem(),
+            ]
+        ]);
+    }
+
+    /**
+     * API: Get single news article for React frontend
+     */
+    public function apiShow(PublicNews $news)
+    {
+        if ($news->status !== 'published') {
+            return response()->json([
+                'success' => false,
+                'message' => 'News article not found or not published'
+            ], 404);
+        }
+
+        $news->load(['author']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $news
+        ]);
+    }
+
+    /**
+     * API: Get latest news articles
+     */
+    public function apiLatest(Request $request)
+    {
+        $limit = min($request->get('limit', 5), 20); // Max 20 articles
+
+        $news = PublicNews::with(['author'])
+            ->where('status', 'published')
+            ->orderBy('published_at', 'desc')
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $news
+        ]);
+    }
 }

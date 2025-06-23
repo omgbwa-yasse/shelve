@@ -156,4 +156,143 @@ class PublicChatController extends Controller
         return redirect()->route('public-chats.index')
             ->with('success', 'Chat deleted successfully');
     }
+
+    // ========================================
+    // API METHODS pour l'interface React
+    // ========================================
+
+    /**
+     * API: Get user's conversations
+     */
+    public function apiConversations(Request $request)
+    {
+        $user = $request->user();
+
+        $conversations = PublicChat::with(['participants', 'messages' => function($query) {
+                $query->latest()->limit(1); // Dernier message seulement
+            }])
+            ->whereHas('participants', function($query) use ($user) {
+                $query->where('public_user_id', $user->id);
+            })
+            ->where('is_active', true)
+            ->orderBy('updated_at', 'desc')
+            ->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $conversations->items(),
+            'pagination' => [
+                'current_page' => $conversations->currentPage(),
+                'last_page' => $conversations->lastPage(),
+                'per_page' => $conversations->perPage(),
+                'total' => $conversations->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * API: Create new conversation
+     */
+    public function apiCreateConversation(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'is_group' => 'boolean',
+            'participant_ids' => 'required|array',
+            'participant_ids.*' => 'exists:public_users,id',
+        ]);
+
+        $user = $request->user();
+
+        // Créer la conversation
+        $chat = PublicChat::create([
+            'title' => $validated['title'],
+            'is_group' => $validated['is_group'] ?? false,
+            'is_active' => true,
+            'created_by' => $user->id,
+        ]);
+
+        // Ajouter les participants (inclure le créateur)
+        $participantIds = array_unique(array_merge($validated['participant_ids'], [$user->id]));
+        $chat->participants()->sync($participantIds);
+
+        $chat->load(['participants']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation created successfully',
+            'data' => $chat
+        ], 201);
+    }
+
+    /**
+     * API: Get conversation messages
+     */
+    public function apiMessages(Request $request, PublicChat $conversation)
+    {
+        $user = $request->user();
+
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if (!$conversation->participants()->where('public_user_id', $user->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $messages = $conversation->messages()
+            ->with(['user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        return response()->json([
+            'success' => true,
+            'data' => $messages->items(),
+            'pagination' => [
+                'current_page' => $messages->currentPage(),
+                'last_page' => $messages->lastPage(),
+                'per_page' => $messages->perPage(),
+                'total' => $messages->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * API: Send message to conversation
+     */
+    public function apiSendMessage(Request $request, PublicChat $conversation)
+    {
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'message_type' => 'in:text,image,file',
+        ]);
+
+        $user = $request->user();
+
+        // Vérifier que l'utilisateur fait partie de la conversation
+        if (!$conversation->participants()->where('public_user_id', $user->id)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        // Créer le message
+        $message = $conversation->messages()->create([
+            'content' => $validated['content'],
+            'message_type' => $validated['message_type'] ?? 'text',
+            'user_id' => $user->id,
+        ]);
+
+        // Mettre à jour le timestamp de la conversation
+        $conversation->touch();
+
+        $message->load(['user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Message sent successfully',
+            'data' => $message
+        ], 201);
+    }
 }

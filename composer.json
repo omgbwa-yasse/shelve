@@ -10,6 +10,7 @@
         "barryvdh/laravel-dompdf": "^3.0",
         "intervention/image": "^3.8",
         "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.1",
         "laravel/scout": "^10.11",
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.5",

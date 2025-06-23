@@ -158,7 +158,7 @@ function App() {
         <ThemeProvider theme={theme}>
           <AuthProvider>
             <ChatProvider>
-              <Router>
+              <Router future={{ v7_relativeSplatPath: true }}>
                 <AppContainer>
                   <Header />
 

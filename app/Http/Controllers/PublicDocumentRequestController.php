@@ -168,4 +168,86 @@ class PublicDocumentRequestController extends Controller
         return redirect()->back()
             ->with('success', 'Attachment deleted successfully.');
     }
+
+    // ========================================
+    // API METHODS pour l'interface React
+    // ========================================
+
+    /**
+     * API: Store new document request
+     */
+    public function apiStore(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'document_type' => 'required|string|max:100',
+            'urgency_level' => 'required|in:low,medium,high',
+            'requested_date' => 'required|date',
+            'contact_email' => 'required|email',
+            'contact_phone' => 'nullable|string|max:20',
+        ]);
+
+        $validated['status'] = 'pending';
+
+        // Si l'utilisateur est authentifié, associer la demande
+        if ($request->user()) {
+            $validated['user_id'] = $request->user()->id;
+        }
+
+        $documentRequest = PublicDocumentRequest::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Document request submitted successfully',
+            'data' => $documentRequest
+        ], 201);
+    }
+
+    /**
+     * API: Get user's document requests
+     */
+    public function apiIndex(Request $request)
+    {
+        $user = $request->user();
+
+        $requests = PublicDocumentRequest::with(['responses'])
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'data' => $requests->items(),
+            'pagination' => [
+                'current_page' => $requests->currentPage(),
+                'last_page' => $requests->lastPage(),
+                'per_page' => $requests->perPage(),
+                'total' => $requests->total(),
+            ]
+        ]);
+    }
+
+    /**
+     * API: Get single document request
+     */
+    public function apiShow(Request $request, PublicDocumentRequest $documentRequest)
+    {
+        $user = $request->user();
+
+        // Vérifier que l'utilisateur peut voir cette demande
+        if ($documentRequest->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied'
+            ], 403);
+        }
+
+        $documentRequest->load(['responses']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $documentRequest
+        ]);
+    }
 }

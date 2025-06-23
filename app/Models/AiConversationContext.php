@@ -46,8 +46,11 @@ class AiConversationContext extends Model
         return $this->expires_at && $this->expires_at->isPast();
     }
 
-    public function touch()
+    public function touch($attribute = null)
     {
-        $this->update(['last_used_at' => now()]);
+        if ($attribute === null) {
+            $this->update(['last_used_at' => now()]);
+        }
+        return parent::touch($attribute);
     }
 }

@@ -127,4 +127,122 @@ class PublicEventController extends Controller
         $registrations = $publicEvent->registrations()->with('user')->get();
         return view('public-events.registrations', compact('publicEvent', 'registrations'));
     }
+
+    // ========================================
+    // API METHODS pour l'interface React
+    // ========================================
+
+    /**
+     * API: Get paginated events for React frontend
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = PublicEvent::with(['registrations']);
+
+        // Filtres
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->where('start_date', '>=', $request->get('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->where('end_date', '<=', $request->get('date_to'));
+        }
+
+        if ($request->filled('is_online')) {
+            $query->where('is_online', $request->boolean('is_online'));
+        }
+
+        // Tri par défaut : événements à venir en premier
+        $query->orderBy('start_date', 'asc');
+
+        // Pagination
+        $perPage = min($request->get('per_page', 10), 50);
+        $events = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => $events->items(),
+            'pagination' => [
+                'current_page' => $events->currentPage(),
+                'last_page' => $events->lastPage(),
+                'per_page' => $events->perPage(),
+                'total' => $events->total(),
+                'from' => $events->firstItem(),
+                'to' => $events->lastItem(),
+            ]
+        ]);
+    }
+
+    /**
+     * API: Get single event for React frontend
+     */
+    public function apiShow(PublicEvent $event)
+    {
+        $event->load(['registrations']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $event
+        ]);
+    }
+
+    /**
+     * API: Register to an event
+     */
+    public function apiRegister(Request $request, PublicEvent $event)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        // Vérifier si l'utilisateur est déjà inscrit
+        $existingRegistration = $event->registrations()
+            ->where('email', $validated['email'])
+            ->first();
+
+        if ($existingRegistration) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous êtes déjà inscrit à cet événement.'
+            ], 422);
+        }
+
+        // Créer l'inscription
+        $registration = $event->registrations()->create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Inscription réussie à l\'événement.',
+            'data' => $registration
+        ]);
+    }
+
+    /**
+     * API: Get event registrations
+     */
+    public function apiRegistrations(PublicEvent $event)
+    {
+        $registrations = $event->registrations()
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $registrations,
+            'total' => $registrations->count()
+        ]);
+    }
 }

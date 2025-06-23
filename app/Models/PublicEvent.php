@@ -16,18 +16,13 @@ class PublicEvent extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'title',
-        'slug',
+        'name',
         'description',
         'start_date',
         'end_date',
         'location',
-        'status',
-        'max_participants',
-        'featured_image',
-        'author_id',
-        'category',
-        'tags',
+        'is_online',
+        'online_link',
     ];
 
     /**
@@ -38,32 +33,15 @@ class PublicEvent extends Model
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
-        'tags' => 'array',
-        'max_participants' => 'integer',
+        'is_online' => 'boolean',
     ];
-
-    /**
-     * Get the author of the event.
-     */
-    public function author()
-    {
-        return $this->belongsTo(User::class, 'author_id');
-    }
 
     /**
      * Get the registrations for the event.
      */
     public function registrations()
     {
-        return $this->hasMany(PublicEventRegistration::class);
-    }
-
-    /**
-     * Scope a query to only include published events.
-     */
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published');
+        return $this->hasMany(PublicEventRegistration::class, 'event_id');
     }
 
     /**
@@ -88,33 +66,25 @@ class PublicEvent extends Model
     public function scopeSearch($query, $search)
     {
         return $query->where(function ($query) use ($search) {
-            $query->where('title', 'like', "%{$search}%")
+            $query->where('name', 'like', "%{$search}%")
                 ->orWhere('description', 'like', "%{$search}%")
                 ->orWhere('location', 'like', "%{$search}%");
         });
     }
 
     /**
-     * Check if the event is full.
+     * Check if the event is online.
      */
-    public function isFull(): bool
+    public function isOnline(): bool
     {
-        if (!$this->max_participants) {
-            return false;
-        }
-
-        return $this->registrations()->count() >= $this->max_participants;
+        return $this->is_online;
     }
 
     /**
-     * Get the number of available spots.
+     * Get the event duration in hours.
      */
-    public function getAvailableSpotsAttribute(): ?int
+    public function getDurationInHours(): float
     {
-        if (!$this->max_participants) {
-            return null;
-        }
-
-        return max(0, $this->max_participants - $this->registrations()->count());
+        return $this->start_date->diffInHours($this->end_date);
     }
 }
