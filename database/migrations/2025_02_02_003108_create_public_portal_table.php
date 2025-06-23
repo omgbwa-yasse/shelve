@@ -46,7 +46,7 @@ return new class extends Migration
             $table->foreignId('published_by')->constrained('users')->nullable(false);
             $table->text('publication_notes')->nullable();
             $table->timestamps();
-            $table->softDeletes(); // Ajout de softDeletes manquant
+            $table->softDeletes();
             $table->index('record_id');
             $table->index('published_by');
             $table->index('published_at');
@@ -83,8 +83,6 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('status');
         });
-
-
 
         Schema::create('public_pages', function (Blueprint $table) {
             $table->id();
@@ -177,8 +175,6 @@ return new class extends Migration
             $table->index('uploaded_by');
         });
 
-
-
         Schema::create('public_feedbacks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
@@ -230,20 +226,7 @@ return new class extends Migration
             $table->index('user_id');
         });
 
-        Schema::create('public_event_registrations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('event_id')->constrained('public_events')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('public_users')->onDelete('cascade');
-            $table->enum('status', ['registered', 'confirmed', 'cancelled', 'attended'])->default('registered');
-            $table->timestamp('registered_at')->useCurrent();
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-            $table->unique(['event_id', 'user_id']);
-            $table->index('event_id');
-            $table->index('user_id');
-            $table->index('status');
-        });
+        // SUPPRIMÉ : La définition dupliquée de public_event_registrations qui était à la fin du fichier
     }
 
     /**
