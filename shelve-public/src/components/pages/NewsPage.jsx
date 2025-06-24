@@ -24,14 +24,17 @@ const NewsPage = () => {
     refetch
   } = useQuery(
     ['news', { page: currentPage, search: searchTerm, sortBy, sortOrder, category }],
-    () => shelveApi.getNews({
-      page: currentPage,
-      per_page: PAGINATION_DEFAULTS.PER_PAGE,
-      search: searchTerm,
-      sort_by: sortBy,
-      sort_order: sortOrder,
-      category
-    }),
+    async () => {
+      const response = await shelveApi.getNews({
+        page: currentPage,
+        per_page: PAGINATION_DEFAULTS.PER_PAGE,
+        search: searchTerm,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+        category
+      });
+      return response.data; // Extract data from axios response
+    },
     {
       keepPreviousData: true,
       onError: (error) => {
@@ -93,9 +96,21 @@ const NewsPage = () => {
     );
   }
 
-  const news = newsData?.data || [];
+  // Safely extract data with proper defaults
+  const news = Array.isArray(newsData?.data) ? newsData.data : [];
   const pagination = newsData?.meta || {};
   const categories = newsData?.categories || [];
+
+  // Debug logging
+  console.log('NewsPage Debug:', {
+    newsData,
+    newsDataType: typeof newsData,
+    newsDataData: newsData?.data,
+    newsDataDataType: typeof newsData?.data,
+    isArray: Array.isArray(newsData?.data),
+    news,
+    newsLength: news?.length
+  });
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -182,7 +197,7 @@ const NewsPage = () => {
       </div>
 
       {/* Results */}
-      {news.length === 0 ? (
+      {!Array.isArray(news) || news.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-500 mb-4">
             <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,12 +205,15 @@ const NewsPage = () => {
             </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Aucune actualité trouvée
+            {!Array.isArray(news) ? 'Erreur de chargement des données' : 'Aucune actualité trouvée'}
           </h3>
           <p className="text-gray-500">
-            {searchTerm || category
-              ? 'Essayez de modifier vos critères de recherche.'
-              : 'Aucune actualité n\'est disponible pour le moment.'}
+            {!Array.isArray(news) 
+              ? 'Les données reçues ne sont pas dans le format attendu. Veuillez rafraîchir la page.'
+              : (searchTerm || category
+                ? 'Essayez de modifier vos critères de recherche.'
+                : 'Aucune actualité n\'est disponible pour le moment.')
+            }
           </p>
         </div>
       ) : (

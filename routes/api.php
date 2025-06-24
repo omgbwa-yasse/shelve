@@ -52,8 +52,8 @@ Route::prefix('public')->name('api.public.')->group(function () {
 
     // News
     Route::get('news', [PublicNewsController::class, 'apiIndex'])->name('news.index');
-    Route::get('news/{news}', [PublicNewsController::class, 'apiShow'])->name('news.show');
     Route::get('news/latest', [PublicNewsController::class, 'apiLatest'])->name('news.latest');
+    Route::get('news/{news}', [PublicNewsController::class, 'apiShow'])->name('news.show');
 
     // Search
     Route::get('search/suggestions', [PublicRecordController::class, 'apiSearchSuggestions'])->name('search.suggestions');

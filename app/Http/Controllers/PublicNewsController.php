@@ -151,13 +151,14 @@ class PublicNewsController extends Controller
     public function apiIndex(Request $request)
     {
         $query = PublicNews::with(['author'])
-            ->where('status', 'published');
+            ->where('is_published', true);
 
         // Filtres
         if ($request->filled('search')) {
             $search = $request->get('search');
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%")
                   ->orWhere('content', 'like', "%{$search}%")
                   ->orWhere('summary', 'like', "%{$search}%");
             });
@@ -177,8 +178,13 @@ class PublicNewsController extends Controller
 
         // Tri
         $sortBy = $request->get('sort_by', 'published_at');
-        $sortDir = $request->get('sort_dir', 'desc');
-        $query->orderBy($sortBy, $sortDir);
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if (in_array($sortBy, ['published_at', 'name', 'title', 'created_at'])) {
+            $query->orderBy($sortBy, $sortOrder === 'asc' ? 'asc' : 'desc');
+        } else {
+            $query->orderBy('published_at', 'desc');
+        }
 
         // Pagination
         $perPage = min($request->get('per_page', 10), 50);
@@ -187,7 +193,7 @@ class PublicNewsController extends Controller
         return response()->json([
             'success' => true,
             'data' => $news->items(),
-            'pagination' => [
+            'meta' => [
                 'current_page' => $news->currentPage(),
                 'last_page' => $news->lastPage(),
                 'per_page' => $news->perPage(),
@@ -203,7 +209,7 @@ class PublicNewsController extends Controller
      */
     public function apiShow(PublicNews $news)
     {
-        if ($news->status !== 'published') {
+        if (!$news->is_published) {
             return response()->json([
                 'success' => false,
                 'message' => 'News article not found or not published'
@@ -226,7 +232,7 @@ class PublicNewsController extends Controller
         $limit = min($request->get('limit', 5), 20); // Max 20 articles
 
         $news = PublicNews::with(['author'])
-            ->where('status', 'published')
+            ->where('is_published', true)
             ->orderBy('published_at', 'desc')
             ->limit($limit)
             ->get();

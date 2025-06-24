@@ -19,11 +19,17 @@ class PublicNews extends Model
         'user_id',
         'is_published',
         'published_at',
+        'title',
+        'summary',
+        'image_path',
+        'status',
+        'featured',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'published_at' => 'datetime',
+        'featured' => 'boolean',
     ];
 
     public function author()
