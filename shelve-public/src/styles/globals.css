@@ -1,4 +1,8 @@
 /* CSS Reset et styles globaux */
+
+@import "tailwindcss";
+
+
 *,
 *::before,
 *::after {

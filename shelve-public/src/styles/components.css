@@ -1,5 +1,7 @@
 /* Components CSS - Styles spécifiques aux composants */
 
+@import "tailwindcss";
+
 /* Form Components */
 .form-field {
   @apply mb-4;
