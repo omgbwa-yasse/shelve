@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { recordsApi } from '../../services/shelveApi';
 import { useApi } from '../../hooks/useApi';
+import { useDebounce } from '../../hooks/useDebounce';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
 import { formatDate } from '../../utils/dateUtils';
@@ -22,47 +23,86 @@ const RecordsPage = () => {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' ou 'list'
 
+  // Débounce pour la recherche en temps réel
+  const debouncedSearch = useDebounce(filters.search, 500);
+
+  // Paramètres finaux pour l'API (avec le search débounced)
+  const apiFilters = useMemo(() => ({
+    ...filters,
+    search: debouncedSearch
+  }), [filters, debouncedSearch]);
+
   const {
     data: recordsData,
     loading,
     error,
     refetch
   } = useApi(
-    () => recordsApi.getRecords({ ...filters, page: currentPage }),
-    [filters, currentPage]
+    () => recordsApi.getRecords({ ...apiFilters, page: currentPage }),
+    [apiFilters, currentPage]
   );
 
   const records = recordsData?.data || [];
   const pagination = recordsData?.meta || {};
 
-  // Mise à jour des paramètres URL
+  // Mise à jour des paramètres URL (seulement pour les filtres non-search)
   useEffect(() => {
     const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(apiFilters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
     if (currentPage > 1) params.set('page', currentPage);
     setSearchParams(params);
-  }, [filters, currentPage, setSearchParams]);
+  }, [apiFilters, currentPage, setSearchParams]);
 
-  const handleFilterChange = (field, value) => {
+  // Reset de la page quand les filtres changent
+  useEffect(() => {
+    if (currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [apiFilters, currentPage]);
+
+  const handleFilterChange = useCallback((field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
-    setCurrentPage(1);
-  };
+  }, []);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    refetch();
-  };
-
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleRecordClick = (recordId) => {
+  const handleRecordClick = useCallback((recordId) => {
     navigate(`/records/${recordId}`);
-  };
+  }, [navigate]);
+
+  const resetFilters = useCallback(() => {
+    setFilters({
+      search: '',
+      type: '',
+      status: 'published',
+      date_from: '',
+      date_to: '',
+      classification: ''
+    });
+    setCurrentPage(1);
+  }, []);
+
+  // Raccourci clavier pour focus sur la recherche (Ctrl+K ou Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+        event.preventDefault();
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
   const getTypeInfo = (type) => {
     return RECORD_TYPES.find(t => t.value === type) || { label: type, value: type };
   };
@@ -84,20 +124,33 @@ const RecordsPage = () => {
 
         {/* Filtres */}
         <div className="filters-section bg-white rounded-lg shadow-md p-6 mb-8">
-          <form onSubmit={handleSearch} className="space-y-4">
+          <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="md:col-span-2 lg:col-span-1">
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
                   Recherche
+                  {loading && debouncedSearch !== filters.search && (
+                    <span className="ml-2 text-xs text-blue-600">Recherche...</span>
+                  )}
+                  <kbd className="ml-2 inline-flex items-center px-2 py-1 text-xs font-mono text-gray-500 bg-gray-100 border border-gray-300 rounded">
+                    Ctrl+K
+                  </kbd>
                 </label>
-                <input
-                  type="text"
-                  id="search"
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  placeholder="Titre, description, référence..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="search"
+                    value={filters.search}
+                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    placeholder="Titre, description, référence..."
+                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -161,33 +214,32 @@ const RecordsPage = () => {
             </div>
 
             <div className="flex justify-between items-center">
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-              >
-                {loading ? 'Recherche...' : 'Rechercher'}
-              </button>
+              <div className="text-sm text-gray-600">
+                {loading && debouncedSearch !== filters.search ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Recherche en cours...
+                  </span>
+                ) : (
+                  <span>Recherche automatique activée</span>
+                )}
+              </div>
 
               <button
                 type="button"
-                onClick={() => {
-                  setFilters({
-                    search: '',
-                    type: '',
-                    status: 'published',
-                    date_from: '',
-                    date_to: '',
-                    classification: ''
-                  });
-                  setCurrentPage(1);
-                }}
-                className="text-gray-600 hover:text-gray-800"
+                onClick={resetFilters}
+                className="flex items-center text-gray-600 hover:text-gray-800 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
               >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
                 Réinitialiser
               </button>
             </div>
-          </form>
+          </div>
         </div>
 
         {/* Barre d'outils */}
@@ -196,6 +248,14 @@ const RecordsPage = () => {
             <p className="text-gray-600">
               {pagination.total || 0} document(s) trouvé(s)
               {filters.search && ` pour "${filters.search}"`}
+              {loading && (
+                <span className="ml-2 inline-flex items-center">
+                  <svg className="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
+              )}
             </p>
           </div>
 
@@ -226,7 +286,8 @@ const RecordsPage = () => {
                 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
                 : 'space-y-4'
             } mb-8`}>
-              {records.map(record => (                <RecordCard
+              {records.map(record => (
+                <RecordCard
                   key={record.id}
                   record={record}
                   viewMode={viewMode}
@@ -278,25 +339,23 @@ const RecordsPage = () => {
           </>
         ) : (
           <div className="no-results text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📄</div>
+            <div className="text-gray-400 text-6xl mb-4">
+              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to ? '🔍' : '📄'}
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Aucun document trouvé
+              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
+                ? 'Aucun résultat pour cette recherche'
+                : 'Aucun document trouvé'
+              }
             </h3>
             <p className="text-gray-600 mb-4">
-              Essayez de modifier vos critères de recherche
+              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
+                ? 'Essayez de modifier vos critères de recherche ou d\'élargir votre recherche'
+                : 'Il n\'y a actuellement aucun document disponible dans les archives'
+              }
             </p>
             <button
-              onClick={() => {
-                setFilters({
-                  search: '',
-                  type: '',
-                  status: 'published',
-                  date_from: '',
-                  date_to: '',
-                  classification: ''
-                });
-                setCurrentPage(1);
-              }}
+              onClick={resetFilters}
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
               Voir tous les documents
