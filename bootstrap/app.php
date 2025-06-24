@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\LogUserAction;
+use App\Http\Middleware\EnsurePublicUserIsApproved;
 use App\Models\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(LogUserAction::class);
+        $middleware->alias([
+            'public.approved' => EnsurePublicUserIsApproved::class,
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function () {
         //
     })->create();
