@@ -208,7 +208,7 @@ const NewsPage = () => {
             {!Array.isArray(news) ? 'Erreur de chargement des données' : 'Aucune actualité trouvée'}
           </h3>
           <p className="text-gray-500">
-            {!Array.isArray(news) 
+            {!Array.isArray(news)
               ? 'Les données reçues ne sont pas dans le format attendu. Veuillez rafraîchir la page.'
               : (searchTerm || category
                 ? 'Essayez de modifier vos critères de recherche.'
