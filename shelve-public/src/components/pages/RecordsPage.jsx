@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { recordsApi } from '../../services/shelveApi';
 import { useApi } from '../../hooks/useApi';
@@ -18,7 +18,9 @@ const RecordsPage = () => {
     status: searchParams.get('status') || 'published',
     date_from: searchParams.get('date_from') || '',
     date_to: searchParams.get('date_to') || '',
-    classification: searchParams.get('classification') || ''
+    classification: searchParams.get('classification') || '',
+    sort_by: searchParams.get('sort_by') || 'published_at',
+    sort_order: searchParams.get('sort_order') || 'desc'
   });
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' ou 'list'
@@ -32,6 +34,30 @@ const RecordsPage = () => {
     search: debouncedSearch
   }), [filters, debouncedSearch]);
 
+  // Créer une clé stable pour les dépendances API
+  const apiKey = useMemo(() =>
+    `${JSON.stringify(apiFilters)}-${currentPage}`,
+    [apiFilters, currentPage]
+  );
+
+  // Reset de la page quand les filtres changent (sauf la première fois)
+  const isFirstRender = useRef(true);
+  const prevApiFiltersKey = useRef(JSON.stringify(apiFilters));
+
+  useEffect(() => {
+    const currentKey = JSON.stringify(apiFilters);
+
+    if (!isFirstRender.current &&
+        prevApiFiltersKey.current !== currentKey &&
+        currentPage > 1) {
+      setCurrentPage(1);
+    }
+
+    prevApiFiltersKey.current = currentKey;
+    isFirstRender.current = false;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiFilters]); // currentPage intentionally omitted to avoid loop
+
   const {
     data: recordsData,
     loading,
@@ -39,13 +65,33 @@ const RecordsPage = () => {
     refetch
   } = useApi(
     () => recordsApi.getRecords({ ...apiFilters, page: currentPage }),
-    [apiFilters, currentPage]
+    null,
+    { dependencies: [apiKey] }
   );
 
-  const records = recordsData?.data || [];
   const pagination = recordsData?.meta || {};
 
-  // Mise à jour des paramètres URL (seulement pour les filtres non-search)
+  // Transformer les données de l'API pour correspondre à l'interface attendue
+  const records = useMemo(() => {
+    const rawRecords = recordsData?.data || [];
+    return rawRecords.map(record => ({
+      id: record.id,
+      title: record.title,
+      description: record.description,
+      reference: record.reference_number,
+      date: record.published_at,
+      created_at: record.published_at,
+      published_at: record.published_at,
+      type: 'document', // Par défaut, peut être enrichi plus tard
+      location: record.publisher?.name,
+      digital_copy_available: true, // Assumé vrai pour les records publics
+      thumbnail_url: null, // À implémenter si nécessaire
+      // Conserver les données originales pour des besoins futurs
+      _original: record
+    }));
+  }, [recordsData?.data]);
+
+  // Mise à jour des paramètres URL
   useEffect(() => {
     const params = new URLSearchParams();
     Object.entries(apiFilters).forEach(([key, value]) => {
@@ -54,13 +100,6 @@ const RecordsPage = () => {
     if (currentPage > 1) params.set('page', currentPage);
     setSearchParams(params);
   }, [apiFilters, currentPage, setSearchParams]);
-
-  // Reset de la page quand les filtres changent
-  useEffect(() => {
-    if (currentPage > 1) {
-      setCurrentPage(1);
-    }
-  }, [apiFilters, currentPage]);
 
   const handleFilterChange = useCallback((field, value) => {
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -82,7 +121,9 @@ const RecordsPage = () => {
       status: 'published',
       date_from: '',
       date_to: '',
-      classification: ''
+      classification: '',
+      sort_by: 'published_at',
+      sort_order: 'desc'
     });
     setCurrentPage(1);
   }, []);
@@ -118,17 +159,24 @@ const RecordsPage = () => {
             Archives et Documents
           </h1>
           <p className="text-lg text-gray-600">
-            Explorez notre collection d'archives et de documents historiques
+            Découvrez notre collection d'archives et de documents historiques.
+            Les documents les plus récemment publiés sont affichés en premier.
           </p>
+          <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+            <p className="text-sm text-blue-800">
+              💡 <strong>Astuce :</strong> Utilisez Ctrl+K pour rechercher rapidement dans les archives.
+              Les documents sont triés par date de publication pour vous montrer les dernières additions.
+            </p>
+          </div>
         </div>
 
         {/* Filtres */}
         <div className="filters-section bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="md:col-span-2 lg:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="md:col-span-3 lg:col-span-2">
                 <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                  Recherche
+                  Recherche dans les archives
                   {loading && debouncedSearch !== filters.search && (
                     <span className="ml-2 text-xs text-blue-600">Recherche...</span>
                   )}
@@ -211,6 +259,38 @@ const RecordsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
+              <div>
+                <label htmlFor="sort_by" className="block text-sm font-medium text-gray-700 mb-2">
+                  Trier par
+                </label>
+                <select
+                  id="sort_by"
+                  value={filters.sort_by}
+                  onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="published_at">Date de publication</option>
+                  <option value="created_at">Date de création</option>
+                  <option value="name">Titre</option>
+                  <option value="code">Référence</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 mb-2">
+                  Ordre
+                </label>
+                <select
+                  id="sort_order"
+                  value={filters.sort_order}
+                  onChange={(e) => handleFilterChange('sort_order', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="desc">Plus récent d'abord</option>
+                  <option value="asc">Plus ancien d'abord</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex justify-between items-center">
@@ -283,7 +363,7 @@ const RecordsPage = () => {
           <>
             <div className={`records-container ${
               viewMode === 'grid'
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
                 : 'space-y-4'
             } mb-8`}>
               {records.map(record => (
@@ -344,21 +424,24 @@ const RecordsPage = () => {
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
-                ? 'Aucun résultat pour cette recherche'
-                : 'Aucun document trouvé'
+                ? 'Aucun document trouvé pour cette recherche'
+                : 'Explorez nos archives historiques'
               }
             </h3>
             <p className="text-gray-600 mb-4">
               {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
                 ? 'Essayez de modifier vos critères de recherche ou d\'élargir votre recherche'
-                : 'Il n\'y a actuellement aucun document disponible dans les archives'
+                : 'Découvrez notre collection de documents et archives historiques. Utilisez les filtres pour affiner votre recherche.'
               }
             </p>
             <button
               onClick={resetFilters}
               className="text-blue-600 hover:text-blue-800 font-medium"
             >
-              Voir tous les documents
+              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
+                ? 'Réinitialiser les filtres'
+                : 'Voir tous les documents récents'
+              }
             </button>
           </div>
         )}

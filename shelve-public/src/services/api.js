@@ -8,7 +8,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000, // Augmenté à 30 secondes
 });
 
 // Intercepteur pour les requêtes
@@ -18,6 +18,17 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Debug: log des requêtes en développement
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', {
+        method: config.method?.toUpperCase(),
+        url: `${config.baseURL}${config.url}`,
+        params: config.params,
+        data: config.data
+      });
+    }
+
     return config;
   },
   (error) => {
@@ -27,9 +38,29 @@ api.interceptors.request.use(
 
 // Intercepteur pour les réponses
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Debug: log des réponses en développement
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Response:', {
+        status: response.status,
+        url: response.config.url,
+        data: response.data
+      });
+    }
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error);
+    console.error('API Error:', {
+      message: error.message,
+      code: error.code,
+      response: error.response?.data,
+      config: {
+        method: error.config?.method,
+        url: error.config?.url,
+        params: error.config?.params
+      }
+    });
+
     if (error.response?.status === 401) {
       localStorage.removeItem('shelve_token');
       localStorage.removeItem('shelve_user');
