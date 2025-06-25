@@ -3,20 +3,22 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ToastContainer } from 'react-toastify';
 import styled, { ThemeProvider } from 'styled-components';
+import PropTypes from 'prop-types';
 
 // Styles
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/globals.css';
 
 // Contexts
-import { AuthProvider } from './context/AuthContext';
-import { ChatProvider } from './context/ChatContext';
+import { AuthProvider } from './context/AuthContext.js';
+import { ChatProvider } from './context/ChatContext.js';
 
 // Components
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import { PageLoading } from './components/common/Loading';
 import ErrorMessageComponent, { ErrorBoundaryFallback } from './components/common/ErrorMessage';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Lazy loaded pages
 const HomePage = React.lazy(() => import('./components/pages/HomePage'));
@@ -30,6 +32,9 @@ const DocumentRequestPage = React.lazy(() => import('./components/pages/Document
 const FeedbackPage = React.lazy(() => import('./components/pages/FeedbackPage'));
 const UserDashboard = React.lazy(() => import('./components/pages/UserDashboard'));
 const ChatPage = React.lazy(() => import('./components/pages/ChatPage'));
+const LoginPage = React.lazy(() => import('./components/pages/LoginPage'));
+const RegisterPage = React.lazy(() => import('./components/pages/RegisterPage'));
+const UserSettingsPage = React.lazy(() => import('./components/pages/UserSettingsPage'));
 
 // Theme configuration
 const theme = {
@@ -141,6 +146,10 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+ErrorBoundary.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 // Route wrapper with error boundary
 const RouteWrapper = ({ children }) => (
   <ErrorBoundary>
@@ -149,6 +158,10 @@ const RouteWrapper = ({ children }) => (
     </Suspense>
   </ErrorBoundary>
 );
+
+RouteWrapper.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 // App component
 function App() {
@@ -231,12 +244,14 @@ function App() {
                         }
                       />
 
-                      {/* Documents */}
+                      {/* Documents - Protected Route */}
                       <Route
                         path="/documents/request"
                         element={
                           <RouteWrapper>
-                            <DocumentRequestPage />
+                            <ProtectedRoute>
+                              <DocumentRequestPage />
+                            </ProtectedRoute>
                           </RouteWrapper>
                         }
                       />
@@ -251,22 +266,54 @@ function App() {
                         }
                       />
 
-                      {/* User */}
+                      {/* User - Protected Routes */}
                       <Route
                         path="/user/dashboard"
                         element={
                           <RouteWrapper>
-                            <UserDashboard />
+                            <ProtectedRoute>
+                              <UserDashboard />
+                            </ProtectedRoute>
+                          </RouteWrapper>
+                        }
+                      />
+                      <Route
+                        path="/user/settings"
+                        element={
+                          <RouteWrapper>
+                            <ProtectedRoute>
+                              <UserSettingsPage />
+                            </ProtectedRoute>
                           </RouteWrapper>
                         }
                       />
 
-                      {/* Chat */}
+                      {/* Chat - Protected Route */}
                       <Route
                         path="/chat"
                         element={
                           <RouteWrapper>
-                            <ChatPage />
+                            <ProtectedRoute>
+                              <ChatPage />
+                            </ProtectedRoute>
+                          </RouteWrapper>
+                        }
+                      />
+
+                      {/* Authentication */}
+                      <Route
+                        path="/login"
+                        element={
+                          <RouteWrapper>
+                            <LoginPage />
+                          </RouteWrapper>
+                        }
+                      />
+                      <Route
+                        path="/register"
+                        element={
+                          <RouteWrapper>
+                            <RegisterPage />
                           </RouteWrapper>
                         }
                       />

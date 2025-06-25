@@ -7,6 +7,34 @@ import ErrorMessage from '../common/ErrorMessage';
 import { formatDate } from '../../utils/dateUtils';
 import { truncateText } from '../../utils/helpers';
 import { EVENT_TYPES } from '../../utils/constants';
+import {
+  PageContainer,
+  PageHeader,
+  PageTitle,
+  PageSubtitle,
+  FiltersSection,
+  FiltersGrid,
+  FilterGroup,
+  FilterLabel,
+  FilterInput,
+  FilterSelect,
+  FilterButton,
+  ContentGrid,
+  ContentCard,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  CardMeta,
+  CardTag,
+  CardDate,
+  PaginationContainer,
+  PaginationButton,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateMessage,
+  StyledLink
+} from '../common/PageComponents';
 
 const EventsPage = () => {
   const navigate = useNavigate();
@@ -66,38 +94,142 @@ const EventsPage = () => {
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
   return (
-    <div className="events-page">
-      <div className="container mx-auto px-4 py-8">
-        <div className="page-header mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Événements et Actualités
-          </h1>
-          <p className="text-lg text-gray-600">
-            Découvrez les derniers événements et actualités de nos archives
-          </p>
-        </div>
+    <PageContainer>
+      <PageHeader>
+        <PageTitle>Événements et Actualités</PageTitle>
+        <PageSubtitle>
+          Découvrez les derniers événements et actualités de nos archives
+        </PageSubtitle>
+      </PageHeader>
 
-        {/* Filtres */}
-        <div className="filters-section bg-white rounded-lg shadow-md p-6 mb-8">
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                  Recherche
-                </label>
-                <input
-                  type="text"
-                  id="search"
-                  value={filters.search}
-                  onChange={(e) => handleFilterChange('search', e.target.value)}
-                  placeholder="Mots-clés..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+      {/* Filtres */}
+      <FiltersSection>
+        <form onSubmit={handleSearch}>
+          <FiltersGrid>
+            <FilterGroup>
+              <FilterLabel htmlFor="search">Recherche</FilterLabel>
+              <FilterInput
+                type="text"
+                id="search"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Mots-clés..."
+              />
+            </FilterGroup>
 
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                  Type
+            <FilterGroup>
+              <FilterLabel htmlFor="type">Type</FilterLabel>
+              <FilterSelect
+                id="type"
+                value={filters.type}
+                onChange={(e) => handleFilterChange('type', e.target.value)}
+              >
+                <option value="">Tous les types</option>
+                {EVENT_TYPES.map(type => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </FilterSelect>
+            </FilterGroup>
+
+            <FilterGroup>
+              <FilterLabel htmlFor="date_from">Date début</FilterLabel>
+              <FilterInput
+                type="date"
+                id="date_from"
+                value={filters.date_from}
+                onChange={(e) => handleFilterChange('date_from', e.target.value)}
+              />
+            </FilterGroup>
+
+            <FilterGroup>
+              <FilterLabel htmlFor="date_to">Date fin</FilterLabel>
+              <FilterInput
+                type="date"
+                id="date_to"
+                value={filters.date_to}
+                onChange={(e) => handleFilterChange('date_to', e.target.value)}
+              />
+            </FilterGroup>
+          </FiltersGrid>
+          
+          <FilterButton type="submit">
+            Rechercher
+          </FilterButton>
+        </form>
+      </FiltersSection>
+
+      {/* Résultats */}
+      {events.length === 0 ? (
+        <EmptyState>
+          <EmptyStateIcon>📅</EmptyStateIcon>
+          <EmptyStateTitle>Aucun événement trouvé</EmptyStateTitle>
+          <EmptyStateMessage>
+            Aucun événement ne correspond à vos critères de recherche. 
+            Essayez de modifier vos filtres.
+          </EmptyStateMessage>
+        </EmptyState>
+      ) : (
+        <>
+          <ContentGrid>
+            {events.map(event => (
+              <StyledLink key={event.id} to={`/events/${event.id}`}>
+                <ContentCard onClick={() => handleEventClick(event.id)}>
+                  <CardContent>
+                    <CardTitle>{event.title}</CardTitle>
+                    <CardDescription>
+                      {truncateText(event.description, 150)}
+                    </CardDescription>
+                    <CardMeta>
+                      <CardDate>{formatDate(event.event_date)}</CardDate>
+                      {event.type && <CardTag>{event.type}</CardTag>}
+                      {event.location && <span>📍 {event.location}</span>}
+                    </CardMeta>
+                  </CardContent>
+                </ContentCard>
+              </StyledLink>
+            ))}
+          </ContentGrid>
+
+          {/* Pagination */}
+          {pagination.last_page > 1 && (
+            <PaginationContainer>
+              <PaginationButton
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </PaginationButton>
+
+              {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
+                .filter(page => 
+                  page === 1 || 
+                  page === pagination.last_page || 
+                  Math.abs(page - currentPage) <= 2
+                )
+                .map(page => (
+                  <PaginationButton
+                    key={page}
+                    current={page === currentPage}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </PaginationButton>
+                ))}
+
+              <PaginationButton
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === pagination.last_page}
+              >
+                Suivant →
+              </PaginationButton>
+            </PaginationContainer>
+          )}
+        </>
+      )}
+    </PageContainer>
+  );
                 </label>
                 <select
                   id="type"

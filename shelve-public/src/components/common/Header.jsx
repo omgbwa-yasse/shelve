@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuth } from '../../context/AuthContext';
-import { FEATURES } from '../../utils/constants';
+import { useAuth } from '../../context/AuthContext.js';
 
 // Styled components
 const HeaderContainer = styled.header`
@@ -85,15 +84,6 @@ const UserSection = styled.div`
   }
 `;
 
-const UserName = styled.span`
-  color: #495057;
-  font-weight: 500;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
 const Button = styled.button`
   padding: 0.5rem 1rem;
   border: 1px solid transparent;
@@ -139,10 +129,121 @@ const MobileMenuButton = styled.button`
   }
 `;
 
+const UserMenu = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const UserMenuButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  color: #007bff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #007bff;
+    color: white;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  }
+`;
+
+const UserMenuDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  min-width: 250px;
+  z-index: 1000;
+  display: ${props => props.isOpen ? 'block' : 'none'};
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 64px;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+  }
+`;
+
+const UserMenuHeader = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+`;
+
+const UserMenuName = styled.div`
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.25rem;
+`;
+
+const UserMenuEmail = styled.div`
+  font-size: 0.875rem;
+  color: #6c757d;
+`;
+
+const UserMenuItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #495057;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f8f9fa;
+
+  &:hover {
+    background: #f8f9fa;
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const UserMenuButton2 = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: #dc3545;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 0 0 8px 8px;
+
+  &:hover {
+    background: #f8d7da;
+    color: #721c24;
+  }
+`;
+
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -151,15 +252,38 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  const closeUserMenu = () => {
+    setIsUserMenuOpen(false);
+  };
+
+  // Close user menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isUserMenuOpen && !event.target.closest('[data-user-menu]')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   return (
     <HeaderContainer>
@@ -202,24 +326,6 @@ const Header = () => {
           </NavLink>
 
           <NavLink
-            to="/documents/request"
-            className={isActive('/documents/request')}
-            onClick={closeMobileMenu}
-          >
-            Demandes
-          </NavLink>
-
-          {FEATURES.CHAT_ENABLED && (
-            <NavLink
-              to="/chat"
-              className={isActive('/chat')}
-              onClick={closeMobileMenu}
-            >
-              Chat
-            </NavLink>
-          )}
-
-          <NavLink
             to="/feedback"
             className={isActive('/feedback')}
             onClick={closeMobileMenu}
@@ -230,30 +336,81 @@ const Header = () => {
 
         <UserSection>
           {isAuthenticated ? (
+            <UserMenu data-user-menu>
+              <UserMenuButton onClick={toggleUserMenu}>
+                <span>👤</span>
+                <span>{user?.first_name || user?.name || 'Mon compte'}</span>
+                <span>{isUserMenuOpen ? '▼' : '▶'}</span>
+              </UserMenuButton>
+
+              <UserMenuDropdown isOpen={isUserMenuOpen}>
+                <UserMenuHeader>
+                  <UserMenuName>
+                    {user?.first_name && user?.last_name
+                      ? `${user.first_name} ${user.last_name}`
+                      : user?.name || 'Utilisateur'
+                    }
+                  </UserMenuName>
+                  <UserMenuEmail>{user?.email}</UserMenuEmail>
+                </UserMenuHeader>
+
+                <UserMenuItem
+                  to="/user/dashboard"
+                  onClick={closeUserMenu}
+                >
+                  <span>🏠</span>
+                  <span>Tableau de bord</span>
+                </UserMenuItem>
+
+                <UserMenuItem
+                  to="/chat"
+                  onClick={closeUserMenu}
+                >
+                  <span>💬</span>
+                  <span>Assistant virtuel</span>
+                </UserMenuItem>
+
+                <UserMenuItem
+                  to="/documents/request"
+                  onClick={closeUserMenu}
+                >
+                  <span>📄</span>
+                  <span>Mes demandes</span>
+                </UserMenuItem>
+
+                <UserMenuItem
+                  to="/user/settings"
+                  onClick={closeUserMenu}
+                >
+                  <span>⚙️</span>
+                  <span>Paramètres</span>
+                </UserMenuItem>
+
+                <UserMenuButton2 onClick={handleLogout}>
+                  <span>🚪</span>
+                  <span>Déconnexion</span>
+                </UserMenuButton2>
+              </UserMenuDropdown>
+            </UserMenu>
+          ) : (
             <>
-              <UserName>
-                Bonjour, {user?.name || user?.email}
-              </UserName>
-              <NavLink
-                to="/user/dashboard"
-                className={isActive('/user/dashboard')}
+              <Button
+                as={Link}
+                to="/login"
+                variant="secondary"
                 onClick={closeMobileMenu}
               >
-                Mon compte
-              </NavLink>
-              <Button variant="secondary" onClick={handleLogout}>
-                Déconnexion
+                Connexion
+              </Button>
+              <Button
+                as={Link}
+                to="/register"
+                variant="primary"
+                onClick={closeMobileMenu}
+              >
+                Inscription
               </Button>
             </>
-          ) : (
-            <Button
-              as={Link}
-              to="/user/register"
-              variant="primary"
-              onClick={closeMobileMenu}
-            >
-              Connexion
-            </Button>
           )}
         </UserSection>
 
