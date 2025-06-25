@@ -153,8 +153,8 @@ export const ContentCard = styled.div`
 export const CardImage = styled.div`
   width: 100%;
   height: 200px;
-  background: ${props => props.image 
-    ? `url(${props.image}) center/cover` 
+  background: ${props => props.image
+    ? `url(${props.image}) center/cover`
     : `linear-gradient(135deg, ${props.theme.colors.primary}20, ${props.theme.colors.primary}40)`
   };
   position: relative;

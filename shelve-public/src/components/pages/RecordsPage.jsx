@@ -8,6 +8,40 @@ import ErrorMessage from '../common/ErrorMessage';
 import { formatDate } from '../../utils/dateUtils';
 import { truncateText } from '../../utils/helpers';
 import { RECORD_TYPES } from '../../utils/constants';
+import {
+  PageContainer,
+  PageHeader,
+  PageTitle,
+  PageSubtitle,
+  FiltersSection,
+  FiltersGrid,
+  FilterGroup,
+  FilterLabel,
+  FilterInput,
+  FilterSelect,
+  FilterButton,
+  ContentGrid,
+  ContentList,
+  ContentCard,
+  ListItem,
+  ListItemHeader,
+  ListItemTitle,
+  ListItemDescription,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  CardMeta,
+  CardTag,
+  CardDate,
+  PaginationContainer,
+  PaginationButton,
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateMessage,
+  ViewToggleButton,
+  StyledLink
+} from '../common/PageComponents';
 
 const RecordsPage = () => {
   const navigate = useNavigate();
@@ -144,430 +178,312 @@ const RecordsPage = () => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
-  const getTypeInfo = (type) => {
-    return RECORD_TYPES.find(t => t.value === type) || { label: type, value: type };
-  };
 
   if (loading && !records.length) return <Loading />;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
   return (
-    <div className="records-page">
-      <div className="container mx-auto px-4 py-8">
-        <div className="page-header mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Archives et Documents
-          </h1>
-          <p className="text-lg text-gray-600">
-            Découvrez notre collection d'archives et de documents historiques.
-            Les documents les plus récemment publiés sont affichés en premier.
+    <PageContainer>
+      <PageHeader>
+        <PageTitle>Archives et Documents</PageTitle>
+        <PageSubtitle>
+          Découvrez notre collection d'archives et de documents historiques.
+          Les documents les plus récemment publiés sont affichés en premier.
+        </PageSubtitle>
+        <div style={{
+          marginTop: '1rem',
+          padding: '1rem',
+          backgroundColor: '#eff6ff',
+          borderLeft: '4px solid #3b82f6',
+          borderRadius: '0 0.5rem 0.5rem 0'
+        }}>
+          <p style={{ fontSize: '0.875rem', color: '#1e40af' }}>
+            💡 <strong>Astuce :</strong> Utilisez Ctrl+K pour rechercher rapidement dans les archives.
+            Les documents sont triés par date de publication pour vous montrer les dernières additions.
           </p>
-          <div className="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
-            <p className="text-sm text-blue-800">
-              💡 <strong>Astuce :</strong> Utilisez Ctrl+K pour rechercher rapidement dans les archives.
-              Les documents sont triés par date de publication pour vous montrer les dernières additions.
-            </p>
-          </div>
         </div>
+      </PageHeader>
 
-        {/* Filtres */}
-        <div className="filters-section bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="md:col-span-3 lg:col-span-2">
-                <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-                  Recherche dans les archives
-                  {loading && debouncedSearch !== filters.search && (
-                    <span className="ml-2 text-xs text-blue-600">Recherche...</span>
-                  )}
-                  <kbd className="ml-2 inline-flex items-center px-2 py-1 text-xs font-mono text-gray-500 bg-gray-100 border border-gray-300 rounded">
-                    Ctrl+K
-                  </kbd>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="search"
-                    value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
-                    placeholder="Titre, description, référence..."
-                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                  Type de document
-                </label>
-                <select
-                  id="type"
-                  value={filters.type}
-                  onChange={(e) => handleFilterChange('type', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Tous les types</option>
-                  {RECORD_TYPES.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="classification" className="block text-sm font-medium text-gray-700 mb-2">
-                  Classification
-                </label>
-                <input
-                  type="text"
-                  id="classification"
-                  value={filters.classification}
-                  onChange={(e) => handleFilterChange('classification', e.target.value)}
-                  placeholder="Cote, série..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="date_from" className="block text-sm font-medium text-gray-700 mb-2">
-                  Date de début
-                </label>
-                <input
-                  type="date"
-                  id="date_from"
-                  value={filters.date_from}
-                  onChange={(e) => handleFilterChange('date_from', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="date_to" className="block text-sm font-medium text-gray-700 mb-2">
-                  Date de fin
-                </label>
-                <input
-                  type="date"
-                  id="date_to"
-                  value={filters.date_to}
-                  onChange={(e) => handleFilterChange('date_to', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="sort_by" className="block text-sm font-medium text-gray-700 mb-2">
-                  Trier par
-                </label>
-                <select
-                  id="sort_by"
-                  value={filters.sort_by}
-                  onChange={(e) => handleFilterChange('sort_by', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="published_at">Date de publication</option>
-                  <option value="created_at">Date de création</option>
-                  <option value="name">Titre</option>
-                  <option value="code">Référence</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="sort_order" className="block text-sm font-medium text-gray-700 mb-2">
-                  Ordre
-                </label>
-                <select
-                  id="sort_order"
-                  value={filters.sort_order}
-                  onChange={(e) => handleFilterChange('sort_order', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="desc">Plus récent d'abord</option>
-                  <option value="asc">Plus ancien d'abord</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">
-                {loading && debouncedSearch !== filters.search ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Recherche en cours...
-                  </span>
-                ) : (
-                  <span>Recherche automatique activée</span>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="flex items-center text-gray-600 hover:text-gray-800 hover:bg-gray-50 px-3 py-2 rounded-md transition-colors"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Réinitialiser
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Barre d'outils */}
-        <div className="toolbar flex justify-between items-center mb-6">
-          <div className="results-info">
-            <p className="text-gray-600">
-              {pagination.total || 0} document(s) trouvé(s)
-              {filters.search && ` pour "${filters.search}"`}
-              {loading && (
-                <span className="ml-2 inline-flex items-center">
-                  <svg className="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+      {/* Filtres */}
+      <FiltersSection>
+        <FiltersGrid>
+          <FilterGroup className="md:col-span-3 lg:col-span-2">
+            <FilterLabel htmlFor="search">
+              Recherche dans les archives
+              {loading && debouncedSearch !== filters.search && (
+                <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: '#2563eb' }}>
+                  Recherche...
                 </span>
               )}
-            </p>
-          </div>
-
-          <div className="view-controls flex items-center gap-2">
-            <span className="text-sm text-gray-600">Affichage :</span>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-              aria-label="Vue en grille"
-            >
-              ⊞
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
-              aria-label="Vue en liste"
-            >
-              ☰
-            </button>
-          </div>
-        </div>
-
-        {/* Résultats */}
-        {records.length > 0 ? (
-          <>
-            <div className={`records-container ${
-              viewMode === 'grid'
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-                : 'space-y-4'
-            } mb-8`}>
-              {records.map(record => (
-                <RecordCard
-                  key={record.id}
-                  record={record}
-                  viewMode={viewMode}
-                  onClick={() => handleRecordClick(record.id)}
-                  getTypeInfo={getTypeInfo}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            {pagination.last_page > 1 && (
-              <div className="pagination flex justify-center items-center space-x-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Précédent
-                </button>
-
-                {[...Array(Math.min(5, pagination.last_page))].map((_, index) => {
-                  const page = Math.max(1, currentPage - 2) + index;
-                  if (page > pagination.last_page) return null;
-
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-3 py-2 text-sm border border-gray-300 rounded-md ${
-                        page === currentPage
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === pagination.last_page}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                  Suivant
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="no-results text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">
-              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to ? '🔍' : '📄'}
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
-                ? 'Aucun document trouvé pour cette recherche'
-                : 'Explorez nos archives historiques'
-              }
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
-                ? 'Essayez de modifier vos critères de recherche ou d\'élargir votre recherche'
-                : 'Découvrez notre collection de documents et archives historiques. Utilisez les filtres pour affiner votre recherche.'
-              }
-            </p>
-            <button
-              onClick={resetFilters}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              {filters.search || filters.type || filters.classification || filters.date_from || filters.date_to
-                ? 'Réinitialiser les filtres'
-                : 'Voir tous les documents récents'
-              }
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Composant pour afficher une carte de document
-const RecordCard = ({ record, viewMode, onClick, getTypeInfo }) => {
-  const typeInfo = getTypeInfo(record.type);
-
-  if (viewMode === 'list') {
-    return (
-      <button
-        onClick={onClick}
-        className="record-card-list w-full text-left bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow"
-      >
-        <div className="flex items-start gap-4">
-          {record.thumbnail_url && (
-            <div className="record-thumbnail flex-shrink-0 w-16 h-20 overflow-hidden rounded">
-              <img
-                src={record.thumbnail_url}
-                alt={record.title}
-                className="w-full h-full object-cover"
+              <kbd style={{
+                marginLeft: '0.5rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '0.25rem 0.5rem',
+                fontSize: '0.75rem',
+                fontFamily: 'monospace',
+                color: '#6b7280',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.25rem'
+              }}>
+                Ctrl+K
+              </kbd>
+            </FilterLabel>
+            <div style={{ position: 'relative' }}>
+              <FilterInput
+                type="text"
+                id="search"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Titre, description, référence..."
+                style={{ paddingLeft: '2.5rem' }}
               />
+              <div style={{
+                position: 'absolute',
+                inset: '0 auto 0 0',
+                paddingLeft: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                pointerEvents: 'none'
+              }}>
+                <svg style={{ height: '1.25rem', width: '1.25rem', color: '#9ca3af' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
             </div>
-          )}
+          </FilterGroup>
 
-          <div className="record-content flex-1">
-            <div className="record-meta flex flex-wrap items-center gap-3 mb-2">
-              <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                {typeInfo.label}
+          <FilterGroup>
+            <FilterLabel htmlFor="type">Type de document</FilterLabel>
+            <FilterSelect
+              id="type"
+              value={filters.type}
+              onChange={(e) => handleFilterChange('type', e.target.value)}
+            >
+              <option value="">Tous les types</option>
+              {RECORD_TYPES.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </FilterSelect>
+          </FilterGroup>
+
+          <FilterGroup>
+            <FilterLabel htmlFor="classification">Classification</FilterLabel>
+            <FilterInput
+              type="text"
+              id="classification"
+              value={filters.classification}
+              onChange={(e) => handleFilterChange('classification', e.target.value)}
+              placeholder="Cote, série..."
+            />
+          </FilterGroup>
+
+          <FilterGroup>
+            <FilterLabel htmlFor="date_from">Date de début</FilterLabel>
+            <FilterInput
+              type="date"
+              id="date_from"
+              value={filters.date_from}
+              onChange={(e) => handleFilterChange('date_from', e.target.value)}
+            />
+          </FilterGroup>
+
+          <FilterGroup>
+            <FilterLabel htmlFor="date_to">Date de fin</FilterLabel>
+            <FilterInput
+              type="date"
+              id="date_to"
+              value={filters.date_to}
+              onChange={(e) => handleFilterChange('date_to', e.target.value)}
+            />
+          </FilterGroup>
+
+          <FilterGroup>
+            <FilterLabel htmlFor="sort_by">Trier par</FilterLabel>
+            <FilterSelect
+              id="sort_by"
+              value={filters.sort_by}
+              onChange={(e) => handleFilterChange('sort_by', e.target.value)}
+            >
+              <option value="published_at">Date de publication</option>
+              <option value="created_at">Date de création</option>
+              <option value="name">Titre</option>
+              <option value="code">Référence</option>
+            </FilterSelect>
+          </FilterGroup>
+
+          <FilterGroup>
+            <FilterLabel htmlFor="sort_order">Ordre</FilterLabel>
+            <FilterSelect
+              id="sort_order"
+              value={filters.sort_order}
+              onChange={(e) => handleFilterChange('sort_order', e.target.value)}
+            >
+              <option value="desc">Plus récent d'abord</option>
+              <option value="asc">Plus ancien d'abord</option>
+            </FilterSelect>
+          </FilterGroup>
+        </FiltersGrid>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+          <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+            {loading && debouncedSearch !== filters.search ? (
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                <svg style={{ animation: 'spin 1s linear infinite', marginLeft: '-0.25rem', marginRight: '0.5rem', height: '1rem', width: '1rem', color: '#2563eb' }} fill="none" viewBox="0 0 24 24">
+                  <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Recherche en cours...
               </span>
-
-              {record.reference && (
-                <span className="text-sm text-gray-500 font-mono">
-                  {record.reference}
-                </span>
-              )}
-
-              <span className="text-sm text-gray-500">
-                {formatDate(record.date || record.created_at)}
-              </span>
-            </div>
-
-            <h3 className="record-title text-lg font-semibold text-gray-900 mb-2">
-              {record.title}
-            </h3>
-
-            {record.description && (
-              <p className="record-description text-gray-600 text-sm mb-2">
-                {truncateText(record.description, 200)}
-              </p>
+            ) : (
+              <span>Recherche automatique activée</span>
             )}
-
-            <div className="record-footer flex items-center gap-4 text-sm text-gray-500">
-              {record.location && (
-                <span>📍 {record.location}</span>
-              )}
-              {record.digital_copy_available && (
-                <span className="text-green-600">✓ Copie numérique</span>
-              )}
-            </div>
           </div>
+
+          <FilterButton
+            type="button"
+            onClick={resetFilters}
+            variant="secondary"
+          >
+            🔄 Réinitialiser
+          </FilterButton>
         </div>
-      </button>
-    );
-  }
+      </FiltersSection>
 
-  return (
-    <button
-      onClick={onClick}
-      className="record-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow text-left w-full"
-    >
-      {record.thumbnail_url && (
-        <div className="record-image h-48 overflow-hidden">
-          <img
-            src={record.thumbnail_url}
-            alt={record.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-      )}
-
-      <div className="record-content p-6">
-        <div className="record-meta mb-3">
-          <span className="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-            {typeInfo.label}
-          </span>
-          {record.reference && (
-            <span className="text-sm text-gray-500 ml-2 font-mono">
-              {record.reference}
-            </span>
-          )}
-        </div>
-
-        <h3 className="record-title text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-          {record.title}
-        </h3>
-
-        {record.description && (
-          <p className="record-description text-gray-600 text-sm line-clamp-3 mb-4">
-            {truncateText(record.description, 150)}
+      {/* Barre d'outils */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <p style={{ color: '#6b7280' }}>
+            {pagination.total || 0} document(s) trouvé(s)
+            {filters.search && ` pour "${filters.search}"`}
+            {loading && (
+              <span style={{ marginLeft: '0.5rem', display: 'inline-flex', alignItems: 'center' }}>
+                <svg style={{ animation: 'spin 1s linear infinite', height: '1rem', width: '1rem', color: '#2563eb' }} fill="none" viewBox="0 0 24 24">
+                  <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            )}
           </p>
-        )}
+        </div>
 
-        <div className="record-footer">
-          <div className="text-sm text-gray-500 mb-2">
-            {formatDate(record.date || record.created_at)}
-          </div>
-
-          <div className="flex justify-between items-center">
-            <span className="text-blue-600 text-sm font-medium">
-              Consulter →
-            </span>
-
-            {record.digital_copy_available && (
-              <span className="text-xs text-green-600">
-                Copie numérique
-              </span>
-            )}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>Affichage :</span>
+          <ViewToggleButton
+            onClick={() => setViewMode('grid')}
+            active={viewMode === 'grid'}
+            aria-label="Vue en grille"
+          >
+            ⊞
+          </ViewToggleButton>
+          <ViewToggleButton
+            onClick={() => setViewMode('list')}
+            active={viewMode === 'list'}
+            aria-label="Vue en liste"
+          >
+            ☰
+          </ViewToggleButton>
         </div>
       </div>
-    </button>
+
+      {/* Résultats */}
+      {records.length > 0 ? (
+        <>
+          {viewMode === 'grid' ? (
+            <ContentGrid>
+              {records.map(record => (
+                <StyledLink key={record.id} to={`/records/${record.id}`}>
+                  <ContentCard onClick={() => handleRecordClick(record.id)}>
+                    <CardContent>
+                      <CardTitle>{record.title}</CardTitle>
+                      <CardDescription>
+                        {truncateText(record.description, 150)}
+                      </CardDescription>
+                      <CardMeta>
+                        <CardDate>{formatDate(record.date)}</CardDate>
+                        {record.reference && <CardTag>{record.reference}</CardTag>}
+                        {record.location && <span>📍 {record.location}</span>}
+                      </CardMeta>
+                    </CardContent>
+                  </ContentCard>
+                </StyledLink>
+              ))}
+            </ContentGrid>
+          ) : (
+            <ContentList>
+              {records.map(record => (
+                <StyledLink key={record.id} to={`/records/${record.id}`}>
+                  <ListItem onClick={() => handleRecordClick(record.id)}>
+                    <ListItemHeader>
+                      <ListItemTitle>{record.title}</ListItemTitle>
+                      <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+                        <span>{formatDate(record.date)}</span>
+                        {record.reference && <span>Réf: {record.reference}</span>}
+                      </div>
+                    </ListItemHeader>
+                    <ListItemDescription>
+                      {truncateText(record.description, 200)}
+                      {record.location && (
+                        <span style={{ marginLeft: '1rem', color: '#6b7280' }}>
+                          📍 {record.location}
+                        </span>
+                      )}
+                    </ListItemDescription>
+                  </ListItem>
+                </StyledLink>
+              ))}
+            </ContentList>
+          )}
+
+          {/* Pagination */}
+          {pagination.last_page > 1 && (
+            <PaginationContainer>
+              <PaginationButton
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </PaginationButton>
+
+              {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
+                .filter(page =>
+                  page === 1 ||
+                  page === pagination.last_page ||
+                  Math.abs(page - currentPage) <= 2
+                )
+                .map(page => (
+                  <PaginationButton
+                    key={page}
+                    current={page === currentPage}
+                    onClick={() => handlePageChange(page)}
+                  >
+                    {page}
+                  </PaginationButton>
+                ))}
+
+              <PaginationButton
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === pagination.last_page}
+              >
+                Suivant →
+              </PaginationButton>
+            </PaginationContainer>
+          )}
+        </>
+      ) : (
+        <EmptyState>
+          <EmptyStateIcon>📄</EmptyStateIcon>
+          <EmptyStateTitle>Aucun document trouvé</EmptyStateTitle>
+          <EmptyStateMessage>
+            Aucun document ne correspond à vos critères de recherche.
+            Essayez de modifier vos filtres.
+          </EmptyStateMessage>
+        </EmptyState>
+      )}
+    </PageContainer>
   );
 };
 
