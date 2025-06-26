@@ -21,7 +21,9 @@ class PublicChatParticipantController extends Controller
      */
     public function create()
     {
-        return view('public.chat-participants.create');
+        $chats = \App\Models\PublicChat::latest()->get();
+        $users = \App\Models\PublicUser::latest()->get();
+        return view('public.chat-participants.create', compact('chats', 'users'));
     }
 
     /**
@@ -31,55 +33,84 @@ class PublicChatParticipantController extends Controller
     {
         $validated = $request->validate([
             'chat_id' => 'required|exists:public_chats,id',
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:public_users,id',
             'role' => 'required|in:admin,moderator,member',
+            'is_active' => 'boolean',
         ]);
+
+        $validated['is_active'] = $request->has('is_active');
+
+        // Check if participant already exists
+        $exists = PublicChatParticipant::where('chat_id', $validated['chat_id'])
+            ->where('user_id', $validated['user_id'])
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Cet utilisateur participe déjà à cette discussion.');
+        }
 
         PublicChatParticipant::create($validated);
 
         return redirect()->route('public.chat-participants.index')
-            ->with('success', 'Chat participant added successfully.');
+            ->with('success', 'Participant ajouté avec succès.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PublicChatParticipant $chatParticipant)
+    public function show(PublicChatParticipant $participant)
     {
-        return view('public.chat-participants.show', compact('chatParticipant'));
+        return view('public.chat-participants.show', compact('participant'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PublicChatParticipant $chatParticipant)
+    public function edit(PublicChatParticipant $participant)
     {
-        return view('public.chat-participants.edit', compact('chatParticipant'));
+        $chats = \App\Models\PublicChat::latest()->get();
+        $users = \App\Models\PublicUser::latest()->get();
+        return view('public.chat-participants.edit', compact('participant', 'chats', 'users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PublicChatParticipant $chatParticipant)
+    public function update(Request $request, PublicChatParticipant $participant)
     {
         $validated = $request->validate([
+            'chat_id' => 'required|exists:public_chats,id',
+            'user_id' => 'required|exists:public_users,id',
             'role' => 'required|in:admin,moderator,member',
+            'is_active' => 'boolean',
         ]);
 
-        $chatParticipant->update($validated);
+        $validated['is_active'] = $request->has('is_active');
+
+        // Check if participant already exists for another entry
+        $exists = PublicChatParticipant::where('chat_id', $validated['chat_id'])
+            ->where('user_id', $validated['user_id'])
+            ->where('id', '!=', $participant->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Cet utilisateur participe déjà à cette discussion.');
+        }
+
+        $participant->update($validated);
 
         return redirect()->route('public.chat-participants.index')
-            ->with('success', 'Chat participant updated successfully.');
+            ->with('success', 'Participant modifié avec succès.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PublicChatParticipant $chatParticipant)
+    public function destroy(PublicChatParticipant $participant)
     {
-        $chatParticipant->delete();
+        $participant->delete();
 
         return redirect()->route('public.chat-participants.index')
-            ->with('success', 'Chat participant removed successfully.');
+            ->with('success', 'Participant retiré avec succès.');
     }
 }

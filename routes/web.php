@@ -578,7 +578,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Chat related routes
         Route::resource('chats', PublicChatController::class)->names('public.chats');
-        Route::resource('chats.messages', PublicChatMessageController::class)->shallow()->names('public.chats.messages');
+        Route::resource('chat-messages', PublicChatMessageController::class)->names('public.chat-messages');
         Route::resource('chat-participants', PublicChatParticipantController::class)->names('public.chat-participants');
 
         // Events related routes

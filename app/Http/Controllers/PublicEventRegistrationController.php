@@ -6,134 +6,114 @@ use App\Models\PublicEvent;
 use App\Models\PublicEventRegistration;
 use App\Models\PublicUser;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class PublicEventRegistrationController extends Controller
 {
     /**
      * Display a listing of the registrations.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $registrations = PublicEventRegistration::with(['event', 'user'])->get();
-        return view('public-event-registrations.index', compact('registrations'));
+        $registrations = PublicEventRegistration::with(['event', 'user'])->paginate(10);
+        return view('public.event-registrations.index', compact('registrations'));
     }
 
     /**
      * Show the form for creating a new registration.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        $events = PublicEvent::all();
-        $users = PublicUser::all();
-        return view('public-event-registrations.create', compact('events', 'users'));
+        $events = PublicEvent::where('status', 'published')->latest()->get();
+        return view('public.event-registrations.create', compact('events'));
     }
 
     /**
      * Store a newly created registration in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'event_id' => 'required|exists:public_events,id',
-            'user_id' => 'required|exists:public_users,id',
-            'status' => 'required|string',
-            'notes' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         // Check if registration already exists
         $exists = PublicEventRegistration::where('event_id', $validated['event_id'])
-            ->where('user_id', $validated['user_id'])
+            ->where('email', $validated['email'])
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'User is already registered for this event.');
+            return back()->with('error', 'Cette adresse email est déjà inscrite à cet événement.');
         }
 
-        // Create with current time
+        $validated['status'] = 'pending';
         $validated['registered_at'] = now();
 
-        $registration = PublicEventRegistration::create($validated);
+        PublicEventRegistration::create($validated);
 
-        return redirect()->route('public-event-registrations.index')
-            ->with('success', 'Registration created successfully');
+        return redirect()->route('public.event-registrations.index')
+            ->with('success', 'Inscription créée avec succès.');
     }
 
     /**
      * Display the specified registration.
-     *
-     * @param  \App\Models\PublicEventRegistration  $registration
-     * @return \Illuminate\Http\Response
      */
     public function show(PublicEventRegistration $registration)
     {
         $registration->load(['event', 'user']);
-        return view('public-event-registrations.show', compact('registration'));
+        return view('public.event-registrations.show', compact('registration'));
     }
 
     /**
      * Show the form for editing the specified registration.
-     *
-     * @param  \App\Models\PublicEventRegistration  $registration
-     * @return \Illuminate\Http\Response
      */
     public function edit(PublicEventRegistration $registration)
     {
-        $events = PublicEvent::all();
-        $users = PublicUser::all();
-        return view('public-event-registrations.edit', compact('registration', 'events', 'users'));
+        $events = PublicEvent::latest()->get();
+        return view('public.event-registrations.edit', compact('registration', 'events'));
     }
 
     /**
      * Update the specified registration in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\PublicEventRegistration  $registration
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, PublicEventRegistration $registration)
     {
         $validated = $request->validate([
             'event_id' => 'required|exists:public_events,id',
-            'user_id' => 'required|exists:public_users,id',
-            'status' => 'required|string',
-            'notes' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:20',
+            'status' => 'required|in:pending,confirmed,cancelled',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         // Check if registration already exists for another entry
         $exists = PublicEventRegistration::where('event_id', $validated['event_id'])
-            ->where('user_id', $validated['user_id'])
+            ->where('email', $validated['email'])
             ->where('id', '!=', $registration->id)
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'User is already registered for this event.');
+            return back()->with('error', 'Cette adresse email est déjà inscrite à cet événement.');
         }
 
         $registration->update($validated);
 
-        return redirect()->route('public-event-registrations.index')
-            ->with('success', 'Registration updated successfully');
+        return redirect()->route('public.event-registrations.index')
+            ->with('success', 'Inscription modifiée avec succès.');
     }
 
     /**
      * Remove the specified registration from storage.
-     *
-     * @param  \App\Models\PublicEventRegistration  $registration
-     * @return \Illuminate\Http\Response
      */
     public function destroy(PublicEventRegistration $registration)
     {
         $registration->delete();
 
-        return redirect()->route('public-event-registrations.index')
-            ->with('success', 'Registration deleted successfully');
+        return redirect()->route('public.event-registrations.index')
+            ->with('success', 'Inscription supprimée avec succès.');
     }
 }

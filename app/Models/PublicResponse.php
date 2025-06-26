@@ -14,8 +14,8 @@ class PublicResponse extends Model
 
     protected $fillable = [
         'document_request_id',
-        'responded_by',
-        'instructions',
+        'user_id',
+        'content',
         'status',
         'sent_at',
     ];
@@ -29,9 +29,9 @@ class PublicResponse extends Model
         return $this->belongsTo(PublicDocumentRequest::class, 'document_request_id');
     }
 
-    public function responder()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'responded_by');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function attachments()

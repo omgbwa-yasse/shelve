@@ -12,58 +12,117 @@ class PublicResponseAttachmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(PublicResponse $response)
+    public function index()
     {
-        $attachments = $response->attachments()->paginate(10);
-        return view('public.response-attachments.index', compact('response', 'attachments'));
+        $attachments = PublicResponseAttachment::with(['response.user'])->paginate(10);
+        return view('public.response-attachments.index', compact('attachments'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create(PublicResponse $response)
+    public function create()
     {
-        return view('public.response-attachments.create', compact('response'));
+        $responses = PublicResponse::latest()->get();
+        return view('public.response-attachments.create', compact('responses'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, PublicResponse $response)
+    public function store(Request $request)
     {
-        $validated = $request->validate([
-            'attachments.*' => 'required|file|max:10240', // 10MB max per file
+        $request->validate([
+            'response_id' => 'required|exists:public_responses,id',
+            'file' => 'required|file|max:10240', // 10MB max
+            'description' => 'nullable|string|max:1000',
         ]);
 
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('public/responses');
-                $response->attachments()->create([
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type' => $file->getMimeType(),
-                    'size' => $file->getSize(),
-                ]);
-            }
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('public/response-attachments');
+
+            PublicResponseAttachment::create([
+                'response_id' => $request->response_id,
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'file_name' => basename($path),
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+                'description' => $request->description,
+            ]);
         }
 
-        return redirect()->route('public.responses.show', $response)
-            ->with('success', 'Attachments added successfully.');
+        return redirect()->route('public.response-attachments.index')
+            ->with('success', 'Pièce jointe ajoutée avec succès.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PublicResponse $response, PublicResponseAttachment $attachment)
+    public function show(PublicResponseAttachment $attachment)
     {
-        return view('public.response-attachments.show', compact('response', 'attachment'));
+        return view('public.response-attachments.show', compact('attachment'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(PublicResponseAttachment $attachment)
+    {
+        $responses = PublicResponse::latest()->get();
+        return view('public.response-attachments.edit', compact('attachment', 'responses'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, PublicResponseAttachment $attachment)
+    {
+        $request->validate([
+            'response_id' => 'required|exists:public_responses,id',
+            'file' => 'nullable|file|max:10240', // 10MB max
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $data = [
+            'response_id' => $request->response_id,
+            'description' => $request->description,
+        ];
+
+        if ($request->hasFile('file')) {
+            // Delete old file
+            if ($attachment->file_path) {
+                Storage::delete($attachment->file_path);
+            }
+
+            $file = $request->file('file');
+            $path = $file->store('public/response-attachments');
+
+            $data = array_merge($data, [
+                'file_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'file_name' => basename($path),
+                'mime_type' => $file->getMimeType(),
+                'file_size' => $file->getSize(),
+            ]);
+        }
+
+        $attachment->update($data);
+
+        return redirect()->route('public.response-attachments.index')
+            ->with('success', 'Pièce jointe modifiée avec succès.');
     }
 
     /**
      * Download the specified attachment.
      */
-    public function download(PublicResponse $response, PublicResponseAttachment $attachment)
+    public function download(PublicResponseAttachment $attachment)
     {
+        if (!Storage::exists($attachment->file_path)) {
+            return redirect()->back()->with('error', 'Fichier non trouvé.');
+        }
+
         return Storage::download(
             $attachment->file_path,
             $attachment->original_name
@@ -73,24 +132,15 @@ class PublicResponseAttachmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PublicResponse $response, PublicResponseAttachment $attachment)
+    public function destroy(PublicResponseAttachment $attachment)
     {
-        Storage::delete($attachment->file_path);
-        $attachment->delete();
-
-        return redirect()->route('public.responses.show', $response)
-            ->with('success', 'Attachment deleted successfully.');
-    }
-
-    /**
-     * Preview the specified attachment.
-     */
-    public function preview(PublicResponse $response, PublicResponseAttachment $attachment)
-    {
-        if (!in_array($attachment->mime_type, ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'])) {
-            return redirect()->back()->with('error', 'Preview not available for this file type.');
+        if ($attachment->file_path) {
+            Storage::delete($attachment->file_path);
         }
 
-        return view('public.response-attachments.preview', compact('response', 'attachment'));
+        $attachment->delete();
+
+        return redirect()->route('public.response-attachments.index')
+            ->with('success', 'Pièce jointe supprimée avec succès.');
     }
 }
