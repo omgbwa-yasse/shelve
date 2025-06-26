@@ -157,11 +157,15 @@ class PublicUserController extends Controller
     }
 
     // ========================================
+    // ========================================
     // API METHODS pour l'interface React
+    // DEPRECATED: These methods have been moved to Api\PublicUserApiController
+    // These methods are kept for backward compatibility and will be removed in future versions
     // ========================================
 
     /**
      * API: Login user
+     * @deprecated Use Api\PublicUserApiController::login() instead
      */
     public function apiLogin(Request $request)
     {
@@ -200,6 +204,7 @@ class PublicUserController extends Controller
 
     /**
      * API: Register new user
+     * @deprecated Use Api\PublicUserApiController::register() instead
      */
     public function apiRegister(Request $request)
     {

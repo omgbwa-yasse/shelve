@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class PublicRecordController extends Controller
 {
-    // Constantes pour les règles de validation
-    private const VALIDATION_NULLABLE_DATE = 'nullable|date';
-    private const VALIDATION_NULLABLE_STRING = 'nullable|string';
-    private const VALIDATION_FILE_ATTACHMENT = 'nullable|file|max:10240';
-
     /**
      * Display a listing of the resource.
      */
@@ -42,10 +37,10 @@ class PublicRecordController extends Controller
     {
         $validated = $request->validate([
             'record_id' => 'required|exists:records,id',
-            'published_at' => self::VALIDATION_NULLABLE_DATE,
-            'expires_at' => self::VALIDATION_NULLABLE_DATE . '|after:published_at',
-            'publication_notes' => self::VALIDATION_NULLABLE_STRING,
-            'attachments.*' => self::VALIDATION_FILE_ATTACHMENT,
+            'published_at' => 'nullable|date',
+            'expires_at' => 'nullable|date|after:published_at',
+            'publication_notes' => 'nullable|string',
+            'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
         ]);
 
         $validated['published_by'] = Auth::id();
@@ -99,10 +94,10 @@ class PublicRecordController extends Controller
     {
         $validated = $request->validate([
             'record_id' => 'required|exists:records,id',
-            'published_at' => self::VALIDATION_NULLABLE_DATE,
-            'expires_at' => self::VALIDATION_NULLABLE_DATE . '|after:published_at',
-            'publication_notes' => self::VALIDATION_NULLABLE_STRING,
-            'attachments.*' => self::VALIDATION_FILE_ATTACHMENT,
+            'published_at' => 'nullable|date',
+            'expires_at' => 'nullable|date|after:published_at',
+            'publication_notes' => 'nullable|string',
+            'attachments.*' => 'nullable|file|max:10240',
         ]);
 
         $record->update($validated);
@@ -183,402 +178,111 @@ class PublicRecordController extends Controller
     }
 
     // ========================================
-    // API METHODS pour l'interface React
+    // DEPRECATED API METHODS
+    // Ces méthodes sont dépréciées - utiliser PublicRecordApiController
     // ========================================
 
     /**
-     * API: Get paginated records for React frontend
+     * @deprecated Use PublicRecordApiController@index instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::index()
      */
     public function apiIndex(Request $request)
     {
-        $query = PublicRecord::with(['record', 'publisher'])
-            ->available(); // Utilise le scope pour les records disponibles
-
-        // Filtres
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->searchContent($search); // Utilise le scope de recherche
-        }
-
-        if ($request->filled('date_from')) {
-            $query->where('published_at', '>=', $request->get('date_from'));
-        }
-
-        if ($request->filled('date_to')) {
-            $query->where('published_at', '<=', $request->get('date_to'));
-        }
-
-        if ($request->filled('language')) {
-            $query->whereHas('record', function ($q) use ($request) {
-                $q->where('language_material', 'like', "%{$request->get('language')}%");
-            });
-        }
-
-        // Tri par défaut : plus récents en premier
-        $query->orderBy('published_at', 'desc');
-
-        // Pagination
-        $perPage = min($request->get('per_page', 10), 50); // Max 50 items par page
-        $records = $query->paginate($perPage);
-
-        // Transformer les données pour l'API en utilisant les nouveaux accesseurs
-        $transformedRecords = $records->getCollection()->map(function ($publicRecord) {
-            return $this->formatRecordForApi($publicRecord);
-        });
-
         return response()->json([
-            'success' => true,
-            'data' => $transformedRecords,
-            'pagination' => [
-                'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'per_page' => $records->perPage(),
-                'total' => $records->total(),
-                'from' => $records->firstItem(),
-                'to' => $records->lastItem(),
-            ],
-            'filters' => [
-                'available_languages' => \App\Models\Record::distinct('language_material')
-                    ->whereNotNull('language_material')
-                    ->pluck('language_material')
-                    ->filter()
-                    ->unique()
-                    ->values(),
-            ]
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records instead.',
+            'new_endpoint' => '/api/public-records'
+        ], 410);
     }
 
     /**
-     * API: Get single record for React frontend
+     * @deprecated Use PublicRecordApiController@show instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::show()
      */
     public function apiShow(PublicRecord $record)
     {
-        // Vérifier que le record n'est pas expiré en utilisant l'accesseur
-        if ($record->is_expired) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Record expired or not available'
-            ], 404);
-        }
-
-        $record->load(['record', 'publisher']);
-
-        if (!$record->record) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Associated record not found'
-            ], 404);
-        }
-
-        $transformedRecord = [
-            'id' => $record->id,
-            'title' => $record->title,
-            'description' => $record->content,
-            'reference_number' => $record->code,
-            'published_at' => $record->published_at,
-            'expires_at' => $record->expires_at,
-            'publication_notes' => $record->publication_notes,
-            'formatted_date_range' => $record->formatted_date_range,
-            'is_available' => $record->is_available,
-            'is_expired' => $record->is_expired,
-            'publisher' => $record->publisher ? [
-                'id' => $record->publisher->id,
-                'name' => $record->publisher->name,
-            ] : null,
-            'record_details' => [
-                'date_start' => $record->date_start,
-                'date_end' => $record->date_end,
-                'date_exact' => $record->date_exact,
-                'biographical_history' => $record->biographical_history,
-                'archival_history' => $record->record->archival_history ?? '',
-                'content' => $record->content,
-                'access_conditions' => $record->access_conditions,
-                'reproduction_conditions' => $record->record->reproduction_conditions ?? '',
-                'language_material' => $record->language_material,
-                'characteristic' => $record->record->characteristic ?? '',
-                'finding_aids' => $record->record->finding_aids ?? '',
-                'location_original' => $record->record->location_original ?? '',
-                'related_unit' => $record->record->related_unit ?? '',
-                'publication_note' => $record->record->publication_note ?? '',
-                'note' => $record->record->note ?? '',
-            ]
-        ];
-
         return response()->json([
-            'success' => true,
-            'data' => $transformedRecord
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/{id} instead.',
+            'new_endpoint' => "/api/public-records/{$record->id}"
+        ], 410);
     }
 
     /**
-     * API: Search records with advanced filtering
+     * @deprecated Use PublicRecordApiController@search instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::search()
      */
     public function apiSearch(Request $request)
     {
-        $validated = $request->validate([
-            'query' => 'required|string|max:255',
-            'filters' => 'array',
-            'filters.date_from' => 'nullable|date',
-            'filters.date_to' => 'nullable|date',
-            'filters.language' => 'nullable|string',
-            'per_page' => 'nullable|integer|min:1|max:50',
-        ]);
-
-        $query = PublicRecord::with(['record', 'publisher'])
-            ->available(); // Utilise le scope pour les records disponibles
-
-        // Recherche textuelle dans le record associé
-        $searchTerm = $validated['query'];
-        $query->searchContent($searchTerm); // Utilise le scope de recherche
-
-        // Appliquer les filtres
-        $filters = $validated['filters'] ?? [];
-        if (!empty($filters['date_from'])) {
-            $query->where('published_at', '>=', $filters['date_from']);
-        }
-        if (!empty($filters['date_to'])) {
-            $query->where('published_at', '<=', $filters['date_to']);
-        }
-        if (!empty($filters['language'])) {
-            $query->whereHas('record', function ($q) use ($filters) {
-                $q->where('language_material', 'like', "%{$filters['language']}%");
-            });
-        }
-
-        // Pagination
-        $perPage = $validated['per_page'] ?? 20;
-        $records = $query->orderBy('published_at', 'desc')->paginate($perPage);
-
-        // Transformer les données en utilisant les accesseurs
-        $transformedRecords = $records->getCollection()->map(function ($publicRecord) {
-            return [
-                'id' => $publicRecord->id,
-                'title' => $publicRecord->title,
-                'description' => $publicRecord->content,
-                'reference_number' => $publicRecord->code,
-                'published_at' => $publicRecord->published_at,
-                'formatted_date_range' => $publicRecord->formatted_date_range,
-                'relevance_excerpt' => $this->generateExcerpt($publicRecord->content, $publicRecord->title),
-                'is_available' => $publicRecord->is_available,
-            ];
-        });
-
         return response()->json([
-            'success' => true,
-            'data' => $transformedRecords,
-            'pagination' => [
-                'current_page' => $records->currentPage(),
-                'last_page' => $records->lastPage(),
-                'per_page' => $records->perPage(),
-                'total' => $records->total(),
-            ],
-            'query' => $searchTerm,
-            'filters' => $filters
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/search instead.',
+            'new_endpoint' => '/api/public-records/search'
+        ], 410);
     }
 
     /**
-     * API: Get search suggestions
+     * @deprecated Use PublicRecordApiController@suggestions instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::suggestions()
      */
     public function apiSearchSuggestions(Request $request)
     {
-        $query = $request->get('q', '');
-
-        if (strlen($query) < 2) {
-            return response()->json([
-                'success' => true,
-                'suggestions' => []
-            ]);
-        }
-
-        $suggestions = PublicRecord::with('record')
-            ->available()
-            ->searchContent($query)
-            ->limit(10)
-            ->get()
-            ->map(function ($publicRecord) {
-                return [
-                    'id' => $publicRecord->id,
-                    'title' => $publicRecord->title,
-                    'reference' => $publicRecord->code,
-                    'suggestion' => $publicRecord->title . ($publicRecord->code ? ' (' . $publicRecord->code . ')' : ''),
-                    'type' => 'record'
-                ];
-            });
-
         return response()->json([
-            'success' => true,
-            'suggestions' => $suggestions
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/suggestions instead.',
+            'new_endpoint' => '/api/public-records/suggestions'
+        ], 410);
     }
 
     /**
-     * API: Get popular searches (mock implementation)
+     * @deprecated Use PublicRecordApiController@popularSearches instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::popularSearches()
      */
     public function apiPopularSearches()
     {
-        // Pour l'instant, retournons des recherches populaires fictives
-        // Plus tard, vous pourrez implémenter un vrai système de tracking
-        $popularSearches = [
-            'Archives historiques',
-            'Documents administratifs',
-            'Correspondance officielle',
-            'Rapports annuels',
-            'Procès-verbaux'
-        ];
-
         return response()->json([
-            'success' => true,
-            'popular_searches' => $popularSearches
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/popular-searches instead.',
+            'new_endpoint' => '/api/public-records/popular-searches'
+        ], 410);
     }
 
     /**
-     * API: Search with facets
+     * @deprecated Use PublicRecordApiController@search instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::search()
      */
     public function apiSearchWithFacets(Request $request)
     {
-        // Implementation similaire à apiSearch mais avec des facettes
-        // Pour simplifier, nous retournons la même chose que apiSearch pour l'instant
-        return $this->apiSearch($request);
+        return response()->json([
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/search instead.',
+            'new_endpoint' => '/api/public-records/search'
+        ], 410);
     }
 
     /**
-     * API: Export records (mock implementation)
+     * @deprecated Use PublicRecordApiController@export instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::export()
      */
     public function apiExport(Request $request)
     {
-        // Pour l'instant, retournons un message indiquant que l'export est en cours
-        // Plus tard, vous pourrez implémenter un vrai système d'export
         return response()->json([
-            'success' => true,
-            'message' => 'Export request received. You will receive an email when ready.',
-            'export_id' => uniqid('export_')
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/export instead.',
+            'new_endpoint' => '/api/public-records/export'
+        ], 410);
     }
 
     /**
-     * API: Export search results (mock implementation)
+     * @deprecated Use PublicRecordApiController@exportSearch instead
+     * @see \App\Http\Controllers\Api\PublicRecordApiController::exportSearch()
      */
     public function apiExportSearch(Request $request)
     {
-        // Similaire à apiExport mais pour les résultats de recherche
         return response()->json([
-            'success' => true,
-            'message' => 'Search export request received. You will receive an email when ready.',
-            'export_id' => uniqid('search_export_')
-        ]);
-    }
-
-    // ========================================
-    // MÉTHODES UTILITAIRES POUR LES DONNÉES ESSENTIELLES
-    // ========================================
-
-    /**
-     * Get a formatted record for API responses
-     */
-    private function formatRecordForApi(PublicRecord $record)
-    {
-        return [
-            'id' => $record->id,
-            'title' => $record->title,
-            'code' => $record->code,
-            'content' => $record->content,
-            'formatted_date_range' => $record->formatted_date_range,
-            'published_at' => $record->published_at,
-            'expires_at' => $record->expires_at,
-            'publication_notes' => $record->publication_notes,
-            'is_available' => $record->is_available,
-            'is_expired' => $record->is_expired,
-            'publisher' => $record->publisher ? [
-                'id' => $record->publisher->id,
-                'name' => $record->publisher->name,
-            ] : null,
-            'record_details' => [
-                'date_start' => $record->date_start,
-                'date_end' => $record->date_end,
-                'biographical_history' => $record->biographical_history,
-                'language_material' => $record->language_material,
-                'access_conditions' => $record->access_conditions,
-            ]
-        ];
-    }
-
-    /**
-     * Generate a smart excerpt from content
-     */
-    private function generateExcerpt($content, $title = '', $maxLength = 200)
-    {
-        if (empty($content)) {
-            return $title ? "Document: {$title}" : 'Contenu non disponible';
-        }
-
-        if (strlen($content) <= $maxLength) {
-            return $content;
-        }
-
-        // Coupe au mot le plus proche
-        $excerpt = substr($content, 0, $maxLength);
-        $lastSpace = strrpos($excerpt, ' ');
-
-        if ($lastSpace !== false && $lastSpace > $maxLength * 0.8) {
-            $excerpt = substr($excerpt, 0, $lastSpace);
-        }
-
-        return $excerpt . '...';
-    }
-
-    /**
-     * Get statistics for API dashboard
-     */
-    public function apiStats()
-    {
-        $total = PublicRecord::count();
-        $available = PublicRecord::available()->count();
-        $expired = PublicRecord::where('expires_at', '<=', now())->count();
-        $published_this_month = PublicRecord::where('published_at', '>=', now()->startOfMonth())->count();
-
-        return response()->json([
-            'success' => true,
-            'stats' => [
-                'total_records' => $total,
-                'available_records' => $available,
-                'expired_records' => $expired,
-                'published_this_month' => $published_this_month,
-                'availability_rate' => $total > 0 ? round(($available / $total) * 100, 2) : 0,
-            ]
-        ]);
-    }
-
-    /**
-     * Get filters data for frontend
-     */
-    public function apiFilters()
-    {
-        $languages = \App\Models\Record::whereNotNull('language_material')
-            ->distinct('language_material')
-            ->pluck('language_material')
-            ->filter()
-            ->sort()
-            ->values();
-
-        $publishers = \App\Models\User::whereIn('id',
-            PublicRecord::distinct('published_by')->pluck('published_by')
-        )->select('id', 'name')->get();
-
-        $dateRange = PublicRecord::selectRaw('MIN(published_at) as min_date, MAX(published_at) as max_date')
-            ->first();
-
-        return response()->json([
-            'success' => true,
-            'filters' => [
-                'languages' => $languages,
-                'publishers' => $publishers,
-                'date_range' => [
-                    'min' => $dateRange->min_date,
-                    'max' => $dateRange->max_date,
-                ]
-            ]
-        ]);
+            'success' => false,
+            'message' => 'This API endpoint is deprecated. Use /api/public-records/export/search instead.',
+            'new_endpoint' => '/api/public-records/export/search'
+        ], 410);
     }
 }

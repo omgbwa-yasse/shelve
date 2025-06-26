@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PublicPage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
+/**
+ * Controller for Public Pages
+ * Handles static pages for the public portal
+ */
 class PublicPageController extends Controller
 {
     /**
@@ -13,8 +15,7 @@ class PublicPageController extends Controller
      */
     public function index()
     {
-        $pages = PublicPage::orderBy('title')->paginate(10);
-        return view('public.pages.index', compact('pages'));
+        return view('public.pages.index');
     }
 
     /**
@@ -30,100 +31,41 @@ class PublicPageController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:public_pages',
-            'content' => 'required|string',
-            'meta_description' => 'nullable|string|max:160',
-            'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'required|in:draft,published,archived',
-            'featured_image' => 'nullable|image|max:2048',
-        ]);
-
-        if ($request->hasFile('featured_image')) {
-            $path = $request->file('featured_image')->store('public/pages');
-            $validated['featured_image_path'] = $path;
-        }
-
-        $validated['author_id'] = auth()->id();
-        $page = PublicPage::create($validated);
-
-        return redirect()->route('public.pages.show', $page)
-            ->with('success', 'Page created successfully.');
+        // Implementation to be added
+        return redirect()->route('public.pages.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(PublicPage $page)
+    public function show(string $id)
     {
-        return view('public.pages.show', compact('page'));
+        return view('public.pages.show', compact('id'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PublicPage $page)
+    public function edit(string $id)
     {
-        return view('public.pages.edit', compact('page'));
+        return view('public.pages.edit', compact('id'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PublicPage $page)
+    public function update(Request $request, string $id)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:public_pages,slug,' . $page->id,
-            'content' => 'required|string',
-            'meta_description' => 'nullable|string|max:160',
-            'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'required|in:draft,published,archived',
-            'featured_image' => 'nullable|image|max:2048',
-        ]);
-
-        if ($request->hasFile('featured_image')) {
-            if ($page->featured_image_path) {
-                Storage::delete($page->featured_image_path);
-            }
-            $path = $request->file('featured_image')->store('public/pages');
-            $validated['featured_image_path'] = $path;
-        }
-
-        $page->update($validated);
-
-        return redirect()->route('public.pages.show', $page)
-            ->with('success', 'Page updated successfully.');
+        // Implementation to be added
+        return redirect()->route('public.pages.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PublicPage $page)
+    public function destroy(string $id)
     {
-        if ($page->featured_image_path) {
-            Storage::delete($page->featured_image_path);
-        }
-
-        $page->delete();
-
-        return redirect()->route('public.pages.index')
-            ->with('success', 'Page deleted successfully.');
-    }
-
-    /**
-     * Update the status of the page.
-     */
-    public function updateStatus(Request $request, PublicPage $page)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:draft,published,archived'
-        ]);
-
-        $page->update($validated);
-
-        return redirect()->back()
-            ->with('success', 'Status updated successfully.');
+        // Implementation to be added
+        return redirect()->route('public.pages.index');
     }
 }
