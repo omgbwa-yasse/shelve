@@ -6,7 +6,7 @@ use App\Http\Controllers\AiModelController;
 use App\Http\Controllers\AiInteractionController;
 use App\Http\Controllers\AiJobController;
 use App\Http\Controllers\OllamaController;
-use App\Http\Controllers\PublicRecordController;
+use App\Http\Controllers\Api\PublicRecordApiController;
 use App\Http\Controllers\PublicEventController;
 use App\Http\Controllers\PublicNewsController;
 use App\Http\Controllers\PublicUserController;
@@ -19,11 +19,11 @@ use App\Http\Controllers\PublicChatController;
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
 
-    // Records
-    Route::get('records', [PublicRecordController::class, 'apiIndex'])->name('records.index');
-    Route::get('records/{record}', [PublicRecordController::class, 'apiShow'])->name('records.show');
-    Route::post('records/search', [PublicRecordController::class, 'apiSearch'])->name('records.search');
-    Route::get('records/export', [PublicRecordController::class, 'apiExport'])->name('records.export');
+    // Records - New API endpoints
+    Route::get('records', [PublicRecordApiController::class, 'index'])->name('records.index');
+    Route::get('records/{record}', [PublicRecordApiController::class, 'show'])->name('records.show');
+    Route::post('records/search', [PublicRecordApiController::class, 'search'])->name('records.search');
+    Route::get('records/export', [PublicRecordApiController::class, 'export'])->name('records.export');
 
     // Events
     Route::get('events', [PublicEventController::class, 'apiIndex'])->name('events.index');
@@ -36,11 +36,12 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::get('news/latest', [PublicNewsController::class, 'apiLatest'])->name('news.latest');
     Route::get('news/{news}', [PublicNewsController::class, 'apiShow'])->name('news.show');
 
-    // Search
-    Route::get('search/suggestions', [PublicRecordController::class, 'apiSearchSuggestions'])->name('search.suggestions');
-    Route::get('search/popular', [PublicRecordController::class, 'apiPopularSearches'])->name('search.popular');
-    Route::post('records/search/facets', [PublicRecordController::class, 'apiSearchWithFacets'])->name('records.search.facets');
-    Route::post('records/export/search', [PublicRecordController::class, 'apiExportSearch'])->name('records.export.search');
+    // Search - New API endpoints
+    Route::get('search/suggestions', [PublicRecordApiController::class, 'suggestions'])->name('search.suggestions');
+    Route::get('search/popular', [PublicRecordApiController::class, 'popularSearches'])->name('search.popular');
+    Route::get('records/statistics', [PublicRecordApiController::class, 'statistics'])->name('records.statistics');
+    Route::get('records/filters', [PublicRecordApiController::class, 'filters'])->name('records.filters');
+    Route::post('records/export/search', [PublicRecordApiController::class, 'exportSearch'])->name('records.export.search');
 
     // Users (Authentication)
     Route::post('users/login', [PublicUserController::class, 'apiLogin'])->name('users.login');
