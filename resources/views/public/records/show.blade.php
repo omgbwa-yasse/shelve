@@ -47,7 +47,7 @@
                             @endswitch
                         </div>
                         <div class="col-md-6">
-                            <strong>Créé par :</strong> {{ $record->user->name ?? 'Inconnu' }}
+                            <strong>Créé par :</strong> {{ $record->publisher->name ?? 'Inconnu' }}
                         </div>
                     </div>
 

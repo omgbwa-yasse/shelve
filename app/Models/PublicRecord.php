@@ -14,6 +14,11 @@ class PublicRecord extends Model
 
     protected $fillable = [
         'record_id',
+        'title',
+        'description',
+        'record_type',
+        'reference_number',
+        'status',
         'published_at',
         'expires_at',
         'published_by',
@@ -38,5 +43,10 @@ class PublicRecord extends Model
     public function documentRequests()
     {
         return $this->hasMany(PublicDocumentRequest::class, 'record_id');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany(PublicRecordAttachment::class, 'public_record_id');
     }
 }

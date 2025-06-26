@@ -36,7 +36,7 @@
                                         <td>{{ $record->title }}</td>
                                         <td>{{ $record->record_type }}</td>
                                         <td>{{ $record->reference_number }}</td>
-                                        <td>{{ $record->user->name ?? 'Inconnu' }}</td>
+                                        <td>{{ $record->publisher->name ?? 'Inconnu' }}</td>
                                         <td>{{ $record->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
                                             @switch($record->status)

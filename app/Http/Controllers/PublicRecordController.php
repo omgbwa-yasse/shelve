@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PublicRecord;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PublicRecordController extends Controller
@@ -13,7 +14,7 @@ class PublicRecordController extends Controller
      */
     public function index()
     {
-        $records = PublicRecord::with(['user', 'attachments'])
+        $records = PublicRecord::with(['publisher', 'attachments'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
         return view('public.records.index', compact('records'));
@@ -41,7 +42,7 @@ class PublicRecordController extends Controller
             'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
         ]);
 
-        $validated['user_id'] = auth()->id();
+        $validated['published_by'] = Auth::id();
         $record = PublicRecord::create($validated);
 
         if ($request->hasFile('attachments')) {
@@ -52,6 +53,7 @@ class PublicRecordController extends Controller
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
+                    'uploaded_by' => Auth::id(),
                 ]);
             }
         }
@@ -100,6 +102,7 @@ class PublicRecordController extends Controller
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
+                    'uploaded_by' => Auth::id(),
                 ]);
             }
         }

@@ -26,15 +26,18 @@
                                     @endif
                                     <div class="card-body">
                                         <h5 class="card-title">{{ $article->title }}</h5>
-                                        <p class="card-text">{{ Str::limit($article->content, 150) }}</p>
-                                        <div class="mb-2">
-                                            <small class="text-muted">
-                                                Publié le {{ $article->published_at->format('d/m/Y') }}
-                                                @if($article->author)
-                                                    par {{ $article->author->name }}
-                                                @endif
-                                            </small>
-                                        </div>
+                                        <p class="card-text">{{ Str::limit($article->content, 150) }}</p>                        <div class="mb-2">
+                            <small class="text-muted">
+                                @if($article->published_at)
+                                    Publié le {{ $article->published_at->format('d/m/Y') }}
+                                @else
+                                    Publié le {{ $article->created_at->format('d/m/Y') }}
+                                @endif
+                                @if($article->author)
+                                    par {{ $article->author->name }}
+                                @endif
+                            </small>
+                        </div>
                                     </div>
                                     <div class="card-footer">
                                         <div class="d-flex justify-content-between">
