@@ -135,6 +135,4 @@ class PublicFeedbackController extends Controller
         return redirect()->back()
             ->with('success', 'Comment deleted successfully.');
     }
-
-    // ========================================
 }
