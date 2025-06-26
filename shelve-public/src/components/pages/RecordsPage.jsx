@@ -98,8 +98,8 @@ const RecordsPage = () => {
     error,
     refetch
   } = useApi(
-    () => recordsApi.getRecords({ 
-      ...apiFilters, 
+    () => recordsApi.getRecords({
+      ...apiFilters,
       page: currentPage,
       per_page: 10 // Ajout du paramètre per_page
     }),

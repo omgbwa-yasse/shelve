@@ -20,8 +20,8 @@ export const newsApi = {
 export const recordsApi = {
   getRecords: (params = {}) => api.get('/public/records', { params }),
   getRecord: (id) => api.get(`/public/records/${id}`),
-  searchRecords: (query, filters = {}) => api.post('/public/records/search', { 
-    query, 
+  searchRecords: (query, filters = {}) => api.post('/public/records/search', {
+    query,
     filters: filters,
     per_page: filters.per_page || 20
   }),
@@ -30,8 +30,8 @@ export const recordsApi = {
   getPopularSearches: () => api.get('/public/search/popular'),
   getStatistics: () => api.get('/public/records/statistics'),
   getFilters: () => api.get('/public/records/filters'),
-  exportSearchResults: (query, filters = {}) => api.post('/public/records/export/search', { 
-    query, 
+  exportSearchResults: (query, filters = {}) => api.post('/public/records/export/search', {
+    query,
     filters,
     format: 'csv'
   }, { responseType: 'blob' }),
