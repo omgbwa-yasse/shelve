@@ -18,7 +18,7 @@
                 <td>{{ $dolly->name }}</td>
                 <td>{{ $dolly->description }}</td>
                 <td>
-                    @switch($dolly->type->name ?? '')
+                    @switch($dolly->category ?? '')
                         @case('record')
                             Archives
                             @break

@@ -12,7 +12,7 @@
                     <i class="bi {{ $item['icon'] }} action-icon text-primary"></i>
                     <h5 class="card-title">{{ $item['text'] }}</h5>
                 </div>
-                <a href="{{ route('dollies.action', ['categ' => $dolly->type->name, 'action' => $item['action'], 'id' => $dolly->id]) }}" class="btn btn-primary btn-action">Exécuter</a>
+                <a href="{{ route('dollies.action', ['categ' => $dolly->category, 'action' => $item['action'], 'id' => $dolly->id]) }}" class="btn btn-primary btn-action">Exécuter</a>
             </div>
         </div>
     @endforeach
