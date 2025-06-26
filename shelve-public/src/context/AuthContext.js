@@ -145,19 +145,16 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await userApi.registerUser(userData);
-      const { user, token } = response.data;
 
-      // Store in localStorage
-      authUtils.setToken(token);
-      authUtils.setUser(user);
-      authUtils.setUserId(user.id);
+      // L'inscription ne connecte pas automatiquement l'utilisateur
+      // car le compte doit être approuvé
+      dispatch({ type: actionTypes.SET_LOADING, payload: false });
 
-      dispatch({
-        type: actionTypes.LOGIN_SUCCESS,
-        payload: { user, token },
-      });
-
-      return { success: true, user, token };
+      return {
+        success: true,
+        message: response.data.message,
+        user: response.data.data
+      };
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Erreur lors de l\'inscription';
 

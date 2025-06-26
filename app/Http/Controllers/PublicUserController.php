@@ -187,6 +187,11 @@ class PublicUserController extends Controller
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_approved'] = false; // Require approval
 
+        // S'assurer que les champs requis en base ont une valeur par défaut
+        $validated['phone1'] = $validated['phone1'] ?? 'Non renseigné';
+        $validated['phone2'] = 'Non renseigné'; // Valeur par défaut
+        $validated['address'] = $validated['address'] ?? 'Non renseignée';
+
         $user = PublicUser::create($validated);
 
         return response()->json([

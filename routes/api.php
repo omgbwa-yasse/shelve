@@ -14,26 +14,7 @@ use App\Http\Controllers\PublicDocumentRequestController;
 use App\Http\Controllers\PublicFeedbackController;
 use App\Http\Controllers\PublicChatController;
 
-// AI/Ollama API routes
-Route::prefix('ai/ollama')->name('api.ai.ollama.')->group(function () {
-        // Santé et modèles
-        Route::get('health', [AiModelController::class, 'healthCheck'])->name('health');
-        Route::get('models', [AiModelController::class, 'getOllamaModels'])->name('models');
-        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
 
-        // Interactions
-        Route::post('interact', [AiInteractionController::class, 'createAndProcess'])->name('interact');
-        Route::post('chat', [AiInteractionController::class, 'chat'])->name('chat');
-        Route::get('stream', [AiInteractionController::class, 'stream'])->name('stream');
-
-        // Jobs par lot
-        Route::post('batch', [AiJobController::class, 'createBatch'])->name('batch.create');
-        Route::get('batch/{job}', [AiJobController::class, 'getJobStatus'])->name('batch.status');
-
-        // Test et dashboard
-        Route::post('test', [OllamaController::class, 'test'])->name('test');
-        Route::get('dashboard', [OllamaController::class, 'dashboard'])->name('dashboard');
-    });
 
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {

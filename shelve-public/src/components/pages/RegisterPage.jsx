@@ -142,6 +142,12 @@ const RegisterPage = () => {
   const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Vérifier que le contexte est bien chargé
+  if (!register) {
+    console.error('La fonction register n\'est pas disponible dans le contexte');
+    return <div>Erreur: Contexte d'authentification non disponible</div>;
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -165,10 +171,23 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Empêcher les soumissions multiples
+    if (loading) return;
+
     setLoading(true);
     setError('');
 
-    // Validation
+    console.log('=== DÉBUT DE L\'INSCRIPTION ===');
+    console.log('Données du formulaire:', formData);
+
+    // Validation côté client
+    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || !formData.password) {
+      setError('Tous les champs obligatoires doivent être remplis');
+      setLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Les mots de passe ne correspondent pas');
       setLoading(false);
@@ -183,25 +202,59 @@ const RegisterPage = () => {
     }
 
     try {
-      const result = await register({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone
-      });
+      console.log('Appel de la fonction register...');
 
-      if (result.success) {
-        toast.success('Compte créé avec succès! Vous pouvez maintenant vous connecter.');
-        navigate('/login');
+      const registrationData = {
+        name: formData.lastName.trim(),
+        first_name: formData.firstName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        password_confirmation: formData.confirmPassword,
+        phone1: formData.phone.trim() || 'Non renseigné',
+        address: 'Non renseignée' // Valeur par défaut car le champ est requis en base
+      };
+
+      console.log('Données envoyées:', registrationData);
+      console.log('Type de register:', typeof register);
+      console.log('Register function:', register);
+
+      const result = await register(registrationData);
+
+      console.log('Résultat reçu:', result);
+      console.log('Type du résultat:', typeof result);
+
+      if (result?.success) {
+        console.log('✅ Inscription réussie');
+        console.log('Message du serveur:', result.message);
+        console.log('Données utilisateur:', result.user);
+        toast.success(result.message || 'Compte créé avec succès! Votre compte est en attente d\'approbation.');
+
+        // Rediriger vers la page de connexion car l'utilisateur n'est pas connecté automatiquement
+        setTimeout(() => {
+          console.log('Redirection vers /login...');
+          navigate('/login');
+        }, 2000); // Plus de temps pour lire le message
       } else {
-        throw new Error(result.error);
+        console.log('❌ Échec de l\'inscription:', result);
+        const errorMessage = result?.error || result?.message || 'Erreur lors de la création du compte';
+        console.log('Message d\'erreur:', errorMessage);
+        setError(errorMessage);
+        toast.error(errorMessage);
       }
     } catch (err) {
-      setError(err.message || 'Erreur lors de la création du compte');
-      toast.error('Erreur lors de la création du compte');
+      console.error('❌ Erreur lors de l\'inscription:', err);
+      console.log('Détails de l\'erreur:', {
+        message: err.message,
+        response: err.response,
+        data: err.response?.data,
+        status: err.response?.status
+      });
+      const errorMessage = err.message || 'Erreur lors de la création du compte';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
+      console.log('=== FIN DE L\'INSCRIPTION ===');
     }
   };
 
