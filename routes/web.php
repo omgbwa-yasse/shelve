@@ -71,7 +71,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use AppHttp\Controllers\DollyController;
+use App\Http\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
