@@ -13,6 +13,15 @@ use App\Http\Controllers\Api\PublicUserApiController;
 use App\Http\Controllers\Api\PublicDocumentRequestApiController;
 use App\Http\Controllers\Api\PublicFeedbackApiController;
 use App\Http\Controllers\Api\PublicChatApiController;
+use App\Http\Controllers\Api\PublicPageApiController;
+use App\Http\Controllers\Api\PublicTemplateApiController;
+use App\Http\Controllers\Api\PublicSearchLogApiController;
+use App\Http\Controllers\Api\PublicResponseApiController;
+use App\Http\Controllers\Api\PublicResponseAttachmentApiController;
+use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
+use App\Http\Controllers\Api\PublicChatParticipantApiController;
+use App\Http\Controllers\Api\PublicChatMessageApiController;
+use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 
 // Middleware constants
 const AUTH_SANCTUM = 'auth:sanctum';
@@ -70,4 +79,87 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::post('chat/conversations', [PublicChatApiController::class, 'createConversation'])->name('chat.conversations.create')->middleware(AUTH_SANCTUM);
     Route::get('chat/conversations/{conversation}/messages', [PublicChatApiController::class, 'messages'])->name('chat.messages')->middleware(AUTH_SANCTUM);
     Route::post('chat/conversations/{conversation}/messages', [PublicChatApiController::class, 'sendMessage'])->name('chat.messages.send')->middleware(AUTH_SANCTUM);
+
+    // Pages
+    Route::get('pages', [PublicPageApiController::class, 'index'])->name('pages.index');
+    Route::get('pages/published', [PublicPageApiController::class, 'published'])->name('pages.published');
+    Route::get('pages/slug/{slug}', [PublicPageApiController::class, 'showBySlug'])->name('pages.show-by-slug');
+    Route::get('pages/{page}', [PublicPageApiController::class, 'show'])->name('pages.show');
+    Route::post('pages', [PublicPageApiController::class, 'store'])->name('pages.store')->middleware(AUTH_SANCTUM);
+    Route::put('pages/{page}', [PublicPageApiController::class, 'update'])->name('pages.update')->middleware(AUTH_SANCTUM);
+    Route::delete('pages/{page}', [PublicPageApiController::class, 'destroy'])->name('pages.destroy')->middleware(AUTH_SANCTUM);
+
+    // Templates
+    Route::get('templates', [PublicTemplateApiController::class, 'index'])->name('templates.index')->middleware(AUTH_SANCTUM);
+    Route::get('templates/type/{type}', [PublicTemplateApiController::class, 'byType'])->name('templates.by-type');
+    Route::get('templates/{template}', [PublicTemplateApiController::class, 'show'])->name('templates.show')->middleware(AUTH_SANCTUM);
+    Route::post('templates', [PublicTemplateApiController::class, 'store'])->name('templates.store')->middleware(AUTH_SANCTUM);
+    Route::put('templates/{template}', [PublicTemplateApiController::class, 'update'])->name('templates.update')->middleware(AUTH_SANCTUM);
+    Route::delete('templates/{template}', [PublicTemplateApiController::class, 'destroy'])->name('templates.destroy')->middleware(AUTH_SANCTUM);
+
+    // Search Logs
+    Route::get('search-logs', [PublicSearchLogApiController::class, 'index'])->name('search-logs.index')->middleware(AUTH_SANCTUM);
+    Route::post('search-logs', [PublicSearchLogApiController::class, 'store'])->name('search-logs.store');
+    Route::get('search-logs/statistics', [PublicSearchLogApiController::class, 'statistics'])->name('search-logs.statistics')->middleware(AUTH_SANCTUM);
+    Route::get('search-logs/user-history', [PublicSearchLogApiController::class, 'userHistory'])->name('search-logs.user-history')->middleware(AUTH_SANCTUM);
+
+    // Responses
+    Route::get('responses', [PublicResponseApiController::class, 'index'])->name('responses.index')->middleware(AUTH_SANCTUM);
+    Route::get('responses/{response}', [PublicResponseApiController::class, 'show'])->name('responses.show')->middleware(AUTH_SANCTUM);
+    Route::post('responses', [PublicResponseApiController::class, 'store'])->name('responses.store')->middleware(AUTH_SANCTUM);
+    Route::put('responses/{response}', [PublicResponseApiController::class, 'update'])->name('responses.update')->middleware(AUTH_SANCTUM);
+    Route::delete('responses/{response}', [PublicResponseApiController::class, 'destroy'])->name('responses.destroy')->middleware(AUTH_SANCTUM);
+    Route::patch('responses/{response}/mark-as-sent', [PublicResponseApiController::class, 'markAsSent'])->name('responses.mark-as-sent')->middleware(AUTH_SANCTUM);
+    Route::get('responses/document-request/{documentRequest}', [PublicResponseApiController::class, 'byDocumentRequest'])->name('responses.by-document-request')->middleware(AUTH_SANCTUM);
+
+    // Response Attachments
+    Route::get('response-attachments', [PublicResponseAttachmentApiController::class, 'index'])->name('response-attachments.index')->middleware(AUTH_SANCTUM);
+    Route::get('response-attachments/{attachment}', [PublicResponseAttachmentApiController::class, 'show'])->name('response-attachments.show')->middleware(AUTH_SANCTUM);
+    Route::post('response-attachments', [PublicResponseAttachmentApiController::class, 'store'])->name('response-attachments.store')->middleware(AUTH_SANCTUM);
+    Route::delete('response-attachments/{attachment}', [PublicResponseAttachmentApiController::class, 'destroy'])->name('response-attachments.destroy')->middleware(AUTH_SANCTUM);
+    Route::get('response-attachments/{attachment}/download', [PublicResponseAttachmentApiController::class, 'download'])->name('response-attachments.download')->middleware(AUTH_SANCTUM);
+
+    // Record Attachments
+    Route::get('record-attachments', [PublicRecordAttachmentApiController::class, 'index'])->name('record-attachments.index');
+    Route::get('record-attachments/{attachment}', [PublicRecordAttachmentApiController::class, 'show'])->name('record-attachments.show');
+    Route::post('record-attachments', [PublicRecordAttachmentApiController::class, 'store'])->name('record-attachments.store')->middleware(AUTH_SANCTUM);
+    Route::delete('record-attachments/{attachment}', [PublicRecordAttachmentApiController::class, 'destroy'])->name('record-attachments.destroy')->middleware(AUTH_SANCTUM);
+    Route::get('record-attachments/{attachment}/download', [PublicRecordAttachmentApiController::class, 'download'])->name('record-attachments.download');
+    Route::get('record-attachments/public-record/{publicRecord}', [PublicRecordAttachmentApiController::class, 'byPublicRecord'])->name('record-attachments.by-public-record');
+
+    // Chat Participants
+    Route::get('chat-participants', [PublicChatParticipantApiController::class, 'index'])->name('chat-participants.index')->middleware(AUTH_SANCTUM);
+    Route::get('chat-participants/{participant}', [PublicChatParticipantApiController::class, 'show'])->name('chat-participants.show')->middleware(AUTH_SANCTUM);
+    Route::post('chat-participants', [PublicChatParticipantApiController::class, 'store'])->name('chat-participants.store')->middleware(AUTH_SANCTUM);
+    Route::put('chat-participants/{participant}', [PublicChatParticipantApiController::class, 'update'])->name('chat-participants.update')->middleware(AUTH_SANCTUM);
+    Route::delete('chat-participants/{participant}', [PublicChatParticipantApiController::class, 'destroy'])->name('chat-participants.destroy')->middleware(AUTH_SANCTUM);
+    Route::get('chat-participants/chat/{chat}', [PublicChatParticipantApiController::class, 'byChat'])->name('chat-participants.by-chat')->middleware(AUTH_SANCTUM);
+    Route::get('chat-participants/user/{user}', [PublicChatParticipantApiController::class, 'byUser'])->name('chat-participants.by-user')->middleware(AUTH_SANCTUM);
+    Route::patch('chat-participants/{participant}/mark-as-read', [PublicChatParticipantApiController::class, 'markAsRead'])->name('chat-participants.mark-as-read')->middleware(AUTH_SANCTUM);
+    Route::patch('chat-participants/{participant}/toggle-admin', [PublicChatParticipantApiController::class, 'toggleAdmin'])->name('chat-participants.toggle-admin')->middleware(AUTH_SANCTUM);
+
+    // Chat Messages
+    Route::get('chat-messages', [PublicChatMessageApiController::class, 'index'])->name('chat-messages.index')->middleware(AUTH_SANCTUM);
+    Route::get('chat-messages/{message}', [PublicChatMessageApiController::class, 'show'])->name('chat-messages.show')->middleware(AUTH_SANCTUM);
+    Route::post('chat-messages', [PublicChatMessageApiController::class, 'store'])->name('chat-messages.store')->middleware(AUTH_SANCTUM);
+    Route::put('chat-messages/{message}', [PublicChatMessageApiController::class, 'update'])->name('chat-messages.update')->middleware(AUTH_SANCTUM);
+    Route::delete('chat-messages/{message}', [PublicChatMessageApiController::class, 'destroy'])->name('chat-messages.destroy')->middleware(AUTH_SANCTUM);
+    Route::get('chat-messages/chat/{chat}', [PublicChatMessageApiController::class, 'byChat'])->name('chat-messages.by-chat')->middleware(AUTH_SANCTUM);
+    Route::get('chat-messages/user/{user}', [PublicChatMessageApiController::class, 'byUser'])->name('chat-messages.by-user')->middleware(AUTH_SANCTUM);
+    Route::patch('chat-messages/{message}/mark-as-read', [PublicChatMessageApiController::class, 'markAsRead'])->name('chat-messages.mark-as-read')->middleware(AUTH_SANCTUM);
+    Route::patch('chat-messages/mark-multiple-as-read', [PublicChatMessageApiController::class, 'markMultipleAsRead'])->name('chat-messages.mark-multiple-as-read')->middleware(AUTH_SANCTUM);
+    Route::get('chat-messages/chat/{chat}/unread-count', [PublicChatMessageApiController::class, 'unreadCount'])->name('chat-messages.unread-count')->middleware(AUTH_SANCTUM);
+    Route::post('chat-messages/search', [PublicChatMessageApiController::class, 'search'])->name('chat-messages.search')->middleware(AUTH_SANCTUM);
+
+    // Event Registrations
+    Route::get('event-registrations', [PublicEventRegistrationApiController::class, 'index'])->name('event-registrations.index')->middleware(AUTH_SANCTUM);
+    Route::get('event-registrations/{registration}', [PublicEventRegistrationApiController::class, 'show'])->name('event-registrations.show')->middleware(AUTH_SANCTUM);
+    Route::post('event-registrations', [PublicEventRegistrationApiController::class, 'store'])->name('event-registrations.store');
+    Route::put('event-registrations/{registration}', [PublicEventRegistrationApiController::class, 'update'])->name('event-registrations.update')->middleware(AUTH_SANCTUM);
+    Route::delete('event-registrations/{registration}', [PublicEventRegistrationApiController::class, 'destroy'])->name('event-registrations.destroy')->middleware(AUTH_SANCTUM);
+    Route::get('event-registrations/event/{event}', [PublicEventRegistrationApiController::class, 'byEvent'])->name('event-registrations.by-event')->middleware(AUTH_SANCTUM);
+    Route::get('event-registrations/user/{user}', [PublicEventRegistrationApiController::class, 'byUser'])->name('event-registrations.by-user')->middleware(AUTH_SANCTUM);
+    Route::patch('event-registrations/{registration}/confirm', [PublicEventRegistrationApiController::class, 'confirm'])->name('event-registrations.confirm')->middleware(AUTH_SANCTUM);
+    Route::patch('event-registrations/{registration}/cancel', [PublicEventRegistrationApiController::class, 'cancel'])->name('event-registrations.cancel')->middleware(AUTH_SANCTUM);
+    Route::get('event-registrations/statistics', [PublicEventRegistrationApiController::class, 'statistics'])->name('event-registrations.statistics')->middleware(AUTH_SANCTUM);
 });
