@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\LogUserAction;
 use App\Http\Middleware\EnsurePublicUserIsApproved;
+use App\Http\Middleware\CorsMiddleware;
 use App\Models\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(LogUserAction::class);
         $middleware->alias([
             'public.approved' => EnsurePublicUserIsApproved::class,
+            'cors' => CorsMiddleware::class,
+        ]);
+        $middleware->api(prepend: [
+            CorsMiddleware::class,
         ]);
     })
     ->withExceptions(function () {

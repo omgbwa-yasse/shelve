@@ -13,28 +13,38 @@ const RecordDetail = () => {
   const navigate = useNavigate();
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [relatedRecords, setRelatedRecords] = useState(null);
+  const [loadingRelated, setLoadingRelated] = useState(false);
 
+  // Premier appel API pour récupérer le record
   const {
     data: record,
     loading,
     error,
     refetch
-  } = useApi(
-    () => recordsApi.getRecord(id),
-    [id]
-  );
+  } = useApi(() => recordsApi.getRecord(id));
 
-  const {
-    data: relatedRecords,
-    loading: loadingRelated
-  } = useApi(
-    () => record ? recordsApi.getRecords({
-      type: record.type,
-      limit: 4,
-      exclude: record.id
-    }) : null,
-    [record]
-  );
+  // Effet pour charger les records similaires quand le record principal est chargé
+  useEffect(() => {
+    if (record?.id && record?.type) {
+      setLoadingRelated(true);
+      recordsApi.getRecords({
+        type: record.type,
+        limit: 4,
+        exclude: record.id
+      })
+      .then(response => {
+        setRelatedRecords(response.data);
+      })
+      .catch(error => {
+        console.error('Erreur lors du chargement des records similaires:', error);
+        setRelatedRecords(null);
+      })
+      .finally(() => {
+        setLoadingRelated(false);
+      });
+    }
+  }, [record?.id, record?.type]);
 
   useEffect(() => {
     if (error?.status === 404) {

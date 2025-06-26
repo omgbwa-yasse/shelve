@@ -31,10 +31,16 @@ const AUTH_SANCTUM = 'auth:sanctum';
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
 
+    // Handle CORS preflight requests
+    Route::options('{any}', function () {
+        return response('', 200);
+    })->where('any', '.*');
+
     // Records - New API endpoints
     Route::get('records', [PublicRecordApiController::class, 'index'])->name('records.index');
     Route::get('records/{record}', [PublicRecordApiController::class, 'show'])->name('records.show');
     Route::post('records/search', [PublicRecordApiController::class, 'search'])->name('records.search');
+    Route::get('records/autocomplete', [PublicRecordApiController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('records/export', [PublicRecordApiController::class, 'export'])->name('records.export');
 
     // Events

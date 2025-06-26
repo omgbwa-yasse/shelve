@@ -71,7 +71,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use App\Http\Controllers\DollyController;
+use AppHttp\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
@@ -592,6 +592,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Document related routes
         Route::resource('document-requests', PublicDocumentRequestController::class)->names('public.document-requests');
+        Route::get('records/autocomplete', [PublicRecordController::class, 'autocomplete'])->name('public.records.autocomplete');
         Route::resource('records', PublicRecordController::class)->names('public.records');
         Route::resource('responses', PublicResponseController::class)->names('public.responses');
         Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('public.response-attachments');

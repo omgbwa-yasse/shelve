@@ -14,15 +14,16 @@
                         @csrf
 
                         <div class="form-group mb-3">
-                            <label for="record_id">Document à publier</label>
-                            <select class="form-control @error('record_id') is-invalid @enderror" id="record_id" name="record_id" required>
-                                <option value="">Sélectionner un document</option>
-                                @foreach(\App\Models\Record::all() as $recordOption)
-                                    <option value="{{ $recordOption->id }}" {{ old('record_id') == $recordOption->id ? 'selected' : '' }}>
-                                        {{ $recordOption->name }} ({{ $recordOption->code }})
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label for="record_search_input">Document à publier</label>
+                            <div class="record-search-container position-relative">
+                                <input type="text"
+                                       class="form-control record-search-input @error('record_id') is-invalid @enderror"
+                                       id="record_search_input"
+                                       placeholder="Tapez au moins 3 caractères pour rechercher..."
+                                       autocomplete="off">
+                                <input type="hidden" name="record_id" id="record_id" value="{{ old('record_id') }}" required>
+                                <div id="record_suggestions" class="autocomplete-suggestions position-absolute w-100 d-none" style="z-index: 1000; max-height: 200px; overflow-y: auto;"></div>
+                            </div>
                             @error('record_id')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -87,3 +88,11 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/record-autocomplete.css') }}">
+@endpush
+
+@push('scripts')
+<script src="{{ asset('js/record-autocomplete.js') }}"></script>
+@endpush

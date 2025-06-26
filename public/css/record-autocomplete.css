@@ -1,0 +1,58 @@
+/* Styles pour l'autocomplétion des records */
+
+.autocomplete-suggestions {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    background-color: #fff;
+}
+
+.autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.15s ease-in-out;
+    font-size: 14px;
+    color: #495057;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+    border-radius: 0 0 6px 6px;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.bg-light {
+    background-color: #f8f9fa !important;
+    color: #212529;
+}
+
+.autocomplete-item:active {
+    background-color: #e9ecef !important;
+}
+
+/* Animation d'apparition */
+.autocomplete-suggestions:not(.d-none) {
+    animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Styles pour le champ de recherche */
+.record-search-container {
+    position: relative;
+}
+
+.record-search-input:focus + .autocomplete-suggestions {
+    border-color: #80bdff;
+}
