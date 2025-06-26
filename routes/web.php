@@ -573,6 +573,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('public')->group(function () {
         // User related routes
         Route::resource('users', PublicUserController::class)->names('public.users');
+        Route::patch('users/{user}/activate', [PublicUserController::class, 'activate'])->name('public.users.activate');
+        Route::patch('users/{user}/deactivate', [PublicUserController::class, 'deactivate'])->name('public.users.deactivate');
 
         // Chat related routes
         Route::resource('chats', PublicChatController::class)->names('public.chats');

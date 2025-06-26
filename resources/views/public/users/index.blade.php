@@ -23,24 +23,28 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('First Name') }}</th>
+                                    <th>{{ __('Last Name') }}</th>
                                     <th>{{ __('Email') }}</th>
+                                    <th>{{ __('Phone') }}</th>
                                     <th>{{ __('Status') }}</th>
-                                    <th>{{ __('Last Login') }}</th>
+                                    <th>{{ __('Created') }}</th>
                                     <th>{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($users as $user)
                                     <tr>
+                                        <td>{{ $user->first_name }}</td>
                                         <td>{{ $user->name }}</td>
                                         <td>{{ $user->email }}</td>
+                                        <td>{{ $user->phone1 ?? '-' }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $user->is_active ? 'success' : 'danger' }}">
-                                                {{ $user->is_active ? __('Active') : __('Inactive') }}
+                                            <span class="badge badge-{{ $user->is_approved ? 'success' : 'warning' }}">
+                                                {{ $user->is_approved ? __('Approved') : __('Pending') }}
                                             </span>
                                         </td>
-                                        <td>{{ $user->last_login_at ? $user->last_login_at->diffForHumans() : __('Never') }}</td>
+                                        <td>{{ $user->created_at->diffForHumans() }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('public.users.show', $user) }}" class="btn btn-sm btn-info">

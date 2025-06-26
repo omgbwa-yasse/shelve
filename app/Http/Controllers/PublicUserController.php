@@ -65,9 +65,9 @@ class PublicUserController extends Controller
      * @param  \App\Models\PublicUser  $publicUser
      * @return \Illuminate\Http\Response
      */
-    public function show(PublicUser $publicUser)
+    public function show(PublicUser $user)
     {
-        return view('public.users.show', compact('publicUser'));
+        return view('public.users.show', ['user' => $user]);
     }
 
     /**
@@ -76,9 +76,9 @@ class PublicUserController extends Controller
      * @param  \App\Models\PublicUser  $publicUser
      * @return \Illuminate\Http\Response
      */
-    public function edit(PublicUser $publicUser)
+    public function edit(PublicUser $user)
     {
-        return view('public.users.edit', compact('publicUser'));
+        return view('public.users.edit', ['user' => $user]);
     }
 
     /**
@@ -88,7 +88,7 @@ class PublicUserController extends Controller
      * @param  \App\Models\PublicUser  $publicUser
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PublicUser $publicUser)
+    public function update(Request $request, PublicUser $user)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -96,7 +96,7 @@ class PublicUserController extends Controller
             'phone1' => 'nullable|string|max:20',
             'phone2' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
-            'email' => 'required|string|email|max:255|unique:public_users,email,' . $publicUser->id,
+            'email' => 'required|string|email|max:255|unique:public_users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'is_approved' => 'boolean',
         ]);
@@ -108,7 +108,7 @@ class PublicUserController extends Controller
             unset($validated['password']); // Don't update password if not provided
         }
 
-        $publicUser->update($validated);
+        $user->update($validated);
 
         return redirect()->route('public.users.index')
             ->with('success', 'User updated successfully');
@@ -120,12 +120,40 @@ class PublicUserController extends Controller
      * @param  \App\Models\PublicUser  $publicUser
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PublicUser $publicUser)
+    public function destroy(PublicUser $user)
     {
-        $publicUser->delete();
+        $user->delete();
 
         return redirect()->route('public.users.index')
             ->with('success', 'User deleted successfully');
+    }
+
+    /**
+     * Activate a user account.
+     *
+     * @param  \App\Models\PublicUser  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function activate(PublicUser $user)
+    {
+        $user->update(['is_approved' => true]);
+
+        return redirect()->route('public.users.show', $user)
+            ->with('success', 'User account activated successfully.');
+    }
+
+    /**
+     * Deactivate a user account.
+     *
+     * @param  \App\Models\PublicUser  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function deactivate(PublicUser $user)
+    {
+        $user->update(['is_approved' => false]);
+
+        return redirect()->route('public.users.show', $user)
+            ->with('success', 'User account deactivated successfully.');
     }
 
     // ========================================
