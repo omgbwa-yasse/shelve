@@ -16,16 +16,25 @@ export const newsApi = {
   getLatestNews: (limit = 5) => api.get('/public/news/latest', { params: { limit } }),
 };
 
-// Records (PublicRecordController)
+// Records (PublicRecordApiController - New API)
 export const recordsApi = {
   getRecords: (params = {}) => api.get('/public/records', { params }),
   getRecord: (id) => api.get(`/public/records/${id}`),
-  searchRecords: (query, filters = {}) => api.post('/public/records/search', { query, ...filters }),
-  exportRecords: (params) => api.get('/public/records/export', { params, responseType: 'blob' }),
+  searchRecords: (query, filters = {}) => api.post('/public/records/search', { 
+    query, 
+    filters: filters,
+    per_page: filters.per_page || 20
+  }),
+  exportRecords: (params) => api.post('/public/records/export', { params, responseType: 'blob' }),
   getSearchSuggestions: (query) => api.get('/public/search/suggestions', { params: { q: query } }),
   getPopularSearches: () => api.get('/public/search/popular'),
-  searchRecordsWithFacets: (params) => api.post('/public/records/search/facets', params),
-  exportSearchResults: (params) => api.post('/public/records/export/search', params, { responseType: 'blob' }),
+  getStatistics: () => api.get('/public/records/statistics'),
+  getFilters: () => api.get('/public/records/filters'),
+  exportSearchResults: (query, filters = {}) => api.post('/public/records/export/search', { 
+    query, 
+    filters,
+    format: 'csv'
+  }, { responseType: 'blob' }),
 };
 
 // Pages (PublicPageController)

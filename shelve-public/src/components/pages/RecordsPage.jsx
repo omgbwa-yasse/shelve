@@ -98,12 +98,16 @@ const RecordsPage = () => {
     error,
     refetch
   } = useApi(
-    () => recordsApi.getRecords({ ...apiFilters, page: currentPage }),
+    () => recordsApi.getRecords({ 
+      ...apiFilters, 
+      page: currentPage,
+      per_page: 10 // Ajout du paramètre per_page
+    }),
     null,
     { dependencies: [apiKey] }
   );
 
-  const pagination = recordsData?.meta || {};
+  const pagination = recordsData?.pagination || {};
 
   // Transformer les données de l'API pour correspondre à l'interface attendue
   const records = useMemo(() => {
@@ -111,15 +115,19 @@ const RecordsPage = () => {
     return rawRecords.map(record => ({
       id: record.id,
       title: record.title,
-      description: record.description,
-      reference: record.reference_number,
+      description: record.content, // L'API retourne 'content' au lieu de 'description'
+      reference: record.code, // L'API retourne 'code' au lieu de 'reference_number'
       date: record.published_at,
       created_at: record.published_at,
       published_at: record.published_at,
       type: 'document', // Par défaut, peut être enrichi plus tard
       location: record.publisher?.name,
-      digital_copy_available: true, // Assumé vrai pour les records publics
+      digital_copy_available: record.is_available, // Utiliser le statut de disponibilité de l'API
       thumbnail_url: null, // À implémenter si nécessaire
+      formatted_date_range: record.formatted_date_range, // Nouveau champ de l'API
+      is_available: record.is_available,
+      is_expired: record.is_expired,
+      publication_notes: record.publication_notes,
       // Conserver les données originales pour des besoins futurs
       _original: record
     }));
@@ -403,9 +411,16 @@ const RecordsPage = () => {
                         {truncateText(record.description, 150)}
                       </CardDescription>
                       <CardMeta>
-                        <CardDate>{formatDate(record.date)}</CardDate>
+                        <CardDate>
+                          {record.formatted_date_range || formatDate(record.date)}
+                        </CardDate>
                         {record.reference && <CardTag>{record.reference}</CardTag>}
                         {record.location && <span>📍 {record.location}</span>}
+                        {record.is_available === false && (
+                          <span style={{ color: '#dc2626', fontSize: '0.75rem' }}>
+                            ⚠️ Non disponible
+                          </span>
+                        )}
                       </CardMeta>
                     </CardContent>
                   </ContentCard>
@@ -420,8 +435,11 @@ const RecordsPage = () => {
                     <ListItemHeader>
                       <ListItemTitle>{record.title}</ListItemTitle>
                       <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
-                        <span>{formatDate(record.date)}</span>
+                        <span>{record.formatted_date_range || formatDate(record.date)}</span>
                         {record.reference && <span>Réf: {record.reference}</span>}
+                        {record.is_available === false && (
+                          <span style={{ color: '#dc2626' }}>⚠️ Non disponible</span>
+                        )}
                       </div>
                     </ListItemHeader>
                     <ListItemDescription>
