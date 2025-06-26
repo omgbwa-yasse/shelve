@@ -22,11 +22,10 @@
                             <thead>
                                 <tr>
                                     <th>Titre</th>
-                                    <th>Type</th>
                                     <th>Référence</th>
-                                    <th>Utilisateur</th>
-                                    <th>Date</th>
-                                    <th>Statut</th>
+                                    <th>Publié par</th>
+                                    <th>Date de publication</th>
+                                    <th>Date d'expiration</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -34,25 +33,10 @@
                                 @foreach($records as $record)
                                     <tr>
                                         <td>{{ $record->title }}</td>
-                                        <td>{{ $record->record_type }}</td>
-                                        <td>{{ $record->reference_number }}</td>
+                                        <td>{{ $record->code }}</td>
                                         <td>{{ $record->publisher->name ?? 'Inconnu' }}</td>
-                                        <td>{{ $record->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>
-                                            @switch($record->status)
-                                                @case('draft')
-                                                    <span class="badge bg-secondary">Brouillon</span>
-                                                    @break
-                                                @case('published')
-                                                    <span class="badge bg-success">Publié</span>
-                                                    @break
-                                                @case('archived')
-                                                    <span class="badge bg-warning">Archivé</span>
-                                                    @break
-                                                @default
-                                                    <span class="badge bg-light">{{ $record->status }}</span>
-                                            @endswitch
-                                        </td>
+                                        <td>{{ $record->published_at ? $record->published_at->format('d/m/Y H:i') : '-' }}</td>
+                                        <td>{{ $record->expires_at ? $record->expires_at->format('d/m/Y H:i') : 'Pas d\'expiration' }}</td>
                                         <td>
                                             <a href="{{ route('public.records.show', $record) }}" class="btn btn-info btn-sm">Voir</a>
                                             <a href="{{ route('public.records.edit', $record) }}" class="btn btn-warning btn-sm">Modifier</a>

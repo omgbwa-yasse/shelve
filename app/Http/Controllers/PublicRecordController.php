@@ -9,14 +9,21 @@ use Illuminate\Support\Facades\Storage;
 
 class PublicRecordController extends Controller
 {
+    // Constantes pour les règles de validation
+    private const VALIDATION_NULLABLE_DATE = 'nullable|date';
+    private const VALIDATION_NULLABLE_STRING = 'nullable|string';
+    private const VALIDATION_FILE_ATTACHMENT = 'nullable|file|max:10240';
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $records = PublicRecord::with(['publisher', 'attachments'])
-            ->orderBy('created_at', 'desc')
+        $records = PublicRecord::with(['publisher', 'attachments', 'record'])
+            ->available()
+            ->orderBy('published_at', 'desc')
             ->paginate(10);
+
         return view('public.records.index', compact('records'));
     }
 
@@ -34,15 +41,20 @@ class PublicRecordController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'record_type' => 'required|string|max:100',
-            'reference_number' => 'required|string|max:100|unique:public_records',
-            'status' => 'required|in:draft,published,archived',
-            'attachments.*' => 'nullable|file|max:10240', // 10MB max per file
+            'record_id' => 'required|exists:records,id',
+            'published_at' => self::VALIDATION_NULLABLE_DATE,
+            'expires_at' => self::VALIDATION_NULLABLE_DATE . '|after:published_at',
+            'publication_notes' => self::VALIDATION_NULLABLE_STRING,
+            'attachments.*' => self::VALIDATION_FILE_ATTACHMENT,
         ]);
 
         $validated['published_by'] = Auth::id();
+
+        // Si pas de date de publication spécifiée, utiliser maintenant
+        if (!isset($validated['published_at'])) {
+            $validated['published_at'] = now();
+        }
+
         $record = PublicRecord::create($validated);
 
         if ($request->hasFile('attachments')) {
@@ -67,6 +79,8 @@ class PublicRecordController extends Controller
      */
     public function show(PublicRecord $record)
     {
+        // Load the record relationship to access essential data
+        $record->load('record');
         return view('public.records.show', compact('record'));
     }
 
@@ -84,12 +98,11 @@ class PublicRecordController extends Controller
     public function update(Request $request, PublicRecord $record)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'record_type' => 'required|string|max:100',
-            'reference_number' => 'required|string|max:100|unique:public_records,reference_number,' . $record->id,
-            'status' => 'required|in:draft,published,archived',
-            'attachments.*' => 'nullable|file|max:10240',
+            'record_id' => 'required|exists:records,id',
+            'published_at' => self::VALIDATION_NULLABLE_DATE,
+            'expires_at' => self::VALIDATION_NULLABLE_DATE . '|after:published_at',
+            'publication_notes' => self::VALIDATION_NULLABLE_STRING,
+            'attachments.*' => self::VALIDATION_FILE_ATTACHMENT,
         ]);
 
         $record->update($validated);
@@ -126,21 +139,6 @@ class PublicRecordController extends Controller
 
         return redirect()->route('public.records.index')
             ->with('success', 'Record deleted successfully.');
-    }
-
-    /**
-     * Update the status of the record.
-     */
-    public function updateStatus(Request $request, PublicRecord $record)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:draft,published,archived'
-        ]);
-
-        $record->update($validated);
-
-        return redirect()->back()
-            ->with('success', 'Status updated successfully.');
     }
 
     /**
@@ -194,16 +192,12 @@ class PublicRecordController extends Controller
     public function apiIndex(Request $request)
     {
         $query = PublicRecord::with(['record', 'publisher'])
-            ->whereHas('record'); // S'assurer que le record associé existe
+            ->available(); // Utilise le scope pour les records disponibles
 
         // Filtres
         if ($request->filled('search')) {
             $search = $request->get('search');
-            $query->whereHas('record', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
-            });
+            $query->searchContent($search); // Utilise le scope de recherche
         }
 
         if ($request->filled('date_from')) {
@@ -214,11 +208,11 @@ class PublicRecordController extends Controller
             $query->where('published_at', '<=', $request->get('date_to'));
         }
 
-        // Filtrer les records non expirés
-        $query->where(function ($q) {
-            $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', now());
-        });
+        if ($request->filled('language')) {
+            $query->whereHas('record', function ($q) use ($request) {
+                $q->where('language_material', 'like', "%{$request->get('language')}%");
+            });
+        }
 
         // Tri par défaut : plus récents en premier
         $query->orderBy('published_at', 'desc');
@@ -227,27 +221,9 @@ class PublicRecordController extends Controller
         $perPage = min($request->get('per_page', 10), 50); // Max 50 items par page
         $records = $query->paginate($perPage);
 
-        // Transformer les données pour l'API
+        // Transformer les données pour l'API en utilisant les nouveaux accesseurs
         $transformedRecords = $records->getCollection()->map(function ($publicRecord) {
-            return [
-                'id' => $publicRecord->id,
-                'title' => $publicRecord->record->name ?? 'Titre non disponible',
-                'description' => $publicRecord->record->content ?? '',
-                'reference_number' => $publicRecord->record->code ?? '',
-                'published_at' => $publicRecord->published_at,
-                'expires_at' => $publicRecord->expires_at,
-                'publication_notes' => $publicRecord->publication_notes,
-                'publisher' => $publicRecord->publisher ? [
-                    'id' => $publicRecord->publisher->id,
-                    'name' => $publicRecord->publisher->name,
-                ] : null,
-                'record_details' => [
-                    'date_start' => $publicRecord->record->date_start,
-                    'date_end' => $publicRecord->record->date_end,
-                    'biographical_history' => $publicRecord->record->biographical_history,
-                    'language_material' => $publicRecord->record->language_material,
-                ]
-            ];
+            return $this->formatRecordForApi($publicRecord);
         });
 
         return response()->json([
@@ -262,7 +238,12 @@ class PublicRecordController extends Controller
                 'to' => $records->lastItem(),
             ],
             'filters' => [
-                'available_languages' => \App\Models\Record::distinct('language_material')->pluck('language_material')->filter(),
+                'available_languages' => \App\Models\Record::distinct('language_material')
+                    ->whereNotNull('language_material')
+                    ->pluck('language_material')
+                    ->filter()
+                    ->unique()
+                    ->values(),
             ]
         ]);
     }
@@ -272,8 +253,8 @@ class PublicRecordController extends Controller
      */
     public function apiShow(PublicRecord $record)
     {
-        // Vérifier que le record n'est pas expiré
-        if ($record->expires_at && $record->expires_at < now()) {
+        // Vérifier que le record n'est pas expiré en utilisant l'accesseur
+        if ($record->is_expired) {
             return response()->json([
                 'success' => false,
                 'message' => 'Record expired or not available'
@@ -291,32 +272,35 @@ class PublicRecordController extends Controller
 
         $transformedRecord = [
             'id' => $record->id,
-            'title' => $record->record->name ?? 'Titre non disponible',
-            'description' => $record->record->content ?? '',
-            'reference_number' => $record->record->code ?? '',
+            'title' => $record->title,
+            'description' => $record->content,
+            'reference_number' => $record->code,
             'published_at' => $record->published_at,
             'expires_at' => $record->expires_at,
             'publication_notes' => $record->publication_notes,
+            'formatted_date_range' => $record->formatted_date_range,
+            'is_available' => $record->is_available,
+            'is_expired' => $record->is_expired,
             'publisher' => $record->publisher ? [
                 'id' => $record->publisher->id,
                 'name' => $record->publisher->name,
             ] : null,
             'record_details' => [
-                'date_start' => $record->record->date_start,
-                'date_end' => $record->record->date_end,
-                'date_exact' => $record->record->date_exact,
-                'biographical_history' => $record->record->biographical_history,
-                'archival_history' => $record->record->archival_history,
-                'content' => $record->record->content,
-                'access_conditions' => $record->record->access_conditions,
-                'reproduction_conditions' => $record->record->reproduction_conditions,
-                'language_material' => $record->record->language_material,
-                'characteristic' => $record->record->characteristic,
-                'finding_aids' => $record->record->finding_aids,
-                'location_original' => $record->record->location_original,
-                'related_unit' => $record->record->related_unit,
-                'publication_note' => $record->record->publication_note,
-                'note' => $record->record->note,
+                'date_start' => $record->date_start,
+                'date_end' => $record->date_end,
+                'date_exact' => $record->date_exact,
+                'biographical_history' => $record->biographical_history,
+                'archival_history' => $record->record->archival_history ?? '',
+                'content' => $record->content,
+                'access_conditions' => $record->access_conditions,
+                'reproduction_conditions' => $record->record->reproduction_conditions ?? '',
+                'language_material' => $record->language_material,
+                'characteristic' => $record->record->characteristic ?? '',
+                'finding_aids' => $record->record->finding_aids ?? '',
+                'location_original' => $record->record->location_original ?? '',
+                'related_unit' => $record->record->related_unit ?? '',
+                'publication_note' => $record->record->publication_note ?? '',
+                'note' => $record->record->note ?? '',
             ]
         ];
 
@@ -337,20 +321,15 @@ class PublicRecordController extends Controller
             'filters.date_from' => 'nullable|date',
             'filters.date_to' => 'nullable|date',
             'filters.language' => 'nullable|string',
+            'per_page' => 'nullable|integer|min:1|max:50',
         ]);
 
         $query = PublicRecord::with(['record', 'publisher'])
-            ->whereHas('record'); // S'assurer que le record associé existe
+            ->available(); // Utilise le scope pour les records disponibles
 
         // Recherche textuelle dans le record associé
         $searchTerm = $validated['query'];
-        $query->whereHas('record', function ($q) use ($searchTerm) {
-            $q->where('name', 'like', "%{$searchTerm}%")
-              ->orWhere('content', 'like', "%{$searchTerm}%")
-              ->orWhere('code', 'like', "%{$searchTerm}%")
-              ->orWhere('biographical_history', 'like', "%{$searchTerm}%")
-              ->orWhere('note', 'like', "%{$searchTerm}%");
-        });
+        $query->searchContent($searchTerm); // Utilise le scope de recherche
 
         // Appliquer les filtres
         $filters = $validated['filters'] ?? [];
@@ -366,23 +345,21 @@ class PublicRecordController extends Controller
             });
         }
 
-        // Filtrer les records non expirés
-        $query->where(function ($q) {
-            $q->whereNull('expires_at')
-              ->orWhere('expires_at', '>', now());
-        });
+        // Pagination
+        $perPage = $validated['per_page'] ?? 20;
+        $records = $query->orderBy('published_at', 'desc')->paginate($perPage);
 
-        $records = $query->orderBy('published_at', 'desc')->paginate(20);
-
-        // Transformer les données
+        // Transformer les données en utilisant les accesseurs
         $transformedRecords = $records->getCollection()->map(function ($publicRecord) {
             return [
                 'id' => $publicRecord->id,
-                'title' => $publicRecord->record->name ?? 'Titre non disponible',
-                'description' => $publicRecord->record->content ?? '',
-                'reference_number' => $publicRecord->record->code ?? '',
+                'title' => $publicRecord->title,
+                'description' => $publicRecord->content,
+                'reference_number' => $publicRecord->code,
                 'published_at' => $publicRecord->published_at,
-                'relevance_excerpt' => substr($publicRecord->record->content ?? '', 0, 200) . '...',
+                'formatted_date_range' => $publicRecord->formatted_date_range,
+                'relevance_excerpt' => $this->generateExcerpt($publicRecord->content, $publicRecord->title),
+                'is_available' => $publicRecord->is_available,
             ];
         });
 
@@ -414,19 +391,18 @@ class PublicRecordController extends Controller
             ]);
         }
 
-        $suggestions = PublicRecord::where('status', 'published')
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('reference_number', 'like', "%{$query}%");
-            })
-            ->select('title', 'reference_number')
+        $suggestions = PublicRecord::with('record')
+            ->available()
+            ->searchContent($query)
             ->limit(10)
             ->get()
-            ->map(function ($record) {
+            ->map(function ($publicRecord) {
                 return [
-                    'title' => $record->title,
-                    'reference' => $record->reference_number,
-                    'suggestion' => $record->title . ' (' . $record->reference_number . ')'
+                    'id' => $publicRecord->id,
+                    'title' => $publicRecord->title,
+                    'reference' => $publicRecord->code,
+                    'suggestion' => $publicRecord->title . ($publicRecord->code ? ' (' . $publicRecord->code . ')' : ''),
+                    'type' => 'record'
                 ];
             });
 
@@ -491,6 +467,118 @@ class PublicRecordController extends Controller
             'success' => true,
             'message' => 'Search export request received. You will receive an email when ready.',
             'export_id' => uniqid('search_export_')
+        ]);
+    }
+
+    // ========================================
+    // MÉTHODES UTILITAIRES POUR LES DONNÉES ESSENTIELLES
+    // ========================================
+
+    /**
+     * Get a formatted record for API responses
+     */
+    private function formatRecordForApi(PublicRecord $record)
+    {
+        return [
+            'id' => $record->id,
+            'title' => $record->title,
+            'code' => $record->code,
+            'content' => $record->content,
+            'formatted_date_range' => $record->formatted_date_range,
+            'published_at' => $record->published_at,
+            'expires_at' => $record->expires_at,
+            'publication_notes' => $record->publication_notes,
+            'is_available' => $record->is_available,
+            'is_expired' => $record->is_expired,
+            'publisher' => $record->publisher ? [
+                'id' => $record->publisher->id,
+                'name' => $record->publisher->name,
+            ] : null,
+            'record_details' => [
+                'date_start' => $record->date_start,
+                'date_end' => $record->date_end,
+                'biographical_history' => $record->biographical_history,
+                'language_material' => $record->language_material,
+                'access_conditions' => $record->access_conditions,
+            ]
+        ];
+    }
+
+    /**
+     * Generate a smart excerpt from content
+     */
+    private function generateExcerpt($content, $title = '', $maxLength = 200)
+    {
+        if (empty($content)) {
+            return $title ? "Document: {$title}" : 'Contenu non disponible';
+        }
+
+        if (strlen($content) <= $maxLength) {
+            return $content;
+        }
+
+        // Coupe au mot le plus proche
+        $excerpt = substr($content, 0, $maxLength);
+        $lastSpace = strrpos($excerpt, ' ');
+
+        if ($lastSpace !== false && $lastSpace > $maxLength * 0.8) {
+            $excerpt = substr($excerpt, 0, $lastSpace);
+        }
+
+        return $excerpt . '...';
+    }
+
+    /**
+     * Get statistics for API dashboard
+     */
+    public function apiStats()
+    {
+        $total = PublicRecord::count();
+        $available = PublicRecord::available()->count();
+        $expired = PublicRecord::where('expires_at', '<=', now())->count();
+        $published_this_month = PublicRecord::where('published_at', '>=', now()->startOfMonth())->count();
+
+        return response()->json([
+            'success' => true,
+            'stats' => [
+                'total_records' => $total,
+                'available_records' => $available,
+                'expired_records' => $expired,
+                'published_this_month' => $published_this_month,
+                'availability_rate' => $total > 0 ? round(($available / $total) * 100, 2) : 0,
+            ]
+        ]);
+    }
+
+    /**
+     * Get filters data for frontend
+     */
+    public function apiFilters()
+    {
+        $languages = \App\Models\Record::whereNotNull('language_material')
+            ->distinct('language_material')
+            ->pluck('language_material')
+            ->filter()
+            ->sort()
+            ->values();
+
+        $publishers = \App\Models\User::whereIn('id',
+            PublicRecord::distinct('published_by')->pluck('published_by')
+        )->select('id', 'name')->get();
+
+        $dateRange = PublicRecord::selectRaw('MIN(published_at) as min_date, MAX(published_at) as max_date')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'filters' => [
+                'languages' => $languages,
+                'publishers' => $publishers,
+                'date_range' => [
+                    'min' => $dateRange->min_date,
+                    'max' => $dateRange->max_date,
+                ]
+            ]
         ]);
     }
 }

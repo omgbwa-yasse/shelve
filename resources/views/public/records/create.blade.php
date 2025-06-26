@@ -14,57 +14,51 @@
                         @csrf
 
                         <div class="form-group mb-3">
-                            <label for="title">Titre</label>
-                            <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                   id="title" name="title" value="{{ old('title') }}" required>
-                            @error('title')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="record_type">Type de document</label>
-                            <input type="text" class="form-control @error('record_type') is-invalid @enderror"
-                                   id="record_type" name="record_type" value="{{ old('record_type') }}" required>
-                            @error('record_type')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="reference_number">Numéro de référence</label>
-                            <input type="text" class="form-control @error('reference_number') is-invalid @enderror"
-                                   id="reference_number" name="reference_number" value="{{ old('reference_number') }}" required>
-                            @error('reference_number')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="description">Description</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror"
-                                      id="description" name="description" rows="6" required>{{ old('description') }}</textarea>
-                            @error('description')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="status">Statut</label>
-                            <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
-                                <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Brouillon</option>
-                                <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>Publié</option>
-                                <option value="archived" {{ old('status') == 'archived' ? 'selected' : '' }}>Archivé</option>
+                            <label for="record_id">Document à publier</label>
+                            <select class="form-control @error('record_id') is-invalid @enderror" id="record_id" name="record_id" required>
+                                <option value="">Sélectionner un document</option>
+                                @foreach(\App\Models\Record::all() as $recordOption)
+                                    <option value="{{ $recordOption->id }}" {{ old('record_id') == $recordOption->id ? 'selected' : '' }}>
+                                        {{ $recordOption->name }} ({{ $recordOption->code }})
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('status')
+                            @error('record_id')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="published_at">Date de publication (optionnel)</label>
+                            <input type="datetime-local" class="form-control @error('published_at') is-invalid @enderror"
+                                   id="published_at" name="published_at" value="{{ old('published_at') }}">
+                            <small class="form-text text-muted">Si vide, la date actuelle sera utilisée</small>
+                            @error('published_at')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="expires_at">Date d'expiration (optionnel)</label>
+                            <input type="datetime-local" class="form-control @error('expires_at') is-invalid @enderror"
+                                   id="expires_at" name="expires_at" value="{{ old('expires_at') }}">
+                            <small class="form-text text-muted">Laissez vide si le document n'expire pas</small>
+                            @error('expires_at')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="publication_notes">Notes de publication (optionnel)</label>
+                            <textarea class="form-control @error('publication_notes') is-invalid @enderror"
+                                      id="publication_notes" name="publication_notes" rows="4">{{ old('publication_notes') }}</textarea>
+                            @error('publication_notes')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
                                 </span>

@@ -22,41 +22,88 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Type :</strong> {{ $record->record_type }}
+                            <strong>Titre :</strong> {{ $record->title }}
                         </div>
                         <div class="col-md-6">
-                            <strong>Référence :</strong> {{ $record->reference_number }}
+                            <strong>Référence :</strong> {{ $record->code }}
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Statut :</strong>
-                            @switch($record->status)
-                                @case('draft')
-                                    <span class="badge bg-secondary">Brouillon</span>
-                                    @break
-                                @case('published')
-                                    <span class="badge bg-success">Publié</span>
-                                    @break
-                                @case('archived')
-                                    <span class="badge bg-warning">Archivé</span>
-                                    @break
-                                @default
-                                    <span class="badge bg-light">{{ $record->status }}</span>
-                            @endswitch
+                            <strong>Date :</strong> {{ $record->formatted_date_range }}
                         </div>
                         <div class="col-md-6">
-                            <strong>Créé par :</strong> {{ $record->publisher->name ?? 'Inconnu' }}
+                            <strong>Statut :</strong>
+                            @if($record->is_expired)
+                                <span class="badge bg-danger">Expiré</span>
+                            @elseif($record->is_available)
+                                <span class="badge bg-success">Disponible</span>
+                            @else
+                                <span class="badge bg-warning">En attente</span>
+                            @endif
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <strong>Description :</strong>
-                        <div class="mt-2 p-3 bg-light border rounded">
-                            {{ $record->description }}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Date de publication :</strong> {{ $record->published_at ? $record->published_at->format('d/m/Y H:i') : '-' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Date d'expiration :</strong> {{ $record->expires_at ? $record->expires_at->format('d/m/Y H:i') : 'Pas d\'expiration' }}
                         </div>
                     </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Publié par :</strong> {{ $record->publisher->name ?? 'Inconnu' }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Créé le :</strong> {{ $record->created_at->format('d/m/Y H:i') }}
+                        </div>
+                    </div>
+
+                    @if($record->publication_notes)
+                    <div class="mb-3">
+                        <strong>Notes de publication :</strong>
+                        <div class="mt-2 p-3 bg-light border rounded">
+                            {{ $record->publication_notes }}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($record->content)
+                    <div class="mb-3">
+                        <strong>Contenu du document :</strong>
+                        <div class="mt-2 p-3 bg-light border rounded">
+                            {{ $record->content }}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($record->biographical_history)
+                    <div class="mb-3">
+                        <strong>Histoire biographique :</strong>
+                        <div class="mt-2 p-3 bg-light border rounded">
+                            {{ $record->biographical_history }}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($record->access_conditions)
+                    <div class="mb-3">
+                        <strong>Conditions d'accès :</strong>
+                        <div class="mt-2 p-3 bg-light border rounded">
+                            {{ $record->access_conditions }}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($record->language_material)
+                    <div class="mb-3">
+                        <strong>Langue du matériel :</strong> {{ $record->language_material }}
+                    </div>
+                    @endif
 
                     @if($record->attachments && $record->attachments->count() > 0)
                         <div class="mb-3">
