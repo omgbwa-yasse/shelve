@@ -151,7 +151,12 @@
                     </div>
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
-                            <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
+                            <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
+                    <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
+                            <i class="bi bi-globe" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
                     <div class="header-nav-item">
@@ -232,6 +237,9 @@
                                     @switch(Request::segment(1))
                                         @case('ai')
                                             @include('submenu.ai')
+                                            @break
+                                        @case('public')
+                                            @include('submenu.public')
                                             @break
                                         @case('bulletin-boards')
                                             @include('submenu.bulletinboards')
