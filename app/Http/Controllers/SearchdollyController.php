@@ -34,9 +34,7 @@ class SearchdollyController extends Controller
             case "room":
             case "slip_record":
             case "container":
-                $dollies = Dolly::whereHas('type', function ($query) use ($request) {
-                    $query->where('name', $request->input('categ'));
-                })->get();
+                $dollies = Dolly::where('category', $request->input('categ'))->get();
                 break;
 
             default:
