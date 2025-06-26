@@ -21,8 +21,8 @@
                         @foreach($news as $article)
                             <div class="col-md-4 mb-4">
                                 <div class="card h-100">
-                                    @if($article->image)
-                                        <img src="{{ asset('storage/' . $article->image) }}" class="card-img-top" alt="{{ $article->title }}">
+                                    @if($article->image_path)
+                                        <img src="{{ asset('storage/' . $article->image_path) }}" class="card-img-top" alt="{{ $article->title }}">
                                     @endif
                                     <div class="card-body">
                                         <h5 class="card-title">{{ $article->title }}</h5>

@@ -21,6 +21,7 @@
                         <table class="table">
                             <thead>
                                 <tr>
+                                    <th>Titre</th>
                                     <th>Type</th>
                                     <th>Contenu</th>
                                     <th>Utilisateur</th>
@@ -32,16 +33,28 @@
                             <tbody>
                                 @foreach($feedback as $item)
                                     <tr>
+                                        <td>{{ $item->title }}</td>
                                         <td>{{ $item->type }}</td>
                                         <td>{{ Str::limit($item->content, 100) }}</td>
                                         <td>{{ $item->user->name ?? 'Anonyme' }}</td>
                                         <td>{{ $item->created_at->format('d/m/Y H:i') }}</td>
                                         <td>
-                                            @if($item->is_resolved)
-                                                <span class="badge bg-success">Résolu</span>
-                                            @else
-                                                <span class="badge bg-warning">En attente</span>
-                                            @endif
+                                            @switch($item->status)
+                                                @case('new')
+                                                    <span class="badge bg-primary">Nouveau</span>
+                                                    @break
+                                                @case('in_progress')
+                                                    <span class="badge bg-warning">En cours</span>
+                                                    @break
+                                                @case('resolved')
+                                                    <span class="badge bg-success">Résolu</span>
+                                                    @break
+                                                @case('closed')
+                                                    <span class="badge bg-secondary">Fermé</span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-light">{{ $item->status }}</span>
+                                            @endswitch
                                         </td>
                                         <td>
                                             <a href="{{ route('public.feedback.show', $item) }}" class="btn btn-info btn-sm">Voir</a>

@@ -598,6 +598,9 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Feedback and search
         Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
+        Route::put('feedback/{feedback}/status', [PublicFeedbackController::class, 'updateStatus'])->name('public.feedback.update-status');
+        Route::post('feedback/{feedback}/comments', [PublicFeedbackController::class, 'addComment'])->name('public.feedback.add-comment');
+        Route::delete('feedback/{feedback}/comments/{comment}', [PublicFeedbackController::class, 'deleteComment'])->name('public.feedback.delete-comment');
         Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
     });
 

@@ -37,6 +37,7 @@
         .submenu-content {
             padding: 0 0 8px 12px;
             margin-bottom: 8px;
+            display: block; /* Toujours visible par défaut */
         }
 
         .submenu-item {
@@ -110,14 +111,31 @@
         .public-interaction-section .submenu-heading:hover {
             background-color: #7b1fa2;
         }
+
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Gestion des Utilisateurs Publics Section -->
     <div class="submenu-section public-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#publicUsersMenu" aria-expanded="true" aria-controls="publicUsersMenu">
+        <div class="submenu-heading">
             <i class="bi bi-people"></i> {{ __('public_users') }}
         </div>
-        <div class="collapse show submenu-content" id="publicUsersMenu">
+        <div class="submenu-content" id="publicUsersMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.users.index') }}">
                     <i class="bi bi-person-lines-fill"></i> {{ __('users_list') }}
@@ -133,10 +151,10 @@
 
     <!-- Contenu Public Section -->
     <div class="submenu-section public-content-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#publicContentMenu" aria-expanded="true" aria-controls="publicContentMenu">
+        <div class="submenu-heading">
             <i class="bi bi-newspaper"></i> {{ __('public_content') }}
         </div>
-        <div class="collapse show submenu-content" id="publicContentMenu">
+        <div class="submenu-content" id="publicContentMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.news.index') }}">
                     <i class="bi bi-journal-text"></i> {{ __('news') }}
@@ -162,10 +180,10 @@
 
     <!-- Documents et Archives Section -->
     <div class="submenu-section public-management-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#publicDocumentsMenu" aria-expanded="true" aria-controls="publicDocumentsMenu">
+        <div class="submenu-heading">
             <i class="bi bi-archive"></i> {{ __('documents_archives') }}
         </div>
-        <div class="collapse show submenu-content" id="publicDocumentsMenu">
+        <div class="submenu-content" id="publicDocumentsMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.records.index') }}">
                     <i class="bi bi-folder"></i> {{ __('records') }}
@@ -191,10 +209,10 @@
 
     <!-- Interaction et Communication Section -->
     <div class="submenu-section public-interaction-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#publicInteractionMenu" aria-expanded="true" aria-controls="publicInteractionMenu">
+        <div class="submenu-heading">
             <i class="bi bi-chat-square-dots"></i> {{ __('interaction_communication') }}
         </div>
-        <div class="collapse show submenu-content" id="publicInteractionMenu">
+        <div class="submenu-content" id="publicInteractionMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.chats.index') }}">
                     <i class="bi bi-chat-left-text"></i> {{ __('chats') }}
@@ -224,3 +242,22 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

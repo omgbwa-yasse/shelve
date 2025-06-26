@@ -1,6 +1,8 @@
-@extends('layouts.app')
-
-@section('content')
+@extends('layouts.ap                    @if($news->image_path)
+                        <div class="mb-4">
+                            <img src="{{ asset('storage/' . $news->image_path) }}" class="img-fluid rounded" alt="{{ $news->title }}">
+                        </div>
+                    @endif@section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">

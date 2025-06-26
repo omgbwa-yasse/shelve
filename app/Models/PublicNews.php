@@ -13,27 +13,24 @@ class PublicNews extends Model
     protected $table = 'public_news';
 
     protected $fillable = [
-        'name',
+        'title',
         'slug',
         'content',
-        'user_id',
-        'is_published',
-        'published_at',
-        'title',
         'summary',
         'image_path',
+        'author_id',
+        'published_at',
         'status',
         'featured',
     ];
 
     protected $casts = [
-        'is_published' => 'boolean',
         'published_at' => 'datetime',
         'featured' => 'boolean',
     ];
 
     public function author()
     {
-        return $this->belongsTo(PublicUser::class, 'user_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 }

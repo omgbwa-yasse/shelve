@@ -15,14 +15,19 @@ class PublicTemplate extends Model
     protected $fillable = [
         'name',
         'description',
-        'parameters',
-        'values',
-        'is_active',
+        'type',
+        'content',
+        'variables',
+        'status',
+        'author_id',
     ];
 
     protected $casts = [
-        'parameters' => 'json',
-        'values' => 'json',
-        'is_active' => 'boolean',
+        'variables' => 'array',
     ];
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 }

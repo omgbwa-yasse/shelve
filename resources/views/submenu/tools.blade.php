@@ -34,10 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par d�faut */ }
         
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Plan de classement Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#planClassementMenu" aria-expanded="true" aria-controls="planClassementMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-grid"></i> {{ __('classification_plan') }}
         </div>
-        <div class="collapse show submenu-content" id="planClassementMenu">
+        <div class="submenu-content" id="planClassementMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('activities.index') }}">
                     <i class="bi bi-list-check"></i> {{ __('all_classes') }}
@@ -100,10 +114,10 @@
 
     <!-- Référentiel de conservation Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#referentielConservationMenu" aria-expanded="true" aria-controls="referentielConservationMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-archive"></i> {{ __('retention_schedule') }}
         </div>
-        <div class="collapse show submenu-content" id="referentielConservationMenu">
+        <div class="submenu-content" id="referentielConservationMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('retentions.index') }}">
                     <i class="bi bi-clock-history"></i> {{ __('all_durations') }}
@@ -119,10 +133,10 @@
 
     <!-- Communicabilité Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#communicabiliteMenu" aria-expanded="true" aria-controls="communicabiliteMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-chat-square-text"></i> {{ __('communicability') }}
         </div>
-        <div class="collapse show submenu-content" id="communicabiliteMenu">
+        <div class="submenu-content" id="communicabiliteMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communicabilities.index')}}">
                     <i class="bi bi-list-check"></i> {{ __('all_classes') }}
@@ -138,10 +152,10 @@
 
     <!-- Organigramme Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#organigrammeMenu" aria-expanded="true" aria-controls="organigrammeMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-diagram-3"></i> {{ __('organization_chart') }}
         </div>
-        <div class="collapse show submenu-content" id="organigrammeMenu">
+        <div class="submenu-content" id="organigrammeMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('organisations.index')}}">
                     <i class="bi bi-building"></i> {{ __('all_units') }}
@@ -157,10 +171,10 @@
 
     <!-- Thésaurus Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#thesaurusMenu" aria-expanded="true" aria-controls="thesaurusMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-book-half"></i> {{ __('thesaurus') }}
         </div>
-        <div class="collapse show submenu-content" id="thesaurusMenu">
+        <div class="submenu-content" id="thesaurusMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('terms.index') }}">
                     <i class="bi bi-tree"></i> {{ __('view_branches') }}
@@ -176,10 +190,10 @@
 
     <!-- Boite à outils Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#outilsMenu" aria-expanded="true" aria-controls="outilsMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-tools"></i> {{ __('toolbox') }}
         </div>
-        <div class="collapse show submenu-content" id="outilsMenu">
+        <div class="submenu-content" id="outilsMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('barcode.create') }}">
                     <i class="bi bi-upc-scan"></i> {{ __('barcode') }}
@@ -188,3 +202,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

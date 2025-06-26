@@ -13,10 +13,10 @@ class PublicDocumentRequestController extends Controller
      */
     public function index()
     {
-        $requests = PublicDocumentRequest::with(['user', 'responses'])
+        $documentRequests = PublicDocumentRequest::with(['user', 'responses'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        return view('public.document-requests.index', compact('requests'));
+        return view('public.document-requests.index', compact('documentRequests'));
     }
 
     /**

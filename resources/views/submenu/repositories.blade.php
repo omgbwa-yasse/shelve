@@ -34,10 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par défaut */ }
         
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Recherche Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true" aria-controls="rechercheMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-        <div class="collapse show submenu-content" id="rechercheMenu">
+        <div class="submenu-content" id="rechercheMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.index') }}">
                     <i class="bi bi-list-check"></i> {{ __('my_archives') }}
@@ -130,10 +144,10 @@
 
     <!-- Enregistrement Section -->
     <div class="submenu-section add-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true" aria-controls="enregistrementMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-journal-plus"></i> {{ __('registration') }}
         </div>
-        <div class="collapse show submenu-content" id="enregistrementMenu">
+        <div class="submenu-content" id="enregistrementMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.create') }}">
                     <i class="bi bi-plus-square"></i> {{ __('new') }}
@@ -149,10 +163,10 @@
 
     <!-- lifeCycle Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#lifeCycleMenu" aria-expanded="true" aria-controls="lifeCycleMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-cart"></i> {{ __('life_cycle') }}
         </div>
-        <div class="collapse show submenu-content" id="lifeCycleMenu">
+        <div class="submenu-content" id="lifeCycleMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.tostore')}}">
                     <i class="bi bi-folder-check"></i> {{ __('to_transfer') }}
@@ -188,10 +202,10 @@
 
     <!-- Import / Export Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#importExportMenu" aria-expanded="true" aria-controls="importExportMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
-        <div class="collapse show submenu-content" id="importExportMenu">
+        <div class="submenu-content" id="importExportMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.import.form') }}">
                     <i class="bi bi-download"></i> {{ __('import') }}
@@ -205,3 +219,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // FonctionnalitÃ© de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

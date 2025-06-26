@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends                    <h2>{{ $event->name }}</h2>
+                    <div>
+                        <a href="{{ route('public.events.edit', $event) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        <form action="{{ route('public.events.destroy', $event) }}" method="POST" class="d-inline">youts.app')
 
 @section('content')
 <div class="container">
@@ -6,10 +9,10 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2>{{ $publicEvent->name }}</h2>
+                    <h2>{{ $event->name }}</h2>
                     <div>
-                        <a href="{{ route('public.events.edit', $publicEvent) }}" class="btn btn-warning btn-sm">Modifier</a>
-                        <form action="{{ route('public.events.destroy', $publicEvent) }}" method="POST" class="d-inline">
+                        <a href="{{ route('public.events.edit', $event) }}" class="btn btn-warning btn-sm">Modifier</a>
+                        <form action="{{ route('public.events.destroy', $event) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">Supprimer</button>
@@ -20,32 +23,32 @@
                 <div class="card-body">
                     <div class="mb-4">
                         <h4>Description</h4>
-                        <p>{{ $publicEvent->description }}</p>
+                        <p>{{ $event->description }}</p>
                     </div>
 
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h4>Dates</h4>
-                            <p><strong>Début:</strong> {{ $publicEvent->start_date->format('d/m/Y H:i') }}</p>
-                            <p><strong>Fin:</strong> {{ $publicEvent->end_date->format('d/m/Y H:i') }}</p>
+                            <p><strong>Début:</strong> {{ $event->start_date->format('d/m/Y H:i') }}</p>
+                            <p><strong>Fin:</strong> {{ $event->end_date->format('d/m/Y H:i') }}</p>
                         </div>
                         <div class="col-md-6">
                             <h4>Lieu</h4>
-                            @if($publicEvent->is_online)
+                            @if($event->is_online)
                                 <p><strong>Type:</strong> Événement en ligne</p>
-                                <p><strong>Lien:</strong> <a href="{{ $publicEvent->online_link }}" target="_blank">{{ $publicEvent->online_link }}</a></p>
+                                <p><strong>Lien:</strong> <a href="{{ $event->online_link }}" target="_blank">{{ $event->online_link }}</a></p>
                             @else
                                 <p><strong>Type:</strong> Événement en présentiel</p>
-                                <p><strong>Lieu:</strong> {{ $publicEvent->location }}</p>
+                                <p><strong>Lieu:</strong> {{ $event->location }}</p>
                             @endif
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <h4>Inscriptions</h4>
-                        <p><strong>Nombre d'inscrits:</strong> {{ $publicEvent->registrations->count() }}</p>
+                        <p><strong>Nombre d'inscrits:</strong> {{ $event->registrations->count() }}</p>
 
-                        @if($publicEvent->registrations->count() > 0)
+                        @if($event->registrations->count() > 0)
                             <div class="table-responsive">
                                 <table class="table">
                                     <thead>
@@ -56,7 +59,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach($publicEvent->registrations as $registration)
+                                        @foreach($event->registrations as $registration)
                                             <tr>
                                                 <td>{{ $registration->user->name }}</td>
                                                 <td>{{ $registration->user->email }}</td>
@@ -73,7 +76,7 @@
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('public.events.index') }}" class="btn btn-secondary">Retour à la liste</a>
-                        <a href="{{ route('public.event-registrations.create', ['event' => $publicEvent->id]) }}" class="btn btn-primary">S'inscrire</a>
+                        <a href="{{ route('public.event-registrations.create', ['event' => $event->id]) }}" class="btn btn-primary">S'inscrire</a>
                     </div>
                 </div>
             </div>
@@ -81,3 +84,4 @@
     </div>
 </div>
 @endsection
+

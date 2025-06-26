@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
-@section('content')
-<div class="container">
+@section('conte                            @if($news->image_path)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $news->image_path) }}" class="img-thumbnail" style="max-height: 200px;" alt="Image actuelle">
+                                </div>
+                            @endif<div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -38,9 +41,9 @@
 
                         <div class="form-group mb-3">
                             <label for="image">Image</label>
-                            @if($news->image)
+                            @if($news->image_path)
                                 <div class="mb-2">
-                                    <img src="{{ asset('storage/' . $news->image) }}" class="img-thumbnail" style="max-height: 200px;" alt="Image actuelle">
+                                    <img src="{{ asset('storage/' . $news->image_path) }}" class="img-thumbnail" style="max-height: 200px;" alt="Image actuelle">
                                 </div>
                             @endif
                             <input type="file" class="form-control @error('image') is-invalid @enderror"

@@ -34,10 +34,7 @@
             font-size: 14px;
         }
 
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par d�faut */ }
 
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Recherche Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true" aria-controls="rechercheMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-        <div class="collapse show submenu-content" id="rechercheMenu">
+        <div class="submenu-content" id="rechercheMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">
                     <i class="bi bi-inbox"></i> {{ __('received_mails') }}
@@ -140,10 +154,10 @@
 
     <!-- Courrier Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#courrierMenu" aria-expanded="true" aria-controls="courrierMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-envelope"></i> {{ __('mail') }}
         </div>
-        <div class="collapse show submenu-content" id="courrierMenu">
+        <div class="submenu-content" id="courrierMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.inprogress') }}">
                     <i class="bi bi-clock"></i> {{ __('to_receive') }}
@@ -183,10 +197,10 @@
 
     <!-- Créer Section -->
     <div class="submenu-section add-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#creerMenu" aria-expanded="true" aria-controls="creerMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-plus-circle"></i> {{ __('create') }}
         </div>
-        <div class="collapse show submenu-content" id="creerMenu">
+        <div class="submenu-content" id="creerMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch.create') }}">
                     <i class="bi bi-bookmark-check"></i> {{ __('parapher') }}
@@ -202,10 +216,10 @@
 
     <!-- Parapheur Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#parapheurMenu" aria-expanded="true" aria-controls="parapheurMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-journal-check"></i> {{ __('parapher') }}
         </div>
-        <div class="collapse show submenu-content" id="parapheurMenu">
+        <div class="submenu-content" id="parapheurMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch-send.create') }}">
                     <i class="bi bi-inbox"></i> {{ __('send') }}
@@ -219,3 +233,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

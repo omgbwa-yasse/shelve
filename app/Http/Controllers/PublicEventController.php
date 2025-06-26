@@ -17,7 +17,7 @@ class PublicEventController extends Controller
     public function index()
     {
         $events = PublicEvent::all();
-        return view('public-events.index', compact('events'));
+        return view('public.events.index', compact('events'));
     }
 
     /**
@@ -27,7 +27,7 @@ class PublicEventController extends Controller
      */
     public function create()
     {
-        return view('public-events.create');
+        return view('public.events.create');
     }
 
     /**
@@ -50,7 +50,7 @@ class PublicEventController extends Controller
 
         $event = PublicEvent::create($validated);
 
-        return redirect()->route('public-events.index')
+        return redirect()->route('public.events.index')
             ->with('success', 'Event created successfully');
     }
 
@@ -60,10 +60,10 @@ class PublicEventController extends Controller
      * @param  \App\Models\PublicEvent  $publicEvent
      * @return \Illuminate\Http\Response
      */
-    public function show(PublicEvent $publicEvent)
+    public function show(PublicEvent $event)
     {
-        $publicEvent->load('registrations.user');
-        return view('public-events.show', compact('publicEvent'));
+        $event->load('registrations.user');
+        return view('public.events.show', compact('event'));
     }
 
     /**
@@ -72,9 +72,9 @@ class PublicEventController extends Controller
      * @param  \App\Models\PublicEvent  $publicEvent
      * @return \Illuminate\Http\Response
      */
-    public function edit(PublicEvent $publicEvent)
+    public function edit(PublicEvent $event)
     {
-        return view('public-events.edit', compact('publicEvent'));
+        return view('public.events.edit', compact('event'));
     }
 
     /**
@@ -84,7 +84,7 @@ class PublicEventController extends Controller
      * @param  \App\Models\PublicEvent  $publicEvent
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PublicEvent $publicEvent)
+    public function update(Request $request, PublicEvent $event)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -96,9 +96,9 @@ class PublicEventController extends Controller
             'online_link' => 'nullable|url|required_if:is_online,1',
         ]);
 
-        $publicEvent->update($validated);
+        $event->update($validated);
 
-        return redirect()->route('public-events.index')
+        return redirect()->route('public.events.index')
             ->with('success', 'Event updated successfully');
     }
 
@@ -108,11 +108,11 @@ class PublicEventController extends Controller
      * @param  \App\Models\PublicEvent  $publicEvent
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PublicEvent $publicEvent)
+    public function destroy(PublicEvent $event)
     {
-        $publicEvent->delete();
+        $event->delete();
 
-        return redirect()->route('public-events.index')
+        return redirect()->route('public.events.index')
             ->with('success', 'Event deleted successfully');
     }
 
@@ -122,10 +122,10 @@ class PublicEventController extends Controller
      * @param  \App\Models\PublicEvent  $publicEvent
      * @return \Illuminate\Http\Response
      */
-    public function registrations(PublicEvent $publicEvent)
+    public function registrations(PublicEvent $event)
     {
-        $registrations = $publicEvent->registrations()->with('user')->get();
-        return view('public-events.registrations', compact('publicEvent', 'registrations'));
+        $registrations = $event->registrations()->with('user')->get();
+        return view('public.events.registrations', compact('event', 'registrations'));
     }
 
     // ========================================

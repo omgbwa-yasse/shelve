@@ -34,10 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par d�faut */ }
         
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Recherche Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#rechercheMenu" aria-expanded="true" aria-controls="rechercheMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-        <div class="collapse show submenu-content" id="rechercheMenu">
+        <div class="submenu-content" id="rechercheMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('search.slips.advanced') }}">
                     <i class="bi bi-search"></i> {{ __('advanced') }}
@@ -110,10 +124,10 @@
 
     <!-- Suivi de transfert Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#suiviTransfertMenu" aria-expanded="true" aria-controls="suiviTransfertMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-arrow-right-circle"></i> {{ __('transfer_tracking') }}
         </div>
-        <div class="collapse show submenu-content" id="suiviTransfertMenu">
+        <div class="submenu-content" id="suiviTransfertMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('slips-sort') }}?categ=project">
                     <i class="bi bi-folder"></i> {{ __('projects') }}
@@ -139,10 +153,10 @@
 
     <!-- Création Section -->
     <div class="submenu-section add-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#enregistrementMenu" aria-expanded="true" aria-controls="enregistrementMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-plus-circle"></i> {{ __('create') }}
         </div>
-        <div class="collapse show submenu-content" id="enregistrementMenu">
+        <div class="submenu-content" id="enregistrementMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('slips.create') }}">
                     <i class="bi bi-building"></i> {{ __('slip') }}
@@ -158,10 +172,10 @@
 
     <!-- Import / Export Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#importExportMenu" aria-expanded="true" aria-controls="importExportMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
-        <div class="collapse show submenu-content" id="importExportMenu">
+        <div class="submenu-content" id="importExportMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('slips.import.form') }}">
                     <i class="bi bi-download"></i> {{ __('import') }}
@@ -175,3 +189,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

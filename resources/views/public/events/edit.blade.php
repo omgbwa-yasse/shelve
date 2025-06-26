@@ -10,14 +10,14 @@
                 </div>
 
                 <div class="card-body">
-                    <form method="POST" action="{{ route('public.events.update', $publicEvent) }}">
+                    <form method="POST" action="{{ route('public.events.update', $event) }}">
                         @csrf
                         @method('PUT')
 
                         <div class="form-group mb-3">
                             <label for="name">Nom de l'événement</label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                   id="name" name="name" value="{{ old('name', $publicEvent->name) }}" required>
+                                   id="name" name="name" value="{{ old('name', $event->name) }}" required>
                             @error('name')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -28,7 +28,7 @@
                         <div class="form-group mb-3">
                             <label for="description">Description</label>
                             <textarea class="form-control @error('description') is-invalid @enderror"
-                                      id="description" name="description" rows="3">{{ old('description', $publicEvent->description) }}</textarea>
+                                      id="description" name="description" rows="3">{{ old('description', $event->description) }}</textarea>
                             @error('description')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -40,7 +40,7 @@
                             <label for="start_date">Date de début</label>
                             <input type="datetime-local" class="form-control @error('start_date') is-invalid @enderror"
                                    id="start_date" name="start_date"
-                                   value="{{ old('start_date', $publicEvent->start_date->format('Y-m-d\TH:i')) }}" required>
+                                   value="{{ old('start_date', $event->start_date->format('Y-m-d\TH:i')) }}" required>
                             @error('start_date')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -52,7 +52,7 @@
                             <label for="end_date">Date de fin</label>
                             <input type="datetime-local" class="form-control @error('end_date') is-invalid @enderror"
                                    id="end_date" name="end_date"
-                                   value="{{ old('end_date', $publicEvent->end_date->format('Y-m-d\TH:i')) }}" required>
+                                   value="{{ old('end_date', $event->end_date->format('Y-m-d\TH:i')) }}" required>
                             @error('end_date')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -63,7 +63,7 @@
                         <div class="form-group mb-3">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="is_online" name="is_online"
-                                       value="1" {{ old('is_online', $publicEvent->is_online) ? 'checked' : '' }}>
+                                       value="1" {{ old('is_online', $event->is_online) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_online">Événement en ligne</label>
                             </div>
                         </div>
@@ -71,7 +71,7 @@
                         <div class="form-group mb-3" id="location_group">
                             <label for="location">Lieu</label>
                             <input type="text" class="form-control @error('location') is-invalid @enderror"
-                                   id="location" name="location" value="{{ old('location', $publicEvent->location) }}">
+                                   id="location" name="location" value="{{ old('location', $event->location) }}">
                             @error('location')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -82,7 +82,7 @@
                         <div class="form-group mb-3" id="online_link_group" style="display: none;">
                             <label for="online_link">Lien de l'événement en ligne</label>
                             <input type="url" class="form-control @error('online_link') is-invalid @enderror"
-                                   id="online_link" name="online_link" value="{{ old('online_link', $publicEvent->online_link) }}">
+                                   id="online_link" name="online_link" value="{{ old('online_link', $event->online_link) }}">
                             @error('online_link')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>

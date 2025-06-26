@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('content')
+@                            <select class="form-control @error('type') is-invalid @enderror" id="type" name="type" required>
+                                <option value="">Sélectionnez un type</option>
+                                <option value="page" {{ old('type', $template->type) === 'page' ? 'selected' : '' }}>Page</option>
+                                <option value="email" {{ old('type', $template->type) === 'email' ? 'selected' : '' }}>Email</option>
+                                <option value="notification" {{ old('type', $template->type) === 'notification' ? 'selected' : '' }}>Notification</option>
+                            </select>n('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">

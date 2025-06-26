@@ -25,15 +25,17 @@
                             </div>
                             <div class="col-md-8">
                                 @switch($template->type)
+                                    @case('page')
+                                        <span class="badge bg-secondary">Page</span>
+                                        @break
                                     @case('email')
                                         <span class="badge bg-primary">Email</span>
-                                        @break
-                                    @case('document')
-                                        <span class="badge bg-success">Document</span>
                                         @break
                                     @case('notification')
                                         <span class="badge bg-info">Notification</span>
                                         @break
+                                    @default
+                                        <span class="badge bg-light">{{ $template->type }}</span>
                                 @endswitch
                             </div>
                         </div>

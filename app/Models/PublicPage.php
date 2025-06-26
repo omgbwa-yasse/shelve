@@ -13,27 +13,22 @@ class PublicPage extends Model
     protected $table = 'public_pages';
 
     protected $fillable = [
-        'name',
+        'title',
         'slug',
         'content',
-        'order',
-        'parent_id',
-        'is_published',
+        'meta_description',
+        'meta_keywords',
+        'status',
+        'featured_image_path',
+        'author_id',
     ];
 
     protected $casts = [
-        'order' => 'integer',
-        'parent_id' => 'integer',
-        'is_published' => 'boolean',
+        'status' => 'string',
     ];
 
-    public function parent()
+    public function author()
     {
-        return $this->belongsTo(PublicPage::class, 'parent_id');
-    }
-
-    public function children()
-    {
-        return $this->hasMany(PublicPage::class, 'parent_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 }

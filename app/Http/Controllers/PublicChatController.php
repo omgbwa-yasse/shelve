@@ -17,7 +17,7 @@ class PublicChatController extends Controller
     public function index()
     {
         $chats = PublicChat::with('participants')->get();
-        return view('public-chats.index', compact('chats'));
+        return view('public.chats.index', compact('chats'));
     }
 
     /**
@@ -28,7 +28,7 @@ class PublicChatController extends Controller
     public function create()
     {
         $users = PublicUser::all();
-        return view('public-chats.create', compact('users'));
+        return view('public.chats.create', compact('users'));
     }
 
     /**
@@ -63,7 +63,7 @@ class PublicChatController extends Controller
             ]);
         }
 
-        return redirect()->route('public-chats.index')
+        return redirect()->route('public.chats.index')
             ->with('success', 'Chat created successfully');
     }
 
@@ -73,10 +73,10 @@ class PublicChatController extends Controller
      * @param  \App\Models\PublicChat  $publicChat
      * @return \Illuminate\Http\Response
      */
-    public function show(PublicChat $publicChat)
+    public function show(PublicChat $chat)
     {
-        $publicChat->load(['messages.user', 'participants.user']);
-        return view('public-chats.show', compact('publicChat'));
+        $chat->load(['messages.user', 'participants.user']);
+        return view('public.chats.show', compact('chat'));
     }
 
     /**
@@ -85,12 +85,12 @@ class PublicChatController extends Controller
      * @param  \App\Models\PublicChat  $publicChat
      * @return \Illuminate\Http\Response
      */
-    public function edit(PublicChat $publicChat)
+    public function edit(PublicChat $chat)
     {
         $users = PublicUser::all();
-        $participants = $publicChat->participants->pluck('user_id')->toArray();
+        $participants = $chat->participants->pluck('user_id')->toArray();
 
-        return view('public-chats.edit', compact('publicChat', 'users', 'participants'));
+        return view('public.chats.edit', compact('chat', 'users', 'participants'));
     }
 
     /**
@@ -100,7 +100,7 @@ class PublicChatController extends Controller
      * @param  \App\Models\PublicChat  $publicChat
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PublicChat $publicChat)
+    public function update(Request $request, PublicChat $chat)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -111,27 +111,27 @@ class PublicChatController extends Controller
         ]);
 
         // Update the chat
-        $publicChat->update([
+        $chat->update([
             'title' => $validated['title'],
             'is_group' => $validated['is_group'] ?? false,
             'is_active' => $validated['is_active'] ?? true,
         ]);
 
         // Sync participants
-        $existingUserIds = $publicChat->participants->pluck('user_id')->toArray();
+        $existingUserIds = $chat->participants->pluck('user_id')->toArray();
         $newUserIds = $validated['user_ids'];
 
         // Remove users no longer in the chat
         foreach ($existingUserIds as $userId) {
             if (!in_array($userId, $newUserIds)) {
-                $publicChat->participants()->where('user_id', $userId)->delete();
+                $chat->participants()->where('user_id', $userId)->delete();
             }
         }
 
         // Add new users to the chat
         foreach ($newUserIds as $userId) {
             if (!in_array($userId, $existingUserIds)) {
-                $publicChat->participants()->create([
+                $chat->participants()->create([
                     'user_id' => $userId,
                     'is_admin' => false,
                     'last_read_at' => now(),
@@ -139,7 +139,7 @@ class PublicChatController extends Controller
             }
         }
 
-        return redirect()->route('public-chats.index')
+        return redirect()->route('public.chats.index')
             ->with('success', 'Chat updated successfully');
     }
 
@@ -149,11 +149,11 @@ class PublicChatController extends Controller
      * @param  \App\Models\PublicChat  $publicChat
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PublicChat $publicChat)
+    public function destroy(PublicChat $chat)
     {
-        $publicChat->delete();
+        $chat->delete();
 
-        return redirect()->route('public-chats.index')
+        return redirect()->route('public.chats.index')
             ->with('success', 'Chat deleted successfully');
     }
 

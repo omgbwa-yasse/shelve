@@ -34,10 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par d�faut */ }
         
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Mon Compte Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#accountMenu" aria-expanded="true" aria-controls="accountMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-person-circle"></i> {{ __('my_account') }}
         </div>
-        <div class="collapse show submenu-content" id="accountMenu">
+        <div class="submenu-content" id="accountMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.show', auth()->user()->id) }}">
                     <i class="bi bi-gear"></i> {{ __('my_account') }}
@@ -95,10 +109,10 @@
 
     <!-- Autorisations et postes Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#authorizationsMenu" aria-expanded="true" aria-controls="authorizationsMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}
         </div>
-        <div class="collapse show submenu-content" id="authorizationsMenu">
+        <div class="submenu-content" id="authorizationsMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.index') }}">
                     <i class="bi bi-person"></i> {{ __('users') }}
@@ -114,10 +128,10 @@
 
     <!-- Droits et permissions Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#rightsMenu" aria-expanded="true" aria-controls="rightsMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-shield-lock"></i> {{ __('rights_and_permissions') }}
         </div>
-        <div class="collapse show submenu-content" id="rightsMenu">
+        <div class="submenu-content" id="rightsMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('roles.index') }}">
                     <i class="bi bi-person-badge"></i> {{ __('roles') }}
@@ -133,10 +147,10 @@
 
     <!-- Tâches Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#tasksMenu" aria-expanded="true" aria-controls="tasksMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-list-task"></i> {{ __('tasks') }}
         </div>
-        <div class="collapse show submenu-content" id="tasksMenu">
+        <div class="submenu-content" id="tasksMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('taskstatus.index') }}">
                     <i class="bi bi-tag"></i> {{ __('task_types') }}
@@ -152,10 +166,10 @@
 
     <!-- Courrier Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#mailMenu" aria-expanded="true" aria-controls="mailMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-envelope"></i> {{ __('mail') }}
         </div>
-        <div class="collapse show submenu-content" id="mailMenu">
+        <div class="submenu-content" id="mailMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-typology.index') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
@@ -176,10 +190,10 @@
 
     <!-- Répertoire Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#directoryMenu" aria-expanded="true" aria-controls="directoryMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-file-text"></i> {{ __('directory') }}
         </div>
-        <div class="collapse show submenu-content" id="directoryMenu">
+        <div class="submenu-content" id="directoryMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-supports.index') }}">
                     <i class="bi bi-hdd"></i> {{ __('supports') }}
@@ -195,10 +209,10 @@
 
     <!-- Transfert Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#transferMenu" aria-expanded="true" aria-controls="transferMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-arrow-right-circle"></i> {{ __('transfer') }}
         </div>
-        <div class="collapse show submenu-content" id="transferMenu">
+        <div class="submenu-content" id="transferMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('transferring-status.index') }}">
                     <i class="bi bi-flag"></i> {{ __('statuses') }}
@@ -209,10 +223,10 @@
 
     <!-- Communication Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#communicationMenu" aria-expanded="true" aria-controls="communicationMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-chat-dots"></i> {{ __('communication') }}
         </div>
-        <div class="collapse show submenu-content" id="communicationMenu">
+        <div class="submenu-content" id="communicationMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communication-status.index') }}">
                     <i class="bi bi-flag"></i> {{ __('communication_status') }}
@@ -228,10 +242,10 @@
 
     <!-- Dépôt Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#depositMenu" aria-expanded="true" aria-controls="depositMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-building"></i> {{ __('deposit') }}
         </div>
-        <div class="collapse show submenu-content" id="depositMenu">
+        <div class="submenu-content" id="depositMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('container-status.index') }}">
                     <i class="bi bi-flag"></i> {{ __('container_statuses') }}
@@ -247,10 +261,10 @@
 
     <!-- Outils de gestion Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#managementMenu" aria-expanded="true" aria-controls="managementMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-gear"></i> {{ __('management_tools') }}
         </div>
-        <div class="collapse show submenu-content" id="managementMenu">
+        <div class="submenu-content" id="managementMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('sorts.index') }}">
                     <i class="bi bi-sort-alpha-down"></i> {{ __('retention_final_sorts') }}
@@ -281,10 +295,10 @@
 
     <!-- Système Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#systemMenu" aria-expanded="true" aria-controls="systemMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-cpu"></i> {{ __('system') }}
         </div>
-        <div class="collapse show submenu-content" id="systemMenu">
+        <div class="submenu-content" id="systemMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.index')}}">
                     <i class="bi bi-save"></i> {{ __('my_backups') }}
@@ -303,3 +317,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

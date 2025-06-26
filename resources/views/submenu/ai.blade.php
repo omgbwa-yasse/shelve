@@ -1,6 +1,26 @@
 <div class="submenu-container py-2">
     <!-- Google Fonts - Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconne        .ai-config-section .submenu-heading:hover {
+            background-color: #5e35b1;
+        }
+
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
+    </style>href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -37,6 +57,7 @@
         .submenu-content {
             padding: 0 0 8px 12px;
             margin-bottom: 8px;
+            display: block; /* Toujours visible par défaut */
         }
 
         .submenu-item {
@@ -99,10 +120,10 @@
 
     <!-- Intelligence Artificielle Section -->
     <div class="submenu-section ai.section">
-        <div class="submenu-heading" data-toggle="collapse" href="#aiMenu" aria-expanded="true" aria-controls="aiMenu">
+        <div class="submenu-heading">
             <i class="bi bi-robot"></i> {{ __('artificial_intelligence') }}
         </div>
-        <div class="collapse show submenu-content" id="aiMenu">
+        <div class="submenu-content" id="aiMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.chats.index') }}">
                     <i class="bi bi-chat-dots"></i> {{ __('ai_chats') }}
@@ -138,10 +159,10 @@
 
     <!-- Configuration IA Section -->
     <div class="submenu-section ai.config-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#aiConfigMenu" aria-expanded="true" aria-controls="aiConfigMenu">
+        <div class="submenu-heading">
             <i class="bi bi-sliders"></i> {{ __('ai_configuration') }}
         </div>
-        <div class="collapse show submenu-content" id="aiConfigMenu">
+        <div class="submenu-content" id="aiConfigMenu">
 
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.models.index') }}">
@@ -172,3 +193,22 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>

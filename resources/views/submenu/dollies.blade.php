@@ -34,10 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content {
-            padding: 0 0 8px 12px;
-            margin-bottom: 8px;
-        }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par défaut */ }
         
         .submenu-item {
             margin-bottom: 2px;
@@ -77,14 +74,31 @@
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
+    
+        /* Style pour les sections collapsibles */
+        .submenu-content.collapsed {
+            display: none;
+        }
+
+        .submenu-heading::after {
+            content: '';
+            margin-left: auto;
+            font-family: 'bootstrap-icons';
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .submenu-heading.collapsed::after {
+            transform: rotate(-90deg);
+        }
     </style>
 
     <!-- Search Section -->
     <div class="submenu-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#searchMenu" aria-expanded="true" aria-controls="searchMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
-        <div class="collapse show submenu-content" id="searchMenu">
+        <div class="submenu-content" id="searchMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dolly.index') }}">
                     <i class="bi bi-cart3"></i> {{ __('all_carts') }}
@@ -135,10 +149,10 @@
 
     <!-- Create Section -->
     <div class="submenu-section add-section">
-        <div class="submenu-heading" data-toggle="collapse" href="#createMenu" aria-expanded="true" aria-controls="createMenu">
+        <div class="submenu-heading" >
             <i class="bi bi-plus-circle"></i> {{ __('create') }}
         </div>
-        <div class="collapse show submenu-content" id="createMenu">
+        <div class="submenu-content" id="createMenu">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dolly.create') }}">
                     <i class="bi bi-cart3"></i> {{ __('cart') }}
@@ -147,3 +161,21 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // FonctionnalitÃ© de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('.submenu-heading');
+    
+    headings.forEach(function(heading) {
+        heading.addEventListener('click', function() {
+            const content = this.nextElementSibling;
+            
+            if (content && content.classList.contains('submenu-content')) {
+                // Toggle la classe collapsed
+                content.classList.toggle('collapsed');
+                this.classList.toggle('collapsed');
+            }
+        });
+    });
+});
+</script>
