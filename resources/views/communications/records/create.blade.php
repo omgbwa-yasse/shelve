@@ -10,7 +10,7 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="{{ route('transactions.records.store', $communication->id) }}" method="POST" id="communicationForm">
+                        <form action="{{ route('communications.records.store', $communication->id) }}" method="POST" id="communicationForm">
                             @csrf
 
                             <!-- Archives voulues -->

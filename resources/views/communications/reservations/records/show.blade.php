@@ -28,9 +28,9 @@
             <td>{{ $reservationRecord->communication ? 'Yes' : 'No' }}</td>
         </tr>
     </table>
-    <a href="{{ route('reservations.index', $reservation) }}" class="btn btn-secondary">Back</a>
-    <a href="{{ route('reservations.records.edit', [$reservation , $reservationRecord]) }}" class="btn btn-warning">Edit</a>
-    <form action="{{ route('reservations.records.destroy', [$reservation , $reservationRecord]) }}" method="POST" style="display: inline-block;">
+    <a href="{{ route('communications.reservations.index') }}" class="btn btn-secondary">Back</a>
+    <a href="{{ route('communications.reservations.records.edit', [$reservation->id , $reservationRecord->id]) }}" class="btn btn-warning">Edit</a>
+    <form action="{{ route('communications.reservations.records.destroy', [$reservation->id , $reservationRecord]) }}" method="POST" style="display: inline-block;">
         @csrf
         @method('DELETE')
         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>

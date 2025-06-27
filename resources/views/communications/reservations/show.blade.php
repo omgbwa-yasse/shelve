@@ -77,15 +77,15 @@
             </div>
         @endif
 
-        <a href="{{ route('reservations.index') }}" class="btn btn-secondary">Back</a>
-        <a href="{{ route('reservations.edit', $reservation->id) }}" class="btn btn-warning">Edit</a>
-        <form action="{{ route('reservations.destroy', $reservation->id) }}" method="POST" class="d-inline">
+        <a href="{{ route('communications.reservations.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('communications.reservations.edit', $reservation->id) }}" class="btn btn-warning">Edit</a>
+        <form action="{{ route('communications.reservations.destroy', $reservation->id) }}" method="POST" class="d-inline">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this reservation?')">Delete</button>
         </form>
-        <a href="{{ route('reservations.records.create', $reservation->id) }}" class="btn btn-warning ">Ajouter des documents</a>
-        <form action="{{ route('reservations-approved') }}" method="POST" class="d-inline">
+        <a href="{{ route('communications.reservations.records.create', $reservation->id) }}" class="btn btn-warning ">Ajouter des documents</a>
+        <form action="{{ route('communications.reservations.actions.approved') }}" method="POST" class="d-inline">
             @csrf
             <input type="hidden" name="id" value="{{ $reservation->id }}">
             <button type="submit" class="btn btn-success">
@@ -97,7 +97,7 @@
     <ul class="list-group list-group-none">
         @foreach($reservation->records as $record)
                 <li class="list-group-item">{{  $record->name }}
-                    <form action="{{ route('reservations.records.destroy', [$reservation , $record]) }}" method="POST" style="display: inline-block;">
+                    <form action="{{ route('communications.reservations.records.destroy', [$reservation->id , $record]) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>

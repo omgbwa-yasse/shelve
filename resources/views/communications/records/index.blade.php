@@ -10,7 +10,7 @@
                 </a>
                 <h1 class="h3 mb-0">Communication Records</h1>
             </div>
-            <a href="{{ route('transactions.records.create', $communication) }}" class="btn btn-primary">
+            <a href="{{ route('communications.records.create', $communication->id) }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg me-2"></i>Nouvel enregistrement
             </a>
         </div>
@@ -65,7 +65,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex justify-content-end gap-2">
-                                            <a href="{{ route('transactions.records.show', [$communication, $record->id]) }}"
+                                            <a href="{{ route('communications.records.show', [$communication->id, $record->id]) }}"
                                                class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-eye me-1"></i>Voir
                                             </a>
@@ -82,7 +82,7 @@
                         <i class="bi bi-folder2-open display-4 text-muted mb-3"></i>
                         <h4 class="text-muted">Aucun enregistrement trouvé</h4>
                         <p class="text-muted">Commencez par créer un nouvel enregistrement.</p>
-                        <a href="{{ route('transactions.records.create', $communication) }}"
+                        <a href="{{ route('communications.records.create', $communication->id) }}"
                            class="btn btn-primary">
                             <i class="bi bi-plus-lg me-2"></i>Créer un enregistrement
                         </a>

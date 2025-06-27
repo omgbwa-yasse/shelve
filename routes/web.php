@@ -343,22 +343,10 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
-    // STRUCTURE DES ROUTES REFACTORISÉE : MODULE COMMUNICATIONS
     Route::prefix('communications')->group(function () {
-
-        // 1. TRANSACTIONS (CRUD principal)
         Route::get('/', [CommunicationController::class, 'index'])->name('communications.index');
-        Route::resource('transactions', CommunicationController::class)->names([
-            'index' => 'communications.transactions.index',
-            'show' => 'communications.transactions.show',
-            'create' => 'communications.transactions.create',
-            'store' => 'communications.transactions.store',
-            'edit' => 'communications.transactions.edit',
-            'update' => 'communications.transactions.update',
-            'destroy' => 'communications.transactions.destroy'
-        ]);
+        Route::resource('transactions', CommunicationController::class)->names('communications.transactions');
 
-        // 2. ACTIONS SPÉCIFIQUES
         Route::prefix('actions')->name('communications.actions.')->group(function () {
             Route::post('add-to-cart', [CommunicationController::class, 'addToCart'])->name('add-to-cart');
             Route::post('reject', [CommunicationController::class, 'reject'])->name('reject');
@@ -368,13 +356,11 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('return-cancel', [CommunicationController::class, 'returnCancel'])->name('return-cancel');
         });
 
-        // 3. EXPORT ET IMPRESSION
         Route::prefix('export')->name('communications.export.')->group(function () {
             Route::get('print', [CommunicationController::class, 'print'])->name('print');
             Route::get('excel', [CommunicationController::class, 'export'])->name('excel');
         });
 
-        // 4. RECHERCHE COMMUNICATIONS
         Route::prefix('search')->name('communications.search.')->group(function () {
             Route::get('/', [SearchCommunicationController::class, 'index'])->name('index');
             Route::get('form', [SearchCommunicationController::class, 'form'])->name('form');
@@ -382,60 +368,32 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('date-selection', [SearchCommunicationController::class, 'date'])->name('date-selection');
         });
 
-        // 5. ENREGISTREMENTS DE COMMUNICATIONS
         Route::prefix('records')->name('communications.records.')->group(function () {
-            Route::resource('/', CommunicationRecordController::class)->names([
-                'index' => 'index',
-                'show' => 'show',
-                'create' => 'create',
-                'store' => 'store',
-                'edit' => 'edit',
-                'update' => 'update',
-                'destroy' => 'destroy'
-            ]);
+            Route::resource('/', CommunicationRecordController::class);
             Route::get('search', [CommunicationRecordController::class, 'searchRecords'])->name('search');
-
-            // Actions spécifiques aux enregistrements
             Route::prefix('actions')->name('actions.')->group(function () {
                 Route::get('return-effective', [CommunicationRecordController::class, 'returnEffective'])->name('return-effective');
                 Route::get('return-cancel', [CommunicationRecordController::class, 'returnCancel'])->name('return-cancel');
             });
         });
 
-        // 6. RÉSERVATIONS (SOUS-MODULE)
-        Route::prefix('reservations')->name('communications.reservations.')->group(function () {
-            Route::resource('/', ReservationController::class)->names([
-                'index' => 'index',
-                'show' => 'show',
-                'create' => 'create',
-                'store' => 'store',
-                'edit' => 'edit',
-                'update' => 'update',
-                'destroy' => 'destroy'
-            ]);
 
-            // Actions spécifiques aux réservations
+        Route::prefix('reservations')->name('communications.reservations.')->group(function () {
+
+            Route::resource('/', ReservationController::class);
             Route::prefix('actions')->name('actions.')->group(function () {
                 Route::post('approved', [ReservationController::class, 'approved'])->name('approved');
             });
 
-            // Recherche des réservations
             Route::prefix('search')->name('search.')->group(function () {
                 Route::get('/', [SearchReservationController::class, 'index'])->name('index');
                 Route::get('date-selection', [SearchReservationController::class, 'date'])->name('date-selection');
             });
-        });
 
-        // 7. ENREGISTREMENTS DE RÉSERVATIONS
-        Route::resource('reservations.records', ReservationRecordController::class)->names([
-            'index' => 'communications.reservations.records.index',
-            'show' => 'communications.reservations.records.show',
-            'create' => 'communications.reservations.records.create',
-            'store' => 'communications.reservations.records.store',
-            'edit' => 'communications.reservations.records.edit',
-            'update' => 'communications.reservations.records.update',
-            'destroy' => 'communications.reservations.records.destroy'
-        ]);
+            Route::resource('statuses', ReservationStatusController::class);
+            Route::resource('records', ReservationRecordController::class)->names('records');
+
+        });
 
     });
 
@@ -563,11 +521,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('term-types', TermTypeController::class);
         Route::resource('languages', LanguageController::class);
         Route::resource('record-supports', RecordSupportController::class);
-        Route::resource('communication-status', CommunicationStatusController::class);
-        Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('record-statuses', RecordStatusController::class);
         Route::resource('transferring-status', SlipStatusController::class);
         Route::resource('mail-action', MailActionController::class);
+        Route::resource('communication-status', CommunicationStatusController::class);
         Route::resource('taskstatus', TaskStatusController::class);
         Route::resource('tasktype', TaskTypeController::class);
         Route::resource('logs', LogController::class)->only(['index', 'show']);

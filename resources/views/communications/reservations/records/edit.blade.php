@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Edit reservation Record</h1>
-    <form action="{{ route('reservations.records.update', $reservationRecord->id) }}" method="POST">
+    <form action="{{ route('communications.reservations.records.update', [$reservation->id, $reservationRecord->id]) }}" method="POST">
         @csrf
         @method('PUT')
         <div class="form-group">

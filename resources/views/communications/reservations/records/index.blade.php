@@ -23,7 +23,7 @@
                     <td>{{ $record->is_original ? 'Yes' : 'No' }}</td>
                     <td>{{ $record->reservation_date }}</td>
                     <td>{{ $record->communication ? 'Yes' : 'No' }}</td>
-                    <td>  <a href="{{ route('reservations.records.show',[$reservation , $record->id]) }}" class="btn btn-info">Show</a> </td>
+                    <td>  <a href="{{ route('communications.reservations.records.show',[$reservation->id , $record->id]) }}" class="btn btn-info">Show</a> </td>
                 </tr>
             @endforeach
         </tbody>

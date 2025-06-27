@@ -20,7 +20,7 @@
             </div>
         @endif
 
-        <form action="{{ route('reservations.store') }}" method="POST">
+        <form action="{{ route('communications.reservations.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>

@@ -13,9 +13,8 @@ class ReservationStatusController extends Controller
         return view('communications.reservations.statuses.index', compact('statuses'));
     }
 
-    public function show(INT $id)
+    public function show(ReservationStatus $status)
     {
-        $status = ReservationStatus::findOrFail($id);
         return view('communications.reservations.statuses.show', compact('status'));
     }
 
@@ -33,13 +32,12 @@ class ReservationStatusController extends Controller
 
         ReservationStatus::create($request->all());
 
-        return redirect()->route('reservation-status.index')
+        return redirect()->route('communications.reservations.statuses.index')
             ->with('success', 'Reservation status created successfully.');
     }
 
-    public function edit(INT $id)
+    public function edit(ReservationStatus $status)
     {
-        $status = ReservationStatus::findOrFail($id);
         return view('communications.reservations.statuses.edit', compact('status'));
     }
 
@@ -52,7 +50,7 @@ class ReservationStatusController extends Controller
 
         $status->update($request->all());
 
-        return redirect()->route('reservation-status.index')
+        return redirect()->route('communications.reservations.statuses.index')
             ->with('success', 'Reservation status updated successfully.');
     }
 
@@ -60,7 +58,7 @@ class ReservationStatusController extends Controller
     {
         $status->delete();
 
-        return redirect()->route('reservation-status.index')
+        return redirect()->route('communications.reservations.statuses.index')
             ->with('success', 'Reservation status deleted successfully.');
     }
 }

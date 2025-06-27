@@ -37,31 +37,29 @@ class CommunicationStatusController extends Controller
     }
 
 
-    public function show(INt $id)
+    public function show(CommunicationStatus $communicationStatus)
     {
-        $status = CommunicationStatus::findOrFail($id);
-        return view('communications.statuses.show', compact('status'));
+        return view('communications.statuses.show', compact('communicationStatus'));
     }
 
 
 
-    public function edit(INT $id)
+    public function edit(CommunicationStatus $communicationStatus)
     {
-        $status = CommunicationStatus::findOrFail($id);
-        return view('communications.statuses.edit', compact('status'));
+        return view('communications.statuses.edit', compact('communicationStatus'));
     }
 
 
 
 
-    public function update(Request $request, CommunicationStatus $status)
+    public function update(Request $request, CommunicationStatus $communicationStatus)
 {
     $request->validate([
-        'name' => 'required|unique:communication_statuses,name,' . $status->id,
+        'name' => 'required|unique:communication_statuses,name,' . $communicationStatus->id,
         'description' => 'required',
     ]);
 
-    $status->update([
+    $communicationStatus->update([
         'name' => $request->name,
         'description' => $request->description,
     ]);
@@ -70,9 +68,9 @@ class CommunicationStatusController extends Controller
 }
 
 
-    public function destroy(CommunicationStatus $status)
+    public function destroy(CommunicationStatus $communicationStatus)
     {
-        $status->delete();
+        $communicationStatus->delete();
         return redirect()->route('communication-status.index')->with('success', 'Status deleted successfully.');
     }
 

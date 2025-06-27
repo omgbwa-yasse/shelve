@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Edit Reservation</h1>
-        <form action="{{ route('reservations.update', $reservation->id) }}" method="POST">
+        <form action="{{ route('communications.reservations.update', $reservation->id) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="mb-3">

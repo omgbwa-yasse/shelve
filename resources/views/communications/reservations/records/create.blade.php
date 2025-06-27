@@ -2,7 +2,7 @@
 
 @section('content')
     <h1>Create New reservation Record</h1>
-    <form action="{{ route('reservations.records.store', $reservation->id) }}" method="POST">
+    <form action="{{ route('communications.reservations.records.store', $reservation->id) }}" method="POST">
         @csrf
         <div class="form-group">
             <label for="record_id">Record</label>

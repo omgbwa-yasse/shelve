@@ -9,7 +9,7 @@
                 <a href="{{ route('communications.transactions.index') }}">Communications</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ route('transactions.show', $communication) }}">
+                <a href="{{ route('communications.transactions.show', $communication) }}">
                     {{ $communicationRecord->communication->code ?? 'Communication' }}
                 </a>
             </li>
@@ -24,10 +24,10 @@
             <a href="{{ route('communications.transactions.index') }}" class="btn btn-secondary me-2">
                 <i class="bi bi-arrow-left"></i> Retour
             </a>
-            <a href="{{ route('transactions.records.edit', [$communication, $communicationRecord]) }}" class="btn btn-warning me-2">
+            <a href="{{ route('communications.records.edit', [$communication->id, $communicationRecord->id]) }}" class="btn btn-warning me-2">
                 <i class="bi bi-pencil"></i> Modifier
             </a>
-            <form action="{{ route('transactions.records.destroy', [$communication, $communicationRecord]) }}" method="POST" class="d-inline">
+            <form action="{{ route('communications.records.destroy', [$communication->id, $communicationRecord->id]) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger"

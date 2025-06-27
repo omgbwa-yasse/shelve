@@ -20,9 +20,9 @@
                         <td>{{ $status->name }}</td>
                         <td>{{ $status->description }}</td>
                         <td>
-                            <a href="{{ route('communication-status.show', $status->id) }}" class="btn btn-info">Show</a>
-                            <a href="{{ route('communication-status.edit', $status->id) }}" class="btn btn-warning">Edit</a>
-                            <form action="{{ route('communication-status.destroy', $status->id) }}" method="POST" class="d-inline">
+                            <a href="{{ route('communication-status.show', $status) }}" class="btn btn-info">Show</a>
+                            <a href="{{ route('communication-status.edit', $status) }}" class="btn btn-warning">Edit</a>
+                            <form action="{{ route('communication-status.destroy', $status) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this status?')">Delete</button>
