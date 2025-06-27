@@ -1,5 +1,126 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    /* Stabiliser les boutons pour éviter qu'ils apparaissent/disparaissent */
+    #clear-search-btn, #save-search-btn, #search-btn {
+        position: relative;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transition: background-color 0.2s ease, border-color 0.2s ease !important;
+        display: inline-block !important;
+    }
+
+    /* Empêcher les flickering des boutons */
+    .btn {
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+
+    /* Stabiliser les onglets de l'accordéon */
+    .accordion-button {
+        position: relative !important;
+        pointer-events: auto !important;
+    }
+
+    .accordion-button:not(.collapsed) {
+        color: #0c63e4 !important;
+        background-color: #e7f1ff !important;
+        box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.125) !important;
+    }
+
+    /* Empêcher la fermeture automatique des onglets */
+    .accordion-collapse.show {
+        display: block !important;
+    }
+
+    .accordion-collapse.collapsing {
+        position: relative;
+        height: 0;
+        overflow: hidden;
+        transition: height 0.35s ease;
+    }
+
+    /* Forcer l'ouverture du premier onglet */
+    #collapseDescription {
+        display: block !important;
+    }
+
+    #collapseDescription.show {
+        display: block !important;
+    }
+
+    /* Forcer l'ouverture de tous les onglets */
+    #collapseDates,
+    #collapseRelations {
+        display: block !important;
+    }
+
+    #collapseDates.show,
+    #collapseRelations.show {
+        display: block !important;
+    }
+
+    /* Forcer l'affichage de tous les contenus d'accordéon */
+    .accordion-collapse {
+        display: block !important;
+        height: auto !important;
+    }
+
+    .accordion-body {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    .list-group-flush {
+        display: block !important;
+    }
+
+    .list-group-item {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Éviter les animations indésirables */
+    .search-criteria-row {
+        transition: opacity 0.2s ease !important;
+    }    /* Stabiliser les éléments dynamiques */
+    .list-group-item {
+        transition: background-color 0.15s ease-in-out !important;
+        cursor: pointer !important;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+    }
+
+    .list-group-item-action {
+        cursor: pointer !important;
+    }
+
+    .list-group-item-action:hover {
+        background-color: #e9ecef !important;
+    }
+
+    /* Empêcher les problèmes de z-index */
+    .card {
+        position: relative;
+        z-index: 1;
+    }
+
+    .accordion {
+        z-index: 2;
+    }
+
+    .accordion-body {
+        z-index: 3;
+    }
+</style>
+@endpush
+
 @section('content')
     <div class="container">
         <div class="row">
@@ -10,82 +131,64 @@
                         <h5 class="mb-0">{{ __('available_fields') }}</h5>
                     </div>
                     <div class="card-body p-0">
-                        <div class="accordion" id="fieldsAccordion">
+                        <div class="simple-sections" id="fieldsContainer">
                             <!-- Description -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDescription">
-                                        {{ __('description') }}
-                                    </button>
-                                </h2>
-                                <div id="collapseDescription" class="accordion-collapse collapse show" data-bs-parent="#fieldsAccordion">
-                                    <div class="accordion-body p-0">
-                                        <div class="list-group list-group-flush" id="description-fields">
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="code" data-name-field="Code">
-                                                <i class="bi bi-hash me-2"></i>{{ __('code') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="name" data-name-field="Intitulé">
-                                                <i class="bi bi-type me-2"></i>{{ __('name') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="content" data-name-field="Contenu">
-                                                <i class="bi bi-file-text me-2"></i>{{ __('content') }}
-                                            </a>
-                                        </div>
-                                    </div>
+                            <div class="section-item mb-3">
+                                <h6 class="fw-bold text-primary">
+                                    <i class="bi bi-file-text me-2"></i>{{ __('description') }}
+                                </h6>
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="code" data-name-field="Code">
+                                        <i class="bi bi-hash me-2"></i>{{ __('code') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="name" data-name-field="Intitulé">
+                                        <i class="bi bi-type me-2"></i>{{ __('name') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="content" data-name-field="Contenu">
+                                        <i class="bi bi-file-text me-2"></i>{{ __('content') }}
+                                    </a>
                                 </div>
                             </div>
 
                             <!-- Dates -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDates">
-                                        {{ __('dates') }}
-                                    </button>
-                                </h2>
-                                <div id="collapseDates" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
-                                    <div class="accordion-body p-0">
-                                        <div class="list-group list-group-flush">
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="return_date" data-name-field="Date retour prévue">
-                                                <i class="bi bi-calendar me-2"></i>{{ __('return_date') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="return_effective" data-name-field="Date retour effective">
-                                                <i class="bi bi-calendar-check me-2"></i>{{ __('return_effective') }}
-                                            </a>
-                                        </div>
-                                    </div>
+                            <div class="section-item mb-3">
+                                <h6 class="fw-bold text-primary">
+                                    <i class="bi bi-calendar me-2"></i>{{ __('dates') }}
+                                </h6>
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="return_date" data-name-field="Date retour prévue">
+                                        <i class="bi bi-calendar me-2"></i>{{ __('return_date') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="return_effective" data-name-field="Date retour effective">
+                                        <i class="bi bi-calendar-check me-2"></i>{{ __('return_effective') }}
+                                    </a>
                                 </div>
                             </div>
 
                             <!-- Relations -->
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRelations">
-                                        {{ __('relations') }}
-                                    </button>
-                                </h2>
-                                <div id="collapseRelations" class="accordion-collapse collapse" data-bs-parent="#fieldsAccordion">
-                                    <div class="accordion-body p-0">
-                                        <div class="list-group list-group-flush">
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="status" data-name-field="Statut">
-                                                <i class="bi bi-flag me-2"></i>{{ __('status') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="operator" data-name-field="Opérateur">
-                                                <i class="bi bi-person me-2"></i>{{ __('operator') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="operator_organisation" data-name-field="Organisation opérateur">
-                                                <i class="bi bi-building me-2"></i>{{ __('operator_organisation') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="user" data-name-field="Utilisateur">
-                                                <i class="bi bi-person me-2"></i>{{ __('user') }}
-                                            </a>
-                                            <a href="#" class="list-group-item list-group-item-action" data-field="user_organisation" data-name-field="Organisation utilisateur">
-                                                <i class="bi bi-building me-2"></i>{{ __('user_organisation') }}
-                                            </a>
-{{--                                            <a href="#" class="list-group-item list-group-item-action" data-field="record" data-name-field="Archive">--}}
-{{--                                                <i class="bi bi-archive me-2"></i>{{ __('record') }}--}}
-{{--                                            </a>--}}
-                                        </div>
-                                    </div>
+                            <div class="section-item mb-3">
+                                <h6 class="fw-bold text-primary">
+                                    <i class="bi bi-people me-2"></i>{{ __('relations') }}
+                                </h6>
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="status" data-name-field="Statut">
+                                        <i class="bi bi-flag me-2"></i>{{ __('status') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="operator" data-name-field="Opérateur">
+                                        <i class="bi bi-person me-2"></i>{{ __('operator') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="operator_organisation" data-name-field="Organisation opérateur">
+                                        <i class="bi bi-building me-2"></i>{{ __('operator_organisation') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="user" data-name-field="Utilisateur">
+                                        <i class="bi bi-person me-2"></i>{{ __('user') }}
+                                    </a>
+                                    <a href="#" class="list-group-item list-group-item-action" data-field="user_organisation" data-name-field="Organisation utilisateur">
+                                        <i class="bi bi-building me-2"></i>{{ __('user_organisation') }}
+                                    </a>
+{{--                                    <a href="#" class="list-group-item list-group-item-action" data-field="record" data-name-field="Archive">--}}
+{{--                                        <i class="bi bi-archive me-2"></i>{{ __('record') }}--}}
+{{--                                    </a>--}}
                                 </div>
                             </div>
                         </div>
@@ -116,7 +219,7 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between mt-3">
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary" id="search-btn">
                                     <i class="bi bi-search me-1"></i>{{ __('search') }}
                                 </button>
                             </div>
@@ -164,14 +267,17 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Communications Advanced Search - Page chargée');
+
             // Données de l'application
             const data = @json($data ?? []);
+            console.log('Données reçues du serveur:', data); // Debug
 
             // Configuration des opérateurs par type de champ
             const operatorConfig = {
-                text: ['commence par', 'contient', 'ne contient pas'],
-                date: ['=', '>', '<'],
-                select: ['avec', 'sauf']
+                text: ['commence par', 'contient', 'ne contient pas', '='],
+                date: ['=', '>', '<', '>=', '<='],
+                select: ['=', '!=']
             };
 
             // Types de champs
@@ -185,18 +291,19 @@
                 operator_organisation: 'select',
                 user: 'select',
                 user_organisation: 'select',
-                status: 'select',
-                record: 'select'
+                status: 'select'
             };
 
             // Données pour les champs select
             const selectFieldsData = {
-                operator: data.operators,
-                operator_organisation: data.organisations,
-                user: data.users,
-                user_organisation: data.organisations,
-                status: data.statuses,
+                operator: data.operators || [],
+                operator_organisation: data.organisations || [],
+                user: data.users || [],
+                user_organisation: data.organisations || [],
+                status: data.statuses || [],
             };
+
+            console.log('Configuration des champs select:', selectFieldsData); // Debug
 
             // Éléments du DOM
             const searchCriteriaContainer = document.getElementById('search-criteria-container');
@@ -206,30 +313,63 @@
             const saveSearchBtn = document.getElementById('save-search-btn');
 
             // Gestionnaire de clic sur les champs
-            document.querySelectorAll('[data-field]').forEach(field => {
+            const fieldElements = document.querySelectorAll('[data-field]');
+            console.log('Nombre de champs détectés:', fieldElements.length); // Debug
+
+            fieldElements.forEach((field, index) => {
+                console.log(`Champ ${index}:`, field.getAttribute('data-field'), field.getAttribute('data-name-field')); // Debug
+
                 field.addEventListener('click', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const fieldName = field.getAttribute('data-field');
                     const fieldLabel = field.getAttribute('data-name-field');
-                    addSearchCriteria(fieldName, fieldLabel);
-                    noCriteriaMessage.style.display = 'none';
+
+                    console.log('Clic sur le champ:', fieldName, fieldLabel); // Debug
+
+                    // Ajouter un délai pour éviter les problèmes de double-clic
+                    if (field.disabled) return;
+                    field.disabled = true;
+
+                    setTimeout(() => {
+                        addSearchCriteria(fieldName, fieldLabel);
+                        noCriteriaMessage.style.display = 'none';
+                        field.disabled = false;
+                    }, 100);
                 });
             });
 
             // Fonction d'ajout de critère
             function addSearchCriteria(field, label) {
+                console.log(`Ajout du critère: ${field} - ${label}`); // Debug
+
                 const criteriaClone = document.importNode(searchCriteriaTemplate.content, true);
 
                 // Configuration des éléments de base
-                criteriaClone.querySelector('.field-name').value = field;
-                criteriaClone.querySelector('.field-label').textContent = label;
+                const fieldInput = criteriaClone.querySelector('.field-name');
+                const fieldLabelSpan = criteriaClone.querySelector('.field-label');
+
+                if (!fieldInput || !fieldLabelSpan) {
+                    console.error('Éléments template non trouvés');
+                    return;
+                }
+
+                fieldInput.value = field;
+                fieldLabelSpan.textContent = label;
 
                 const operatorSelect = criteriaClone.querySelector('.field-operator');
                 const valueInput = criteriaClone.querySelector('.field-value');
 
+                if (!operatorSelect || !valueInput) {
+                    console.error('Éléments select/input non trouvés');
+                    return;
+                }
+
                 // Configuration des opérateurs
-                const fieldType = fieldTypes[field];
-                const operators = operatorConfig[fieldType];
+                const fieldType = fieldTypes[field] || 'text';
+                console.log(`Type de champ ${field}: ${fieldType}`); // Debug
+
+                const operators = operatorConfig[fieldType] || operatorConfig.text;
                 operators.forEach(op => {
                     const option = document.createElement('option');
                     option.value = op;
@@ -241,8 +381,9 @@
                 if (fieldType === 'date') {
                     valueInput.type = 'date';
                 } else if (fieldType === 'select') {
+                    // Créer un nouveau select
                     const selectElement = document.createElement('select');
-                    selectElement.classList.add('form-select', 'form-select-sm');
+                    selectElement.classList.add('form-select', 'form-select-sm', 'field-value');
                     selectElement.name = 'value[]';
 
                     // Ajout d'une option par défaut
@@ -251,8 +392,10 @@
                     defaultOption.textContent = '-- Sélectionner --';
                     selectElement.appendChild(defaultOption);
 
-                    // Ajout des options
+                    // Ajout des options selon le type de champ
                     const items = selectFieldsData[field] || [];
+                    console.log(`Chargement des options pour ${field}:`, items); // Debug
+
                     items.forEach(item => {
                         const option = document.createElement('option');
                         option.value = item.id;
@@ -260,26 +403,44 @@
                         selectElement.appendChild(option);
                     });
 
-                    valueInput.replaceWith(selectElement);
+                    // Remplacer l'input par le select
+                    valueInput.parentNode.insertBefore(selectElement, valueInput);
+                    valueInput.remove();
                 }
 
-                // Ajout des classes pour l'animation
+                // Ajout au DOM avec animation stable
                 const criteriaRow = criteriaClone.querySelector('.search-criteria-row');
+
+                // Désactiver temporairement les transitions pour éviter les flickering
+                criteriaRow.style.transition = 'none';
                 criteriaRow.style.opacity = '0';
+
                 searchCriteriaContainer.appendChild(criteriaClone);
 
-                // Animation d'apparition
+                // Réactiver les transitions et animer
                 requestAnimationFrame(() => {
                     criteriaRow.style.transition = 'opacity 0.3s ease-in-out';
-                    criteriaRow.style.opacity = '1';
+                    requestAnimationFrame(() => {
+                        criteriaRow.style.opacity = '1';
+                    });
                 });
             }
 
             // Suppression d'un critère
             searchCriteriaContainer.addEventListener('click', function(e) {
                 if (e.target.closest('.remove-criteria-btn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
                     const criteriaRow = e.target.closest('.search-criteria-row');
+                    const button = e.target.closest('.remove-criteria-btn');
+
+                    // Désactiver le bouton pour éviter les double-clics
+                    button.disabled = true;
+
+                    criteriaRow.style.transition = 'opacity 0.3s ease-in-out';
                     criteriaRow.style.opacity = '0';
+
                     setTimeout(() => {
                         criteriaRow.remove();
                         if (searchCriteriaContainer.querySelectorAll('.search-criteria-row').length === 0) {
@@ -329,13 +490,20 @@
                 const rows = searchCriteriaContainer.querySelectorAll('.search-criteria-row');
 
                 rows.forEach(row => {
-                    criteria.push({
-                        field: row.querySelector('.field-name').value,
-                        operator: row.querySelector('.field-operator').value,
-                        value: row.querySelector('.field-value').value
-                    });
+                    const fieldInput = row.querySelector('.field-name');
+                    const operatorSelect = row.querySelector('.field-operator');
+                    const valueElement = row.querySelector('.field-value');
+
+                    if (fieldInput && operatorSelect && valueElement) {
+                        criteria.push({
+                            field: fieldInput.value,
+                            operator: operatorSelect.value,
+                            value: valueElement.value
+                        });
+                    }
                 });
 
+                console.log('Critères collectés:', criteria); // Debug
                 return criteria;
             }
 
@@ -404,12 +572,23 @@
                             const fieldLabel = field.getAttribute('data-name-field');
                             addSearchCriteria(fieldName, fieldLabel);
 
-                            const lastRow = searchCriteriaContainer.lastElementChild;
-                            lastRow.querySelector('.field-operator').value = criterion.operator;
-                            const valueInput = lastRow.querySelector('.field-value');
-                            if (valueInput) {
-                                valueInput.value = criterion.value;
-                            }
+                            // Attendre que l'élément soit ajouté au DOM
+                            setTimeout(() => {
+                                const rows = searchCriteriaContainer.querySelectorAll('.search-criteria-row');
+                                const lastRow = rows[rows.length - 1];
+
+                                if (lastRow) {
+                                    const operatorSelect = lastRow.querySelector('.field-operator');
+                                    const valueInput = lastRow.querySelector('.field-value');
+
+                                    if (operatorSelect) {
+                                        operatorSelect.value = criterion.operator;
+                                    }
+                                    if (valueInput) {
+                                        valueInput.value = criterion.value;
+                                    }
+                                }
+                            }, 100);
                         }
                     });
                 }, 300);
@@ -451,6 +630,30 @@
 
             // Initialiser les recherches sauvegardées au chargement
             updateSavedSearchesList();
+
+            // Validation du formulaire avant soumission
+            const searchForm = document.getElementById('advanced-search-form');
+            searchForm.addEventListener('submit', function(e) {
+                const criteria = collectSearchCriteria();
+
+                if (criteria.length === 0) {
+                    e.preventDefault();
+                    showToast('warning', 'Veuillez ajouter au moins un critère de recherche');
+                    return false;
+                }
+
+                // Vérifier que tous les critères ont des valeurs
+                const invalidCriteria = criteria.filter(c => !c.value || c.value.trim() === '');
+                if (invalidCriteria.length > 0) {
+                    e.preventDefault();
+                    showToast('warning', 'Tous les critères doivent avoir une valeur');
+                    return false;
+                }
+
+                console.log('Soumission du formulaire avec les critères:', criteria); // Debug
+                return true;
+            });
+        });
         });
     </script>
 @endpush

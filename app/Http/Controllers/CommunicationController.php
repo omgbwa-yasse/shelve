@@ -14,6 +14,7 @@ use App\Models\Organisation;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CommunicationController extends Controller
@@ -41,42 +42,39 @@ class CommunicationController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'code' => 'required',
-            'name' => 'required',
-            'gcontent' => 'nullable',  // Changé de 'content' à 'gcontent'
-            'user_id' => 'required|exists:users,id',
-            'return_date' => 'required|date',
-            'user_organisation_id' => 'required|exists:organisations,id',
-            'selected_records' => 'required|array',
-            'original' => 'nullable|array',
-            'content' => 'nullable|array',
-        ]);
-
-        $communication = Communication::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'content' => $request->input('gcontent'),
-            'operator_id' => Auth()->user()->id,
-            'user_id' => $request->user_id,
-            'user_organisation_id' => $request->user_organisation_id,
-            'operator_organisation_id' => Auth()->user()->current_organisation_id,
-            'return_date' => $request->return_date,
-            'status_id' => 1,
-        ]);
-
-        // Traitement direct du tableau de records
-        foreach ($request->selected_records as $recordId) {
-            CommunicationRecord::create([
-                'communication_id' => $communication->id,
-                'record_id' => $recordId,
-                'is_original' => isset($request->original[$recordId]) ? true : false,
-                'content' => $request->content[$recordId] ?? null,
-                'return_date' => date('Y-m-d', strtotime("+14 days")),
+        try {
+            $request->validate([
+                'code' => 'required|string|max:255',
+                'name' => 'required|string|max:255',
+                'content' => 'nullable|string',
+                'user_id' => 'required|exists:users,id',
+                'return_date' => 'required|date|after_or_equal:today',
+                'user_organisation_id' => 'required|exists:organisations,id',
+                'status_id' => 'required|exists:communication_statuses,id',
             ]);
-        }
 
-        return redirect()->back()->with('success', 'Communication créée avec succès');
+            // Vérifier que l'utilisateur a une organisation courante
+            if (!Auth::user()->current_organisation_id) {
+                return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
+            }
+
+            Communication::create([
+                'code' => $request->code,
+                'name' => $request->name,
+                'content' => $request->content,
+                'operator_id' => Auth::user()->id,
+                'user_id' => $request->user_id,
+                'user_organisation_id' => $request->user_organisation_id,
+                'operator_organisation_id' => Auth::user()->current_organisation_id,
+                'return_date' => $request->return_date,
+                'status_id' => $request->status_id,
+            ]);
+
+            return redirect()->route('transactions.index')->with('success', 'Communication créée avec succès');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()])->withInput();
+        }
     }
 
     public function show(INT $id)

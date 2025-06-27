@@ -3,6 +3,23 @@
 @section('content')
     <div class="container">
         <h1>Nouvelle réservation</h1>
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
         <form action="{{ route('reservations.store') }}" method="POST">
             @csrf
             <div class="mb-3">
@@ -19,106 +36,123 @@
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="user_id" class="form-label">User</label>
-                        <select name="user_id" id="user_id" class="form-select" required>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
+                    <label for="user_organisation_id" class="form-label">{{ __('User Organisation') }}</label>
+                    <select name="user_organisation_id" id="user_organisation_id" class="form-select" required>
+                        <option value="">{{ __('Select an organization') }}</option>
+                        @foreach ($organisations as $organisation)
+                            <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="user_organisation_id" class="form-label">User Organisation</label>
-                        <select name="user_organisation_id" id="user_organisation_id" class="form-select" required>
-                            @foreach ($organisations as $organisation)
-                                <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
-                            @endforeach
-                        </select>
+                    <label for="user_id" class="form-label">{{ __('User') }}</label>
+                    <select name="user_id" id="user_id" class="form-select" required disabled>
+                        <option value="">{{ __('Please select an organization first') }}</option>
+                    </select>
+                    <small class="text-muted">{{ __('Please select an organization first') }}</small>
+                    <div id="userLoading" class="text-center mt-2" style="display: none;">
+                        <div class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></div>
+                        <span class="ms-2">{{ __('Loading users...') }}</span>
+                    </div>
                 </div>
             </div>
             <button type="submit" class="btn btn-primary">Ajouter</button>
         </form>
     </div>
 
-    <style>
-        .select-with-search {
-            position: relative;
-        }
-        .select-with-search .search-input {
-            border-top-right-radius: 0.25rem;
-            border-bottom-right-radius: 0.25rem;
-        }
-        .select-with-search .form-select {
-            border-color: #ced4da;
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-            border-color: #ced4da;
-        }
-        .btn-primary {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
-        }
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
-        }
-    </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const selectWithSearchElements = document.querySelectorAll('.select-with-search');
+            const organisationSelect = document.getElementById('user_organisation_id');
+            const userSelect = document.getElementById('user_id');
+            const userLoading = document.getElementById('userLoading');
+            let organisationUsers = [];
 
-            selectWithSearchElements.forEach(selectWithSearch => {
-                const searchInput = selectWithSearch.querySelector('.search-input');
-                const select = selectWithSearch.querySelector('select');
-                const options = Array.from(select.options).slice(1); // Exclude the first option
+            // Fonction pour charger les utilisateurs d'une organisation via AJAX
+            function loadOrganisationUsers(organisationId) {
+                if (!organisationId) {
+                    userSelect.disabled = true;
+                    userSelect.innerHTML = '<option value="">{{ __("Please select an organization first") }}</option>';
+                    return;
+                }
 
-                searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
+                userLoading.style.display = 'block';
+                userSelect.disabled = true;
+                userSelect.innerHTML = '<option value="">{{ __("Loading...") }}</option>';
 
-                    options.forEach(option => {
-                        const optionText = option.textContent.toLowerCase();
-                        if (optionText.includes(searchTerm)) {
-                            option.style.display = '';
-                        } else {
-                            option.style.display = 'none';
-                        }
-                    });
-
-                    // Reset selection and show placeholder option
-                    select.selectedIndex = 0;
-                    select.options[0].style.display = '';
-
-                    // If no visible options, show a "No results" option
-                    const visibleOptions = options.filter(option => option.style.display !== 'none');
-                    if (visibleOptions.length === 0) {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (!noResultsOption) {
-                            const newNoResultsOption = document.createElement('option');
-                            newNoResultsOption.textContent = 'No results found';
-                            newNoResultsOption.disabled = true;
-                            newNoResultsOption.setAttribute('data-no-results', 'true');
-                            select.appendChild(newNoResultsOption);
-                        } else {
-                            noResultsOption.style.display = '';
-                        }
-                    } else {
-                        const noResultsOption = select.querySelector('option[data-no-results]');
-                        if (noResultsOption) {
-                            noResultsOption.style.display = 'none';
-                        }
+                fetch(`/api/organisations/${organisationId}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
                     }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    organisationUsers = users;
+                    updateUserSelect(users);
+                    userLoading.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des utilisateurs:', error);
+                    userLoading.style.display = 'none';
+                    userSelect.innerHTML = '<option value="">{{ __("Error loading users") }}</option>';
+                });
+            }
+
+            // Fonction pour mettre à jour le select des utilisateurs
+            function updateUserSelect(users) {
+                userSelect.innerHTML = '<option value="">{{ __("Select a user") }}</option>';
+
+                if (users.length === 0) {
+                    userSelect.innerHTML = '<option value="">{{ __("No users found in this organization") }}</option>';
+                    userSelect.disabled = true;
+                    return;
+                }
+
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    userSelect.appendChild(option);
                 });
 
-                // Clear search input when select changes
-                select.addEventListener('change', function() {
-                    searchInput.value = '';
-                    options.forEach(option => option.style.display = '');
-                    const noResultsOption = select.querySelector('option[data-no-results]');
-                    if (noResultsOption) {
-                        noResultsOption.style.display = 'none';
+                userSelect.disabled = false;
+            }
+
+            // Écouter les changements d'organisation
+            organisationSelect.addEventListener('change', function() {
+                const organisationId = this.value;
+                loadOrganisationUsers(organisationId);
+            });
+
+            // Validation du formulaire
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const requiredFields = {
+                    'code': 'Code',
+                    'name': 'Objet',
+                    'user_organisation_id': 'Organisation utilisateur',
+                    'user_id': 'Utilisateur'
+                };
+
+                let errors = [];
+
+                for (let fieldName in requiredFields) {
+                    const field = document.getElementById(fieldName);
+                    if (!field || !field.value.trim()) {
+                        errors.push(`Le champ "${requiredFields[fieldName]}" est obligatoire`);
                     }
-                });
+                }
+
+                if (errors.length > 0) {
+                    e.preventDefault();
+                    alert('Erreurs de validation:\n' + errors.join('\n'));
+                    return false;
+                }
             });
         });
     </script>

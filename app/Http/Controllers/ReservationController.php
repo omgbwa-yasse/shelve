@@ -11,7 +11,9 @@ use App\Models\ReservationStatus;
 use App\Models\User;
 use App\Models\Organisation;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class ReservationController extends Controller
@@ -48,10 +50,10 @@ class ReservationController extends Controller
                 'code' => $reservation->code,
                 'name' => $reservation->name,
                 'content' => $reservation->content,
-                'operator_id' => auth()->id(),
+                'operator_id' => Auth::user()->id,
                 'user_id' => $reservation->user_id,
                 'user_organisation_id' => $reservation->user_organisation_id,
-                'operator_organisation_id' => auth()->user()->current_organisation_id,
+                'operator_organisation_id' => Auth::user()->current_organisation_id,
                 'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
                 'status_id' => 1,
             ]);
@@ -86,7 +88,7 @@ class ReservationController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Erreur lors de l\'approbation de la réservation: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'approbation de la réservation: ' . $e->getMessage());
 
             return redirect()
                 ->back()
@@ -112,29 +114,38 @@ class ReservationController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'code' => 'required|unique:reservations|max:10',
-            'name' => 'required|string|max:200',
-            'content' => 'nullable|string',
-            'user_id' => 'required|exists:users,id',
-            'user_organisation_id' => 'required|exists:organisations,id',
-        ]);
+        try {
+            $request->validate([
+                'code' => 'required|unique:reservations|max:10',
+                'name' => 'required|string|max:200',
+                'content' => 'nullable|string',
+                'user_id' => 'required|exists:users,id',
+                'user_organisation_id' => 'required|exists:organisations,id',
+            ]);
 
+            // Vérifier que l'utilisateur a une organisation courante
+            if (!Auth::user()->current_organisation_id) {
+                return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une réservation.'])->withInput();
+            }
 
-        Reservation::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'content' => $request->input('content'),
-            'operator_id' => Auth()->user()->id,
-            'user_id' => $request->user_id,
-            'user_organisation_id' => $request->user_organisation_id,
-            'operator_organisation_id' => Auth()->user()->current_organisation_id,
-            'return_date' => $request->return_date,
-            'status_id' => 1, // Examen
-        ]);
+            Reservation::create([
+                'code' => $request->code,
+                'name' => $request->name,
+                'content' => $request->input('content'),
+                'operator_id' => Auth::user()->id,
+                'user_id' => $request->user_id,
+                'user_organisation_id' => $request->user_organisation_id,
+                'operator_organisation_id' => Auth::user()->current_organisation_id,
+                'return_date' => $request->return_date,
+                'status_id' => 1, // Examen
+            ]);
 
-        return redirect()->route('reservations.index')
-            ->with('success', 'Reservation created successfully.');
+            return redirect()->route('reservations.index')
+                ->with('success', 'Réservation créée avec succès.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()])->withInput();
+        }
     }
 
 
@@ -158,7 +169,7 @@ class ReservationController extends Controller
         $request->validate([
             'code' => 'required|unique:reservations,code,'.$reservation->id.'|max:10',
             'name' => 'required|string|max:200',
-            'content' => 'nullable|sting',
+            'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'user_organisation_id' => 'required|exists:organisations,id',
         ]);
@@ -167,8 +178,8 @@ class ReservationController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'content' => $request->input('content'),
-            'operator_id' => Auth()->user()->id,
-            'operator_organisation_id' => Auth()->user()->current_organisation_id,
+            'operator_id' => Auth::user()->id,
+            'operator_organisation_id' => Auth::user()->current_organisation_id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'status_id' => 1,

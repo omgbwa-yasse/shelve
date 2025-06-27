@@ -151,6 +151,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/authors', [AuthorController::class, 'indexApi']);
         Route::post('/authors', [AuthorController::class, 'storeApi']);
         Route::get('/author-types', [AuthorController::class, 'authorTypesApi']);
+        Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
+            return $organisation->users;
+        });
     });
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
@@ -361,6 +364,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('select', [SearchCommunicationController::class, 'date'])->name('communications-select-date');
         Route::get('/advanced', [SearchCommunicationController::class, 'form'])->name('communications.advanced.form');
         Route::post('/advanced', [SearchCommunicationController::class, 'advanced'])->name('search.communications.advanced');
+        Route::get('/test-advanced', function() {
+            return view('test_simple_advanced');
+        })->name('communications.test.advanced');
 
     });
 

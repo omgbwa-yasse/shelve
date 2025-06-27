@@ -1,19 +1,17 @@
-<div class="submenu-container py-2">
-    <!-- Google Fonts - Inter -->
-    <link rel="preconnect" hre        <div class="submenu-heading">
-            <i class="bi bi-envelope"></i> {{ __('Communications') }}
-        </div>
-        <div class="submenu-content" id="communicationsMenu">ttps://fonts.googleapis.com">
+
+
+
+    <div class="communications-submenu" id="communicationsMenu">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        .submenu-container {
+        .communications-submenu {
             font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
         }
 
-        .submenu-heading {
+        .communications-submenu .submenu-heading {
             background-color: #4285f4;
             color: white;
             border-radius: 6px;
@@ -26,28 +24,30 @@
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            user-select: none;
         }
 
-        .submenu-heading:hover {
+        .communications-submenu .submenu-heading:hover {
             background-color: #3367d6;
         }
 
-        .submenu-heading i {
+        .communications-submenu .submenu-heading i {
             margin-right: 8px;
             font-size: 14px;
         }
 
-        .submenu-content {
+        .communications-submenu .submenu-section-content {
             padding: 0 0 8px 12px;
             margin-bottom: 8px;
-            display: block; /* Toujours visible par défaut */
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .submenu-item {
+        .communications-submenu .submenu-item {
             margin-bottom: 2px;
         }
 
-        .submenu-link {
+        .communications-submenu .submenu-link {
             display: flex;
             align-items: center;
             padding: 4px 8px;
@@ -58,45 +58,54 @@
             font-size: 12.5px;
         }
 
-        .submenu-link:hover {
+        .communications-submenu .submenu-link:hover {
             background-color: #f1f3f4;
             color: #4285f4;
             text-decoration: none;
         }
 
-        .submenu-link i {
+        .communications-submenu .submenu-link i {
             margin-right: 8px;
             color: #5f6368;
             font-size: 13px;
         }
 
-        .submenu-link:hover i {
+        .communications-submenu .submenu-link:hover i {
             color: #4285f4;
         }
 
-        .add-section .submenu-heading {
+        .communications-submenu .add-section .submenu-heading {
             background-color: #34a853;
         }
 
-        .add-section .submenu-heading:hover {
+        .communications-submenu .add-section .submenu-heading:hover {
             background-color: #188038;
         }
 
-        /* Style pour les sections collapsibles */
-        .submenu-content.collapsed {
-            display: none;
+        /* Animation de collapse plus fluide */
+        .communications-submenu .submenu-section-content.collapsed {
+            max-height: 0 !important;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: 0;
+            opacity: 0;
         }
 
-        .submenu-heading::after {
-            content: '';
+        .communications-submenu .submenu-heading::after {
+            content: '▼';
             margin-left: auto;
-            font-family: 'bootstrap-icons';
             font-size: 12px;
-            transition: transform 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .submenu-heading.collapsed::after {
+        .communications-submenu .submenu-heading.collapsed::after {
             transform: rotate(-90deg);
+        }
+
+        /* État par défaut - tout ouvert */
+        .communications-submenu .submenu-section-content {
+            max-height: 300px;
+            opacity: 1;
         }
     </style>
 
@@ -105,7 +114,7 @@
         <div class="submenu-heading">
             <i class="bi bi-chat-dots"></i> {{ __('communications') }}
         </div>
-        <div class="submenu-content" id="communicationsMenu">
+        <div class="submenu-section-content" id="communicationsSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('transactions.index')}}">
                     <i class="bi bi-inbox"></i> {{ __('view_all') }}
@@ -139,7 +148,7 @@
         <div class="submenu-heading">
             <i class="bi bi-calendar-check"></i> {{ __('reservations') }}
         </div>
-        <div class="submenu-content" id="reservationsMenu">
+        <div class="submenu-section-content" id="reservationsSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('reservations.index')}}">
                     <i class="bi bi-list-ul"></i> {{ __('view_all') }}
@@ -163,7 +172,7 @@
         <div class="submenu-heading">
             <i class="bi bi-plus-circle"></i> {{ __('add') }}
         </div>
-        <div class="submenu-content" id="addMenu">
+        <div class="submenu-section-content" id="addSection">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('transactions.create')}}">
                     <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
@@ -180,19 +189,58 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fonctionnalité de collapse optionnelle pour les sous-menus
-    const headings = document.querySelectorAll('.submenu-heading');
+    console.log('Communications submenu initialized');
+
+    // Sélectionner uniquement les éléments de notre sous-menu
+    const menuContainer = document.getElementById('communicationsMenu');
+    if (!menuContainer) {
+        console.error('Communications menu container not found');
+        return;
+    }
+
+    const headings = menuContainer.querySelectorAll('.submenu-heading');
+    console.log('Found headings:', headings.length);
 
     headings.forEach(function(heading) {
-        heading.addEventListener('click', function() {
-            const content = this.nextElementSibling;
+        heading.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-            if (content && content.classList.contains('submenu-content')) {
-                // Toggle la classe collapsed
-                content.classList.toggle('collapsed');
-                this.classList.toggle('collapsed');
+            const content = this.nextElementSibling;
+            console.log('Clicked heading:', this.textContent.trim());
+            console.log('Content element:', content);
+
+            if (content && content.classList.contains('submenu-section-content')) {
+                // Toggle les classes
+                const isCollapsed = content.classList.contains('collapsed');
+
+                if (isCollapsed) {
+                    content.classList.remove('collapsed');
+                    this.classList.remove('collapsed');
+                    console.log('Expanded section');
+                } else {
+                    content.classList.add('collapsed');
+                    this.classList.add('collapsed');
+                    console.log('Collapsed section');
+                }
+            } else {
+                console.error('Content element not found or invalid');
             }
         });
     });
+
+    // S'assurer que tous les menus sont ouverts par défaut
+    const allContents = menuContainer.querySelectorAll('.submenu-section-content');
+    const allMenuHeadings = menuContainer.querySelectorAll('.submenu-heading');
+
+    allContents.forEach(function(content) {
+        content.classList.remove('collapsed');
+    });
+
+    allMenuHeadings.forEach(function(heading) {
+        heading.classList.remove('collapsed');
+    });
+
+    console.log('All sections opened by default');
 });
 </script>

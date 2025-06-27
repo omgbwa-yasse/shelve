@@ -34,7 +34,7 @@
             font-size: 14px;
         }
         
-        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par défaut */ }
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par dï¿½faut */ }
         
         .submenu-item {
             margin-bottom: 2px;
