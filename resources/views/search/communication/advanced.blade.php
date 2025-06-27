@@ -654,6 +654,6 @@
                 return true;
             });
         });
-        });
+
     </script>
 @endpush
