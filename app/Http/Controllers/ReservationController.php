@@ -21,7 +21,7 @@ class ReservationController extends Controller
     public function index()
     {
         $reservations = Reservation::with('operator', 'user', 'status', 'userOrganisation', 'operatorOrganisation')->get();
-        return view('reservations.index', compact('reservations'));
+        return view('communications.reservations.index', compact('reservations'));
     }
 
 
@@ -29,7 +29,7 @@ class ReservationController extends Controller
     public function show($id)
     {
         $reservation = reservation::findOrFail($id);
-        return view('reservations.show', compact('reservation'));
+        return view('communications.reservations.show', compact('reservation'));
     }
 
 
@@ -105,7 +105,7 @@ class ReservationController extends Controller
         $users = User::all();
         $statuses = ReservationStatus::all();
         $organisations = Organisation::all();
-        return view('reservations.create', compact('operators', 'users', 'statuses', 'organisations'));
+        return view('communications.reservations.create', compact('operators', 'users', 'statuses', 'organisations'));
     }
 
 
@@ -157,7 +157,7 @@ class ReservationController extends Controller
         $users = User::all();
         $statuses = ReservationStatus::all();
         $organisations = Organisation::all();
-        return view('reservations.edit', compact('reservation', 'operators', 'users', 'statuses', 'organisations'));
+        return view('communications.reservations.edit', compact('reservation', 'operators', 'users', 'statuses', 'organisations'));
     }
 
 

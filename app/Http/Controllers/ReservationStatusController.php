@@ -10,18 +10,18 @@ class ReservationStatusController extends Controller
     public function index()
     {
         $statuses = ReservationStatus::with('reservations')->get();
-        return view('reservations.statuses.index', compact('statuses'));
+        return view('communications.reservations.statuses.index', compact('statuses'));
     }
 
     public function show(INT $id)
     {
         $status = ReservationStatus::findOrFail($id);
-        return view('reservations.statuses.show', compact('status'));
+        return view('communications.reservations.statuses.show', compact('status'));
     }
 
     public function create()
     {
-        return view('reservations.statuses.create');
+        return view('communications.reservations.statuses.create');
     }
 
     public function store(Request $request)
@@ -40,7 +40,7 @@ class ReservationStatusController extends Controller
     public function edit(INT $id)
     {
         $status = ReservationStatus::findOrFail($id);
-        return view('reservations.statuses.edit', compact('status'));
+        return view('communications.reservations.statuses.edit', compact('status'));
     }
 
     public function update(Request $request, ReservationStatus $status)

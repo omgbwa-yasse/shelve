@@ -19,7 +19,7 @@ class ReservationRecordController extends Controller
         $reservationRecords = ReservationRecord::where('reservation_id', $reservation->id)->get();
         $reservationRecords->load('reservation', 'record','communication');
 
-        return view('Reservations.records.index', compact('reservationRecords','reservation'));
+        return view('communications.reservations.records.index', compact('reservationRecords','reservation'));
     }
 
 
@@ -30,7 +30,7 @@ class ReservationRecordController extends Controller
         $reservation = Reservation::findOrFail($id);
         $records = Record::all();
         $users = User::all();
-        return view('Reservations.records.create', compact('reservation', 'records', 'users'));
+        return view('communications.reservations.records.create', compact('reservation', 'records', 'users'));
     }
 
 
@@ -41,7 +41,7 @@ class ReservationRecordController extends Controller
         $reservationRecord = ReservationRecord::findOrFail($idRecord);
         $reservationRecord->load('record','reservation');
         $reservation = Reservation::findOrFail($id);
-        return view('reservations.records.show', compact('reservationRecord', 'reservation'));
+        return view('communications.reservations.records.show', compact('reservationRecord', 'reservation'));
     }
 
 
@@ -52,7 +52,7 @@ class ReservationRecordController extends Controller
     {
         $records = Record::all();
         $users = User::all();
-        return view('reservations.records.edit', compact('reservationRecord', 'reservation', 'records', 'users'));
+        return view('communications.reservations.records.edit', compact('reservationRecord', 'reservation', 'records', 'users'));
     }
 
 
