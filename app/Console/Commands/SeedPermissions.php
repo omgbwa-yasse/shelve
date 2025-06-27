@@ -31,19 +31,16 @@ class SeedPermissions extends Command
         $fresh = $this->option('fresh');
 
         if ($fresh) {
-            $this->info('Running fresh permissions seeding (will truncate existing data)...');
-            Artisan::call('db:seed', [
-                '--class' => 'PermissionSeeder'
-            ]);
-        } else {
-            $this->info('Running permissions update seeding (will preserve existing data)...');
-            Artisan::call('db:seed', [
-                '--class' => 'PermissionUpdateSeeder'
-            ]);
+            $this->warn('Option --fresh ignorée. Le seeder utilise maintenant updateOrInsert() par défaut pour la sécurité.');
         }
 
-        $this->info('Permissions seeded successfully!');
-        
+        $this->info('Running permissions seeding (updateOrInsert - safe for production)...');
+        Artisan::call('db:seed', [
+            '--class' => 'PermissionSeeder'
+        ]);
+
+        $this->info('Permissions seeded successfully! Total: 222 permissions');
+
         return Command::SUCCESS;
     }
 }
