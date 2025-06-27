@@ -5,8 +5,21 @@
         <div class="row justify-content-center">
             <div class="">
                 <div class="">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h2 class="mb-0">Détails du bordereau du versement</h2>
+                        <div>
+                            <a href="{{ route('slips.print', $slip->id) }}" class="btn btn-danger me-2" target="_blank">
+                                <i class="fas fa-file-pdf"></i> Générer PDF du bordereau
+                            </a>
+                            <form method="POST" action="{{ route('slips.export') }}" style="display: inline;">
+                                @csrf
+                                <input type="hidden" name="slip_id" value="{{ $slip->id }}">
+                                <input type="hidden" name="format" value="excel">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-file-excel"></i> Exporter en Excel
+                                </button>
+                            </form>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row mb-4">

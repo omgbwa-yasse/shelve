@@ -3,18 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Exports\RecordsExport;
-use App\Exports\SlipsExport;
+use App\Exports\SlipExport;
 use App\Exports\SEDAExport;
 use App\Exports\EADExport;
 use App\Models\Dolly;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DollyExportController extends Controller
 {
     public function showExportForm()
     {
-        $dollies = Dolly::all();
+        // Récupérer l'organisation de l'utilisateur connecté
+        $userOrganisationId = Auth::user()->current_organisation_id;
+
+        // Récupérer uniquement les dollies de l'organisation courante ou publics
+        $dollies = Dolly::where(function ($query) use ($userOrganisationId) {
+            $query->where('owner_organisation_id', $userOrganisationId)
+                  ->orWhere('is_public', true);
+        })->get();
+
         return view('exports.dolly_export', compact('dollies'));
     }
 
@@ -44,7 +53,17 @@ class DollyExportController extends Controller
 
     private function exportExcel($items, $fileName, $type)
     {
-        $export = $type === 'records' ? new RecordsExport($items) : new SlipsExport($items);
+        if ($type === 'records') {
+            $export = new RecordsExport($items);
+        } else {
+            // Pour les slips, prendre le premier slip de la collection
+            $firstSlip = $items->first();
+            if (!$firstSlip) {
+                throw new \Exception('Aucun bordereau trouvé pour l\'export');
+            }
+            $export = new SlipExport($firstSlip);
+            $fileName = 'bordereau_' . $firstSlip->code;
+        }
         return Excel::download($export, $fileName . '.xlsx');
     }
 

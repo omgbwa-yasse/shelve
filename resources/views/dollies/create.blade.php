@@ -14,10 +14,10 @@
             <textarea name="description" id="description" class="form-control" required></textarea>
         </div>
         <div class="mb-3">
-            <label for="type_id" class="form-label">Type</label>
-            <select name="type_id" id="type_id" class="form-select" required>
+            <label for="category" class="form-label">Category</label>
+            <select name="category" id="category" class="form-select" required>
                 @foreach ($categories as $category)
-                <option value="{{ $type->id }}">
+                <option value="{{ $category }}">
                     @if($category == 'record')
                         Description des archives
                     @elseif($category == 'mail')

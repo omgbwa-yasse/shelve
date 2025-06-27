@@ -7,6 +7,7 @@ use App\Models\RecordSupport;
 use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Slip;
 use App\Models\Activity;
 use App\Models\Building;
@@ -220,7 +221,7 @@ class SearchSlipController extends Controller
     public function index(Request $request)
     {
         // Récupérer l'organisation de l'utilisateur connecté
-        $userOrganisationId = auth()->user()->current_organisation_id;
+        $userOrganisationId = Auth::user()->current_organisation_id;
 
         $query = Slip::query();
 
@@ -256,8 +257,7 @@ class SearchSlipController extends Controller
                 break;
 
             case "officer-organisation":
-                $query->where('officer_organisation_id', $request->input('id'))
-                    ->where('officer_organisation_id', $userOrganisationId); // Double vérification
+                $query->where('officer_organisation_id', $request->input('id'));
                 break;
 
             case "user":
@@ -265,8 +265,7 @@ class SearchSlipController extends Controller
                 break;
 
             case "user-organisation":
-                $query->where('user_organisation_id', $request->input('id'))
-                    ->where('user_organisation_id', $userOrganisationId); // Double vérification
+                $query->where('user_organisation_id', $request->input('id'));
                 break;
 
             case "received":
@@ -323,9 +322,29 @@ class SearchSlipController extends Controller
 
     public function organisation()
     {
-        $organisations = Organisation::all();
-        $organisations->load('userSlips','officerSlips');
-        return view('search.slips.organisationSearch', compact('organisations'));
+        // Récupérer l'organisation courante de l'utilisateur connecté
+        $userOrganisationId = Auth::user()->current_organisation_id;
+
+        // Récupérer seulement les slips émis ou reçus par l'organisation courante
+        $slips = Slip::where(function($query) use ($userOrganisationId) {
+            $query->where('officer_organisation_id', $userOrganisationId)
+                  ->orWhere('user_organisation_id', $userOrganisationId);
+        })
+        ->with([
+            'officerOrganisation',
+            'officer',
+            'userOrganisation',
+            'user',
+            'slipStatus',
+            'records',
+            'receivedAgent',
+            'approvedAgent',
+            'integratedAgent'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+        return view('slips.index', compact('slips'));
     }
 
 }

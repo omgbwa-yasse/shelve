@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\EADExport;
 use App\Exports\SEDAExport;
-use App\Exports\SlipsExport;
+use App\Exports\SlipExport;
 use App\Imports\SlipsImport;
 use App\Models\Dolly;
 use App\Models\SlipRecord;
@@ -17,6 +17,7 @@ use App\Models\Slip;
 use App\Models\Record;
 use App\Models\SlipStatus;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use SimpleXMLElement;
 use ZipArchive;
@@ -79,7 +80,8 @@ class SlipController extends Controller
         $organisations = Organisation::all();
         $users = User::with('organisations')->get();
         $slipStatuses = SlipStatus::all();
-        return view('slips.create', compact('organisations', 'users', 'slipStatuses'));
+        $currentOrganisation = Auth::user()->currentOrganisation;
+        return view('slips.create', compact('organisations', 'users', 'slipStatuses', 'currentOrganisation'));
     }
 
 
@@ -90,7 +92,6 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id', // supprimer
             'user_organisation_id' => 'required|exists:organisations,id',  // Supprimer et merge
             'user_id' => 'nullable|exists:users,id', // Supprimer et merge
             'slip_status_id' => 'required|exists:slip_statuses,id',
@@ -100,7 +101,11 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
-        $request->merge(['officer_id' => auth()->user()->id]);
+        // Ajouter automatiquement l'organisation courante de l'utilisateur et l'officer_id
+        $request->merge([
+            'officer_id' => Auth::user()->id,
+            'officer_organisation_id' => Auth::user()->current_organisation_id
+        ]);
 
         Slip::create($request->all());
 
@@ -119,8 +124,8 @@ class SlipController extends Controller
             'mail_containers' => 'required|array',
         ]);
 
-        $request->merge(['officer_id' => auth()->user()->id]);
-        $request->merge(['organisation_id' => auth()->user()->current_organisation_id]);
+        $request->merge(['officer_id' => Auth::user()->id]);
+        $request->merge(['organisation_id' => Auth::user()->current_organisation_id]);
         $request->merge(['slip_status_id' => 1]);
         $request->merge(['is_received' => False]);
         $request->merge(['received_date' => null]);
@@ -422,35 +427,77 @@ class SlipController extends Controller
     }
     public function exportForm()
     {
-        $dollies = Dolly::all();
-        return view('slips.export', compact('dollies'));
+        // Récupérer l'organisation de l'utilisateur connecté
+        $userOrganisationId = Auth::user()->current_organisation_id;
+
+        // Récupérer uniquement les bordereaux émis ou reçus par l'organisation courante
+        $slips = Slip::where(function($query) use ($userOrganisationId) {
+            $query->where('officer_organisation_id', $userOrganisationId)
+                ->orWhere('user_organisation_id', $userOrganisationId);
+        })
+        ->with(['officer', 'officerOrganisation', 'userOrganisation', 'user', 'slipStatus', 'records'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        return view('slips.export', compact('slips'));
     }
 
 
     public function export(Request $request)
     {
-        $dollyId = $request->input('dolly_id');
-        $format = $request->input('format');
+        $slipId = $request->input('slip_id'); // Paramètre pour un slip spécifique
+        $format = $request->input('format', 'excel');
 
-        if ($dollyId) {
-            $dolly = Dolly::findOrFail($dollyId);
-            $slips = $dolly->slips;
+        // Récupérer l'organisation de l'utilisateur connecté
+        $userOrganisationId = Auth::user()->current_organisation_id;
+
+        // Déterminer quel slip exporter
+        if ($slipId) {
+            // Exporter un slip spécifique
+            $slip = Slip::where('id', $slipId)
+                ->where(function($query) use ($userOrganisationId) {
+                    $query->where('officer_organisation_id', $userOrganisationId)
+                        ->orWhere('user_organisation_id', $userOrganisationId);
+                })->firstOrFail();
         } else {
-            $slips = Slip::all();
+            // Prendre le premier bordereau de l'organisation
+            $slip = Slip::where(function($query) use ($userOrganisationId) {
+                $query->where('officer_organisation_id', $userOrganisationId)
+                    ->orWhere('user_organisation_id', $userOrganisationId);
+            })->first();
+
+            if (!$slip) {
+                return redirect()->back()->with('error', 'Aucun bordereau trouvé');
+            }
         }
+
+        // Charger toutes les relations nécessaires pour l'export
+        $slip->load([
+            'officerOrganisation',
+            'officer',
+            'userOrganisation',
+            'user',
+            'slipStatus',
+            'records.level',
+            'records.support',
+            'records.activity',
+            'records.containers',
+            'records.creator',
+            'records.authors'
+        ]);
 
         switch ($format) {
             case 'excel':
-                return Excel::download(new SlipsExport($slips), 'slips.xlsx');
+                return Excel::download(new SlipExport($slip), 'bordereau_' . $slip->code . '.xlsx');
             case 'ead':
-                $xml = $this->generateEAD($slips);
+                $xml = $this->generateEAD(collect([$slip]));
                 return response($xml)
                     ->header('Content-Type', 'application/xml')
-                    ->header('Content-Disposition', 'attachment; filename="slips.xml"');
+                    ->header('Content-Disposition', 'attachment; filename="bordereau_' . $slip->code . '.xml"');
             case 'seda':
-                return $this->exportSEDA($slips);
+                return $this->exportSEDA(collect([$slip]));
             default:
-                return redirect()->back()->with('error', 'Invalid export format');
+                return redirect()->back()->with('error', 'Format d\'export invalide');
         }
     }
 

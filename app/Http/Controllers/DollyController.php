@@ -29,7 +29,8 @@ class DollyController extends Controller
 
     public function create()
     {
-       return view('dollies.create');
+        $categories = Dolly::categories();
+        return view('dollies.create', compact('categories'));
     }
 
 
