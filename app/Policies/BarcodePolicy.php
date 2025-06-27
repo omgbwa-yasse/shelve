@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Barcode;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class BarcodePolicy
+class BarcodePolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('barcode_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'barcode_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Barcode $barcode): bool
+    public function view(User $user, Barcode $barcode): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('barcode_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $barcode, 'barcode_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('barcode_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'barcode_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Barcode $barcode): bool
+    public function update(User $user, Barcode $barcode): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('barcode_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $barcode, 'barcode_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Barcode $barcode): bool
+    public function delete(User $user, Barcode $barcode): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('barcode_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $barcode, 'barcode_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Barcode $barcode): bool
+    public function forceDelete(User $user, Barcode $barcode): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('barcode_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $barcode, 'barcode_force_delete');
     }
 
     /**

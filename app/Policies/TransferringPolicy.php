@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Transferring;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class TransferringPolicy
+class TransferringPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('transferring_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'transferring_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Transferring $transferring): bool
+    public function view(User $user, Transferring $transferring): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('transferring_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $transferring, 'transferring_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('transferring_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'transferring_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Transferring $transferring): bool
+    public function update(User $user, Transferring $transferring): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('transferring_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $transferring, 'transferring_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Transferring $transferring): bool
+    public function delete(User $user, Transferring $transferring): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('transferring_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $transferring, 'transferring_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Transferring $transferring): bool
+    public function forceDelete(User $user, Transferring $transferring): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('transferring_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $transferring, 'transferring_force_delete');
     }
 
     /**

@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Container;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class ContainerPolicy
+class ContainerPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('container_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'container_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Container $container): bool
+    public function view(User $user, Container $container): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('container_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $container, 'container_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('container_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'container_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Container $container): bool
+    public function update(User $user, Container $container): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('container_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $container, 'container_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Container $container): bool
+    public function delete(User $user, Container $container): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('container_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $container, 'container_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Container $container): bool
+    public function forceDelete(User $user, Container $container): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('container_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $container, 'container_force_delete');
     }
 
     /**

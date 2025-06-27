@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Retention;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class RetentionPolicy
+class RetentionPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('retention_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'retention_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Retention $retention): bool
+    public function view(User $user, Retention $retention): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('retention_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $retention, 'retention_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('retention_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'retention_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Retention $retention): bool
+    public function update(User $user, Retention $retention): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('retention_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $retention, 'retention_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Retention $retention): bool
+    public function delete(User $user, Retention $retention): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('retention_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $retention, 'retention_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Retention $retention): bool
+    public function forceDelete(User $user, Retention $retention): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('retention_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $retention, 'retention_force_delete');
     }
 
     /**

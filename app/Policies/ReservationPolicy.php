@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class ReservationPolicy
+class ReservationPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('reservation_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'reservation_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Reservation $reservation): bool
+    public function view(User $user, Reservation $reservation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('reservation_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $reservation, 'reservation_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('reservation_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'reservation_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Reservation $reservation): bool
+    public function update(User $user, Reservation $reservation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('reservation_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $reservation, 'reservation_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Reservation $reservation): bool
+    public function delete(User $user, Reservation $reservation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('reservation_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $reservation, 'reservation_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Reservation $reservation): bool
+    public function forceDelete(User $user, Reservation $reservation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('reservation_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $reservation, 'reservation_force_delete');
     }
 
     /**

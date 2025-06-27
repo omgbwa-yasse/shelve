@@ -5,54 +5,48 @@ namespace App\Policies;
 use App\Models\SlipRecord;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class SlipRecordPolicy
+class SlipRecordPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('slip_record_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'slip_record_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, SlipRecord $slip_record): bool
+    public function view(User $user, SlipRecord $slipRecord): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_record_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $slipRecord, 'slip_record_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('slip_record_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'slip_record_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, SlipRecord $slip_record): bool
+    public function update(User $user, SlipRecord $slipRecord): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_record_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $slipRecord, 'slip_record_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, SlipRecord $slip_record): bool
+    public function delete(User $user, SlipRecord $slipRecord): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_record_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $slipRecord, 'slip_record_delete');
     }
 
     /**
@@ -63,17 +57,15 @@ class SlipRecordPolicy
     {
         return $user->currentOrganisation &&
             $user->hasPermissionTo('slip_record_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+            $this->checkOrganisationAccess($user, $slipRecord);
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, SlipRecord $slip_record): bool
+    public function forceDelete(User $user, SlipRecord $slipRecord): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_record_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $slipRecord, 'slip_record_force_delete');
     }
 
     /**

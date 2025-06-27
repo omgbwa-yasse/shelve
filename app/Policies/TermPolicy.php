@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Term;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class TermPolicy
+class TermPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('term_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'term_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Term $term): bool
+    public function view(User $user, Term $term): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('term_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $term, 'term_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('term_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'term_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Term $term): bool
+    public function update(User $user, Term $term): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('term_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $term, 'term_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Term $term): bool
+    public function delete(User $user, Term $term): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('term_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $term, 'term_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Term $term): bool
+    public function forceDelete(User $user, Term $term): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('term_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $term, 'term_force_delete');
     }
 
     /**

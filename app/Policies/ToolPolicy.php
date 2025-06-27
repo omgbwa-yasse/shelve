@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Tool;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class ToolPolicy
+class ToolPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('tool_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'tool_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Tool $tool): bool
+    public function view(User $user, Tool $tool): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('tool_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $tool, 'tool_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('tool_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'tool_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Tool $tool): bool
+    public function update(User $user, Tool $tool): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('tool_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $tool, 'tool_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Tool $tool): bool
+    public function delete(User $user, Tool $tool): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('tool_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $tool, 'tool_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Tool $tool): bool
+    public function forceDelete(User $user, Tool $tool): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('tool_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $tool, 'tool_force_delete');
     }
 
     /**

@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class ReportPolicy
+class ReportPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('report_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'report_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Report $report): bool
+    public function view(User $user, Report $report): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('report_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $report, 'report_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('report_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'report_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Report $report): bool
+    public function update(User $user, Report $report): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('report_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $report, 'report_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Report $report): bool
+    public function delete(User $user, Report $report): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('report_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $report, 'report_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Report $report): bool
+    public function forceDelete(User $user, Report $report): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('report_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $report, 'report_force_delete');
     }
 
     /**

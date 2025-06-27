@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Room;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class RoomPolicy
+class RoomPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('room_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'room_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Room $room): bool
+    public function view(User $user, Room $room): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('room_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $room, 'room_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('room_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'room_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Room $room): bool
+    public function update(User $user, Room $room): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('room_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $room, 'room_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Room $room): bool
+    public function delete(User $user, Room $room): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('room_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $room, 'room_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Room $room): bool
+    public function forceDelete(User $user, Room $room): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('room_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $room, 'room_force_delete');
     }
 
     /**

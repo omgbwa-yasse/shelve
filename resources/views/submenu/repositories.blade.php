@@ -3,13 +3,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+
     <style>
         .submenu-container {
             font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
         }
-        
+
         .submenu-heading {
             background-color: #4285f4;
             color: white;
@@ -24,22 +24,22 @@
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        
+
         .submenu-heading:hover {
             background-color: #3367d6;
         }
-        
+
         .submenu-heading i {
             margin-right: 8px;
             font-size: 14px;
         }
-        
-        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par d�faut */ }
-        
+
+        .submenu-content { padding: 0 0 8px 12px; margin-bottom: 8px; display: block; /* Toujours visible par défaut */ }
+
         .submenu-item {
             margin-bottom: 2px;
         }
-        
+
         .submenu-link {
             display: flex;
             align-items: center;
@@ -50,31 +50,31 @@
             transition: all 0.2s ease;
             font-size: 12.5px;
         }
-        
+
         .submenu-link:hover {
             background-color: #f1f3f4;
             color: #4285f4;
             text-decoration: none;
         }
-        
+
         .submenu-link i {
             margin-right: 8px;
             color: #5f6368;
             font-size: 13px;
         }
-        
+
         .submenu-link:hover i {
             color: #4285f4;
         }
-        
+
         .add-section .submenu-heading {
             background-color: #34a853;
         }
-        
+
         .add-section .submenu-heading:hover {
             background-color: #188038;
         }
-    
+
         /* Style pour les sections collapsibles */
         .submenu-content.collapsed {
             display: none;
@@ -148,16 +148,20 @@
             <i class="bi bi-journal-plus"></i> {{ __('registration') }}
         </div>
         <div class="submenu-content" id="enregistrementMenu">
+            @can('create', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.create') }}">
                     <i class="bi bi-plus-square"></i> {{ __('new') }}
                 </a>
             </div>
+            @endcan
+            @can('create', App\Models\Author::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-author.create') }}">
                     <i class="bi bi-plus-square"></i> {{ __('producer') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
 
@@ -206,28 +210,32 @@
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
         <div class="submenu-content" id="importExportMenu">
+            @can('import', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.import.form') }}">
                     <i class="bi bi-download"></i> {{ __('import') }}
                 </a>
             </div>
+            @endcan
+            @can('export', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.export.form') }}">
                     <i class="bi bi-upload"></i> {{ __('export') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    // FonctionnalitÃ© de collapse optionnelle pour les sous-menus
     const headings = document.querySelectorAll('.submenu-heading');
-    
+
     headings.forEach(function(heading) {
         heading.addEventListener('click', function() {
             const content = this.nextElementSibling;
-            
+
             if (content && content.classList.contains('submenu-content')) {
                 // Toggle la classe collapsed
                 content.classList.toggle('collapsed');

@@ -5,9 +5,9 @@ namespace App\Policies;
 use App\Models\BulletinBoard;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class BulletinBoardPolicy
+class BulletinBoardPolicy extends BasePolicy
 {
     /**
      * Check if the user has access to the model within their current organisation.

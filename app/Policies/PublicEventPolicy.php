@@ -4,42 +4,69 @@ namespace App\Policies;
 
 use App\Models\PublicUser;
 use App\Models\PublicEvent;
-use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Auth\Access\Response;
 
-class PublicEventPolicy
+class PublicEventPolicy extends PublicBasePolicy
 {
-    use HandlesAuthorization;    /**
+    /**
      * Determine whether the user can view any events.
      */
-    public function viewAny(): bool
+    public function viewAny(): bool|Response
     {
-        return true; // Les événements sont publics
+        return $this->canViewPublic();
     }
 
     /**
      * Determine whether the user can view the event.
      */
-    public function view(): bool
+    public function view(): bool|Response
     {
-        return true; // Les événements sont publics
+        return $this->canViewPublic();
     }
 
     /**
      * Determine whether the user can register for the event.
      */
-    public function register(PublicUser $user, PublicEvent $event): bool
+    public function register(?PublicUser $user, PublicEvent $event): bool|Response
     {
-        return $user->is_approved
-            && $user->email_verified_at !== null
-            && $event->start_date > now();
+        $authCheck = $this->canPerformAuthenticatedAction($user, 'vous inscrire à cet événement');
+        if ($authCheck !== true) {
+            return $authCheck;
+        }
+
+        return $this->checkEventRegistrationRules($event);
+    }
+
+    /**
+     * Check event-specific registration rules.
+     */
+    private function checkEventRegistrationRules(PublicEvent $event): bool|Response
+    {
+        if ($event->start_date <= now()) {
+            return $this->deny('Les inscriptions sont fermées pour cet événement.');
+        }
+
+        if ($event->max_participants && $event->registrations_count >= $event->max_participants) {
+            return $this->deny('Cet événement affiche complet.');
+        }
+
+        return true;
     }
 
     /**
      * Determine whether the user can cancel their registration.
      */
-    public function cancelRegistration(PublicUser $user, PublicEvent $event): bool
+    public function cancelRegistration(?PublicUser $user, PublicEvent $event): bool|Response
     {
-        return $user->is_approved
-            && $event->start_date > now()->addHours(24); // 24h avant l'événement
+        $authCheck = $this->canPerformAuthenticatedAction($user, 'annuler votre inscription');
+        if ($authCheck !== true) {
+            return $authCheck;
+        }
+
+        if ($event->start_date <= now()->addHours(24)) {
+            return $this->deny('Vous ne pouvez plus annuler votre inscription moins de 24h avant l\'événement.');
+        }
+
+        return true;
     }
 }

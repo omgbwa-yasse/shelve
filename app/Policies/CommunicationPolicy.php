@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Communication;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class CommunicationPolicy
+class CommunicationPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('communication_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'communication_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Communication $communication): bool
+    public function view(User $user, Communication $communication): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('communication_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $communication, 'communication_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('communication_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'communication_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Communication $communication): bool
+    public function update(User $user, Communication $communication): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('communication_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $communication, 'communication_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Communication $communication): bool
+    public function delete(User $user, Communication $communication): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('communication_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $communication, 'communication_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Communication $communication): bool
+    public function forceDelete(User $user, Communication $communication): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('communication_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $communication, 'communication_force_delete');
     }
 
     /**

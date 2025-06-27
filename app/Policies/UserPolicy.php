@@ -4,54 +4,48 @@ namespace App\Policies;
 
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class UserPolicy
+class UserPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('user_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'user_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, User $targetUser): bool
+    public function view(User $user, User $user): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('user_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $user, 'user_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('user_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'user_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, User $targetUser): bool
+    public function update(User $user, User $user): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $user, 'user_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, User $targetUser): bool
+    public function delete(User $user, User $user): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('user_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $user, 'user_delete');
     }
 
     /**
@@ -61,17 +55,15 @@ class UserPolicy
     {
         return $user->currentOrganisation &&
             $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+            $this->checkOrganisationAccess($user, $user);
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, User $targetUser): bool
+    public function forceDelete(User $user, User $user): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('user_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $user, 'user_force_delete');
     }
 
     /**

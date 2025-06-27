@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Organisation;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class OrganisationPolicy
+class OrganisationPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('organisation_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'organisation_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Organisation $organisation): bool
+    public function view(User $user, Organisation $organisation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('organisation_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $organisation, 'organisation_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('organisation_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'organisation_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Organisation $organisation): bool
+    public function update(User $user, Organisation $organisation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('organisation_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $organisation, 'organisation_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Organisation $organisation): bool
+    public function delete(User $user, Organisation $organisation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('organisation_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $organisation, 'organisation_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Organisation $organisation): bool
+    public function forceDelete(User $user, Organisation $organisation): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('organisation_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $organisation, 'organisation_force_delete');
     }
 
     /**

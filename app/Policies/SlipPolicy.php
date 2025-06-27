@@ -5,64 +5,56 @@ namespace App\Policies;
 use App\Models\Slip;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
-use Illuminate\Support\Facades\Cache;
+use App\Policies\BasePolicy;
 
-class SlipPolicy
+class SlipPolicy extends BasePolicy
 {
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('slip_viewAny', $user->currentOrganisation);
+        return $this->canViewAny($user, 'slip_viewAny');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Slip $slip): bool
+    public function view(User $user, Slip $slip): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canView($user, $slip, 'slip_view');
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user): bool|Response
     {
-        return $user->currentOrganisation && $user->hasPermissionTo('slip_create', $user->currentOrganisation);
+        return $this->canCreate($user, 'slip_create');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Slip $slip): bool
+    public function update(User $user, Slip $slip): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canUpdate($user, $slip, 'slip_update');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Slip $slip): bool
+    public function delete(User $user, Slip $slip): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canDelete($user, $slip, 'slip_delete');
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Slip $slip): bool
+    public function forceDelete(User $user, Slip $slip): bool|Response
     {
-        return $user->currentOrganisation &&
-            $user->hasPermissionTo('slip_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $record);
+        return $this->canForceDelete($user, $slip, 'slip_force_delete');
     }
 
     /**

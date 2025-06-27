@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 use ZipArchive;
 
@@ -42,6 +43,8 @@ class RecordController extends Controller
 
     public function index()
     {
+        $this->authorize('viewAny', Record::class);
+
         if (Gate::allows('viewAny', Record::class)) {
             // L'utilisateur a la permission de voir tous les records
             $records = Record::with([
@@ -80,41 +83,46 @@ class RecordController extends Controller
 
     public function create()
     {
-            $statuses = RecordStatus::all();
-            $supports = RecordSupport::all();
-            $activities = Activity::all();
-            $parents = Record::all();
-            $containers = Container::all();
-            $users = User::all();
-            $levels = RecordLevel::all();
-            $records = Record::all();
-            $authors = Author::with('type')->get();
-            $terms = Term::all();
-            $authorTypes = AuthorType::all();
-            $parents = Author::all();
-            return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        $this->authorize('create', Record::class);
+
+        $statuses = RecordStatus::all();
+        $supports = RecordSupport::all();
+        $activities = Activity::all();
+        $parents = Record::all();
+        $containers = Container::all();
+        $users = User::all();
+        $levels = RecordLevel::all();
+        $records = Record::all();
+        $authors = Author::with('type')->get();
+        $terms = Term::all();
+        $authorTypes = AuthorType::all();
+        $parents = Author::all();
+        return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
 
     public function createFull()
     {
+        $this->authorize('create', Record::class);
+
         $statuses = RecordStatus::all();
-            $supports = RecordSupport::all();
-            $activities = Activity::all();
-            $parents = Record::all();
-            $containers = Container::all();
-            $users = User::all();
-            $levels = RecordLevel::all();
-            $records = Record::all();
-            $authors = Author::with('type')->get();
-            $terms = Term::all();
-            $authorTypes = AuthorType::all();
-            $parents = Author::all();
-            return view('records.createFull', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        $supports = RecordSupport::all();
+        $activities = Activity::all();
+        $parents = Record::all();
+        $containers = Container::all();
+        $users = User::all();
+        $levels = RecordLevel::all();
+        $records = Record::all();
+        $authors = Author::with('type')->get();
+        $terms = Term::all();
+        $authorTypes = AuthorType::all();
+        $parents = Author::all();
+        return view('records.createFull', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Record::class);
 
         $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
         if (strlen($dateFormat) > 1) {
@@ -209,6 +217,7 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
+        $this->authorize('view', $record);
 
         $record->load('children');
         return view('records.show', compact('record'));
@@ -216,6 +225,8 @@ class RecordController extends Controller
 
     public function edit(Record $record)
     {
+        $this->authorize('update', $record);
+
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -236,6 +247,7 @@ class RecordController extends Controller
 
     public function update(Request $request, Record $record)
     {
+        $this->authorize('update', $record);
 
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
@@ -310,6 +322,7 @@ class RecordController extends Controller
 
     public function destroy(Record $record)
     {
+        $this->authorize('delete', $record);
 
         $record->delete();
 
@@ -320,6 +333,9 @@ class RecordController extends Controller
     // ici c\'est pour l'import export
     public function exportButton(Request $request)
     {
+        // Vérifier les permissions d'export pour les records
+        $this->authorize('export', Record::class);
+
         $recordIds = explode(',', $request->query('records'));
         $format = $request->query('format', 'excel');
         $records = Record::whereIn('id', $recordIds)->get();
@@ -340,7 +356,7 @@ class RecordController extends Controller
                     return response()->json(['error' => 'Format d\'exportation non valide.'], 400);
             }
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de l\'exportation: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'exportation: ' . $e->getMessage());
             return response()->json(['error' => 'Une erreur est survenue lors de l\'exportation.'], 500);
         }
     }
@@ -348,6 +364,8 @@ class RecordController extends Controller
 
     public function export(Request $request)
     {
+        $this->authorize('export', Record::class);
+
         $dollyId = $request->input('dolly_id');
         $format = $request->input('format');
 
@@ -378,18 +396,23 @@ class RecordController extends Controller
 
     public function importForm()
     {
+        $this->authorize('import', Record::class);
+
         return view('records.import');
     }
 
 
     public function exportForm()
     {
+        $this->authorize('export', Record::class);
+
         $dollies = Dolly::all();
         return view('records.export', compact('dollies'));
     }
 
     public function import(Request $request)
     {
+        $this->authorize('import', Record::class);
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xml',
             'format' => 'required|in:excel,ead,seda',
@@ -606,7 +629,7 @@ class RecordController extends Controller
                             'path' => 'attachments/' . $fileName,
                             'size' => (int)$attachment->Size,
                             'crypt' => (string)$attachment->Crypt,
-                            'creator_id' => auth()->id(), // Assuming the current user is the creator
+                            'creator_id' => Auth::id(), // Assuming the current user is the creator
                         ]);
 
                         $newRecord->attachments()->save($newAttachment);
