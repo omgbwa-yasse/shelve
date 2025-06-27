@@ -10,17 +10,17 @@ class ReservationStatusController extends Controller
     public function index()
     {
         $statuses = ReservationStatus::with('reservations')->get();
-        return view('communications.reservations.statuses.index', compact('statuses'));
+        return view('settings.reservation-statuses.index', compact('statuses'));
     }
 
-    public function show(ReservationStatus $status)
+    public function show(ReservationStatus $reservationStatus)
     {
-        return view('communications.reservations.statuses.show', compact('status'));
+        return view('settings.reservation-statuses.show', compact('reservationStatus'));
     }
 
     public function create()
     {
-        return view('communications.reservations.statuses.create');
+        return view('settings.reservation-statuses.create');
     }
 
     public function store(Request $request)
@@ -32,33 +32,33 @@ class ReservationStatusController extends Controller
 
         ReservationStatus::create($request->all());
 
-        return redirect()->route('communications.reservations.statuses.index')
+        return redirect()->route('reservation-status.index')
             ->with('success', 'Reservation status created successfully.');
     }
 
-    public function edit(ReservationStatus $status)
+    public function edit(ReservationStatus $reservationStatus)
     {
-        return view('communications.reservations.statuses.edit', compact('status'));
+        return view('settings.reservation-statuses.edit', compact('reservationStatus'));
     }
 
-    public function update(Request $request, ReservationStatus $status)
+    public function update(Request $request, ReservationStatus $reservationStatus)
     {
         $request->validate([
-            'name' => 'required|unique:reservation_statuses,name,'.$status->id.'|max:50',
+            'name' => 'required|unique:reservation_statuses,name,'.$reservationStatus->id.'|max:50',
             'description' => 'nullable|string',
         ]);
 
-        $status->update($request->all());
+        $reservationStatus->update($request->all());
 
-        return redirect()->route('communications.reservations.statuses.index')
+        return redirect()->route('reservation-status.index')
             ->with('success', 'Reservation status updated successfully.');
     }
 
-    public function destroy(ReservationStatus $status)
+    public function destroy(ReservationStatus $reservationStatus)
     {
-        $status->delete();
+        $reservationStatus->delete();
 
-        return redirect()->route('communications.reservations.statuses.index')
+        return redirect()->route('reservation-status.index')
             ->with('success', 'Reservation status deleted successfully.');
     }
 }

@@ -233,7 +233,7 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.statuses.index') }}">
+                <a class="submenu-link" href="{{ route('reservation-status.index') }}">
                     <i class="bi bi-flag"></i> {{ __('reservation_status') }}
                 </a>
             </div>

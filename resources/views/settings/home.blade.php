@@ -146,7 +146,7 @@
                         <a href="{{ route('communication-status.index') }}" class="btn btn-outline-info rounded-3">
                             <i class="bi bi-flag me-2"></i>{{ __('communication_status') }}
                         </a>
-                        <a href="{{ route('communications.reservations.statuses.index') }}" class="btn btn-outline-info rounded-3">
+                        <a href="{{ route('reservation-status.index') }}" class="btn btn-outline-info rounded-3">
                             <i class="bi bi-flag me-2"></i>{{ __('reservation_status') }}
                         </a>
                     </div>

@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Reservation Statuses</h1>
-        <a href="{{ route('communications.reservations.statuses.create') }}" class="btn btn-primary mb-3">Create New Status</a>
+        <a href="{{ route('reservation-status.create') }}" class="btn btn-primary mb-3">Create New Status</a>
         <table class="table">
             <thead>
                 <tr>
@@ -18,7 +18,7 @@
                         <td>{{ $status->name }}</td>
                         <td>{{ $status->description }}</td>
                         <td>
-                            <a href="{{ route('communications.reservations.statuses.show', $status) }}" class="btn btn-info btn-sm">View</a>
+                            <a href="{{ route('reservation-status.show', $status) }}" class="btn btn-info btn-sm">View</a>
                         </td>
                     </tr>
                 @endforeach

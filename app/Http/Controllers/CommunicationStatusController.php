@@ -12,13 +12,13 @@ class CommunicationStatusController extends Controller
     public function index()
     {
         $statuses = CommunicationStatus::all();
-        return view('communications.statuses.index', compact('statuses'));
+        return view('settings.communication-statuses.index', compact('statuses'));
     }
 
 
     public function create()
     {
-        return view('communications.statuses.create');
+        return view('settings.communication-statuses.create');
     }
 
 
@@ -39,14 +39,14 @@ class CommunicationStatusController extends Controller
 
     public function show(CommunicationStatus $communicationStatus)
     {
-        return view('communications.statuses.show', compact('communicationStatus'));
+        return view('settings.communication-statuses.show', compact('communicationStatus'));
     }
 
 
 
     public function edit(CommunicationStatus $communicationStatus)
     {
-        return view('communications.statuses.edit', compact('communicationStatus'));
+        return view('settings.communication-statuses.edit', compact('communicationStatus'));
     }
 
 

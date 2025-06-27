@@ -390,7 +390,6 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::get('date-selection', [SearchReservationController::class, 'date'])->name('date-selection');
             });
 
-            Route::resource('statuses', ReservationStatusController::class);
             Route::resource('records', ReservationRecordController::class)->names('records');
 
         });
@@ -525,6 +524,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('transferring-status', SlipStatusController::class);
         Route::resource('mail-action', MailActionController::class);
         Route::resource('communication-status', CommunicationStatusController::class);
+        Route::resource('reservation-status', ReservationStatusController::class);
         Route::resource('taskstatus', TaskStatusController::class);
         Route::resource('tasktype', TaskTypeController::class);
         Route::resource('logs', LogController::class)->only(['index', 'show']);
