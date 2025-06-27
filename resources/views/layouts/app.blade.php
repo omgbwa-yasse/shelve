@@ -108,62 +108,84 @@
 
                 <!-- Navigation principale -->
                 <nav class="header-nav">
+                    @can('module_bulletin_boards_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
                             <i class="bi bi-card-text" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_mails_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
                             <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
 
                         </a>
                     </div>
+                    @endcan
+                    @can('module_repositories_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
                             <i class="bi bi-folder" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_communications_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}">>
                             <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_transferrings_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}">
                             <i class="bi bi-arrow-left-right" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_deposits_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}">
                             <i class="bi bi-building" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_tools_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}">
                             <i class="bi bi-tools" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_dollies_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
                             <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_ai_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
                             <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_public_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
                             <i class="bi bi-globe" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
+                    @can('module_settings_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
+                    @endcan
                 </nav>
 
                 <!-- Barre de recherche compacte avec sélecteur fixe -->

@@ -22,13 +22,14 @@ class PermissionSeeder extends Seeder
             $this->getLocationManagementPermissions(),
             $this->getSystemManagementPermissions(),
             $this->getPortalPermissions(),
-            $this->getTechnicalPermissions()
+            $this->getTechnicalPermissions(),
+            $this->getModuleAccessPermissions()
         );
 
         // Use updateOrInsert for each permission to preserve existing data
         foreach ($permissions as $permission) {
             DB::table('permissions')->updateOrInsert(
-                ['id' => $permission['id']],
+                ['name' => $permission['name']],
                 $permission
             );
         }
@@ -273,6 +274,8 @@ class PermissionSeeder extends Seeder
             ['id' => 142, 'name' => 'container_update', 'description' => 'Autorisation de mettre à jour un conteneur', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 143, 'name' => 'container_delete', 'description' => 'Autorisation de supprimer un conteneur', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 144, 'name' => 'container_force_delete', 'description' => 'Autorisation de supprimer définitivement un conteneur', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 143, 'name' => 'container_delete', 'description' => 'Autorisation de supprimer un conteneur', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 144, 'name' => 'container_force_delete', 'description' => 'Autorisation de supprimer définitivement un conteneur', 'created_at' => $now, 'updated_at' => $now],
         ];
     }
 
@@ -413,6 +416,42 @@ class PermissionSeeder extends Seeder
             ['id' => 220, 'name' => 'communicability_update', 'description' => 'Autorisation de mettre à jour une communicabilité', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 221, 'name' => 'communicability_delete', 'description' => 'Autorisation de supprimer une communicabilité', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 222, 'name' => 'communicability_force_delete', 'description' => 'Autorisation de supprimer définitivement une communicabilité', 'created_at' => $now, 'updated_at' => $now],
+        ];
+    }
+
+    /**
+     * Get module access permissions (pour contrôler l'accès aux 11 modules de navigation principale)
+     *
+     * @return array
+     */
+    private function getModuleAccessPermissions(): array
+    {
+        $now = Carbon::now();
+
+        return [
+
+            // Module de base
+            ['id' => 223, 'name' => 'module_bulletin_boards_access', 'description' => 'Autorisation d\'accéder au module tableaux d\'affichage', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 224, 'name' => 'module_mails_access', 'description' => 'Autorisation d\'accéder au module courrier', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 225, 'name' => 'module_repositories_access', 'description' => 'Autorisation d\'accéder au module dossiers/archives', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 226, 'name' => 'module_communications_access', 'description' => 'Autorisation d\'accéder au module communications', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 227, 'name' => 'module_transferrings_access', 'description' => 'Autorisation d\'accéder au module transferts/bordereaux', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 228, 'name' => 'module_deposits_access', 'description' => 'Autorisation d\'accéder au module bâtiments/dépôts', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 229, 'name' => 'module_tools_access', 'description' => 'Autorisation d\'accéder au module outils/activités', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 230, 'name' => 'module_dollies_access', 'description' => 'Autorisation d\'accéder au module chariots', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 231, 'name' => 'module_ai_access', 'description' => 'Autorisation d\'accéder au module intelligence artificielle', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 232, 'name' => 'module_public_access', 'description' => 'Autorisation d\'accéder au module portail public', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 233, 'name' => 'module_settings_access', 'description' => 'Autorisation d\'accéder au module paramètres', 'created_at' => $now, 'updated_at' => $now],
+
+            // Module de gestion des utilisateurs
+            ['id' => 234, 'name' => 'module_users_access', 'description' => 'Autorisation d\'accéder au module gestion des utilisateurs', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 241, 'name' => 'module_search_access', 'description' => 'Autorisation d\'utiliser la fonction de recherche globale', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 242, 'name' => 'module_advanced_search_access', 'description' => 'Autorisation d\'utiliser la recherche avancée', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 243, 'name' => 'module_org_switching_access', 'description' => 'Autorisation de changer d\'organisation', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 244, 'name' => 'module_language_switching_access', 'description' => 'Autorisation de changer de langue', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 245, 'name' => 'module_profile_access', 'description' => 'Autorisation d\'accéder à la gestion du profil utilisateur', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 246, 'name' => 'module_navigation_access', 'description' => 'Autorisation d\'accéder à la navigation globale', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 247, 'name' => 'module_import_export_access', 'description' => 'Autorisation d\'utiliser les fonctions d\'import/export', 'created_at' => $now, 'updated_at' => $now],
         ];
     }
 }
