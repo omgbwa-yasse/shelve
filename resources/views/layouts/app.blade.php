@@ -125,7 +125,7 @@
                         </a>
                     </div>
                     <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('transactions.index') }}">
+                        <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}">>
                             <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>

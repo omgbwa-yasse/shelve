@@ -9,6 +9,7 @@ use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CommunicationRecordController extends Controller
 {
@@ -24,9 +25,8 @@ class CommunicationRecordController extends Controller
     public function create(INT $id)
     {
         $communication = Communication::findOrFail($id);
-        $records = Record::all();
         $users = User::all();
-        return view('communications.records.create', compact('communication', 'records', 'users'));
+        return view('communications.records.create', compact('communication', 'users'));
     }
 
 
@@ -57,23 +57,22 @@ class CommunicationRecordController extends Controller
     {
         $request->validate([
             'record_id' => 'required|exists:records,id',
-            'is_original' => 'required|boolean',
+            'is_original' => 'required|in:0,1',
             'content' => 'nullable|string',
-            'return_effective' => 'nullable|date',
         ]);
 
-        $communication = communication::findOrFail($id);
+        $communication = Communication::findOrFail($id);
 
         $communicationRecord = CommunicationRecord::create([
             'communication_id' => $communication->id,
             'content' => $request->input('content'),
             'record_id' => $request->record_id,
-            'is_original' => $request->is_original,
-            'return_date' => date('y-m-d', strtotime("+14 days")),
-
+            'is_original' => (int)$request->is_original,
+            'return_date' => date('Y-m-d', strtotime("+14 days")),
         ]);
 
-        return redirect()->route('transactions.records.index', $communication )->with('success', 'Communication created successfully.');
+
+        return redirect()->route('communications.transactions.show', $communication->id)->with('success', 'Communication request created successfully.');
     }
 
 
@@ -89,7 +88,7 @@ class CommunicationRecordController extends Controller
         ]);
 
         $communicationRecord->update($request->all());
-        return redirect()->route('communication-transactions.index')->with('success', 'Communication updated successfully.');
+        return redirect()->route('communications.transactions.index')->with('success', 'Communication updated successfully.');
     }
 
 
@@ -100,7 +99,7 @@ class CommunicationRecordController extends Controller
         $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => now(), 'operator_id' => Auth()->user()->getAuthIdentifier() ]);  // Ajouter operateur qui fait le retour effectif
         $communication = $communicationRecord ->communication;
-        return redirect()->route('transactions.show', $communication)->with('success', 'Communication updated successfully.');
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');
     }
 
 
@@ -109,7 +108,7 @@ class CommunicationRecordController extends Controller
         $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => NULL]);
         $communication = $communicationRecord->communication;
-        return redirect()->route('transactions.show', $communication)->with('success', 'Communication updated successfully.');
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');
     }
 
 
@@ -118,7 +117,26 @@ class CommunicationRecordController extends Controller
     {
         $communication = Communication::findOrFail($communication_id);
         $communication->records()->where('id', $record_id)->delete();
-        return redirect()->route('transactions.show',$communication_id)->with('success', 'Communication record deleted successfully.');
+        return redirect()->route('communications.transactions.show',$communication_id)->with('success', 'Communication record deleted successfully.');
+    }
+
+    public function searchRecords(Request $request)
+    {
+        $query = $request->get('q');
+
+        // Vérifier que la requête fait au moins 3 caractères
+        if (strlen($query) < 3) {
+            return response()->json([]);
+        }
+
+        // Rechercher les archives par nom ou code, limiter à 5 résultats
+        $records = Record::where('name', 'LIKE', '%' . $query . '%')
+                        ->orWhere('code', 'LIKE', '%' . $query . '%')
+                        ->select('id', 'name', 'code')
+                        ->limit(5)
+                        ->get();
+
+        return response()->json($records);
     }
 
 }

@@ -15,6 +15,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CommunicationController extends Controller
@@ -23,7 +24,7 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
+        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation', 'status')->paginate(10);
         return view('communications.index', compact('communications'));
     }
 
@@ -42,39 +43,34 @@ class CommunicationController extends Controller
 
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'code' => 'required|string|max:255',
-                'name' => 'required|string|max:255',
-                'content' => 'nullable|string',
-                'user_id' => 'required|exists:users,id',
-                'return_date' => 'required|date|after_or_equal:today',
-                'user_organisation_id' => 'required|exists:organisations,id',
-                'status_id' => 'required|exists:communication_statuses,id',
-            ]);
+        $request->validate([
+            'code' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'user_id' => 'required|exists:users,id',
+            'return_date' => 'required|date|after_or_equal:today',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'status_id' => 'required|exists:communication_statuses,id',
+        ]);
 
-            // Vérifier que l'utilisateur a une organisation courante
-            if (!Auth::user()->current_organisation_id) {
-                return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
-            }
-
-            Communication::create([
-                'code' => $request->code,
-                'name' => $request->name,
-                'content' => $request->content,
-                'operator_id' => Auth::user()->id,
-                'user_id' => $request->user_id,
-                'user_organisation_id' => $request->user_organisation_id,
-                'operator_organisation_id' => Auth::user()->current_organisation_id,
-                'return_date' => $request->return_date,
-                'status_id' => $request->status_id,
-            ]);
-
-            return redirect()->route('transactions.index')->with('success', 'Communication créée avec succès');
-
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => 'Erreur lors de la création: ' . $e->getMessage()])->withInput();
+        // Vérifier que l'utilisateur a une organisation courante
+        if (!Auth::user()->current_organisation_id) {
+            return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
         }
+
+        Communication::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'content' => $request->content,
+            'operator_id' => Auth::user()->id,
+            'user_id' => $request->user_id,
+            'user_organisation_id' => $request->user_organisation_id,
+            'operator_organisation_id' => Auth::user()->current_organisation_id,
+            'return_date' => $request->return_date,
+            'status_id' => $request->status_id,
+        ]);
+
+        return redirect()->route('communications.transactions.index')->with('success', 'Communication créée avec succès');
     }
 
     public function show(INT $id)
@@ -89,6 +85,13 @@ class CommunicationController extends Controller
     public function edit(INT $id)
     {
         $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+
+        // Empêcher l'édition si la communication est retournée
+        if ($communication->isReturned()) {
+            return redirect()->route('communications.transactions.show', $id)
+                ->with('error', 'Cette communication ne peut plus être modifiée car elle a été retournée.');
+        }
+
         $users = User::all();
         $statuses = CommunicationStatus::all();
         $organisations = Organisation::all();
@@ -99,12 +102,45 @@ class CommunicationController extends Controller
     public function transmission(Request $request)
     {
         $communication = Communication::findOrFail($request->input('id'));
-        if($communication->return_effective == NULL){
-            $communication->update([
-                'status_id' => 2, // traités
-            ]);
+
+        // Utiliser la nouvelle logique de changement de statut
+        if($communication->return_effective == null && !$communication->isReturned()){
+            $communication->changeStatus('transmit');
         }
-        return view('communications.show', compact('communication'));
+
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Documents transmis - Communication en consultation.');
+    }
+
+    public function validateCommunication(Request $request)
+    {
+        $communication = Communication::findOrFail($request->input('id'));
+
+        // Valider seulement si en cours de demande
+        if($communication->status_id == 1 && !$communication->isReturned()){
+            $communication->changeStatus('validate');            return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication validée avec succès.');
+        }
+        return redirect()->route('communications.transactions.show', $communication)->with('error', 'Cette communication ne peut pas être validée dans son état actuel.');
+    }
+
+    public function reject(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:communications,id',
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $communication = Communication::findOrFail($request->input('id'));
+
+        // Rejeter si en cours de demande ou validée
+        if(in_array($communication->status_id, [1, 2]) && !$communication->isReturned()){
+            $communication->changeStatus('reject');
+
+            // Optionnellement stocker la raison du rejet
+            if($request->filled('reason')) {
+                $communication->update(['content' => $communication->content . "\n\nRaison du rejet: " . $request->reason]);
+            }            return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication rejetée.');
+        }
+        return redirect()->route('communications.transactions.show', $communication)->with('error', 'Cette communication ne peut pas être rejetée dans son état actuel.');
     }
 
 
@@ -113,53 +149,72 @@ class CommunicationController extends Controller
         $request->validate([
             'id' => 'required|exists:communications,id',
         ]);
+
         $communication = Communication::findOrFail($request->input('id'));
-        if($communication->return_effective == NULL){
-            $communication->update([
-                'return_effective' => Now(),
-                'status_id' => 3, // traités
+
+        if($communication->return_effective == null){
+            // Changer le statut et mettre à jour la date de retour
+            $communication->changeStatus('return');
+            $communication->update(['return_effective' => now()]);
+
+            // Mettre à jour tous les records liés qui ne sont pas encore retournés
+            $communication->records()->whereNull('return_effective')->update([
+                'return_effective' => now(),
             ]);
         }
-        return view('communications.show', compact('communication'));
+
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication marquée comme retournée avec succès.');
     }
 
 
     public function returnCancel(Request $request)
     {
         $communication = Communication::findOrFail($request->input('id'));
-        if($communication->return_effective != NULL){
-            $communication->update([
-                'return_effective' => NULL,
+
+        if($communication->return_effective != null){
+            // Utiliser la nouvelle logique pour revenir en consultation
+            $communication->changeStatus('cancel_return');
+            $communication->update(['return_effective' => null]);
+
+            // Annuler le retour effectif de tous les records liés
+            $communication->records()->whereNotNull('return_effective')->update([
+                'return_effective' => null,
             ]);
         }
-        return view('communications.show', compact('communication'));
+
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Retour effectif annulé avec succès.');
     }
 
 
     public function update(Request $request, Communication $communication)
     {
+        // Empêcher la modification si la communication est retournée
+        if ($communication->isReturned()) {
+            return redirect()->route('communications.transactions.show', $communication->id)
+                ->with('error', 'Cette communication ne peut plus être modifiée car elle a été retournée.');
+        }
+
         $request->validate([
-            'code' => 'required' . $communication->id,
+            'code' => 'required|string|max:255',
             'name' => 'required|string|max:200',
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
             'status_id' => 'required|exists:communication_statuses,id',
+            'user_organisation_id' => 'required|exists:organisations,id',
         ]);
 
         $communication->update([
             'code' => $request->code,
             'name' => $request->name,
             'content' => $request->input('content'),
-            'operator_id' => Auth()->user()->id,
-            'operator_organisation_id' => Auth()->user()->current_organisation_id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'status_id' => 1,
+            'status_id' => $request->status_id, // CORRIGÉ : utiliser le statut sélectionné
         ]);
 
-        return redirect()->back()->with('success', 'Communication updated successfully.');
+        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication mise à jour avec succès.');
     }
 
 
@@ -168,11 +223,18 @@ class CommunicationController extends Controller
     public function destroy(INT $communication_id)
     {
         $communication = Communication::with('records')->findOrFail($communication_id);
+
+        // Empêcher la suppression si la communication est retournée
+        if ($communication->isReturned()) {
+            return redirect()->route('communications.transactions.index')
+                ->with('error', 'Cette communication ne peut pas être supprimée car elle a été retournée.');
+        }
+
         if ($communication->records->isEmpty()) {
             $communication->delete();
-            return redirect()->route('transactions.index')->with('success', 'Communication deleted successfully.');
+            return redirect()->route('communications.transactions.index')->with('success', 'Communication supprimée avec succès.');
         } else {
-            return redirect()->route('transactions.index')->with('error', 'You cannot delete this communication.');
+            return redirect()->route('communications.transactions.index')->with('error', 'Vous ne pouvez pas supprimer cette communication car elle contient des documents.');
         }
     }
 

@@ -6,7 +6,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('transactions.index') }}">Communications</a>
+                <a href="{{ route('communications.transactions.index') }}">Communications</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="{{ route('transactions.show', $communication) }}">
@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Détails de l'Enregistrement #{{ $communicationRecord->id }}</h1>
         <div>
-            <a href="{{ route('transactions.index') }}" class="btn btn-secondary me-2">
+            <a href="{{ route('communications.transactions.index') }}" class="btn btn-secondary me-2">
                 <i class="bi bi-arrow-left"></i> Retour
             </a>
             <a href="{{ route('transactions.records.edit', [$communication, $communicationRecord]) }}" class="btn btn-warning me-2">

@@ -116,7 +116,7 @@
         </div>
         <div class="submenu-section-content" id="communicationsSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('transactions.index')}}">
+                <a class="submenu-link" href="{{ route('communications.transactions.index')}}">>
                     <i class="bi bi-inbox"></i> {{ __('view_all') }}
                 </a>
             </div>

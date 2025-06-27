@@ -83,7 +83,7 @@ class ReservationController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('transactions.show', $communication->id)
+                ->route('communications.transactions.show', $communication->id)
                 ->with('success', 'La réservation a été approuvée et convertie en communication.');
 
         } catch (\Exception $e) {
@@ -140,7 +140,7 @@ class ReservationController extends Controller
                 'status_id' => 1, // Examen
             ]);
 
-            return redirect()->route('reservations.index')
+            return redirect()->route('communications.reservations.index')
                 ->with('success', 'Réservation créée avec succès.');
 
         } catch (\Exception $e) {
@@ -185,7 +185,7 @@ class ReservationController extends Controller
             'status_id' => 1,
         ]);
 
-        return redirect()->route('reservations.index')
+        return redirect()->route('communications.reservations.index')
             ->with('success', 'Reservation updated successfully.');
     }
 
@@ -197,7 +197,7 @@ class ReservationController extends Controller
         $reservation = reservation::findOrFail($id);
         $reservation->delete();
 
-        return redirect()->route('reservations.index')
+        return redirect()->route('communications.reservations.index')
             ->with('success', 'Reservation deleted successfully.');
     }
 }

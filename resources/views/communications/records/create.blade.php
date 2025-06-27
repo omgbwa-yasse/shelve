@@ -10,7 +10,7 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="{{ route('transactions.records.store', $communication) }}" method="POST">
+                        <form action="{{ route('transactions.records.store', $communication->id) }}" method="POST" id="communicationForm">
                             @csrf
 
                             <!-- Archives voulues -->
@@ -20,21 +20,30 @@
                                     <span class="text-danger">*</span>
                                 </label>
 
-                                <!-- Affichage de l'archive sélectionnée -->
-                                <div id="selectedArchiveDisplay" class="mb-2">
-                                    <div class="alert alert-light border">
-                                        <span id="noSelectionText">Aucune archive sélectionnée</span>
-                                        <div id="selectedArchiveInfo" style="display: none;">
-                                            <strong id="selectedArchiveName"></strong>
-                                            <small class="text-muted" id="selectedArchiveId"></small>
-                                        </div>
-                                    </div>
+                                <!-- Champ de recherche avec autocomplétion -->
+                                <div class="position-relative">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="archiveSearch"
+                                        placeholder="Tapez au moins 3 caractères pour rechercher..."
+                                        autocomplete="off"
+                                    >
+                                    <div id="searchResults" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
                                 </div>
 
-                                <!-- Bouton pour ouvrir le modal -->
-                                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#archiveModal">
-                                    <i class="bi bi-search me-2"></i>Sélectionner une archive
-                                </button>
+                                <!-- Affichage de l'archive sélectionnée -->
+                                <div id="selectedArchiveDisplay" class="mt-2" style="display: none;">
+                                    <div class="alert alert-success border d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong id="selectedArchiveName"></strong>
+                                            <small class="text-muted d-block" id="selectedArchiveId"></small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelection()">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
                                 <input type="hidden" name="record_id" id="record_id" required>
                                 @error('record_id')
@@ -101,84 +110,103 @@
         </div>
     </div>
 
-    <!-- Modal de sélection d'archive -->
-    <div class="modal fade" id="archiveModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Sélection d'une archive</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <!-- Barre de recherche -->
-                    <div class="mb-3">
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="archiveSearch"
-                            placeholder="Rechercher une archive..."
-                            oninput="filterArchives(this.value)"
-                        >
-                    </div>
-
-                    <!-- Liste des archives -->
-                    <div class="list-group" style="max-height: 400px; overflow-y: auto;">
-                        @foreach($records as $record)
-                            <button
-                                type="button"
-                                class="list-group-item list-group-item-action archive-item"
-                                onclick="selectArchive('{{ $record->id }}', '{{ $record->name }}')"
-                                data-id="{{ $record->id }}"
-                                data-name="{{ $record->name }}"
-                            >
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <strong>{{ $record->name }}</strong>
-                                    <small class="text-muted">#{{ $record->id }}</small>
-                                </div>
-                            </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <script>
-        function filterArchives(query) {
-            query = query.toLowerCase();
-            document.querySelectorAll('.archive-item').forEach(item => {
-                const name = item.getAttribute('data-name').toLowerCase();
-                const id = item.getAttribute('data-id');
-                item.style.display = (name.includes(query) || id.includes(query)) ? '' : 'none';
-            });
-        }
+        let searchTimeout = null;
 
-        function selectArchive(id, name) {
+        document.getElementById('archiveSearch').addEventListener('input', function(e) {
+            const query = e.target.value;
+            const resultsDiv = document.getElementById('searchResults');
+
+            // Effacer le timeout précédent
+            clearTimeout(searchTimeout);
+
+            if (query.length < 3) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            // Attendre 300ms après la dernière frappe pour lancer la recherche
+            searchTimeout = setTimeout(() => {
+                fetch(`{{ route('communications.records.search') }}?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+
+                        if (data.length === 0) {
+                            resultsDiv.innerHTML = '<div class="list-group-item text-muted">Aucun résultat trouvé</div>';
+                        } else {
+                            data.forEach(record => {
+                                const item = document.createElement('button');
+                                item.type = 'button';
+                                item.className = 'list-group-item list-group-item-action';
+                                item.innerHTML = `
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>${record.name}</strong>
+                                        <small class="text-muted">#${record.id}</small>
+                                    </div>
+                                    ${record.code ? `<small class="text-muted">Code: ${record.code}</small>` : ''}
+                                `;
+                                item.onclick = () => selectArchive(record.id, record.name, record.code);
+                                resultsDiv.appendChild(item);
+                            });
+                        }
+
+                        resultsDiv.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors de la recherche:', error);
+                        resultsDiv.innerHTML = '<div class="list-group-item text-danger">Erreur lors de la recherche</div>';
+                        resultsDiv.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        function selectArchive(id, name, code) {
             // Mettre à jour l'input caché
             document.getElementById('record_id').value = id;
 
             // Mettre à jour l'affichage
-            document.getElementById('noSelectionText').style.display = 'none';
-            document.getElementById('selectedArchiveInfo').style.display = 'block';
             document.getElementById('selectedArchiveName').textContent = name;
-            document.getElementById('selectedArchiveId').textContent = ` #${id}`;
+            document.getElementById('selectedArchiveId').textContent = `#${id}${code ? ' - Code: ' + code : ''}`;
+            document.getElementById('selectedArchiveDisplay').style.display = 'block';
 
-            // Fermer le modal
-            bootstrap.Modal.getInstance(document.getElementById('archiveModal')).hide();
+            // Vider le champ de recherche et cacher les résultats
+            document.getElementById('archiveSearch').value = '';
+            document.getElementById('searchResults').style.display = 'none';
         }
 
-        // Initialiser l'affichage si une valeur est déjà sélectionnée
+        function clearSelection() {
+            document.getElementById('record_id').value = '';
+            document.getElementById('selectedArchiveDisplay').style.display = 'none';
+        }
+
+        // Cacher les résultats quand on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#archiveSearch') && !e.target.closest('#searchResults')) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // Validation du formulaire avant soumission
+        document.getElementById('communicationForm').addEventListener('submit', function(e) {
+            const recordId = document.getElementById('record_id').value;
+            if (!recordId) {
+                e.preventDefault();
+                alert('Veuillez sélectionner une archive avant de soumettre le formulaire.');
+                document.getElementById('archiveSearch').focus();
+                return false;
+            }
+        });
+
+        // Initialiser l'affichage si une valeur est déjà sélectionnée (pour les erreurs de validation)
         document.addEventListener('DOMContentLoaded', function() {
             const selectedId = document.getElementById('record_id').value;
             if (selectedId) {
-                const item = document.querySelector(`.archive-item[data-id="${selectedId}"]`);
-                if (item) {
-                    selectArchive(selectedId, item.getAttribute('data-name'));
-                }
+                // Si on a un ID mais pas d'affichage, on peut faire une requête pour récupérer les infos
+                // Pour l'instant, on affiche juste l'ID
+                document.getElementById('selectedArchiveName').textContent = `Archive #${selectedId}`;
+                document.getElementById('selectedArchiveId').textContent = `#${selectedId}`;
+                document.getElementById('selectedArchiveDisplay').style.display = 'block';
             }
         });
     </script>

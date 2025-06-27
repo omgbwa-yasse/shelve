@@ -76,7 +76,7 @@ class ReservationRecordController extends Controller
             'operator_id' => Auth::id(),
         ]);
 
-        return redirect()->route('reservations.records.index', $reservation )->with('success', 'Reservation created successfully.');
+        return redirect()->route('communications.reservations.records.index', $reservation )->with('success', 'Reservation created successfully.');
     }
 
 
@@ -92,7 +92,7 @@ class ReservationRecordController extends Controller
 
         $ReservationRecord->update($request->all());
 
-        return redirect()->route('reservations.records.index')->with('success', 'Reservation updated successfully.');
+        return redirect()->route('communications.reservations.records.index')->with('success', 'Reservation updated successfully.');
     }
 
 
@@ -101,7 +101,7 @@ class ReservationRecordController extends Controller
     public function destroy(INT $id, ReservationRecord $ReservationRecord)
     {
         $ReservationRecord->delete();
-        return redirect()->route('reservations.records.index', $id)->with('success', 'Reservation record deleted successfully.');
+        return redirect()->route('communications.reservations.records.index', $id)->with('success', 'Reservation record deleted successfully.');
     }
 }
 
