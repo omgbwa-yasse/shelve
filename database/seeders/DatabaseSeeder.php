@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             OrganisationSeeder::class,
             PermissionSeeder::class, // Seeder de permissions complet et sécurisé (222 permissions)
-            RolePermissionSeeder::class,
             UserSeeder::class,
             ActivitySeeder::class,
             AuthorSeeder::class,
