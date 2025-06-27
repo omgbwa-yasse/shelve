@@ -14,7 +14,7 @@ class SlipPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('slip_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('slip_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class SlipPolicy
      */
     public function view(User $user, Slip $slip): bool
     {
-        return $user->hasPermissionTo('slip_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $slip);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('slip_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class SlipPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('slip_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('slip_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class SlipPolicy
      */
     public function update(User $user, Slip $slip): bool
     {
-        return $user->hasPermissionTo('slip_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $slip);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('slip_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class SlipPolicy
      */
     public function delete(User $user, Slip $slip): bool
     {
-        return $user->hasPermissionTo('slip_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $slip);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('slip_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class SlipPolicy
      */
     public function forceDelete(User $user, Slip $slip): bool
     {
-        return $user->hasPermissionTo('slip_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $slip);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('slip_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

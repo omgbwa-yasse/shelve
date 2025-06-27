@@ -14,7 +14,7 @@ class LanguagePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('language_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('language_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class LanguagePolicy
      */
     public function view(User $user, Language $language): bool
     {
-        return $user->hasPermissionTo('language_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $language);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('language_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class LanguagePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('language_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('language_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class LanguagePolicy
      */
     public function update(User $user, Language $language): bool
     {
-        return $user->hasPermissionTo('language_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $language);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('language_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class LanguagePolicy
      */
     public function delete(User $user, Language $language): bool
     {
-        return $user->hasPermissionTo('language_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $language);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('language_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class LanguagePolicy
      */
     public function forceDelete(User $user, Language $language): bool
     {
-        return $user->hasPermissionTo('language_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $language);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('language_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

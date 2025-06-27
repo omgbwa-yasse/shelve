@@ -14,7 +14,7 @@ class BackupPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('backup_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('backup_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class BackupPolicy
      */
     public function view(User $user, Backup $backup): bool
     {
-        return $user->hasPermissionTo('backup_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $backup);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('backup_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class BackupPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('backup_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('backup_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class BackupPolicy
      */
     public function update(User $user, Backup $backup): bool
     {
-        return $user->hasPermissionTo('backup_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $backup);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('backup_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class BackupPolicy
      */
     public function delete(User $user, Backup $backup): bool
     {
-        return $user->hasPermissionTo('backup_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $backup);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('backup_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class BackupPolicy
      */
     public function forceDelete(User $user, Backup $backup): bool
     {
-        return $user->hasPermissionTo('backup_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $backup);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('backup_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

@@ -14,7 +14,7 @@ class RecordPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('record_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('record_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,7 +22,8 @@ class RecordPolicy
      */
     public function view(User $user, Record $record): bool
     {
-        return $user->hasPermissionTo('record_view', $user->currentOrganisation) &&
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('record_view', $user->currentOrganisation) &&
             $this->checkOrganisationAccess($user, $record);
     }
 
@@ -31,7 +32,7 @@ class RecordPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('record_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('record_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,7 +40,8 @@ class RecordPolicy
      */
     public function update(User $user, Record $record): bool
     {
-        return $user->hasPermissionTo('record_update', $user->currentOrganisation) &&
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('record_update', $user->currentOrganisation) &&
             $this->checkOrganisationAccess($user, $record);
     }
 
@@ -48,7 +50,8 @@ class RecordPolicy
      */
     public function delete(User $user, Record $record): bool
     {
-        return $user->hasPermissionTo('record_delete', $user->currentOrganisation) &&
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('record_delete', $user->currentOrganisation) &&
             $this->checkOrganisationAccess($user, $record);
     }
 
@@ -57,7 +60,8 @@ class RecordPolicy
      */
     public function forceDelete(User $user, Record $record): bool
     {
-        return $user->hasPermissionTo('record_force_delete', $user->currentOrganisation) &&
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('record_force_delete', $user->currentOrganisation) &&
             $this->checkOrganisationAccess($user, $record);
     }
 

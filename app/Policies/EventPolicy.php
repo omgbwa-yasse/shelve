@@ -14,7 +14,7 @@ class EventPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('event_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('event_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class EventPolicy
      */
     public function view(User $user, Event $event): bool
     {
-        return $user->hasPermissionTo('event_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $event);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('event_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class EventPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('event_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('event_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class EventPolicy
      */
     public function update(User $user, Event $event): bool
     {
-        return $user->hasPermissionTo('event_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $event);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('event_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class EventPolicy
      */
     public function delete(User $user, Event $event): bool
     {
-        return $user->hasPermissionTo('event_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $event);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('event_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class EventPolicy
      */
     public function forceDelete(User $user, Event $event): bool
     {
-        return $user->hasPermissionTo('event_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $event);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('event_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

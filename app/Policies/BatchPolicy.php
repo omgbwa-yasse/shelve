@@ -14,7 +14,7 @@ class BatchPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('batch_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('batch_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class BatchPolicy
      */
     public function view(User $user, Batch $batch): bool
     {
-        return $user->hasPermissionTo('batch_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $batch);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('batch_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class BatchPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('batch_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('batch_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class BatchPolicy
      */
     public function update(User $user, Batch $batch): bool
     {
-        return $user->hasPermissionTo('batch_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $batch);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('batch_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class BatchPolicy
      */
     public function delete(User $user, Batch $batch): bool
     {
-        return $user->hasPermissionTo('batch_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $batch);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('batch_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class BatchPolicy
      */
     public function forceDelete(User $user, Batch $batch): bool
     {
-        return $user->hasPermissionTo('batch_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $batch);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('batch_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

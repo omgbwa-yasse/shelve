@@ -14,7 +14,7 @@ class DepositPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('deposit_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('deposit_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class DepositPolicy
      */
     public function view(User $user, Deposit $deposit): bool
     {
-        return $user->hasPermissionTo('deposit_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $deposit);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('deposit_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class DepositPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('deposit_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('deposit_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class DepositPolicy
      */
     public function update(User $user, Deposit $deposit): bool
     {
-        return $user->hasPermissionTo('deposit_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $deposit);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('deposit_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class DepositPolicy
      */
     public function delete(User $user, Deposit $deposit): bool
     {
-        return $user->hasPermissionTo('deposit_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $deposit);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('deposit_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class DepositPolicy
      */
     public function forceDelete(User $user, Deposit $deposit): bool
     {
-        return $user->hasPermissionTo('deposit_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $deposit);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('deposit_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

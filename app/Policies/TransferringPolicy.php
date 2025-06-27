@@ -14,7 +14,7 @@ class TransferringPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('transferring_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('transferring_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class TransferringPolicy
      */
     public function view(User $user, Transferring $transferring): bool
     {
-        return $user->hasPermissionTo('transferring_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $transferring);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('transferring_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class TransferringPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('transferring_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('transferring_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class TransferringPolicy
      */
     public function update(User $user, Transferring $transferring): bool
     {
-        return $user->hasPermissionTo('transferring_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $transferring);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('transferring_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class TransferringPolicy
      */
     public function delete(User $user, Transferring $transferring): bool
     {
-        return $user->hasPermissionTo('transferring_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $transferring);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('transferring_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class TransferringPolicy
      */
     public function forceDelete(User $user, Transferring $transferring): bool
     {
-        return $user->hasPermissionTo('transferring_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $transferring);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('transferring_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

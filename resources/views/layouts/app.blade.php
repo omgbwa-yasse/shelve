@@ -102,9 +102,15 @@
                 </a>
 
                 <!-- Organisation (cliquable pour modal) -->
+                @if(Auth::user()->currentOrganisation)
                 <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
                     <span><strong>({{ Auth::user()->currentOrganisation->code }})  {{ Str::limit(Auth::user()->currentOrganisation->name, 20, '...') }}</strong></span>
                 </a>
+                @else
+                <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
+                    <span><strong>{{ __('No Organisation') }}</strong></span>
+                </a>
+                @endif
 
                 <!-- Navigation principale -->
                 <nav class="header-nav">

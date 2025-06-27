@@ -14,7 +14,7 @@ class DollyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('dolly_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('dolly_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class DollyPolicy
      */
     public function view(User $user, Dolly $dolly): bool
     {
-        return $user->hasPermissionTo('dolly_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $dolly);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('dolly_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class DollyPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('dolly_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('dolly_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class DollyPolicy
      */
     public function update(User $user, Dolly $dolly): bool
     {
-        return $user->hasPermissionTo('dolly_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $dolly);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('dolly_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class DollyPolicy
      */
     public function delete(User $user, Dolly $dolly): bool
     {
-        return $user->hasPermissionTo('dolly_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $dolly);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('dolly_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class DollyPolicy
      */
     public function forceDelete(User $user, Dolly $dolly): bool
     {
-        return $user->hasPermissionTo('dolly_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $dolly);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('dolly_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

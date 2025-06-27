@@ -14,7 +14,7 @@ class ShelfPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('shelf_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('shelf_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ShelfPolicy
      */
     public function view(User $user, Shelf $shelf): bool
     {
-        return $user->hasPermissionTo('shelf_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $shelf);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('shelf_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ShelfPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('shelf_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('shelf_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ShelfPolicy
      */
     public function update(User $user, Shelf $shelf): bool
     {
-        return $user->hasPermissionTo('shelf_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $shelf);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('shelf_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ShelfPolicy
      */
     public function delete(User $user, Shelf $shelf): bool
     {
-        return $user->hasPermissionTo('shelf_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $shelf);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('shelf_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ShelfPolicy
      */
     public function forceDelete(User $user, Shelf $shelf): bool
     {
-        return $user->hasPermissionTo('shelf_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $shelf);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('shelf_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

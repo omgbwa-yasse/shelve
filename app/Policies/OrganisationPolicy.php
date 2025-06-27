@@ -14,7 +14,7 @@ class OrganisationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('organisation_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('organisation_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class OrganisationPolicy
      */
     public function view(User $user, Organisation $organisation): bool
     {
-        return $user->hasPermissionTo('organisation_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $organisation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('organisation_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class OrganisationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('organisation_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('organisation_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class OrganisationPolicy
      */
     public function update(User $user, Organisation $organisation): bool
     {
-        return $user->hasPermissionTo('organisation_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $organisation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('organisation_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class OrganisationPolicy
      */
     public function delete(User $user, Organisation $organisation): bool
     {
-        return $user->hasPermissionTo('organisation_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $organisation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('organisation_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class OrganisationPolicy
      */
     public function forceDelete(User $user, Organisation $organisation): bool
     {
-        return $user->hasPermissionTo('organisation_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $organisation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('organisation_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

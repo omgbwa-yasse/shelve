@@ -14,7 +14,7 @@ class LogPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('log_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('log_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class LogPolicy
      */
     public function view(User $user, Log $log): bool
     {
-        return $user->hasPermissionTo('log_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $log);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('log_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class LogPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('log_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('log_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class LogPolicy
      */
     public function update(User $user, Log $log): bool
     {
-        return $user->hasPermissionTo('log_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $log);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('log_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class LogPolicy
      */
     public function delete(User $user, Log $log): bool
     {
-        return $user->hasPermissionTo('log_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $log);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('log_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class LogPolicy
      */
     public function forceDelete(User $user, Log $log): bool
     {
-        return $user->hasPermissionTo('log_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $log);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('log_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

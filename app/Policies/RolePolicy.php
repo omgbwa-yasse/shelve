@@ -14,7 +14,7 @@ class RolePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('role_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('role_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class RolePolicy
      */
     public function view(User $user, Role $role): bool
     {
-        return $user->hasPermissionTo('role_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $role);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('role_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class RolePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('role_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('role_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
-        return $user->hasPermissionTo('role_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $role);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('role_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
-        return $user->hasPermissionTo('role_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $role);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('role_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class RolePolicy
      */
     public function forceDelete(User $user, Role $role): bool
     {
-        return $user->hasPermissionTo('role_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $role);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('role_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

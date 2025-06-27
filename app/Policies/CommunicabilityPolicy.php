@@ -14,7 +14,7 @@ class CommunicabilityPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('communicability_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('communicability_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class CommunicabilityPolicy
      */
     public function view(User $user, Communicability $communicability): bool
     {
-        return $user->hasPermissionTo('communicability_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communicability);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communicability_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class CommunicabilityPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('communicability_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('communicability_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class CommunicabilityPolicy
      */
     public function update(User $user, Communicability $communicability): bool
     {
-        return $user->hasPermissionTo('communicability_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communicability);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communicability_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class CommunicabilityPolicy
      */
     public function delete(User $user, Communicability $communicability): bool
     {
-        return $user->hasPermissionTo('communicability_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communicability);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communicability_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class CommunicabilityPolicy
      */
     public function forceDelete(User $user, Communicability $communicability): bool
     {
-        return $user->hasPermissionTo('communicability_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communicability);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communicability_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

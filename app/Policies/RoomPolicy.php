@@ -14,7 +14,7 @@ class RoomPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('room_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('room_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class RoomPolicy
      */
     public function view(User $user, Room $room): bool
     {
-        return $user->hasPermissionTo('room_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $room);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('room_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class RoomPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('room_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('room_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class RoomPolicy
      */
     public function update(User $user, Room $room): bool
     {
-        return $user->hasPermissionTo('room_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $room);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('room_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class RoomPolicy
      */
     public function delete(User $user, Room $room): bool
     {
-        return $user->hasPermissionTo('room_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $room);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('room_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class RoomPolicy
      */
     public function forceDelete(User $user, Room $room): bool
     {
-        return $user->hasPermissionTo('room_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $room);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('room_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

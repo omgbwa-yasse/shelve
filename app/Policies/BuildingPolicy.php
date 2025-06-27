@@ -14,7 +14,7 @@ class BuildingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('building_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('building_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class BuildingPolicy
      */
     public function view(User $user, Building $building): bool
     {
-        return $user->hasPermissionTo('building_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $building);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('building_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class BuildingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('building_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('building_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class BuildingPolicy
      */
     public function update(User $user, Building $building): bool
     {
-        return $user->hasPermissionTo('building_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $building);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('building_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class BuildingPolicy
      */
     public function delete(User $user, Building $building): bool
     {
-        return $user->hasPermissionTo('building_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $building);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('building_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class BuildingPolicy
      */
     public function forceDelete(User $user, Building $building): bool
     {
-        return $user->hasPermissionTo('building_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $building);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('building_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

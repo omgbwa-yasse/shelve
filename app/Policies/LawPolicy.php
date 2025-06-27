@@ -14,7 +14,7 @@ class LawPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('law_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('law_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class LawPolicy
      */
     public function view(User $user, Law $law): bool
     {
-        return $user->hasPermissionTo('law_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $law);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('law_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class LawPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('law_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('law_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class LawPolicy
      */
     public function update(User $user, Law $law): bool
     {
-        return $user->hasPermissionTo('law_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $law);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('law_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class LawPolicy
      */
     public function delete(User $user, Law $law): bool
     {
-        return $user->hasPermissionTo('law_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $law);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('law_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class LawPolicy
      */
     public function forceDelete(User $user, Law $law): bool
     {
-        return $user->hasPermissionTo('law_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $law);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('law_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

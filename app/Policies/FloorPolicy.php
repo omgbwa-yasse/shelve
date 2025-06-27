@@ -14,7 +14,7 @@ class FloorPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('floor_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('floor_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class FloorPolicy
      */
     public function view(User $user, Floor $floor): bool
     {
-        return $user->hasPermissionTo('floor_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $floor);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('floor_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class FloorPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('floor_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('floor_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class FloorPolicy
      */
     public function update(User $user, Floor $floor): bool
     {
-        return $user->hasPermissionTo('floor_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $floor);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('floor_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class FloorPolicy
      */
     public function delete(User $user, Floor $floor): bool
     {
-        return $user->hasPermissionTo('floor_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $floor);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('floor_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class FloorPolicy
      */
     public function forceDelete(User $user, Floor $floor): bool
     {
-        return $user->hasPermissionTo('floor_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $floor);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('floor_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

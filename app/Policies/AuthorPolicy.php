@@ -14,7 +14,7 @@ class AuthorPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('author_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('author_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class AuthorPolicy
      */
     public function view(User $user, Author $author): bool
     {
-        return $user->hasPermissionTo('author_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $author);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('author_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class AuthorPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('author_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('author_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class AuthorPolicy
      */
     public function update(User $user, Author $author): bool
     {
-        return $user->hasPermissionTo('author_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $author);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('author_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class AuthorPolicy
      */
     public function delete(User $user, Author $author): bool
     {
-        return $user->hasPermissionTo('author_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $author);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('author_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class AuthorPolicy
      */
     public function forceDelete(User $user, Author $author): bool
     {
-        return $user->hasPermissionTo('author_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $author);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('author_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

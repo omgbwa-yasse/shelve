@@ -14,7 +14,7 @@ class RetentionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('retention_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('retention_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class RetentionPolicy
      */
     public function view(User $user, Retention $retention): bool
     {
-        return $user->hasPermissionTo('retention_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $retention);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('retention_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class RetentionPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('retention_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('retention_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class RetentionPolicy
      */
     public function update(User $user, Retention $retention): bool
     {
-        return $user->hasPermissionTo('retention_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $retention);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('retention_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class RetentionPolicy
      */
     public function delete(User $user, Retention $retention): bool
     {
-        return $user->hasPermissionTo('retention_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $retention);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('retention_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class RetentionPolicy
      */
     public function forceDelete(User $user, Retention $retention): bool
     {
-        return $user->hasPermissionTo('retention_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $retention);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('retention_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

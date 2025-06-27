@@ -14,7 +14,7 @@ class PostPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('post_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('post_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class PostPolicy
      */
     public function view(User $user, Post $post): bool
     {
-        return $user->hasPermissionTo('post_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $post);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('post_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class PostPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('post_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('post_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class PostPolicy
      */
     public function update(User $user, Post $post): bool
     {
-        return $user->hasPermissionTo('post_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $post);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('post_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class PostPolicy
      */
     public function delete(User $user, Post $post): bool
     {
-        return $user->hasPermissionTo('post_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $post);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('post_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class PostPolicy
      */
     public function forceDelete(User $user, Post $post): bool
     {
-        return $user->hasPermissionTo('post_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $post);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('post_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

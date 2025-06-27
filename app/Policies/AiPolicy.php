@@ -14,7 +14,7 @@ class AiPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('ai_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('ai_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class AiPolicy
      */
     public function view(User $user, Ai $ai): bool
     {
-        return $user->hasPermissionTo('ai_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $ai);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('ai_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class AiPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('ai_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('ai_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class AiPolicy
      */
     public function update(User $user, Ai $ai): bool
     {
-        return $user->hasPermissionTo('ai_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $ai);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('ai_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class AiPolicy
      */
     public function delete(User $user, Ai $ai): bool
     {
-        return $user->hasPermissionTo('ai_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $ai);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('ai_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class AiPolicy
      */
     public function forceDelete(User $user, Ai $ai): bool
     {
-        return $user->hasPermissionTo('ai_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $ai);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('ai_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

@@ -14,7 +14,7 @@ class SettingPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('setting_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('setting_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class SettingPolicy
      */
     public function view(User $user, Setting $setting): bool
     {
-        return $user->hasPermissionTo('setting_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $setting);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('setting_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class SettingPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('setting_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('setting_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class SettingPolicy
      */
     public function update(User $user, Setting $setting): bool
     {
-        return $user->hasPermissionTo('setting_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $setting);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('setting_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class SettingPolicy
      */
     public function delete(User $user, Setting $setting): bool
     {
-        return $user->hasPermissionTo('setting_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $setting);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('setting_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class SettingPolicy
      */
     public function forceDelete(User $user, Setting $setting): bool
     {
-        return $user->hasPermissionTo('setting_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $setting);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('setting_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

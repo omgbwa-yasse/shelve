@@ -14,7 +14,7 @@ class ActivityPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('activity_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('activity_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ActivityPolicy
      */
     public function view(User $user, Activity $activity): bool
     {
-        return $user->hasPermissionTo('activity_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $activity);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('activity_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ActivityPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('activity_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('activity_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ActivityPolicy
      */
     public function update(User $user, Activity $activity): bool
     {
-        return $user->hasPermissionTo('activity_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $activity);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('activity_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ActivityPolicy
      */
     public function delete(User $user, Activity $activity): bool
     {
-        return $user->hasPermissionTo('activity_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $activity);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('activity_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ActivityPolicy
      */
     public function forceDelete(User $user, Activity $activity): bool
     {
-        return $user->hasPermissionTo('activity_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $activity);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('activity_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

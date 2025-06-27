@@ -14,7 +14,7 @@ class ToolPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('tool_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('tool_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ToolPolicy
      */
     public function view(User $user, Tool $tool): bool
     {
-        return $user->hasPermissionTo('tool_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $tool);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('tool_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ToolPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('tool_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('tool_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ToolPolicy
      */
     public function update(User $user, Tool $tool): bool
     {
-        return $user->hasPermissionTo('tool_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $tool);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('tool_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ToolPolicy
      */
     public function delete(User $user, Tool $tool): bool
     {
-        return $user->hasPermissionTo('tool_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $tool);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('tool_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ToolPolicy
      */
     public function forceDelete(User $user, Tool $tool): bool
     {
-        return $user->hasPermissionTo('tool_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $tool);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('tool_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

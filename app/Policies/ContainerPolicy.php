@@ -14,7 +14,7 @@ class ContainerPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('container_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('container_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ContainerPolicy
      */
     public function view(User $user, Container $container): bool
     {
-        return $user->hasPermissionTo('container_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $container);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('container_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ContainerPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('container_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('container_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ContainerPolicy
      */
     public function update(User $user, Container $container): bool
     {
-        return $user->hasPermissionTo('container_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $container);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('container_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ContainerPolicy
      */
     public function delete(User $user, Container $container): bool
     {
-        return $user->hasPermissionTo('container_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $container);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('container_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ContainerPolicy
      */
     public function forceDelete(User $user, Container $container): bool
     {
-        return $user->hasPermissionTo('container_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $container);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('container_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

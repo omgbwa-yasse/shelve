@@ -14,7 +14,7 @@ class MailPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('mail_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('mail_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class MailPolicy
      */
     public function view(User $user, Mail $mail): bool
     {
-        return $user->hasPermissionTo('mail_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $mail);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('mail_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class MailPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('mail_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('mail_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class MailPolicy
      */
     public function update(User $user, Mail $mail): bool
     {
-        return $user->hasPermissionTo('mail_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $mail);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('mail_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class MailPolicy
      */
     public function delete(User $user, Mail $mail): bool
     {
-        return $user->hasPermissionTo('mail_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $mail);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('mail_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class MailPolicy
      */
     public function forceDelete(User $user, Mail $mail): bool
     {
-        return $user->hasPermissionTo('mail_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $mail);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('mail_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

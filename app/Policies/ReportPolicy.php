@@ -14,7 +14,7 @@ class ReportPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('report_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('report_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ReportPolicy
      */
     public function view(User $user, Report $report): bool
     {
-        return $user->hasPermissionTo('report_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $report);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('report_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ReportPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('report_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('report_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ReportPolicy
      */
     public function update(User $user, Report $report): bool
     {
-        return $user->hasPermissionTo('report_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $report);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('report_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ReportPolicy
      */
     public function delete(User $user, Report $report): bool
     {
-        return $user->hasPermissionTo('report_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $report);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('report_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ReportPolicy
      */
     public function forceDelete(User $user, Report $report): bool
     {
-        return $user->hasPermissionTo('report_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $report);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('report_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

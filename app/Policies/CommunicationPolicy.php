@@ -14,7 +14,7 @@ class CommunicationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('communication_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('communication_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class CommunicationPolicy
      */
     public function view(User $user, Communication $communication): bool
     {
-        return $user->hasPermissionTo('communication_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communication);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communication_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class CommunicationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('communication_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('communication_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class CommunicationPolicy
      */
     public function update(User $user, Communication $communication): bool
     {
-        return $user->hasPermissionTo('communication_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communication);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communication_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class CommunicationPolicy
      */
     public function delete(User $user, Communication $communication): bool
     {
-        return $user->hasPermissionTo('communication_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communication);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communication_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class CommunicationPolicy
      */
     public function forceDelete(User $user, Communication $communication): bool
     {
-        return $user->hasPermissionTo('communication_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $communication);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('communication_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

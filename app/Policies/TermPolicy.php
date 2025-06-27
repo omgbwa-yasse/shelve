@@ -14,7 +14,7 @@ class TermPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('term_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('term_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class TermPolicy
      */
     public function view(User $user, Term $term): bool
     {
-        return $user->hasPermissionTo('term_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $term);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('term_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class TermPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('term_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('term_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class TermPolicy
      */
     public function update(User $user, Term $term): bool
     {
-        return $user->hasPermissionTo('term_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $term);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('term_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class TermPolicy
      */
     public function delete(User $user, Term $term): bool
     {
-        return $user->hasPermissionTo('term_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $term);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('term_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class TermPolicy
      */
     public function forceDelete(User $user, Term $term): bool
     {
-        return $user->hasPermissionTo('term_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $term);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('term_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

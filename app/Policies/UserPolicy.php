@@ -13,7 +13,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('user_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('user_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -21,8 +21,9 @@ class UserPolicy
      */
     public function view(User $user, User $targetUser): bool
     {
-        return $user->hasPermissionTo('user_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $targetUser);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('user_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -30,7 +31,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('user_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('user_create', $user->currentOrganisation);
     }
 
     /**
@@ -38,8 +39,9 @@ class UserPolicy
      */
     public function update(User $user, User $targetUser): bool
     {
-        return $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $targetUser);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -47,8 +49,9 @@ class UserPolicy
      */
     public function delete(User $user, User $targetUser): bool
     {
-        return $user->hasPermissionTo('user_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $targetUser);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('user_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -56,8 +59,9 @@ class UserPolicy
      */
     public function restore(User $user, User $targetUser): bool
     {
-        return $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $targetUser);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('user_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -65,8 +69,9 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $targetUser): bool
     {
-        return $user->hasPermissionTo('user_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $targetUser);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('user_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

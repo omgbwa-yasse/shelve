@@ -14,7 +14,7 @@ class BarcodePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('barcode_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('barcode_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class BarcodePolicy
      */
     public function view(User $user, Barcode $barcode): bool
     {
-        return $user->hasPermissionTo('barcode_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $barcode);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('barcode_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class BarcodePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('barcode_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('barcode_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class BarcodePolicy
      */
     public function update(User $user, Barcode $barcode): bool
     {
-        return $user->hasPermissionTo('barcode_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $barcode);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('barcode_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class BarcodePolicy
      */
     public function delete(User $user, Barcode $barcode): bool
     {
-        return $user->hasPermissionTo('barcode_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $barcode);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('barcode_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class BarcodePolicy
      */
     public function forceDelete(User $user, Barcode $barcode): bool
     {
-        return $user->hasPermissionTo('barcode_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $barcode);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('barcode_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**

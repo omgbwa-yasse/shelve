@@ -14,7 +14,7 @@ class ReservationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('reservation_viewAny', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('reservation_viewAny', $user->currentOrganisation);
     }
 
     /**
@@ -22,8 +22,9 @@ class ReservationPolicy
      */
     public function view(User $user, Reservation $reservation): bool
     {
-        return $user->hasPermissionTo('reservation_view', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $reservation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('reservation_view', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -31,7 +32,7 @@ class ReservationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('reservation_create', $user->currentOrganisation);
+        return $user->currentOrganisation && $user->hasPermissionTo('reservation_create', $user->currentOrganisation);
     }
 
     /**
@@ -39,8 +40,9 @@ class ReservationPolicy
      */
     public function update(User $user, Reservation $reservation): bool
     {
-        return $user->hasPermissionTo('reservation_update', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $reservation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('reservation_update', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -48,8 +50,9 @@ class ReservationPolicy
      */
     public function delete(User $user, Reservation $reservation): bool
     {
-        return $user->hasPermissionTo('reservation_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $reservation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('reservation_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
@@ -57,8 +60,9 @@ class ReservationPolicy
      */
     public function forceDelete(User $user, Reservation $reservation): bool
     {
-        return $user->hasPermissionTo('reservation_force_delete', $user->currentOrganisation) &&
-            $this->checkOrganisationAccess($user, $reservation);
+        return $user->currentOrganisation &&
+            $user->hasPermissionTo('reservation_force_delete', $user->currentOrganisation) &&
+            $this->checkOrganisationAccess($user, $record);
     }
 
     /**
