@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CommunicationRecord;
 use App\Models\Communication;
-use App\Models\CommunicationStatus;
 use App\Models\Organisation;
 use App\Models\Record;
 use App\Models\User;

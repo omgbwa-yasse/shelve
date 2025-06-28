@@ -227,16 +227,6 @@
             <i class="bi bi-chat-dots"></i> {{ __('communication') }}
         </div>
         <div class="submenu-content" id="communicationMenu">
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communication-status.index') }}">
-                    <i class="bi bi-flag"></i> {{ __('communication_status') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reservation-status.index') }}">
-                    <i class="bi bi-flag"></i> {{ __('reservation_status') }}
-                </a>
-            </div>
         </div>
     </div>
 

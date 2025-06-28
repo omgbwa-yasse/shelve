@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\Reservation;
 use App\Models\Activity;
 use App\Models\Building;
@@ -18,9 +19,10 @@ class SearchReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reservation::query();
+        try {
+            $query = Reservation::query();
 
-        switch($request->input('categ')) {
+            switch($request->input('categ')) {
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
@@ -35,23 +37,38 @@ class SearchReservationController extends Controller
                 break;
 
             case "code":
-                $query->where('code', $request->input('value'));
+                $value = $request->input('value');
+                if ($value) {
+                    $query->where('code', $value);
+                }
                 break;
 
             case "operator":
-                $query->where('operator_id', $request->input('id'));
+                $id = $request->input('id');
+                if ($id) {
+                    $query->where('operator_id', $id);
+                }
                 break;
 
             case "operator-organisation":
-                $query->where('operator_organisation_id', $request->input('id'));
+                $id = $request->input('id');
+                if ($id) {
+                    $query->where('operator_organisation_id', $id);
+                }
                 break;
 
             case "user":
-                $query->where('user_id', $request->input('id'));
+                $id = $request->input('id');
+                if ($id) {
+                    $query->where('user_id', $id);
+                }
                 break;
 
             case "user-organisation":
-                $query->where('user_organisation_id', $request->input('id'));
+                $id = $request->input('id');
+                if ($id) {
+                    $query->where('user_organisation_id', $id);
+                }
                 break;
 
             case "return-available":
@@ -71,15 +88,11 @@ class SearchReservationController extends Controller
                 break;
 
             case "approved":
-                $query->whereHas('status', function ($q) {
-                    $q->where('name', 'approuvée');
-                });
+                $query->where('status', 'approved');
                 break;
 
             case "InProgress":
-                $query->whereHas('status', function ($q) {
-                    $q->where('name', 'En examen');
-                });
+                $query->where('status', 'pending');
                 break;
 
             default:
@@ -96,6 +109,13 @@ class SearchReservationController extends Controller
         $reservations = $query->paginate(10);
 
         return view('communications.reservations.index', compact('reservations'));
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, log l'erreur et retourner une vue avec des réservations vides
+            Log::error('Erreur dans SearchReservationController: ' . $e->getMessage());
+            $reservations = collect()->paginate(10);
+            return view('communications.reservations.index', compact('reservations'));
+        }
     }
 
     public function date()

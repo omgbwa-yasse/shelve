@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Record;
 use App\Models\User;
+use App\Enums\CommunicationStatus;
 use Laravel\Scout\Searchable;
 
 
@@ -22,7 +23,13 @@ class Communication extends Model
         'user_organisation_id',
         'return_date',
         'return_effective',
-        'status_id',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => CommunicationStatus::class,
+        'return_date' => 'date',
+        'return_effective' => 'date',
     ];
 
     public function operator()
@@ -59,49 +66,75 @@ class Communication extends Model
     /**
      * Vérifier si la communication est retournée
      */
-    public function isReturned()
+    public function isReturned(): bool
     {
-        return $this->status_id == 5; // 5 = Retournée
+        return $this->status === CommunicationStatus::RETURNED;
     }
 
     /**
      * Vérifier si la communication peut être modifiée/supprimée
      */
-    public function canBeEdited()
+    public function canBeEdited(): bool
     {
         return !$this->isReturned();
     }
 
     /**
+     * Vérifier si la communication est en attente
+     */
+    public function isPending(): bool
+    {
+        return $this->status === CommunicationStatus::PENDING;
+    }
+
+    /**
+     * Vérifier si la communication est approuvée
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === CommunicationStatus::APPROVED;
+    }
+
+    /**
+     * Vérifier si la communication est rejetée
+     */
+    public function isRejected(): bool
+    {
+        return $this->status === CommunicationStatus::REJECTED;
+    }
+
+    /**
+     * Vérifier si la communication est en consultation
+     */
+    public function isInConsultation(): bool
+    {
+        return $this->status === CommunicationStatus::IN_CONSULTATION;
+    }
+
+    /**
      * Obtenir le statut suivant logique selon l'action
      */
-    public function getNextStatusId($action)
+    public function getNextStatus($action): CommunicationStatus
     {
-        switch ($action) {
-            case 'validate':
-                return $this->status_id == 1 ? 2 : $this->status_id; // Demande en cours → Validée
-            case 'reject':
-                return in_array($this->status_id, [1, 2]) ? 3 : $this->status_id; // → Rejetée
-            case 'transmit':
-                return $this->status_id == 2 ? 4 : $this->status_id; // Validée → En consultation
-            case 'return':
-                return $this->status_id == 4 ? 5 : $this->status_id; // En consultation → Retournée
-            case 'cancel_return':
-                return $this->status_id == 5 ? 4 : $this->status_id; // Retournée → En consultation
-            default:
-                return $this->status_id;
-        }
+        return match ($action) {
+            'validate' => $this->status === CommunicationStatus::PENDING ? CommunicationStatus::APPROVED : $this->status,
+            'reject' => in_array($this->status, [CommunicationStatus::PENDING, CommunicationStatus::APPROVED]) ? CommunicationStatus::REJECTED : $this->status,
+            'transmit' => $this->status === CommunicationStatus::APPROVED ? CommunicationStatus::IN_CONSULTATION : $this->status,
+            'return' => $this->status === CommunicationStatus::IN_CONSULTATION ? CommunicationStatus::RETURNED : $this->status,
+            'cancel_return' => $this->status === CommunicationStatus::RETURNED ? CommunicationStatus::IN_CONSULTATION : $this->status,
+            default => $this->status,
+        };
     }
 
     /**
      * Changer le statut avec validation
      */
-    public function changeStatus($action)
+    public function changeStatus($action): bool
     {
-        $newStatusId = $this->getNextStatusId($action);
+        $newStatus = $this->getNextStatus($action);
 
-        if ($newStatusId != $this->status_id) {
-            $this->update(['status_id' => $newStatusId]);
+        if ($newStatus !== $this->status) {
+            $this->update(['status' => $newStatus]);
             return true;
         }
 

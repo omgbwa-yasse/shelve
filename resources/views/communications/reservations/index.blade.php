@@ -32,22 +32,21 @@
                                         <div class="card-text d-flex flex-wrap">
                                             <div class="mr-3">
                                                 <strong>Demandeur :</strong>
-                                                <span>
-                                                    @if($reservation->user)
-                                                        <a href="{{ route('communications.reservations.search.index')}}?user={{ $reservation->user->id }}">
-                                                            {{ $reservation->user->name }}
-                                                        </a>
-                                                    @else
-                                                        <span class="text-muted">N/A</span>
-                                                    @endif
+                                                <span>                                    @if($reservation->user)
+                                        <a href="{{ route('communications.reservations.search.index')}}?categ=user&id={{ $reservation->user->id }}">
+                                            {{ $reservation->user->name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
 
-                                                    @if($reservation->userOrganisation)
-                                                        (<a href="{{ route('communications.reservations.search.index')}}?user_organisation={{ $reservation->userOrganisation->id }}">
-                                                                {{ $reservation->userOrganisation->name }}
-                                                        </a>)
-                                                    @else
-                                                        (<span class="text-muted">N/A</span>)
-                                                    @endif
+                                    @if($reservation->userOrganisation)
+                                        (<a href="{{ route('communications.reservations.search.index')}}?categ=user-organisation&id={{ $reservation->userOrganisation->id }}">
+                                                {{ $reservation->userOrganisation->name }}
+                                        </a>)
+                                    @else
+                                        (<span class="text-muted">N/A</span>)
+                                    @endif
                                                 </span>
                                             </div>
                                         </div>
@@ -55,22 +54,21 @@
                                         <div class="card-text d-flex flex-wrap">
                                             <div class="mr-3">
                                                 <strong>Opérateur :</strong>
-                                                <span>
-                                                    @if($reservation->operator)
-                                                        <a href="{{ route('communications.reservations.search.index')}}?operator={{ $reservation->operator->id }}">
-                                                            {{ $reservation->operator->name }}
-                                                        </a>
-                                                    @else
-                                                        <span class="text-muted">N/A</span>
-                                                    @endif
+                                                <span>                                    @if($reservation->operator)
+                                        <a href="{{ route('communications.reservations.search.index')}}?categ=operator&id={{ $reservation->operator->id }}">
+                                            {{ $reservation->operator->name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">N/A</span>
+                                    @endif
 
-                                                    @if($reservation->operatorOrganisation)
-                                                        (<a href="{{ route('communications.reservations.search.index')}}?operator_organisation={{ $reservation->operatorOrganisation->id }}">
-                                                            {{ $reservation->operatorOrganisation->name }}
-                                                        </a>)
-                                                    @else
-                                                        (<span class="text-muted">N/A</span>)
-                                                    @endif
+                                    @if($reservation->operatorOrganisation)
+                                        (<a href="{{ route('communications.reservations.search.index')}}?categ=operator-organisation&id={{ $reservation->operatorOrganisation->id }}">
+                                            {{ $reservation->operatorOrganisation->name }}
+                                        </a>)
+                                    @else
+                                        (<span class="text-muted">N/A</span>)
+                                    @endif
                                                 </span>
                                             </div>
                                         </div>
@@ -82,9 +80,7 @@
                                             <div>
                                                 <strong>Statut :</strong>
                                                 @if($reservation->status)
-                                                    <a href="{{ route('communications.reservations.search.index')}}?status={{ $reservation->status->id }}">
-                                                        {{ $reservation->status->name }}
-                                                    </a>
+                                                    <span class="badge badge-info">{{ $reservation->status->name }}</span>
                                                 @else
                                                     <span class="text-muted">N/A</span>
                                                 @endif

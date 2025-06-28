@@ -143,12 +143,6 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('communication-status.index') }}" class="btn btn-outline-info rounded-3">
-                            <i class="bi bi-flag me-2"></i>{{ __('communication_status') }}
-                        </a>
-                        <a href="{{ route('reservation-status.index') }}" class="btn btn-outline-info rounded-3">
-                            <i class="bi bi-flag me-2"></i>{{ __('reservation_status') }}
-                        </a>
                     </div>
                 </div>
             </div>

@@ -8,7 +8,7 @@ use App\Models\Attachment;
 use App\Models\Author;
 use App\Models\Communicability;
 use App\Models\Communication;
-use App\Models\CommunicationStatus;
+use App\Enums\CommunicationStatus;
 use App\Models\Container;
 use App\Models\Dolly;
 use App\Models\DollyType;
@@ -314,11 +314,11 @@ class ReportController extends Controller
         $completedCommunications = Communication::whereNotNull('return_effective')->count();
 
         // Communications par statut
-        $communicationsByStatus = Communication::select('status_id', DB::raw('count(*) as count'))
-            ->groupBy('status_id')
-            ->pluck('count', 'status_id')
+        $communicationsByStatus = Communication::select('status', DB::raw('count(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
             ->toArray();
-        $statusNames = CommunicationStatus::pluck('name', 'id')->toArray();
+        $statusNames = collect(CommunicationStatus::cases())->pluck('label', 'value')->toArray();
 
         // Évolution du nombre de communications
         $communicationsEvolution = Communication::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))

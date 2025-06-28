@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CommunicationStatus;
+use App\Enums\CommunicationStatus;
 use Illuminate\Http\Request;
 use App\Models\communication;
 use App\Models\Activity;
@@ -23,8 +23,15 @@ class SearchCommunicationController extends Controller
 
     public function form()
     {
+        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
+
         $data = [
-            'statuses' => CommunicationStatus::select('id', 'name')->get(),
+            'statuses' => $statuses,
             'operators' => User::select('id', 'name')->get(),
             'users' => User::select('id', 'name')->get(),
             'organisations' => Organisation::select('id', 'name')->get(),
@@ -150,10 +157,10 @@ class SearchCommunicationController extends Controller
     private function applyStatusSearch($query, $operator, $value)
     {
         if ($operator === 'avec') {
-            $query->where('status_id', $value);
+            $query->where('status', $value);
         } else {
-            $query->where('status_id', '!=', $value)
-                ->orWhereNull('status_id');
+            $query->where('status', '!=', $value)
+                ->orWhereNull('status');
         }
     }
 

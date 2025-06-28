@@ -65,11 +65,12 @@ return new class extends Migration
             $table->unsignedBigInteger('operator_organisation_id')->nullable(false);
             $table->unsignedBigInteger('user_id')->nullable(false);
             $table->unsignedBigInteger('user_organisation_id')->nullable(false);
-            $table->unsignedBigInteger('status_id')->nullable(false);
+            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled', 'in_progress', 'completed'])->default('pending');
+            $table->date('return_date')->nullable();
+            $table->date('return_effective')->nullable();
             $table->timestamps();
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('status_id')->references('id')->on('reservation_statuses')->onDelete('cascade');
             $table->foreign('user_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->foreign('operator_organisation_id')->references('id')->on('organisations')->onDelete('cascade');
         });
@@ -81,19 +82,12 @@ return new class extends Migration
             $table->boolean('is_original')->default(false)->nullable(false);
             $table->date('reservation_date')->nullable(false);
             $table->unsignedBigInteger('operator_id')->nullable(false);
-            $table->date('communication_id')->nullable();
+            $table->unsignedBigInteger('communication_id')->nullable();
             $table->timestamps();
             $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('reservation_id')->references('id')->on('reservations')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::create('reservation_statuses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 50)->unique()->nullable(false);
-            $table->text('description')->nullable(true);
-            $table->timestamps();
         });
 
 
@@ -104,6 +98,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('communication');
+        Schema::dropIfExists('reservation_record');
+        Schema::dropIfExists('reservations');
+        Schema::dropIfExists('communication_record');
+        Schema::dropIfExists('communications');
+        Schema::dropIfExists('communication_statuses');
     }
 };

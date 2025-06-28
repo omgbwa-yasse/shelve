@@ -8,7 +8,7 @@ use App\Models\floor;
 use App\Models\shelf;
 use App\Models\SlipStatus;
 use App\Models\Room;
-use App\Models\CommunicationStatus;
+use App\Enums\CommunicationStatus;
 use App\Models\MailPriority;
 use App\Models\MailType;
 use App\Models\RecordStatus;
@@ -534,7 +534,12 @@ class DollyActionController extends Controller
 
      Public function CommunicationStatus(INT $id){
         $dolly = dolly::findOrFail($id);
-        $statuses = CommunicationStatus::all();
+        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
         return view('dollies.actions.CommunicationStatusForm', compact('dolly','statuses'))->with('success', 'Dolly created successfully.');
      }
 
@@ -542,7 +547,7 @@ class DollyActionController extends Controller
         $dolly = Dolly::findOrFail($id);
         $dolly->load('communications');
         foreach ($dolly->communications as $communication) {
-            $communication->update(['status_id' => $value]);
+            $communication->update(['status' => $value]);
         }
      }
 

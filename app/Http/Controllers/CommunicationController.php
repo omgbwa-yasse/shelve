@@ -7,7 +7,7 @@ use App\Exports\CommunicationsExport;
 use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
 use App\Models\communicationRecord;
-use App\Models\CommunicationStatus;
+use App\Enums\CommunicationStatus;
 use App\Models\Dolly;
 use App\Models\DollyCommunication;
 use App\Models\Organisation;
@@ -24,7 +24,7 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation', 'status')->paginate(10);
+        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
         return view('communications.index', compact('communications'));
     }
 
@@ -33,7 +33,12 @@ class CommunicationController extends Controller
     public function create()
     {
         $users = User::all();
-        $statuses = CommunicationStatus::all();
+        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
         $organisations = Organisation::all();
         return view('communications.create', compact('users', 'statuses','organisations'));
     }
@@ -50,7 +55,7 @@ class CommunicationController extends Controller
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date|after_or_equal:today',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'status_id' => 'required|exists:communication_statuses,id',
+            'status' => 'required|in:pending,approved,rejected,in_consultation,returned',
         ]);
 
         // Vérifier que l'utilisateur a une organisation courante
@@ -67,7 +72,7 @@ class CommunicationController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'operator_organisation_id' => Auth::user()->current_organisation_id,
             'return_date' => $request->return_date,
-            'status_id' => $request->status_id,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('communications.transactions.index')->with('success', 'Communication créée avec succès');
@@ -93,7 +98,12 @@ class CommunicationController extends Controller
         }
 
         $users = User::all();
-        $statuses = CommunicationStatus::all();
+        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
         $organisations = Organisation::all();
         return view('communications.edit', compact('organisations','communication', 'users', 'statuses'));
     }
@@ -116,7 +126,7 @@ class CommunicationController extends Controller
         $communication = Communication::findOrFail($request->input('id'));
 
         // Valider seulement si en cours de demande
-        if($communication->status_id == 1 && !$communication->isReturned()){
+        if($communication->isPending() && !$communication->isReturned()){
             $communication->changeStatus('validate');            return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication validée avec succès.');
         }
         return redirect()->route('communications.transactions.show', $communication)->with('error', 'Cette communication ne peut pas être validée dans son état actuel.');
@@ -132,7 +142,7 @@ class CommunicationController extends Controller
         $communication = Communication::findOrFail($request->input('id'));
 
         // Rejeter si en cours de demande ou validée
-        if(in_array($communication->status_id, [1, 2]) && !$communication->isReturned()){
+        if(($communication->isPending() || $communication->isApproved()) && !$communication->isReturned()){
             $communication->changeStatus('reject');
 
             // Optionnellement stocker la raison du rejet
@@ -200,7 +210,7 @@ class CommunicationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
-            'status_id' => 'required|exists:communication_statuses,id',
+            'status' => 'required|in:pending,approved,rejected,in_consultation,returned',
             'user_organisation_id' => 'required|exists:organisations,id',
         ]);
 
@@ -211,7 +221,7 @@ class CommunicationController extends Controller
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'status_id' => $request->status_id, // CORRIGÉ : utiliser le statut sélectionné
+            'status' => $request->status, // CORRIGÉ : utiliser le statut sélectionné
         ]);
 
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication mise à jour avec succès.');

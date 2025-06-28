@@ -7,7 +7,7 @@ use App\Models\ReservationRecord;
 use Illuminate\Http\Request;
 use App\Models\Reservation;
 use App\Models\Communication;
-use App\Models\ReservationStatus;
+use App\Enums\ReservationStatus;
 use App\Models\User;
 use App\Models\Organisation;
 use Illuminate\Support\Carbon;
@@ -102,7 +102,12 @@ class ReservationController extends Controller
     {
         $operators = User::all();
         $users = User::all();
-        $statuses = ReservationStatus::all();
+        $statuses = collect(ReservationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
         $organisations = Organisation::all();
         return view('communications.reservations.create', compact('operators', 'users', 'statuses', 'organisations'));
     }
@@ -153,7 +158,12 @@ class ReservationController extends Controller
     {
         $operators = User::all();
         $users = User::all();
-        $statuses = ReservationStatus::all();
+        $statuses = collect(ReservationStatus::cases())->map(function ($status) {
+            return [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        });
         $organisations = Organisation::all();
         return view('communications.reservations.edit', compact('reservation', 'operators', 'users', 'statuses', 'organisations'));
     }

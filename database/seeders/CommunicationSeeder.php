@@ -10,79 +10,6 @@ class CommunicationSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = Carbon::now();
-
-        // Communication statuses
-        $communicationStatuses = [
-            [
-                'id' => 1,
-                'name' => 'Demande en cours',
-                'description' => 'La demande est en cours de traitement',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 2,
-                'name' => 'Validée',
-                'description' => 'La demande a été validée',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 3,
-                'name' => 'Rejetée',
-                'description' => 'La demande a été rejetée',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 4,
-                'name' => 'En consultation',
-                'description' => 'Les documents sont en consultation',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 5,
-                'name' => 'Retournée',
-                'description' => 'Les documents ont été retournés',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ];
-
-        // Reservation statuses
-        $reservationStatuses = [
-            [
-                'id' => 1,
-                'name' => 'Demande en cours',
-                'description' => 'La réservation est en cours de traitement',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 2,
-                'name' => 'Validée',
-                'description' => 'La réservation a été validée',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 3,
-                'name' => 'Rejetée',
-                'description' => 'La réservation a été rejetée',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 4,
-                'name' => 'Annulée',
-                'description' => 'La réservation a été annulée',
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-        ];
-
         // Communications
         $communications = [];
         $communicationRecords = [];
@@ -99,7 +26,18 @@ class CommunicationSeeder extends Seeder
             $returnDate = $requestDate->copy()->addDays(15);
             $returnEffective = $i <= 10 ? $requestDate->copy()->addDays(rand(7, 14)) : null;
 
-            $status = $i <= 5 ? 4 : ($i <= 10 ? 5 : ($i <= 12 ? 2 : ($i <= 14 ? 1 : 3)));
+            // Map to enum values for communications
+            if ($i <= 5) {
+                $status = 'in_consultation';
+            } elseif ($i <= 10) {
+                $status = 'returned';
+            } elseif ($i <= 12) {
+                $status = 'approved';
+            } elseif ($i <= 14) {
+                $status = 'pending';
+            } else {
+                $status = 'rejected';
+            }
 
             // Fix the code to be shorter
             $codeNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
@@ -116,7 +54,7 @@ class CommunicationSeeder extends Seeder
                 'user_organisation_id' => $userOrgId,
                 'return_date' => $returnDate,
                 'return_effective' => $returnEffective,
-                'status_id' => $status,
+                'status' => $status,
                 'created_at' => $requestDate,
                 'updated_at' => $requestDate,
             ];
@@ -153,7 +91,17 @@ class CommunicationSeeder extends Seeder
             $userOrgId = DB::table('users')->where('id', $userId)->value('current_organisation_id');
 
             $requestDate = Carbon::now()->subDays(rand(1, 15));
-            $status = $i <= 6 ? 2 : ($i <= 8 ? 1 : ($i <= 9 ? 3 : 4));
+
+            // Map to enum values
+            if ($i <= 6) {
+                $status = 'approved';
+            } elseif ($i <= 8) {
+                $status = 'pending';
+            } elseif ($i <= 9) {
+                $status = 'rejected';
+            } else {
+                $status = 'cancelled';
+            }
 
             // Fix the code to be shorter
             $codeNumber = str_pad($i, 3, '0', STR_PAD_LEFT);
@@ -168,14 +116,12 @@ class CommunicationSeeder extends Seeder
                 'operator_organisation_id' => $operatorOrgId,
                 'user_id' => $userId,
                 'user_organisation_id' => $userOrgId,
-                'status_id' => $status,
+                'status' => $status,
                 'created_at' => $requestDate,
                 'updated_at' => $requestDate,
             ];
         }
 
-        DB::table('communication_statuses')->insert($communicationStatuses);
-        DB::table('reservation_statuses')->insert($reservationStatuses);
         DB::table('communications')->insert($communications);
         DB::table('communication_record')->insert($communicationRecords);
         DB::table('reservations')->insert($reservations);
