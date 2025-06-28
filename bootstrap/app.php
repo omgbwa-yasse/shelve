@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\LogUserAction;
 use App\Http\Middleware\EnsurePublicUserIsApproved;
 use App\Http\Middleware\CorsMiddleware;
+use App\Http\Middleware\CheckPermissionMiddleware;
 use App\Models\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'public.approved' => EnsurePublicUserIsApproved::class,
             'cors' => CorsMiddleware::class,
+            'permission' => CheckPermissionMiddleware::class,
         ]);
         $middleware->api(prepend: [
             CorsMiddleware::class,

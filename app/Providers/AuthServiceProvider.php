@@ -6,6 +6,7 @@ use App\Models\PublicDocumentRequest;
 use App\Models\PublicEvent;
 use App\Policies\PublicDocumentRequestPolicy;
 use App\Policies\PublicEventPolicy;
+use App\Services\PolicyService;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -66,5 +67,8 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPolicies();
+
+        // Enregistrer les Gates personnalisés avec Spatie Permission
+        PolicyService::registerGates();
     }
 }

@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Organisation;
 use App\Models\Role;
 use App\Models\Permission;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -44,21 +45,16 @@ class User extends Authenticatable
         return $this->current_organisation_id;
     }
 
-
-
     public function currentOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'current_organisation_id');
     }
-
-
 
     public function organisations()
     {
         return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id')
                     ->withTimestamps();
     }
-
 
     public function roles()
     {
@@ -67,43 +63,36 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    /**
+     * Vérifier si l'utilisateur est un superadmin
+     *
+     * @return bool
+     */
+    public function isSuperAdmin()
+    {
+        return $this->hasRole('superadmin') || $this->hasRole('super-admin');
+    }
 
-
+    /**
+     * Méthode de compatibilité pour vérifier les permissions avec organisation
+     * Compatible avec le système existant
+     */
     public function checkUserPermission($permissionName, $organisationId = null)
     {
-        // Utiliser un cache pour les permissions fréquemment vérifiées
-        $permission = Cache::remember('permission:'.$permissionName, 3600, function() use ($permissionName) {
-            return Permission::where('name', $permissionName)->select('id')->first();
-        });
-
-        if (!$permission) {
-            return false;
+        // Si c'est un superadmin, autoriser tout
+        if ($this->isSuperAdmin()) {
+            return true;
         }
 
-        $organisationId = $organisationId ?? $this->current_organisation_id;
-
-        // Requête optimisée avec jointure directe plutôt que whereHas
-        return $this->roles()
-            ->join('role_permission', 'roles.id', '=', 'role_permission.role_id')
-            ->where('role_permission.permission_id', $permission->id)
-            ->where('roles.organisation_id', $organisationId)
-            ->exists();
+        // Utiliser Spatie pour vérifier la permission
+        return $this->hasPermissionTo($permissionName);
     }
 
-
-
-    public function hasPermissionTo($permissionName, $organisationId = null)
+    /**
+     * Définir le guard par défaut pour Spatie Laravel Permission
+     */
+    public function getDefaultGuardName(): string
     {
-        $organisationId = $organisationId ?? $this->current_organisation_id;
-
-        return $this->roles()
-            ->wherePivot('organisation_id', $organisationId)
-            ->whereHas('permissions', function ($query) use ($permissionName) {
-                $query->where('permissions.name', $permissionName);
-            })
-            ->exists();
+        return 'web';
     }
-
-
-
 }

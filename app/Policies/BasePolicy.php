@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 
 abstract class BasePolicy
 {
@@ -16,7 +17,7 @@ abstract class BasePolicy
     public function before(User $user, string $ability): bool|null
     {
         // Grant all abilities to super administrators
-        if ($user->hasRole('super-admin')) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
@@ -38,145 +39,22 @@ abstract class BasePolicy
     }
 
     /**
-     * Check if the user has the required permission for their current organisation.
+     * Check if the user has the required permission using Gate.
      */
     protected function hasPermission(User $user, string $permission): bool
     {
-        return $user->currentOrganisation &&
-               $user->hasPermissionTo($permission, $user->currentOrganisation);
+        return Gate::forUser($user)->allows($permission);
     }
 
     /**
      * Check if the user has access to the model within their current organisation.
      * This method handles various ways models can be linked to organisations.
+     * Now integrates with Gate for organization access checks.
      */
     protected function checkOrganisationAccess(User $user, Model $model): bool
     {
-        if (!$user->currentOrganisation) {
-            return false;
-        }
-
-        $modelClass = get_class($model);
-        $modelName = class_basename($modelClass);
-        $cacheKey = strtolower($modelName) . "_org_access:{$user->id}:{$model->id}:{$user->current_organisation_id}";
-
-        return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $model) {
-            return $this->performOrganisationCheck($user, $model);
-        });
-    }
-
-    /**
-     * Perform the actual organisation access check.
-     * This method contains the logic for checking organisation access.
-     */
-    private function performOrganisationCheck(User $user, Model $model): bool
-    {
-        // 1. For models directly linked to organisations (many-to-many)
-        if ($this->checkDirectOrganisationLink($model, $user->current_organisation_id)) {
-            return true;
-        }
-
-        // 2. For models with organisation_id column (belongs to organisation)
-        if ($this->checkOrganisationIdColumn($model, $user->current_organisation_id)) {
-            return true;
-        }
-
-        // 3. For models linked through activity (like Records)
-        if ($this->checkActivityOrganisationLink($model, $user->current_organisation_id)) {
-            return true;
-        }
-
-        // 4. For models linked through user (belongs to user)
-        if ($this->checkUserOrganisationLink($model, $user->current_organisation_id)) {
-            return true;
-        }
-
-        // 5. For models linked through building/location hierarchy
-        if ($this->checkBuildingOrganisationLink($user, $model)) {
-            return true;
-        }
-
-        // Default: deny access if no specific organisation link found
-        return false;
-    }
-
-    /**
-     * Check direct organisation link (many-to-many relationship).
-     */
-    private function checkDirectOrganisationLink(Model $model, int $organisationId): bool
-    {
-        if (!method_exists($model, 'organisations')) {
-            return false;
-        }
-
-        foreach($model->organisations as $organisation) {
-            if ($organisation->id == $organisationId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check organisation_id column.
-     */
-    private function checkOrganisationIdColumn(Model $model, int $organisationId): bool
-    {
-        return isset($model->organisation_id) && $model->organisation_id == $organisationId;
-    }
-
-    /**
-     * Check organisation link through activity.
-     */
-    private function checkActivityOrganisationLink(Model $model, int $organisationId): bool
-    {
-        if (!method_exists($model, 'activity') || !$model->activity) {
-            return false;
-        }
-
-        foreach($model->activity->organisations as $organisation) {
-            if ($organisation->id == $organisationId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check organisation link through user.
-     */
-    private function checkUserOrganisationLink(Model $model, int $organisationId): bool
-    {
-        if (!isset($model->user_id)) {
-            return false;
-        }
-
-        $modelUser = $model->user;
-        if (!$modelUser || !$modelUser->organisations) {
-            return false;
-        }
-
-        foreach($modelUser->organisations as $organisation) {
-            if ($organisation->id == $organisationId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Check organisation link through building hierarchy.
-     */
-    private function checkBuildingOrganisationLink(User $user, Model $model): bool
-    {
-        if (!method_exists($model, 'building') || !$model->building) {
-            return false;
-        }
-
-        return $this->checkOrganisationAccess($user, $model->building);
+        // Use Gate to check organisation access
+        return Gate::forUser($user)->allows('access-in-organisation', $model);
     }
 
     /**
