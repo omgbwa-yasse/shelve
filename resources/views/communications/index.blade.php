@@ -3,7 +3,7 @@
 @section('content')
     <div class="container-fluid ">
         <h1><i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Communications') }} {{ $title ?? ''}}</h1>
-        <a href="{{ route('transactions.create') }}" class="btn btn-primary mb-3">
+        <a href="{{ route('communications.transactions.create') }}" class="btn btn-primary mb-3">
             <i class="bi bi-plus-circle"></i> {{ __('Fill a form') }}
         </a>
 
@@ -13,11 +13,11 @@
                     <i class="bi bi-cart me-1"></i>
                     {{ __('Cart') }}
                 </a>
-                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.export') }}">
+                <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.export.excel') }}">
                     <i class="bi bi-download me-1"></i>
                     {{ __('Export') }}
                 </a>
-                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.print') }}">
+                <a href="#" id="printBtn" class="btn btn-light btn-sm me-2" data-route="{{ route('communications.export.print') }}">
                     <i class="bi bi-printer me-1"></i>
                     {{ __('Print') }}
                 </a>
@@ -41,7 +41,7 @@
                                 <i class="bi bi-chevron-down fs-5"></i>
                             </button>
                             <h4 class="card-title flex-grow-1 m-0 text-primary" for="communication-{{ $communication->id }}">
-                                <a href="{{ route('transactions.show', $communication->id ?? '') }}" class="text-decoration-none text-dark">
+                                <a href="{{ route('communications.transactions.show', $communication->id ?? '') }}" class="text-decoration-none text-dark">
                                     <span class="fs-5 fw-semibold">{{ $communication->code ?? 'N/A' }}</span>
                                     <span class="fs-5"> : {{ $communication->name ?? 'N/A' }}</span>
                                     @if($communication->status)

@@ -95,7 +95,7 @@ class SearchReservationController extends Controller
 
         $reservations = $query->paginate(10);
 
-        return view('reservations.index', compact('reservations'));
+        return view('communications.reservations.index', compact('reservations'));
     }
 
     public function date()

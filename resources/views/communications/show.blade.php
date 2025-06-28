@@ -50,8 +50,8 @@
                 <div class="btn-group">
                     <a href="{{ route('communications.transactions.index') }}" class="btn btn-outline-secondary"> {{ __('Back') }}</a>
                     @if($communication->canBeEdited())
-                        <a href="{{ route('transactions.edit', $communication->id) }}" class="btn btn-warning"> {{ __('Edit') }}</a>
-                        <form action="{{ route('transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
+                        <a href="{{ route('communications.transactions.edit', $communication->id) }}" class="btn btn-warning"> {{ __('Edit') }}</a>
+                        <form action="{{ route('communications.transactions.destroy', $communication->id) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger" onclick="return confirm('{{ __('Are you sure you want to delete this communication?') }}')">{{ __('Delete') }}</button>
@@ -63,17 +63,17 @@
                 <div class="btn-group ms-2">
                     {{-- Actions basées sur le statut --}}
                     @if($communication->status_id == 1) {{-- Demande en cours --}}
-                        <a href="{{ route('communication-validate') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Validate') }}</a>
+                        <a href="{{ route('communications.actions.validate') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Validate') }}</a>
                         <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">{{ __('Reject') }}</button>
                     @elseif($communication->status_id == 2 && !$communication->isReturned()) {{-- Validée --}}
-                        <a href="{{ route('record-transmission') }}?id={{$communication->id}}" class="btn btn-primary">{{ __('Transmit Documents') }}</a>
+                        <a href="{{ route('communications.actions.transmission') }}?id={{$communication->id}}" class="btn btn-primary">{{ __('Transmit Documents') }}</a>
                     @endif
 
                     {{-- Actions de retour --}}
                     @if($communication->return_effective == NULL)
-                        <a href="{{ route('return-effective') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Effective Return') }}</a>
+                        <a href="{{ route('communications.actions.return-effective') }}?id={{$communication->id}}" class="btn btn-success">{{ __('Effective Return') }}</a>
                     @else
-                        <a href="{{ route('return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">{{ __('Cancel Effective Return') }}</a>
+                        <a href="{{ route('communications.actions.return-cancel') }}?id={{$communication->id}}" class="btn btn-danger">{{ __('Cancel Effective Return') }}</a>
                     @endif
                 </div>
                 </div>
@@ -84,7 +84,7 @@
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">{{ __('Documents') }}</h5>
                 @if($communication->canBeEdited())
-                    <a href="{{ route('transactions.records.create', $communication->id) }}" class="btn btn-primary btn-sm">
+                    <a href="{{ route('communications.records.create', $communication->id) }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-plus-circle me-1"></i>{{ __('Add Documents') }}
                     </a>
                 @else
@@ -102,12 +102,12 @@
                                 <p class="mb-0"><strong>{{ __('Content') }}:</strong> {{ $record->content ?? 'N/A' }}</p>
                             </div>
                             <div class="btn-group">
-                                <a href="{{ route('transactions.records.show', [$communication, $record]) }}" class="btn btn-outline-secondary btn-sm">{{ __('View') }}</a>
+                                <a href="{{ route('communications.records.show', [$communication, $record]) }}" class="btn btn-outline-secondary btn-sm">{{ __('View') }}</a>
                                 @if($communication->canBeEdited())
                                     @if($record->return_effective == NULL && !$record->is_original)
-                                        <a href="{{ route('record-return-effective') }}?id={{ $record->id }}" class="btn btn-success btn-sm">{{ __('Return') }}</a>
+                                        <a href="{{ route('communications.records.actions.return-effective') }}?id={{ $record->id }}" class="btn btn-success btn-sm">{{ __('Return') }}</a>
                                     @elseif($record->return_effective != NULL && $record->is_original)
-                                        <a href="{{ route('record-return-cancel') }}?id={{ $record->id }}" class="btn btn-danger btn-sm">{{ __('Cancel Return') }}</a>
+                                        <a href="{{ route('communications.records.actions.return-cancel') }}?id={{ $record->id }}" class="btn btn-danger btn-sm">{{ __('Cancel Return') }}</a>
                                     @endif
                                 @endif
                             </div>
@@ -122,7 +122,7 @@
     <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('communication-reject') }}" method="POST">
+                <form action="{{ route('communications.actions.reject') }}" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{ $communication->id }}">
                     <div class="modal-header">
@@ -157,14 +157,14 @@
             if (exportBtn) {
                 exportBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    window.location.href = "{{ route('communications.export') }}?id={{ $communication->id }}";
+                    window.location.href = "{{ route('communications.export.excel') }}?id={{ $communication->id }}";
                 });
             }
 
             if (printBtn) {
                 printBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    window.location.href = "{{ route('communications.print') }}?id={{ $communication->id }}";
+                    window.location.href = "{{ route('communications.export.print') }}?id={{ $communication->id }}";
                 });
             }
         });

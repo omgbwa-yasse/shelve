@@ -26,9 +26,8 @@ class ReservationController extends Controller
 
 
 
-    public function show($id)
+    public function show(Reservation $reservation)
     {
-        $reservation = reservation::findOrFail($id);
         return view('communications.reservations.show', compact('reservation'));
     }
 
@@ -150,9 +149,8 @@ class ReservationController extends Controller
 
 
 
-    public function edit(INT $id)
+    public function edit(Reservation $reservation)
     {
-        $reservation = reservation::findOrFail($id);
         $operators = User::all();
         $users = User::all();
         $statuses = ReservationStatus::all();
@@ -163,9 +161,8 @@ class ReservationController extends Controller
 
 
 
-    public function update(Request $request, INT $id)
+    public function update(Request $request, Reservation $reservation)
     {
-        $reservation = reservation::findOrFail($id);
         $request->validate([
             'code' => 'required|unique:reservations,code,'.$reservation->id.'|max:10',
             'name' => 'required|string|max:200',
@@ -192,9 +189,8 @@ class ReservationController extends Controller
 
 
 
-    public function destroy(INT $id)
+    public function destroy(Reservation $reservation)
     {
-        $reservation = reservation::findOrFail($id);
         $reservation->delete();
 
         return redirect()->route('communications.reservations.index')

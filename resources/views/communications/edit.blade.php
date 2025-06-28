@@ -31,7 +31,7 @@
     @endif
     <div class="container-fluid ">
         <h1>{{ __('Edit Record') }}</h1>
-        <form action="{{ route('transactions.update', $communication->id) }}" method="POST">
+        <form action="{{ route('communications.transactions.update', $communication->id) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="mb-3">

@@ -20,7 +20,7 @@
             </div>
         @endif
 
-        <form action="{{ route('transactions.store') }}" method="POST">
+        <form action="{{ route('communications.transactions.store') }}" method="POST">
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">{{ __('Code') }}</label>

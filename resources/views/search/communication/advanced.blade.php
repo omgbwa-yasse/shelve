@@ -211,7 +211,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <form id="advanced-search-form" method="POST" action="{{ route('search.communications.advanced') }}">
+                        <form id="advanced-search-form" method="POST" action="{{ route('communications.search.advanced') }}">
                             @csrf
                             <div id="search-criteria-container">
                                 <div class="alert alert-info" id="no-criteria-message">

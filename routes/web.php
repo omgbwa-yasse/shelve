@@ -380,7 +380,14 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::prefix('reservations')->name('communications.reservations.')->group(function () {
 
-            Route::resource('/', ReservationController::class);
+            Route::get('/', [ReservationController::class, 'index'])->name('index');
+            Route::get('/create', [ReservationController::class, 'create'])->name('create');
+            Route::post('/', [ReservationController::class, 'store'])->name('store');
+            Route::get('/{reservation}', [ReservationController::class, 'show'])->name('show');
+            Route::get('/{reservation}/edit', [ReservationController::class, 'edit'])->name('edit');
+            Route::put('/{reservation}', [ReservationController::class, 'update'])->name('update');
+            Route::delete('/{reservation}', [ReservationController::class, 'destroy'])->name('destroy');
+
             Route::prefix('actions')->name('actions.')->group(function () {
                 Route::post('approved', [ReservationController::class, 'approved'])->name('approved');
             });

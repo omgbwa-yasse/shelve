@@ -116,27 +116,27 @@
         </div>
         <div class="submenu-section-content" id="communicationsSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.transactions.index')}}">>
+                <a class="submenu-link" href="{{ route('communications.index')}}">
                     <i class="bi bi-inbox"></i> {{ __('view_all') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications-sort')}}?categ=return-effective">
+                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=return-effective">
                     <i class="bi bi-check-circle"></i> {{ __('returned') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications-sort')}}?categ=unreturn">
+                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=unreturn">
                     <i class="bi bi-dash-circle"></i> {{ __('without_return') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications-sort')}}?categ=not-return">
+                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=not-return">
                     <i class="bi bi-x-circle"></i> {{ __('not_returned') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.advanced.form') }}">
+                <a class="submenu-link" href="{{ route('communications.search.form') }}">
                     <i class="bi bi-search"></i> {{ __('advanced') }}
                 </a>
             </div>
@@ -150,17 +150,17 @@
         </div>
         <div class="submenu-section-content" id="reservationsSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reservations.index')}}">
+                <a class="submenu-link" href="{{ route('communications.reservations.index')}}">
                     <i class="bi bi-list-ul"></i> {{ __('view_all') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reservations-sort', ['categ' => 'InProgress'])}}">
+                <a class="submenu-link" href="{{ route('communications.reservations.search.index', ['categ' => 'InProgress'])}}">
                     <i class="bi bi-hourglass-split"></i> {{ __('under_review') }}
                 </a>
             </div>
             {{-- <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reservations-sort', ['categ' => 'approved'])}}">
+                <a class="submenu-link" href="{{ route('communications.reservations.search.index', ['categ' => 'approved'])}}">
                     <i class="bi bi-check2-all"></i> {{ __('approved') }}
                 </a>
             </div> --}}
@@ -174,12 +174,12 @@
         </div>
         <div class="submenu-section-content" id="addSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('transactions.create')}}">
+                <a class="submenu-link" href="{{ route('communications.transactions.create')}}">
                     <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reservations.create')}}">
+                <a class="submenu-link" href="{{ route('communications.reservations.create')}}">
                     <i class="bi bi-calendar-plus"></i> {{ __('add_reservation') }}
                 </a>
             </div>

@@ -4,7 +4,9 @@ namespace App\Policies;
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Support\Facades\Cache;
 use App\Policies\BasePolicy;
 
 class RolePolicy extends BasePolicy
@@ -60,7 +62,7 @@ class RolePolicy extends BasePolicy
     /**
      * Check if the user has access to the model within their current organisation.
      */
-    private function checkOrganisationAccess(User $user, Role $role): bool
+    protected function checkOrganisationAccess(User $user, Model $role): bool
     {
         $cacheKey = "role_org_access:{$user->id}:{$role->id}:{$user->current_organisation_id}";
 
