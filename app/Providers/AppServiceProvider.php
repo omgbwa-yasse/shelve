@@ -4,9 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Record;
-use App\Policies\RecordPolicy;
 use App\Services\PolicyService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -32,7 +29,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
-        Gate::policy(Record::class, RecordPolicy::class);
+
+        // Laravel découvrira automatiquement les policies selon les conventions de nommage
+        // Exemple : User -> UserPolicy, Record -> RecordPolicy, etc.
+        // Enregistrement manuel seulement si nécessaire pour des cas spéciaux
 
         // Enregistrer nos Gates personnalisés
         PolicyService::registerGates();

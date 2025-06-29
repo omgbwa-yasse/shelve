@@ -13,16 +13,22 @@ abstract class BasePolicy
     /**
      * Perform pre-authorization checks.
      * This method runs before any other policy method.
+     * Supports guest users with optional type-hint.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(?User $user, string $ability): bool|null
     {
+        // Handle guest users (non-authenticated)
+        if (!$user) {
+            return in_array($ability, $this->getGuestAllowedAbilities()) ? null : false;
+        }
+
         // Grant all abilities to super administrators
         if ($user->isSuperAdmin()) {
             return true;
         }
 
         // Check if user has a current organisation (required for most actions)
-        if (!$user->currentOrganisation && !in_array($ability, $this->getGuestAllowedAbilities())) {
+        if (!$this->userHasCurrentOrganisation($user) && !in_array($ability, $this->getGuestAllowedAbilities())) {
             return false;
         }
 
@@ -83,9 +89,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can perform viewAny action.
+     * Supports guest users with optional type-hint.
      */
-    protected function canViewAny(User $user, string $permission): bool|Response
+    protected function canViewAny(?User $user, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour voir ces éléments.');
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->deny('Vous n\'avez pas la permission de voir ces éléments.');
         }
@@ -94,9 +105,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can view a specific model.
+     * Supports guest users with optional type-hint.
      */
-    protected function canView(User $user, Model $model, string $permission): bool|Response
+    protected function canView(?User $user, Model $model, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->denyAsNotFound();
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->denyAsNotFound();
         }
@@ -110,9 +126,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can create models.
+     * Supports guest users with optional type-hint.
      */
-    protected function canCreate(User $user, string $permission): bool|Response
+    protected function canCreate(?User $user, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour créer cet élément.');
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->deny('Vous n\'avez pas la permission de créer cet élément.');
         }
@@ -121,9 +142,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can update a specific model.
+     * Supports guest users with optional type-hint.
      */
-    protected function canUpdate(User $user, Model $model, string $permission): bool|Response
+    protected function canUpdate(?User $user, Model $model, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour modifier cet élément.');
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->deny('Vous n\'avez pas la permission de modifier cet élément.');
         }
@@ -137,9 +163,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can delete a specific model.
+     * Supports guest users with optional type-hint.
      */
-    protected function canDelete(User $user, Model $model, string $permission): bool|Response
+    protected function canDelete(?User $user, Model $model, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour supprimer cet élément.');
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->deny('Vous n\'avez pas la permission de supprimer cet élément.');
         }
@@ -153,9 +184,14 @@ abstract class BasePolicy
 
     /**
      * Check if user can force delete a specific model.
+     * Supports guest users with optional type-hint.
      */
-    protected function canForceDelete(User $user, Model $model, string $permission): bool|Response
+    protected function canForceDelete(?User $user, Model $model, string $permission): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour supprimer définitivement cet élément.');
+        }
+
         if (!$this->hasPermission($user, $permission)) {
             return $this->deny('Vous n\'avez pas la permission de supprimer définitivement cet élément.');
         }
@@ -165,5 +201,17 @@ abstract class BasePolicy
         }
 
         return true;
+    }
+
+    /**
+     * Check if user has a current organisation.
+     */
+    protected function userHasCurrentOrganisation(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        return isset($user->current_organisation_id) && !empty($user->current_organisation_id);
     }
 }
