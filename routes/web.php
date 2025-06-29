@@ -665,6 +665,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('chat', [OllamaController::class, 'chat'])->name('chat');
     });
 
+    // Module Scan
+    Route::prefix('scan')->middleware(['auth'])->group(function () {
+        Route::get('/', [\App\Http\Controllers\ScanController::class, 'index'])->name('scan.index');
+        Route::post('/upload', [\App\Http\Controllers\ScanController::class, 'uploadPage'])->name('scan.upload');
+        Route::get('/pages/{session}', [\App\Http\Controllers\ScanController::class, 'listPages'])->name('scan.pages');
+        Route::delete('/page', [\App\Http\Controllers\ScanController::class, 'deletePage'])->name('scan.page.delete');
+        Route::post('/save', [\App\Http\Controllers\ScanController::class, 'save'])->name('scan.save');
+        Route::get('/sessions', [\App\Http\Controllers\ScanController::class, 'listSessions'])->name('scan.sessions');
+        Route::post('/attach', [\App\Http\Controllers\ScanController::class, 'attachToRecord'])->name('scan.attach');
+    });
 
 });
 

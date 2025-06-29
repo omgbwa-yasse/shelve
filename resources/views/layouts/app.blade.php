@@ -170,6 +170,13 @@
                         </a>
                     </div>
                     @endcan
+                    @can('module_scan_access')
+                    <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'scan') active @endif" href="{{ route('scan.index') }}">
+                            <i class="bi bi-scanner" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
+                    @endcan
                     @can('module_dollies_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
