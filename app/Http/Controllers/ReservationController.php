@@ -20,7 +20,7 @@ class ReservationController extends Controller
 {
     public function index()
     {
-        $reservations = Reservation::with('operator', 'user', 'status', 'userOrganisation', 'operatorOrganisation')->get();
+        $reservations = Reservation::with('operator', 'user', 'userOrganisation', 'operatorOrganisation')->get();
         return view('communications.reservations.index', compact('reservations'));
     }
 
@@ -125,9 +125,9 @@ class ReservationController extends Controller
                 'content' => 'nullable|string',
                 'user_id' => 'required|exists:users,id',
                 'user_organisation_id' => 'required|exists:organisations,id',
+                'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, ReservationStatus::cases())),
             ]);
 
-            // Vérifier que l'utilisateur a une organisation courante
             if (!Auth::user()->current_organisation_id) {
                 return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une réservation.'])->withInput();
             }
@@ -141,7 +141,7 @@ class ReservationController extends Controller
                 'user_organisation_id' => $request->user_organisation_id,
                 'operator_organisation_id' => Auth::user()->current_organisation_id,
                 'return_date' => $request->return_date,
-                'status_id' => 1, // Examen
+                'status' => ReservationStatus::from($request->status),
             ]);
 
             return redirect()->route('communications.reservations.index')
@@ -179,6 +179,7 @@ class ReservationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'user_organisation_id' => 'required|exists:organisations,id',
+            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, ReservationStatus::cases())),
         ]);
 
         $reservation->update([
@@ -189,7 +190,7 @@ class ReservationController extends Controller
             'operator_organisation_id' => Auth::user()->current_organisation_id,
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
-            'status_id' => 1,
+            'status' => ReservationStatus::from($request->status),
         ]);
 
         return redirect()->route('communications.reservations.index')

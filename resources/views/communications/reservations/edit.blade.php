@@ -34,6 +34,14 @@
                     @endforeach
                 </select>
             </div>
+            <div class="mb-3">
+                <label for="status" class="form-label">Statut</label>
+                <select name="status" id="status" class="form-select" required>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status['value'] }}" {{ (isset($reservation) && $reservation->status->value === $status['value']) ? 'selected' : '' }}>{{ $status['label'] }}</option>
+                    @endforeach
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>
     </div>
