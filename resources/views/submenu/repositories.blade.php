@@ -94,21 +94,27 @@
     </style>
 
     <!-- Recherche Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'search'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
         <div class="submenu-content" id="rechercheMenu">
+            @can('viewAny', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.index') }}">
                     <i class="bi bi-list-check"></i> {{ __('my_archives') }}
                 </a>
             </div>
+            @endcan
+            @can('viewAny', App\Models\Author::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-author.index') }}">
                     <i class="bi bi-person"></i> {{ __('holders') }}
                 </a>
             </div>
+            @endcan
+            @can('viewAny', App\Models\Record::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-select-date')}}">
                     <i class="bi bi-calendar"></i> {{ __('dates') }}
@@ -139,10 +145,13 @@
                     <i class="bi bi-search"></i> {{ __('advanced') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
+    @endif
 
     <!-- Enregistrement Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'add'))
     <div class="submenu-section add-section">
         <div class="submenu-heading" >
             <i class="bi bi-journal-plus"></i> {{ __('registration') }}
@@ -164,8 +173,10 @@
             @endcan
         </div>
     </div>
+    @endif
 
     <!-- lifeCycle Section -->
+    @can('viewAny', App\Models\Record::class)
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-cart"></i> {{ __('life_cycle') }}
@@ -203,8 +214,10 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <!-- Import / Export Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'tools'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
@@ -226,6 +239,7 @@
             @endcan
         </div>
     </div>
+    @endif
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

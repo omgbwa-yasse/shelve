@@ -99,34 +99,43 @@
             <i class="bi bi-person-circle"></i> {{ __('my_account') }}
         </div>
         <div class="submenu-content" id="accountMenu">
+            @auth
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.show', auth()->user()->id) }}">
                     <i class="bi bi-gear"></i> {{ __('my_account') }}
                 </a>
             </div>
+            @endauth
         </div>
     </div>
 
     <!-- Autorisations et postes Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('settings', 'users'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}
         </div>
         <div class="submenu-content" id="authorizationsMenu">
+            @can('viewAny', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.index') }}">
                     <i class="bi bi-person"></i> {{ __('users') }}
                 </a>
             </div>
+            @endcan
+            @can('manage', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('user-organisation-role.index') }}">
                     <i class="bi bi-diagram-3"></i> {{ __('assigned_positions') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
+    @endif
 
     <!-- Droits et permissions Section -->
+    @can('manage', App\Models\User::class)
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-shield-lock"></i> {{ __('rights_and_permissions') }}
@@ -144,6 +153,7 @@
             </div>
         </div>
     </div>
+    @endcan
 
     <!-- Tâches Section -->
     <div class="submenu-section">
@@ -284,28 +294,36 @@
     </div>
 
     <!-- Système Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('settings', 'system'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-cpu"></i> {{ __('system') }}
         </div>
         <div class="submenu-content" id="systemMenu">
+            @can('viewAny', App\Models\Backup::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.index')}}">
                     <i class="bi bi-save"></i> {{ __('my_backups') }}
                 </a>
             </div>
+            @endcan
+            @can('create', App\Models\Backup::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.create')}}">
                     <i class="bi bi-plus-square"></i> {{ __('new_backup') }}
                 </a>
             </div>
+            @endcan
+            @can('manage', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="">
                     <i class="bi bi-people"></i> {{ __('ldap') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
+    @endif
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

@@ -110,11 +110,13 @@
     </style>
 
     <!-- Communications Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'search'))
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-chat-dots"></i> {{ __('communications') }}
         </div>
         <div class="submenu-section-content" id="communicationsSection">
+            @can('viewAny', App\Models\Communication::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.index')}}">
                     <i class="bi bi-inbox"></i> {{ __('view_all') }}
@@ -140,10 +142,13 @@
                     <i class="bi bi-search"></i> {{ __('advanced') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
+    @endif
 
     <!-- Reservations Section -->
+    @can('viewAny', App\Models\Communication::class)
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-calendar-check"></i> {{ __('reservations') }}
@@ -166,13 +171,16 @@
             </div> --}}
         </div>
     </div>
+    @endcan
 
     <!-- Add Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'add'))
     <div class="submenu-section add-section">
         <div class="submenu-heading">
             <i class="bi bi-plus-circle"></i> {{ __('add') }}
         </div>
         <div class="submenu-section-content" id="addSection">
+            @can('create', App\Models\Communication::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.transactions.create')}}">
                     <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
@@ -183,8 +191,10 @@
                     <i class="bi bi-calendar-plus"></i> {{ __('add_reservation') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
+    @endif
 </div>
 
 <script>

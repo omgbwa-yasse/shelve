@@ -119,6 +119,7 @@
 
 
     <!-- Intelligence Artificielle Section -->
+    @auth
     <div class="submenu-section ai.section">
         <div class="submenu-heading">
             <i class="bi bi-robot"></i> {{ __('artificial_intelligence') }}
@@ -158,12 +159,12 @@
     </div>
 
     <!-- Configuration IA Section -->
+    @can('manage', App\Models\User::class)
     <div class="submenu-section ai.config-section">
         <div class="submenu-heading">
             <i class="bi bi-sliders"></i> {{ __('ai_configuration') }}
         </div>
         <div class="submenu-content" id="aiConfigMenu">
-
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.models.index') }}">
                     <i class="bi bi-box"></i> {{ __('ai_models') }}
@@ -191,6 +192,8 @@
             </div>
         </div>
     </div>
+    @endcan
+    @endauth
 
 </div>
 

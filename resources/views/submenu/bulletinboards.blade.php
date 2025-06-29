@@ -94,30 +94,29 @@
     </style>
 
     <!-- Recherche Section -->
+    @can('viewAny', App\Models\BulletinBoard::class)
     <div class="submenu-section">
-
         <div class="submenu-section">
             <div class="submenu-heading" >
                 <i class="bi bi-search"></i> {{ __('search') }}
             </div>
             <div class="submenu-content" id="rechercheMenu">
-
                 <div class="submenu-item">
                     <a class="submenu-link" href="{{ route('bulletin-boards.index') }}">
                         <i class="bi bi-clipboard"></i> Mes barbillards
                     </a>
                 </div>
-
+                @can('create', App\Models\BulletinBoard::class)
                 <div class="submenu-item">
                     <a class="submenu-link" href="{{ route('bulletin-boards.create') }}">
                         <i class="bi bi-clipboard-plus"></i> Nouveau
                     </a>
                 </div>
-
+                @endcan
             </div>
         </div>
-
     </div>
+    @endcan
 </div>
 
 <script>
