@@ -34,6 +34,14 @@
                 <label for="content" class="form-label">Description</label>
                 <textarea class="form-control" id="content" name="content"></textarea>
             </div>
+            <div class="mb-3">
+                <label for="status" class="form-label">Statut</label>
+                <select name="status" id="status" class="form-select" required>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="user_organisation_id" class="form-label">{{ __('User Organisation') }}</label>
