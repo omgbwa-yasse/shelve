@@ -55,7 +55,7 @@ class CommunicationController extends Controller
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date|after_or_equal:today',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'status' => 'required|in:pending,approved,rejected,in_consultation,returned',
+            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, CommunicationStatus::cases())),
         ]);
 
         // Vérifier que l'utilisateur a une organisation courante
@@ -72,7 +72,7 @@ class CommunicationController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'operator_organisation_id' => Auth::user()->current_organisation_id,
             'return_date' => $request->return_date,
-            'status' => $request->status,
+            'status' => CommunicationStatus::from($request->status),
         ]);
 
         return redirect()->route('communications.transactions.index')->with('success', 'Communication créée avec succès');
@@ -210,7 +210,7 @@ class CommunicationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
-            'status' => 'required|in:pending,approved,rejected,in_consultation,returned',
+            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, CommunicationStatus::cases())),
             'user_organisation_id' => 'required|exists:organisations,id',
         ]);
 
@@ -221,7 +221,7 @@ class CommunicationController extends Controller
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'status' => $request->status, // CORRIGÉ : utiliser le statut sélectionné
+            'status' => CommunicationStatus::from($request->status), // Correction : conversion en enum
         ]);
 
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication mise à jour avec succès.');

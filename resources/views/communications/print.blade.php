@@ -151,7 +151,7 @@
                 <div>
                     <div class="info-row">
                         <span class="info-label">{{ __('status') }}:</span>
-                        {{ $communication->status->name ?? __('not_available') }}
+                        {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}
                     </div>
                     <div class="info-row">
                         <span class="info-label">{{ __('return_date') }}:</span>
@@ -189,7 +189,7 @@
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">{{ __('status') }}:</span>
-                                    {{ $communicationRecord->record->status->name ?? __('not_available') }}
+                                    {{ method_exists($communicationRecord->record->status, 'label') ? $communicationRecord->record->status->label() : ucfirst($communicationRecord->record->status->value) }}
                                 </div>
                             </div>
                         </div>

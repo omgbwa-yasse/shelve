@@ -80,7 +80,7 @@
                                             <div>
                                                 <strong>Statut :</strong>
                                                 @if($reservation->status)
-                                                    <span class="badge badge-info">{{ $reservation->status->name }}</span>
+                                                    <span class="badge bg-{{ $reservation->status->color() }}">{{ $reservation->status->label() }}</span>
                                                 @else
                                                     <span class="text-muted">N/A</span>
                                                 @endif

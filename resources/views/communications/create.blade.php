@@ -63,10 +63,11 @@
                     <input type="date" class="form-control" id="return_date" name="return_date" required>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label for="status_id" class="form-label">{{ __('Status') }}</label>
-                    <select class="form-select" id="status_id" name="status_id" required>
+                    <label for="status" class="form-label">{{ __('Status') }}</label>
+                    <select class="form-select" id="status" name="status" required>
+                        <option value="" disabled selected>{{ __('Select a status...') }}</option>
                         @foreach ($statuses as $status)
-                            <option value="{{ $status->id }}">{{ $status->name }}</option>
+                            <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
                         @endforeach
                     </select>
                 </div>

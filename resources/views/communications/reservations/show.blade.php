@@ -60,7 +60,12 @@
                                 <strong>Date de retour prévu :</strong> {{ $reservation->return_date ?? 'N/A' }}
                             </div>
                             <div>
-                                <strong>Statut :</strong> {{ $reservation->status->name ?? 'N/A' }}
+                                <strong>Statut :</strong>
+                                @if($reservation->status)
+                                    <span class="badge bg-{{ $reservation->status->color() }}">{{ $reservation->status->label() }}</span>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
                             </div>
                         </div>
                     </div>

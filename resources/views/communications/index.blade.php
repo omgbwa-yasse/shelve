@@ -45,33 +45,9 @@
                                     <span class="fs-5 fw-semibold">{{ $communication->code ?? 'N/A' }}</span>
                                     <span class="fs-5"> : {{ $communication->name ?? 'N/A' }}</span>
                                     @if($communication->status)
-                                        @switch($communication->status->id)
-                                            @case(1)
-                                                <span class="badge ms-2 bg-warning">
-                                                    <i class="bi bi-clock"></i> [{{ $communication->status->name }}]
-                                                </span>
-                                                @break
-                                            @case(2)
-                                                <span class="badge ms-2 bg-success">
-                                                    <i class="bi bi-check-circle"></i> [{{ $communication->status->name }}]
-                                                </span>
-                                                @break
-                                            @case(3)
-                                                <span class="badge ms-2 bg-danger">
-                                                    <i class="bi bi-x-circle"></i> [{{ $communication->status->name }}]
-                                                </span>
-                                                @break
-                                            @case(4)
-                                                <span class="badge ms-2 bg-info">
-                                                    <i class="bi bi-eye"></i> [{{ $communication->status->name }}]
-                                                </span>
-                                                @break
-                                            @case(5)
-                                                <span class="badge ms-2 bg-secondary">
-                                                    <i class="bi bi-archive"></i> [{{ $communication->status->name }}]
-                                                </span>
-                                                @break
-                                        @endswitch
+                                        <span class="badge ms-2 bg-secondary">
+                                            {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}
+                                        </span>
                                     @endif
                                 </a>
                             </h4>
@@ -104,9 +80,9 @@
                                         <p class="mb-2">
                                             <i class="bi bi-info-circle-fill me-2 text-primary"></i><strong>{{ __('Status') }} :</strong>
                                             @if($communication->status)
-                                                <a href="{{ route('communications-sort') }}?status={{ $communication->status->id }}">{{ $communication->status->name }}</a>
-                                            @else
-                                                <span class="text-muted">N/A</span>
+                                                <a href="{{ route('communications-sort') }}?status={{ $communication->status->value }}">
+                                                    {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}
+                                                </a>
                                             @endif
                                         </p>
                                     </div>

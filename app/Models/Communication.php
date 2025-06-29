@@ -58,11 +58,6 @@ class Communication extends Model
         return $this->belongsTo(Organisation::class, 'user_organisation_id');
     }
 
-    public function status()
-    {
-        return $this->belongsTo(CommunicationStatus::class, 'status_id');
-    }
-
     /**
      * Vérifier si la communication est retournée
      */
