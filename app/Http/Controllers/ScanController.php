@@ -8,11 +8,16 @@ use Illuminate\Support\Str;
 
 class ScanController extends Controller
 {
-    // Affiche la page principale du module scan (vue à faire)
+    // Affiche la page principale du module scan pour la numérisation
     public function index()
     {
-        // return view('scan.index');
-        return response()->json(['message' => 'Vue à faire']);
+        return view('scan.session');
+    }
+
+    // Affiche la liste des documents numérisés
+    public function list()
+    {
+        return view('scan.list');
     }
 
     // Reçoit une page scannée (upload AJAX)
@@ -35,6 +40,41 @@ class ScanController extends Controller
     {
         $files = Storage::disk('local')->files("scans/{$session}/pages");
         return response()->json(['pages' => $files]);
+    }
+
+    // Détecte les scanners connectés
+    public function detectScanners()
+    {
+        // Dans un environnement réel, vous utiliseriez une bibliothèque ou un service
+        // pour détecter les scanners comme TWAIN, SANE, WIA ou autres selon le système d'exploitation
+
+        // Pour la démonstration, nous renverrons une liste statique
+        // mais dans un vrai cas d'utilisation, ce serait dynamique
+
+        $scanners = [];
+
+        // Simulation de détection de scanners
+        // Dans un cas réel, il faudrait ici implémenter la détection via une bibliothèque adaptée
+        $possibleScanners = [
+            ['id' => 'scanner1', 'name' => 'HP ScanJet Pro 2000 s2'],
+            ['id' => 'scanner2', 'name' => 'Epson WorkForce ES-500W'],
+            ['id' => 'scanner3', 'name' => 'Brother ADS-2700W'],
+            ['id' => 'scanner4', 'name' => 'Canon imageFormula R40'],
+            ['id' => 'scanner5', 'name' => 'Fujitsu ScanSnap iX1600'],
+        ];
+
+        // Ajouter aléatoirement des scanners à la liste pour simuler une détection
+        // Dans un cas réel, cette liste serait remplie avec les vrais périphériques détectés
+        foreach ($possibleScanners as $scanner) {
+            if (rand(0, 1)) {
+                $scanners[] = $scanner;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'scanners' => $scanners
+        ]);
     }
 
     // Supprime une page d'une session

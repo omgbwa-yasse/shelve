@@ -318,8 +318,9 @@
                                         @case('public-admin')
                                             @include('submenu.public-admin')
                                             @break
-                                        @default
-                                            @include('submenu.mails')
+                                        @case('scan')
+                                            @include('submenu.scan')
+                                            @break
                                     @endswitch
                                 </div>
                             </div>

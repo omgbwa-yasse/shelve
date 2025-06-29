@@ -442,6 +442,7 @@ class PermissionSeeder extends Seeder
             ['id' => 231, 'name' => 'module_ai_access', 'description' => 'Autorisation d\'accéder au module intelligence artificielle', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 232, 'name' => 'module_public_access', 'description' => 'Autorisation d\'accéder au module portail public', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 233, 'name' => 'module_settings_access', 'description' => 'Autorisation d\'accéder au module paramètres', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 290, 'name' => 'module_scan_access', 'description' => 'Autorisation d\'accéder au module scan', 'created_at' => $now, 'updated_at' => $now],
 
             // Module de gestion des utilisateurs
             ['id' => 234, 'name' => 'module_users_access', 'description' => 'Autorisation d\'accéder au module gestion des utilisateurs', 'created_at' => $now, 'updated_at' => $now],
