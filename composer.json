@@ -17,7 +17,6 @@
         "maatwebsite/excel": "^3.1",
         "milon/barcode": "^11.0",
         "php-ffmpeg/php-ffmpeg": "^1.2",
-        "spatie/laravel-permission": "^6.20",
         "teamtnt/laravel-scout-tntsearch-driver": "^14.0",
         "teamtnt/tntsearch": "^4.3"
     },

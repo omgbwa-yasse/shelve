@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class PolicyService
 {
@@ -20,7 +20,7 @@ class PolicyService
             return $user->hasRole('superadmin');
         });
 
-        // 2. Gate pour vérifier les permissions Spatie
+        // 2. Gate pour vérifier les permissions natives
         Gate::define('has-permission', function (User $user, string $permission) {
             if ($user->hasRole('superadmin')) {
                 return true;
@@ -107,8 +107,8 @@ class PolicyService
      */
     private static function registerDynamicPermissionGates()
     {
-        // Récupérer toutes les permissions du système
-        $permissions = Permission::where('guard_name', 'web')->get();
+        // Récupérer toutes les permissions du système natif
+        $permissions = Permission::all();
 
         foreach ($permissions as $permission) {
             Gate::define($permission->name, function (User $user) use ($permission) {
@@ -149,7 +149,7 @@ class PolicyService
     public static function getUserPermissions(User $user): array
     {
         if ($user->hasRole('superadmin')) {
-            return Permission::where('guard_name', 'web')->pluck('name')->toArray();
+            return Permission::all()->pluck('name')->toArray();
         }
 
         return $user->getAllPermissions()->pluck('name')->toArray();
