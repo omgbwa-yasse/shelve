@@ -1,7 +1,4 @@
-
-
-
-    <div class="communications-submenu" id="communicationsMenu">
+<div class="communications-submenu" id="communicationsMenu">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -160,15 +157,15 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.search.index', ['categ' => 'InProgress'])}}">
-                    <i class="bi bi-hourglass-split"></i> {{ __('under_review') }}
+                <a class="submenu-link" href="{{ route('communications.reservations.search.index')}}">
+                    <i class="bi bi-search"></i> {{ __('advanced_search') }}
                 </a>
             </div>
-            {{-- <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.search.index', ['categ' => 'approved'])}}">
-                    <i class="bi bi-check2-all"></i> {{ __('approved') }}
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.reservations.search.date-selection')}}">
+                    <i class="bi bi-calendar-range"></i> {{ __('date_selection') }}
                 </a>
-            </div> --}}
+            </div>
         </div>
     </div>
     @endcan
