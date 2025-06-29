@@ -60,7 +60,7 @@ class SuperadminSeeder extends Seeder
         // 4. Attribuer toutes les permissions au rôle
         $allPermissions = Permission::all();
         $permissionIds = $allPermissions->pluck('id')->toArray();
-        
+
         // Synchroniser les permissions du rôle
         $superadminRole->permissions()->sync($permissionIds);
 
