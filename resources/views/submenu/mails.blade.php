@@ -186,15 +186,6 @@
         </div>
     </div>
     @endif
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-incoming.index') }}">
-                    <i class="bi bi-box-arrow-in-left"></i> Externe entrant
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Courrier Section -->
     <div class="submenu-section">
