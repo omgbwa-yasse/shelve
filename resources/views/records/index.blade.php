@@ -170,7 +170,7 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('transactions.store') }}" method="POST">
+                <form action="{{ route('communications.transactions.store') }}" method="POST">
                     @csrf
                     <div class="modal-body p-4">
                         <div class="row g-4">
