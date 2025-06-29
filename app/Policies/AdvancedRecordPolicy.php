@@ -19,7 +19,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool|Response
+    public function viewAny(?User $user): bool|Response
     {
         return $this->canViewAny($user, 'record_viewAny');
     }
@@ -27,7 +27,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Record $record): bool|Response
+    public function view(?User $user, Record $record): bool|Response
     {
         $basicCheck = $this->canView($user, $record, 'record_view');
         if ($basicCheck !== true) {
@@ -41,7 +41,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool|Response
+    public function create(?User $user): bool|Response
     {
         $basicCheck = $this->canCreate($user, 'record_create');
         if ($basicCheck !== true) {
@@ -55,7 +55,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Record $record): bool|Response
+    public function update(?User $user, Record $record): bool|Response
     {
         $basicCheck = $this->canUpdate($user, $record, 'record_update');
         if ($basicCheck !== true) {
@@ -69,7 +69,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Record $record): bool|Response
+    public function delete(?User $user, Record $record): bool|Response
     {
         $basicCheck = $this->canDelete($user, $record, 'record_delete');
         if ($basicCheck !== true) {
@@ -83,7 +83,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Record $record): bool|Response
+    public function forceDelete(?User $user, Record $record): bool|Response
     {
         return $this->canForceDelete($user, $record, 'record_force_delete');
     }
@@ -91,27 +91,24 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine if user can archive/unarchive records.
      */
-    public function archive(User $user, Record $record): bool|Response
+    public function archive(?User $user, Record $record): bool|Response
     {
-        if (!$this->hasPermission($user, 'record_archive')) {
-            return $this->deny('Vous n\'avez pas la permission d\'archiver des documents.');
-        }
-
-        if (!$this->checkOrganisationAccess($user, $record)) {
-            return $this->denyAsNotFound();
+        $result = $this->canUpdate($user, $record, 'record_archive');
+        if (!is_bool($result)) {
+            return $result;
         }
 
         if ($record->is_archived) {
             return $this->deny('Ce document est déjà archivé.');
         }
 
-        return true;
+        return $this->allow();
     }
 
     /**
      * Determine if user can export records.
      */
-    public function export(User $user): bool|Response
+    public function export(?User $user): bool|Response
     {
         if (!$this->hasPermission($user, 'record_export')) {
             return $this->deny('Vous n\'avez pas la permission d\'exporter des documents.');

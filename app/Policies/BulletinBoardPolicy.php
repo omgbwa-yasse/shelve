@@ -10,38 +10,65 @@ use App\Policies\BasePolicy;
 class BulletinBoardPolicy extends BasePolicy
 {
     /**
-     * Check if the user has access to the model within their current organisation.
+     * Determine whether the user can view any bulletin boards.
      */
-    private function checkOrganisationAccess(User $user, BulletinBoard $bulletinboard): bool
+    public function viewAny(?User $user): Response
     {
-        $cacheKey = "bulletin_board_org_access:{$user->id}:{$bulletinboard->id}:{$user->current_organisation_id}";
+        $result = $this->canViewAny($user, 'bulletinboards.view');
+        return is_bool($result) ? $this->allow() : $result;
+    }
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $bulletinboard) {
-            // For models directly linked to organisations
-            if (method_exists($bulletinboard, 'organisations')) {
-                foreach($bulletinboard->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
+    /**
+     * Determine whether the user can view the bulletin board.
+     */
+    public function view(?User $user, BulletinBoard $bulletinBoard): Response
+    {
+        $result = $this->canView($user, $bulletinBoard, 'bulletinboards.view');
+        return is_bool($result) ? $this->allow() : $result;
+    }
 
-            // For models with organisation_id column
-            if (isset($bulletinboard->organisation_id)) {
-                return $bulletinboard->organisation_id == $user->current_organisation_id;
-            }
+    /**
+     * Determine whether the user can create bulletin boards.
+     */
+    public function create(?User $user): Response
+    {
+        $result = $this->canCreate($user, 'bulletinboards.create');
+        return is_bool($result) ? $this->allow() : $result;
+    }
 
-            // For models linked through activity (like Record)
-            if (method_exists($bulletinboard, 'activity') && $bulletinboard->activity) {
-                foreach($bulletinboard->activity->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
+    /**
+     * Determine whether the user can update the bulletin board.
+     */
+    public function update(?User $user, BulletinBoard $bulletinBoard): Response
+    {
+        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards.update');
+        return is_bool($result) ? $this->allow() : $result;
+    }
 
-            // Default: allow access if no specific organisation restriction
-            return true;
-        });
+    /**
+     * Determine whether the user can delete the bulletin board.
+     */
+    public function delete(?User $user, BulletinBoard $bulletinBoard): Response
+    {
+        $result = $this->canDelete($user, $bulletinBoard, 'bulletinboards.delete');
+        return is_bool($result) ? $this->allow() : $result;
+    }
+
+    /**
+     * Determine whether the user can restore the bulletin board.
+     */
+    public function restore(?User $user, BulletinBoard $bulletinBoard): Response
+    {
+        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards.restore');
+        return is_bool($result) ? $this->allow() : $result;
+    }
+
+    /**
+     * Determine whether the user can permanently delete the bulletin board.
+     */
+    public function forceDelete(?User $user, BulletinBoard $bulletinBoard): Response
+    {
+        $result = $this->canForceDelete($user, $bulletinBoard, 'bulletinboards.force-delete');
+        return is_bool($result) ? $this->allow() : $result;
     }
 }

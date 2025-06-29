@@ -12,7 +12,7 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool|Response
+    public function viewAny(?User $user): bool|Response
     {
         return $this->canViewAny($user, 'slip_viewAny');
     }
@@ -20,7 +20,7 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Slip $slip): bool|Response
+    public function view(?User $user, Slip $slip): bool|Response
     {
         return $this->canView($user, $slip, 'slip_view');
     }
@@ -28,7 +28,7 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool|Response
+    public function create(?User $user): bool|Response
     {
         return $this->canCreate($user, 'slip_create');
     }
@@ -36,7 +36,7 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Slip $slip): bool|Response
+    public function update(?User $user, Slip $slip): bool|Response
     {
         return $this->canUpdate($user, $slip, 'slip_update');
     }
@@ -44,7 +44,7 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Slip $slip): bool|Response
+    public function delete(?User $user, Slip $slip): bool|Response
     {
         return $this->canDelete($user, $slip, 'slip_delete');
     }
@@ -52,17 +52,10 @@ class SlipPolicy extends BasePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Slip $slip): bool|Response
+    public function forceDelete(?User $user, Slip $slip): bool|Response
     {
         return $this->canForceDelete($user, $slip, 'slip_force_delete');
-    }
-
-    /**
-     * Check if the user has access to the model within their current organisation.
-     */
-    private function checkOrganisationAccess(User $user, Slip $slip): bool
-    {
-        $cacheKey = "slip_org_access:{$user->id}:{$slip->id}:{$user->current_organisation_id}";
+    }";
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $slip) {
             // For models directly linked to organisations

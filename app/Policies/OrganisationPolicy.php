@@ -93,7 +93,7 @@ class OrganisationPolicy extends BasePolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Organisation $organisation): bool|Response
+    public function restore(?User $user, Organisation $organisation): bool|Response
     {
         // Seuls les superadmins peuvent restaurer des organisations
         if (!Gate::forUser($user)->allows('is-superadmin')) {
@@ -106,7 +106,7 @@ class OrganisationPolicy extends BasePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Organisation $organisation): bool|Response
+    public function forceDelete(?User $user, Organisation $organisation): bool|Response
     {
         // Seuls les superadmins peuvent faire un force delete
         if (!Gate::forUser($user)->allows('is-superadmin')) {

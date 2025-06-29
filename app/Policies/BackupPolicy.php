@@ -12,7 +12,7 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool|Response
+    public function viewAny(?User $user): bool|Response
     {
         return $this->canViewAny($user, 'backup_viewAny');
     }
@@ -20,7 +20,7 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Backup $backup): bool|Response
+    public function view(?User $user, Backup $backup): bool|Response
     {
         return $this->canView($user, $backup, 'backup_view');
     }
@@ -28,7 +28,7 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool|Response
+    public function create(?User $user): bool|Response
     {
         return $this->canCreate($user, 'backup_create');
     }
@@ -36,7 +36,7 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Backup $backup): bool|Response
+    public function update(?User $user, Backup $backup): bool|Response
     {
         return $this->canUpdate($user, $backup, 'backup_update');
     }
@@ -44,7 +44,7 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Backup $backup): bool|Response
+    public function delete(?User $user, Backup $backup): bool|Response
     {
         return $this->canDelete($user, $backup, 'backup_delete');
     }
@@ -52,17 +52,10 @@ class BackupPolicy extends BasePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Backup $backup): bool|Response
+    public function forceDelete(?User $user, Backup $backup): bool|Response
     {
         return $this->canForceDelete($user, $backup, 'backup_force_delete');
-    }
-
-    /**
-     * Check if the user has access to the model within their current organisation.
-     */
-    private function checkOrganisationAccess(User $user, Backup $backup): bool
-    {
-        $cacheKey = "backup_org_access:{$user->id}:{$backup->id}:{$user->current_organisation_id}";
+    }";
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $backup) {
             // For models directly linked to organisations
