@@ -41,6 +41,14 @@ class User extends Authenticatable
         return $this->belongsTo(Organisation::class, 'current_organisation_id');
     }
 
+    /**
+     * Alias for organisation relationship (for backward compatibility)
+     */
+    public function currentOrganisation()
+    {
+        return $this->organisation();
+    }
+
     public function recordsCreated()
     {
         return $this->hasMany(Record::class, 'user_id');

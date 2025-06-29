@@ -128,7 +128,7 @@ class AdvancedRecordPolicy extends BasePolicy
         }
 
         // Check if record is in quarantine
-        if ($record->status === 'quarantine' && !$user->hasPermissionTo('record_view_quarantine', $user->currentOrganisation)) {
+        if ($record->status === 'quarantine' && !$user->hasPermissionTo('record_view_quarantine')) {
             return $this->deny('Ce document est en quarantaine.');
         }
 
@@ -138,10 +138,14 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Check record creation business rules.
      */
-    private function checkRecordCreationRules(User $user): bool|Response
+    private function checkRecordCreationRules(?User $user): bool|Response
     {
+        if (!$user) {
+            return true;
+        }
+
         // Check if user has reached their daily creation limit
-        $dailyLimit = $user->currentOrganisation->settings['daily_record_creation_limit'] ?? null;
+        $dailyLimit = $user->organisation->settings['daily_record_creation_limit'] ?? null;
         if ($dailyLimit) {
             $todayCount = Record::where('created_by', $user->id)
                 ->whereDate('created_at', today())
