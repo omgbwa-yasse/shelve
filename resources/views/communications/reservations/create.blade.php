@@ -24,21 +24,21 @@
             @csrf
             <div class="mb-3">
                 <label for="code" class="form-label">Code</label>
-                <input type="text" class="form-control" id="code" name="code" required>
+                <input type="text" class="form-control" id="code" name="code" value="{{ old('code') }}" required>
             </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Objet</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">Description</label>
-                <textarea class="form-control" id="content" name="content"></textarea>
+                <textarea class="form-control" id="content" name="content">{{ old('content') }}</textarea>
             </div>
             <div class="mb-3">
                 <label for="status" class="form-label">Statut</label>
                 <select name="status" id="status" class="form-select" required>
                     @foreach ($statuses as $status)
-                        <option value="{{ $status['value'] }}">{{ $status['label'] }}</option>
+                        <option value="{{ $status['value'] }}" {{ old('status') === $status['value'] ? 'selected' : '' }}>{{ $status['label'] }}</option>
                     @endforeach
                 </select>
             </div>
@@ -48,7 +48,7 @@
                     <select name="user_organisation_id" id="user_organisation_id" class="form-select" required>
                         <option value="">{{ __('Select an organization') }}</option>
                         @foreach ($organisations as $organisation)
-                            <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
+                            <option value="{{ $organisation->id }}" {{ old('user_organisation_id') == $organisation->id ? 'selected' : '' }}>{{ $organisation->name }}</option>
                         @endforeach
                     </select>
                 </div>

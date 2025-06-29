@@ -38,7 +38,7 @@
                 <label for="status" class="form-label">Statut</label>
                 <select name="status" id="status" class="form-select" required>
                     @foreach ($statuses as $status)
-                        <option value="{{ $status['value'] }}" {{ (isset($reservation) && $reservation->status->value === $status['value']) ? 'selected' : '' }}>{{ $status['label'] }}</option>
+                        <option value="{{ $status['value'] }}" {{ (old('status', $reservation->status->value ?? null) === $status['value']) ? 'selected' : '' }}>{{ $status['label'] }}</option>
                     @endforeach
                 </select>
             </div>
