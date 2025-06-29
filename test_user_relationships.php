@@ -51,6 +51,21 @@ try {
         echo "❌ currentOrganisation() relationship failed: " . $e->getMessage() . "\n";
     }
     
+    // Test organisations relationship (plural - many-to-many)
+    try {
+        $orgs = $user->organisations;
+        if ($orgs && $orgs->count() > 0) {
+            echo "✅ organisations() relationship works: " . $orgs->count() . " organisations found\n";
+            foreach ($orgs->take(3) as $org) {
+                echo "   - {$org->name} (ID: {$org->id})\n";
+            }
+        } else {
+            echo "ℹ️ organisations() relationship returns empty collection\n";
+        }
+    } catch (Exception $e) {
+        echo "❌ organisations() relationship failed: " . $e->getMessage() . "\n";
+    }
+    
     echo "\n🎉 All relationship tests completed!\n";
     
 } catch (Exception $e) {

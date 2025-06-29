@@ -80,11 +80,17 @@
                     <form action="{{ route('switch.organisation') }}" method="POST">
                         @csrf
                         <div class="list-group org-list">
-                            @foreach(Auth::user()->organisations as $organisation)
-                                <button type="submit" name="organisation_id" value="{{ $organisation->id }}" class="list-group-item list-group-item-action">
-                                    <i class="bi bi-building mr-2"></i> {{ $organisation->name }}
-                                </button>
-                            @endforeach
+                            @if(Auth::user() && Auth::user()->organisations && Auth::user()->organisations->count() > 0)
+                                @foreach(Auth::user()->organisations as $organisation)
+                                    <button type="submit" name="organisation_id" value="{{ $organisation->id }}" class="list-group-item list-group-item-action">
+                                        <i class="bi bi-building mr-2"></i> {{ $organisation->name }}
+                                    </button>
+                                @endforeach
+                            @else
+                                <div class="list-group-item">
+                                    <i class="bi bi-info-circle mr-2"></i> Aucune organisation disponible
+                                </div>
+                            @endif
                         </div>
                     </form>
                 </div>

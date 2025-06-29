@@ -49,6 +49,14 @@ class User extends Authenticatable
         return $this->organisation();
     }
 
+    /**
+     * Many-to-many relationship with organisations through user_organisation_role pivot table
+     */
+    public function organisations()
+    {
+        return $this->belongsToMany(Organisation::class, 'user_organisation_role', 'user_id', 'organisation_id');
+    }
+
     public function recordsCreated()
     {
         return $this->hasMany(Record::class, 'user_id');
