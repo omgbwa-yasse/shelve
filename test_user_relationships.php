@@ -18,15 +18,15 @@ echo "🔍 Testing User model relationships...\n\n";
 try {
     // Get first user
     $user = User::first();
-    
+
     if (!$user) {
         echo "❌ No users found in database\n";
         exit(1);
     }
-    
+
     echo "✅ User found: {$user->name} (ID: {$user->id})\n";
     echo "   Current Organisation ID: " . ($user->current_organisation_id ?? 'null') . "\n";
-    
+
     // Test organisation relationship
     try {
         $org = $user->organisation;
@@ -38,7 +38,7 @@ try {
     } catch (Exception $e) {
         echo "❌ organisation() relationship failed: " . $e->getMessage() . "\n";
     }
-    
+
     // Test currentOrganisation relationship (our new alias)
     try {
         $currentOrg = $user->currentOrganisation;
@@ -50,7 +50,7 @@ try {
     } catch (Exception $e) {
         echo "❌ currentOrganisation() relationship failed: " . $e->getMessage() . "\n";
     }
-    
+
     // Test organisations relationship (plural - many-to-many)
     try {
         $orgs = $user->organisations;
@@ -65,9 +65,9 @@ try {
     } catch (Exception $e) {
         echo "❌ organisations() relationship failed: " . $e->getMessage() . "\n";
     }
-    
+
     echo "\n🎉 All relationship tests completed!\n";
-    
+
 } catch (Exception $e) {
     echo "❌ Test failed: " . $e->getMessage() . "\n";
     exit(1);
