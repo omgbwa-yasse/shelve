@@ -55,7 +55,11 @@ class SlipPolicy extends BasePolicy
     public function forceDelete(?User $user, Slip $slip): bool|Response
     {
         return $this->canForceDelete($user, $slip, 'slip_force_delete');
-    }";
+    }
+
+    public function belongsToOrganisation(User $user, Slip $slip): bool
+    {
+        $cacheKey = 'slip_organisation_' . $slip->id . '_user_' . $user->id;
 
         return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $slip) {
             // For models directly linked to organisations

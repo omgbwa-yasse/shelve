@@ -1,8 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-<div id="mailList">
-
     <h1 class="text-3xl font-bold text-gray-900 mb-6">Courriers entrants</h1>
 
     <!-- Bandeau de recherche avec icônes -->

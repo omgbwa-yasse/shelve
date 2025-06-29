@@ -319,8 +319,7 @@
                         </div>
                     </div>
 
-                    <div class="@auth col-md-10 @else col-md-12 @endauth">
-                        @endauth
+                    <div class="col-md-10">
                         <div id="container" class="card">
                             @yield('content')
                         </div>
@@ -329,6 +328,23 @@
             </div>
         </main>
     </div>
+@endauth
+
+@guest
+    <div id="app">
+        <main class="py-3">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="container" class="card">
+                            @yield('content')
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+@endguest
 
     @stack('scripts')
 
