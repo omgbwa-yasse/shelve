@@ -134,11 +134,6 @@
                     <i class="bi bi-x-circle"></i> {{ __('not_returned') }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.form') }}">
-                    <i class="bi bi-search"></i> {{ __('advanced') }}
-                </a>
-            </div>
             @endcan
         </div>
     </div>
@@ -154,11 +149,6 @@
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.index')}}">
                     <i class="bi bi-list-ul"></i> {{ __('view_all') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.search.index')}}">
-                    <i class="bi bi-search"></i> {{ __('advanced_search') }}
                 </a>
             </div>
             <div class="submenu-item">

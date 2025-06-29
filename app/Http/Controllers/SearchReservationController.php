@@ -108,7 +108,15 @@ class SearchReservationController extends Controller
 
         $reservations = $query->paginate(10);
 
-        return view('communications.reservations.index', compact('reservations'));
+        // Préparer les données pour la vue de recherche avancée
+        $statuses = collect(\App\Enums\ReservationStatus::cases())->map(fn($status) => [
+            'value' => $status->value,
+            'label' => $status->label(),
+        ]);
+        $users = \App\Models\User::orderBy('name')->get();
+        $organisations = \App\Models\Organisation::orderBy('name')->get();
+
+        return view('communications.reservations.search', compact('statuses', 'users', 'organisations'));
 
         } catch (\Exception $e) {
             // En cas d'erreur, log l'erreur et retourner une vue avec des réservations vides

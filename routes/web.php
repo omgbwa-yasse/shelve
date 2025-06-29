@@ -377,7 +377,6 @@ Route::group(['middleware' => 'auth'], function () {
 
 
         Route::prefix('reservations')->name('communications.reservations.')->group(function () {
-
             Route::get('/', [ReservationController::class, 'index'])->name('index');
             Route::get('/create', [ReservationController::class, 'create'])->name('create');
             Route::post('/', [ReservationController::class, 'store'])->name('store');
@@ -400,6 +399,9 @@ Route::group(['middleware' => 'auth'], function () {
         });
 
     });
+
+
+
 
 
     Route::prefix('repositories')->group(function () {
