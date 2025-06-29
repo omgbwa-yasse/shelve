@@ -13,7 +13,7 @@ class OrganisationPolicy extends BasePolicy
      * Determine whether the user can view any models.
      * Gestion des organisations accessible aux superadmins et utilisateurs avec permission spécifique
      */
-    public function viewAny(User $user): bool|Response
+    public function viewAny(?User $user): bool|Response
     {
         return $this->canViewAny($user, 'organisations.view');
     }
@@ -21,7 +21,7 @@ class OrganisationPolicy extends BasePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Organisation $organisation): bool|Response
+    public function view(?User $user, Organisation $organisation): bool|Response
     {
         return $this->canView($user, $organisation, 'organisations.view');
     }
@@ -30,8 +30,12 @@ class OrganisationPolicy extends BasePolicy
      * Determine whether the user can create models.
      * Création d'organisations généralement limitée aux superadmins
      */
-    public function create(User $user): bool|Response
+    public function create(?User $user): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour créer une organisation.');
+        }
+
         // Seuls les superadmins peuvent créer de nouvelles organisations
         if (!Gate::forUser($user)->allows('is-superadmin')) {
             return $this->deny('Seul un superadmin peut créer de nouvelles organisations.');
@@ -43,15 +47,21 @@ class OrganisationPolicy extends BasePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Organisation $organisation): bool|Response
+    public function update(?User $user, Organisation $organisation): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour modifier une organisation.');
+        }
+
         // Les superadmins peuvent modifier toutes les organisations
         if (Gate::forUser($user)->allows('is-superadmin')) {
             return $this->allow();
         }
 
         // Les autres utilisateurs ne peuvent modifier que leur organisation courante
-        if ($user->currentOrganisation && $user->current_organisation_id === $organisation->id) {
+        if ($this->userHasCurrentOrganisation($user) &&
+            isset($user->current_organisation_id) &&
+            $user->current_organisation_id === $organisation->id) {
             return $this->canUpdate($user, $organisation, 'organisations.update');
         }
 
@@ -61,8 +71,12 @@ class OrganisationPolicy extends BasePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Organisation $organisation): bool|Response
+    public function delete(?User $user, Organisation $organisation): bool|Response
     {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour supprimer une organisation.');
+        }
+
         // Seuls les superadmins peuvent supprimer des organisations
         if (!Gate::forUser($user)->allows('is-superadmin')) {
             return $this->deny('Seul un superadmin peut supprimer des organisations.');
