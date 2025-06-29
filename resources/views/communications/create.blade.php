@@ -124,6 +124,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let organisationUsers = []; // Stocker les utilisateurs de l'organisation sélectionnée
+            let lastLoadedOrganisationId = null;
 
             // Organisation search functionality
             const organisationSearch = document.getElementById('organisationSearch');
@@ -152,8 +153,11 @@
                     document.getElementById('user_id').value = '';
                     document.getElementById('user_name').value = '';
 
-                    // Charger les utilisateurs de cette organisation
-                    loadOrganisationUsers(organisationId);
+                    // Charger les utilisateurs de cette organisation uniquement si différent
+                    if (lastLoadedOrganisationId !== organisationId) {
+                        loadOrganisationUsers(organisationId);
+                        lastLoadedOrganisationId = organisationId;
+                    }
 
                     // Activer le bouton de sélection utilisateur
                     const userSelectButton = document.getElementById('userSelectButton');

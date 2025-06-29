@@ -74,6 +74,7 @@
             const userSelect = document.getElementById('user_id');
             const userLoading = document.getElementById('userLoading');
             let organisationUsers = [];
+            let lastLoadedOrganisationId = null;
 
             // Fonction pour charger les utilisateurs d'une organisation via AJAX
             function loadOrganisationUsers(organisationId) {
@@ -135,7 +136,10 @@
             // Écouter les changements d'organisation
             organisationSelect.addEventListener('change', function() {
                 const organisationId = this.value;
-                loadOrganisationUsers(organisationId);
+                if (lastLoadedOrganisationId !== organisationId) {
+                    loadOrganisationUsers(organisationId);
+                    lastLoadedOrganisationId = organisationId;
+                }
             });
 
             // Validation du formulaire
