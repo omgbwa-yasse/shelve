@@ -35,6 +35,8 @@ class ReservationController extends Controller
 
     public function approved(Request $request)
     {
+        Log::info('Méthode approved appelée avec les données: ', $request->all());
+
         $request->validate([
             'id' => 'required|exists:reservations,id'
         ]);
@@ -44,6 +46,8 @@ class ReservationController extends Controller
             // Récupérer la réservation avec ses relations
             $reservation = Reservation::with(['records', 'user', 'userOrganisation'])
                 ->findOrFail($request->input('id'));
+
+            Log::info('Réservation trouvée: ', ['id' => $reservation->id, 'code' => $reservation->code]);
 
             // Créer la nouvelle communication
             $communication = Communication::create([
@@ -82,8 +86,13 @@ class ReservationController extends Controller
 
             DB::commit();
 
+            Log::info('Communication créée avec succès, redirection vers: ', [
+                'communication_id' => $communication->id,
+                'route' => 'communications.transactions.show'
+            ]);
+
             return redirect()
-                ->route('communications.transactions.show', $communication)
+                ->route('communications.transactions.show', ['transaction' => $communication->id])
                 ->with('success', 'La réservation a été approuvée et convertie en communication.');
 
         } catch (\Exception $e) {

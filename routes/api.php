@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
 use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
+use App\Http\Controllers\Api\OrganisationApiController;
 
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
@@ -163,4 +164,10 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::patch('event-registrations/{registration}/confirm', [PublicEventRegistrationApiController::class, 'confirm'])->name('event-registrations.confirm')->middleware('auth:sanctum');
     Route::patch('event-registrations/{registration}/cancel', [PublicEventRegistrationApiController::class, 'cancel'])->name('event-registrations.cancel')->middleware('auth:sanctum');
     Route::get('event-registrations/statistics', [PublicEventRegistrationApiController::class, 'statistics'])->name('event-registrations.statistics')->middleware('auth:sanctum');
+});
+
+// Routes API pour l'interface administrative
+Route::middleware('auth:sanctum')->group(function () {
+    // Organisations
+    Route::get('organisations/{organisation}/users', [OrganisationApiController::class, 'getUsers'])->name('api.organisations.users');
 });

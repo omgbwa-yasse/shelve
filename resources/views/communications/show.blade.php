@@ -42,7 +42,7 @@
                         <p><strong>{{ __('Effective Return Date') }}:</strong> {{ $communication->return_effective ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-4">
-                        <p><strong>{{ __('Status') }}:</strong> {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}</p>
+                        <p><strong>{{ __('Status') }}:</strong> {{ $communication->statusLabel() }}</p>
                     </div>
                 </div>
             </div>
