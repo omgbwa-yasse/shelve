@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Reservation;
+use App\Enums\ReservationStatus;
 use App\Models\Activity;
 use App\Models\Building;
 use App\Models\Room;
@@ -72,7 +73,8 @@ class SearchReservationController extends Controller
                 break;
 
             case "return-available":
-                $query->where('return_date', '>=', now()->format('Y-m-d'));
+                $query->where('return_date', '<=', now()->format('Y-m-d'))
+                      ->whereNull('return_effective');
                 break;
 
             case "not-return":
@@ -88,11 +90,11 @@ class SearchReservationController extends Controller
                 break;
 
             case "approved":
-                $query->where('status', 'approved');
+                $query->where('status', ReservationStatus::APPROVED);
                 break;
 
             case "InProgress":
-                $query->where('status', 'pending');
+                $query->where('status', ReservationStatus::PENDING);
                 break;
 
             default:
@@ -101,7 +103,7 @@ class SearchReservationController extends Controller
         }
 
         // Ajout des relations nécessaires
-        $query->with(['status', 'operator', 'operatorOrganisation', 'user', 'userOrganisation', 'records']);
+        $query->with(['operator', 'operatorOrganisation', 'user', 'userOrganisation', 'records', 'communication']);
 
         // Tri par date de création décroissante
         $query->orderBy('created_at', 'desc');
@@ -116,7 +118,7 @@ class SearchReservationController extends Controller
         $users = \App\Models\User::orderBy('name')->get();
         $organisations = \App\Models\Organisation::orderBy('name')->get();
 
-        return view('communications.reservations.search', compact('statuses', 'users', 'organisations'));
+        return view('communications.reservations.search', compact('reservations', 'statuses', 'users', 'organisations'));
 
         } catch (\Exception $e) {
             // En cas d'erreur, log l'erreur et retourner une vue avec des réservations vides

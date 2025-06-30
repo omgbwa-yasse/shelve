@@ -3,7 +3,7 @@
 <div class="container">
     <h1>Recherche par date</h1>
 
-    <form action="{{ route('communications.sort') }}" method="GET">
+    <form action="{{ route('communications.search.index') }}" method="GET">
         @csrf
         <input type="text" name="categ" value="dates" hidden>
         <div class="row">

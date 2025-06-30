@@ -71,6 +71,14 @@
                                 <strong>Utilisateur :</strong> {{ $reservation->user->name ?? 'N/A' }}<br>
                                 <strong>Organisation :</strong> {{ $reservation->userOrganisation->name ?? 'N/A' }}<br>
                                 <strong>Date retour :</strong> {{ $reservation->return_date ?? 'N/A' }}
+
+                                @if($reservation->communication)
+                                    <br>
+                                    <strong>Communication :</strong>
+                                    <a href="{{ route('communications.transactions.show', $reservation->communication->id) }}" class="text-success">
+                                        <i class="bi bi-check-circle-fill"></i> {{ $reservation->communication->code }}
+                                    </a>
+                                @endif
                             </p>
                         </div>
                     </div>

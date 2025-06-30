@@ -26,52 +26,10 @@ class Communication extends Model
     ];
 
     protected $casts = [
-        'status' => 'string',
+        'status' => \App\Enums\CommunicationStatus::class,
         'return_date' => 'date',
         'return_effective' => 'date',
     ];
-
-    /**
-     * All possible statuses and their labels.
-     *
-     * @var string[]
-     */
-    protected static array $statusOptions = [
-        'pending' => 'Demande en cours',
-        'approved' => 'Validée',
-        'rejected' => 'Rejetée',
-        'in_consultation' => 'En consultation',
-        'returned' => 'Retournée',
-    ];
-
-    /**
-     * Get current status label.
-     */
-    public function statusLabel(): string
-    {
-        return self::$statusOptions[$this->status] ?? (string)$this->status;
-    }
-
-    /**
-     * Get list of available statuses for select.
-     *
-     * @return array<int, array{value:string,label:string}>
-     */
-    public static function statuses(): array
-    {
-        return array_map(fn($value, $label) => ['value' => $value, 'label' => $label],
-            array_keys(self::$statusOptions), self::$statusOptions);
-    }
-
-    /**
-     * Get list of status values for validation.
-     *
-     * @return string[]
-     */
-    public static function statusValues(): array
-    {
-        return array_keys(self::$statusOptions);
-    }
 
     public function operator()
     {
@@ -81,7 +39,9 @@ class Communication extends Model
 
     public function records()
     {
-        return $this->hasMany(communicationRecord::class);
+        return $this->belongsToMany(Record::class, 'communication_record')
+                    ->withPivot('content', 'is_original', 'return_date', 'return_effective', 'operator_id')
+                    ->withTimestamps();
     }
 
     public function operatorOrganisation()

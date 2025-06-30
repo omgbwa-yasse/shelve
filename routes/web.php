@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
+use App\Http\Controllers\PhantomController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
@@ -366,6 +367,12 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('date-selection', [SearchCommunicationController::class, 'date'])->name('date-selection');
         });
 
+        // Routes pour les fantômes PDF
+        Route::prefix('phantom')->name('communications.phantom.')->group(function () {
+            Route::get('/{communication}/generate', [PhantomController::class, 'generatePhantom'])->name('generate');
+            Route::get('/{communication}/preview', [PhantomController::class, 'previewPhantom'])->name('preview');
+        });
+
         Route::prefix('records')->name('communications.records.')->group(function () {
             Route::resource('/', CommunicationRecordController::class);
             Route::get('search', [CommunicationRecordController::class, 'searchRecords'])->name('search');
@@ -380,6 +387,11 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/', [ReservationController::class, 'index'])->name('index');
             Route::get('/create', [ReservationController::class, 'create'])->name('create');
             Route::post('/', [ReservationController::class, 'store'])->name('store');
+            Route::get('/approved', [ReservationController::class, 'listApproved'])->name('approved.list');
+            Route::get('/approved-reservations', [ReservationController::class, 'listApprovedReservations'])->name('approved.reservations');
+            Route::get('/return-available', [ReservationController::class, 'returnAvailable'])->name('return.available');
+            Route::post('/{reservation}/mark-returned', [ReservationController::class, 'markAsReturned'])->name('mark.returned');
+            Route::get('/pending', [ReservationController::class, 'pending'])->name('pending');
             Route::get('/{reservation}', [ReservationController::class, 'show'])->name('show');
             Route::get('/{reservation}/edit', [ReservationController::class, 'edit'])->name('edit');
             Route::put('/{reservation}', [ReservationController::class, 'update'])->name('update');

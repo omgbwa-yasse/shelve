@@ -21,6 +21,7 @@ class Reservation extends Model
         'status',
         'return_date',
         'return_effective',
+        'communication_id',
     ];
 
     protected $casts = [
@@ -52,6 +53,11 @@ class Reservation extends Model
     public function operatorOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'operator_organisation_id');
+    }
+
+    public function communication()
+    {
+        return $this->belongsTo(Communication::class, 'communication_id');
     }
 
     // Méthodes d'aide pour les statuts

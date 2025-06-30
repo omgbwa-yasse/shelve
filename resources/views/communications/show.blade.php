@@ -42,7 +42,7 @@
                         <p><strong>{{ __('Effective Return Date') }}:</strong> {{ $communication->return_effective ?? 'N/A' }}</p>
                     </div>
                     <div class="col-md-4">
-                        <p><strong>{{ __('Status') }}:</strong> {{ $communication->statusLabel() }}</p>
+                        <p><strong>{{ __('Status') }}:</strong> {{ $communication->status?->label() ?? 'N/A' }}</p>
                     </div>
                 </div>
             </div>
@@ -59,6 +59,25 @@
                     @else
                         <span class="badge bg-success ms-2">{{ __('Returned') }} - {{ __('No modification allowed') }}</span>
                     @endif
+                </div>
+                <div class="btn-group ms-2">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="phantomDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-file-earmark-pdf"></i> {{ __('Phantom') }}
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="phantomDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('communications.phantom.generate', $communication->id) }}">
+                                    <i class="bi bi-download"></i> {{ __('Download PDF') }}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('communications.phantom.preview', $communication->id) }}" target="_blank">
+                                    <i class="bi bi-eye"></i> {{ __('Preview') }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="btn-group ms-2">
                     {{-- Actions basées sur le statut --}}

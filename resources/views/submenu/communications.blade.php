@@ -79,6 +79,8 @@
             background-color: #188038;
         }
 
+
+
         /* Animation de collapse plus fluide */
         .communications-submenu .submenu-section-content.collapsed {
             max-height: 0 !important;
@@ -120,6 +122,21 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.search.form')}}">
+                    <i class="bi bi-search"></i> {{ __('advanced_search') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.search.date-selection')}}">
+                    <i class="bi bi-calendar-range"></i> {{ __('date_search') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=InProgress">
+                    <i class="bi bi-clock"></i> {{ __('in_progress') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=return-effective">
                     <i class="bi bi-check-circle"></i> {{ __('returned') }}
                 </a>
@@ -132,6 +149,11 @@
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=not-return">
                     <i class="bi bi-x-circle"></i> {{ __('not_returned') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=return-available">
+                    <i class="bi bi-calendar-check"></i> {{ __('return_available') }}
                 </a>
             </div>
             @endcan
@@ -154,6 +176,26 @@
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.search.date-selection')}}">
                     <i class="bi bi-calendar-range"></i> {{ __('date_selection') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.reservations.pending')}}">
+                    <i class="bi bi-clock-history"></i> {{ __('pending_reservations') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.reservations.approved.reservations')}}">
+                    <i class="bi bi-check-circle-fill"></i> {{ __('approved_reservations') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.reservations.approved.list')}}">
+                    <i class="bi bi-arrow-right-circle"></i> {{ __('approved_with_communications') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.reservations.return.available')}}">
+                    <i class="bi bi-calendar-event"></i> {{ __('return_available') }}
                 </a>
             </div>
         </div>

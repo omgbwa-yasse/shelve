@@ -86,6 +86,20 @@
                                                 @endif
                                             </div>
                                         </div>
+
+                                        @if($reservation->communication_id)
+                                            <div class="card-text mt-2">
+                                                <div class="alert alert-success py-2">
+                                                    <small>
+                                                        <i class="bi bi-check-circle-fill"></i>
+                                                        <strong>Communication générée :</strong>
+                                                        <a href="{{ route('communications.transactions.show', $reservation->communication_id) }}" class="alert-link">
+                                                            Voir la communication #{{ $reservation->communication_id }}
+                                                        </a>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
 
                                 </div>

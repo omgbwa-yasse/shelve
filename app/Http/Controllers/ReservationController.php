@@ -20,7 +20,7 @@ class ReservationController extends Controller
 {
     public function index()
     {
-        $reservations = Reservation::with('operator', 'user', 'userOrganisation', 'operatorOrganisation')->get();
+        $reservations = Reservation::with('operator', 'user', 'userOrganisation', 'operatorOrganisation', 'communication')->get();
         return view('communications.reservations.index', compact('reservations'));
     }
 
@@ -59,7 +59,14 @@ class ReservationController extends Controller
                 'user_organisation_id' => $reservation->user_organisation_id,
                 'operator_organisation_id' => Auth::user()->current_organisation_id,
                 'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
-                'status' => 'approved',
+                'status' => \App\Enums\CommunicationStatus::APPROVED,
+            ]);
+
+            // Mettre à jour la réservation avec l'ID de la communication
+            $reservation->update([
+                'communication_id' => $communication->id,
+                'status' => ReservationStatus::APPROVED,
+                'return_date' => Carbon::now()->addDays(14)->format('Y-m-d')
             ]);
 
             // Pour chaque record de la réservation
@@ -80,9 +87,6 @@ class ReservationController extends Controller
                     'record_id' => $record->id
                 ])->delete();
             }
-
-            // Supprimer la réservation
-            $reservation->delete();
 
             DB::commit();
 
@@ -215,5 +219,67 @@ class ReservationController extends Controller
 
         return redirect()->route('communications.reservations.index')
             ->with('success', 'Reservation deleted successfully.');
+    }
+
+    /**
+     * Display approved reservations with their communications.
+     */
+    public function listApproved()
+    {
+        $reservations = Reservation::with(['operator', 'user', 'userOrganisation', 'operatorOrganisation', 'communication', 'records'])
+            ->where('status', ReservationStatus::APPROVED)
+            ->whereNotNull('communication_id')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('communications.reservations.approved', compact('reservations'));
+    }
+
+    /**
+     * Display approved reservations.
+     */
+    public function listApprovedReservations()
+    {
+        $reservations = Reservation::with(['operator', 'operatorOrganisation', 'user', 'userOrganisation', 'records', 'communication'])
+            ->where('status', ReservationStatus::APPROVED)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('communications.reservations.approved_reservations', compact('reservations'));
+    }
+
+    /**
+     * Display pending reservations.
+     */
+    public function pending()
+    {
+        return view('communications.reservations.pending');
+    }
+
+    public function returnAvailable()
+    {
+        $reservations = Reservation::with(['operator', 'operatorOrganisation', 'user', 'userOrganisation', 'records', 'communication'])
+            ->where('return_date', '<=', now()->format('Y-m-d'))
+            ->whereNull('return_effective')
+            ->orderBy('return_date', 'asc')
+            ->paginate(15);
+
+        return view('communications.reservations.return_available', compact('reservations'));
+    }
+
+    public function markAsReturned(Request $request, Reservation $reservation)
+    {
+        $reservation->update([
+            'return_effective' => now()->format('Y-m-d')
+        ]);
+
+        // Également mettre à jour la communication associée si elle existe
+        if ($reservation->communication) {
+            $reservation->communication->update([
+                'return_effective' => now()->format('Y-m-d')
+            ]);
+        }
+
+        return response()->json(['success' => true]);
     }
 }

@@ -46,7 +46,7 @@
                                     <span class="fs-5"> : {{ $communication->name ?? 'N/A' }}</span>
                                     @if($communication->status)
                                         <span class="badge ms-2 bg-secondary">
-                                            {{ $communication->statusLabel() }}
+                                            {{ $communication->status->label() }}
                                         </span>
                                     @endif
                                 </a>
@@ -80,11 +80,21 @@
                                         <p class="mb-2">
                                             <i class="bi bi-info-circle-fill me-2 text-primary"></i><strong>{{ __('Status') }} :</strong>
                                             @if($communication->status)
-                                                <a href="{{ route('communications.index') }}?status={{ $communication->status }}">
-                                                    {{ $communication->statusLabel() }}
+                                                <a href="{{ route('communications.index') }}?status={{ $communication->status->value }}">
+                                                    {{ $communication->status->label() }}
                                                 </a>
                                             @endif
                                         </p>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="btn-group">
+                                            <a href="{{ route('communications.transactions.show', $communication->id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> {{ __('View') }}
+                                            </a>
+                                            <a href="{{ route('communications.phantom.generate', $communication->id) }}" class="btn btn-sm btn-outline-info" title="{{ __('Download PDF Phantom') }}">
+                                                <i class="bi bi-file-earmark-pdf"></i> {{ __('Phantom') }}
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
