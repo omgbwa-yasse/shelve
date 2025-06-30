@@ -255,7 +255,7 @@
                     'user_organisation_id': 'Organisation utilisateur',
                     'user_id': 'Utilisateur',
                     'return_date': 'Date de retour',
-                    'status_id': 'Statut'
+                    'status': 'Statut'
                 };
 
                 let errors = [];

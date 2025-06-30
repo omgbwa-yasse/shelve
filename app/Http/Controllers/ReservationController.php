@@ -28,6 +28,7 @@ class ReservationController extends Controller
 
     public function show(Reservation $reservation)
     {
+        $reservation->load(['operator', 'user', 'userOrganisation', 'operatorOrganisation', 'records']);
         return view('communications.reservations.show', compact('reservation'));
     }
 
@@ -54,13 +55,13 @@ class ReservationController extends Controller
                 'user_organisation_id' => $reservation->user_organisation_id,
                 'operator_organisation_id' => Auth::user()->current_organisation_id,
                 'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
-                'status_id' => 1,
+                'status' => 'approved',
             ]);
 
             // Pour chaque record de la réservation
             foreach ($reservation->records as $record) {
                 // Créer l'entrée dans communication_record
-                CommunicationRecord::create([
+                communicationRecord::create([
                     'communication_id' => $communication->id,
                     'record_id' => $record->id,
                     'content' => null, // ou une valeur par défaut si nécessaire
@@ -82,7 +83,7 @@ class ReservationController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('communications.transactions.show', $communication->id)
+                ->route('communications.transactions.show', $communication)
                 ->with('success', 'La réservation a été approuvée et convertie en communication.');
 
         } catch (\Exception $e) {
@@ -140,7 +141,6 @@ class ReservationController extends Controller
                 'user_id' => $request->user_id,
                 'user_organisation_id' => $request->user_organisation_id,
                 'operator_organisation_id' => Auth::user()->current_organisation_id,
-                'return_date' => $request->return_date,
                 'status' => ReservationStatus::from($request->status),
             ]);
 

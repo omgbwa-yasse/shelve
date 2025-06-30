@@ -46,7 +46,7 @@
                                     <span class="fs-5"> : {{ $communication->name ?? 'N/A' }}</span>
                                     @if($communication->status)
                                         <span class="badge ms-2 bg-secondary">
-                                            {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}
+                                            {{ $communication->statusLabel() }}
                                         </span>
                                     @endif
                                 </a>
@@ -61,13 +61,13 @@
                                     <div class="col-md-6">
                                         <p class="mb-2">
                                             <i class="bi bi-person-fill me-2 text-primary"></i><strong>{{ __('Requester') }} :</strong>
-                                            <a href="{{ route('communications-sort') }}?user={{ $communication->user->id }}">{{ $communication->user->name ?? 'N/A' }}</a>
-                                            (<a href="{{ route('communications-sort') }}?user_organisation={{ $communication->userOrganisation->id ?? '' }}">{{ $communication->userOrganisation->name ?? 'N/A' }}</a>)
+                                            <a href="{{ route('communications.index') }}?user={{ $communication->user->id }}">{{ $communication->user->name ?? 'N/A' }}</a>
+                                            (<a href="{{ route('communications.index') }}?user_organisation={{ $communication->userOrganisation->id ?? '' }}">{{ $communication->userOrganisation->name ?? 'N/A' }}</a>)
                                         </p>
                                         <p class="mb-2">
                                             <i class="bi bi-person-badge-fill me-2 text-primary"></i><strong>{{ __('Operator') }} :</strong>
-                                            <a href="{{ route('communications-sort') }}?operator={{ $communication->operator->id }}">{{ $communication->operator->name ?? 'N/A' }}</a>
-                                            (<a href="{{ route('communications-sort') }}?operator_organisation={{ $communication->operatorOrganisation->id ?? '' }}">{{ $communication->operatorOrganisation->name ?? 'N/A' }}</a>)
+                                            <a href="{{ route('communications.index') }}?operator={{ $communication->operator->id }}">{{ $communication->operator->name ?? 'N/A' }}</a>
+                                            (<a href="{{ route('communications.index') }}?operator_organisation={{ $communication->operatorOrganisation->id ?? '' }}">{{ $communication->operatorOrganisation->name ?? 'N/A' }}</a>)
                                         </p>
                                     </div>
                                     <div class="col-md-6">
@@ -80,8 +80,8 @@
                                         <p class="mb-2">
                                             <i class="bi bi-info-circle-fill me-2 text-primary"></i><strong>{{ __('Status') }} :</strong>
                                             @if($communication->status)
-                                                <a href="{{ route('communications-sort') }}?status={{ $communication->status->value }}">
-                                                    {{ method_exists($communication->status, 'label') ? $communication->status->label() : ucfirst($communication->status->value) }}
+                                                <a href="{{ route('communications.index') }}?status={{ $communication->status }}">
+                                                    {{ $communication->statusLabel() }}
                                                 </a>
                                             @endif
                                         </p>

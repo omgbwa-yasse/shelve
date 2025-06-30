@@ -7,7 +7,6 @@ use App\Exports\CommunicationsExport;
 use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
 use App\Models\communicationRecord;
-use App\Enums\CommunicationStatus;
 use App\Models\Dolly;
 use App\Models\DollyCommunication;
 use App\Models\Organisation;
@@ -33,14 +32,9 @@ class CommunicationController extends Controller
     public function create()
     {
         $users = User::all();
-        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
-            return [
-                'value' => $status->value,
-                'label' => $status->label()
-            ];
-        });
+        $statuses = Communication::statuses();
         $organisations = Organisation::all();
-        return view('communications.create', compact('users', 'statuses','organisations'));
+        return view('communications.create', compact('users', 'statuses', 'organisations'));
     }
 
 
@@ -48,35 +42,39 @@ class CommunicationController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'code' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date|after_or_equal:today',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, CommunicationStatus::cases())),
+            'status' => 'required|in:' . implode(',', Communication::statusValues()),
         ]);
 
-        // Vérifier que l'utilisateur a une organisation courante
         if (!Auth::user()->current_organisation_id) {
             return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
         }
 
-        Communication::create([
-            'code' => $request->code,
-            'name' => $request->name,
-            'content' => $request->content,
+        $communication = Communication::create([
+            'code' => $validated['code'],
+            'name' => $validated['name'],
+            'content' => $validated['content'] ?? null,
             'operator_id' => Auth::user()->id,
-            'user_id' => $request->user_id,
-            'user_organisation_id' => $request->user_organisation_id,
+            'user_id' => $validated['user_id'],
+            'user_organisation_id' => $validated['user_organisation_id'],
             'operator_organisation_id' => Auth::user()->current_organisation_id,
-            'return_date' => $request->return_date,
-            'status' => CommunicationStatus::from($request->status),
+            'return_date' => $validated['return_date'],
+            'status' => $validated['status'],
         ]);
 
-        return redirect()->route('communications.transactions.index')->with('success', 'Communication créée avec succès');
+        return redirect()->route('communications.transactions.show', $communication)
+            ->with('success', 'Communication créée avec succès');
+
     }
+
+
+
 
     public function show(INT $id)
     {
@@ -98,14 +96,9 @@ class CommunicationController extends Controller
         }
 
         $users = User::all();
-        $statuses = collect(CommunicationStatus::cases())->map(function ($status) {
-            return [
-                'value' => $status->value,
-                'label' => $status->label()
-            ];
-        });
+        $statuses = Communication::statuses();
         $organisations = Organisation::all();
-        return view('communications.edit', compact('organisations','communication', 'users', 'statuses'));
+        return view('communications.edit', compact('organisations', 'communication', 'users', 'statuses'));
     }
 
 
@@ -210,7 +203,7 @@ class CommunicationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
-            'status' => 'required|in:' . implode(',', array_map(fn($case) => $case->value, CommunicationStatus::cases())),
+            'status' => 'required|in:' . implode(',', Communication::statusValues()),
             'user_organisation_id' => 'required|exists:organisations,id',
         ]);
 
@@ -221,7 +214,7 @@ class CommunicationController extends Controller
             'user_id' => $request->user_id,
             'user_organisation_id' => $request->user_organisation_id,
             'return_date' => $request->return_date,
-            'status' => CommunicationStatus::from($request->status), // Correction : conversion en enum
+            'status' => $request->status,
         ]);
 
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication mise à jour avec succès.');
