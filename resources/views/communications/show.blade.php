@@ -62,10 +62,10 @@
                 </div>
                 <div class="btn-group ms-2">
                     <div class="dropdown">
-                        <button class="btn btn-info dropdown-toggle" type="button" id="phantomDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="ghostDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-file-earmark-pdf"></i> {{ __('Phantom') }}
                         </button>
-                        <ul class="dropdown-menu" aria-labelledby="phantomDropdown">
+                        <ul class="dropdown-menu" aria-labelledby="ghostDropdown">
                             <li>
                                 <a class="dropdown-item" href="{{ route('communications.phantom.generate', $communication->id) }}">
                                     <i class="bi bi-download"></i> {{ __('Download PDF') }}
