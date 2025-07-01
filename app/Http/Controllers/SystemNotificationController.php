@@ -79,20 +79,20 @@ class SystemNotificationController extends Controller
             ->route('workflows.notifications.system.show', $notification)
             ->with('success', 'Notification mise à jour avec succès.');
     }
-    
+
     /**
      * Marquer une notification système comme lue.
      */
     public function markAsRead(SystemNotification $notification)
     {
         $notification->markAsRead();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Notification marquée comme lue.'
         ]);
     }
-    
+
     /**
      * Marquer toutes les notifications système comme lues.
      */
@@ -100,20 +100,20 @@ class SystemNotificationController extends Controller
     {
         SystemNotification::whereNull('read_at')
             ->update(['read_at' => now()]);
-            
+
         return response()->json([
             'success' => true,
             'message' => 'Toutes les notifications ont été marquées comme lues.'
         ]);
     }
-    
+
     /**
      * Supprimer une notification système.
      */
     public function destroy(SystemNotification $notification)
     {
         $notification->delete();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Notification supprimée avec succès.'

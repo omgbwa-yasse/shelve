@@ -116,7 +116,7 @@
         document.querySelectorAll('.mark-read-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const notificationId = this.getAttribute('data-id');
-                
+
                 fetch(`/workflows/notifications/system/${notificationId}/mark-read`, {
                     method: 'POST',
                     headers: {
@@ -131,7 +131,7 @@
                         notificationItem.classList.add('opacity-75');
                         notificationItem.classList.remove('border-l-4', 'border-l-blue-500');
                         this.remove();
-                        
+
                         // Mise à jour du compteur
                         const unreadCount = document.getElementById('unreadCount');
                         unreadCount.textContent = parseInt(unreadCount.textContent) - 1;
@@ -144,7 +144,7 @@
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const notificationId = this.getAttribute('data-id');
-                
+
                 fetch(`/workflows/notifications/system/${notificationId}`, {
                     method: 'DELETE',
                     headers: {
@@ -157,7 +157,7 @@
                     if (data.success) {
                         const notificationItem = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
                         notificationItem.remove();
-                        
+
                         // Mise à jour du compteur si nécessaire
                         const wasUnread = notificationItem.classList.contains('border-l-blue-500');
                         if (wasUnread) {

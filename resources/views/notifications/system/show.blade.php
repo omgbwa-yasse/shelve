@@ -34,7 +34,7 @@
                 @endswitch
             </span>
             <h1 class="text-2xl font-bold text-gray-800">{{ $notification->title ?? 'Notification système' }}</h1>
-            
+
             <span class="priority-badge px-2 py-1 text-xs rounded
                 @if(($notification->priority ?? 1) >= 4) bg-red-100 text-red-800
                 @elseif(($notification->priority ?? 1) >= 3) bg-orange-100 text-orange-800
@@ -69,7 +69,7 @@
         @if(isset($notification->data) && is_array($notification->data))
             <div class="mt-6 border-t border-gray-200 pt-4">
                 <h2 class="text-lg font-semibold text-gray-800 mb-3">Informations complémentaires</h2>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach($notification->data as $key => $value)
                         @if(!is_array($value) && $key != 'message')

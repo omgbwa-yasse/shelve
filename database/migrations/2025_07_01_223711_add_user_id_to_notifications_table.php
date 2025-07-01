@@ -17,19 +17,19 @@ return new class extends Migration
                 $table->unsignedBigInteger('user_id')->nullable()->after('id');
                 $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             }
-            
+
             if (!Schema::hasColumn('notifications', 'title')) {
                 $table->string('title')->nullable()->after('type');
             }
-            
+
             if (!Schema::hasColumn('notifications', 'message')) {
                 $table->text('message')->nullable()->after('title');
             }
-            
+
             if (!Schema::hasColumn('notifications', 'priority')) {
                 $table->tinyInteger('priority')->default(1)->after('message');
             }
-            
+
             if (!Schema::hasColumn('notifications', 'action_url')) {
                 $table->string('action_url')->nullable()->after('priority');
             }
