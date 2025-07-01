@@ -143,7 +143,7 @@
                                         <td>{{ Str::limit($task->description, 50) }}</td>
                                         <td>{{ $task->duration }} heures</td>
                                         <td>{{ $task->start_date ? $task->start_date : 'Non définie' }}</td>
-                                        <td><span class="badge bg-{{ $task->taskStatus->description }}">{{ $task->taskStatus->name }}</span></td>
+                                        <td><span class="badge bg-primary">{{ $task->status ? $task->status->name : 'N/A' }}</span></td>
                                         <td>
                                             <a href="{{ route('tasks.show', $task) }}" class="btn btn-outline-primary btn-sm">Voir</a>
                                         </td>

@@ -10,6 +10,7 @@ use App\Models\WorkflowStepInstance;
 use App\Enums\WorkflowInstanceStatus;
 use App\Enums\WorkflowStepInstanceStatus;
 use App\Enums\AssignmentType;
+use App\Enums\TaskAssigneeType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -381,10 +382,10 @@ class WorkflowInstanceController extends Controller
         ];
 
         // Workflows assignés à l'utilisateur actuel
-        $myWorkflows = WorkflowInstance::whereHas('steps', function ($query) {
-            $query->whereHas('assignments', function ($q) {
-                $q->where('assignee_type', AssignmentType::USER)
-                  ->where('assignee_id', Auth::id());
+        $myWorkflows = WorkflowInstance::whereHas('stepInstances', function ($query) {
+            $query->where(function($q) {
+                $q->where('assigned_to_user_id', Auth::id())
+                  ->whereIn('assignment_type', [AssignmentType::USER, AssignmentType::BOTH]);
             });
         })
         ->whereNotIn('status', [WorkflowInstanceStatus::COMPLETED, WorkflowInstanceStatus::CANCELLED])
@@ -395,8 +396,8 @@ class WorkflowInstanceController extends Controller
 
         // Tâches assignées à l'utilisateur actuel
         $myTasks = \App\Models\Task::whereHas('assignments', function ($query) {
-            $query->where('assignee_type', AssignmentType::USER)
-                  ->where('assignee_id', Auth::id());
+            $query->where('assignee_type', TaskAssigneeType::USER->value)
+                  ->where('assignee_user_id', Auth::id());
         })
         ->whereNull('completed_at')
         ->with(['category'])

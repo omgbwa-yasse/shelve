@@ -41,7 +41,6 @@ class Task extends Model
         // Champs existants
         'name',
         'duration',
-        'task_status_id',
         'task_type_id'
     ];
 
@@ -59,11 +58,6 @@ class Task extends Model
     public function taskType()
     {
         return $this->belongsTo(TaskType::class, 'task_type_id');
-    }
-
-    public function taskStatus()
-    {
-        return $this->belongsTo(TaskStatus::class, 'task_status_id');
     }
 
     /**

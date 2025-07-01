@@ -11,7 +11,7 @@
                             Task Details: {{ $task->name }}
                         </h1>
                         <span class="badge bg-light text-primary">
-                            Status: {{ $task->taskStatus->name?? 'N/A' }}
+                            Status: {{ $task->status ? $task->status->name : 'N/A' }}
                         </span>
                     </div>
                     <div class="card-body">

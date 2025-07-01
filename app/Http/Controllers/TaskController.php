@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\TaskType;
-use App\Models\TaskStatus;
+use App\Enums\TaskStatus;
 use App\Models\User;
 use App\Models\Organisation;
 use App\Models\Attachment;
@@ -23,8 +23,8 @@ class TaskController extends Controller
     {
         $tasks = Task::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->with(['taskType', 'taskStatus', 'users', 'organisations'])
-            ->select('id', 'name', 'description', 'duration', 'start_date', 'task_status_id')
+        })->with(['taskType', 'users', 'organisations'])
+            ->select('id', 'name', 'description', 'duration', 'start_date', 'status')
             ->paginate(10);
 
         return view('tasks.my_tasks', compact('tasks'));
@@ -32,14 +32,14 @@ class TaskController extends Controller
 
     public function index(Request $request)
     {
-        $query = Task::with(['taskType', 'taskStatus', 'users', 'organisations']);
+        $query = Task::with(['taskType', 'users', 'organisations']);
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
         if ($request->has('status') && $request->status != '') {
-            $query->where('task_status_id', $request->status);
+            $query->where('status', $request->status);
         }
 
         if ($request->has('type') && $request->type != '') {
@@ -48,7 +48,7 @@ class TaskController extends Controller
 
         $tasks = $query->paginate(10);
 
-        $statuses = TaskStatus::all();
+        $statuses = collect(TaskStatus::cases());
         $types = TaskType::all();
 
         return view('tasks.index', compact('tasks', 'statuses', 'types'));
@@ -58,7 +58,7 @@ class TaskController extends Controller
     public function create()
     {
         $taskTypes = TaskType::all();
-        $taskStatuses = TaskStatus::all();
+        $taskStatuses = collect(TaskStatus::cases());
         $users = User::all();
         $organisations = Organisation::all();
         $mails = Mail::all();
@@ -77,7 +77,7 @@ class TaskController extends Controller
             'description' => 'required|string',
             'duration' => 'required|integer',
             'task_type_id' => 'required|exists:task_types,id',
-            'task_status_id' => 'required|exists:task_statues,id',
+            'status' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\TaskStatus::class)],
             'user_ids' => 'required|array',
             'organisation_ids' => 'required|array',
             'attachments' => 'nullable|array',
@@ -109,7 +109,7 @@ class TaskController extends Controller
                 'description' => $validatedData['description'],
                 'duration' => $validatedData['duration'],
                 'task_type_id' => $validatedData['task_type_id'],
-                'task_status_id' => $validatedData['task_status_id'],
+                'status' => $validatedData['status'],
                 'start_date' => $validatedData['start_date'], // Ajoutez cette ligne pour la date de début
                 'parent_task_id' => $validatedData['parent_task_id'], // Ajoutez cette ligne pour la tâche parente
             ]);
@@ -184,7 +184,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $taskTypes = TaskType::all();
-        $taskStatuses = TaskStatus::all();
+        $taskStatuses = collect(TaskStatus::cases());
         $users = User::all();
         $organisations = Organisation::all();
         $mails = Mail::all();
@@ -203,7 +203,7 @@ class TaskController extends Controller
             'description' => 'required|string',
             'duration' => 'required|integer',
             'task_type_id' => 'required|exists:task_types,id',
-            'task_status_id' => 'required|exists:task_statues,id',
+            'status' => ['required', new \Illuminate\Validation\Rules\Enum(\App\Enums\TaskStatus::class)],
             'user_ids' => 'required|array',
             'organisation_ids' => 'required|array',
             'attachments' => 'nullable|array',
@@ -219,7 +219,7 @@ class TaskController extends Controller
                 'description' => $validatedData['description'],
                 'duration' => $validatedData['duration'],
                 'task_type_id' => $validatedData['task_type_id'],
-                'task_status_id' => $validatedData['task_status_id'],
+                'status' => $validatedData['status'],
             ]);
 
             $task->users()->sync($validatedData['user_ids']);
@@ -292,7 +292,7 @@ class TaskController extends Controller
         }
 
         if ($request->has('status') && $request->status !== '') {
-            $query->where('task_status_id', $request->status);
+            $query->where('status', $request->status);
         }
 
         if ($request->has('type') && $request->type !== '') {
@@ -301,7 +301,7 @@ class TaskController extends Controller
 
         $tasks = $query->paginate(10);
 
-        $statuses = TaskStatus::all();
+        $statuses = collect(TaskStatus::cases());
         $types = TaskType::all();
 
         return view('tasks.supervision.index', compact('tasks', 'statuses', 'types'));

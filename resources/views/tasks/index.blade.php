@@ -83,8 +83,8 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ $task->taskStatus->color ?? 'secondary' }}">
-                                        {{ $task->taskStatus->name ?? "N/A"}}
+                                    <span class="badge bg-{{ $task->status ? 'primary' : 'secondary' }}">
+                                        {{ $task->status ? $task->status->name : "N/A" }}
                                     </span>
                                 </td>
                                 <td>
