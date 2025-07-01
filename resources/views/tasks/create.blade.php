@@ -151,13 +151,13 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="task_status_id" class="form-label"><i class="bi bi-exclamation-triangle me-2"></i>Status</label>
-                                    <select class="form-select @error('task_status_id') is-invalid @enderror" id="task_status_id" name="task_status_id" required>
+                                    <label for="status" class="form-label"><i class="bi bi-exclamation-triangle me-2"></i>Status</label>
+                                    <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                                         @foreach($taskStatuses as $status)
-                                            <option value="{{ $status->id }}">{{ $status->name }}</option>
+                                            <option value="{{ $status->value }}">{{ $status->name }}</option>
                                         @endforeach
                                     </select>
-                                    @error('task_status_id')
+                                    @error('status')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

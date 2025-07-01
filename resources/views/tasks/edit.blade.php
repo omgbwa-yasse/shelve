@@ -19,10 +19,10 @@
                 <input type="number" class="form-control" id="duration" name="duration" value="{{ $task->duration }}" required>
             </div>
             <div class="form-group">
-                <label for="task_status_id">Status</label>
-                <select class="form-control" id="task_status_id" name="task_status_id" required>
+                <label for="status">Status</label>
+                <select class="form-control" id="status" name="status" required>
                     @foreach($taskStatuses as $status)
-                        <option value="{{ $status->id }}" {{ $task->task_status_id == $status->id ? 'selected' : '' }}>
+                        <option value="{{ $status->value }}" {{ $task->status && $task->status->value == $status->value ? 'selected' : '' }}>
                             {{ $status->name }}
                         </option>
                     @endforeach
