@@ -56,7 +56,7 @@ use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
-use App\Http\Controllers\RecordSupportController;
+use AppHttp\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\SearchCommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
@@ -70,7 +70,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use App\Http\Controllers\DollyController;
+use AppHttp\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
@@ -81,6 +81,8 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
+use App\Http\Controllers\MailNotificationController;
+use App\Http\Controllers\MailWorkflowController;
 use App\Http\Controllers\MailIncomingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -264,6 +266,18 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('mails')->group(function () {
+
+        // Routes pour les notifications
+        Route::prefix('notifications')->name('mail-notifications.')->group(function () {
+            Route::get('/', [MailNotificationController::class, 'index'])->name('index');
+            Route::get('/unread-count', [MailNotificationController::class, 'unreadCount'])->name('unread-count');
+            Route::get('/poll', [MailNotificationController::class, 'poll'])->name('poll');
+            Route::get('/show', [MailNotificationController::class, 'show'])->name('show');
+            Route::patch('/{id}/read', [MailNotificationController::class, 'markAsRead'])->name('mark-read');
+            Route::patch('/mark-multiple-read', [MailNotificationController::class, 'markMultipleAsRead'])->name('mark-multiple-read');
+            Route::patch('/mark-all-read', [MailNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+            Route::delete('/{id}', [MailNotificationController::class, 'destroy'])->name('destroy');
+        });
 
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
@@ -530,6 +544,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('users', UserController::class);
         Route::resource('role_permissions', RolePermissionController::class);
         Route::get('role_permissions/{role}/permissions', [RolePermissionController::class, 'getRolePermissions'])->name('role_permissions.get_permissions');
+        Route::put('role_permissions/matrix', [RolePermissionController::class, 'updateMatrix'])->name('role_permissions.update_matrix');
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('mail-priority', MailPriorityController::class);
         Route::resource('container-status', ContainerStatusController::class);
@@ -681,6 +696,17 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
+});
+
+    // Route de test temporaire
+    Route::get('/test', function() {
+        return view('workflow.test');
+    })->name('test');
+
+    // Route de test pour le logo
+    Route::get('/logo-test', function() {
+        return view('workflow.logo-test');
+    })->name('logo-test');
 });
 
 

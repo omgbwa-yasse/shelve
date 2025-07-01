@@ -12,32 +12,36 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Première étape : ajouter la nouvelle colonne enum status
+        // Première étape : ajouter la nouvelle colonne enum status si elle n'existe pas
         Schema::table('reservations', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled', 'in_progress', 'completed'])
-                  ->default('pending')
-                  ->after('user_organisation_id');
+            if (!Schema::hasColumn('reservations', 'status')) {
+                $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled', 'in_progress', 'completed'])
+                      ->default('pending')
+                      ->after('user_organisation_id');
+            }
         });
 
-        // Deuxième étape : migrer les données de status_id vers status
-        DB::statement("
-            UPDATE reservations
-            SET status = CASE
-                WHEN status_id = 1 THEN 'pending'
-                WHEN status_id = 2 THEN 'approved'
-                WHEN status_id = 3 THEN 'rejected'
-                WHEN status_id = 4 THEN 'cancelled'
-                ELSE 'pending'
-            END
-        ");
+        // Deuxième étape : migrer les données de status_id vers status (seulement si status_id existe)
+        if (Schema::hasColumn('reservations', 'status_id')) {
+            DB::statement("
+                UPDATE reservations
+                SET status = CASE
+                    WHEN status_id = 1 THEN 'pending'
+                    WHEN status_id = 2 THEN 'approved'
+                    WHEN status_id = 3 THEN 'rejected'
+                    WHEN status_id = 4 THEN 'cancelled'
+                    ELSE 'pending'
+                END
+            ");
 
-        // Troisième étape : supprimer la contrainte de clé étrangère et la colonne status_id
-        Schema::table('reservations', function (Blueprint $table) {
-            $table->dropForeign(['status_id']);
-            $table->dropColumn('status_id');
-        });
+            // Troisième étape : supprimer la contrainte de clé étrangère et la colonne status_id
+            Schema::table('reservations', function (Blueprint $table) {
+                $table->dropForeign(['status_id']);
+                $table->dropColumn('status_id');
+            });
+        }
 
-        // Quatrième étape : supprimer la table reservation_statuses
+        // Quatrième étape : supprimer la table reservation_statuses si elle existe
         Schema::dropIfExists('reservation_statuses');
     }
 

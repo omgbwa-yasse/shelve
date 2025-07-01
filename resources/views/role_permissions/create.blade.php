@@ -47,7 +47,7 @@
                         <div class="permissions-container">
                             <h5 class="mb-3">
                                 <i class="bi bi-key"></i> {{ __('assign_permissions') }}
-                                <span class="badge bg-secondary ms-2">{{ $permissionsByCategory->sum(function($permissions) { return $permissions->count(); }) }} total</span>
+                                <span class="badge bg-secondary ms-2">{{ $permissionsByCategory->sum(function($permissions) { return $permissions->count(); }) }} {{ __('total') }}</span>
                             </h5>
 
                             @if($permissionsByCategory->count() > 0)
@@ -89,7 +89,7 @@
                                                             <h6 class="mb-0">
                                                                 <i class="bi bi-collection me-1"></i>
                                                                 {{ $categoryLabels[$category] ?? ucfirst($category) }}
-                                                                <small class="text-muted">({{ $permissions->count() }} permissions)</small>
+                                                                <small class="text-muted">({{ $permissions->count() }} {{ __('permissions') }})</small>
                                                             </h6>
                                                             <div class="btn-group btn-group-sm">
                                                                 <button type="button" class="btn btn-outline-success category-select-all" data-category="{{ $category }}">
@@ -115,15 +115,13 @@
                                                                                    name="permissions[]"
                                                                                    value="{{ $permission->id }}"
                                                                                    data-category="{{ $category }}">
-                                                                            <label class="form-check-label w-100" for="permission_{{ $permission->id }}">
-                                                                                <div class="permission-name">
-                                                                                    {{ str_replace($category.'.', '', $permission->name) }}
-                                                                                </div>
-                                                                                @if($permission->description)
-                                                                                    <div class="permission-description">
-                                                                                        {{ $permission->description }}
-                                                                                    </div>
-                                                                                @endif
+                                                                            <label class="form-check-label w-100" for="permission_{{ $permission->id }}">                                                                <div class="permission-name">
+                                                                    {{ __($permission->name) }}
+                                                                </div>                                                                @if($permission->description)
+                                                                    <div class="permission-description">
+                                                                        {{ __($permission->description) }}
+                                                                    </div>
+                                                                @endif
                                                                             </label>
                                                                         </div>
                                                                     </div>

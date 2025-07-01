@@ -15,7 +15,7 @@ class OrganisationPolicy extends BasePolicy
      */
     public function viewAny(?User $user): bool|Response
     {
-        return $this->canViewAny($user, 'organisations.view');
+        return $this->canViewAny($user, 'organisations_view');
     }
 
     /**
@@ -23,7 +23,7 @@ class OrganisationPolicy extends BasePolicy
      */
     public function view(?User $user, Organisation $organisation): bool|Response
     {
-        return $this->canView($user, $organisation, 'organisations.view');
+        return $this->canView($user, $organisation, 'organisations_view');
     }
 
     /**
@@ -41,7 +41,7 @@ class OrganisationPolicy extends BasePolicy
             return $this->deny('Seul un superadmin peut créer de nouvelles organisations.');
         }
 
-        return $this->canCreate($user, 'organisations.create');
+        return $this->canCreate($user, 'organisations_create');
     }
 
     /**
@@ -62,7 +62,7 @@ class OrganisationPolicy extends BasePolicy
         if ($this->userHasCurrentOrganisation($user) &&
             isset($user->current_organisation_id) &&
             $user->current_organisation_id === $organisation->id) {
-            return $this->canUpdate($user, $organisation, 'organisations.update');
+            return $this->canUpdate($user, $organisation, 'organisations_update');
         }
 
         return $this->deny('Vous ne pouvez modifier que votre organisation courante.');
@@ -87,7 +87,7 @@ class OrganisationPolicy extends BasePolicy
             return $this->deny('L\'organisation "Direction générale" ne peut pas être supprimée.');
         }
 
-        return $this->canDelete($user, $organisation, 'organisations.delete');
+        return $this->canDelete($user, $organisation, 'organisations_delete');
     }
 
     /**
@@ -100,7 +100,7 @@ class OrganisationPolicy extends BasePolicy
             return $this->deny('Seul un superadmin peut restaurer des organisations.');
         }
 
-        return $this->canUpdate($user, $organisation, 'organisations.update');
+        return $this->canUpdate($user, $organisation, 'organisations_update');
     }
 
     /**
@@ -118,6 +118,6 @@ class OrganisationPolicy extends BasePolicy
             return $this->deny('L\'organisation "Direction générale" ne peut pas être supprimée définitivement.');
         }
 
-        return $this->canForceDelete($user, $organisation, 'organisations.force_delete');
+        return $this->canForceDelete($user, $organisation, 'organisations_force_delete');
     }
 }

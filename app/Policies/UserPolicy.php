@@ -14,7 +14,7 @@ class UserPolicy extends BasePolicy
      */
     public function viewAny(?User $user): bool|Response
     {
-        return $this->canViewAny($user, 'users.view');
+        return $this->canViewAny($user, 'users_view');
     }
 
     /**
@@ -23,7 +23,7 @@ class UserPolicy extends BasePolicy
      */
     public function view(?User $user, User $targetUser): bool|Response
     {
-        return $this->canView($user, $targetUser, 'users.view');
+        return $this->canView($user, $targetUser, 'users_view');
     }
 
     /**
@@ -32,7 +32,7 @@ class UserPolicy extends BasePolicy
      */
     public function create(?User $user): bool|Response
     {
-        return $this->canCreate($user, 'users.create');
+        return $this->canCreate($user, 'users_create');
     }
 
     /**
@@ -41,7 +41,7 @@ class UserPolicy extends BasePolicy
      */
     public function update(?User $user, User $targetUser): bool|Response
     {
-        return $this->canUpdate($user, $targetUser, 'users.update');
+        return $this->canUpdate($user, $targetUser, 'users_update');
     }
 
     /**
@@ -59,7 +59,7 @@ class UserPolicy extends BasePolicy
             return $this->deny('Seul un superadmin peut supprimer un autre superadmin.');
         }
 
-        return $this->canDelete($user, $targetUser, 'users.delete');
+        return $this->canDelete($user, $targetUser, 'users_delete');
     }
 
     /**
@@ -68,7 +68,7 @@ class UserPolicy extends BasePolicy
      */
     public function restore(?User $user, User $targetUser): bool|Response
     {
-        return $this->canUpdate($user, $targetUser, 'users.update');
+        return $this->canUpdate($user, $targetUser, 'users_update');
     }
 
     /**
@@ -86,7 +86,7 @@ class UserPolicy extends BasePolicy
             return $this->deny('Seul un superadmin peut supprimer définitivement un autre superadmin.');
         }
 
-        return $this->canForceDelete($user, $targetUser, 'users.force_delete');
+        return $this->canForceDelete($user, $targetUser, 'users_force_delete');
     }
 
     /**

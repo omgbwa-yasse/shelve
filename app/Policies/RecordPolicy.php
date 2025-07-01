@@ -15,7 +15,7 @@ class RecordPolicy extends BasePolicy
      */
     public function viewAny(?User $user): bool|Response
     {
-        return $this->canViewAny($user, 'records.view');
+        return $this->canViewAny($user, 'records_view');
     }
 
     /**
@@ -24,7 +24,7 @@ class RecordPolicy extends BasePolicy
      */
     public function view(?User $user, Record $record): bool|Response
     {
-        return $this->canView($user, $record, 'records.view');
+        return $this->canView($user, $record, 'records_view');
     }
 
     /**
@@ -33,7 +33,7 @@ class RecordPolicy extends BasePolicy
      */
     public function create(?User $user): bool|Response
     {
-        return $this->canCreate($user, 'records.create');
+        return $this->canCreate($user, 'records_create');
     }
 
     /**
@@ -51,7 +51,7 @@ class RecordPolicy extends BasePolicy
             return $this->deny('Un record archivé ne peut pas être modifié.');
         }
 
-        return $this->canUpdate($user, $record, 'records.update');
+        return $this->canUpdate($user, $record, 'records_update');
     }
 
     /**
@@ -69,7 +69,7 @@ class RecordPolicy extends BasePolicy
             return $this->deny('Un record en cours de traitement ou archivé ne peut pas être supprimé.');
         }
 
-        return $this->canDelete($user, $record, 'records.delete');
+        return $this->canDelete($user, $record, 'records_delete');
     }
 
     /**
@@ -78,7 +78,7 @@ class RecordPolicy extends BasePolicy
      */
     public function restore(?User $user, Record $record): bool|Response
     {
-        return $this->canUpdate($user, $record, 'records.update');
+        return $this->canUpdate($user, $record, 'records_update');
     }
 
     /**
@@ -96,7 +96,7 @@ class RecordPolicy extends BasePolicy
             return $this->deny('Seul un superadmin peut supprimer définitivement des records.');
         }
 
-        return $this->canForceDelete($user, $record, 'records.force_delete');
+        return $this->canForceDelete($user, $record, 'records_force_delete');
     }
 
     /**
@@ -114,6 +114,6 @@ class RecordPolicy extends BasePolicy
             return $this->deny('Ce record est déjà archivé.');
         }
 
-        return $this->canUpdate($user, $record, 'records.archive');
+        return $this->canUpdate($user, $record, 'records_archive');
     }
 }

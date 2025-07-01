@@ -131,7 +131,10 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
                             <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
-
+                            <!-- Badge de notifications -->
+                            <span id="mail-notification-badge" class="position-absolute badge badge-danger" style="top: -5px; right: -10px; font-size: 0.7rem; display: none;">
+                                <span id="notification-count">0</span>
+                            </span>
                         </a>
                     </div>
                     @endcan
@@ -220,6 +223,18 @@
 
                 <!-- Actions utilisateur -->
                 <div class="header-actions">
+                    <!-- Notifications -->
+                    @can('module_mails_access')
+                    <div class="header-action-item">
+                        <a href="{{ route('mail-notifications.show') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
+                            <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
+                            <span id="header-notification-badge" class="position-absolute badge badge-danger" style="top: -8px; right: -8px; font-size: 0.6rem; display: none;">
+                                <span id="header-notification-count">0</span>
+                            </span>
+                        </a>
+                    </div>
+                    @endcan
+
                     <!-- Sélecteur de langue -->
                     <div class="header-action-item">
                         <a href="#" class="header-action-btn" id="langBtn" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -379,6 +394,50 @@
             }).blur(function() {
                 $(this).closest('.header-search-form').css('background-color', 'rgba(255, 255, 255, 0.15)');
             });
+
+            // Mise à jour automatique des badges de notifications
+            @can('module_mails_access')
+            updateNotificationBadges();
+            setInterval(updateNotificationBadges, 30000); // Toutes les 30 secondes
+            @endcan
+
+
+        });
+
+        @can('module_mails_access')
+        function updateNotificationBadges() {
+            fetch('/mails/notifications/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const count = data.count;
+
+                    // Badge dans la navigation principale
+                    const mainBadge = document.getElementById('mail-notification-badge');
+                    const mainCount = document.getElementById('notification-count');
+
+                    // Badge dans le header
+                    const headerBadge = document.getElementById('header-notification-badge');
+                    const headerCount = document.getElementById('header-notification-count');
+
+                    if (count > 0) {
+                        if (mainBadge && mainCount) {
+                            mainBadge.style.display = 'inline-block';
+                            mainCount.textContent = count > 99 ? '99+' : count;
+                        }
+                        if (headerBadge && headerCount) {
+                            headerBadge.style.display = 'inline-block';
+                            headerCount.textContent = count > 99 ? '99+' : count;
+                        }
+                    } else {
+                        if (mainBadge) mainBadge.style.display = 'none';
+                        if (headerBadge) headerBadge.style.display = 'none';
+                    }
+                })
+                .catch(error => console.log('Erreur lors de la récupération des notifications:', error));
+        }
+        @endcan
+
+
         });
     </script>
 </body>

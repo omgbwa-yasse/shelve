@@ -12,8 +12,33 @@ class RolePermissionController extends Controller
 
     public function index()
     {
-        $rolePermissions = RolePermission::with('role', 'permission')->get();
-        return view('role_permissions.index', compact('rolePermissions'));
+        // Récupérer tous les rôles
+        $roles = Role::all();
+
+        // Grouper les permissions par catégorie
+        $permissions = Permission::all();
+        $permissionsByCategory = $permissions->groupBy('category');
+
+        // Définir l'ordre des catégories et leurs labels
+        $categoryLabels = [
+            'dashboard' => 'Tableau de bord',
+            'mail' => 'Courrier',
+            'records' => 'Documents',
+            'communications' => 'Communications',
+            'reservations' => 'Réservations',
+            'users' => 'Utilisateurs et Rôles',
+            'settings' => 'Paramètres',
+            'system' => 'Système',
+            'backups' => 'Sauvegardes'
+        ];
+
+        // Créer une matrice des permissions par rôle
+        $rolePermissions = [];
+        foreach ($roles as $role) {
+            $rolePermissions[$role->id] = $role->permissions()->pluck('permissions.id')->toArray();
+        }
+
+        return view('role_permissions.index', compact('roles', 'permissionsByCategory', 'categoryLabels', 'rolePermissions'));
     }
 
 
@@ -147,6 +172,40 @@ class RolePermissionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des permissions'
+            ], 500);
+        }
+    }
+
+    public function updateMatrix(Request $request)
+    {
+        try {
+            // Récupérer toutes les permissions soumises
+            $permissions = $request->input('permissions', []);
+
+            // Récupérer tous les rôles
+            $roles = Role::all();
+
+            foreach ($roles as $role) {
+                $rolePermissions = $permissions[$role->id] ?? [];
+
+                // Détacher toutes les permissions actuelles du rôle
+                $role->permissions()->detach();
+
+                // Attacher les nouvelles permissions
+                if (!empty($rolePermissions)) {
+                    $role->permissions()->attach($rolePermissions);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions mises à jour avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour des permissions: ' . $e->getMessage()
             ], 500);
         }
     }

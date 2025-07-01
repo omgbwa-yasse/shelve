@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Policies;
-
 use App\Models\Transferring;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -55,34 +54,5 @@ class TransferringPolicy extends BasePolicy
     public function forceDelete(?User $user, Transferring $transferring): bool|Response
     {
         return $this->canForceDelete($user, $transferring, 'transferring_force_delete');
-    }";
-
-        return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $transferring) {
-            // For models directly linked to organisations
-            if (method_exists($transferring, 'organisations')) {
-                foreach($transferring->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
-
-            // For models with organisation_id column
-            if (isset($transferring->organisation_id)) {
-                return $transferring->organisation_id == $user->current_organisation_id;
-            }
-
-            // For models linked through activity (like Record)
-            if (method_exists($transferring, 'activity') && $transferring->activity) {
-                foreach($transferring->activity->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
-
-            // Default: allow access if no specific organisation restriction
-            return true;
-        });
     }
 }

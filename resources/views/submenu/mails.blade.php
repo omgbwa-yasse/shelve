@@ -95,7 +95,24 @@
         .submenu-heading.collapsed::after {
             transform: rotate(-90deg);
         }
+
+        /* Style pour les badges de notification */
+        .submenu-link .badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .submenu-link {
+            position: relative;
+        }
     </style>
+
+    <!-- Note: La section Notifications & Suivi a été déplacée vers le menu workflow -->
+    @can('module_mails_access')
+    <!-- Placeholder pour rétrocompatibilité si nécessaire -->
+    @endcan
 
     <!-- Recherche Section -->
     @if(SubmenuPermissions::canAccessSubmenuSection('mails', 'search'))
@@ -284,5 +301,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Mise à jour du badge de notifications dans le sous-menu
+    function updateSidebarNotificationBadge() {
+        fetch('/mails/notifications/unread-count')
+            .then(response => response.json())
+            .then(data => {
+                const count = data.count;
+                const sidebarBadge = document.getElementById('sidebar-notification-badge');
+                const sidebarCount = document.getElementById('sidebar-notification-count');
+
+                if (count > 0 && sidebarBadge && sidebarCount) {
+                    sidebarBadge.style.display = 'inline-block';
+                    sidebarCount.textContent = count > 99 ? '99+' : count;
+                } else if (sidebarBadge) {
+                    sidebarBadge.style.display = 'none';
+                }
+            })
+            .catch(error => console.log('Erreur sidebar notifications:', error));
+    }
+
+    // Mettre à jour immédiatement et puis toutes les 30 secondes
+    updateSidebarNotificationBadge();
+    setInterval(updateSidebarNotificationBadge, 30000);
 });
 </script>

@@ -14,7 +14,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function viewAny(?User $user): Response
     {
-        $result = $this->canViewAny($user, 'bulletinboards.view');
+        $result = $this->canViewAny($user, 'bulletinboards_view');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -23,7 +23,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function view(?User $user, BulletinBoard $bulletinBoard): Response
     {
-        $result = $this->canView($user, $bulletinBoard, 'bulletinboards.view');
+        $result = $this->canView($user, $bulletinBoard, 'bulletinboards_view');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -32,7 +32,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function create(?User $user): Response
     {
-        $result = $this->canCreate($user, 'bulletinboards.create');
+        $result = $this->canCreate($user, 'bulletinboards_create');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -41,7 +41,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function update(?User $user, BulletinBoard $bulletinBoard): Response
     {
-        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards.update');
+        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards_update');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -50,7 +50,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function delete(?User $user, BulletinBoard $bulletinBoard): Response
     {
-        $result = $this->canDelete($user, $bulletinBoard, 'bulletinboards.delete');
+        $result = $this->canDelete($user, $bulletinBoard, 'bulletinboards_delete');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -59,7 +59,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function restore(?User $user, BulletinBoard $bulletinBoard): Response
     {
-        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards.restore');
+        $result = $this->canUpdate($user, $bulletinBoard, 'bulletinboards_restore');
         return is_bool($result) ? $this->allow() : $result;
     }
 
@@ -68,7 +68,7 @@ class BulletinBoardPolicy extends BasePolicy
      */
     public function forceDelete(?User $user, BulletinBoard $bulletinBoard): Response
     {
-        $result = $this->canForceDelete($user, $bulletinBoard, 'bulletinboards.force-delete');
+        $result = $this->canForceDelete($user, $bulletinBoard, 'bulletinboards_force_delete');
         return is_bool($result) ? $this->allow() : $result;
     }
 }

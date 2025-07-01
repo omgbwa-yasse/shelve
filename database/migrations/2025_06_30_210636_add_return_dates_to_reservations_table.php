@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('reservations', function (Blueprint $table) {
-            $table->date('return_date')->nullable()->after('communication_id');
-            $table->date('return_effective')->nullable()->after('return_date');
+            if (!Schema::hasColumn('reservations', 'return_date')) {
+                $table->date('return_date')->nullable()->after('communication_id');
+            }
+            if (!Schema::hasColumn('reservations', 'return_effective')) {
+                $table->date('return_effective')->nullable()->after('return_date');
+            }
         });
     }
 

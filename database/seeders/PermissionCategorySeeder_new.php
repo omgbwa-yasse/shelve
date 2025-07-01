@@ -13,7 +13,6 @@ class PermissionCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $this->createModulePermissions();
         $this->createDashboardPermissions();
         $this->createMailPermissions();
         $this->createRecordsPermissions();
@@ -23,72 +22,8 @@ class PermissionCategorySeeder extends Seeder
         $this->createSettingsPermissions();
         $this->createSystemPermissions();
         $this->createBackupsPermissions();
-        $this->createAdditionalPermissions();
 
         $this->command->info('Permissions avec catégories créées avec succès!');
-    }
-
-    private function createModulePermissions()
-    {
-        $permissions = [
-            [
-                'name' => 'module_bulletin_boards_access',
-                'category' => 'system',
-                'description' => 'Accès au module Tableaux d\'affichage'
-            ],
-            [
-                'name' => 'module_mails_access',
-                'category' => 'system',
-                'description' => 'Accès au module Courriers'
-            ],
-            [
-                'name' => 'module_repositories_access',
-                'category' => 'system',
-                'description' => 'Accès au module Dépôts'
-            ],
-            [
-                'name' => 'module_communications_access',
-                'category' => 'system',
-                'description' => 'Accès au module Communications'
-            ],
-            [
-                'name' => 'module_transferrings_access',
-                'category' => 'system',
-                'description' => 'Accès au module Transferts'
-            ],
-            [
-                'name' => 'module_deposits_access',
-                'category' => 'system',
-                'description' => 'Accès au module Dépôts physiques'
-            ],
-            [
-                'name' => 'module_tools_access',
-                'category' => 'system',
-                'description' => 'Accès au module Outils'
-            ],
-            [
-                'name' => 'module_dollies_access',
-                'category' => 'system',
-                'description' => 'Accès au module Chariots'
-            ],
-            [
-                'name' => 'module_ai_access',
-                'category' => 'system',
-                'description' => 'Accès au module Intelligence Artificielle'
-            ],
-            [
-                'name' => 'module_public_access',
-                'category' => 'system',
-                'description' => 'Accès au module Public'
-            ],
-            [
-                'name' => 'module_settings_access',
-                'category' => 'system',
-                'description' => 'Accès au module Paramètres'
-            ],
-        ];
-
-        $this->insertPermissions($permissions);
     }
 
     private function createDashboardPermissions()
@@ -352,110 +287,6 @@ class PermissionCategorySeeder extends Seeder
 
         $this->insertPermissions($permissions);
     }
-
-    private function createAdditionalPermissions()
-    {
-        $permissions = [
-            // BulletinBoard permissions
-            [
-                'name' => 'bulletinboards_view',
-                'category' => 'system',
-                'description' => 'Voir les tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_create',
-                'category' => 'system',
-                'description' => 'Créer des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_update',
-                'category' => 'system',
-                'description' => 'Modifier des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_delete',
-                'category' => 'system',
-                'description' => 'Supprimer des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_restore',
-                'category' => 'system',
-                'description' => 'Restaurer des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_force_delete',
-                'category' => 'system',
-                'description' => 'Supprimer définitivement des tableaux d\'affichage'
-            ],
-            // Organisation permissions
-            [
-                'name' => 'organisations_view',
-                'category' => 'organizations',
-                'description' => 'Voir les organisations'
-            ],
-            [
-                'name' => 'organisations_create',
-                'category' => 'organizations',
-                'description' => 'Créer des organisations'
-            ],
-            [
-                'name' => 'organisations_update',
-                'category' => 'organizations',
-                'description' => 'Modifier des organisations'
-            ],
-            [
-                'name' => 'organisations_delete',
-                'category' => 'organizations',
-                'description' => 'Supprimer des organisations'
-            ],
-            [
-                'name' => 'organisations_force_delete',
-                'category' => 'organizations',
-                'description' => 'Supprimer définitivement des organisations'
-            ],
-            // Additional record permissions
-            [
-                'name' => 'records_update',
-                'category' => 'records',
-                'description' => 'Modifier des dossiers'
-            ],
-            [
-                'name' => 'records_delete',
-                'category' => 'records',
-                'description' => 'Supprimer des dossiers'
-            ],
-            [
-                'name' => 'records_force_delete',
-                'category' => 'records',
-                'description' => 'Supprimer définitivement des dossiers'
-            ],
-            [
-                'name' => 'records_archive',
-                'category' => 'records',
-                'description' => 'Archiver des dossiers'
-            ],
-            // Additional user permissions
-            [
-                'name' => 'users_update',
-                'category' => 'users',
-                'description' => 'Modifier des utilisateurs'
-            ],
-            [
-                'name' => 'users_delete',
-                'category' => 'users',
-                'description' => 'Supprimer des utilisateurs'
-            ],
-            [
-                'name' => 'users_force_delete',
-                'category' => 'users',
-                'description' => 'Supprimer définitivement des utilisateurs'
-            ],
-        ];
-
-        $this->insertPermissions($permissions);
-    }
-
-
 
     private function insertPermissions(array $permissions)
     {
