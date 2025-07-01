@@ -330,7 +330,7 @@
                                         @case('dollies')
                                             @include('submenu.dollies')
                                             @break
-                                        @case('workflow')
+                                        @case('workflows')
                                             @include('submenu.workflows')
                                             @break
                                         @case('public-admin')
