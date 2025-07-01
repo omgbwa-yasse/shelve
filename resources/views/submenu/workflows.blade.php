@@ -1,49 +1,207 @@
-<nav class="nav flex-column nav-pills submenu">
-    <div class="nav-item-header">{{ __('Workflows') }}</div>
+<div class="submenu-container py-2">
+    @php
+    use App\Helpers\SubmenuPermissions;
+    @endphp
 
-    @can('workflow_dashboard')
-    <a class="nav-link {{ request()->routeIs('workflows.dashboard') ? 'active' : '' }}" href="{{ route('workflows.dashboard') }}">
-        <i class="bi bi-grid me-2"></i>{{ __('Tableau de bord') }}
-    </a>
-    @endcan
+    <style>
+        .submenu-container {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
 
-    @can('workflow_template_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflows.templates.*') ? 'active' : '' }}" href="{{ route('workflows.templates.index') }}">
-        <i class="bi bi-file-earmark-text me-2"></i>{{ __('Modèles de workflow') }}
-    </a>
-    @endcan
+        .submenu-heading {
+            background-color: #4285f4;
+            color: white;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
 
-    @can('workflow_instance_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflows.instances.*') ? 'active' : '' }}" href="{{ route('workflows.instances.index') }}">
-        <i class="bi bi-diagram-3 me-2"></i>{{ __('Instances de workflow') }}
-    </a>
-    @endcan
+        .submenu-heading i {
+            margin-right: 8px;
+            font-size: 14px;
+        }
 
-    <div class="nav-item-header">{{ __('Tâches') }}</div>
+        .submenu-content {
+            padding: 0 0 8px 12px;
+            margin-bottom: 8px;
+            display: block;
+        }
 
-    @can('task_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflows.tasks.index') ? 'active' : '' }}" href="{{ route('workflows.tasks.index') }}">
-        <i class="bi bi-list-task me-2"></i>{{ __('Toutes les tâches') }}
-    </a>
-    @endcan
+        .submenu-item {
+            margin-bottom: 2px;
+        }
 
-    @can('task_viewOwn')
-    <a class="nav-link {{ request()->routeIs('workflows.tasks.my') ? 'active' : '' }}" href="{{ route('workflows.tasks.my') }}">
-        <i class="bi bi-person-check me-2"></i>{{ __('Mes tâches') }}
-    </a>
-    @endcan
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            color: #202124;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12.5px;
+        }
 
-    <div class="nav-item-header">{{ __('Notifications') }}</div>
+        .submenu-link:hover {
+            background-color: #f1f3f4;
+            color: #4285f4;
+            text-decoration: none;
+        }
 
-    @can('notification_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflows.notifications.index') ? 'active' : '' }}" href="{{ route('workflows.notifications.index') }}">
-        <i class="bi bi-bell me-2"></i>{{ __('Mes notifications') }}
-    </a>
-    @endcan
+        .submenu-link i {
+            margin-right: 8px;
+            color: #5f6368;
+            font-size: 13px;
+        }
 
-    @can('systemNotification_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflows.notifications.system.*') ? 'active' : '' }}" href="{{ route('workflows.notifications.system.index') }}">
-        <i class="bi bi-bell-fill me-2"></i>{{ __('Notifications système') }}
-    </a>
-    @endcan
-</nav>
+        .submenu-link.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .submenu-link.active i {
+            color: #1a73e8;
+        }
+    </style>
+
+    <!-- Section Tableau de bord -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-grid"></i>
+            {{ __('Vue d\'ensemble') }}
+        </div>
+        <div class="submenu-content">
+            @can('workflow_dashboard')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.dashboard') }}" class="submenu-link {{ request()->routeIs('workflows.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer"></i>
+                    {{ __('Tableau de bord') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+
+    <!-- Section Modèles -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-file-earmark-text"></i>
+            {{ __('Modèles') }}
+        </div>
+        <div class="submenu-content">
+            @can('workflow_template_viewAny')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.templates.index') }}" class="submenu-link {{ request()->routeIs('workflows.templates.index') ? 'active' : '' }}">
+                    <i class="bi bi-list-ul"></i>
+                    {{ __('Liste des modèles') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('workflow_template_create')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.templates.create') }}" class="submenu-link {{ request()->routeIs('workflows.templates.create') ? 'active' : '' }}">
+                    <i class="bi bi-plus-circle"></i>
+                    {{ __('Créer un modèle') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+
+    <!-- Section Instances -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-diagram-3"></i>
+            {{ __('Instances') }}
+        </div>
+        <div class="submenu-content">
+            @can('workflow_instance_viewAny')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.instances.index') }}" class="submenu-link {{ request()->routeIs('workflows.instances.index') ? 'active' : '' }}">
+                    <i class="bi bi-collection"></i>
+                    {{ __('Toutes les instances') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('workflow_instance_create')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.instances.create') }}" class="submenu-link {{ request()->routeIs('workflows.instances.create') ? 'active' : '' }}">
+                    <i class="bi bi-plus-circle"></i>
+                    {{ __('Démarrer une instance') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+
+    <!-- Section Tâches -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-list-task"></i>
+            {{ __('Tâches') }}
+        </div>
+        <div class="submenu-content">
+            @can('task_viewAny')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.tasks.index') }}" class="submenu-link {{ request()->routeIs('workflows.tasks.index') ? 'active' : '' }}">
+                    <i class="bi bi-card-list"></i>
+                    {{ __('Toutes les tâches') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('task_viewOwn')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.tasks.my') }}" class="submenu-link {{ request()->routeIs('workflows.tasks.my') ? 'active' : '' }}">
+                    <i class="bi bi-person-check"></i>
+                    {{ __('Mes tâches') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('task_create')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.tasks.create') }}" class="submenu-link {{ request()->routeIs('workflows.tasks.create') ? 'active' : '' }}">
+                    <i class="bi bi-plus-circle"></i>
+                    {{ __('Créer une tâche') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+
+    <!-- Section Notifications -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-bell"></i>
+            {{ __('Notifications') }}
+        </div>
+        <div class="submenu-content">
+            @can('notification_viewAny')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.notifications.index') }}" class="submenu-link {{ request()->routeIs('workflows.notifications.index') ? 'active' : '' }}">
+                    <i class="bi bi-envelope"></i>
+                    {{ __('Mes notifications') }}
+                </a>
+            </div>
+            @endcan
+
+            @can('systemNotification_viewAny')
+            <div class="submenu-item">
+                <a href="{{ route('workflows.notifications.system.index') }}" class="submenu-link {{ request()->routeIs('workflows.notifications.system.*') ? 'active' : '' }}">
+                    <i class="bi bi-bell-fill"></i>
+                    {{ __('Notifications système') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+</div>

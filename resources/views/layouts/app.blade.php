@@ -38,7 +38,6 @@
             padding: 0.5rem 1rem;
             border-radius: 4px;
             margin-bottom: 0.25rem;
-            transition: all 0.2s ease-in-out;
         }
 
         .submenu-card .nav-link:hover {
@@ -54,12 +53,6 @@
         .submenu-card .nav-link i {
             margin-right: 0.5rem;
             font-size: 1rem;
-        }
-
-        /* Animation sur hover */
-        .submenu-card .nav-link:hover i {
-            transform: translateX(3px);
-            transition: transform 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -388,15 +381,7 @@
                 $('#orgModal').modal('hide');
             });
 
-            // Animation sur hover
-            $('.header-nav-link').hover(
-                function() {
-                    $(this).find('i').css('transform', 'translateY(-2px)');
-                },
-                function() {
-                    $(this).find('i').css('transform', 'translateY(0)');
-                }
-            );
+            // Pas d'animation sur hover
 
             // Focus sur le champ de recherche
             $('.header-search-input').focus(function() {
