@@ -33,7 +33,7 @@
                             <select name="status" class="form-select" id="statusFilter">
                                 <option value="">All Statuses</option>
                                 @foreach($statuses as $status)
-                                    <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
+                                    <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
                                         {{ $status->name }}
                                     </option>
                                 @endforeach
