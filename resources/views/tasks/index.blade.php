@@ -34,7 +34,7 @@
                                 <option value="">All Statuses</option>
                                 @foreach($statuses as $status)
                                     <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
-                                        {{ $status->name }}
+                                        {{ $status->label() }}
                                     </option>
                                 @endforeach
                             </select>
@@ -83,8 +83,8 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ $task->status ? 'primary' : 'secondary' }}">
-                                        {{ $task->status ? $task->status->name : "N/A" }}
+                                    <span class="badge {{ $task->status ? $task->status->color() : 'bg-secondary' }}">
+                                        {{ $task->status ? $task->status->label() : "N/A" }}
                                     </span>
                                 </td>
                                 <td>
