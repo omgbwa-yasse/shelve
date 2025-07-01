@@ -2,19 +2,23 @@
 
 namespace App\Policies;
 
-use App\Models\Task;
 use App\Models\User;
+use App\Models\Task;
+use App\Enums\TaskStatus;
+use App\Enums\TaskPriority;
+use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Auth\Access\Response;
-use App\Policies\BasePolicy;
 
-class TaskPolicy extends BasePolicy
+class TaskPolicy
 {
+    use HandlesAuthorization;
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(?User $user): bool|Response
     {
-        return $this->canViewAny($user, 'task_viewAny');
+        return $user && $user->can('task.view');
     }
 
     /**
@@ -22,7 +26,37 @@ class TaskPolicy extends BasePolicy
      */
     public function view(?User $user, Task $task): bool|Response
     {
-        return $this->canView($user, $task, 'task_view');
+        if (!$user) {
+            return false;
+        }
+
+        // Admin peut voir toutes les tâches
+        if ($user->can('task.view-all')) {
+            return true;
+        }
+
+        // Utilisateur peut voir les tâches qui lui sont assignées
+        if ($user->can('task.view')) {
+            // Tâche créée par l'utilisateur
+            if ($task->created_by === $user->id) {
+                return true;
+            }
+
+            // Tâche assignée à l'utilisateur
+            if ($task->assignments()->where('assignee_type', 'user')
+                ->where('assignee_id', $user->id)->exists()) {
+                return true;
+            }
+
+            // Tâche assignée à une organisation de l'utilisateur
+            $userOrganizationIds = $user->organisations->pluck('id')->toArray();
+            if (!empty($userOrganizationIds) && $task->assignments()->where('assignee_type', 'organisation')
+                ->whereIn('assignee_id', $userOrganizationIds)->exists()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -30,7 +64,7 @@ class TaskPolicy extends BasePolicy
      */
     public function create(?User $user): bool|Response
     {
-        return $this->canCreate($user, 'task_create');
+        return $user && $user->can('task.create');
     }
 
     /**
@@ -38,7 +72,28 @@ class TaskPolicy extends BasePolicy
      */
     public function update(?User $user, Task $task): bool|Response
     {
-        return $this->canUpdate($user, $task, 'task_update');
+        if (!$user) {
+            return false;
+        }
+
+        // Admin peut mettre à jour toutes les tâches
+        if ($user->can('task.update-all')) {
+            return true;
+        }
+
+        // Utilisateur peut mettre à jour ses propres tâches
+        if ($user->can('task.update-own') && $task->created_by === $user->id) {
+            return true;
+        }
+
+        // L'utilisateur assigné peut mettre à jour certains champs de la tâche
+        if ($user->can('task.update-assigned') &&
+            $task->assignments()->where('assignee_type', 'user')
+                ->where('assignee_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -46,7 +101,21 @@ class TaskPolicy extends BasePolicy
      */
     public function delete(?User $user, Task $task): bool|Response
     {
-        return $this->canDelete($user, $task, 'task_delete');
+        if (!$user) {
+            return false;
+        }
+
+        // Admin peut supprimer toutes les tâches
+        if ($user->can('task.delete-all')) {
+            return true;
+        }
+
+        // Utilisateur peut supprimer ses propres tâches
+        if ($user->can('task.delete-own') && $task->created_by === $user->id) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -54,35 +123,95 @@ class TaskPolicy extends BasePolicy
      */
     public function forceDelete(?User $user, Task $task): bool|Response
     {
-        return $this->canForceDelete($user, $task, 'task_force_delete');
-    }";
+        return $user && $user->can('task.force-delete');
+    }
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function() use ($user, $task) {
-            // For models directly linked to organisations
-            if (method_exists($task, 'organisations')) {
-                foreach($task->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
-
-            // For models with organisation_id column
-            if (isset($task->organisation_id)) {
-                return $task->organisation_id == $user->current_organisation_id;
-            }
-
-            // For models linked through activity (like Record)
-            if (method_exists($task, 'activity') && $task->activity) {
-                foreach($task->activity->organisations as $organisation) {
-                    if ($organisation->id == $user->current_organisation_id) {
-                        return true;
-                    }
-                }
-            }
-
-            // Default: allow access if no specific organisation restriction
+    /**
+     * Détermine si l'utilisateur peut assigner une tâche
+     */
+    public function assign(?User $user, Task $task): bool|Response
+    {
+        // Admin peut assigner toutes les tâches
+        if ($user && $user->can('task.assign')) {
             return true;
-        });
+        }
+
+        // Créateur peut assigner ses propres tâches
+        if ($user && $user->can('task.assign-own') && $task->created_by === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut compléter une tâche
+     */
+    public function complete(?User $user, Task $task): bool|Response
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // Admin peut compléter toutes les tâches
+        if ($user->can('task.complete-any')) {
+            return true;
+        }
+
+        // La tâche ne doit pas être déjà complétée ou annulée
+        if ($task->status && in_array($task->status, [
+            TaskStatus::DONE,
+            TaskStatus::CANCELLED
+        ])) {
+            return false;
+        }
+
+        // Le créateur peut compléter sa propre tâche
+        if ($user->can('task.complete-own') && $task->created_by === $user->id) {
+            return true;
+        }
+
+        // L'assigné peut compléter la tâche
+        if ($user->can('task.complete') &&
+            $task->assignments()->where('assignee_type', 'user')
+                ->where('assignee_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Détermine si l'utilisateur peut commenter une tâche
+     */
+    public function comment(?User $user, Task $task): bool|Response
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // Admin peut commenter toutes les tâches
+        if ($user->can('task.comment-any')) {
+            return true;
+        }
+
+        // La tâche ne doit pas être annulée
+        if ($task->status && $task->status === TaskStatus::CANCELLED) {
+            return false;
+        }
+
+        // Le créateur peut commenter sa propre tâche
+        if ($user->can('task.comment-own') && $task->created_by === $user->id) {
+            return true;
+        }
+
+        // L'assigné peut commenter la tâche
+        if ($user->can('task.comment') &&
+            $task->assignments()->where('assignee_type', 'user')
+                ->where('assignee_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return false;
     }
 }

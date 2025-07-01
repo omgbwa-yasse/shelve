@@ -180,6 +180,13 @@
                         </a>
                     </div>
                     @endcan
+                    @can('workflow_dashboard')
+                    <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'workflow') active @endif" href="{{ route('workflow.dashboard') }}">
+                            <i class="bi bi-diagram-3" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
+                    @endcan
                     @can('module_ai_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
@@ -322,6 +329,9 @@
                                             @break
                                         @case('dollies')
                                             @include('submenu.dollies')
+                                            @break
+                                        @case('workflow')
+                                            @include('submenu.workflow')
                                             @break
                                         @case('public-admin')
                                             @include('submenu.public-admin')

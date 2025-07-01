@@ -56,7 +56,7 @@ use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
-use AppHttp\Controllers\RecordSupportController;
+use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\SearchCommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
@@ -70,7 +70,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use AppHttp\Controllers\DollyController;
+use App\Http\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
@@ -696,8 +696,6 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
-});
-
     // Route de test temporaire
     Route::get('/test', function() {
         return view('workflow.test');
@@ -707,6 +705,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/logo-test', function() {
         return view('workflow.logo-test');
     })->name('logo-test');
+
+    // Inclusion des routes du module workflow
+    require __DIR__ . '/workflow.php';
 });
 
 

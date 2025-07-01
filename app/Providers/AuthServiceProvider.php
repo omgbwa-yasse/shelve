@@ -59,6 +59,15 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Post::class => \App\Policies\PostPolicy::class,
         \App\Models\Ai::class => \App\Policies\AiPolicy::class,
         \App\Models\Barcode::class => \App\Policies\BarcodePolicy::class,
+
+        // Workflow module policies
+        \App\Models\WorkflowTemplate::class => \App\Policies\WorkflowTemplatePolicy::class,
+        \App\Models\WorkflowStep::class => \App\Policies\WorkflowStepPolicy::class,
+        \App\Models\WorkflowInstance::class => \App\Policies\WorkflowInstancePolicy::class,
+        \App\Models\WorkflowStepInstance::class => \App\Policies\WorkflowStepInstancePolicy::class,
+        \App\Models\TaskComment::class => \App\Policies\TaskCommentPolicy::class,
+        \App\Models\TaskAssignment::class => \App\Policies\TaskAssignmentPolicy::class,
+        \App\Models\SystemNotification::class => \App\Policies\SystemNotificationPolicy::class,
     ];
 
     /**
