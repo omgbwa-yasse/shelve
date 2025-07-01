@@ -14,12 +14,12 @@
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflow.templates.show', $template) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.templates.show', $template) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Retour au modèle') }}
                 </a>
                 @can('workflow.step.create')
-                <a href="{{ route('workflow.templates.steps.create', $template) }}" class="btn btn-primary">
+                <a href="{{ route('workflows.templates.steps.create', $template) }}" class="btn btn-primary">
                     <i class="bi bi-plus-lg me-1"></i>
                     {{ __('Ajouter une étape') }}
                 </a>
@@ -63,7 +63,7 @@
                                         <span class="badge bg-secondary">{{ $step->order }}</span>
                                     </td>
                                     <td>
-                                        <a href="{{ route('workflow.steps.show', $step) }}">
+                                        <a href="{{ route('workflows.steps.show', $step) }}">
                                             {{ $step->name }}
                                         </a>
                                         <div class="small text-muted">{{ Str::limit($step->description, 50) }}</div>
@@ -84,19 +84,19 @@
                                     <td class="text-end">
                                         <div class="btn-group btn-group-sm">
                                             @can('workflow.step.view', $step)
-                                            <a href="{{ route('workflow.steps.show', $step) }}" class="btn btn-outline-secondary">
+                                            <a href="{{ route('workflows.steps.show', $step) }}" class="btn btn-outline-secondary">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             @endcan
 
                                             @can('workflow.step.update', $step)
-                                            <a href="{{ route('workflow.steps.edit', $step) }}" class="btn btn-outline-secondary">
+                                            <a href="{{ route('workflows.steps.edit', $step) }}" class="btn btn-outline-secondary">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             @endcan
 
                                             @can('workflow.step.delete', $step)
-                                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('{{ route('workflow.steps.destroy', $step) }}', '{{ __('Êtes-vous sûr de vouloir supprimer cette étape ?') }}')">
+                                            <button type="button" class="btn btn-outline-danger" onclick="confirmDelete('{{ route('workflows.steps.destroy', $step) }}', '{{ __('Êtes-vous sûr de vouloir supprimer cette étape ?') }}')">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                             @endcan

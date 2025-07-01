@@ -14,13 +14,13 @@
         <div class="col-auto">
             <div class="btn-group">
                 @can('update', $template)
-                <a href="{{ route('workflow.templates.edit', $template) }}" class="btn btn-primary">
+                <a href="{{ route('workflows.templates.edit', $template) }}" class="btn btn-primary">
                     <i class="bi bi-pencil me-1"></i>
                     {{ __('Modifier') }}
                 </a>
                 @endcan
 
-                <a href="{{ route('workflow.templates.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.templates.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Retour à la liste') }}
                 </a>
@@ -74,7 +74,7 @@
                 <div class="card-footer bg-light">
                     <div class="d-flex justify-content-between">
                         @can('toggleActive', $template)
-                        <form action="{{ route('workflow.templates.toggle-active', $template) }}" method="POST">
+                        <form action="{{ route('workflows.templates.toggle-active', $template) }}" method="POST">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-{{ $template->is_active ? 'warning' : 'success' }}">
                                 <i class="bi bi-{{ $template->is_active ? 'toggle-off' : 'toggle-on' }} me-1"></i>
@@ -85,7 +85,7 @@
 
                         <div>
                             @can('duplicate', $template)
-                            <form action="{{ route('workflow.templates.duplicate', $template) }}" method="POST" class="d-inline">
+                            <form action="{{ route('workflows.templates.duplicate', $template) }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-info">
                                     <i class="bi bi-copy me-1"></i>
@@ -95,7 +95,7 @@
                             @endcan
 
                             @can('delete', $template)
-                            <form action="{{ route('workflow.templates.destroy', $template) }}" method="POST" class="d-inline delete-form">
+                            <form action="{{ route('workflows.templates.destroy', $template) }}" method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">
@@ -137,7 +137,7 @@
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">{{ __('Étapes du workflow') }}</h5>
                     @can('create', [\App\Models\WorkflowStep::class, $template])
-                    <a href="{{ route('workflow.templates.steps.create', $template) }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('workflows.templates.steps.create', $template) }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-plus-lg me-1"></i>
                         {{ __('Ajouter une étape') }}
                     </a>
@@ -201,10 +201,10 @@
                                         </div>
 
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('workflow.steps.edit', $step) }}" class="btn btn-outline-secondary">
+                                            <a href="{{ route('workflows.steps.edit', $step) }}" class="btn btn-outline-secondary">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('workflow.steps.destroy', $step) }}" method="POST" class="delete-step-form">
+                                            <form action="{{ route('workflows.steps.destroy', $step) }}" method="POST" class="delete-step-form">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-outline-danger">

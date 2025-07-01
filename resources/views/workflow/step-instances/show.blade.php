@@ -9,13 +9,13 @@
                 {{ __('Étape') }}: {{ $stepInstance->step->name }}
             </h1>
             <p class="text-muted mt-2">
-                {{ __('Instance') }}: <a href="{{ route('workflow.instances.show', $stepInstance->instance) }}">{{ $stepInstance->instance->name }}</a> |
-                {{ __('Modèle') }}: <a href="{{ route('workflow.templates.show', $stepInstance->instance->template) }}">{{ $stepInstance->instance->template->name }}</a>
+                {{ __('Instance') }}: <a href="{{ route('workflows.instances.show', $stepInstance->instance) }}">{{ $stepInstance->instance->name }}</a> |
+                {{ __('Modèle') }}: <a href="{{ route('workflows.templates.show', $stepInstance->instance->template) }}">{{ $stepInstance->instance->template->name }}</a>
             </p>
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflow.instances.show', $stepInstance->instance) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.instances.show', $stepInstance->instance) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Retour à l\'instance') }}
                 </a>
@@ -165,7 +165,7 @@
 
                     @if($stepInstance->status->value === 'in_progress')
                     <div class="mt-4">
-                        <form action="{{ route('workflow.step-instances.comment', $stepInstance) }}" method="POST">
+                        <form action="{{ route('workflows.step-instances.comment', $stepInstance) }}" method="POST">
                             @csrf
                             <div class="mb-3">
                                 <label for="comment" class="form-label">{{ __('Ajouter un commentaire') }}</label>
@@ -377,7 +377,7 @@
                     <h5 class="modal-title" id="completeStepModalLabel">{{ __('Compléter l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.complete', $stepInstance) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.complete', $stepInstance) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <p>{{ __('Vous êtes sur le point de marquer cette étape comme complétée.') }}</p>
@@ -421,7 +421,7 @@
                     <h5 class="modal-title" id="rejectStepModalLabel">{{ __('Rejeter l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.reject', $stepInstance) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.reject', $stepInstance) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="alert alert-danger">
@@ -454,7 +454,7 @@
                     <h5 class="modal-title" id="reassignStepModalLabel">{{ __('Réassigner l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.reassign', $stepInstance) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.reassign', $stepInstance) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <p>{{ __('Sélectionnez les nouveaux assignés pour cette étape.') }}</p>

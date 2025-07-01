@@ -12,14 +12,14 @@
         <div class="col-auto">
             <div class="btn-group">
                 @can('workflow_template_viewAny')
-                <a href="{{ route('workflow.templates.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.templates.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-file-earmark-text me-1"></i>
                     {{ __('Modèles') }}
                 </a>
                 @endcan
 
                 @can('workflow_instance_viewAny')
-                <a href="{{ route('workflow.instances.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.instances.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-diagram-3 me-1"></i>
                     {{ __('Instances') }}
                 </a>
@@ -108,7 +108,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Mes workflows actifs') }}</h5>
-                    <a href="{{ route('workflow.instances.index', ['assigned' => 'me']) }}" class="btn btn-sm btn-link">
+                    <a href="{{ route('workflows.instances.index', ['assigned' => 'me']) }}" class="btn btn-sm btn-link">
                         {{ __('Voir tout') }}
                     </a>
                 </div>
@@ -120,7 +120,7 @@
                     @else
                         <div class="list-group list-group-flush">
                             @foreach($myWorkflows as $workflow)
-                                <a href="{{ route('workflow.instances.show', $workflow) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <a href="{{ route('workflows.instances.show', $workflow) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">{{ $workflow->name }}</h6>
                                         <small class="text-muted">{{ $workflow->template->name }}</small>

@@ -10,7 +10,7 @@
             </h1>
         </div>
         <div class="col-auto">
-            <a href="{{ route('workflow.instances.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('workflows.instances.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>
                 {{ __('Retour à la liste') }}
             </a>
@@ -19,7 +19,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflow.instances.store') }}" method="POST">
+            <form action="{{ route('workflows.instances.store') }}" method="POST">
                 @csrf
 
                 <div class="row mb-4">

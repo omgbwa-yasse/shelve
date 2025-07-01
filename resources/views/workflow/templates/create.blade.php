@@ -12,7 +12,7 @@
             </h1>
         </div>
         <div class="col-auto">
-            <a href="{{ route('workflow.templates.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ route('workflows.templates.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>
                 {{ __('Retour à la liste') }}
             </a>
@@ -21,7 +21,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflow.templates.store') }}" method="POST">
+            <form action="{{ route('workflows.templates.store') }}" method="POST">
                 @csrf
 
                 <div class="row mb-3">
@@ -68,7 +68,7 @@
                         <i class="bi bi-save me-1"></i>
                         {{ __('Créer le modèle') }}
                     </button>
-                    <a href="{{ route('workflow.templates.index') }}" class="btn btn-outline-secondary ms-2">
+                    <a href="{{ route('workflows.templates.index') }}" class="btn btn-outline-secondary ms-2">
                         {{ __('Annuler') }}
                     </a>
                 </div>

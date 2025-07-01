@@ -27,7 +27,7 @@ class WorkflowStepController extends Controller
      */
     public function index(WorkflowTemplate $template)
     {
-        return redirect()->route('workflow.templates.show', $template);
+        return redirect()->route('workflows.templates.show', $template);
     }
 
     /**
@@ -108,7 +108,7 @@ class WorkflowStepController extends Controller
         }
 
         return redirect()
-            ->route('workflow.templates.show', $template)
+            ->route('workflows.templates.show', $template)
             ->with('success', 'L\'étape a été ajoutée au workflow avec succès.');
     }
 
@@ -233,7 +233,7 @@ class WorkflowStepController extends Controller
         }
 
         return redirect()
-            ->route('workflow.steps.show', [$template, $step])
+            ->route('workflows.steps.show', [$template, $step])
             ->with('success', 'L\'étape a été mise à jour avec succès.');
     }
 
@@ -249,7 +249,7 @@ class WorkflowStepController extends Controller
             $query->where('status', '!=', 'completed');
         })->exists()) {
             return redirect()
-                ->route('workflow.steps.show', [$template, $step])
+                ->route('workflows.steps.show', [$template, $step])
                 ->with('error', 'Impossible de supprimer cette étape car elle est utilisée dans des workflows actifs.');
         }
 
@@ -265,7 +265,7 @@ class WorkflowStepController extends Controller
             ->decrement('order_index');
 
         return redirect()
-            ->route('workflow.templates.show', $template)
+            ->route('workflows.templates.show', $template)
             ->with('success', 'L\'étape a été supprimée avec succès.');
     }
 

@@ -178,7 +178,7 @@ class WorkflowInstanceController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('workflow.instances.show', $workflowInstance)
+                ->route('workflows.instances.show', $workflowInstance)
                 ->with('success', 'Le workflow a été démarré avec succès.');
 
         } catch (\Exception $e) {
@@ -214,7 +214,7 @@ class WorkflowInstanceController extends Controller
         if ($instance->status === WorkflowInstanceStatus::COMPLETED ||
             $instance->status === WorkflowInstanceStatus::CANCELLED) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Les workflows terminés ou annulés ne peuvent pas être modifiés.');
         }
 
@@ -231,7 +231,7 @@ class WorkflowInstanceController extends Controller
         if ($instance->status === WorkflowInstanceStatus::COMPLETED ||
             $instance->status === WorkflowInstanceStatus::CANCELLED) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Les workflows terminés ou annulés ne peuvent pas être modifiés.');
         }
 
@@ -265,7 +265,7 @@ class WorkflowInstanceController extends Controller
         }
 
         return redirect()
-            ->route('workflow.instances.show', $instance)
+            ->route('workflows.instances.show', $instance)
             ->with('success', 'Le workflow a été mis à jour avec succès.');
     }
 
@@ -277,7 +277,7 @@ class WorkflowInstanceController extends Controller
         // Vérifier si on peut supprimer ce workflow
         if ($instance->status === WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Impossible de supprimer un workflow en cours. Annulez-le d\'abord.');
         }
 
@@ -291,7 +291,7 @@ class WorkflowInstanceController extends Controller
         $instance->delete();
 
         return redirect()
-            ->route('workflow.instances.index')
+            ->route('workflows.instances.index')
             ->with('success', 'Le workflow a été supprimé avec succès.');
     }
 
@@ -303,7 +303,7 @@ class WorkflowInstanceController extends Controller
         if ($instance->status === WorkflowInstanceStatus::COMPLETED ||
             $instance->status === WorkflowInstanceStatus::CANCELLED) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Ce workflow est déjà terminé ou annulé.');
         }
 
@@ -319,7 +319,7 @@ class WorkflowInstanceController extends Controller
             ->update(['status' => WorkflowStepInstanceStatus::SKIPPED]);
 
         return redirect()
-            ->route('workflow.instances.show', $instance)
+            ->route('workflows.instances.show', $instance)
             ->with('success', 'Le workflow a été annulé avec succès.');
     }
 
@@ -330,7 +330,7 @@ class WorkflowInstanceController extends Controller
     {
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Seuls les workflows en cours peuvent être mis en pause.');
         }
 
@@ -338,7 +338,7 @@ class WorkflowInstanceController extends Controller
         $instance->save();
 
         return redirect()
-            ->route('workflow.instances.show', $instance)
+            ->route('workflows.instances.show', $instance)
             ->with('success', 'Le workflow a été mis en pause avec succès.');
     }
 
@@ -349,7 +349,7 @@ class WorkflowInstanceController extends Controller
     {
         if ($instance->status !== WorkflowInstanceStatus::ON_HOLD) {
             return redirect()
-                ->route('workflow.instances.show', $instance)
+                ->route('workflows.instances.show', $instance)
                 ->with('error', 'Seuls les workflows en pause peuvent être repris.');
         }
 
@@ -357,7 +357,7 @@ class WorkflowInstanceController extends Controller
         $instance->save();
 
         return redirect()
-            ->route('workflow.instances.show', $instance)
+            ->route('workflows.instances.show', $instance)
             ->with('success', 'Le workflow a été repris avec succès.');
     }
 

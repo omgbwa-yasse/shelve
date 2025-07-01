@@ -2,19 +2,19 @@
     <div class="nav-item-header">{{ __('Workflows') }}</div>
 
     @can('workflow_dashboard')
-    <a class="nav-link {{ request()->routeIs('workflow.dashboard') ? 'active' : '' }}" href="{{ route('workflow.dashboard') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.dashboard') ? 'active' : '' }}" href="{{ route('workflows.dashboard') }}">
         <i class="bi bi-grid me-2"></i>{{ __('Tableau de bord') }}
     </a>
     @endcan
 
     @can('workflow_template_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflow.templates.*') ? 'active' : '' }}" href="{{ route('workflow.templates.index') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.templates.*') ? 'active' : '' }}" href="{{ route('workflows.templates.index') }}">
         <i class="bi bi-file-earmark-text me-2"></i>{{ __('Modèles de workflow') }}
     </a>
     @endcan
 
     @can('workflow_instance_viewAny')
-    <a class="nav-link {{ request()->routeIs('workflow.instances.*') ? 'active' : '' }}" href="{{ route('workflow.instances.index') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.instances.*') ? 'active' : '' }}" href="{{ route('workflows.instances.index') }}">
         <i class="bi bi-diagram-3 me-2"></i>{{ __('Instances de workflow') }}
     </a>
     @endcan

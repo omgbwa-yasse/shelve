@@ -52,7 +52,7 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être modifiées.');
         }
 
@@ -85,7 +85,7 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être modifiées.');
         }
 
@@ -153,7 +153,7 @@ class WorkflowStepInstanceController extends Controller
         }
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été mise à jour avec succès.');
     }
 
@@ -170,13 +170,13 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être démarrées.');
         }
 
         if ($stepInstance->status !== WorkflowStepInstanceStatus::PENDING) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes en attente peuvent être démarrées.');
         }
 
@@ -193,7 +193,7 @@ class WorkflowStepInstanceController extends Controller
         }
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été démarrée avec succès.');
     }
 
@@ -210,13 +210,13 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être terminées.');
         }
 
         if ($stepInstance->status !== WorkflowStepInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes en cours peuvent être terminées.');
         }
 
@@ -238,7 +238,7 @@ class WorkflowStepInstanceController extends Controller
         }
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été terminée avec succès.');
     }
 
@@ -255,20 +255,20 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être ignorées.');
         }
 
         if (!in_array($stepInstance->status, [WorkflowStepInstanceStatus::PENDING, WorkflowStepInstanceStatus::IN_PROGRESS])) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes en attente ou en cours peuvent être ignorées.');
         }
 
         // Vérifier si l'étape peut être ignorée
         if (!$stepInstance->step->can_be_skipped) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Cette étape ne peut pas être ignorée.');
         }
 
@@ -288,7 +288,7 @@ class WorkflowStepInstanceController extends Controller
         }
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été ignorée avec succès.');
     }
 
@@ -305,13 +305,13 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être marquées comme échouées.');
         }
 
         if (!in_array($stepInstance->status, [WorkflowStepInstanceStatus::PENDING, WorkflowStepInstanceStatus::IN_PROGRESS])) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes en attente ou en cours peuvent être marquées comme échouées.');
         }
 
@@ -333,7 +333,7 @@ class WorkflowStepInstanceController extends Controller
         ]);
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été marquée comme échouée et le workflow a été mis en pause.');
     }
 
@@ -350,13 +350,13 @@ class WorkflowStepInstanceController extends Controller
 
         if ($instance->status !== WorkflowInstanceStatus::IN_PROGRESS) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes de workflows en cours peuvent être réassignées.');
         }
 
         if (!in_array($stepInstance->status, [WorkflowStepInstanceStatus::PENDING, WorkflowStepInstanceStatus::IN_PROGRESS])) {
             return redirect()
-                ->route('workflow.step-instances.show', [$instance, $stepInstance])
+                ->route('workflows.step-instances.show', [$instance, $stepInstance])
                 ->with('error', 'Seules les étapes en attente ou en cours peuvent être réassignées.');
         }
 
@@ -389,7 +389,7 @@ class WorkflowStepInstanceController extends Controller
         ]);
 
         return redirect()
-            ->route('workflow.step-instances.show', [$instance, $stepInstance])
+            ->route('workflows.step-instances.show', [$instance, $stepInstance])
             ->with('success', 'L\'étape a été réassignée avec succès.');
     }
 

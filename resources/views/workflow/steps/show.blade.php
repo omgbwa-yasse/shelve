@@ -9,18 +9,18 @@
                 {{ $step->name }}
             </h1>
             <p class="text-muted mt-2">
-                {{ __('Étape du modèle') }}: <a href="{{ route('workflow.templates.show', $step->template) }}">{{ $step->template->name }}</a>
+                {{ __('Étape du modèle') }}: <a href="{{ route('workflows.templates.show', $step->template) }}">{{ $step->template->name }}</a>
             </p>
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflow.templates.show', $step->template) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.templates.show', $step->template) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Retour au modèle') }}
                 </a>
 
                 @can('workflow.step.update', $step)
-                <a href="{{ route('workflow.steps.edit', $step) }}" class="btn btn-outline-primary">
+                <a href="{{ route('workflows.steps.edit', $step) }}" class="btn btn-outline-primary">
                     <i class="bi bi-pencil me-1"></i>
                     {{ __('Modifier') }}
                 </a>
@@ -121,7 +121,7 @@
                         <div class="col-md-4 fw-bold">{{ __('Prochaine étape (succès)') }}</div>
                         <div class="col-md-8">
                             @if($step->nextStepOnSuccess)
-                                <a href="{{ route('workflow.steps.show', $step->nextStepOnSuccess) }}">
+                                <a href="{{ route('workflows.steps.show', $step->nextStepOnSuccess) }}">
                                     {{ $step->nextStepOnSuccess->name }}
                                 </a>
                             @else
@@ -133,7 +133,7 @@
                         <div class="col-md-4 fw-bold">{{ __('Prochaine étape (échec)') }}</div>
                         <div class="col-md-8">
                             @if($step->nextStepOnFailure)
-                                <a href="{{ route('workflow.steps.show', $step->nextStepOnFailure) }}">
+                                <a href="{{ route('workflows.steps.show', $step->nextStepOnFailure) }}">
                                     {{ $step->nextStepOnFailure->name }}
                                 </a>
                             @else
@@ -178,7 +178,7 @@
                                         @endif
                                     </div>
                                     @can('workflow.step.manageAssignments', $step)
-                                    <form action="{{ route('workflow.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST">
+                                    <form action="{{ route('workflows.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette assignation?') }}')">
@@ -239,7 +239,7 @@
                 <h5 class="modal-title" id="assignModalLabel">{{ __('Ajouter une assignation') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('workflow.steps.assignments.store', $step) }}" method="POST">
+            <form action="{{ route('workflows.steps.assignments.store', $step) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="form-group mb-3">

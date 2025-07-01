@@ -11,7 +11,7 @@
         </div>
         <div class="col-auto">
             @can('workflow.instance.create')
-            <a href="{{ route('workflow.instances.create') }}" class="btn btn-primary">
+            <a href="{{ route('workflows.instances.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-lg me-1"></i>
                 {{ __('Nouvelle instance') }}
             </a>
@@ -21,7 +21,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflow.instances.index') }}" method="GET" class="mb-4">
+            <form action="{{ route('workflows.instances.index') }}" method="GET" class="mb-4">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <div class="input-group">
@@ -89,7 +89,7 @@
                                 <tr>
                                     <td>{{ $instance->id }}</td>
                                     <td>
-                                        <a href="{{ route('workflow.instances.show', $instance) }}" class="text-decoration-none">
+                                        <a href="{{ route('workflows.instances.show', $instance) }}" class="text-decoration-none">
                                             {{ $instance->name }}
                                         </a>
                                         @if($instance->reference)
@@ -97,13 +97,13 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('workflow.templates.show', $instance->template) }}" class="text-decoration-none">
+                                        <a href="{{ route('workflows.templates.show', $instance->template) }}" class="text-decoration-none">
                                             {{ $instance->template->name }}
                                         </a>
                                     </td>
                                     <td>
                                         @if($instance->currentStep)
-                                            <a href="{{ route('workflow.step-instances.show', $instance->currentStep) }}" class="text-decoration-none">
+                                            <a href="{{ route('workflows.step-instances.show', $instance->currentStep) }}" class="text-decoration-none">
                                                 {{ $instance->currentStep->step->name }}
                                             </a>
                                         @else
@@ -123,25 +123,25 @@
                                     <td>{{ $instance->created_at->format('d/m/Y H:i') }}</td>
                                     <td class="text-end">
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('workflow.instances.show', $instance) }}" class="btn btn-outline-secondary" title="{{ __('Voir les détails') }}">
+                                            <a href="{{ route('workflows.instances.show', $instance) }}" class="btn btn-outline-secondary" title="{{ __('Voir les détails') }}">
                                                 <i class="bi bi-eye"></i>
                                             </a>
 
                                             @if($instance->status->value === 'draft')
                                                 @can('workflow.instance.start', $instance)
-                                                <button type="button" class="btn btn-outline-primary" onclick="confirmAction('{{ route('workflow.instances.start', $instance) }}', '{{ __('Êtes-vous sûr de vouloir démarrer ce workflow ?') }}')" title="{{ __('Démarrer') }}">
+                                                <button type="button" class="btn btn-outline-primary" onclick="confirmAction('{{ route('workflows.instances.start', $instance) }}', '{{ __('Êtes-vous sûr de vouloir démarrer ce workflow ?') }}')" title="{{ __('Démarrer') }}">
                                                     <i class="bi bi-play"></i>
                                                 </button>
                                                 @endcan
                                             @elseif($instance->status->value === 'in_progress')
                                                 @can('workflow.instance.pause', $instance)
-                                                <button type="button" class="btn btn-outline-warning" onclick="confirmAction('{{ route('workflow.instances.pause', $instance) }}', '{{ __('Êtes-vous sûr de vouloir mettre en pause ce workflow ?') }}')" title="{{ __('Mettre en pause') }}">
+                                                <button type="button" class="btn btn-outline-warning" onclick="confirmAction('{{ route('workflows.instances.pause', $instance) }}', '{{ __('Êtes-vous sûr de vouloir mettre en pause ce workflow ?') }}')" title="{{ __('Mettre en pause') }}">
                                                     <i class="bi bi-pause"></i>
                                                 </button>
                                                 @endcan
                                             @elseif($instance->status->value === 'paused')
                                                 @can('workflow.instance.resume', $instance)
-                                                <button type="button" class="btn btn-outline-success" onclick="confirmAction('{{ route('workflow.instances.resume', $instance) }}', '{{ __('Êtes-vous sûr de vouloir reprendre ce workflow ?') }}')" title="{{ __('Reprendre') }}">
+                                                <button type="button" class="btn btn-outline-success" onclick="confirmAction('{{ route('workflows.instances.resume', $instance) }}', '{{ __('Êtes-vous sûr de vouloir reprendre ce workflow ?') }}')" title="{{ __('Reprendre') }}">
                                                     <i class="bi bi-play"></i>
                                                 </button>
                                                 @endcan
@@ -149,7 +149,7 @@
 
                                             @if(!in_array($instance->status->value, ['completed', 'cancelled']))
                                                 @can('workflow.instance.cancel', $instance)
-                                                <button type="button" class="btn btn-outline-danger" onclick="confirmAction('{{ route('workflow.instances.cancel', $instance) }}', '{{ __('Êtes-vous sûr de vouloir annuler ce workflow ?') }}')" title="{{ __('Annuler') }}">
+                                                <button type="button" class="btn btn-outline-danger" onclick="confirmAction('{{ route('workflows.instances.cancel', $instance) }}', '{{ __('Êtes-vous sûr de vouloir annuler ce workflow ?') }}')" title="{{ __('Annuler') }}">
                                                     <i class="bi bi-x-lg"></i>
                                                 </button>
                                                 @endcan

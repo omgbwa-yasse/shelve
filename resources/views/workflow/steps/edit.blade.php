@@ -14,7 +14,7 @@
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflow.steps.show', $step) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.steps.show', $step) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Annuler et retourner') }}
                 </a>
@@ -24,7 +24,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflow.steps.update', $step) }}" method="POST">
+            <form action="{{ route('workflows.steps.update', $step) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -209,7 +209,7 @@
                                     </td>
                                     <td>{{ $assignment->role }}</td>
                                     <td class="text-end">
-                                        <form action="{{ route('workflow.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('workflows.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette assignation?') }}')">
@@ -234,7 +234,7 @@
                     <h5 class="modal-title" id="assignModalLabel">{{ __('Ajouter une assignation') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.steps.assignments.store', $step) }}" method="POST">
+                <form action="{{ route('workflows.steps.assignments.store', $step) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group mb-3">

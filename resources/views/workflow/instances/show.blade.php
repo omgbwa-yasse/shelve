@@ -9,7 +9,7 @@
                 {{ $instance->name }}
             </h1>
             <p class="text-muted mt-2">
-                {{ __('Instance du modèle') }}: <a href="{{ route('workflow.templates.show', $instance->template) }}">{{ $instance->template->name }}</a>
+                {{ __('Instance du modèle') }}: <a href="{{ route('workflows.templates.show', $instance->template) }}">{{ $instance->template->name }}</a>
                 @if($instance->reference)
                 <span class="ms-3"><strong>{{ __('Référence') }}:</strong> {{ $instance->reference }}</span>
                 @endif
@@ -17,28 +17,28 @@
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflow.instances.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.instances.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Retour à la liste') }}
                 </a>
 
                 @if($instance->status->value === 'draft')
                     @can('workflow.instance.start', $instance)
-                    <button type="button" class="btn btn-success" onclick="confirmAction('{{ route('workflow.instances.start', $instance) }}', '{{ __('Êtes-vous sûr de vouloir démarrer ce workflow ?') }}')">
+                    <button type="button" class="btn btn-success" onclick="confirmAction('{{ route('workflows.instances.start', $instance) }}', '{{ __('Êtes-vous sûr de vouloir démarrer ce workflow ?') }}')">
                         <i class="bi bi-play me-1"></i>
                         {{ __('Démarrer') }}
                     </button>
                     @endcan
                 @elseif($instance->status->value === 'in_progress')
                     @can('workflow.instance.pause', $instance)
-                    <button type="button" class="btn btn-warning" onclick="confirmAction('{{ route('workflow.instances.pause', $instance) }}', '{{ __('Êtes-vous sûr de vouloir mettre en pause ce workflow ?') }}')">
+                    <button type="button" class="btn btn-warning" onclick="confirmAction('{{ route('workflows.instances.pause', $instance) }}', '{{ __('Êtes-vous sûr de vouloir mettre en pause ce workflow ?') }}')">
                         <i class="bi bi-pause me-1"></i>
                         {{ __('Mettre en pause') }}
                     </button>
                     @endcan
                 @elseif($instance->status->value === 'paused')
                     @can('workflow.instance.resume', $instance)
-                    <button type="button" class="btn btn-success" onclick="confirmAction('{{ route('workflow.instances.resume', $instance) }}', '{{ __('Êtes-vous sûr de vouloir reprendre ce workflow ?') }}')">
+                    <button type="button" class="btn btn-success" onclick="confirmAction('{{ route('workflows.instances.resume', $instance) }}', '{{ __('Êtes-vous sûr de vouloir reprendre ce workflow ?') }}')">
                         <i class="bi bi-play me-1"></i>
                         {{ __('Reprendre') }}
                     </button>
@@ -47,7 +47,7 @@
 
                 @if(!in_array($instance->status->value, ['completed', 'cancelled']))
                     @can('workflow.instance.cancel', $instance)
-                    <button type="button" class="btn btn-danger" onclick="confirmAction('{{ route('workflow.instances.cancel', $instance) }}', '{{ __('Êtes-vous sûr de vouloir annuler ce workflow ?') }}')">
+                    <button type="button" class="btn btn-danger" onclick="confirmAction('{{ route('workflows.instances.cancel', $instance) }}', '{{ __('Êtes-vous sûr de vouloir annuler ce workflow ?') }}')">
                         <i class="bi bi-x-lg me-1"></i>
                         {{ __('Annuler') }}
                     </button>
@@ -150,7 +150,7 @@
                             <div class="step-connector {{ $index < $stepCount - 1 ? '' : 'd-none' }}"></div>
                             <div class="step-details">
                                 <h6>
-                                    <a href="{{ route('workflow.step-instances.show', $stepInstance) }}" class="text-decoration-none">
+                                    <a href="{{ route('workflows.step-instances.show', $stepInstance) }}" class="text-decoration-none">
                                         {{ $stepInstance->step->name }}
                                     </a>
                                 </h6>
@@ -178,7 +178,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Étape actuelle') }}</h5>
                     @if($currentStep)
-                    <a href="{{ route('workflow.step-instances.show', $currentStep) }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('workflows.step-instances.show', $currentStep) }}" class="btn btn-sm btn-outline-primary">
                         {{ __('Voir les détails') }}
                     </a>
                     @endif
@@ -379,7 +379,7 @@
                     <h5 class="modal-title" id="completeStepModalLabel">{{ __('Compléter l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.complete', $currentStep) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.complete', $currentStep) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <p>{{ __('Vous êtes sur le point de marquer cette étape comme complétée.') }}</p>
@@ -423,7 +423,7 @@
                     <h5 class="modal-title" id="rejectStepModalLabel">{{ __('Rejeter l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.reject', $currentStep) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.reject', $currentStep) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <div class="alert alert-danger">
@@ -456,7 +456,7 @@
                     <h5 class="modal-title" id="reassignStepModalLabel">{{ __('Réassigner l\'étape') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('workflow.step-instances.reassign', $currentStep) }}" method="POST">
+                <form action="{{ route('workflows.step-instances.reassign', $currentStep) }}" method="POST">
                     @csrf
                     <div class="modal-body">
                         <p>{{ __('Sélectionnez les nouveaux assignés pour cette étape.') }}</p>

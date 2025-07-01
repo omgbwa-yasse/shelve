@@ -12,7 +12,7 @@
             </h1>
         </div>
         <div class="col-auto">
-            <a href="{{ route('workflow.templates.show', $template) }}" class="btn btn-outline-secondary">
+            <a href="{{ route('workflows.templates.show', $template) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i>
                 {{ __('Retour aux détails') }}
             </a>
@@ -21,7 +21,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflow.templates.update', $template) }}" method="POST">
+            <form action="{{ route('workflows.templates.update', $template) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -69,7 +69,7 @@
                         <i class="bi bi-save me-1"></i>
                         {{ __('Enregistrer les modifications') }}
                     </button>
-                    <a href="{{ route('workflow.templates.show', $template) }}" class="btn btn-outline-secondary ms-2">
+                    <a href="{{ route('workflows.templates.show', $template) }}" class="btn btn-outline-secondary ms-2">
                         {{ __('Annuler') }}
                     </a>
                 </div>

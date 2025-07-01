@@ -81,7 +81,7 @@ class WorkflowTemplateController extends Controller
         $template = WorkflowTemplate::create($validated);
 
         return redirect()
-            ->route('workflow.templates.show', $template)
+            ->route('workflows.templates.show', $template)
             ->with('success', 'Le template de workflow a été créé avec succès.');
     }
 
@@ -126,7 +126,7 @@ class WorkflowTemplateController extends Controller
         $template->update($validated);
 
         return redirect()
-            ->route('workflow.templates.show', $template)
+            ->route('workflows.templates.show', $template)
             ->with('success', 'Le template de workflow a été mis à jour avec succès.');
     }
 
@@ -138,14 +138,14 @@ class WorkflowTemplateController extends Controller
         // Vérifier si le template a des instances actives
         if ($template->instances()->where('status', '!=', 'completed')->count() > 0) {
             return redirect()
-                ->route('workflow.templates.show', $template)
+                ->route('workflows.templates.show', $template)
                 ->with('error', 'Impossible de supprimer ce template car il a des instances actives.');
         }
 
         $template->delete();
 
         return redirect()
-            ->route('workflow.templates.index')
+            ->route('workflows.templates.index')
             ->with('success', 'Le template de workflow a été supprimé avec succès.');
     }
 
@@ -193,7 +193,7 @@ class WorkflowTemplateController extends Controller
         }
 
         return redirect()
-            ->route('workflow.templates.show', $newTemplate)
+            ->route('workflows.templates.show', $newTemplate)
             ->with('success', 'Le template de workflow a été dupliqué avec succès.');
     }
 }

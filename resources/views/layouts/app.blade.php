@@ -110,7 +110,7 @@
                 <!-- Organisation (cliquable pour modal) -->
                 @if(Auth::user()->currentOrganisation)
                 <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
-                    <span><strong>({{ Auth::user()->currentOrganisation->code }})  {{ Str::limit(Auth::user()->currentOrganisation->name, 20, '...') }}</strong></span>
+                    <span><strong>({{ Auth::user()->currentOrganisation->code }})  {{ Str::limit(Auth::user()->currentOrganisation->name, 5, '...') }}</strong></span>
                 </a>
                 @else
                 <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
@@ -182,7 +182,7 @@
                     @endcan
                     @can('module_workflow_access')
                     <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'workflow') active @endif" href="{{ route('workflow.dashboard') }}">
+                        <a class="header-nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.dashboard') }}">
                             <i class="bi bi-diagram-3" style="font-size: 1.5rem;"></i>
                         </a>
                     </div>
