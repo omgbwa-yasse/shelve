@@ -154,7 +154,7 @@
                                     <label for="status" class="form-label"><i class="bi bi-exclamation-triangle me-2"></i>Status</label>
                                     <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                                         @foreach($taskStatuses as $status)
-                                            <option value="{{ $status->value }}">{{ $status->name }}</option>
+                                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
                                         @endforeach
                                     </select>
                                     @error('status')

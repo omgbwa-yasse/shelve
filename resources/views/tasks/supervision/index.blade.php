@@ -9,8 +9,8 @@
                 <select name="status" class="form-control mr-2">
                     <option value="">All Statuses</option>
                     @foreach($statuses as $status)
-                        <option value="{{ $status->id }}" {{ request('status') == $status->id ? 'selected' : '' }}>
-                            {{ $status->name }}
+                        <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
+                            {{ $status->label() }}
                         </option>
                     @endforeach
                 </select>
@@ -40,7 +40,7 @@
                 <tr>
                     <td>{{ $task->name }}</td>
                     <td>{{ $task->taskType->name }}</td>
-                    <td>{{ $task->taskStatus->name }}</td>
+                    <td>{{ $task->status ? $task->status->label() : 'N/A' }}</td>
                     <td>{{ $task->duration }} hours</td>
                     <td>
                         <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info">View</a>

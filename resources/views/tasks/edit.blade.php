@@ -23,7 +23,7 @@
                 <select class="form-control" id="status" name="status" required>
                     @foreach($taskStatuses as $status)
                         <option value="{{ $status->value }}" {{ $task->status && $task->status->value == $status->value ? 'selected' : '' }}>
-                            {{ $status->name }}
+                            {{ $status->label() }}
                         </option>
                     @endforeach
                 </select>
