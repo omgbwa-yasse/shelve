@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Enregistrer les observers
         \App\Models\TaskAssignment::observe(\App\Observers\TaskAssignmentObserver::class);
+        \App\Models\TaskUser::observe(\App\Observers\TaskUserObserver::class);
 
         $this->handleLocale();
 
