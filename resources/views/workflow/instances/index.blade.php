@@ -42,7 +42,7 @@
                     <div class="col-md-2">
                         <select name="status" class="form-control">
                             <option value="">{{ __('Tous les statuts') }}</option>
-                            @foreach(\App\Enums\WorkflowStatus::cases() as $status)
+                            @foreach(\App\Enums\WorkflowInstanceStatus::cases() as $status)
                                 <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
                                     {{ $status->label() }}
                                 </option>
@@ -111,7 +111,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge {{ $instance->status->badgeClass() }}">
+                                        <span class="badge {{ $instance->status->color() }}">
                                             {{ $instance->status->label() }}
                                         </span>
                                     </td>
