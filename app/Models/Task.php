@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\AssignmentType;
+use App\Enums\TaskPriority;
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Task extends Model
 {
@@ -11,7 +15,46 @@ class Task extends Model
 
     protected $table = 'tasks';
 
-    protected $fillable = ['name', 'description', 'duration', 'task_status_id', 'task_type_id', 'start_date', 'parent_task_id'];
+    protected $fillable = [
+        'title',
+        'description',
+        'status',
+        'priority',
+        'due_date',
+        'start_date',
+        'completed_at',
+        'estimated_hours',
+        'actual_hours',
+        'progress_percentage',
+        'category_id',
+        'assigned_to_organisation_id',
+        'assigned_to_user_id',
+        'assignment_type',
+        'created_by',
+        'mail_id',
+        'workflow_step_instance_id',
+        'parent_task_id',
+        'tags',
+        'custom_fields',
+        'completion_notes',
+        'assignment_notes',
+        // Champs existants
+        'name',
+        'duration',
+        'task_status_id',
+        'task_type_id'
+    ];
+
+    protected $casts = [
+        'status' => TaskStatus::class,
+        'priority' => TaskPriority::class,
+        'assignment_type' => AssignmentType::class,
+        'due_date' => 'datetime',
+        'start_date' => 'datetime',
+        'completed_at' => 'datetime',
+        'tags' => 'array',
+        'custom_fields' => 'array',
+    ];
 
     public function taskType()
     {
@@ -21,6 +64,14 @@ class Task extends Model
     public function taskStatus()
     {
         return $this->belongsTo(TaskStatus::class, 'task_status_id');
+    }
+
+    /**
+     * La catégorie de cette tâche
+     */
+    public function category()
+    {
+        return $this->belongsTo(TaskCategory::class, 'category_id');
     }
 
     public function organisations()
@@ -63,14 +114,96 @@ class Task extends Model
         return $this->hasMany(TaskSupervision::class);
     }
 
+    /**
+     * L'utilisateur assigné à cette tâche (si assignment_type inclut 'user')
+     */
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    /**
+     * L'organisation assignée à cette tâche (si assignment_type inclut 'organisation')
+     */
+    public function assignedOrganisation()
+    {
+        return $this->belongsTo(Organisation::class, 'assigned_to_organisation_id');
+    }
+
+    /**
+     * L'utilisateur qui a créé cette tâche
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * L'étape de workflow associée à cette tâche (si elle existe)
+     */
+    public function workflowStepInstance()
+    {
+        return $this->belongsTo(WorkflowStepInstance::class, 'workflow_step_instance_id');
+    }
+
+    /**
+     * La tâche parente (si c'est une sous-tâche)
+     */
     public function parentTask()
     {
         return $this->belongsTo(Task::class, 'parent_task_id');
     }
 
+    /**
+     * Les sous-tâches
+     */
     public function childTasks()
     {
         return $this->hasMany(Task::class, 'parent_task_id');
+    }
+
+    /**
+     * Les assignations multiples pour cette tâche
+     */
+    public function assignments()
+    {
+        return $this->hasMany(TaskAssignment::class);
+    }
+
+    /**
+     * L'historique d'assignation de cette tâche
+     */
+    public function assignmentHistory()
+    {
+        return $this->hasMany(TaskAssignmentHistory::class);
+    }
+
+    /**
+     * Les commentaires sur cette tâche
+     */
+    public function comments()
+    {
+        return $this->hasMany(TaskComment::class);
+    }
+
+    /**
+     * Les tâches dont dépend cette tâche
+     */
+    public function dependencies()
+    {
+        return $this->belongsToMany(Task::class, 'task_dependencies', 'task_id', 'depends_on_task_id')
+            ->withPivot('dependency_type', 'lag_days')
+            ->withTimestamps();
+    }
+
+    /**
+     * Les tâches qui dépendent de cette tâche
+     */
+    public function dependents()
+    {
+        return $this->belongsToMany(Task::class, 'task_dependencies', 'depends_on_task_id', 'task_id')
+            ->withPivot('dependency_type', 'lag_days')
+            ->withTimestamps();
     }
 }
 
