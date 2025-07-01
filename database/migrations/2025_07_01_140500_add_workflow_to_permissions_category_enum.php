@@ -12,13 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Si vous avez besoin d'ajouter une valeur à un enum de catégorie de permission
-        // cette migration peut être utilisée
-
-        // Exemple:
-        // if (Schema::hasTable('permission_categories')) {
-        //     DB::statement("ALTER TABLE permission_categories MODIFY COLUMN category ENUM('admin', 'records', 'mails', 'users', 'workflow') NOT NULL");
-        // }
+        // Ajouter la valeur 'workflow' à l'enum de la colonne 'category' de la table 'permissions'
+        if (Schema::hasTable('permissions')) {
+            DB::statement("ALTER TABLE permissions MODIFY COLUMN category ENUM('dashboard','mail','records','communications','reservations','transfers','deposits','users','settings','system','reports','tools','ai','backups','search','thesaurus','organizations','workflow') NULL");
+        }
     }
 
     /**
@@ -26,11 +23,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Si nécessaire, revert les modifications
-
-        // Exemple:
-        // if (Schema::hasTable('permission_categories')) {
-        //     DB::statement("ALTER TABLE permission_categories MODIFY COLUMN category ENUM('admin', 'records', 'mails', 'users') NOT NULL");
-        // }
+        // Retirer la valeur 'workflow' de l'enum de la colonne 'category' de la table 'permissions'
+        if (Schema::hasTable('permissions')) {
+            DB::statement("ALTER TABLE permissions MODIFY COLUMN category ENUM('dashboard','mail','records','communications','reservations','transfers','deposits','users','settings','system','reports','tools','ai','backups','search','thesaurus','organizations') NULL");
+        }
     }
 };
