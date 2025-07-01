@@ -48,20 +48,25 @@ Route::middleware(['auth'])->prefix('workflow')->name('workflow.')->group(functi
 Route::middleware(['auth'])->prefix('tasks')->name('tasks.')->group(function () {
     Route::get('/', [TaskController::class, 'index'])->name('index');
     Route::get('/my', [TaskController::class, 'myTasks'])->name('my');
-    Route::resource('tasks', TaskController::class)->except(['index']);
+    Route::get('/create', [TaskController::class, 'create'])->name('create');
+    Route::post('/', [TaskController::class, 'store'])->name('store');
+    Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+    Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
+    Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+    Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
 
     // Commentaires sur les tâches
-    Route::post('tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('comments.store');
-    Route::delete('tasks/{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('{task}/comments', [TaskCommentController::class, 'store'])->name('comments.store');
+    Route::delete('{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('comments.destroy');
 
     // Assignation de tâches
-    Route::post('tasks/{task}/assignments', [TaskAssignmentController::class, 'store'])->name('assignments.store');
-    Route::delete('tasks/{task}/assignments/{assignment}', [TaskAssignmentController::class, 'destroy'])->name('assignments.destroy');
+    Route::post('{task}/assignments', [TaskAssignmentController::class, 'store'])->name('assignments.store');
+    Route::delete('{task}/assignments/{assignment}', [TaskAssignmentController::class, 'destroy'])->name('assignments.destroy');
 
     // Actions spéciales sur les tâches
-    Route::post('tasks/{task}/complete', [TaskController::class, 'complete'])->name('complete');
-    Route::post('tasks/{task}/start', [TaskController::class, 'start'])->name('start');
-    Route::post('tasks/{task}/pause', [TaskController::class, 'pause'])->name('pause');
+    Route::post('{task}/complete', [TaskController::class, 'complete'])->name('complete');
+    Route::post('{task}/start', [TaskController::class, 'start'])->name('start');
+    Route::post('{task}/pause', [TaskController::class, 'pause'])->name('pause');
 });
 
 // Routes pour les notifications du système
