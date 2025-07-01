@@ -67,6 +67,13 @@ Route::middleware(['auth'])->prefix('tasks')->name('tasks.')->group(function () 
     Route::post('{task}/complete', [TaskController::class, 'complete'])->name('complete');
     Route::post('{task}/start', [TaskController::class, 'start'])->name('start');
     Route::post('{task}/pause', [TaskController::class, 'pause'])->name('pause');
+    
+    // Gestion des pièces jointes
+    Route::post('{task}/attachment/{attachmentId}/remove', [TaskController::class, 'removeAttachment'])->name('removeAttachment');
+    Route::get('{task}/attachment/{attachmentId}/download', [TaskController::class, 'downloadAttachment'])->name('download');
+    
+    // Supervision
+    Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
 });
 
 // Routes pour les notifications du système
