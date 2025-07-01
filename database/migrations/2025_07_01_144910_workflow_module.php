@@ -43,8 +43,8 @@ return new class extends Migration
             $table->json('conditions')->nullable()->comment('Conditions pour cette étape');
             $table->timestamps();
 
-            $table->unique(['workflow_template_id', 'order_index']);
-            $table->index(['workflow_template_id', 'step_type']);
+            $table->unique(['workflow_template_id', 'order_index'], 'idx_workflow_step_unique');
+            $table->index(['workflow_template_id', 'step_type'], 'idx_workflow_step_type');
         });
 
         // Assignations d'étapes (qui peut faire quoi)
@@ -59,9 +59,9 @@ return new class extends Migration
             $table->boolean('allow_reassignment')->default(true)->comment('Permet la réassignation');
             $table->timestamps();
 
-            $table->index(['workflow_step_id', 'assignee_type']);
-            // Utilisation d'un nom personnalisé pour l'index pour éviter qu'il ne soit trop long
-            $table->index(['assignee_user_id', 'assignee_organisation_id'], 'workflow_step_assign_user_org_idx');
+            $table->index(['workflow_step_id', 'assignee_type'], 'idx_wf_step_assignee_type');
+            // Utilisation d'un nom d'index personnalisé plus court
+            $table->index(['assignee_user_id', 'assignee_organisation_id'], 'idx_workflow_assignees');
         });
 
         // Instances de workflows (workflows en cours)
@@ -79,9 +79,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['status', 'due_date']);
-            $table->index(['mail_id', 'status']);
-            $table->index(['current_step_id', 'status']); // Index ajouté
+            $table->index(['status', 'due_date'], 'idx_wf_instance_status_due');
+            $table->index(['mail_id', 'status'], 'idx_wf_instance_mail_status');
+            $table->index(['current_step_id', 'status'], 'idx_wf_instance_step_status');
         });
 
         // Historique des étapes de workflow
@@ -106,10 +106,10 @@ return new class extends Migration
             $table->text('assignment_notes')->nullable()->comment('Notes sur l\'assignation de l\'étape');
             $table->timestamps();
 
-            $table->index(['workflow_instance_id', 'status']);
-            $table->index(['assigned_to_user_id', 'status']);
-            $table->index(['assigned_to_organisation_id', 'status']);
-            $table->index(['assignment_type', 'status']);
+            $table->index(['workflow_instance_id', 'status'], 'idx_wf_step_instance_status');
+            $table->index(['assigned_to_user_id', 'status'], 'idx_wf_step_user_status');
+            $table->index(['assigned_to_organisation_id', 'status'], 'idx_wf_step_org_status');
+            $table->index(['assignment_type', 'status'], 'idx_wf_step_assign_status');
         });
 
         // ============ SYSTÈME DE TÂCHES ============
@@ -160,13 +160,13 @@ return new class extends Migration
             $table->timestamps();
 
             // Index améliorés
-            $table->index(['status', 'assigned_to_user_id']);
-            $table->index(['status', 'assigned_to_organisation_id']);
-            $table->index(['assignment_type', 'status']);
-            $table->index(['due_date', 'status', 'priority']); // Index composé amélioré
-            $table->index(['mail_id', 'status']);
-            $table->index(['created_by', 'status']);
-            $table->index(['parent_task_id', 'status']);
+            $table->index(['status', 'assigned_to_user_id'], 'idx_task_status_user');
+            $table->index(['status', 'assigned_to_organisation_id'], 'idx_task_status_org');
+            $table->index(['assignment_type', 'status'], 'idx_task_assign_status');
+            $table->index(['due_date', 'status', 'priority'], 'idx_task_due_status_priority');
+            $table->index(['mail_id', 'status'], 'idx_task_mail_status');
+            $table->index(['created_by', 'status'], 'idx_task_creator_status');
+            $table->index(['parent_task_id', 'status'], 'idx_task_parent_status');
         });
 
         // Dépendances entre tâches
@@ -178,8 +178,8 @@ return new class extends Migration
             $table->integer('lag_days')->default(0)->comment('Délai en jours');
             $table->timestamps();
 
-            $table->unique(['task_id', 'depends_on_task_id']);
-            $table->index(['depends_on_task_id', 'dependency_type']);
+            $table->unique(['task_id', 'depends_on_task_id'], 'idx_task_dependency_unique');
+            $table->index(['depends_on_task_id', 'dependency_type'], 'idx_task_dependency_type');
         });
 
         // Assignations multiples de tâches - CORRIGÉE
@@ -199,9 +199,9 @@ return new class extends Migration
             $table->text('assignment_reason')->nullable()->comment('Raison de l\'assignation');
             $table->timestamps();
 
-            $table->index(['task_id', 'assignee_type']);
-            $table->index(['assignee_user_id', 'role']);
-            $table->index(['assignee_organisation_id', 'role']);
+            $table->index(['task_id', 'assignee_type'], 'idx_task_assign_type');
+            $table->index(['assignee_user_id', 'role'], 'idx_task_user_role');
+            $table->index(['assignee_organisation_id', 'role'], 'idx_task_org_role');
 
             // Contrainte d'unicité corrigée - séparée par type
             $table->unique(['task_id', 'assignee_user_id', 'role'], 'task_user_role_unique');
@@ -230,9 +230,9 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index(['task_id', 'action_type']);
-            $table->index(['performed_by', 'created_at']);
-            $table->index(['effective_date', 'expiry_date']);
+            $table->index(['task_id', 'action_type'], 'idx_task_history_action');
+            $table->index(['performed_by', 'created_at'], 'idx_task_history_performer');
+            $table->index(['effective_date', 'expiry_date'], 'idx_task_history_dates');
         });
 
         // Délégations d'organisations (pour gérer les hiérarchies)
@@ -251,9 +251,9 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index(['delegating_organisation_id', 'is_active']);
-            $table->index(['delegate_organisation_id', 'is_active']);
-            $table->index(['start_date', 'end_date']);
+            $table->index(['delegating_organisation_id', 'is_active'], 'idx_org_delegator');
+            $table->index(['delegate_organisation_id', 'is_active'], 'idx_org_delegate');
+            $table->index(['start_date', 'end_date'], 'idx_org_delegation_dates');
 
             // Empêcher la délégation circulaire
             $table->unique(['delegating_organisation_id', 'delegate_organisation_id', 'start_date'], 'org_delegation_unique');
@@ -269,8 +269,8 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->index(['task_id', 'created_at']);
-            $table->index(['user_id', 'type']);
+            $table->index(['task_id', 'created_at'], 'idx_task_comment_date');
+            $table->index(['user_id', 'type'], 'idx_task_comment_user_type');
         });
 
         // ============ SYSTÈME DE SUIVI ET NOTIFICATIONS ============
@@ -288,9 +288,9 @@ return new class extends Migration
             $table->text('user_agent')->nullable();
             $table->timestamps();
 
-            $table->index(['mail_id', 'event_type']);
-            $table->index(['user_id', 'created_at']);
-            $table->index(['event_type', 'created_at']);
+            $table->index(['mail_id', 'event_type'], 'idx_mail_event_type');
+            $table->index(['user_id', 'created_at'], 'idx_mail_event_user_date');
+            $table->index(['event_type', 'created_at'], 'idx_mail_event_type_date');
         });
 
         // Notifications
@@ -306,9 +306,9 @@ return new class extends Migration
             $table->string('action_url')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'read_at']);
-            $table->index(['type', 'created_at']);
-            $table->index(['priority', 'read_at']);
+            $table->index(['user_id', 'read_at'], 'idx_notification_user_read');
+            $table->index(['type', 'created_at'], 'idx_notification_type_date');
+            $table->index(['priority', 'read_at'], 'idx_notification_priority');
         });
 
         // Abonnements aux notifications
@@ -321,8 +321,8 @@ return new class extends Migration
             $table->json('conditions')->nullable()->comment('Conditions pour déclencher la notification');
             $table->timestamps();
 
-            $table->unique(['user_id', 'event_type', 'channel']);
-            $table->index(['event_type', 'is_active']);
+            $table->unique(['user_id', 'event_type', 'channel'], 'idx_notif_sub_unique');
+            $table->index(['event_type', 'is_active'], 'idx_notif_sub_event_active');
         });
 
         // ============ RAPPORTS ET STATISTIQUES ============
@@ -338,9 +338,9 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->unique(['mail_id', 'metric_date', 'metric_type']);
-            $table->index(['metric_type', 'metric_date']);
-            $table->index(['metric_date', 'value']);
+            $table->unique(['mail_id', 'metric_date', 'metric_type'], 'idx_mail_metric_unique');
+            $table->index(['metric_type', 'metric_date'], 'idx_mail_metric_type_date');
+            $table->index(['metric_date', 'value'], 'idx_mail_metric_date_value');
         });
 
         // Templates d'emails
@@ -356,8 +356,8 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->index(['category', 'is_active']);
-            $table->unique(['name', 'category']);
+            $table->index(['category', 'is_active'], 'idx_email_tpl_category');
+            $table->unique(['name', 'category'], 'idx_email_tpl_unique');
         });
 
         // ============ AMÉLIORATION DE LA TABLE MAILS ============
@@ -376,8 +376,8 @@ return new class extends Migration
 
             // Index composés pour les requêtes courantes
             $table->index(['status', 'priority_id', 'expected_response_date'], 'mails_dashboard_index');
-            $table->index(['current_assignee_user_id', 'status']);
-            $table->index(['current_assignee_organisation_id', 'status']);
+            $table->index(['current_assignee_user_id', 'status'], 'idx_mail_user_status');
+            $table->index(['current_assignee_organisation_id', 'status'], 'idx_mail_org_status');
         });
 
         // ============ CONTRAINTES CHECK (PostgreSQL/MySQL 8.0+) ============
