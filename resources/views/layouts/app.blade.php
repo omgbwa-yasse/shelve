@@ -180,7 +180,7 @@
                         </a>
                     </div>
                     @endcan
-                    @can('workflow_dashboard')
+                    @can('module_workflow_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'workflow') active @endif" href="{{ route('workflow.dashboard') }}">
                             <i class="bi bi-diagram-3" style="font-size: 1.5rem;"></i>

@@ -359,4 +359,68 @@ class WorkflowInstanceController extends Controller
             ->route('workflow.instances.show', $instance)
             ->with('success', 'Le workflow a été repris avec succès.');
     }
+
+    /**
+     * Affiche le tableau de bord du module workflow
+     * 
+     * @return \Illuminate\View\View
+     */
+    public function dashboard()
+    {
+        $this->authorize('workflow_dashboard');
+
+        // Statistiques globales
+        $stats = [
+            'active_workflows' => WorkflowInstance::whereNotIn('status', [WorkflowInstanceStatus::COMPLETED, WorkflowInstanceStatus::CANCELLED])->count(),
+            'completed_workflows' => WorkflowInstance::where('status', WorkflowInstanceStatus::COMPLETED)->count(),
+            'active_tasks' => \App\Models\Task::whereNull('completed_at')->count(),
+            'overdue_items' => WorkflowInstance::where('due_date', '<', now())
+                ->whereNull('completed_at')
+                ->whereNotIn('status', [WorkflowInstanceStatus::COMPLETED, WorkflowInstanceStatus::CANCELLED])
+                ->count()
+        ];
+
+        // Workflows assignés à l'utilisateur actuel
+        $myWorkflows = WorkflowInstance::whereHas('steps', function ($query) {
+            $query->whereHas('assignments', function ($q) {
+                $q->where('assignee_type', AssignmentType::USER)
+                  ->where('assignee_id', Auth::id());
+            });
+        })
+        ->whereNotIn('status', [WorkflowInstanceStatus::COMPLETED, WorkflowInstanceStatus::CANCELLED])
+        ->with(['template', 'currentStep', 'currentStep.step'])
+        ->orderBy('due_date', 'asc')
+        ->limit(5)
+        ->get();
+
+        // Tâches assignées à l'utilisateur actuel
+        $myTasks = \App\Models\Task::whereHas('assignments', function ($query) {
+            $query->where('assignee_type', AssignmentType::USER)
+                  ->where('assignee_id', Auth::id());
+        })
+        ->whereNull('completed_at')
+        ->with(['category'])
+        ->orderBy('due_date', 'asc')
+        ->limit(5)
+        ->get();
+
+        // Activités récentes (peuvent être des changements d'état de workflow, des commentaires, etc.)
+        $recentActivities = \App\Models\SystemNotification::orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        // Workflows par modèle (pour le graphique)
+        $workflowsByTemplate = DB::table('workflow_templates')
+            ->select([
+                'workflow_templates.name', 
+                DB::raw('COUNT(CASE WHEN workflow_instances.status NOT IN ("' . WorkflowInstanceStatus::COMPLETED->value . '", "' . WorkflowInstanceStatus::CANCELLED->value . '") THEN 1 ELSE NULL END) as active_count'),
+                DB::raw('COUNT(CASE WHEN workflow_instances.status = "' . WorkflowInstanceStatus::COMPLETED->value . '" THEN 1 ELSE NULL END) as completed_count')
+            ])
+            ->leftJoin('workflow_instances', 'workflow_templates.id', '=', 'workflow_instances.workflow_template_id')
+            ->groupBy('workflow_templates.id', 'workflow_templates.name')
+            ->orderBy('active_count', 'desc')
+            ->get();
+
+        return view('workflow.dashboard', compact('stats', 'myWorkflows', 'myTasks', 'recentActivities', 'workflowsByTemplate'));
+    }
 }

@@ -23,6 +23,7 @@ class PermissionCategorySeeder extends Seeder
         $this->createSettingsPermissions();
         $this->createSystemPermissions();
         $this->createBackupsPermissions();
+        $this->createWorkflowPermissions();
         $this->createAdditionalPermissions();
 
         $this->command->info('Permissions avec catégories créées avec succès!');
@@ -85,6 +86,11 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'module_settings_access',
                 'category' => 'system',
                 'description' => 'Accès au module Paramètres'
+            ],
+            [
+                'name' => 'module_workflow_access',
+                'category' => 'system',
+                'description' => 'Accès au module Workflow'
             ],
         ];
 
@@ -456,6 +462,293 @@ class PermissionCategorySeeder extends Seeder
     }
 
 
+
+    private function createWorkflowPermissions()
+    {
+        $permissions = [
+            // Accès au tableau de bord workflow
+            [
+                'name' => 'workflow_dashboard',
+                'category' => 'workflow',
+                'description' => 'Accès au tableau de bord des workflows'
+            ],
+            
+            // Permissions pour les modèles de workflow
+            [
+                'name' => 'workflow_template_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir tous les modèles de workflow'
+            ],
+            [
+                'name' => 'workflow_template_view',
+                'category' => 'workflow',
+                'description' => 'Voir un modèle de workflow'
+            ],
+            [
+                'name' => 'workflow_template_create',
+                'category' => 'workflow',
+                'description' => 'Créer des modèles de workflow'
+            ],
+            [
+                'name' => 'workflow_template_update',
+                'category' => 'workflow',
+                'description' => 'Modifier des modèles de workflow'
+            ],
+            [
+                'name' => 'workflow_template_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer des modèles de workflow'
+            ],
+            [
+                'name' => 'workflow_template_duplicate',
+                'category' => 'workflow',
+                'description' => 'Dupliquer des modèles de workflow'
+            ],
+            
+            // Permissions pour les étapes de workflow
+            [
+                'name' => 'workflow_step_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les étapes de workflow'
+            ],
+            [
+                'name' => 'workflow_step_view',
+                'category' => 'workflow',
+                'description' => 'Voir une étape de workflow'
+            ],
+            [
+                'name' => 'workflow_step_create',
+                'category' => 'workflow',
+                'description' => 'Créer des étapes de workflow'
+            ],
+            [
+                'name' => 'workflow_step_update',
+                'category' => 'workflow',
+                'description' => 'Modifier des étapes de workflow'
+            ],
+            [
+                'name' => 'workflow_step_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer des étapes de workflow'
+            ],
+            [
+                'name' => 'workflow_step_reorder',
+                'category' => 'workflow',
+                'description' => 'Réorganiser les étapes de workflow'
+            ],
+            
+            // Permissions pour les instances de workflow
+            [
+                'name' => 'workflow_instance_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les instances de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_view',
+                'category' => 'workflow',
+                'description' => 'Voir une instance de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_create',
+                'category' => 'workflow',
+                'description' => 'Créer des instances de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_update',
+                'category' => 'workflow',
+                'description' => 'Modifier des instances de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer des instances de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_start',
+                'category' => 'workflow',
+                'description' => 'Démarrer une instance de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_cancel',
+                'category' => 'workflow',
+                'description' => 'Annuler une instance de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_pause',
+                'category' => 'workflow',
+                'description' => 'Mettre en pause une instance de workflow'
+            ],
+            [
+                'name' => 'workflow_instance_resume',
+                'category' => 'workflow',
+                'description' => 'Reprendre une instance de workflow en pause'
+            ],
+            
+            // Permissions pour les instances d'étapes de workflow
+            [
+                'name' => 'workflow_step_instance_view',
+                'category' => 'workflow',
+                'description' => 'Voir une instance d\'étape de workflow'
+            ],
+            [
+                'name' => 'workflow_step_instance_update',
+                'category' => 'workflow',
+                'description' => 'Mettre à jour une instance d\'étape de workflow'
+            ],
+            [
+                'name' => 'workflow_step_instance_complete',
+                'category' => 'workflow',
+                'description' => 'Marquer une étape comme complétée'
+            ],
+            [
+                'name' => 'workflow_step_instance_reject',
+                'category' => 'workflow',
+                'description' => 'Rejeter une étape de workflow'
+            ],
+            [
+                'name' => 'workflow_step_instance_reassign',
+                'category' => 'workflow',
+                'description' => 'Réassigner une étape de workflow'
+            ],
+            
+            // Permissions pour les tâches
+            [
+                'name' => 'task_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les tâches'
+            ],
+            [
+                'name' => 'task_view',
+                'category' => 'workflow',
+                'description' => 'Voir une tâche'
+            ],
+            [
+                'name' => 'task_viewOwn',
+                'category' => 'workflow',
+                'description' => 'Voir ses propres tâches'
+            ],
+            [
+                'name' => 'task_create',
+                'category' => 'workflow',
+                'description' => 'Créer des tâches'
+            ],
+            [
+                'name' => 'task_update',
+                'category' => 'workflow',
+                'description' => 'Modifier des tâches'
+            ],
+            [
+                'name' => 'task_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer des tâches'
+            ],
+            [
+                'name' => 'task_complete',
+                'category' => 'workflow',
+                'description' => 'Marquer une tâche comme terminée'
+            ],
+            
+            // Permissions pour les commentaires de tâches
+            [
+                'name' => 'task_comment_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir tous les commentaires de tâches'
+            ],
+            [
+                'name' => 'task_comment_create',
+                'category' => 'workflow',
+                'description' => 'Ajouter un commentaire à une tâche'
+            ],
+            [
+                'name' => 'task_comment_update',
+                'category' => 'workflow',
+                'description' => 'Modifier un commentaire de tâche'
+            ],
+            [
+                'name' => 'task_comment_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer un commentaire de tâche'
+            ],
+            
+            // Permissions pour les assignations de tâches
+            [
+                'name' => 'task_assignment_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les assignations de tâches'
+            ],
+            [
+                'name' => 'task_assignment_create',
+                'category' => 'workflow',
+                'description' => 'Assigner une tâche'
+            ],
+            [
+                'name' => 'task_assignment_update',
+                'category' => 'workflow',
+                'description' => 'Modifier une assignation de tâche'
+            ],
+            [
+                'name' => 'task_assignment_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer une assignation de tâche'
+            ],
+            
+            // Permissions pour les notifications
+            [
+                'name' => 'notification_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les notifications'
+            ],
+            [
+                'name' => 'notification_view',
+                'category' => 'workflow',
+                'description' => 'Voir une notification'
+            ],
+            [
+                'name' => 'notification_mark_read',
+                'category' => 'workflow',
+                'description' => 'Marquer une notification comme lue'
+            ],
+            [
+                'name' => 'notification_mark_unread',
+                'category' => 'workflow',
+                'description' => 'Marquer une notification comme non lue'
+            ],
+            [
+                'name' => 'notification_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer une notification'
+            ],
+            
+            // Permissions pour les notifications système
+            [
+                'name' => 'systemNotification_viewAny',
+                'category' => 'workflow',
+                'description' => 'Voir toutes les notifications système'
+            ],
+            [
+                'name' => 'systemNotification_view',
+                'category' => 'workflow',
+                'description' => 'Voir une notification système'
+            ],
+            [
+                'name' => 'systemNotification_create',
+                'category' => 'workflow',
+                'description' => 'Créer une notification système'
+            ],
+            [
+                'name' => 'systemNotification_update',
+                'category' => 'workflow',
+                'description' => 'Modifier une notification système'
+            ],
+            [
+                'name' => 'systemNotification_delete',
+                'category' => 'workflow',
+                'description' => 'Supprimer une notification système'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
 
     private function insertPermissions(array $permissions)
     {
