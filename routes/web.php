@@ -627,21 +627,24 @@ Route::group(['middleware' => 'auth'], function () {
 
     // User accessible routes
     Route::prefix('ai')->middleware(['auth'])->group(function () {
+        // Routes générales AI accessibles à tous les utilisateurs avec module_ai_access
         Route::resource('chats', AiChatController::class)->names('ai.chats');
         Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
         Route::resource('actions', AiActionController::class)->names('ai.actions');
         Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
         Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
-        Route::resource('resources', AiResourceController::class)->names('ai.resources')   ;
-
-        Route::resource('models', AiModelController::class)->names('ai.models');
-        Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
-        Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
-        Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
         Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
-        Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
+        Route::resource('resources', AiResourceController::class)->names('ai.resources');
 
+        // Routes de configuration AI protégées par la permission ai_configure
+        Route::middleware(['can:ai_configure'])->group(function () {
+            Route::resource('models', AiModelController::class)->names('ai.models');
+            Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
+            Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
+            Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
+            Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
+        });
     });
 
 
@@ -698,12 +701,16 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
 
 
-    // routes/web.php - Ajouter ces routes
-    Route::prefix('ai/ollama')->name('ai.ollama.')->group(function () {
-        Route::get('/', [OllamaController::class, 'index'])->name('index');
-        Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
-        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
-        Route::get('chat', [OllamaController::class, 'chat'])->name('chat');
+    // routes/web.php - Routes Ollama
+    Route::prefix('ai/ollama')->name('ai.ollama.')->middleware(['auth'])->group(function () {
+        Route::get('chat', [OllamaController::class, 'chat'])->name('chat'); // Chat accessible à tous
+
+        // Fonctionnalités de configuration nécessitant la permission ai_configure
+        Route::middleware(['can:ai_configure'])->group(function () {
+            Route::get('/', [OllamaController::class, 'index'])->name('index');
+            Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
+            Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
+        });
     });
 
 

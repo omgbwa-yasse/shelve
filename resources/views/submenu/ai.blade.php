@@ -159,7 +159,7 @@
     </div>
 
     <!-- Configuration IA Section -->
-    @can('manage', App\Models\User::class)
+    @can('ai_configure')
     <div class="submenu-section ai.config-section">
         <div class="submenu-heading">
             <i class="bi bi-sliders"></i> {{ __('ai_configuration') }}
