@@ -60,7 +60,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['workflow_step_id', 'assignee_type']);
-            $table->index(['assignee_user_id', 'assignee_organisation_id']);
+            // Utilisation d'un nom personnalisé pour l'index pour éviter qu'il ne soit trop long
+            $table->index(['assignee_user_id', 'assignee_organisation_id'], 'workflow_step_assign_user_org_idx');
         });
 
         // Instances de workflows (workflows en cours)

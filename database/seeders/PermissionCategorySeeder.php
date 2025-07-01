@@ -472,7 +472,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Accès au tableau de bord des workflows'
             ],
-            
+
             // Permissions pour les modèles de workflow
             [
                 'name' => 'workflow_template_viewAny',
@@ -504,7 +504,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Dupliquer des modèles de workflow'
             ],
-            
+
             // Permissions pour les étapes de workflow
             [
                 'name' => 'workflow_step_viewAny',
@@ -536,7 +536,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Réorganiser les étapes de workflow'
             ],
-            
+
             // Permissions pour les instances de workflow
             [
                 'name' => 'workflow_instance_viewAny',
@@ -583,7 +583,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Reprendre une instance de workflow en pause'
             ],
-            
+
             // Permissions pour les instances d'étapes de workflow
             [
                 'name' => 'workflow_step_instance_view',
@@ -610,7 +610,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Réassigner une étape de workflow'
             ],
-            
+
             // Permissions pour les tâches
             [
                 'name' => 'task_viewAny',
@@ -647,7 +647,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Marquer une tâche comme terminée'
             ],
-            
+
             // Permissions pour les commentaires de tâches
             [
                 'name' => 'task_comment_viewAny',
@@ -669,7 +669,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Supprimer un commentaire de tâche'
             ],
-            
+
             // Permissions pour les assignations de tâches
             [
                 'name' => 'task_assignment_viewAny',
@@ -691,7 +691,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Supprimer une assignation de tâche'
             ],
-            
+
             // Permissions pour les notifications
             [
                 'name' => 'notification_viewAny',
@@ -718,7 +718,7 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'workflow',
                 'description' => 'Supprimer une notification'
             ],
-            
+
             // Permissions pour les notifications système
             [
                 'name' => 'systemNotification_viewAny',

@@ -362,7 +362,7 @@ class WorkflowInstanceController extends Controller
 
     /**
      * Affiche le tableau de bord du module workflow
-     * 
+     *
      * @return \Illuminate\View\View
      */
     public function dashboard()
@@ -412,7 +412,7 @@ class WorkflowInstanceController extends Controller
         // Workflows par modèle (pour le graphique)
         $workflowsByTemplate = DB::table('workflow_templates')
             ->select([
-                'workflow_templates.name', 
+                'workflow_templates.name',
                 DB::raw('COUNT(CASE WHEN workflow_instances.status NOT IN ("' . WorkflowInstanceStatus::COMPLETED->value . '", "' . WorkflowInstanceStatus::CANCELLED->value . '") THEN 1 ELSE NULL END) as active_count'),
                 DB::raw('COUNT(CASE WHEN workflow_instances.status = "' . WorkflowInstanceStatus::COMPLETED->value . '" THEN 1 ELSE NULL END) as completed_count')
             ])
