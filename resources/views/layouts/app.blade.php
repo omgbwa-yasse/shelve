@@ -331,7 +331,7 @@
                                             @include('submenu.dollies')
                                             @break
                                         @case('workflow')
-                                            @include('submenu.workflow')
+                                            @include('submenu.workflows')
                                             @break
                                         @case('public-admin')
                                             @include('submenu.public-admin')

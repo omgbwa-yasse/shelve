@@ -21,10 +21,11 @@ class TaskController extends Controller
 {
     public function myTasks()
     {
-        $tasks = Task::whereHas('users', function ($query) {
-            $query->where('user_id', auth()->id());
+        $userId = \Illuminate\Support\Facades\Auth::user()->id;
+        $tasks = Task::whereHas('users', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
         })->with(['taskType', 'users', 'organisations'])
-            ->select('id', 'name', 'description', 'duration', 'start_date', 'status')
+            ->select('id', 'title', 'description', 'estimated_hours', 'start_date', 'status')
             ->paginate(10);
 
         return view('tasks.my_tasks', compact('tasks'));
@@ -281,8 +282,8 @@ class TaskController extends Controller
     }
     public function supervision(Request $request)
     {
-        $user = auth()->user();
-        $query = Task::with(['taskType', 'taskStatus', 'users', 'organisations'])
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $query = Task::with(['taskType', 'users', 'organisations'])
             ->whereHas('taskSupervisions', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             });
