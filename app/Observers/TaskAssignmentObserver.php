@@ -44,7 +44,7 @@ class TaskAssignmentObserver
                     'updated_at' => now(),
                 ]
             );
-        } 
+        }
         // Si l'assignation n'est plus à un utilisateur, supprimer de task_users
         elseif ($taskAssignment->assignee_type != 'user' || !$taskAssignment->assignee_user_id) {
             // Vérifie si cette entrée existait avant

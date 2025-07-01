@@ -20,14 +20,14 @@ return new class extends Migration
                     $table->id()->first();
                 });
             }
-            
+
             // On vérifie si les timestamps existent déjà
             if (!Schema::hasColumn('task_users', 'created_at')) {
                 Schema::table('task_users', function (Blueprint $table) {
                     $table->timestamps();
                 });
             }
-            
+
             // On ajoute un index unique s'il n'existe pas déjà
             // On doit vérifier si l'index existe déjà, mais cette vérification est plus complexe
             try {
@@ -44,12 +44,12 @@ return new class extends Migration
                 $table->foreignId('task_id')->constrained()->onDelete('cascade');
                 $table->foreignId('user_id')->constrained()->onDelete('cascade');
                 $table->timestamps();
-                
+
                 // Ajouter un index unique pour éviter les doublons
                 $table->unique(['task_id', 'user_id'], 'task_user_unique');
             });
         }
-        
+
         // Réinitialiser la table task_users avec les données de task_assignments
         DB::statement("DELETE FROM task_users");
         DB::statement("

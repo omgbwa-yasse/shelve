@@ -19,7 +19,7 @@ class TaskUserObserver
             ->where('assignee_user_id', $taskUser->user_id)
             ->where('assignee_type', 'user')
             ->exists();
-        
+
         if (!$exists) {
             // Créer une nouvelle assignation
             TaskAssignment::create([

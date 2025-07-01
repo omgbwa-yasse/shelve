@@ -38,28 +38,28 @@ class UpdateTaskUsersTable extends Command
         // Vérifier la structure actuelle
         $columns = Schema::getColumnListing('task_users');
         $this->info('Colonnes actuelles: ' . implode(', ', $columns));
-        
+
         try {
             // On sauvegarde d'abord les données existantes
             $this->info('Sauvegarde des données existantes...');
             $existingData = DB::table('task_users')->get();
             $this->info('Nombre d\'enregistrements sauvegardés: ' . count($existingData));
-            
+
             // Ajouter les colonnes ID et timestamps si elles n'existent pas
             if (!in_array('id', $columns)) {
                 $this->info('Ajout de la colonne ID...');
                 DB::statement('ALTER TABLE task_users ADD COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST');
             }
-            
+
             if (!in_array('created_at', $columns)) {
                 $this->info('Ajout des colonnes timestamps...');
                 DB::statement('ALTER TABLE task_users ADD COLUMN created_at TIMESTAMP NULL');
                 DB::statement('ALTER TABLE task_users ADD COLUMN updated_at TIMESTAMP NULL');
-                
+
                 // Mettre à jour les timestamps pour les enregistrements existants
                 DB::statement('UPDATE task_users SET created_at = NOW(), updated_at = NOW()');
             }
-            
+
             // Ajouter l'index unique s'il n'existe pas déjà
             try {
                 $this->info('Ajout de l\'index unique...');
@@ -67,13 +67,13 @@ class UpdateTaskUsersTable extends Command
             } catch (\Exception $e) {
                 $this->warn('L\'index existe probablement déjà: ' . $e->getMessage());
             }
-            
+
             // Synchroniser avec les données de task_assignments
             $this->info('Synchronisation des données avec task_assignments...');
-            
+
             // Vider la table
             DB::statement('DELETE FROM task_users');
-            
+
             // Réinsérer les données depuis task_assignments
             $inserted = DB::statement("
                 INSERT INTO task_users (task_id, user_id, created_at, updated_at)
@@ -81,10 +81,10 @@ class UpdateTaskUsersTable extends Command
                 FROM task_assignments
                 WHERE assignee_type = 'user'
             ");
-            
+
             $count = DB::table('task_users')->count();
             $this->info('Données réinsérées avec succès. Nombre d\'enregistrements: ' . $count);
-            
+
             $this->info('Mise à jour terminée avec succès.');
             return 0;
         } catch (\Exception $e) {
