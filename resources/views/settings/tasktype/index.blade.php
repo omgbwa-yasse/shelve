@@ -9,6 +9,7 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Color</th>
                 <th>Description</th>
                 <th>Activity</th>
                 <th>Actions</th>
@@ -19,6 +20,13 @@
                 <tr>
                     <td>{{ $taskType->id }}</td>
                     <td>{{ $taskType->name }}</td>
+                    <td>
+                        @if($taskType->color)
+                            <span class="badge" style="background-color: {{ $taskType->color }}">{{ $taskType->color }}</span>
+                        @else
+                            N/A
+                        @endif
+                    </td>
                     <td>{{ $taskType->description }}</td>
                     <td>{{ $taskType->activity->name ?? "N/A" }}</td>
                     <td>

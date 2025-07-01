@@ -27,6 +27,7 @@ class TaskTypeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'color' => 'nullable|string|max:20',
             'activity_id' => 'required|exists:activities,id',
         ]);
 
@@ -46,6 +47,7 @@ class TaskTypeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'color' => 'nullable|string|max:20',
             'activity_id' => 'required|exists:activities,id',
         ]);
 

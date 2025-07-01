@@ -14,6 +14,11 @@
                 <textarea name="description" class="form-control"></textarea>
             </div>
             <div class="form-group">
+                <label for="color">Color</label>
+                <input type="color" name="color" class="form-control">
+                <small class="form-text text-muted">Choose a color for this task type</small>
+            </div>
+            <div class="form-group">
                 <label for="activity_id">Activity</label>
                 <select name="activity_id" class="form-control" required>
                     @foreach($activities as $activity)

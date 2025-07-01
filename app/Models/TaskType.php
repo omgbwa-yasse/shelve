@@ -11,7 +11,7 @@ class TaskType extends Model
 
     protected $table = 'task_types';
 
-    protected $fillable = ['name', 'description', 'activity_id'];
+    protected $fillable = ['name', 'description', 'color', 'activity_id'];
 
     public function activity()
     {
