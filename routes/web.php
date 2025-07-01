@@ -788,6 +788,10 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-as-read');
 
             Route::resource('system', SystemNotificationController::class)->only(['index', 'show', 'update']);
+            Route::post('system/{notification}/mark-read', [SystemNotificationController::class, 'markAsRead'])->name('system.mark-read');
+            Route::post('system/mark-all-read', [SystemNotificationController::class, 'markAllAsRead'])->name('system.mark-all-read');
+            Route::delete('system/{notification}', [SystemNotificationController::class, 'destroy'])->name('system.destroy');
+            
             Route::post('subscribe/{channel}/{entity_type}/{entity_id}', [NotificationController::class, 'subscribe'])->name('subscribe');
             Route::post('unsubscribe/{subscription}', [NotificationController::class, 'unsubscribe'])->name('unsubscribe');
         });
