@@ -99,43 +99,34 @@
             <i class="bi bi-person-circle"></i> {{ __('my_account') }}
         </div>
         <div class="submenu-content" id="accountMenu">
-            @auth
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.show', auth()->user()->id) }}">
                     <i class="bi bi-gear"></i> {{ __('my_account') }}
                 </a>
             </div>
-            @endauth
         </div>
     </div>
 
     <!-- Autorisations et postes Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('settings', 'users'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-people"></i> {{ __('authorizations_and_positions') }}
         </div>
         <div class="submenu-content" id="authorizationsMenu">
-            @can('viewAny', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('users.index') }}">
                     <i class="bi bi-person"></i> {{ __('users') }}
                 </a>
             </div>
-            @endcan
-            @can('manage', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('user-organisation-role.index') }}">
                     <i class="bi bi-diagram-3"></i> {{ __('assigned_positions') }}
                 </a>
             </div>
-            @endcan
         </div>
     </div>
-    @endif
 
     <!-- Droits et permissions Section -->
-    @can('manage', App\Models\User::class)
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-shield-lock"></i> {{ __('rights_and_permissions') }}
@@ -147,32 +138,23 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('roles.create') }}">
+                    <i class="bi bi-person-plus"></i> {{ __('create_role') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('role_permissions.index') }}">
                     <i class="bi bi-key"></i> {{ __('assign_permissions') }}
                 </a>
             </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('role_permissions.create') }}">
+                    <i class="bi bi-key-fill"></i> {{ __('create_permission') }}
+                </a>
+            </div>
         </div>
     </div>
-    @endcan
 
-    <!-- Tâches Section -->
-    <div class="submenu-section">
-        <div class="submenu-heading" >
-            <i class="bi bi-list-task"></i> {{ __('tasks') }}
-        </div>
-        <div class="submenu-content" id="tasksMenu">
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('taskstatus.index') }}">
-                    <i class="bi bi-tag"></i> {{ __('task_types') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('tasktype.index') }}">
-                    <i class="bi bi-flag"></i> {{ __('task_statuses') }}
-                </a>
-            </div>
-        </div>
-    </div>
 
     <!-- Courrier Section -->
     <div class="submenu-section">
@@ -192,7 +174,7 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-priority.index') }}">
-                    <i class="bi bi-flag"></i> {{ __('actions') }}
+                    <i class="bi bi-flag"></i> {{ __('priorities') }}
                 </a>
             </div>
         </div>
@@ -228,15 +210,6 @@
                     <i class="bi bi-flag"></i> {{ __('statuses') }}
                 </a>
             </div>
-        </div>
-    </div>
-
-    <!-- Communication Section -->
-    <div class="submenu-section">
-        <div class="submenu-heading" >
-            <i class="bi bi-chat-dots"></i> {{ __('communication') }}
-        </div>
-        <div class="submenu-content" id="communicationMenu">
         </div>
     </div>
 
@@ -294,36 +267,28 @@
     </div>
 
     <!-- Système Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('settings', 'system'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-cpu"></i> {{ __('system') }}
         </div>
         <div class="submenu-content" id="systemMenu">
-            @can('viewAny', App\Models\Backup::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.index')}}">
                     <i class="bi bi-save"></i> {{ __('my_backups') }}
                 </a>
             </div>
-            @endcan
-            @can('create', App\Models\Backup::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.create')}}">
                     <i class="bi bi-plus-square"></i> {{ __('new_backup') }}
                 </a>
             </div>
-            @endcan
-            @can('manage', App\Models\User::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="">
                     <i class="bi bi-people"></i> {{ __('ldap') }}
                 </a>
             </div>
-            @endcan
         </div>
     </div>
-    @endif
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

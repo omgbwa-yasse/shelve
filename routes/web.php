@@ -529,6 +529,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('roles', RoleController::class);
         Route::resource('users', UserController::class);
         Route::resource('role_permissions', RolePermissionController::class);
+        Route::get('role_permissions/{role}/permissions', [RolePermissionController::class, 'getRolePermissions'])->name('role_permissions.get_permissions');
         Route::resource('mail-typology', MailTypologyController::class);
         Route::resource('mail-priority', MailPriorityController::class);
         Route::resource('container-status', ContainerStatusController::class);

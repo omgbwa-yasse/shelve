@@ -12,6 +12,9 @@ class NativePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        // Appel du seeder de permissions avec catégories
+        $this->call(PermissionCategorySeeder::class);
+
+        $this->command->info('✅ Permissions natives créées avec succès via PermissionCategorySeeder');
     }
 }

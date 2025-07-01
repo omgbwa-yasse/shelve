@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SettingSeeder::class,
             OrganisationSeeder::class,
-            PermissionSeeder::class, // Seeder de permissions complet et sécurisé (222 permissions)
+            PermissionCategorySeeder::class, // Seeder avec catégories et nomenclature unifiée
             UserSeeder::class,
             ActivitySeeder::class,
             AuthorSeeder::class,
@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CommunicationSeeder::class,
             BulletinBoardSeeder::class,
             PublicPortalSeeder::class,
+            SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
         ]);
     }
 }

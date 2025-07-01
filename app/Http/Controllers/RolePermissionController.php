@@ -22,8 +22,33 @@ class RolePermissionController extends Controller
     public function create()
     {
         $roles = Role::all();
+
+        // Grouper les permissions par catégorie
         $permissions = Permission::all();
-        return view('role_permissions.create', compact('roles', 'permissions'));
+        $permissionsByCategory = $permissions->groupBy('category');
+
+        // Définir l'ordre des catégories et leurs labels
+        $categoryLabels = [
+            'dashboard' => 'Tableau de bord',
+            'mail' => 'Courrier',
+            'records' => 'Documents',
+            'communications' => 'Communications',
+            'reservations' => 'Réservations',
+            'users' => 'Utilisateurs et Rôles',
+            'settings' => 'Paramètres',
+            'system' => 'Système',
+            'backups' => 'Sauvegardes',
+            'transfers' => 'Transferts',
+            'deposits' => 'Dépôts',
+            'reports' => 'Rapports',
+            'tools' => 'Outils',
+            'ai' => 'Intelligence Artificielle',
+            'search' => 'Recherche',
+            'thesaurus' => 'Thésaurus',
+            'organizations' => 'Organisations'
+        ];
+
+        return view('role_permissions.create', compact('roles', 'permissionsByCategory', 'categoryLabels'));
     }
 
 
@@ -106,5 +131,24 @@ class RolePermissionController extends Controller
             ->with('success', 'Role permission deleted successfully.');
     }
 
+
+    public function getRolePermissions(Request $request, $roleId)
+    {
+        try {
+            $role = Role::findOrFail($roleId);
+            $permissions = $role->permissions()->pluck('permissions.id')->toArray();
+
+            return response()->json([
+                'success' => true,
+                'permissions' => $permissions,
+                'role_name' => $role->name
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des permissions'
+            ], 500);
+        }
+    }
 
 }
