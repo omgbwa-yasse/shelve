@@ -43,8 +43,8 @@ return new class extends Migration
             $table->json('conditions')->nullable()->comment('Conditions pour cette étape');
             $table->timestamps();
 
-            $table->unique(['workflow_template_id', 'order_index']);
-            $table->index(['workflow_template_id', 'step_type']);
+            $table->unique(['workflow_template_id', 'order_index'], 'idx_workflow_step_template_order');
+            $table->index(['workflow_template_id', 'step_type'], 'idx_workflow_step_template_type');
         });
 
         // Assignations d'étapes (qui peut faire quoi)
