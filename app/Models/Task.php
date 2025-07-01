@@ -38,7 +38,6 @@ class Task extends Model
         'custom_fields',
         'completion_notes',
         'assignment_notes',
-        // Champs existants
         'name',
         'duration',
         'task_type_id'
