@@ -99,7 +99,7 @@ class TaskAssignmentController extends Controller
         }
 
         return redirect()
-            ->route('tasks.assignments.index', $task)
+            ->route('workflows.tasks.assignments.index', $task)
             ->with('success', 'Assigné ajouté avec succès.');
     }
 

@@ -4,7 +4,7 @@
     <div class="container">
         <h1>Supervised Tasks</h1>
         <div class="mb-3">
-            <form action="{{ route('tasks.supervision') }}" method="GET" class="form-inline">
+            <form action="{{ route('workflows.tasks.supervision') }}" method="GET" class="form-inline">
                 <input type="text" name="search" class="form-control mr-2" placeholder="Search tasks" value="{{ request('search') }}">
                 <select name="status" class="form-control mr-2">
                     <option value="">All Statuses</option>
@@ -43,9 +43,9 @@
                     <td>{{ $task->status ? $task->status->label() : 'N/A' }}</td>
                     <td>{{ $task->duration }} hours</td>
                     <td>
-                        <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info">View</a>
-                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-sm btn-primary">Edit</a>
-                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" style="display:inline">
+                        <a href="{{ route('workflows.tasks.show', $task) }}" class="btn btn-sm btn-info">View</a>
+                        <a href="{{ route('workflows.tasks.edit', $task) }}" class="btn btn-sm btn-primary">Edit</a>
+                        <form action="{{ route('workflows.tasks.destroy', $task) }}" method="POST" style="display:inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>

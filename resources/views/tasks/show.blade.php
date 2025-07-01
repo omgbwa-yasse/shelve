@@ -97,7 +97,7 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <form action="{{ route('tasks.download', ['task' => $task->id, 'attachment' => $attachment->id]) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('workflows.tasks.download', ['task' => $task->id, 'attachment' => $attachment->id]) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-outline-secondary btn-sm">
                                                         <i class="bi bi-download me-1"></i>
@@ -248,11 +248,11 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary btn-lg w-100 mb-3">
+                        <a href="{{ route('workflows.tasks.edit', $task) }}" class="btn btn-primary btn-lg w-100 mb-3">
                             <i class="bi bi-pencil-square me-2"></i>
                             Edit Task
                         </a>
-                        <form action="{{ route('tasks.destroy', $task) }}" method="POST" id="deleteTaskForm">
+                        <form action="{{ route('workflows.tasks.destroy', $task) }}" method="POST" id="deleteTaskForm">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-lg w-100" id="deleteTaskBtn">

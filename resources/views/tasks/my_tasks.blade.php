@@ -145,7 +145,7 @@
                                         <td>{{ $task->start_date ? $task->start_date : 'Non définie' }}</td>
                                         <td><span class="badge {{ $task->status ? $task->status->color() : 'bg-secondary' }}">{{ $task->status ? $task->status->label() : 'N/A' }}</span></td>
                                         <td>
-                                            <a href="{{ route('tasks.show', $task) }}" class="btn btn-outline-primary btn-sm">Voir</a>
+                                            <a href="{{ route('workflows.tasks.show', $task) }}" class="btn btn-outline-primary btn-sm">Voir</a>
                                         </td>
                                     </tr>
                                 @endforeach

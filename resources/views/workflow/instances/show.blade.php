@@ -322,7 +322,7 @@
                                 @foreach($instance->tasks as $task)
                                     <li class="list-group-item d-flex justify-content-between align-items-center ps-0 pe-0">
                                         <div>
-                                            <a href="{{ route('tasks.show', $task) }}" class="text-decoration-none">
+                                            <a href="{{ route('workflows.tasks.show', $task) }}" class="text-decoration-none">
                                                 {{ $task->title }}
                                             </a>
                                             <span class="badge {{ $task->status->badgeClass() }} ms-2">{{ $task->status->label() }}</span>

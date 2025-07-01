@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Edit Task: {{ $task->name }}</h1>
-        <form action="{{ route('tasks.update', $task) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('workflows.tasks.update', $task) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             <div class="form-group">
@@ -70,7 +70,7 @@
             @foreach($task->attachments as $attachment)
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     {{ basename($attachment->file_path) }}
-                    <form action="{{ route('tasks.remove-attachment', ['task' => $task->id, 'attachment' => $attachment->id]) }}" method="POST">
+                    <form action="{{ route('workflows.tasks.remove-attachment', ['task' => $task->id, 'attachment' => $attachment->id]) }}" method="POST">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this attachment?')">Remove</button>

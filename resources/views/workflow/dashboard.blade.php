@@ -26,7 +26,7 @@
                 @endcan
 
                 @can('task_viewAny')
-                <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.tasks.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-list-task me-1"></i>
                     {{ __('Tâches') }}
                 </a>
@@ -143,7 +143,7 @@
             <div class="card shadow-sm h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('Mes tâches à faire') }}</h5>
-                    <a href="{{ route('tasks.my') }}" class="btn btn-sm btn-link">
+                    <a href="{{ route('workflows.tasks.my') }}" class="btn btn-sm btn-link">
                         {{ __('Voir tout') }}
                     </a>
                 </div>
@@ -155,7 +155,7 @@
                     @else
                         <div class="list-group list-group-flush">
                             @foreach($myTasks as $task)
-                                <a href="{{ route('tasks.show', $task) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <a href="{{ route('workflows.tasks.show', $task) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">{{ $task->title }}</h6>
                                         <small class="text-muted">{{ $task->category->name ?? '' }}</small>

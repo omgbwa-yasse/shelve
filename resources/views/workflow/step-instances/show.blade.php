@@ -215,7 +215,7 @@
                                     @foreach($stepInstance->tasks as $task)
                                         <tr>
                                             <td>
-                                                <a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a>
+                                                <a href="{{ route('workflows.tasks.show', $task) }}">{{ $task->title }}</a>
                                             </td>
                                             <td>
                                                 @forelse($task->assignments as $assignment)
@@ -240,19 +240,19 @@
                                             </td>
                                             <td class="text-end">
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="{{ route('tasks.show', $task) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('workflows.tasks.show', $task) }}" class="btn btn-outline-secondary">
                                                         <i class="bi bi-eye"></i>
                                                     </a>
 
                                                     @if($task->status->value === 'pending')
                                                         @can('task.start', $task)
-                                                        <a href="{{ route('tasks.start', $task) }}" class="btn btn-outline-primary">
+                                                        <a href="{{ route('workflows.tasks.start', $task) }}" class="btn btn-outline-primary">
                                                             <i class="bi bi-play"></i>
                                                         </a>
                                                         @endcan
                                                     @elseif($task->status->value === 'in_progress')
                                                         @can('task.complete', $task)
-                                                        <a href="{{ route('tasks.complete', $task) }}" class="btn btn-outline-success">
+                                                        <a href="{{ route('workflows.tasks.complete', $task) }}" class="btn btn-outline-success">
                                                             <i class="bi bi-check-lg"></i>
                                                         </a>
                                                         @endcan
@@ -494,7 +494,7 @@
                     <h5 class="modal-title" id="createTaskModalLabel">{{ __('Créer une tâche') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="{{ route('tasks.store') }}" method="POST">
+                <form action="{{ route('workflows.tasks.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="workflow_step_instance_id" value="{{ $stepInstance->id }}">
                     <div class="modal-body">

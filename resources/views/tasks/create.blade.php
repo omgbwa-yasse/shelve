@@ -107,7 +107,7 @@
                 </button>
             </div>
             <div class="card-body">
-                <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data" id="taskForm">
+                <form action="{{ route('workflows.tasks.store') }}" method="POST" enctype="multipart/form-data" id="taskForm">
                     @csrf
                     <ul class="nav nav-tabs mb-3" id="taskTabs" role="tablist">
                         <li class="nav-item" role="presentation">

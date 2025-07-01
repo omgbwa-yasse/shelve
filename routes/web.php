@@ -748,49 +748,49 @@ Route::group(['middleware' => 'auth'], function () {
             return redirect()->route('workflows.dashboard');
         });
         Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
-    });
 
-    // Routes pour les tâches liées au workflow
-    Route::prefix('tasks')->name('tasks.')->group(function () {
-        Route::get('/', [TaskController::class, 'index'])->name('index');
-        Route::get('/my', [TaskController::class, 'myTasks'])->name('my');
-        Route::get('/create', [TaskController::class, 'create'])->name('create');
-        Route::post('/', [TaskController::class, 'store'])->name('store');
-        Route::get('/{task}', [TaskController::class, 'show'])->name('show');
-        Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
-        Route::put('/{task}', [TaskController::class, 'update'])->name('update');
-        Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
+        // Routes pour les tâches liées au workflow
+        Route::prefix('tasks')->name('tasks.')->group(function () {
+            Route::get('/', [TaskController::class, 'index'])->name('index');
+            Route::get('/my', [TaskController::class, 'myTasks'])->name('my');
+            Route::get('/create', [TaskController::class, 'create'])->name('create');
+            Route::post('/', [TaskController::class, 'store'])->name('store');
+            Route::get('/{task}', [TaskController::class, 'show'])->name('show');
+            Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
+            Route::put('/{task}', [TaskController::class, 'update'])->name('update');
+            Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
 
-        // Commentaires sur les tâches
-        Route::post('{task}/comments', [TaskCommentController::class, 'store'])->name('comments.store');
-        Route::delete('{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('comments.destroy');
+            // Commentaires sur les tâches
+            Route::post('{task}/comments', [TaskCommentController::class, 'store'])->name('comments.store');
+            Route::delete('{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('comments.destroy');
 
-        // Assignation de tâches
-        Route::post('{task}/assignments', [TaskAssignmentController::class, 'store'])->name('assignments.store');
-        Route::delete('{task}/assignments/{assignment}', [TaskAssignmentController::class, 'destroy'])->name('assignments.destroy');
+            // Assignation de tâches
+            Route::post('{task}/assignments', [TaskAssignmentController::class, 'store'])->name('assignments.store');
+            Route::delete('{task}/assignments/{assignment}', [TaskAssignmentController::class, 'destroy'])->name('assignments.destroy');
 
-        // Actions spéciales sur les tâches
-        Route::post('{task}/complete', [TaskController::class, 'complete'])->name('complete');
-        Route::post('{task}/start', [TaskController::class, 'start'])->name('start');
-        Route::post('{task}/pause', [TaskController::class, 'pause'])->name('pause');
+            // Actions spéciales sur les tâches
+            Route::post('{task}/complete', [TaskController::class, 'complete'])->name('complete');
+            Route::post('{task}/start', [TaskController::class, 'start'])->name('start');
+            Route::post('{task}/pause', [TaskController::class, 'pause'])->name('pause');
 
-        // Gestion des pièces jointes
-        Route::post('{task}/attachment/{attachmentId}/remove', [TaskController::class, 'removeAttachment'])->name('removeAttachment');
-        Route::get('{task}/attachment/{attachmentId}/download', [TaskController::class, 'downloadAttachment'])->name('download');
+            // Gestion des pièces jointes
+            Route::post('{task}/attachment/{attachmentId}/remove', [TaskController::class, 'removeAttachment'])->name('removeAttachment');
+            Route::get('{task}/attachment/{attachmentId}/download', [TaskController::class, 'downloadAttachment'])->name('download');
 
-        // Supervision
-        Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
-    });
+            // Supervision
+            Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
+        });
 
-    // Routes pour les notifications du système
-    Route::prefix('notifications')->name('notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::get('/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
-        Route::get('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-as-read');
+        // Routes pour les notifications du système
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'index'])->name('index');
+            Route::get('/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
+            Route::get('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-as-read');
 
-        Route::resource('system', SystemNotificationController::class)->only(['index', 'show', 'update']);
-        Route::post('subscribe/{channel}/{entity_type}/{entity_id}', [NotificationController::class, 'subscribe'])->name('subscribe');
-        Route::post('unsubscribe/{subscription}', [NotificationController::class, 'unsubscribe'])->name('unsubscribe');
+            Route::resource('system', SystemNotificationController::class)->only(['index', 'show', 'update']);
+            Route::post('subscribe/{channel}/{entity_type}/{entity_id}', [NotificationController::class, 'subscribe'])->name('subscribe');
+            Route::post('unsubscribe/{subscription}', [NotificationController::class, 'unsubscribe'])->name('unsubscribe');
+        });
     });
 });
 

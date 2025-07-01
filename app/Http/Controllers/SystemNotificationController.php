@@ -76,7 +76,7 @@ class SystemNotificationController extends Controller
         $notification->save();
 
         return redirect()
-            ->route('notifications.system.show', $notification)
+            ->route('workflows.notifications.system.show', $notification)
             ->with('success', 'Notification mise à jour avec succès.');
     }
 }

@@ -172,7 +172,7 @@ class TaskController extends Controller
             ]);
         });
 
-        return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
+        return redirect()->route('workflows.tasks.index')->with('success', 'Task created successfully.');
     }
 
     public function show(Task $task)
@@ -256,13 +256,13 @@ class TaskController extends Controller
             }
         });
 
-        return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
+        return redirect()->route('workflows.tasks.index')->with('success', 'Task updated successfully.');
     }
 
     public function destroy(Task $task)
     {
         $task->delete();
-        return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
+        return redirect()->route('workflows.tasks.index')->with('success', 'Task deleted successfully.');
     }
 
     public function removeAttachment(Task $task, $attachmentId)

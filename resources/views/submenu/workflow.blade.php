@@ -22,13 +22,13 @@
     <div class="nav-item-header">{{ __('Tâches') }}</div>
 
     @can('task_viewAny')
-    <a class="nav-link {{ request()->routeIs('tasks.index') ? 'active' : '' }}" href="{{ route('tasks.index') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.tasks.index') ? 'active' : '' }}" href="{{ route('workflows.tasks.index') }}">
         <i class="bi bi-list-task me-2"></i>{{ __('Toutes les tâches') }}
     </a>
     @endcan
 
     @can('task_viewOwn')
-    <a class="nav-link {{ request()->routeIs('tasks.my') ? 'active' : '' }}" href="{{ route('tasks.my') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.tasks.my') ? 'active' : '' }}" href="{{ route('workflows.tasks.my') }}">
         <i class="bi bi-person-check me-2"></i>{{ __('Mes tâches') }}
     </a>
     @endcan
@@ -36,13 +36,13 @@
     <div class="nav-item-header">{{ __('Notifications') }}</div>
 
     @can('notification_viewAny')
-    <a class="nav-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}" href="{{ route('notifications.index') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.notifications.index') ? 'active' : '' }}" href="{{ route('workflows.notifications.index') }}">
         <i class="bi bi-bell me-2"></i>{{ __('Mes notifications') }}
     </a>
     @endcan
 
     @can('systemNotification_viewAny')
-    <a class="nav-link {{ request()->routeIs('notifications.system.*') ? 'active' : '' }}" href="{{ route('notifications.system.index') }}">
+    <a class="nav-link {{ request()->routeIs('workflows.notifications.system.*') ? 'active' : '' }}" href="{{ route('workflows.notifications.system.index') }}">
         <i class="bi bi-bell-fill me-2"></i>{{ __('Notifications système') }}
     </a>
     @endcan

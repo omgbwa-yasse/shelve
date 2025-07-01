@@ -10,7 +10,7 @@
                 </h1>
             </div>
             <div class="col-auto">
-                <a href="{{ route('tasks.create') }}" class="btn btn-success">
+                <a href="{{ route('workflows.tasks.create') }}" class="btn btn-success">
                     <i class="bi bi-plus-lg me-2"></i>
                     Create New Task
                 </a>
@@ -19,7 +19,7 @@
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <form action="{{ route('tasks.index') }}" method="GET" id="taskFilterForm">
+                <form action="{{ route('workflows.tasks.index') }}" method="GET" id="taskFilterForm">
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="input-group">
@@ -73,7 +73,7 @@
                         @forelse($tasks as $task)
                             <tr>
                                 <td>
-                                    <a href="{{ route('tasks.show', $task) }}" class="text-decoration-none">
+                                    <a href="{{ route('workflows.tasks.show', $task) }}" class="text-decoration-none">
                                         {{ $task->name }}
                                     </a>
                                 </td>
@@ -93,7 +93,7 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                        <a href="{{ route('workflows.tasks.show', $task) }}" class="btn btn-sm btn-outline-primary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </div>
@@ -103,7 +103,7 @@
                             <tr>
                                 <td colspan="5" class="text-center py-4">
                                     <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                                    No tasks found. Try adjusting your filters or <a href="{{ route('tasks.create') }}">create a new task</a>.
+                                    No tasks found. Try adjusting your filters or <a href="{{ route('workflows.tasks.create') }}">create a new task</a>.
                                 </td>
                             </tr>
                         @endforelse
