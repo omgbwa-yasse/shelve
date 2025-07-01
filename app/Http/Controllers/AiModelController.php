@@ -12,11 +12,28 @@ class AiModelController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $models = AiModel::paginate(15);
+        $models = AiModel::orderBy('created_at', 'desc')->paginate(15);
+
+        // Si c'est une requête AJAX, retourner JSON
+        if ($request->ajax() || $request->has('ajax')) {
+            return response()->json([
+                'success' => true,
+                'models' => $models->items(),
+                'pagination' => [
+                    'total' => $models->total(),
+                    'per_page' => $models->perPage(),
+                    'current_page' => $models->currentPage(),
+                    'last_page' => $models->lastPage(),
+                ]
+            ]);
+        }
+
+        // Sinon, retourner la vue normale
         return view('ai.models.index', compact('models'));
     }
 
@@ -170,5 +187,28 @@ class AiModelController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Afficher le formulaire de synchronisation des modèles Ollama
+     */
+    public function syncModelsForm()
+    {
+        $models = AiModel::where('provider', 'ollama')->get();
+
+        try {
+            $ollamaModels = $this->ollamaService->getAvailableModels();
+            $health = $this->ollamaService->healthCheck();
+            $isConnected = $health['status'] === 'healthy';
+        } catch (\Exception $e) {
+            $ollamaModels = [];
+            $isConnected = false;
+        }
+
+        return view('ai.models.sync', [
+            'models' => $models,
+            'ollamaModels' => $ollamaModels,
+            'isConnected' => $isConnected
+        ]);
     }
 }

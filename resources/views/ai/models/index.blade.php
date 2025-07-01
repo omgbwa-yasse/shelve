@@ -8,14 +8,18 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">{{ __('ai_models') }}</h5>
                     <div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="window.location.reload()">
+                        <button type="button" class="btn btn-sm btn-outline-secondary me-2" id="refreshModelsBtn">
                             <i class="bi bi-arrow-clockwise"></i> {{ __('refresh') }}
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success me-2" id="syncOllamaBtn">
+                            <i class="bi bi-cloud-download"></i> {{ __('sync_ollama_models') }}
                         </button>
                         <a href="{{ route('ai.models.create') }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-plus-lg"></i> {{ __('add_model') }}
                         </a>
                     </div>
                 </div>
+                <div id="ajax-alert" class="alert d-none mt-2" role="alert"></div>
                 <div class="card-body">
                     <!-- Filtres -->
                     <div class="row mb-4">
@@ -86,8 +90,8 @@
                                         </td>
                                         <td>{{ $model->version }}</td>
                                         <td>
-                                            <span class="badge bg-{{ $model->status === 'active' ? 'success' :
-                                                ($model->status === 'training' ? 'warning' : 'secondary') }}">
+                                            <span class="badge bg-{{ $model->status === 'active' ?
+                                                'success' : ($model->status === 'training' ? 'warning' : 'secondary') }}">
                                                 {{ __($model->status) }}
                                             </span>
                                         </td>
@@ -321,6 +325,203 @@ document.addEventListener('DOMContentLoaded', function() {
     typeFilter.addEventListener('change', filterTable);
     statusFilter.addEventListener('change', filterTable);
     sortFilter.addEventListener('change', filterTable);
+
+    // AJAX pour rafraîchir les modèles
+    const refreshModelsBtn = document.getElementById('refreshModelsBtn');
+    const syncOllamaBtn = document.getElementById('syncOllamaBtn');
+    const ajaxAlert = document.getElementById('ajax-alert');
+
+    function showAlert(message, type) {
+        ajaxAlert.innerText = message;
+        ajaxAlert.className = `alert alert-${type} mt-2`;
+
+        // Masquer l'alerte après 4 secondes
+        setTimeout(() => {
+            ajaxAlert.className = 'alert d-none mt-2';
+        }, 4000);
+    }
+
+    // Actualiser les modèles depuis la base de données
+    refreshModelsBtn.addEventListener('click', async () => {
+        refreshModelsBtn.disabled = true;
+        refreshModelsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Chargement...';
+
+        try {
+            const response = await fetch('{{ route('ai.models.index') }}?ajax=1', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des modèles');
+            }
+
+            const data = await response.json();
+            updateModelsTable(data.models);
+            showAlert('Liste des modèles actualisée avec succès', 'success');
+        } catch (error) {
+            console.error('Erreur AJAX:', error);
+            showAlert('Erreur lors de l\'actualisation des modèles: ' + error.message, 'danger');
+        } finally {
+            refreshModelsBtn.disabled = false;
+            refreshModelsBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> {{ __('refresh') }}';
+        }
+    });
+
+    // Synchroniser avec les modèles Ollama
+    syncOllamaBtn.addEventListener('click', async () => {
+        if (!confirm('{{ __("confirm_ollama_sync") }}')) return;
+
+        syncOllamaBtn.disabled = true;
+        syncOllamaBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> {{ __("synchronizing") }}...';
+
+        try {
+            // Vérifier d'abord la connectivité avec Ollama
+            const healthResponse = await fetch('/api/ai/ollama/health', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const healthData = await healthResponse.json();
+
+            if (healthData.status !== 'healthy') {
+                throw new Error('{{ __("ollama_not_available") }}: ' + healthData.message);
+            }
+
+            // Lancer la synchronisation
+            const response = await fetch('/api/ai/ollama/models/sync', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '{{ __("sync_error") }}');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                showAlert(`${data.synced_count} {{ __("models_synced_successfully") }}`, 'success');
+                // Actualiser la liste après la synchronisation
+                refreshModelsBtn.click();
+            } else {
+                throw new Error(data.message || '{{ __("unknown_error") }}');
+            }
+        } catch (error) {
+            console.error('Erreur AJAX:', error);
+            showAlert('{{ __("sync_error") }}: ' + error.message, 'danger');
+        } finally {
+            syncOllamaBtn.disabled = false;
+            syncOllamaBtn.innerHTML = '<i class="bi bi-cloud-download"></i> {{ __("sync_ollama_models") }}';
+        }
+    });
+
+    // Mettre à jour le tableau des modèles avec les nouvelles données
+    function updateModelsTable(models) {
+        const tbody = document.querySelector('table tbody');
+        tbody.innerHTML = '';
+
+        if (models.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="8" class="text-center">{{ __('no_models_found') }}</td>`;
+            tbody.appendChild(tr);
+            return;
+        }
+
+        models.forEach(model => {
+            const tr = document.createElement('tr');
+
+            // Définir le statut et l'icône
+            const statusClass = model.status === 'active' ? 'success' :
+                               (model.status === 'training' ? 'warning' : 'secondary');
+
+            const iconClass = model.type === 'text' ? 'chat-dots' :
+                             (model.type === 'image' ? 'image' :
+                             (model.type === 'code' ? 'code-square' : 'cpu'));
+
+            // Calculer les métriques de performance
+            let performanceHtml = '-';
+            if (model.performance_metrics) {
+                const metrics = JSON.parse(model.performance_metrics);
+                const accuracy = metrics.accuracy || 0;
+                performanceHtml = `
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 5px;">
+                            <div class="progress-bar bg-success"
+                                 role="progressbar"
+                                 style="width: ${accuracy}%"
+                                 aria-valuenow="${accuracy}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">${accuracy.toFixed(1)}%</small>
+                    </div>
+                `;
+            }
+
+            // Formater la date
+            let lastTrained = model.last_trained_at ? new Date(model.last_trained_at).toLocaleString() : '-';
+
+            tr.innerHTML = `
+                <td>${model.id}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-${iconClass} me-2 text-primary"></i>
+                        ${model.name}
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-info">
+                        ${model.type}_model
+                    </span>
+                </td>
+                <td>${model.version}</td>
+                <td>
+                    <span class="badge bg-${statusClass}">
+                        ${model.status}
+                    </span>
+                </td>
+                <td>${performanceHtml}</td>
+                <td>${lastTrained}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <a href="/ai/models/${model.id}" class="btn btn-outline-primary" title="Voir">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="/ai/models/${model.id}/edit" class="btn btn-outline-secondary" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button onclick="deleteModel(${model.id})" class="btn btn-outline-danger" title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button onclick="trainModel(${model.id})" class="btn btn-outline-warning" title="Entraîner">
+                            <i class="bi bi-cpu"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        // Réappliquer les filtres après mise à jour
+        filterTable();
+    }
 });
 </script>
 @endpush

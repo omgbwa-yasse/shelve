@@ -698,10 +698,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('dollies', [ReportController::class, 'statisticsDollies'])->name('report.statistics.dollies');
     });
 
-    Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
-
-
-    // routes/web.php - Routes Ollama
+    Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');    // routes/web.php - Routes Ollama
     Route::prefix('ai/ollama')->name('ai.ollama.')->middleware(['auth'])->group(function () {
         Route::get('chat', [OllamaController::class, 'chat'])->name('chat'); // Chat accessible à tous
 
@@ -711,6 +708,13 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
             Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
         });
+    });
+
+    // API routes pour Ollama
+    Route::prefix('api/ai/ollama')->middleware(['auth', 'can:ai_configure'])->group(function () {
+        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels']);
+        Route::get('models', [AiModelController::class, 'getOllamaModels']);
+        Route::get('health', [OllamaController::class, 'healthCheckApi']);
     });
 
 
