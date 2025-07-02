@@ -629,6 +629,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('ai')->middleware(['auth'])->group(function () {
         // Routes générales AI accessibles à tous les utilisateurs avec module_ai_access
         Route::resource('chats', AiChatController::class)->names('ai.chats');
+        Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start');
+        Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat');
         Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
         Route::resource('actions', AiActionController::class)->names('ai.actions');

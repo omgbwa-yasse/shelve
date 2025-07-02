@@ -123,4 +123,32 @@ class AiChatController extends Controller
 
         return redirect()->route('ai.chats.index')->with('success', 'AI Chat deleted successfully');
     }
+
+    /**
+     * Start a new chat conversation.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function startChat($id)
+    {
+        $aiChat = AiChat::findOrFail($id);
+
+        // Vérifier si le chat est actif
+        if (!$aiChat->is_active) {
+            return redirect()->back()->with('error', 'Ce chat est inactif et ne peut pas être démarré.');
+        }
+
+        // Créer un premier message d'accueil du système
+        $aiChat->messages()->create([
+            'content' => 'Bonjour ! Je suis votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
+            'role' => 'assistant',
+            'metadata' => [
+                'type' => 'welcome',
+                'timestamp' => now()->timestamp
+            ]
+        ]);
+
+        return redirect()->route('ai.chats.show', ['chat' => $id])->with('success', 'Chat démarré avec succès !');
+    }
 }

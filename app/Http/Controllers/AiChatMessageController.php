@@ -49,6 +49,45 @@ class AiChatMessageController extends Controller
     }
 
     /**
+     * Store a message for a specific chat.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $chatId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function storeForChat(Request $request, $chatId)
+    {
+        $chat = \App\Models\AiChat::findOrFail($chatId);
+
+        $validated = $request->validate([
+            'content' => 'required|string',
+            'role' => 'required|string',
+        ]);
+
+        // Ajouter l'ID du chat
+        $validated['ai_chat_id'] = $chat->id;
+
+        // Créer le message
+        $message = AiChatMessage::create($validated);
+
+        // Si c'est un message utilisateur, générer une réponse de l'IA
+        if ($validated['role'] === 'user') {
+            // Créer une réponse de l'assistant (à remplacer par une vraie intégration d'IA)
+            AiChatMessage::create([
+                'ai_chat_id' => $chat->id,
+                'role' => 'assistant',
+                'content' => 'Merci pour votre message. Je suis en train de traiter votre demande.',
+                'metadata' => [
+                    'type' => 'response',
+                    'timestamp' => now()->timestamp
+                ]
+            ]);
+        }
+
+        return redirect()->route('ai.chats.show', ['chat' => $chatId])->with('success', 'Message envoyé avec succès !');
+    }
+
+    /**
      * Display the specified resource.
      *
      * @param  \App\Models\AiChatMessage  $aiChatMessage

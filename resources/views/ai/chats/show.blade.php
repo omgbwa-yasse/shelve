@@ -40,29 +40,38 @@
                         <!-- Messages -->
                         <div class="chat-messages mb-4" style="max-height: 500px; overflow-y: auto;">
                             @forelse($aiChat->messages ?? [] as $message)
-                                <div class="message mb-3 {{ $message->is_from_user ? 'text-end' : '' }}">
-                                    <div class="message-content d-inline-block p-3 rounded {{ $message->is_from_user ? 'bg-primary text-white' : 'bg-light' }}"
+                                <div class="message mb-3 {{ $message->role === 'user' ? 'text-end' : '' }}">
+                                    <div class="message-content d-inline-block p-3 rounded {{ $message->role === 'user' ? 'bg-primary text-white' : 'bg-light' }}"
                                          style="max-width: 80%;">
                                         <div class="message-text">
                                             {!! nl2br(e($message->content)) !!}
                                         </div>
-                                        <small class="message-time d-block mt-1 {{ $message->is_from_user ? 'text-white-50' : 'text-muted' }}">
+                                        <small class="message-time d-block mt-1 {{ $message->role === 'user' ? 'text-white-50' : 'text-muted' }}">
                                             {{ $message->created_at ? $message->created_at->format('d/m/Y H:i') : 'Date inconnue' }}
                                         </small>
                                     </div>
                                 </div>
                             @empty
-                                <div class="text-center text-muted py-5">
-                                    <i class="fas fa-comments fa-3x mb-3"></i>
-                                    <p>Aucun message dans cette conversation.</p>
+                                <div class="text-center py-5">
+                                    <i class="fas fa-comments fa-3x mb-3 text-muted"></i>
+                                    <p class="text-muted">Aucun message dans cette conversation.</p>
+
+                                    @if($aiChat->is_active)
+                                        <div class="mt-4">
+                                            <a href="{{ route('ai.chats.start', ['id' => $aiChat->id]) }}" class="btn btn-success btn-lg">
+                                                <i class="fas fa-play-circle"></i> Commencer le chat
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforelse
                         </div>
 
                         <!-- Formulaire de nouveau message -->
                         @if($aiChat->is_active)
-                            <form action="{{ url('/ai/chats/'.$aiChat->id.'/messages') }}" method="POST" class="mt-4">
+                            <form action="{{ route('ai.chats.messages.storeForChat', ['chat' => $aiChat->id]) }}" method="POST" class="mt-4">
                                 @csrf
+                                <input type="hidden" name="role" value="user">
                                 <div class="input-group">
                                     <textarea name="content" class="form-control" rows="3"
                                               placeholder="Écrivez votre message..." required></textarea>
