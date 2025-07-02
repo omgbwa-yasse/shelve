@@ -18,10 +18,14 @@
                             </small>
                         </div>
                         <div class="btn-group">
-                            <a href="{{ route('ai.chats.edit', $aiChat) }}" class="btn btn-warning">
+                            <!-- Debug Info:
+                                Chat ID = {{ $aiChat->id ?? 'null' }}
+                                Chat Object = {{ get_class($aiChat) ?? 'not an object' }}
+                            -->
+                            <a href="{{ url('/ai/chats/'.$aiChat->id.'/edit') }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
-                            <form action="{{ route('ai.chats.destroy', $aiChat) }}" method="POST" class="d-inline">
+                            <form action="{{ url('/ai/chats/'.$aiChat->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger"
@@ -57,7 +61,7 @@
 
                         <!-- Formulaire de nouveau message -->
                         @if($aiChat->is_active)
-                            <form action="{{ route('ai.chats.messages.store', $aiChat) }}" method="POST" class="mt-4">
+                            <form action="{{ url('/ai/chats/'.$aiChat->id.'/messages') }}" method="POST" class="mt-4">
                                 @csrf
                                 <div class="input-group">
                                     <textarea name="content" class="form-control" rows="3"
@@ -89,7 +93,7 @@
                                             <div class="card-body">
                                                 <h5 class="card-title">{{ $resource->title ?? 'Titre non disponible' }}</h5>
                                                 <p class="card-text">{{ isset($resource->description) ? Str::limit($resource->description, 100) : 'Description non disponible' }}</p>
-                                                <a href="{{ route('ai.resources.show', $resource) }}"
+                                                <a href="{{ url('/ai/resources/'.$resource->id) }}"
                                                    class="btn btn-sm btn-outline-primary">
                                                     Voir la ressource
                                                 </a>

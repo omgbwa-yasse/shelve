@@ -51,31 +51,36 @@ class AiChatController extends Controller
         $chat = AiChat::create($validated);
 
         // Rediriger vers la page de détails du chat
-        return redirect()->route('ai.chats.show', $chat)->with('success', 'Chat AI créé avec succès');
+        return redirect()->route('ai.chats.show', ['chat' => $chat->id])->with('success', 'Chat AI créé avec succès');
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\AiChat  $aiChat
+     * @param  int  $id
      * @return \Illuminate\Contracts\View\View
      */
-    public function show(AiChat $aiChat)
+    public function show($id)
     {
+        // Récupérer le chat avec l'ID spécifié
+        $aiChat = AiChat::findOrFail($id);
+
         // Charger toutes les relations nécessaires pour éviter les erreurs de propriété null
         $aiChat->load(['user', 'aiModel', 'messages', 'resources']);
-        
+
         return view('ai.chats.show', compact('aiChat'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\AiChat  $aiChat
+     * @param  int  $id
      * @return \Illuminate\Contracts\View\View
      */
-    public function edit(AiChat $aiChat)
+    public function edit($id)
     {
+        $aiChat = AiChat::findOrFail($id);
+
         return view('ai.chats.edit', [
             'aiChat' => $aiChat,
             'aiModels' => AiModel::all(),
@@ -86,11 +91,13 @@ class AiChatController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\AiChat  $aiChat
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, AiChat $aiChat)
+    public function update(Request $request, $id)
     {
+        $aiChat = AiChat::findOrFail($id);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'ai_model_id' => 'required|exists:ai_models,id',
@@ -106,11 +113,12 @@ class AiChatController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\AiChat  $aiChat
+     * @param  int  $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(AiChat $aiChat)
+    public function destroy($id)
     {
+        $aiChat = AiChat::findOrFail($id);
         $aiChat->delete();
 
         return redirect()->route('ai.chats.index')->with('success', 'AI Chat deleted successfully');

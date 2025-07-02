@@ -45,15 +45,15 @@
                                             <td>{{ $chat->created_at->format('d/m/Y H:i') }}</td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ route('ai.chats.show', $chat) }}"
+                                                    <a href="{{ route('ai.chats.show', ['chat' => $chat->id]) }}"
                                                        class="btn btn-sm btn-info" title="Voir">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="{{ route('ai.chats.edit', $chat) }}"
+                                                    <a href="{{ route('ai.chats.edit', ['chat' => $chat->id]) }}"
                                                        class="btn btn-sm btn-warning" title="Modifier">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('ai.chats.destroy', $chat) }}"
+                                                    <form action="{{ route('ai.chats.destroy', ['chat' => $chat->id]) }}"
                                                           method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')

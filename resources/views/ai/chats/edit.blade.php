@@ -10,7 +10,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form method="POST" action="{{ route('ai.chats.update', $aiChat) }}">
+                    <form method="POST" action="{{ route('ai.chats.update', ['chat' => $aiChat->id]) }}">
                         @csrf
                         @method('PUT')
 
