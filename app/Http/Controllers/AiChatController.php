@@ -132,23 +132,78 @@ class AiChatController extends Controller
      */
     public function startChat($id)
     {
-        $aiChat = AiChat::findOrFail($id);
+        $aiChat = AiChat::with('aiModel')->findOrFail($id);
 
         // Vérifier si le chat est actif
         if (!$aiChat->is_active) {
             return redirect()->back()->with('error', 'Ce chat est inactif et ne peut pas être démarré.');
         }
 
-        // Créer un premier message d'accueil du système
-        $aiChat->messages()->create([
-            'content' => 'Bonjour ! Je suis votre assistant IA. Comment puis-je vous aider aujourd\'hui ?',
-            'role' => 'assistant',
-            'metadata' => [
-                'type' => 'welcome',
-                'timestamp' => now()->timestamp
-            ]
-        ]);
+        // Vérifier si le modèle AI existe
+        if (!$aiChat->aiModel) {
+            return redirect()->back()->with('error', 'Aucun modèle AI associé à ce chat.');
+        }
 
-        return redirect()->route('ai.chats.show', ['chat' => $id])->with('success', 'Chat démarré avec succès !');
+        try {
+            // Vérifier la disponibilité du modèle via le service Ollama
+            $ollamaService = app(\App\Services\OllamaService::class);
+            $modelDetails = null;
+            
+            try {
+                // Tenter de récupérer les détails du modèle
+                $modelDetails = $ollamaService->getModelDetails($aiChat->aiModel->name);
+            } catch (\Exception $e) {
+                // Si le modèle n'est pas disponible, on continue mais on log l'erreur
+                \Illuminate\Support\Facades\Log::warning("Le modèle {$aiChat->aiModel->name} n'est pas disponible sur Ollama: " . $e->getMessage());
+            }
+
+            // Message d'accueil personnalisé en fonction du modèle
+            $welcomeMessage = 'Bonjour ! Je suis votre assistant IA';
+            
+            if ($aiChat->aiModel) {
+                $welcomeMessage .= " basé sur le modèle {$aiChat->aiModel->name}";
+            }
+            
+            $welcomeMessage .= ". Comment puis-je vous aider aujourd'hui ?";
+
+            // Créer un premier message d'accueil du système
+            $aiChat->messages()->create([
+                'content' => $welcomeMessage,
+                'role' => 'assistant',
+                'metadata' => [
+                    'type' => 'welcome',
+                    'timestamp' => now()->timestamp,
+                    'model_details' => $modelDetails
+                ]
+            ]);
+
+            return redirect()->route('ai.chats.show', ['chat' => $id])->with('success', 'Chat démarré avec succès !');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erreur lors du démarrage du chat: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Vérifier l'état de connexion à Ollama
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkOllamaStatus()
+    {
+        try {
+            $ollamaService = app(\App\Services\OllamaService::class);
+            $status = $ollamaService->healthCheck();
+            
+            return response()->json([
+                'status' => $status['status'],
+                'message' => $status['message'],
+                'response_time' => $status['response_time']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de la vérification du statut Ollama: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

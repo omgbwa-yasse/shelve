@@ -14,20 +14,28 @@ class OllamaService
 {
     protected string $baseUrl;
     protected int $timeout;
+    protected int $retryCount;
+    protected int $retryDelay;
 
     public function __construct()
     {
         $this->baseUrl = config('ollama.base_url', 'http://localhost:11434');
         $this->timeout = config('ollama.timeout', 120);
+        $this->retryCount = config('ollama.retry_count', 2);
+        $this->retryDelay = config('ollama.retry_delay', 1000); // ms
     }
 
     /**
      * Obtenir la liste des modèles disponibles sur Ollama
+     * 
+     * @throws Exception Si la connexion échoue ou si la réponse n'est pas valide
+     * @return array
      */
     public function getAvailableModels(): array
     {
         try {
             $response = Http::timeout($this->timeout)
+                ->retry($this->retryCount, $this->retryDelay)
                 ->get("{$this->baseUrl}/api/tags");
 
             if ($response->successful()) {
@@ -36,13 +44,19 @@ class OllamaService
 
             throw new Exception("Erreur lors de la récupération des modèles: " . $response->body());
         } catch (Exception $e) {
-            Log::error('Ollama getAvailableModels error: ' . $e->getMessage());
+            Log::error('Ollama getAvailableModels error: ' . $e->getMessage(), [
+                'base_url' => $this->baseUrl,
+                'exception' => $e
+            ]);
             throw $e;
         }
     }
 
     /**
      * Synchroniser les modèles Ollama avec la base de données
+     * 
+     * @throws Exception Si la récupération des modèles échoue
+     * @return int Nombre de modèles synchronisés
      */
     public function syncModels(): int
     {
@@ -76,13 +90,21 @@ class OllamaService
 
             return $synced;
         } catch (Exception $e) {
-            Log::error('Ollama syncModels error: ' . $e->getMessage());
+            Log::error('Ollama syncModels error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             throw $e;
         }
     }
 
     /**
      * Générer une réponse avec Ollama
+     * 
+     * @param string $model Le nom du modèle à utiliser
+     * @param string $prompt Le prompt/message à envoyer
+     * @param array $options Options additionnelles pour la génération
+     * @param bool $stream Utiliser le streaming pour la réponse
+     * @return array
      */
     public function generate(
         string $model,
@@ -91,6 +113,14 @@ class OllamaService
         bool $stream = false
     ): array {
         try {
+            // Vérifier si le modèle existe avant de faire l'appel
+            if (!$this->modelExists($model)) {
+                return [
+                    'success' => false,
+                    'error' => "Le modèle '$model' n'existe pas sur le serveur Ollama."
+                ];
+            }
+            
             $payload = [
                 'model' => $model,
                 'prompt' => $prompt,
@@ -103,6 +133,7 @@ class OllamaService
             ];
 
             $response = Http::timeout($this->timeout)
+                ->retry($this->retryCount, $this->retryDelay)
                 ->post("{$this->baseUrl}/api/generate", $payload);
 
             if ($response->successful()) {
@@ -124,9 +155,16 @@ class OllamaService
                 ];
             }
 
-            throw new Exception("Erreur de génération: " . $response->body());
+            return [
+                'success' => false,
+                'error' => "Erreur de génération: " . $response->body(),
+                'status_code' => $response->status()
+            ];
         } catch (Exception $e) {
-            Log::error('Ollama generate error: ' . $e->getMessage());
+            Log::error('Ollama generate error: ' . $e->getMessage(), [
+                'model' => $model,
+                'exception' => $e
+            ]);
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -136,10 +174,23 @@ class OllamaService
 
     /**
      * Chat avec contexte (conversation)
+     * 
+     * @param string $model Le nom du modèle à utiliser
+     * @param array $messages Les messages précédents de la conversation
+     * @param array $options Options additionnelles pour la génération
+     * @return array
      */
     public function chat(string $model, array $messages, array $options = []): array
     {
         try {
+            // Vérifier si le modèle existe avant de faire l'appel
+            if (!$this->modelExists($model)) {
+                return [
+                    'success' => false,
+                    'error' => "Le modèle '$model' n'existe pas sur le serveur Ollama."
+                ];
+            }
+            
             $payload = [
                 'model' => $model,
                 'messages' => $messages,
@@ -151,6 +202,7 @@ class OllamaService
             ];
 
             $response = Http::timeout($this->timeout)
+                ->retry($this->retryCount, $this->retryDelay)
                 ->post("{$this->baseUrl}/api/chat", $payload);
 
             if ($response->successful()) {
@@ -171,9 +223,16 @@ class OllamaService
                 ];
             }
 
-            throw new Exception("Erreur de chat: " . $response->body());
+            return [
+                'success' => false,
+                'error' => "Erreur de chat: " . $response->body(),
+                'status_code' => $response->status()
+            ];
         } catch (Exception $e) {
-            Log::error('Ollama chat error: ' . $e->getMessage());
+            Log::error('Ollama chat error: ' . $e->getMessage(), [
+                'model' => $model,
+                'exception' => $e
+            ]);
             return [
                 'success' => false,
                 'error' => $e->getMessage()
@@ -214,7 +273,10 @@ class OllamaService
             $interaction->update(['status' => 'processing']);
 
             $aiModel = $interaction->aiModel;
-            $parameters = json_decode($interaction->parameters, true) ?? [];
+            $parameters = [];
+            if (isset($interaction->parameters)) {
+                $parameters = $interaction->parameters; // It's already decoded due to the json cast in the model
+            }
 
             $result = $this->generate(
                 $aiModel->name,
@@ -245,7 +307,10 @@ class OllamaService
 
             return $interaction->fresh();
         } catch (Exception $e) {
-            Log::error('Process interaction error: ' . $e->getMessage());
+            Log::error('Process interaction error: ' . $e->getMessage(), [
+                'interaction_id' => $interaction->id,
+                'exception' => $e
+            ]);
             $interaction->update([
                 'status' => 'failed',
                 'output' => 'Erreur système: ' . $e->getMessage()
@@ -281,7 +346,10 @@ class OllamaService
             $job->update(['status' => 'processing']);
 
             $inputs = json_decode($job->input, true);
-            $parameters = json_decode($job->parameters, true) ?? [];
+            $parameters = [];
+            if (isset($job->parameters)) {
+                $parameters = $job->parameters; // It's already decoded due to the json cast in the model
+            }
             $results = [];
 
             foreach ($inputs as $input) {
@@ -300,7 +368,10 @@ class OllamaService
 
             return $job->fresh();
         } catch (Exception $e) {
-            Log::error('Process batch job error: ' . $e->getMessage());
+            Log::error('Process batch job error: ' . $e->getMessage(), [
+                'job_id' => $job->id,
+                'exception' => $e
+            ]);
             $job->update([
                 'status' => 'failed',
                 'error' => $e->getMessage()
@@ -311,22 +382,39 @@ class OllamaService
 
     /**
      * Vérifier l'état de santé d'Ollama
+     * 
+     * @return array ['status' => 'healthy'|'unhealthy', 'response_time' => float, 'message' => string]
      */
     public function healthCheck(): array
     {
         try {
-            $response = Http::timeout(10)->get("{$this->baseUrl}/");
+            // Utiliser un timeout court pour la vérification de santé
+            $response = Http::timeout(5)->get("{$this->baseUrl}/");
+
+            // Vérifier si des modèles sont disponibles
+            $modelsAvailable = false;
+            try {
+                $models = $this->getAvailableModels();
+                $modelsAvailable = !empty($models);
+            } catch (Exception $e) {
+                Log::warning('Ollama health check - models check failed: ' . $e->getMessage());
+            }
 
             return [
                 'status' => $response->successful() ? 'healthy' : 'unhealthy',
                 'response_time' => $response->transferStats?->getTransferTime() ?? 0,
-                'message' => $response->successful() ? 'Ollama is running' : 'Ollama is not responding'
+                'models_available' => $modelsAvailable,
+                'message' => $response->successful() 
+                    ? 'Ollama est en ligne' . ($modelsAvailable ? ' avec des modèles disponibles' : ' mais aucun modèle n\'est disponible') 
+                    : 'Ollama ne répond pas'
             ];
         } catch (Exception $e) {
+            Log::warning('Ollama health check failed: ' . $e->getMessage());
             return [
                 'status' => 'unhealthy',
                 'response_time' => 0,
-                'message' => 'Connection failed: ' . $e->getMessage()
+                'models_available' => false,
+                'message' => 'Connexion échouée: ' . $e->getMessage()
             ];
         }
     }
@@ -336,29 +424,44 @@ class OllamaService
      */
     public function generateStream(string $model, string $prompt, array $options = []): \Generator
     {
-        $payload = [
-            'model' => $model,
-            'prompt' => $prompt,
-            'stream' => true,
-            'options' => array_merge([
-                'temperature' => 0.7,
-            ], $options)
-        ];
+        try {
+            // Vérifier si le modèle existe
+            if (!$this->modelExists($model)) {
+                yield [
+                    'error' => "Le modèle '$model' n'existe pas sur le serveur Ollama."
+                ];
+                return;
+            }
+            
+            $payload = [
+                'model' => $model,
+                'prompt' => $prompt,
+                'stream' => true,
+                'options' => array_merge([
+                    'temperature' => 0.7,
+                ], $options)
+            ];
 
-        $response = Http::timeout($this->timeout)
-            ->withOptions(['stream' => true])
-            ->post("{$this->baseUrl}/api/generate", $payload);
+            $response = Http::timeout($this->timeout)
+                ->withOptions(['stream' => true])
+                ->post("{$this->baseUrl}/api/generate", $payload);
 
-        $body = $response->getBody();
+            $body = $response->getBody();
 
-        while (!$body->eof()) {
-            $line = trim($body->read(1024));
-            if (!empty($line)) {
-                $data = json_decode($line, true);
-                if ($data) {
-                    yield $data;
+            while (!$body->eof()) {
+                $line = trim($body->read(1024));
+                if (!empty($line)) {
+                    $data = json_decode($line, true);
+                    if ($data) {
+                        yield $data;
+                    }
                 }
             }
+        } catch (Exception $e) {
+            Log::error('Ollama generateStream error: ' . $e->getMessage());
+            yield [
+                'error' => $e->getMessage()
+            ];
         }
     }
 
@@ -389,6 +492,7 @@ class OllamaService
      *
      * @param string $name Nom du modèle
      * @return array
+     * @throws Exception Si le modèle n'est pas trouvé
      */
     public function getModelDetails(string $name): array
     {
@@ -432,5 +536,58 @@ class OllamaService
 
         // Par défaut, c'est un modèle de texte
         return 'text';
+    }
+
+    /**
+     * Récupère l'historique des messages d'un chat et le formate pour Ollama
+     *
+     * @param  \App\Models\AiChat  $chat
+     * @param  int  $limit  Nombre maximum de messages à récupérer
+     * @return array
+     */
+    public function getChatHistory(\App\Models\AiChat $chat, int $limit = 10): array
+    {
+        // Récupérer les messages par ordre chronologique
+        $messages = $chat->messages()
+            ->whereNotIn('metadata->type', ['thinking', 'error'])  // Exclure les messages temporaires/erreur
+            ->orderBy('created_at', 'desc')
+            ->take($limit)
+            ->get()
+            ->sortBy('created_at')
+            ->values();
+
+        // Formatter les messages pour l'API Ollama
+        $history = [];
+        foreach ($messages as $message) {
+            // Mapper 'user' -> 'user', 'assistant' -> 'assistant', 'system' -> 'system'
+            $role = in_array($message->role, ['user', 'assistant', 'system']) 
+                ? $message->role 
+                : 'user'; // par défaut
+            
+            $history[] = [
+                'role' => $role,
+                'content' => $message->content
+            ];
+        }
+        
+        return $history;
+    }
+    
+    /**
+     * Annule une génération en cours en supprimant le modèle de la mémoire Ollama
+     * 
+     * @return bool Succès de l'opération
+     */
+    public function cancelGeneration(): bool
+    {
+        try {
+            $response = Http::timeout(5)
+                ->delete("{$this->baseUrl}/api/generate");
+                
+            return $response->successful();
+        } catch (Exception $e) {
+            Log::error('Ollama cancelGeneration error: ' . $e->getMessage());
+            return false;
+        }
     }
 }

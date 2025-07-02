@@ -56,7 +56,7 @@ use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
-use App\Http\Controllers\RecordSupportController;
+use AppHttp\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\SearchCommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
@@ -630,6 +630,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes générales AI accessibles à tous les utilisateurs avec module_ai_access
         Route::resource('chats', AiChatController::class)->names('ai.chats');
         Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start');
+        Route::get('chats/check-ollama-status', [AiChatController::class, 'checkOllamaStatus'])->name('ai.chats.check-ollama-status');
         Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat');
         Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
