@@ -148,7 +148,7 @@ class AiChatController extends Controller
             // Vérifier la disponibilité du modèle via le service Ollama
             $ollamaService = app(\App\Services\OllamaService::class);
             $modelDetails = null;
-            
+
             try {
                 // Tenter de récupérer les détails du modèle
                 $modelDetails = $ollamaService->getModelDetails($aiChat->aiModel->name);
@@ -159,11 +159,11 @@ class AiChatController extends Controller
 
             // Message d'accueil personnalisé en fonction du modèle
             $welcomeMessage = 'Bonjour ! Je suis votre assistant IA';
-            
+
             if ($aiChat->aiModel) {
                 $welcomeMessage .= " basé sur le modèle {$aiChat->aiModel->name}";
             }
-            
+
             $welcomeMessage .= ". Comment puis-je vous aider aujourd'hui ?";
 
             // Créer un premier message d'accueil du système
@@ -193,7 +193,7 @@ class AiChatController extends Controller
         try {
             $ollamaService = app(\App\Services\OllamaService::class);
             $status = $ollamaService->healthCheck();
-            
+
             return response()->json([
                 'status' => $status['status'],
                 'message' => $status['message'],

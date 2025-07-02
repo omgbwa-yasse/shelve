@@ -170,7 +170,7 @@
         .typing-animation span:nth-child(1) { animation-delay: 0s; }
         .typing-animation span:nth-child(2) { animation-delay: 0.3s; }
         .typing-animation span:nth-child(3) { animation-delay: 0.6s; }
-        
+
         @keyframes typing {
             0%, 100% { opacity: 0.3; transform: scale(0.8); }
             50% { opacity: 1; transform: scale(1); }
@@ -188,14 +188,14 @@
             const sendButton = document.getElementById('send-button');
             const typingIndicator = document.getElementById('typing-indicator');
             const ollamaStatusBadge = document.getElementById('ollama-status');
-            
+
             // Scroll to bottom of messages
             function scrollToBottom() {
                 if (chatMessages) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }
-            
+
             // Check Ollama status
             function checkOllamaStatus() {
                 fetch('{{ route("ai.chats.check-ollama-status") }}')
@@ -215,23 +215,23 @@
                         console.error('Erreur de vérification du statut:', error);
                     });
             }
-            
+
             // Handle form submission
             if (messageForm) {
                 messageForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
+
                     // Disable form while processing
                     sendButton.disabled = true;
                     messageContent.disabled = true;
-                    
+
                     // Show typing indicator
                     typingIndicator.classList.remove('d-none');
                     scrollToBottom();
-                    
+
                     // Get form data
                     const formData = new FormData(messageForm);
-                    
+
                     // Send message
                     fetch(messageForm.action, {
                         method: 'POST',
@@ -252,13 +252,13 @@
                             // Add user message to chat
                             const userMessageHtml = createMessageHtml(data.userMessage);
                             appendMessage(userMessageHtml);
-                            
+
                             // Add AI response to chat
                             if (data.aiMessage) {
                                 const aiMessageHtml = createMessageHtml(data.aiMessage);
                                 appendMessage(aiMessageHtml);
                             }
-                            
+
                             // Clear the form
                             messageContent.value = '';
                         } else {
@@ -277,7 +277,7 @@
                     });
                 });
             }
-            
+
             // Create message HTML
             function createMessageHtml(message) {
                 const isUser = message.role === 'user';
@@ -288,12 +288,12 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
-                
+
                 let badgeHtml = '';
                 if (message.metadata && message.metadata.type) {
                     badgeHtml = `<span class="badge bg-info">${message.metadata.type}</span>`;
                 }
-                
+
                 return `
                     <div class="message mb-3 ${isUser ? 'text-end' : ''}" id="message-${message.id}">
                         <div class="message-content d-inline-block p-3 rounded ${isUser ? 'bg-primary text-white' : 'bg-light'}"
@@ -308,7 +308,7 @@
                     </div>
                 `;
             }
-            
+
             // Append message to chat
             function appendMessage(messageHtml) {
                 const messageContainer = document.createElement('div');
@@ -316,7 +316,7 @@
                 chatMessages.appendChild(messageContainer.firstElementChild);
                 scrollToBottom();
             }
-            
+
             // Show system message
             function showSystemMessage(type, message) {
                 const systemMessages = document.getElementById('system-messages');
@@ -327,18 +327,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 `;
                 systemMessages.appendChild(alertDiv);
-                
+
                 // Auto-remove after 5 seconds
                 setTimeout(() => {
                     alertDiv.classList.remove('show');
                     setTimeout(() => alertDiv.remove(), 150);
                 }, 5000);
             }
-            
+
             // Initialize
             scrollToBottom();
             checkOllamaStatus();
-            
+
             // Check Ollama status every 30 seconds
             setInterval(checkOllamaStatus, 30000);
         });

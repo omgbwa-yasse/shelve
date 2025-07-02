@@ -88,7 +88,7 @@ class AiChatMessageController extends Controller
             if ($validated['role'] === 'user') {
                 // Récupérer le service Ollama une seule fois pour éviter la duplication
                 $ollamaService = app(\App\Services\OllamaService::class);
-                
+
                 // Vérifier l'état de santé d'Ollama
                 $healthCheck = $ollamaService->healthCheck();
                 if ($healthCheck['status'] !== 'healthy') {
@@ -98,7 +98,7 @@ class AiChatMessageController extends Controller
                 try {
                     // Récupérer le contexte des messages précédents
                     $previousMessages = $ollamaService->getChatHistory($chat, 10);
-                    
+
                     // Créer un message temporaire indiquant que l'IA réfléchit
                     $tempMessage = AiChatMessage::create([
                         'ai_chat_id' => $chat->id,
@@ -112,8 +112,8 @@ class AiChatMessageController extends Controller
 
                     // Faire appel au service Ollama pour obtenir une réponse
                     $response = $ollamaService->generate(
-                        $chat->aiModel->name, 
-                        $validated['content'], 
+                        $chat->aiModel->name,
+                        $validated['content'],
                         [
                             'temperature' => 0.7,
                             'context' => $previousMessages
@@ -135,7 +135,7 @@ class AiChatMessageController extends Controller
                             'total_duration' => $response['total_duration'] ?? null
                         ]
                     ]);
-                    
+
                     $aiMessage = $tempMessage->fresh();
                 } catch (\Exception $e) {
                     // Log l'erreur pour le débogage
@@ -144,7 +144,7 @@ class AiChatMessageController extends Controller
                         'model' => $chat->aiModel->name ?? 'unknown',
                         'exception' => $e
                     ]);
-                    
+
                     // En cas d'erreur, créer un message d'erreur
                     $aiMessage = AiChatMessage::create([
                         'ai_chat_id' => $chat->id,
@@ -171,7 +171,7 @@ class AiChatMessageController extends Controller
         } catch (\Exception $e) {
             // Log l'erreur
             Log::error('Erreur storeForChat: ' . $e->getMessage());
-            
+
             // Si c'est une requête AJAX, retourner une réponse JSON avec l'erreur
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -179,7 +179,7 @@ class AiChatMessageController extends Controller
                     'error' => $e->getMessage()
                 ], 400);
             }
-            
+
             return redirect()->route('ai.chats.show', ['chat' => $chatId])->with('error', $e->getMessage());
         }
     }

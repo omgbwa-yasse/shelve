@@ -629,9 +629,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('ai')->middleware(['auth'])->group(function () {
         // Routes générales AI accessibles à tous les utilisateurs avec module_ai_access
         Route::resource('chats', AiChatController::class)->names('ai.chats');
-        Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start');
+        Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
         Route::get('chats/check-ollama-status', [AiChatController::class, 'checkOllamaStatus'])->name('ai.chats.check-ollama-status');
-        Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat');
+        Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
         Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
         Route::resource('actions', AiActionController::class)->names('ai.actions');

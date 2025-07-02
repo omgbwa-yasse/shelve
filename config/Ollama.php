@@ -16,7 +16,7 @@ return [
     'timeout' => env('OLLAMA_TIMEOUT', 120),
 
     'retry_count' => env('OLLAMA_RETRY_COUNT', 2),
-    
+
     'retry_delay' => env('OLLAMA_RETRY_DELAY', 1000), // milliseconds
 
     'default_options' => [
@@ -41,6 +41,6 @@ return [
         'connection' => env('OLLAMA_QUEUE_CONNECTION', 'default'),
         'timeout' => env('OLLAMA_QUEUE_TIMEOUT', 300),
     ],
-    
+
     'health_check_timeout' => env('OLLAMA_HEALTH_CHECK_TIMEOUT', 5),
 ];

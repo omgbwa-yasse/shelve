@@ -15,7 +15,7 @@ class EnsureOllamaIsAvailable
     {
         $this->ollamaService = $ollamaService;
     }
-    
+
     /**
      * Handle an incoming request that requires Ollama to be available.
      *
@@ -28,14 +28,14 @@ class EnsureOllamaIsAvailable
         try {
             // Vérifier l'état de santé d'Ollama
             $healthCheck = $this->ollamaService->healthCheck();
-            
+
             if ($healthCheck['status'] !== 'healthy') {
                 Log::warning('Tentative d\'accès à une route nécessitant Ollama alors que le service est indisponible', [
                     'health_check' => $healthCheck,
                     'route' => $request->route()->getName(),
                     'user_id' => $request->user() ? $request->user()->id : null
                 ]);
-                
+
                 // Si c'est une requête AJAX, retourner une erreur JSON
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
@@ -43,11 +43,11 @@ class EnsureOllamaIsAvailable
                         'error' => 'Le service Ollama n\'est pas disponible: ' . $healthCheck['message']
                     ], 503);
                 }
-                
+
                 // Sinon, rediriger avec un message d'erreur
                 return redirect()->back()->with('error', 'Le service Ollama n\'est pas disponible: ' . $healthCheck['message']);
             }
-            
+
             return $next($request);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la vérification de disponibilité d\'Ollama', [
@@ -55,7 +55,7 @@ class EnsureOllamaIsAvailable
                 'route' => $request->route()->getName(),
                 'user_id' => $request->user() ? $request->user()->id : null
             ]);
-            
+
             // Si c'est une requête AJAX, retourner une erreur JSON
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -63,7 +63,7 @@ class EnsureOllamaIsAvailable
                     'error' => 'Erreur lors de la vérification de disponibilité d\'Ollama: ' . $e->getMessage()
                 ], 503);
             }
-            
+
             // Sinon, rediriger avec un message d'erreur
             return redirect()->back()->with('error', 'Erreur lors de la vérification de disponibilité d\'Ollama: ' . $e->getMessage());
         }

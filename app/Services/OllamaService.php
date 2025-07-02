@@ -27,7 +27,7 @@ class OllamaService
 
     /**
      * Obtenir la liste des modèles disponibles sur Ollama
-     * 
+     *
      * @throws Exception Si la connexion échoue ou si la réponse n'est pas valide
      * @return array
      */
@@ -54,7 +54,7 @@ class OllamaService
 
     /**
      * Synchroniser les modèles Ollama avec la base de données
-     * 
+     *
      * @throws Exception Si la récupération des modèles échoue
      * @return int Nombre de modèles synchronisés
      */
@@ -99,7 +99,7 @@ class OllamaService
 
     /**
      * Générer une réponse avec Ollama
-     * 
+     *
      * @param string $model Le nom du modèle à utiliser
      * @param string $prompt Le prompt/message à envoyer
      * @param array $options Options additionnelles pour la génération
@@ -120,7 +120,7 @@ class OllamaService
                     'error' => "Le modèle '$model' n'existe pas sur le serveur Ollama."
                 ];
             }
-            
+
             $payload = [
                 'model' => $model,
                 'prompt' => $prompt,
@@ -174,7 +174,7 @@ class OllamaService
 
     /**
      * Chat avec contexte (conversation)
-     * 
+     *
      * @param string $model Le nom du modèle à utiliser
      * @param array $messages Les messages précédents de la conversation
      * @param array $options Options additionnelles pour la génération
@@ -190,7 +190,7 @@ class OllamaService
                     'error' => "Le modèle '$model' n'existe pas sur le serveur Ollama."
                 ];
             }
-            
+
             $payload = [
                 'model' => $model,
                 'messages' => $messages,
@@ -382,7 +382,7 @@ class OllamaService
 
     /**
      * Vérifier l'état de santé d'Ollama
-     * 
+     *
      * @return array ['status' => 'healthy'|'unhealthy', 'response_time' => float, 'message' => string]
      */
     public function healthCheck(): array
@@ -404,8 +404,8 @@ class OllamaService
                 'status' => $response->successful() ? 'healthy' : 'unhealthy',
                 'response_time' => $response->transferStats?->getTransferTime() ?? 0,
                 'models_available' => $modelsAvailable,
-                'message' => $response->successful() 
-                    ? 'Ollama est en ligne' . ($modelsAvailable ? ' avec des modèles disponibles' : ' mais aucun modèle n\'est disponible') 
+                'message' => $response->successful()
+                    ? 'Ollama est en ligne' . ($modelsAvailable ? ' avec des modèles disponibles' : ' mais aucun modèle n\'est disponible')
                     : 'Ollama ne répond pas'
             ];
         } catch (Exception $e) {
@@ -432,7 +432,7 @@ class OllamaService
                 ];
                 return;
             }
-            
+
             $payload = [
                 'model' => $model,
                 'prompt' => $prompt,
@@ -560,22 +560,22 @@ class OllamaService
         $history = [];
         foreach ($messages as $message) {
             // Mapper 'user' -> 'user', 'assistant' -> 'assistant', 'system' -> 'system'
-            $role = in_array($message->role, ['user', 'assistant', 'system']) 
-                ? $message->role 
+            $role = in_array($message->role, ['user', 'assistant', 'system'])
+                ? $message->role
                 : 'user'; // par défaut
-            
+
             $history[] = [
                 'role' => $role,
                 'content' => $message->content
             ];
         }
-        
+
         return $history;
     }
-    
+
     /**
      * Annule une génération en cours en supprimant le modèle de la mémoire Ollama
-     * 
+     *
      * @return bool Succès de l'opération
      */
     public function cancelGeneration(): bool
@@ -583,7 +583,7 @@ class OllamaService
         try {
             $response = Http::timeout(5)
                 ->delete("{$this->baseUrl}/api/generate");
-                
+
             return $response->successful();
         } catch (Exception $e) {
             Log::error('Ollama cancelGeneration error: ' . $e->getMessage());
