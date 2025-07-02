@@ -81,6 +81,35 @@ class AiModelController extends Controller
     }
 
     /**
+     * Display the specified resource by name.
+     *
+     * @param  string  $name
+     * @return \Illuminate\Http\Response
+     */
+    public function showByName($name)
+    {
+        // Récupérer le modèle par son nom depuis la base de données
+        $aiModel = AiModel::where('name', $name)->firstOrFail();
+
+        // Si le modèle n'existe pas dans la base mais existe dans Ollama,
+        // on peut essayer de le récupérer via l'API d'Ollama
+        if (!$aiModel && $this->ollamaService->modelExists($name)) {
+            $modelData = $this->ollamaService->getModelDetails($name);
+            // Créer un objet temporaire avec les données du modèle
+            $aiModel = new AiModel([
+                'name' => $name,
+                'provider' => 'Ollama',
+                'type' => $modelData['type'] ?? 'text',
+                'version' => $modelData['version'] ?? '1.0',
+                'status' => 'active',
+                // Autres propriétés pertinentes...
+            ]);
+        }
+
+        return view('ai.models.show', compact('aiModel'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\AiModel  $aiModel

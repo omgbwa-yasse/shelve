@@ -641,6 +641,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::middleware(['can:ai_configure'])->group(function () {
             Route::resource('models', AiModelController::class)->names('ai.models');
             Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
+            Route::get('models/name/{name}', [AiModelController::class, 'showByName'])->name('ai.models.show.by.name');
             Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
             Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
             Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');

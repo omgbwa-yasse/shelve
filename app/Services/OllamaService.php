@@ -361,4 +361,76 @@ class OllamaService
             }
         }
     }
+
+    /**
+     * Vérifie si un modèle existe sur Ollama par son nom
+     *
+     * @param string $name Nom du modèle
+     * @return bool
+     */
+    public function modelExists(string $name): bool
+    {
+        try {
+            $models = $this->getAvailableModels();
+            foreach ($models as $model) {
+                if ($model['name'] === $name) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception $e) {
+            Log::error('Ollama modelExists error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Récupère les détails d'un modèle Ollama par son nom
+     *
+     * @param string $name Nom du modèle
+     * @return array
+     */
+    public function getModelDetails(string $name): array
+    {
+        try {
+            $models = $this->getAvailableModels();
+            foreach ($models as $model) {
+                if ($model['name'] === $name) {
+                    return [
+                        'name' => $model['name'],
+                        'type' => $this->inferModelType($model['name']),
+                        'version' => $model['modified_at'] ?? null,
+                        'size' => $model['size'] ?? 0,
+                        'digest' => $model['digest'] ?? null,
+                    ];
+                }
+            }
+            throw new Exception("Modèle non trouvé: {$name}");
+        } catch (Exception $e) {
+            Log::error('Ollama getModelDetails error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Infère le type de modèle en fonction de son nom
+     */
+    protected function inferModelType(string $modelName): string
+    {
+        $modelName = strtolower($modelName);
+
+        // Inférer le type de modèle à partir du nom
+        if (str_contains($modelName, 'image') || str_contains($modelName, 'dall-e') ||
+            str_contains($modelName, 'stable') || str_contains($modelName, 'sd')) {
+            return 'image';
+        } elseif (str_contains($modelName, 'code') || str_contains($modelName, 'starcoder') ||
+                str_contains($modelName, 'codellama') || str_contains($modelName, 'wizard-coder')) {
+            return 'code';
+        } elseif (str_contains($modelName, 'embed') || str_contains($modelName, 'embedding')) {
+            return 'embedding';
+        }
+
+        // Par défaut, c'est un modèle de texte
+        return 'text';
+    }
 }

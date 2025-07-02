@@ -116,7 +116,7 @@
                                         <td>{{ $model->last_trained_at ? $model->last_trained_at->format('Y-m-d H:i:s') : '-' }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{{ route('ai.models.show', $model) }}"
+                                                <a href="{{ route('ai.models.show.by.name', ['name' => $model->name]) }}"
                                                    class="btn btn-outline-primary"
                                                    title="{{ __('view') }}">
                                                     <i class="bi bi-eye"></i>
@@ -286,8 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Définir les URLs pour les actions
     const baseRoute = "{{ url('/ai/models') }}";
     // Générer des URLs correctes pour les modèles
-    function getModelShowUrl(id) {
-        return `${baseRoute}/${id}`;
+    function getModelShowUrl(id, name) {
+        // Si le nom est fourni, utiliser la route par nom, sinon utiliser l'ID
+        return name ? `${baseRoute}/name/${encodeURIComponent(name)}` : `${baseRoute}/${id}`;
     }
     function getModelEditUrl(id) {
         return `${baseRoute}/${id}/edit`;
@@ -510,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${lastTrained}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <a href="${getModelShowUrl(model.id)}" class="btn btn-outline-primary" title="{{ __('view') }}">
+                        <a href="${getModelShowUrl(model.id, model.name)}" class="btn btn-outline-primary" title="{{ __('view') }}">
                             <i class="bi bi-eye"></i>
                         </a>
                         <a href="${getModelEditUrl(model.id)}" class="btn btn-outline-secondary" title="{{ __('edit') }}">

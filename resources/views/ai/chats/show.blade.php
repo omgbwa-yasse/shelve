@@ -9,8 +9,8 @@
                         <div>
                             <h2 class="mb-0">{{ $aiChat->title }}</h2>
                             <small class="text-muted">
-                                Modèle: {{ $aiChat->aiModel->name }} |
-                                Créé par: {{ $aiChat->user->name }} |
+                                Modèle: {{ $aiChat->aiModel ? $aiChat->aiModel->name : 'Non défini' }} |
+                                Créé par: {{ $aiChat->user ? $aiChat->user->name : 'Utilisateur inconnu' }} |
                                 Statut:
                                 <span class="badge bg-{{ $aiChat->is_active ? 'success' : 'danger' }}">
                                     {{ $aiChat->is_active ? 'Actif' : 'Inactif' }}
@@ -35,7 +35,7 @@
                     <div class="card-body">
                         <!-- Messages -->
                         <div class="chat-messages mb-4" style="max-height: 500px; overflow-y: auto;">
-                            @forelse($aiChat->messages as $message)
+                            @forelse($aiChat->messages ?? [] as $message)
                                 <div class="message mb-3 {{ $message->is_from_user ? 'text-end' : '' }}">
                                     <div class="message-content d-inline-block p-3 rounded {{ $message->is_from_user ? 'bg-primary text-white' : 'bg-light' }}"
                                          style="max-width: 80%;">
@@ -43,7 +43,7 @@
                                             {!! nl2br(e($message->content)) !!}
                                         </div>
                                         <small class="message-time d-block mt-1 {{ $message->is_from_user ? 'text-white-50' : 'text-muted' }}">
-                                            {{ $message->created_at->format('d/m/Y H:i') }}
+                                            {{ $message->created_at ? $message->created_at->format('d/m/Y H:i') : 'Date inconnue' }}
                                         </small>
                                     </div>
                                 </div>
@@ -76,20 +76,20 @@
                 </div>
 
                 <!-- Ressources associées -->
-                @if($aiChat->resources->isNotEmpty())
+                @if(isset($aiChat->resources) && $aiChat->resources->isNotEmpty())
                     <div class="card mt-4">
                         <div class="card-header">
                             <h3 class="mb-0">Ressources associées</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                @foreach($aiChat->resources as $resource)
+                                @foreach($aiChat->resources ?? [] as $resource)
                                     <div class="col-md-4 mb-3">
                                         <div class="card h-100">
                                             <div class="card-body">
-                                                <h5 class="card-title">{{ $resource->title }}</h5>
-                                                <p class="card-text">{{ Str::limit($resource->description, 100) }}</p>
-                                                <a href="{{ route('resources.show', $resource) }}"
+                                                <h5 class="card-title">{{ $resource->title ?? 'Titre non disponible' }}</h5>
+                                                <p class="card-text">{{ isset($resource->description) ? Str::limit($resource->description, 100) : 'Description non disponible' }}</p>
+                                                <a href="{{ route('ai.resources.show', $resource) }}"
                                                    class="btn btn-sm btn-outline-primary">
                                                     Voir la ressource
                                                 </a>
