@@ -640,6 +640,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes de configuration AI protégées par la permission ai_configure
         Route::middleware(['can:ai_configure'])->group(function () {
             Route::resource('models', AiModelController::class)->names('ai.models');
+            Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
             Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
             Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
             Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
@@ -714,7 +715,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::prefix('api/ai/ollama')->middleware(['auth', 'can:ai_configure'])->group(function () {
         Route::post('models/sync', [AiModelController::class, 'syncOllamaModels']);
         Route::get('models', [AiModelController::class, 'getOllamaModels']);
-        Route::get('health', [OllamaController::class, 'healthCheckApi']);
+        Route::get('health', [AiModelController::class, 'healthCheck']);
     });
 
 

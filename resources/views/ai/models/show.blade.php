@@ -6,13 +6,13 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">AI Model Details</h4>
+                    <h4 class="mb-0">{{ __('ai_model_details') }}</h4>
                     <div>
-                        <a href="{{ route('ai.models.edit', $aiModel) }}" class="btn btn-primary btn-sm">Edit</a>
-                        <form action="{{ route('ai.models.destroy', $aiModel) }}" method="POST" class="d-inline">
+                        <a href="{{ route('ai.models.edit', ['model' => $aiModel->id]) }}" class="btn btn-primary btn-sm">{{ __('edit') }}</a>
+                        <form action="{{ route('ai.models.destroy', ['model' => $aiModel->id]) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this model?')">Delete</button>
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ __('confirm_model_deletion') }}')">{{ __('delete') }}</button>
                         </form>
                     </div>
                 </div>

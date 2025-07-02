@@ -263,14 +263,14 @@
 function deleteModel(id) {
     const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     const form = document.getElementById('deleteForm');
-    form.action = `/ai/models/${id}`;
+    form.action = `{{ url('/ai/models') }}/${id}`;
     modal.show();
 }
 
 function trainModel(id) {
     const modal = new bootstrap.Modal(document.getElementById('trainModal'));
     const form = document.getElementById('trainForm');
-    form.action = `/ai/models/${id}/train`;
+    form.action = `{{ url('/ai/models') }}/${id}/train`;
     modal.show();
 }
 
@@ -282,6 +282,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const sortFilter = document.getElementById('sortFilter');
     const table = document.querySelector('table tbody');
     const rows = table.getElementsByTagName('tr');
+
+    // Définir les URLs pour les actions
+    const baseRoute = "{{ url('/ai/models') }}";
+    // Générer des URLs correctes pour les modèles
+    function getModelShowUrl(id) {
+        return `${baseRoute}/${id}`;
+    }
+    function getModelEditUrl(id) {
+        return `${baseRoute}/${id}/edit`;
+    }
 
     function filterTable() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -500,16 +510,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${lastTrained}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <a href="/ai/models/${model.id}" class="btn btn-outline-primary" title="Voir">
+                        <a href="${getModelShowUrl(model.id)}" class="btn btn-outline-primary" title="{{ __('view') }}">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="/ai/models/${model.id}/edit" class="btn btn-outline-secondary" title="Modifier">
+                        <a href="${getModelEditUrl(model.id)}" class="btn btn-outline-secondary" title="{{ __('edit') }}">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <button onclick="deleteModel(${model.id})" class="btn btn-outline-danger" title="Supprimer">
+                        <button onclick="deleteModel(${model.id})" class="btn btn-outline-danger" title="{{ __('delete') }}">
                             <i class="bi bi-trash"></i>
                         </button>
-                        <button onclick="trainModel(${model.id})" class="btn btn-outline-warning" title="Entraîner">
+                        <button onclick="trainModel(${model.id})" class="btn btn-outline-warning" title="{{ __('train') }}">
                             <i class="bi bi-cpu"></i>
                         </button>
                     </div>

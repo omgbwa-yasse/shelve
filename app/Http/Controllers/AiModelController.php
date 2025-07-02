@@ -211,4 +211,46 @@ class AiModelController extends Controller
             'isConnected' => $isConnected
         ]);
     }
+
+    /**
+     * Train the specified AI Model.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\AiModel  $model
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function trainModel(Request $request, AiModel $model)
+    {
+        try {
+            // Mark the model as training
+            $model->status = 'training';
+            $model->save();
+
+            // In a real implementation, you might want to dispatch a job here
+            // For now, we'll just simulate training by updating the last trained timestamp
+            $model->last_trained_at = now();
+            $model->save();
+
+            if ($request->ajax() || $request->has('ajax')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => __('training_started_for_model', ['model' => $model->name]),
+                    'model' => $model
+                ]);
+            }
+
+            return redirect()->route('ai.models.show', ['model' => $model->id])
+                ->with('success', __('training_started_for_model', ['model' => $model->name]));
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->has('ajax')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('training_error') . ': ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->route('ai.models.show', ['model' => $model->id])
+                ->with('error', __('training_error') . ': ' . $e->getMessage());
+        }
+    }
 }

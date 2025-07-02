@@ -6,11 +6,11 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="mb-0">Edit AI Model</h4>
+                    <h4 class="mb-0">{{ __('edit_ai_model') }}</h4>
                 </div>
 
                 <div class="card-body">
-                    <form method="POST" action="{{ route('ai.models.update', $aiModel) }}">
+                    <form method="POST" action="{{ route('ai.models.update', ['model' => $aiModel->id]) }}">
                         @csrf
                         @method('PUT')
 
@@ -70,8 +70,8 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('ai.models.show', $aiModel) }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Update AI Model</button>
+                            <a href="{{ route('ai.models.show', ['model' => $aiModel->id]) }}" class="btn btn-secondary">{{ __('cancel') }}</a>
+                            <button type="submit" class="btn btn-primary">{{ __('update_ai_model') }}</button>
                         </div>
                     </form>
                 </div>

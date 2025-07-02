@@ -85,4 +85,13 @@ class OllamaController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Vérifier l'état de santé d'Ollama (endpoint API)
+     */
+    public function healthCheckApi(): JsonResponse
+    {
+        $health = $this->ollamaService->healthCheck();
+        return response()->json($health);
+    }
 }
