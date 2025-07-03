@@ -504,5 +504,18 @@
     "permissions.backups_restore.description": "Permet de restaurer des sauvegardes",
     "N/A": "N/D",
     "Invalid record": "Enregistrement invalide",
-    "Are you sure you want to delete this user organisation role?": "Êtes-vous sûr de vouloir supprimer ce rôle utilisateur-organisation ?"
+    "Are you sure you want to delete this user organisation role?": "Êtes-vous sûr de vouloir supprimer ce rôle utilisateur-organisation ?",
+    
+    "ai_enrich": "Enrichir par IA",
+    "ai_features": "Fonctionnalités IA",
+    "record_enrichment": "Enrichissement de fiche",
+    "ai_enrichment_desc": "Extraire des mots-clés et suggérer des termes à partir du contenu de la fiche.",
+    "extract_keywords": "Extraire mots-clés",
+    "suggest_terms": "Suggérer termes",
+    "transfer_features": "Fonctionnalités de versement",
+    "ai_transfer_desc": "Valider, classifier et générer des rapports pour les versements d'archives.",
+    "validate": "Valider",
+    "classify": "Classifier",
+    "report": "Rapport",
+    "ai_results": "Résultats IA"
 }

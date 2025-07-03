@@ -31,4 +31,9 @@ return [
         ],
     ],
 
+    'mcp' => [
+        'url' => env('MCP_SERVER_URL', 'http://localhost:3000'),
+        'api_key' => env('MCP_API_KEY'),
+    ],
+
 ];

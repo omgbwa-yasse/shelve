@@ -772,5 +772,18 @@
     "permissions.backups_restore.description": "Allows restoring backups",
     "N/A": "N/A",
     "Invalid record": "Invalid record",
-    "Are you sure you want to delete this user organisation role?": "Are you sure you want to delete this user organisation role?"
+    "Are you sure you want to delete this user organisation role?": "Are you sure you want to delete this user organisation role?",
+    
+    "ai_enrich": "AI Enrich",
+    "ai_features": "AI Features",
+    "record_enrichment": "Record Enrichment",
+    "ai_enrichment_desc": "Extract keywords and suggest terms from record content.",
+    "extract_keywords": "Extract Keywords",
+    "suggest_terms": "Suggest Terms",
+    "transfer_features": "Transfer Features",
+    "ai_transfer_desc": "Validate, classify, and generate reports for archive transfers.",
+    "validate": "Validate",
+    "classify": "Classify",
+    "report": "Report",
+    "ai_results": "AI Results"
 }
