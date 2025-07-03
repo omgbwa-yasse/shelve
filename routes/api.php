@@ -26,6 +26,12 @@ use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\Api\OrganisationApiController;
 
+// Routes API pour le thésaurus et la recherche de termes
+Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
+    Route::get('/search', [App\Http\Controllers\Api\TermApiController::class, 'search'])->name('search');
+    Route::get('/categories', [App\Http\Controllers\Api\TermApiController::class, 'categories'])->name('categories');
+});
+
 // Routes API pour l'enrichissement des records via Ollama MCP
 Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
     Route::get('status', [RecordEnricherController::class, 'status'])->name('status');

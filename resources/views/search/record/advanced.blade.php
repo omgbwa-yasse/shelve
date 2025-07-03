@@ -1,5 +1,59 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    /* Assurer que tous les éléments dans les accordéons sont cliquables */
+    .accordion-collapse,
+    .accordion-body,
+    .list-group-item-action {
+        pointer-events: auto !important;
+    }
+
+    /* S'assurer que les éléments interactifs sont toujours cliquables */
+    .accordion-item * {
+        pointer-events: auto !important;
+    }
+
+    /* Rendre visible l'intérieur des accordéons même quand ils sont ouverts */
+    .accordion-collapse.show {
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    /* Corriger l'affichage des listes à l'intérieur des accordéons */
+    .list-group-flush {
+        pointer-events: auto !important;
+        visibility: visible !important;
+        display: block !important;
+    }
+
+    /* Garantir que tous les liens dans les accordéons sont visibles et cliquables */
+    .list-group-item-action {
+        visibility: visible !important;
+        display: flex !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 100 !important; /* Assurer un z-index élevé pour éviter que d'autres éléments passent au-dessus */
+    }
+
+    /* Désactiver les animations qui peuvent causer des problèmes */
+    .accordion-collapse {
+        transition: none !important;
+    }
+
+    /* Forcer l'affichage de tous les éléments à l'intérieur des accordéons */
+    #fieldsAccordion .list-group,
+    #fieldsAccordion .list-group-item {
+        display: block !important;
+        opacity: 1 !important;
+        height: auto !important;
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="container">
         <div class="row">
@@ -212,7 +266,89 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {            // Fonction complète pour corriger les problèmes d'interactivité des accordéons
+            const fixAccordionInteractivity = () => {
+                // Traiter tous les accordéons
+                document.querySelectorAll('.accordion-collapse').forEach(collapse => {
+                    // Forcer l'élément accordéon à être interactif
+                    collapse.style.pointerEvents = 'auto';
+                    collapse.style.visibility = 'visible';
+                    collapse.style.overflow = 'visible';
+                    collapse.style.height = 'auto';
+                    collapse.style.display = 'block';
+                    collapse.style.opacity = '1';
+                    collapse.style.position = 'relative';
+                    collapse.style.zIndex = '5';
+
+                    // Traiter les contenus internes
+                    collapse.querySelectorAll('.accordion-body').forEach(body => {
+                        body.style.pointerEvents = 'auto';
+                        body.style.visibility = 'visible';
+                        body.style.display = 'block';
+                    });
+
+                    // Traiter les listes à l'intérieur
+                    collapse.querySelectorAll('.list-group, .list-group-flush').forEach(list => {
+                        list.style.pointerEvents = 'auto';
+                        list.style.visibility = 'visible';
+                        list.style.display = 'block';
+                        list.style.opacity = '1';
+                    });
+
+                    // Traiter tous les éléments cliquables
+                    collapse.querySelectorAll('.list-group-item, .list-group-item-action, a, button, input, select').forEach(element => {
+                        element.style.pointerEvents = 'auto';
+                        element.style.visibility = 'visible';
+                        element.style.opacity = '1';
+                        element.style.position = 'relative';
+                        element.style.zIndex = '10';
+                        element.style.display = element.tagName.toLowerCase() === 'a' ? 'flex' : '';
+                    });
+
+                    // S'assurer que tous les champs avec un attribut data-field sont particulièrement visibles
+                    collapse.querySelectorAll('[data-field]').forEach(field => {
+                        field.style.pointerEvents = 'auto';
+                        field.style.visibility = 'visible';
+                        field.style.opacity = '1';
+                        field.style.position = 'relative';
+                        field.style.zIndex = '20'; // Z-index plus élevé pour ces éléments critiques
+                    });
+                });
+            };
+
+            // Appliquer les correctifs immédiatement
+            fixAccordionInteractivity();
+
+            // Forcer tous les accordéons ouverts par défaut pour éviter les problèmes
+            document.querySelectorAll('.accordion-collapse').forEach(collapse => {
+                collapse.classList.add('show');
+            });
+
+            // Mettre en place une surveillance continue pour garantir l'interactivité
+            const observer = new MutationObserver(() => {
+                fixAccordionInteractivity();
+            });
+
+            // Observer les changements dans les accordéons
+            document.querySelectorAll('.accordion').forEach(accordion => {
+                observer.observe(accordion, { subtree: true, attributes: true, childList: true });
+            });
+
+            // Ajouter des écouteurs d'événements pour corriger après chaque clic
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Appliquer immédiatement
+                    fixAccordionInteractivity();
+
+                    // Puis réappliquer après un délai pour gérer les animations
+                    setTimeout(fixAccordionInteractivity, 50);
+                    setTimeout(fixAccordionInteractivity, 300);
+                });
+            });
+
+            // Corriger également après le chargement complet
+            window.addEventListener('load', fixAccordionInteractivity);
+
             // Données de l'application
             const data = @json($data ?? []);
             console.log('Données chargées:', data); // Pour déboguer
@@ -265,16 +401,42 @@
                 creator: data.creators,
                 container: data.containers,
                 status: data.statues
+            };            // Fonction pour rendre un élément complètement cliquable
+            const makeFullyInteractive = (element) => {
+                element.style.pointerEvents = 'auto';
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+                element.style.position = 'relative';
+                element.style.zIndex = '50'; // Z-index très élevé
+                element.style.cursor = 'pointer'; // Assurer que le curseur indique un élément cliquable
             };
 
-            // Gestionnaire de clic sur les champs
+            // Gestionnaire de clic sur les champs avec amélioration de l'interactivité
             document.querySelectorAll('[data-field]').forEach(field => {
-                field.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const fieldName = field.getAttribute('data-field');
-                    const fieldLabel = field.getAttribute('data-name-field');
-                    addSearchCriteria(fieldName, fieldLabel);
-                    noCriteriaMessage.style.display = 'none';
+                // Application des styles essentiels pour rendre le champ cliquable
+                makeFullyInteractive(field);
+
+                // S'assurer que tous les parents sont également cliquables
+                let parent = field.parentElement;
+                while (parent && parent !== document.body) {
+                    parent.style.pointerEvents = 'auto';
+                    parent = parent.parentElement;
+                }
+
+                // Attacher plusieurs écouteurs d'événements pour maximiser les chances de capture
+                ['click', 'mousedown', 'touchstart'].forEach(eventType => {
+                    field.addEventListener(eventType, (e) => {
+                        // Bloquer la propagation et le comportement par défaut
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        console.log('Champ cliqué:', field.getAttribute('data-field')); // Pour le débogage
+
+                        const fieldName = field.getAttribute('data-field');
+                        const fieldLabel = field.getAttribute('data-name-field');
+                        addSearchCriteria(fieldName, fieldLabel);
+                        noCriteriaMessage.style.display = 'none';
+                    }, true); // Use capture phase
                 });
             });
 

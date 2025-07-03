@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container-fluid">
         <div class="row mb-3">
             <div class="col">
@@ -104,7 +105,7 @@
                 <!-- Context Panel -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="contextHeader">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#contextCollapse" aria-expanded="false" aria-controls="contextCollapse">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#contextCollapse" aria-expanded="true" aria-controls="contextCollapse">
                             {{ __('context') }}
                         </button>
                     </h2>
@@ -129,9 +130,9 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
-
-
+                <!-- Indexing Panel -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="indexingHeader">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#indexingCollapse" aria-expanded="true" aria-controls="indexingCollapse">
@@ -169,11 +170,11 @@
                 <!-- Notes Panel -->
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="notesHeader">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#notesCollapse" aria-expanded="false" aria-controls="notesCollapse">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#notesCollapse" aria-expanded="true" aria-controls="notesCollapse">
                             {{ __('notes') }}
                         </button>
                     </h2>
-                    <div id="notesCollapse" class="accordion-collapse collapse" aria-labelledby="notesHeader" data-bs-parent="">
+                    <div id="notesCollapse" class="accordion-collapse collapse show" aria-labelledby="notesHeader" data-bs-parent="">
                         <div class="accordion-body">
                             <textarea name="note" class="form-control form-control-sm" rows="3"></textarea>
                         </div>
@@ -190,12 +191,13 @@
         </form>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals - inclus une seule fois -->
     @include('records.partials.author_modal')
     @include('records.partials.term_modal')
     @include('records.partials.activity_modal')
 
     <style>
+        /* Styles pour l'accordéon et les formulaires */
         .accordion-button { padding: 0.75rem 1.25rem; }
         .accordion-button:not(.collapsed) {
             background-color: var(--bs-primary);
@@ -206,6 +208,7 @@
         }
         .accordion-button:hover {
             background-color: var(--bs-primary);
+            color: white;
         }
         .accordion-button:focus { box-shadow: none; }
         .form-label { margin-bottom: 0.2rem; }
@@ -213,30 +216,97 @@
         .form-control-sm, .form-select-sm { padding: 0.25rem 0.5rem; }
         .input-group-sm > .form-control { padding: 0.25rem 0.5rem; }
         .btn-sm { padding: 0.25rem 0.5rem; }
-    </style>
 
-    <!-- Modals -->
-    @include('records.partials.author_modal')
-    @include('records.partials.term_modal')
-    @include('records.partials.activity_modal')
+        /* Assurer que les champs sont toujours visibles - pour tous les panneaux, pas seulement ceux avec .show */
+        .accordion-collapse {
+            position: static !important;
+            visibility: visible !important;
+            display: block !important;
+            height: auto !important;
+            overflow: visible !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+        }
 
-    <style>
-        .form-label { margin-bottom: 0.2rem; }
-        .card-body { padding: 1rem; }
-        .form-control-sm, .form-select-sm { padding: 0.25rem 0.5rem; }
-        .input-group-sm > .form-control { padding: 0.25rem 0.5rem; }
-        .btn-sm { padding: 0.25rem 0.5rem; }
+        /* Styles pour les contenus des sections accordéon */
+        .accordion-item {
+            overflow: visible;
+            z-index: auto;
+            position: relative;
+        }
+
+        /* Assurer que les champs de formulaire sont cliquables */
+        .accordion-body .form-control,
+        .accordion-body .form-select,
+        .accordion-body .input-group,
+        .accordion-body .btn {
+            position: relative;
+            z-index: 10;
+            pointer-events: auto !important;
+        }
+
+        /* Correction pour que toutes les sections accordéon restent ouvertes */
+        .collapse {
+            display: block !important;
+        }
+
+        /* Style spécifique pour les sections accordéon */
+        .accordion-button {
+            pointer-events: auto;
+        }
+
+        /* Réduire l'opacité des panneaux fermés pour indiquer visuellement qu'ils sont fermés tout en les gardant visibles */
+        .accordion-collapse:not(.show) {
+            opacity: 0.95 !important;
+        }
     </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Disable accordion parent to allow multiple panels open
+            // Configurer l'accordéon pour permettre plusieurs panneaux ouverts et tous les ouvrir par défaut
             const accordionPanels = document.querySelectorAll('.accordion-collapse');
             accordionPanels.forEach(panel => {
-                panel.setAttribute('data-bs-parent', '');
+                // Enlever la référence au parent pour permettre d'avoir plusieurs sections ouvertes
+                panel.removeAttribute('data-bs-parent');
+
+                // S'assurer que tous les panneaux sont ouverts par défaut
+                panel.classList.add('show');
+
+                // Forcer la visibilité des panneaux
+                panel.style.display = 'block';
+                panel.style.height = 'auto';
+                panel.style.visibility = 'visible';
+                panel.style.overflow = 'visible';
+                panel.style.opacity = '1';
             });
 
-            // Function to filter list items
+            // S'assurer que tous les boutons accordéon sont dans l'état ouvert
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.classList.remove('collapsed');
+                button.setAttribute('aria-expanded', 'true');
+            });
+
+            // S'assurer que les boutons accordéon fonctionnent correctement
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-bs-target');
+                    const targetPanel = document.querySelector(targetId);
+
+                    // Attendre la fin de l'animation Bootstrap
+                    setTimeout(() => {
+                        if (targetPanel.classList.contains('show')) {
+                            // Assurer la visibilité complète
+                            targetPanel.style.display = 'block';
+                            targetPanel.style.height = 'auto';
+                            targetPanel.style.visibility = 'visible';
+                            targetPanel.style.overflow = 'visible';
+                            targetPanel.style.opacity = '1';
+                        }
+                    }, 350); // Délai légèrement supérieur à la transition Bootstrap
+                });
+            });
+
+            // Fonction pour filtrer les éléments de liste dans les modals
             function filterList(searchInput, listItems) {
                 const filter = searchInput.value.toLowerCase();
                 listItems.forEach(item => {
@@ -245,7 +315,124 @@
                 });
             }
 
-            // Modal configuration
+            // Charger les catégories de termes pour le filtre
+            function loadTermCategories() {
+                const categorySelect = document.getElementById('term-category-filter');
+                if (!categorySelect) return;
+
+                fetch('/api/thesaurus/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Vider les options existantes sauf la première
+                    while (categorySelect.options.length > 1) {
+                        categorySelect.options.remove(1);
+                    }
+
+                    // Ajouter les catégories comme options
+                    data.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        categorySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Erreur lors du chargement des catégories:', error));
+            }
+
+            // Fonction pour rechercher des termes via AJAX
+            function searchTerms(keyword = '', categoryId = '') {
+                const termList = document.getElementById('term-list');
+                const loadingIndicator = document.getElementById('term-loading');
+                const noResultsMessage = document.getElementById('term-no-results');
+
+                if (!termList || !loadingIndicator || !noResultsMessage) return;
+
+                // Afficher l'indicateur de chargement
+                termList.style.display = 'none';
+                noResultsMessage.style.display = 'none';
+                loadingIndicator.style.display = 'block';
+
+                // Construire l'URL avec les paramètres de recherche
+                let searchUrl = `/api/thesaurus/search?keyword=${encodeURIComponent(keyword)}`;
+                if (categoryId) {
+                    searchUrl += `&category_id=${categoryId}`;
+                }
+
+                fetch(searchUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Cacher l'indicateur de chargement
+                    loadingIndicator.style.display = 'none';
+
+                    // Vider la liste de résultats
+                    termList.innerHTML = '';
+
+                    if (data.length === 0) {
+                        // Afficher le message "aucun résultat"
+                        noResultsMessage.style.display = 'block';
+                    } else {
+                        // Afficher la liste des résultats
+                        termList.style.display = 'block';                        // Ajouter chaque terme à la liste
+                        data.forEach(term => {
+                            const item = document.createElement('a');
+                            item.href = '#';
+                            item.className = 'list-group-item list-group-item-action';
+                            item.dataset.id = term.id;
+                            if (term.category_id) {
+                                item.dataset.category = term.category_id;
+                            }
+                            // Stocker le nom formaté pour l'affichage
+                            item.dataset.formattedName = term.formatted_name || term.name;
+
+                            // Créer un span pour le nom du terme
+                            const nameSpan = document.createElement('span');
+                            nameSpan.textContent = term.name;
+
+                            // Si une catégorie est disponible, ajouter un span pour celle-ci
+                            if (term.category_name) {
+                                nameSpan.textContent = term.name;
+
+                                const categorySpan = document.createElement('span');
+                                categorySpan.className = 'ms-1 text-muted';
+                                categorySpan.textContent = '(' + term.category_name + ')';
+
+                                item.appendChild(nameSpan);
+                                item.appendChild(categorySpan);
+                            } else {
+                                item.appendChild(nameSpan);
+                            }
+
+                            termList.appendChild(item);
+
+                            // Ajouter les gestionnaires d'événements pour la sélection
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                item.classList.toggle('active');
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la recherche de termes:', error);
+                    loadingIndicator.style.display = 'none';
+                    noResultsMessage.style.display = 'block';
+                    noResultsMessage.textContent = 'Erreur lors de la recherche. Veuillez réessayer.';
+                });
+            }
+
+            // Configuration des modals
             const modals = [
                 {
                     modalId: 'authorModal',
@@ -258,13 +445,16 @@
                 },
                 {
                     modalId: 'termModal',
-                    searchId: 'term-search',
+                    searchId: 'term-search-input',
                     listId: 'term-list',
                     displayId: 'selected-terms-display',
                     hiddenInputId: 'term-ids',
                     saveButtonId: 'save-terms',
+                    searchButtonId: 'term-search-button',
+                    categoryFilterId: 'term-category-filter',
                     multiSelect: true,
-                    required: true
+                    required: true,
+                    useAjax: true
                 },
                 {
                     modalId: 'activityModal',
@@ -278,7 +468,7 @@
                 }
             ];
 
-            // Initialize each modal
+            // Initialiser chaque modal
             modals.forEach(config => {
                 const modal = document.getElementById(config.modalId);
                 const search = document.getElementById(config.searchId);
@@ -289,28 +479,68 @@
 
                 if (!modal || !search || !list || !saveButton || !displayInput || !hiddenInput) return;
 
-                const items = list.querySelectorAll('.list-group-item');
-
-                // Search functionality
-                search.addEventListener('input', () => filterList(search, items));
-
-                // Item selection
-                items.forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        if (config.multiSelect) {
-                            item.classList.toggle('active');
-                        } else {
-                            items.forEach(i => i.classList.remove('active'));
-                            item.classList.add('active');
-                        }
+                // Configuration spécifique pour le modal de termes avec AJAX
+                if (config.useAjax) {
+                    // Charger les catégories lors de l'ouverture du modal
+                    modal.addEventListener('show.bs.modal', function() {
+                        loadTermCategories();
                     });
-                });
 
-                // Save selection
+                    // Configurer la recherche AJAX
+                    const searchButton = document.getElementById(config.searchButtonId);
+                    const categoryFilter = document.getElementById(config.categoryFilterId);
+
+                    if (searchButton && categoryFilter) {
+                        // Recherche lorsqu'on clique sur le bouton
+                        searchButton.addEventListener('click', function() {
+                            searchTerms(search.value, categoryFilter.value);
+                        });
+
+                        // Recherche lorsqu'on appuie sur Entrée dans le champ de recherche
+                        search.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                searchTerms(search.value, categoryFilter.value);
+                            }
+                        });
+
+                        // Recherche lorsqu'on change de catégorie
+                        categoryFilter.addEventListener('change', function() {
+                            searchTerms(search.value, categoryFilter.value);
+                        });
+
+                        // Recherche initiale avec des termes vides
+                        modal.addEventListener('shown.bs.modal', function() {
+                            searchTerms('', '');
+                        });
+                    }
+                } else {
+                    // Fonctionnalité de recherche standard pour les autres modaux
+                    const items = list.querySelectorAll('.list-group-item');
+                    search.addEventListener('input', () => filterList(search, items));
+
+                    // Sélection d'éléments pour les modaux standard
+                    items.forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (config.multiSelect) {
+                                item.classList.toggle('active');
+                            } else {
+                                items.forEach(i => i.classList.remove('active'));
+                                item.classList.add('active');
+                            }
+                        });
+                    });
+                }
+
+                // Sauvegarder la sélection (commun à tous les modals)
                 saveButton.addEventListener('click', () => {
                     const selectedItems = list.querySelectorAll('.list-group-item.active');
-                    const selectedNames = Array.from(selectedItems).map(item => item.textContent.trim());
+                    // Utiliser le nom formaté stocké dans data-formatted-name s'il existe
+                    const selectedNames = Array.from(selectedItems).map(item => {
+                        // Utiliser le format leMot(PremiereLeMajusculeCategorie)
+                        return item.dataset.formattedName || item.textContent.trim();
+                    });
                     const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
 
                     displayInput.value = selectedNames.join('; ');
@@ -320,7 +550,7 @@
                         hiddenInput.value = selectedIds[0] || '';
                     }
 
-                    // Add validation class if required
+                    // Ajouter une classe de validation si requis
                     if (config.required && hiddenInput.value === '') {
                         displayInput.classList.add('is-invalid');
                     } else {
@@ -329,6 +559,46 @@
 
                     bootstrap.Modal.getInstance(modal).hide();
                 });
+            });
+
+            // Fonction pour s'assurer que tous les champs d'une section sont visibles
+            function ensureFieldsVisibility() {
+                document.querySelectorAll('.accordion-collapse.show').forEach(panel => {
+                    // Pour chaque panneau ouvert, s'assurer que ses champs sont visibles
+                    panel.querySelectorAll('.form-control, .form-select, .input-group').forEach(field => {
+                        field.style.pointerEvents = 'auto';
+                        field.style.opacity = '1';
+                        field.style.position = 'relative';
+                        field.style.zIndex = '10';
+                    });
+                });
+            }
+
+            // Exécuter au chargement pour les sections déjà ouvertes
+            ensureFieldsVisibility();
+
+            // Exécuter après chaque clic sur une section accordéon
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Délai pour laisser Bootstrap traiter les transitions
+                    setTimeout(ensureFieldsVisibility, 400);
+                });
+            });
+
+            // Observer les mutations pour détecter les changements de classe .show
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' &&
+                       mutation.attributeName === 'class' &&
+                       mutation.target.classList.contains('accordion-collapse')) {
+                        ensureFieldsVisibility();
+                    }
+                });
+            });
+
+            // Observer tous les panneaux accordéon
+            document.querySelectorAll('.accordion-collapse').forEach(panel => {
+                observer.observe(panel, { attributes: true });
             });
         });
     </script>

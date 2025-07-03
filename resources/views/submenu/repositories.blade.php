@@ -1,13 +1,23 @@
-<div class="submenu-container py-2">
+<div class="submenu-container submenu-repos        .submenu-repositories-isolated .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-size: 12.5px;
+        }olated py-2">
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <style>
-        .submenu-container {
+    <style>        .submenu-container {
             font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
+            z-index: 10;
+            position: relative;
         }
 
         .submenu-heading {
@@ -81,22 +91,44 @@
         }
 
         .submenu-heading::after {
-            content: '';
+            content: '\F282'; /* Flèche bas (bootstrap icons) */
             margin-left: auto;
             font-family: 'bootstrap-icons';
-            font-size: 12px;
+            font-size: 14px;
             transition: transform 0.2s ease;
         }
 
         .submenu-heading.collapsed::after {
             transform: rotate(-90deg);
+        }        /* Amélioration pour indiquer la cliquabilité */
+        .submenu-heading {
+            position: relative;
+            overflow: hidden;
+            user-select: none; /* Éviter la sélection de texte */
+        }
+
+        .submenu-heading::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none; /* S'assurer que cet élément ne capture pas les événements */
+        }
+
+        .submenu-heading:hover::before {
+            opacity: 1;
         }
     </style>
 
     <!-- Recherche Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'search'))
     <div class="submenu-section">
-        <div class="submenu-heading" >
+        <div class="submenu-heading" data-menu-action="toggle">
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
         <div class="submenu-content" id="rechercheMenu">
@@ -153,7 +185,7 @@
     <!-- Enregistrement Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'add'))
     <div class="submenu-section add-section">
-        <div class="submenu-heading" >
+        <div class="submenu-heading" data-menu-action="toggle">
             <i class="bi bi-journal-plus"></i> {{ __('registration') }}
         </div>
         <div class="submenu-content" id="enregistrementMenu">
@@ -178,7 +210,7 @@
     <!-- lifeCycle Section -->
     @can('viewAny', App\Models\Record::class)
     <div class="submenu-section">
-        <div class="submenu-heading" >
+        <div class="submenu-heading" data-menu-action="toggle">
             <i class="bi bi-cart"></i> {{ __('life_cycle') }}
         </div>
         <div class="submenu-content" id="lifeCycleMenu">
@@ -219,7 +251,7 @@
     <!-- Import / Export Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('repositories', 'tools'))
     <div class="submenu-section">
-        <div class="submenu-heading" >
+        <div class="submenu-heading" data-menu-action="toggle">
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
         <div class="submenu-content" id="importExportMenu">
@@ -243,19 +275,33 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // FonctionnalitÃ© de collapse optionnelle pour les sous-menus
-    const headings = document.querySelectorAll('.submenu-heading');
+    // Fonctionnalité de collapse optionnelle pour les sous-menus
+    const headings = document.querySelectorAll('[data-menu-action="toggle"]');
 
     headings.forEach(function(heading) {
-        heading.addEventListener('click', function() {
-            const content = this.nextElementSibling;
+        heading.addEventListener('click', function(event) {
+            // Important: utiliser currentTarget pour référencer l'élément qui a l'écouteur d'événement
+            // et non pas nécessairement l'élément sur lequel l'utilisateur a cliqué
+            const clickedHeading = event.currentTarget;
+            const content = clickedHeading.nextElementSibling;
 
             if (content && content.classList.contains('submenu-content')) {
                 // Toggle la classe collapsed
                 content.classList.toggle('collapsed');
-                this.classList.toggle('collapsed');
+                clickedHeading.classList.toggle('collapsed');
+
+                // Empêcher seulement la navigation par défaut, sans perturber le reste du document
+                event.preventDefault();
             }
         });
     });
-});
-</script>
+
+    // Fix pour formulaires - s'assurer que les éléments de formulaire fonctionnent correctement
+    const formElements = document.querySelectorAll('input, select, textarea, button');
+    formElements.forEach(function(element) {
+        // S'assurer que les événements de formulaire sont toujours traités correctement
+        element.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+});</script>
