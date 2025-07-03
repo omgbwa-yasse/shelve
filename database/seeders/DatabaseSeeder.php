@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
             OrganisationSeeder::class,
             PermissionCategorySeeder::class, // Seeder avec catégories et nomenclature unifiée
             UpdateRecordsPermissionsSeeder::class, // Mise à jour des permissions du module Records/Repositories
-            CommunicationPermissionsSeeder::class, // Ajout des permissions manquantes pour le module Communications
+            CommunicationsPermissionsSeeder::class, // Ajout des permissions manquantes pour le module Communications
             UserSeeder::class,
             ActivitySeeder::class,
             AuthorSeeder::class,
