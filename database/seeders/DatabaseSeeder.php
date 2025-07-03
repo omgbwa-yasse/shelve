@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             OrganisationSeeder::class,
             PermissionCategorySeeder::class, // Seeder avec catégories et nomenclature unifiée
+            UpdateRecordsPermissionsSeeder::class, // Mise à jour des permissions du module Records/Repositories
             UserSeeder::class,
             ActivitySeeder::class,
             AuthorSeeder::class,

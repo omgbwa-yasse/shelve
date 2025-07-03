@@ -56,31 +56,42 @@ class SubmenuPermissions
         return [
             // Section Recherche
             'search' => [
-                'all_records' => 'records.view',
-                'by_classification' => 'records.view',
-                'by_date' => 'records.view',
-                'by_author' => 'records.view',
-                'advanced_search' => 'records.view',
-                'my_records' => 'records.view',
+                'my_archives' => 'records_view',
+                'holders' => 'authors_view',
+                'dates' => 'records_view',
+                'keywords' => 'records_view',
+                'activities' => 'records_view',
+                'premises' => 'records_view',
+                'recent' => 'records_view',
+                'advanced_search' => 'records_view',
             ],
             // Section Ajout
             'add' => [
-                'new_record' => 'records.create',
-                'import_records' => 'records.create',
-                'bulk_create' => 'records.create',
+                'create_record' => 'records_create',
+                'create_author' => 'authors_create',
             ],
-            // Section Configuration
-            'config' => [
-                'classifications' => 'records.config',
-                'retention_rules' => 'records.config',
-                'authors' => 'records.config',
-                'terms' => 'records.config',
+            // Section Cycle de vie
+            'lifecycle' => [
+                'tostore' => 'records_lifecycle',
+                'toretain' => 'records_lifecycle',
+                'totransfer' => 'records_lifecycle',
+                'toeliminate' => 'records_lifecycle',
+                'tokeep' => 'records_lifecycle',
+                'tosort' => 'records_lifecycle',
             ],
             // Section Outils
             'tools' => [
-                'export' => 'records.export',
-                'statistics' => 'records.view',
-                'audit' => 'records.audit',
+                'import' => 'records_import',
+                'export' => 'records_export',
+            ],
+            // Section MCP/IA
+            'mcp' => [
+                'enrich' => 'mcp_features',
+                'extract_keywords' => 'mcp_features',
+                'suggest_terms' => 'mcp_features',
+                'validate' => 'mcp_features',
+                'classify' => 'mcp_features',
+                'report' => 'mcp_features',
             ]
         ];
     }

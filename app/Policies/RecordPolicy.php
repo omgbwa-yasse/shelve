@@ -116,4 +116,30 @@ class RecordPolicy extends BasePolicy
 
         return $this->canUpdate($user, $record, 'records_archive');
     }
+
+    /**
+     * Determine whether the user can import records.
+     * Supports guest users with optional type-hint.
+     */
+    public function import(?User $user): bool|Response
+    {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour importer des records.');
+        }
+
+        return $user->hasPermissionTo('records_import');
+    }
+
+    /**
+     * Determine whether the user can export records.
+     * Supports guest users with optional type-hint.
+     */
+    public function export(?User $user): bool|Response
+    {
+        if (!$user) {
+            return $this->deny('Vous devez être connecté pour exporter des records.');
+        }
+
+        return $user->hasPermissionTo('records_export');
+    }
 }

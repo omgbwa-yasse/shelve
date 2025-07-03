@@ -176,6 +176,36 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'records',
                 'description' => 'Exporter des dossiers'
             ],
+            [
+                'name' => 'records_import',
+                'category' => 'records',
+                'description' => 'Importer des dossiers'
+            ],
+            [
+                'name' => 'records_search',
+                'category' => 'records',
+                'description' => 'Rechercher des dossiers'
+            ],
+            [
+                'name' => 'records_lifecycle',
+                'category' => 'records',
+                'description' => 'Gérer le cycle de vie des dossiers'
+            ],
+            [
+                'name' => 'authors_view',
+                'category' => 'records',
+                'description' => 'Voir les producteurs'
+            ],
+            [
+                'name' => 'authors_create',
+                'category' => 'records',
+                'description' => 'Créer des producteurs'
+            ],
+            [
+                'name' => 'mcp_features',
+                'category' => 'records',
+                'description' => 'Utiliser les fonctionnalités MCP/IA'
+            ],
         ];
 
         $this->insertPermissions($permissions);
@@ -424,11 +454,6 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'records_update',
                 'category' => 'records',
                 'description' => 'Modifier des dossiers'
-            ],
-            [
-                'name' => 'records_delete',
-                'category' => 'records',
-                'description' => 'Supprimer des dossiers'
             ],
             [
                 'name' => 'records_force_delete',

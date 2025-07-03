@@ -223,17 +223,17 @@
             <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }} (EAD, Excel, SEDA)
         </div>
         <div class="submenu-content" id="importExportMenu">
-            @can('import', App\Models\Record::class)
+            @can('records_import')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.import.form') }}">
-                    <i class="bi bi-download"></i> {{ __('import') }}
+                    <i class="bi bi-download"></i> {{ __('record_import') }}
                 </a>
             </div>
             @endcan
-            @can('export', App\Models\Record::class)
+            @can('records_export')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('records.export.form') }}">
-                    <i class="bi bi-upload"></i> {{ __('export') }}
+                    <i class="bi bi-upload"></i> {{ __('record_export') }}
                 </a>
             </div>
             @endcan
