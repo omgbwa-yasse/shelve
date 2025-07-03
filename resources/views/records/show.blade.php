@@ -17,6 +17,9 @@
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                     <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
                 </button>
+                <button type="button" id="btn-ai-enrich" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-stars"></i> {{ __('ai_enrich') ?? 'AI Enrich' }}
+                </button>
             </div>
         </div>
 
