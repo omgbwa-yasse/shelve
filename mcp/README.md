@@ -133,8 +133,10 @@ Le service d'enrichissement est disponible via le contrôleur `RecordEnricherCon
 - `GET /api/records/enrich/status` : Vérifier l'état du service
 - `POST /api/records/enrich/{id}` : Enrichir un enregistrement et éventuellement mettre à jour un champ spécifique
 - `POST /api/records/enrich/{id}/preview` : Prévisualiser l'enrichissement sans sauvegarder les modifications
+- `POST /api/records/enrich/{id}/format-title` : Formater le titre d'un enregistrement
+- `POST /api/records/enrich/{id}/extract-keywords` : Extraire des mots-clés et rechercher dans le thésaurus
 
-### Exemple d'utilisation dans l'application
+### Exemples d'utilisation dans l'application
 
 ```php
 // Injecter le service
@@ -153,6 +155,30 @@ public function someMethod(RecordEnricherService $enricherService)
     if ($result['success']) {
         // Utiliser le contenu enrichi
         $enrichedContent = $result['enrichedContent'];
+    }
+    
+    // Formater un titre
+    $titleResult = $enricherService->formatTitle(
+        $record->name,
+        'llama3',
+        Auth::id()
+    );
+    
+    if ($titleResult['success']) {
+        $formattedTitle = $titleResult['formattedTitle'];
+    }
+    
+    // Extraire des mots-clés
+    $keywordsResult = $enricherService->extractKeywords(
+        $record,
+        'llama3',
+        5,  // nombre maximum de termes
+        Auth::id()
+    );
+    
+    if ($keywordsResult['success']) {
+        $extractedKeywords = $keywordsResult['extractedKeywords'];
+        $matchedTerms = $keywordsResult['matchedTerms'];
     }
 }
 ```

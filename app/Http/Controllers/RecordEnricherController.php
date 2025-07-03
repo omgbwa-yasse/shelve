@@ -270,7 +270,7 @@ class RecordEnricherController extends Controller
             if ($applyTerms && !empty($result['matchedTerms'])) {
                 // Récupérer les IDs des termes correspondants
                 $termIds = array_column($result['matchedTerms'], 'id');
-                
+
                 // Attacher les termes au record
                 if (!empty($termIds)) {
                     $record->terms()->syncWithoutDetaching($termIds);

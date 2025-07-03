@@ -205,19 +205,19 @@ class RecordEnricherService
 
             if ($response->successful()) {
                 $result = $response->json();
-                
+
                 // Création d'une interaction AI pour le suivi
                 if ($userId && isset($result['success']) && $result['success']) {
                     $this->logAiInteraction(
-                        $userId, 
-                        $modelName, 
-                        $title, 
-                        $result['formattedTitle'], 
+                        $userId,
+                        $modelName,
+                        $title,
+                        $result['formattedTitle'],
                         'format_title',
                         null
                     );
                 }
-                
+
                 return $result;
             }
 
@@ -257,14 +257,14 @@ class RecordEnricherService
                 $record->archival_history,
                 $record->note
             ];
-            
+
             // Filtrer les valeurs null et vides puis joindre
             $contentToAnalyze = array_filter($contentToAnalyze, function($value) {
                 return !is_null($value) && trim($value) !== '';
             });
-            
+
             $content = implode("\n\n", $contentToAnalyze);
-            
+
             // Appel à l'API MCP
             $response = Http::timeout($this->timeout)
                 ->post("{$this->mcpBaseUrl}/api/thesaurus-search", [
@@ -276,22 +276,22 @@ class RecordEnricherService
 
             if ($response->successful()) {
                 $result = $response->json();
-                
+
                 // Création d'une interaction AI pour le suivi
                 if ($userId && isset($result['success']) && $result['success']) {
                     $this->logAiInteraction(
-                        $userId, 
-                        $modelName, 
-                        $content, 
+                        $userId,
+                        $modelName,
+                        $content,
                         json_encode([
                             'extractedKeywords' => $result['extractedKeywords'],
                             'matchedTerms' => $result['matchedTerms']
-                        ]), 
+                        ]),
                         'extract_keywords',
                         $record->id
                     );
                 }
-                
+
                 return $result;
             }
 
@@ -319,14 +319,14 @@ class RecordEnricherService
         // Trouver le modèle AI correspondant
         $aiModels = $this->ollamaService->getAvailableModels();
         $aiModelId = null;
-        
+
         foreach ($aiModels as $model) {
             if ($model['name'] === $modelName) {
                 $aiModelId = $model['id'] ?? null;
                 break;
             }
         }
-        
+
         if ($aiModelId) {
             // Créer une interaction
             AiInteraction::create([

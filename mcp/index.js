@@ -83,17 +83,17 @@ Texte: "${content}"
     if (LARAVEL_API_TOKEN) {
       try {
         const termsResponse = await axios.post(
-          `${LARAVEL_API_URL}/terms/search`, 
+          `${LARAVEL_API_URL}/terms/search`,
           { keywords },
-          { 
-            headers: { 
+          {
+            headers: {
               'Authorization': `Bearer ${LARAVEL_API_TOKEN}`,
               'Content-Type': 'application/json',
               'Accept': 'application/json'
-            } 
+            }
           }
         );
-        
+
         if (termsResponse.data && termsResponse.data.terms) {
           return {
             extractedKeywords: keywords,
@@ -112,7 +112,7 @@ Texte: "${content}"
       matchedTerms: [],
       success: true
     };
-    
+
   } catch (error) {
     console.error('Erreur lors de l\'extraction des mots-clés:', error);
     return {
@@ -133,7 +133,7 @@ Reformatez le titre suivant au format "objet:action(typologie)" où:
 - action: représente l'activité ou l'action principale
 - typologie: représente le type de document
 
-Exemple: 
+Exemple:
 "Procès verbal de la réunion du 25 janvier 2024" -> "Réunion:procès-verbal(administratif)"
 "Correspondance avec le Ministère concernant les subventions" -> "Subventions:correspondance(administratif)"
 
@@ -165,7 +165,7 @@ Retournez uniquement le titre reformaté, sans explications ni commentaires.
       formattedTitle: formattedTitle,
       success: true
     };
-    
+
   } catch (error) {
     console.error('Erreur lors du formatage du titre:', error);
     return {
@@ -183,9 +183,9 @@ app.post('/api/enrich', async (req, res) => {
     // Valider la requête
     const validatedData = EnrichRequestSchema.parse(req.body);
     const { recordId, recordData, modelName, mode } = validatedData;
-    
+
     console.log(`Traitement demandé pour l'enregistrement #${recordId} avec le modèle ${modelName} en mode ${mode}`);
-    
+
     // Traitement spécifique pour le formatage du titre
     if (mode === 'format_title') {
       const result = await formatRecordTitle(recordData.name, modelName);
@@ -198,7 +198,7 @@ app.post('/api/enrich', async (req, res) => {
         model: modelName
       });
     }
-    
+
     // Traitement spécifique pour l'extraction de mots-clés et recherche thésaurus
     if (mode === 'extract_keywords') {
       // Concaténer toutes les informations disponibles pour une meilleure extraction
@@ -209,7 +209,7 @@ app.post('/api/enrich', async (req, res) => {
         recordData.archival_history,
         recordData.note
       ].filter(Boolean).join("\n\n");
-      
+
       const result = await searchThesaurusTerms(contentToAnalyze, modelName);
       return res.json({
         success: result.success,
@@ -220,10 +220,10 @@ app.post('/api/enrich', async (req, res) => {
         model: modelName
       });
     }
-    
+
     // Construire le prompt en fonction du mode choisi
     let prompt = '';
-    
+
     if (mode === 'enrich') {
       prompt = `Enrichissez la description suivante d'un document d'archives.
 Améliorez la clarté et l'exhaustivité tout en conservant les informations factuelles.
@@ -294,7 +294,7 @@ ${recordData.archival_history ? `Historique archivistique: ${recordData.archival
     } else {
       throw new Error('Réponse invalide d\'Ollama');
     }
-    
+
   } catch (error) {
     console.error('Erreur lors du traitement:', error);
     res.status(error.status || 500).json({
@@ -311,9 +311,9 @@ app.post('/api/thesaurus-search', async (req, res) => {
     // Valider la requête
     const validatedData = ThesaurusSearchSchema.parse(req.body);
     const { recordId, content, modelName, maxTerms } = validatedData;
-    
+
     console.log(`Recherche dans le thésaurus pour l'enregistrement #${recordId} avec ${maxTerms} termes max`);
-    
+
     const result = await searchThesaurusTerms(content, modelName, maxTerms);
     return res.json({
       success: result.success,
@@ -335,16 +335,16 @@ app.post('/api/thesaurus-search', async (req, res) => {
 app.post('/api/format-title', async (req, res) => {
   try {
     const { title, modelName = DEFAULT_MODEL } = req.body;
-    
+
     if (!title) {
       return res.status(400).json({
         success: false,
         error: "Le titre est requis"
       });
     }
-    
+
     console.log(`Formatage du titre: "${title}"`);
-    
+
     const result = await formatRecordTitle(title, modelName);
     return res.json(result);
   } catch (error) {
