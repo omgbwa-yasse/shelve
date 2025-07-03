@@ -6,6 +6,7 @@ use App\Http\Controllers\AiModelController;
 use App\Http\Controllers\AiInteractionController;
 use App\Http\Controllers\AiJobController;
 use App\Http\Controllers\OllamaController;
+use App\Http\Controllers\RecordEnricherController;
 use App\Http\Controllers\Api\PublicRecordApiController;
 use App\Http\Controllers\Api\PublicEventApiController;
 use App\Http\Controllers\Api\PublicNewsApiController;
@@ -23,6 +24,15 @@ use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\Api\OrganisationApiController;
+
+// Routes API pour l'enrichissement des records via Ollama MCP
+Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
+    Route::get('status', [RecordEnricherController::class, 'status'])->name('status');
+    Route::post('{id}', [RecordEnricherController::class, 'enrich'])->name('process');
+    Route::post('{id}/preview', [RecordEnricherController::class, 'preview'])->name('preview');
+    Route::post('{id}/format-title', [RecordEnricherController::class, 'formatTitle'])->name('format-title');
+    Route::post('{id}/extract-keywords', [RecordEnricherController::class, 'extractKeywords'])->name('extract-keywords');
+});
 
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
