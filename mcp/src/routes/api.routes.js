@@ -1,9 +1,10 @@
 // Routes API pour l'enrichissement des records
 const express = require('express');
 const router = express.Router();
+const { z } = require('zod');
 const enrichmentController = require('../controllers/enrichment.controller');
 const transferController = require('../controllers/transfer.controller');
-const validateRequest = require('../middleware/validation.middleware');
+const { validateRequest, validateParams, validateQuery } = require('../middleware/validation.middleware');
 const authMiddleware = require('../middleware/auth.middleware');
 const schemas = require('../schemas/validation');
 
@@ -42,21 +43,32 @@ router.get('/check-ollama', enrichmentController.checkOllama);
 router.get(
   '/transfer/slips/:slipId/enhance',
   authMiddleware,
+  validateParams(schemas.TransferSlipSchema),
+  validateQuery(z.object({ modelName: z.string().optional() })),
   transferController.enhanceSlip
 );
 router.get(
   '/transfer/slips/:slipId/validate',
   authMiddleware,
+  validateParams(schemas.ValidateRecordsSchema),
+  validateQuery(z.object({ modelName: z.string().optional() })),
   transferController.validateRecords
 );
 router.get(
   '/transfer/slips/:slipId/classify',
   authMiddleware,
+  validateParams(schemas.ClassificationSchema),
+  validateQuery(z.object({ modelName: z.string().optional() })),
   transferController.suggestClassification
 );
 router.get(
   '/transfer/slips/:slipId/report',
   authMiddleware,
+  validateParams(schemas.TransferSlipSchema),
+  validateQuery(z.object({ 
+    modelName: z.string().optional(),
+    includeValidation: z.enum(['true', 'false']).optional()
+  })),
   transferController.generateReport
 );
 

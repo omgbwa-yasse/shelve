@@ -11,8 +11,9 @@ class TransferController {
    */
   async enhanceSlip(req, res) {
     try {
-      const { slipId } = req.params;
-      const { model = 'llama3' } = req.query;
+      const { slipId } = req.validatedParams || req.params;
+      const { modelName = 'llama3' } = req.validatedQuery || req.query;
+      const model = modelName;
 
       // Récupérer les données du bordereau depuis l'API Laravel
       const slipData = await laravelApiService.getSlipDetails(slipId);
@@ -56,8 +57,9 @@ class TransferController {
    */
   async validateRecords(req, res) {
     try {
-      const { slipId } = req.params;
-      const { model = 'llama3' } = req.query;
+      const { slipId } = req.validatedParams || req.params;
+      const { modelName = 'llama3' } = req.validatedQuery || req.query;
+      const model = modelName;
 
       // Récupérer les enregistrements associés au bordereau
       const recordsData = await laravelApiService.getSlipRecords(slipId);
@@ -90,8 +92,9 @@ class TransferController {
    */
   async suggestClassification(req, res) {
     try {
-      const { slipId } = req.params;
-      const { model = 'llama3' } = req.query;
+      const { slipId } = req.validatedParams || req.params;
+      const { modelName = 'llama3' } = req.validatedQuery || req.query;
+      const model = modelName;
 
       // Récupérer les enregistrements associés au bordereau
       const recordsData = await laravelApiService.getSlipRecords(slipId);
@@ -124,9 +127,10 @@ class TransferController {
    */
   async generateReport(req, res) {
     try {
-      const { slipId } = req.params;
-      const { model = 'llama3', includeValidation = 'true' } = req.query;
-      const shouldIncludeValidation = includeValidation === 'true';
+      const { slipId } = req.validatedParams || req.params;
+      const { modelName = 'llama3', includeValidation = true } = req.validatedQuery || req.query;
+      const model = modelName;
+      const shouldIncludeValidation = includeValidation === true || includeValidation === 'true';
 
       // Récupérer les données du bordereau
       const slipData = await laravelApiService.getSlipDetails(slipId);
