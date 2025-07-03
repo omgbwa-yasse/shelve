@@ -186,7 +186,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="card h-100 bg-light">
                             <div class="card-body">
@@ -206,7 +206,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-12">
                         <div id="ai-results-container" class="border rounded p-3" style="display: none;">
                             <h6 class="border-bottom pb-2 mb-3">
@@ -380,7 +380,7 @@
             // MCP API Functions
             const recordId = {{ $record->id }};
             const apiBaseUrl = '/api/mcp'; // Adjust this based on your API configuration
-            
+
             const showLoading = (containerId, message) => {
                 const container = document.getElementById(containerId);
                 container.innerHTML = `
@@ -392,31 +392,31 @@
                     </div>
                 `;
             };
-            
+
             const showResults = (title, content) => {
                 const resultsContainer = document.getElementById('ai-results-container');
                 const resultsTitle = document.getElementById('ai-results-title');
                 const resultsContent = document.getElementById('ai-results-content');
-                
+
                 resultsTitle.textContent = title;
                 resultsContent.innerHTML = content;
                 resultsContainer.style.display = 'block';
-                
+
                 // Scroll to results
                 resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             };
-            
+
             const handleApiError = (error) => {
                 console.error('API Error:', error);
                 showResults('Error', `<div class="alert alert-danger">An error occurred: ${error.message || 'Unknown error'}</div>`);
             };
-            
+
             // Enrich Record
             document.getElementById('btn-ai-enrich').addEventListener('click', async () => {
                 try {
                     showResults('Record Enrichment', '<div class="text-center">Processing record content...</div>');
                     showLoading('ai-results-content', 'Analyzing record content...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/enrich/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -424,41 +424,41 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
+
                     let resultsHTML = `
                         <div class="alert alert-success">
                             <strong>Record successfully enriched!</strong>
                         </div>
                         <h6>Extracted Keywords:</h6>
                         <div class="mb-3">
-                            ${data.keywords.map(keyword => 
+                            ${data.keywords.map(keyword =>
                                 `<span class="badge bg-info text-dark me-1 mb-1">${keyword}</span>`
                             ).join('')}
                         </div>
                         <h6>Suggested Terms:</h6>
                         <div>
-                            ${data.terms.map(term => 
+                            ${data.terms.map(term =>
                                 `<span class="badge bg-primary me-1 mb-1">${term}</span>`
                             ).join('')}
                         </div>
                     `;
-                    
+
                     showResults('Record Enrichment Results', resultsHTML);
                 } catch (error) {
                     handleApiError(error);
                 }
             });
-            
+
             // Extract Keywords
             document.getElementById('btn-extract-keywords').addEventListener('click', async () => {
                 try {
                     showResults('Keyword Extraction', '<div class="text-center">Extracting keywords...</div>');
                     showLoading('ai-results-content', 'Analyzing record content for keywords...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/extract-keywords/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -466,23 +466,23 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
+
                     let resultsHTML = `
                         <h6>Extracted Keywords by Category:</h6>
                         <div class="row g-3">
                     `;
-                    
+
                     for (const [category, keywords] of Object.entries(data.categorizedKeywords)) {
                         resultsHTML += `
                             <div class="col-md-4">
                                 <div class="card h-100 border-info">
                                     <div class="card-header bg-info bg-opacity-10 small fw-bold">${category}</div>
                                     <div class="card-body p-2">
-                                        ${keywords.map(keyword => 
+                                        ${keywords.map(keyword =>
                                             `<span class="badge bg-light text-dark border me-1 mb-1">${keyword}</span>`
                                         ).join('')}
                                     </div>
@@ -490,20 +490,20 @@
                             </div>
                         `;
                     }
-                    
+
                     resultsHTML += `</div>`;
                     showResults('Keyword Extraction Results', resultsHTML);
                 } catch (error) {
                     handleApiError(error);
                 }
             });
-            
+
             // Suggest Terms
             document.getElementById('btn-suggest-terms').addEventListener('click', async () => {
                 try {
                     showResults('Term Suggestions', '<div class="text-center">Generating term suggestions...</div>');
                     showLoading('ai-results-content', 'Analyzing record content for term suggestions...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/assign-terms/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -511,11 +511,11 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
+
                     let resultsHTML = `
                         <div class="mb-3">
                             <div class="alert alert-info">
@@ -527,7 +527,7 @@
                                 <div class="border rounded p-2 bg-light">
                                     <div class="fw-bold small">${term.name}</div>
                                     <div class="text-muted xsmall">${term.confidence}% confidence</div>
-                                    <button class="btn btn-xs btn-outline-primary mt-1 btn-apply-term" 
+                                    <button class="btn btn-xs btn-outline-primary mt-1 btn-apply-term"
                                             data-term-id="${term.id}" data-term-name="${term.name}">
                                         <i class="bi bi-plus-circle"></i> Apply
                                     </button>
@@ -535,15 +535,15 @@
                             `).join('')}
                         </div>
                     `;
-                    
+
                     showResults('Term Suggestion Results', resultsHTML);
-                    
+
                     // Add event listeners for apply term buttons
                     document.querySelectorAll('.btn-apply-term').forEach(button => {
                         button.addEventListener('click', async (e) => {
                             const termId = e.target.closest('button').getAttribute('data-term-id');
                             const termName = e.target.closest('button').getAttribute('data-term-name');
-                            
+
                             try {
                                 const response = await fetch(`/api/records/${recordId}/add-term/${termId}`, {
                                     method: 'POST',
@@ -552,21 +552,21 @@
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                                     }
                                 });
-                                
+
                                 if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                                
+
                                 // Update UI to reflect the applied term
                                 e.target.closest('button').innerHTML = '<i class="bi bi-check"></i> Applied';
                                 e.target.closest('button').classList.remove('btn-outline-primary');
                                 e.target.closest('button').classList.add('btn-success');
                                 e.target.closest('button').disabled = true;
-                                
+
                                 // Update the terms list in the UI without page reload
                                 const termsContainer = document.querySelector('dt:contains("{{ __('terms') }}")').nextElementSibling;
                                 termsContainer.innerHTML += `
                                     <a href="{{ route('records.sort')}}?categ=term&id=${termId}">
                                         ${termName}
-                                    </a> ; 
+                                    </a> ;
                                 `;
                             } catch (error) {
                                 console.error('Error applying term:', error);
@@ -578,13 +578,13 @@
                     handleApiError(error);
                 }
             });
-            
+
             // Validate Records
             document.getElementById('btn-validate-records').addEventListener('click', async () => {
                 try {
                     showResults('Record Validation', '<div class="text-center">Validating record...</div>');
                     showLoading('ai-results-content', 'Checking record compliance...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/validate/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -592,35 +592,35 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
-                    const statusBadge = data.isValid 
-                        ? '<span class="badge bg-success">Valid</span>' 
+
+                    const statusBadge = data.isValid
+                        ? '<span class="badge bg-success">Valid</span>'
                         : '<span class="badge bg-danger">Invalid</span>';
-                        
+
                     let resultsHTML = `
                         <div class="alert ${data.isValid ? 'alert-success' : 'alert-danger'}">
                             <h6>Validation Status: ${statusBadge}</h6>
                             <p>${data.message}</p>
                         </div>
-                        
+
                         <h6>Validation Details:</h6>
                         <ul class="list-group mb-3">
                             ${data.validationResults.map(result => `
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     ${result.field}
-                                    ${result.valid 
-                                        ? '<span class="badge bg-success"><i class="bi bi-check"></i></span>' 
+                                    ${result.valid
+                                        ? '<span class="badge bg-success"><i class="bi bi-check"></i></span>'
                                         : '<span class="badge bg-danger"><i class="bi bi-x"></i></span>'
                                     }
                                 </li>
                                 ${!result.valid ? `<li class="list-group-item list-group-item-danger small">${result.message}</li>` : ''}
                             `).join('')}
                         </ul>
-                        
+
                         ${!data.isValid ? `
                             <div>
                                 <h6>Suggestions:</h6>
@@ -630,19 +630,19 @@
                             </div>
                         ` : ''}
                     `;
-                    
+
                     showResults('Record Validation Results', resultsHTML);
                 } catch (error) {
                     handleApiError(error);
                 }
             });
-            
+
             // Suggest Classification
             document.getElementById('btn-suggest-classification').addEventListener('click', async () => {
                 try {
                     showResults('Classification Suggestion', '<div class="text-center">Generating classification suggestions...</div>');
                     showLoading('ai-results-content', 'Analyzing record for classification...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/classify/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -650,16 +650,16 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
+
                     let resultsHTML = `
                         <div class="alert alert-info mb-3">
                             Based on the content analysis, the following classifications are suggested:
                         </div>
-                        
+
                         <div class="list-group mb-3">
                             ${data.classifications.map((classification, index) => `
                                 <div class="list-group-item list-group-item-action">
@@ -671,25 +671,25 @@
                                 </div>
                             `).join('')}
                         </div>
-                        
+
                         <div>
                             <h6>Classification Rationale:</h6>
                             <p>${data.rationale}</p>
                         </div>
                     `;
-                    
+
                     showResults('Classification Suggestions', resultsHTML);
                 } catch (error) {
                     handleApiError(error);
                 }
             });
-            
+
             // Generate Report
             document.getElementById('btn-generate-report').addEventListener('click', async () => {
                 try {
                     showResults('Report Generation', '<div class="text-center">Generating archive report...</div>');
                     showLoading('ai-results-content', 'Creating comprehensive report...');
-                    
+
                     const response = await fetch(`${apiBaseUrl}/report/${recordId}`, {
                         method: 'POST',
                         headers: {
@@ -697,40 +697,40 @@
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         }
                     });
-                    
+
                     if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-                    
+
                     const data = await response.json();
-                    
+
                     let resultsHTML = `
                         <div class="alert alert-success mb-3">
                             <i class="bi bi-file-earmark-check me-2"></i>
                             Report generated successfully!
                         </div>
-                        
+
                         <div class="card mb-3">
                             <div class="card-header bg-light">
                                 <h6 class="mb-0">Report Summary</h6>
                             </div>
                             <div class="card-body">
                                 <p>${data.summary}</p>
-                                
+
                                 <h6 class="mt-3">Key Metrics:</h6>
                                 <ul class="list-unstyled">
-                                    ${Object.entries(data.metrics || {}).map(([key, value]) => 
+                                    ${Object.entries(data.metrics || {}).map(([key, value]) =>
                                         `<li><strong>${key}:</strong> ${value}</li>`
                                     ).join('')}
                                 </ul>
                             </div>
                         </div>
-                        
+
                         <div class="d-grid gap-2">
                             <a href="${data.reportUrl}" class="btn btn-outline-primary" target="_blank">
                                 <i class="bi bi-file-earmark-pdf me-2"></i>Download Full Report
                             </a>
                         </div>
                     `;
-                    
+
                     showResults('Generated Report', resultsHTML);
                 } catch (error) {
                     handleApiError(error);

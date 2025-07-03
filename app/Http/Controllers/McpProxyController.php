@@ -18,7 +18,7 @@ class McpProxyController extends Controller
 
     /**
      * Proxy a request to the MCP server for record enrichment
-     * 
+     *
      * @param Request $request
      * @param int $id Record ID
      * @return \Illuminate\Http\JsonResponse
@@ -36,7 +36,7 @@ class McpProxyController extends Controller
 
     /**
      * Proxy a request to the MCP server for extracting keywords
-     * 
+     *
      * @param Request $request
      * @param int $id Record ID
      * @return \Illuminate\Http\JsonResponse
@@ -54,7 +54,7 @@ class McpProxyController extends Controller
 
     /**
      * Proxy a request to the MCP server for assigning terms
-     * 
+     *
      * @param Request $request
      * @param int $id Record ID
      * @return \Illuminate\Http\JsonResponse
@@ -90,7 +90,7 @@ class McpProxyController extends Controller
 
     /**
      * Proxy a request to the MCP server for classification
-     * 
+     *
      * @param Request $request
      * @param int $id Record ID
      * @return \Illuminate\Http\JsonResponse
@@ -108,7 +108,7 @@ class McpProxyController extends Controller
 
     /**
      * Proxy a request to the MCP server for report generation
-     * 
+     *
      * @param Request $request
      * @param int $id Record ID
      * @return \Illuminate\Http\JsonResponse
