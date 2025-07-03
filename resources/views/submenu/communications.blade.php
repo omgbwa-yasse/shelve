@@ -1,3 +1,7 @@
+@php
+    use Illuminate\Support\Facades\Gate;
+@endphp
+
 <div class="communications-submenu" id="communicationsMenu">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -162,12 +166,13 @@
     @endif
 
     <!-- Reservations Section -->
-    @can('viewAny', App\Models\Communication::class)
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'search'))
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-calendar-check"></i> {{ __('reservations') }}
         </div>
         <div class="submenu-section-content" id="reservationsSection">
+            @can('viewAny', App\Models\Reservation::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.index')}}">
                     <i class="bi bi-list-ul"></i> {{ __('view_all') }}
@@ -198,9 +203,10 @@
                     <i class="bi bi-calendar-event"></i> {{ __('return_available') }}
                 </a>
             </div>
+            @endcan
         </div>
     </div>
-    @endcan
+    @endif
 
     <!-- Add Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'add'))
@@ -215,12 +221,68 @@
                     <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
                 </a>
             </div>
+            @endcan
+
+            @can('create', App\Models\Reservation::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.create')}}">
                     <i class="bi bi-calendar-plus"></i> {{ __('add_reservation') }}
                 </a>
             </div>
             @endcan
+        </div>
+    </div>
+    @endif
+
+    <!-- Config Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'config'))
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-gear"></i> {{ __('configuration') }}
+        </div>
+        <div class="submenu-section-content" id="configSection">
+            @if(Gate::allows('communication_config'))
+            <div class="submenu-item">
+                <a class="submenu-link" href="">
+                    <i class="bi bi-tags"></i> {{ __('types') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('statuses.index', ['module' => 'communications']) }}">
+                    <i class="bi bi-clipboard-check"></i> {{ __('statuses') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('workflows.index', ['module' => 'communications']) }}">
+                    <i class="bi bi-diagram-3"></i> {{ __('workflows') }}
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    <!-- Tools Section -->
+    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'tools'))
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-tools"></i> {{ __('tools') }}
+        </div>
+        <div class="submenu-section-content" id="toolsSection">
+            @if(Gate::allows('communication_export'))
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('communications.export.index') }}">
+                    <i class="bi bi-file-earmark-arrow-down"></i> {{ __('export') }}
+                </a>
+            </div>
+            @endif
+            @if(Gate::allows('communication_view'))
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('reports.index', ['module' => 'communications']) }}">
+                    <i class="bi bi-bar-chart"></i> {{ __('statistics') }}
+                </a>
+            </div>
+            @endif
         </div>
     </div>
     @endif
