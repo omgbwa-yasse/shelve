@@ -312,6 +312,162 @@ class RecordEnricherService
     }
 
     /**
+     * Extraire des mots-clés catégorisés (géographiques, thématiques, typologiques) d'un record
+     *
+     * @param Record $record L'enregistrement à analyser
+     * @param string $modelName Le nom du modèle à utiliser
+     * @param int $maxTermsPerCategory Nombre maximum de termes par catégorie
+     * @param bool $autoAssign Assigner automatiquement les termes trouvés
+     * @param int|null $userId L'ID de l'utilisateur qui effectue l'opération
+     * @return array
+     */
+    public function extractCategorizedKeywords(Record $record, string $modelName = 'llama3', int $maxTermsPerCategory = 3, bool $autoAssign = false, ?int $userId = null): array
+    {
+        try {
+            // Concaténer toutes les informations disponibles pour une meilleure extraction
+            $contentToAnalyze = [
+                $record->name,
+                $record->content,
+                $record->biographical_history,
+                $record->archival_history,
+                $record->note
+            ];
+
+            // Filtrer les valeurs null et vides puis joindre
+            $contentToAnalyze = array_filter($contentToAnalyze, function($value) {
+                return !is_null($value) && trim($value) !== '';
+            });
+
+            $content = implode("\n\n", $contentToAnalyze);
+
+            // Appel à l'API MCP
+            // Préparer les données du record pour l'API
+            $recordData = [
+                'id' => $record->id,
+                'name' => $record->name,
+                'content' => $record->content,
+                'biographical_history' => $record->biographical_history,
+                'archival_history' => $record->archival_history,
+                'note' => $record->note,
+                'date_start' => $record->date_start,
+                'date_end' => $record->date_end,
+            ];
+
+            $response = Http::timeout($this->timeout)
+                ->post("{$this->mcpBaseUrl}/api/categorized-keywords", [
+                    'recordId' => $record->id,
+                    'recordData' => $recordData,
+                    'modelName' => $modelName,
+                    'autoAssign' => $autoAssign
+                ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+
+                // Création d'une interaction AI pour le suivi
+                if ($userId && isset($result['success']) && $result['success']) {
+                    $this->logAiInteraction(
+                        $userId,
+                        $modelName,
+                        $content,
+                        json_encode([
+                            'extractedKeywords' => $result['extractedKeywords'],
+                            'matchedTerms' => $result['matchedTerms'],
+                            'assignmentResults' => $result['assignment'] ?? null
+                        ]),
+                        'categorized_keywords',
+                        $record->id
+                    );
+                }
+
+                return $result;
+            }
+
+            return [
+                'success' => false,
+                'error' => "Erreur lors de l'extraction des mots-clés catégorisés via MCP: " . $response->body()
+            ];
+        } catch (Exception $e) {
+            Log::error('MCP extractCategorizedKeywords error: ' . $e->getMessage(), [
+                'record_id' => $record->id,
+                'exception' => $e
+            ]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Assigner des termes à un record
+     *
+     * @param int $recordId ID du record
+     * @param array $termIds IDs des termes à associer
+     * @param int|null $userId L'ID de l'utilisateur qui effectue l'opération
+     * @return array
+     */
+    public function assignTermsToRecord(int $recordId, array $termIds, ?int $userId = null): array
+    {
+        try {
+            // Organiser les termes par ID en objets avec type
+    $termObjects = [];
+    foreach ($termIds as $termId) {
+        // Normalement vous auriez un moyen de déterminer le type du terme
+        // Ici on fait une requête simple pour obtenir le terme avec son type
+        $term = \App\Models\Term::find($termId);
+        if ($term) {
+            $termObjects[] = [
+                'id' => $term->id,
+                'name' => $term->name,
+                'type' => $term->type ?? 'unknown'
+            ];
+        }
+    }
+
+    // Appel à l'API MCP
+    $response = Http::timeout($this->timeout)
+        ->post("{$this->mcpBaseUrl}/api/assign-terms", [
+            'recordId' => $recordId,
+            'terms' => $termObjects
+        ]);
+
+            if ($response->successful()) {
+                $result = $response->json();
+
+                // Création d'une interaction AI pour le suivi
+                if ($userId && isset($result['success']) && $result['success']) {
+                    $this->logAiInteraction(
+                        $userId,
+                        'system',
+                        json_encode(['recordId' => $recordId, 'termIds' => $termIds]),
+                        json_encode($result),
+                        'assign_terms',
+                        $recordId
+                    );
+                }
+
+                return $result;
+            }
+
+            return [
+                'success' => false,
+                'error' => "Erreur lors de l'assignation des termes au record via MCP: " . $response->body()
+            ];
+        } catch (Exception $e) {
+            Log::error('MCP assignTermsToRecord error: ' . $e->getMessage(), [
+                'record_id' => $recordId,
+                'term_ids' => $termIds,
+                'exception' => $e
+            ]);
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
      * Utilitaire pour enregistrer les interactions AI
      */
     private function logAiInteraction(int $userId, string $modelName, string $input, string $output, string $mode, ?int $recordId = null): void

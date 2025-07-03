@@ -39,9 +39,10 @@ class RecordEnricherController extends Controller
     {
         // Valider la requête
         $validator = Validator::make($request->all(), [
-            'mode' => 'required|in:enrich,summarize,analyze,format_title,extract_keywords',
+            'mode' => 'required|in:enrich,summarize,analyze,format_title,extract_keywords,categorized_keywords',
             'model' => 'nullable|string',
             'field_target' => 'nullable|in:content,biographical_history,note,name',
+            'auto_assign_terms' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -295,6 +296,109 @@ class RecordEnricherController extends Controller
         return response()->json([
             'success' => false,
             'error' => $result['error'] ?? "Erreur inconnue lors de l'extraction des mots-clés"
+        ], 500);
+    }
+
+    /**
+     * Extraire des mots-clés catégorisés (géographiques, thématiques, typologiques)
+     */
+    public function extractCategorizedKeywords(Request $request, $id)
+    {
+        // Valider la requête
+        $validator = Validator::make($request->all(), [
+            'model' => 'nullable|string',
+            'maxTermsPerCategory' => 'nullable|integer|min:1|max:10',
+            'autoAssign' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Récupérer l'enregistrement
+        $record = Record::find($id);
+        if (!$record) {
+            return response()->json([
+                'success' => false,
+                'error' => "Enregistrement non trouvé"
+            ], 404);
+        }
+
+        // Extraire les mots-clés catégorisés
+        $result = $this->enricherService->extractCategorizedKeywords(
+            $record,
+            $request->input('model', 'llama3'),
+            $request->input('maxTermsPerCategory', 3),
+            $request->input('autoAssign', false),
+            Auth::id()
+        );
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'recordId' => $record->id,
+                'extractedKeywords' => $result['extractedKeywords'],
+                'matchedTerms' => $result['matchedTerms'],
+                'allExtractedKeywords' => $result['allExtractedKeywords'] ?? [],
+                'assignment' => $result['assignment'] ?? ['autoAssigned' => false]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => $result['error'] ?? "Erreur inconnue lors de l'extraction des mots-clés catégorisés"
+        ], 500);
+    }
+
+    /**
+     * Assigner des termes à un record
+     */
+    public function assignTerms(Request $request, $id)
+    {
+        // Valider la requête
+        $validator = Validator::make($request->all(), [
+            'termIds' => 'required|array',
+            'termIds.*' => 'required|integer|exists:terms,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Récupérer l'enregistrement
+        $record = Record::find($id);
+        if (!$record) {
+            return response()->json([
+                'success' => false,
+                'error' => "Enregistrement non trouvé"
+            ], 404);
+        }
+
+        // Associer les termes
+        $result = $this->enricherService->assignTermsToRecord(
+            $record->id,
+            $request->input('termIds'),
+            Auth::id()
+        );
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Termes associés avec succès',
+                'assignedTerms' => $result['assignedTerms'] ?? count($request->input('termIds')),
+                'recordId' => $record->id
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => $result['error'] ?? "Erreur lors de l'association des termes"
         ], 500);
     }
 }

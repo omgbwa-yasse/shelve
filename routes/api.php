@@ -32,6 +32,8 @@ Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:s
     Route::post('{id}/preview', [RecordEnricherController::class, 'preview'])->name('preview');
     Route::post('{id}/format-title', [RecordEnricherController::class, 'formatTitle'])->name('format-title');
     Route::post('{id}/extract-keywords', [RecordEnricherController::class, 'extractKeywords'])->name('extract-keywords');
+    Route::post('{id}/categorized-keywords', [RecordEnricherController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
+    Route::post('{id}/assign-terms', [RecordEnricherController::class, 'assignTerms'])->name('assign-terms');
 });
 
 // Routes API publiques pour l'interface frontend React
