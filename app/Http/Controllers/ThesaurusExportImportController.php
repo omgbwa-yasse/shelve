@@ -13,6 +13,14 @@ use Illuminate\Support\Facades\Validator;
 class ThesaurusExportImportController extends Controller
 {
     /**
+     * Affiche la page d'accueil pour l'import/export du thésaurus
+     */
+    public function index()
+    {
+        return view('thesaurus.export_import.index');
+    }
+    
+    /**
      * Export les termes du thésaurus au format SKOS (XML)
      */
     public function exportSkos(Request $request)
@@ -607,6 +615,8 @@ class ThesaurusExportImportController extends Controller
 
                     $isNewTerm = true;
                     $term = new Term();
+                    $term->preferred_label = $preferred_label;
+                    $term->language = $language;
                     $stats['created']++;
                 } else {
                     $stats['updated']++;
