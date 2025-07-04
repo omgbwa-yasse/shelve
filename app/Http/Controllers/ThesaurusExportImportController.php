@@ -19,7 +19,7 @@ class ThesaurusExportImportController extends Controller
     {
         return view('thesaurus.export_import.index');
     }
-    
+
     /**
      * Export les termes du thésaurus au format SKOS (XML)
      */

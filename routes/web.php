@@ -897,6 +897,9 @@ Route::group(['prefix' => 'thesaurus'], function () {
     Route::get('search', [App\Http\Controllers\ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
     Route::get('search/results', [App\Http\Controllers\ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
 
+    // Route pour la page d'accueil d'import/export
+    Route::get('export-import', [App\Http\Controllers\ThesaurusExportImportController::class, 'index'])->name('thesaurus.export-import');
+
     // Routes pour l'export
     Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
     Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
