@@ -22,6 +22,18 @@
 
     <!-- Scripts (locaux) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons (hébergés localement) -->
+    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap-icons.css') }}">
+
+    <!-- CSS Dependencies - Hébergés localement -->
+    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap.min.css') }}">
+
+    <!-- Scripts (locaux) -->
+    <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <style>
@@ -390,6 +402,8 @@
                 $('#orgModal').modal('hide');
             });
 
+            // Pas d'animation sur hover
+
             // Focus sur le champ de recherche
             $('.header-search-input').focus(function() {
                 $(this).closest('.header-search-form').css('background-color', 'rgba(255, 255, 255, 0.2)');
@@ -402,6 +416,8 @@
             updateNotificationBadges();
             setInterval(updateNotificationBadges, 30000); // Toutes les 30 secondes
             @endcan
+
+
         });
 
         @can('module_mails_access')
@@ -436,6 +452,9 @@
                 .catch(error => console.log('Erreur lors de la récupération des notifications:', error));
         }
         @endcan
+
+
+        });
     </script>
 </body>
 </html>

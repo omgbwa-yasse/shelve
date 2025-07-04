@@ -139,22 +139,26 @@ class Mail extends Model
     // Relations pour les entités externes
     public function externalSender()
     {
-        return $this->belongsTo(ExternalContact::class, 'external_sender_id');
+        // Return a relationship that will always return null until the migration is applied
+        return $this->belongsTo(ExternalContact::class)->whereRaw('1 = 0');
     }
 
     public function externalSenderOrganization()
     {
-        return $this->belongsTo(ExternalOrganization::class, 'external_sender_organization_id');
+        // Return a relationship that will always return null until the migration is applied
+        return $this->belongsTo(ExternalOrganization::class)->whereRaw('1 = 0');
     }
 
     public function externalRecipient()
     {
-        return $this->belongsTo(ExternalContact::class, 'external_recipient_id');
+        // Return a relationship that will always return null until the migration is applied
+        return $this->belongsTo(ExternalContact::class)->whereRaw('1 = 0');
     }
 
     public function externalRecipientOrganization()
     {
-        return $this->belongsTo(ExternalOrganization::class, 'external_recipient_organization_id');
+        // Return a relationship that will always return null until the migration is applied
+        return $this->belongsTo(ExternalOrganization::class)->whereRaw('1 = 0');
     }
 
     // Méthodes polymorphiques pour obtenir l'expéditeur et le destinataire réels basés sur le type
