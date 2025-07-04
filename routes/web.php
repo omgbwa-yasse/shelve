@@ -28,6 +28,8 @@ use App\Http\Controllers\MailTransactionController;
 use App\Http\Controllers\MailAuthorContactController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\floorController;
+use App\Http\Controllers\ExternalContactController;
+use App\Http\Controllers\ExternalOrganizationController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ShelfController;
 use App\Http\Controllers\ContainerController;
@@ -352,6 +354,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('archives/{containerId}/remove-mails', [MailArchiveController::class, 'removeMails'])->name('mail-archive.remove-mails');
     });
 
+    // Routes pour les contacts et organisations externes
+    Route::prefix('external')->name('external.')->group(function() {
+        // Routes pour les organisations externes
+        Route::resource('organizations', ExternalOrganizationController::class);
+
+        // Routes pour les contacts externes
+        Route::resource('contacts', ExternalContactController::class);
+    });
 
     Route::get('/api/dollies', [DollyController::class, 'apiList']);
     Route::post('/api/dollies', [DollyController::class, 'apiCreate']);

@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             CommunicationSeeder::class,
             BulletinBoardSeeder::class,
             PublicPortalSeeder::class,
+            ExternalOrganizationSeeder::class,
+            ExternalContactSeeder::class,
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
         ]);
     }

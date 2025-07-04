@@ -70,12 +70,18 @@ class MailSendController extends Controller
         $priorities = MailPriority::orderBy('name')->get();
         $typologies = MailTypology::orderBy('name')->get();
 
+        // Récupérer les contacts et organisations externes
+        $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
+        $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
+
         return view('mails.send.create', compact(
             'mailActions',
             'recipientOrganisations',
             'users',
             'priorities',
-            'typologies'
+            'typologies',
+            'externalContacts',
+            'externalOrganizations'
         ));
     }
 
@@ -208,31 +214,78 @@ class MailSendController extends Controller
     public function store(Request $request)
     {
         try {
-            $validatedData = $request->validate([
+            // Validation de base
+            $baseValidation = [
                 'name' => 'required|max:150',
                 'date' => 'required|date',
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'action_id' => 'required|exists:mail_actions,id',
-                'recipient_user_id' => 'nullable|exists:users,id',
-                'recipient_organisation_id' => 'required|exists:organisations,id',
                 'priority_id' => 'required|exists:mail_priorities,id',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'recipient_type' => 'required|in:internal,external_contact,external_organization',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
-            ]);
+            ];
 
+            // Validation conditionnelle selon le type de destinataire
+            if ($request->input('recipient_type') === 'internal') {
+                $recipientValidation = [
+                    'recipient_user_id' => 'required|exists:users,id',
+                    'recipient_organisation_id' => 'required|exists:organisations,id',
+                ];
+            } elseif ($request->input('recipient_type') === 'external_contact') {
+                $recipientValidation = [
+                    'external_recipient_id' => 'required|exists:external_contacts,id',
+                ];
+            } elseif ($request->input('recipient_type') === 'external_organization') {
+                $recipientValidation = [
+                    'external_recipient_organization_id' => 'required|exists:external_organizations,id',
+                ];
+            } else {
+                $recipientValidation = [];
+            }
+
+            $validatedData = $request->validate(array_merge($baseValidation, $recipientValidation));
 
             $mailCode = $this->generateMailCode($validatedData['typology_id']);
 
-
-            // Assign the generated mail code to the validated data
-            $validatedData['code'] = $mailCode;
-
-            $mail = Mail::create($validatedData + [
+            // Préparer les données de base du courrier
+            $mailData = [
+                'code' => $mailCode,
+                'name' => $validatedData['name'],
+                'date' => $validatedData['date'],
+                'description' => $validatedData['description'],
+                'document_type' => $validatedData['document_type'],
+                'action_id' => $validatedData['action_id'],
+                'priority_id' => $validatedData['priority_id'],
+                'typology_id' => $validatedData['typology_id'],
                 'sender_organisation_id' => auth()->user()->current_organisation_id,
                 'sender_user_id' => auth()->id(),
                 'status' => 'in_progress',
-            ]);
+                'mail_type' => 'outgoing', // Courrier sortant
+                'sender_type' => 'user', // L'expéditeur est toujours un utilisateur interne
+            ];
+
+            // Ajouter les données du destinataire selon le type
+            if ($validatedData['recipient_type'] === 'internal') {
+                $mailData['recipient_user_id'] = $validatedData['recipient_user_id'];
+                $mailData['recipient_organisation_id'] = $validatedData['recipient_organisation_id'];
+                $mailData['recipient_type'] = 'user';
+            } elseif ($validatedData['recipient_type'] === 'external_contact') {
+                $mailData['external_recipient_id'] = $validatedData['external_recipient_id'];
+                $mailData['recipient_type'] = 'external_contact';
+
+                // Vérifier si le contact externe appartient à une organisation et l'ajouter si c'est le cas
+                $externalContact = \App\Models\ExternalContact::find($validatedData['external_recipient_id']);
+                if ($externalContact && $externalContact->external_organization_id) {
+                    $mailData['external_recipient_organization_id'] = $externalContact->external_organization_id;
+                }
+            } elseif ($validatedData['recipient_type'] === 'external_organization') {
+                $mailData['external_recipient_organization_id'] = $validatedData['external_recipient_organization_id'];
+                $mailData['recipient_type'] = 'external_organization';
+            }
+
+            $mail = Mail::create($mailData);
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {

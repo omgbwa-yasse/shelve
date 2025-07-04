@@ -91,25 +91,59 @@ class MailReceivedController extends Controller
         $users = User::all();
         $priorities = MailPriority::all();
         $typologies = MailTypology::all();
-        return view('mails.received.create', compact('mailActions', 'senderOrganisations','users', 'priorities','typologies' ));
+
+        // Récupérer les contacts et organisations externes
+        $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
+        $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
+
+        return view('mails.received.create', compact(
+            'mailActions',
+            'senderOrganisations',
+            'users',
+            'priorities',
+            'typologies',
+            'externalContacts',
+            'externalOrganizations'
+        ));
     }
 
 
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        // Validation de base
+        $baseValidation = [
             'name' => 'required|max:150',
             'date' => 'required|date',
             'description' => 'nullable',
             'document_type' => 'required|in:original,duplicate,copy',
             'action_id' => 'required|exists:mail_actions,id',
-            'sender_user_id' => 'required|exists:users,id',
-            'sender_organisation_id' => 'required|exists:organisations,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
-        ]);
+            'sender_type' => 'required|in:internal,external_contact,external_organization',
+        ];
 
+        // Validation conditionnelle selon le type d'expéditeur
+        if ($request->input('sender_type') === 'internal') {
+            $senderValidation = [
+                'sender_user_id' => 'required|exists:users,id',
+                'sender_organisation_id' => 'required|exists:organisations,id',
+            ];
+        } elseif ($request->input('sender_type') === 'external_contact') {
+            $senderValidation = [
+                'external_sender_id' => 'required|exists:external_contacts,id',
+            ];
+        } elseif ($request->input('sender_type') === 'external_organization') {
+            $senderValidation = [
+                'external_sender_organization_id' => 'required|exists:external_organizations,id',
+            ];
+        } else {
+            $senderValidation = [];
+        }
+
+        $validatedData = $request->validate(array_merge($baseValidation, $senderValidation));
+
+        // Génération du code de courrier
         if (!isset($validatedData['code']) || empty($validatedData['code'])) {
             $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
         } else {
@@ -119,20 +153,53 @@ class MailReceivedController extends Controller
             }
         }
 
-        Mail::create($validatedData + [
+        // Préparer les données de base du courrier
+        $mailData = [
+            'code' => $validatedData['code'],
+            'name' => $validatedData['name'],
+            'date' => $validatedData['date'],
+            'description' => $validatedData['description'],
+            'document_type' => $validatedData['document_type'],
+            'action_id' => $validatedData['action_id'],
+            'priority_id' => $validatedData['priority_id'],
+            'typology_id' => $validatedData['typology_id'],
             'recipient_organisation_id' => auth()->user()->current_organisation_id,
             'recipient_user_id' => auth()->id(),
             'status' => 'in_progress',
-        ]);
+            'mail_type' => 'incoming', // Courrier entrant
+            'recipient_type' => 'user', // Le destinataire est toujours un utilisateur interne
+        ];
+
+        // Ajouter les données de l'expéditeur selon le type
+        if ($validatedData['sender_type'] === 'internal') {
+            $mailData['sender_user_id'] = $validatedData['sender_user_id'];
+            $mailData['sender_organisation_id'] = $validatedData['sender_organisation_id'];
+            $mailData['sender_type'] = 'user';
+        } elseif ($validatedData['sender_type'] === 'external_contact') {
+            $mailData['external_sender_id'] = $validatedData['external_sender_id'];
+            $mailData['sender_type'] = 'external_contact';
+
+            // Vérifier si le contact externe appartient à une organisation et l'ajouter si c'est le cas
+            $externalContact = \App\Models\ExternalContact::find($validatedData['external_sender_id']);
+            if ($externalContact && $externalContact->external_organization_id) {
+                $mailData['external_sender_organization_id'] = $externalContact->external_organization_id;
+            }
+        } elseif ($validatedData['sender_type'] === 'external_organization') {
+            $mailData['external_sender_organization_id'] = $validatedData['external_sender_organization_id'];
+            $mailData['sender_type'] = 'external_organization';
+        }
+
+        Mail::create($mailData);
 
         return redirect()->route('mail-received.index')
-                         ->with('success', 'Mail created successfully.');
+                         ->with('success', 'Mail créé avec succès.');
     }
 
 
     public function incoming(Request $request)
     {
-        $validatedData = $request->validate([
+        // Validation de base
+        $baseValidation = [
             'name' => 'required|max:150',
             'date' => 'required|date',
             'description' => 'nullable',
@@ -140,32 +207,90 @@ class MailReceivedController extends Controller
             'action_id' => 'required|exists:mail_actions,id',
             'priority_id' => 'required|exists:mail_priorities,id',
             'typology_id' => 'required|exists:mail_typologies,id',
-        ]);
+            'sender_type' => 'required|in:external_contact,external_organization',
+        ];
 
+        // Validation conditionnelle selon le type d'expéditeur
+        if ($request->input('sender_type') === 'external_contact') {
+            $senderValidation = [
+                'external_sender_id' => 'required|exists:external_contacts,id',
+            ];
+        } elseif ($request->input('sender_type') === 'external_organization') {
+            $senderValidation = [
+                'external_sender_organization_id' => 'required|exists:external_organizations,id',
+            ];
+        } else {
+            $senderValidation = [];
+        }
+
+        $validatedData = $request->validate(array_merge($baseValidation, $senderValidation));
+
+        // Génération du code de courrier
         if (!isset($validatedData['code']) || empty($validatedData['code'])) {
             $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
         } else {
             $existingMail = Mail::where('code', $validatedData['code'])->first();
-            if (!$existingMail) {
-                return back()->withErrors(['code' => 'Aucun mail trouvé avec ce code.'])->withInput();
+            if ($existingMail) {
+                return back()->withErrors(['code' => 'Un mail avec ce code existe déjà.'])->withInput();
             }
         }
 
-        Mail::create($validatedData + [
+        // Préparer les données de base du courrier
+        $mailData = [
+            'code' => $validatedData['code'],
+            'name' => $validatedData['name'],
+            'date' => $validatedData['date'],
+            'description' => $validatedData['description'],
+            'document_type' => $validatedData['document_type'],
+            'action_id' => $validatedData['action_id'],
+            'priority_id' => $validatedData['priority_id'],
+            'typology_id' => $validatedData['typology_id'],
             'recipient_organisation_id' => auth()->user()->current_organisation_id,
             'recipient_user_id' => auth()->id(),
             'status' => 'in_progress',
-        ]);
+            'mail_type' => 'incoming', // Courrier entrant
+            'recipient_type' => 'user', // Le destinataire est toujours un utilisateur interne
+        ];
+
+        // Ajouter les données de l'expéditeur selon le type
+        if ($validatedData['sender_type'] === 'external_contact') {
+            $mailData['external_sender_id'] = $validatedData['external_sender_id'];
+            $mailData['sender_type'] = 'external_contact';
+
+            // Vérifier si le contact externe appartient à une organisation et l'ajouter si c'est le cas
+            $externalContact = \App\Models\ExternalContact::find($validatedData['external_sender_id']);
+            if ($externalContact && $externalContact->external_organization_id) {
+                $mailData['external_sender_organization_id'] = $externalContact->external_organization_id;
+            }
+        } elseif ($validatedData['sender_type'] === 'external_organization') {
+            $mailData['external_sender_organization_id'] = $validatedData['external_sender_organization_id'];
+            $mailData['sender_type'] = 'external_organization';
+        }
+
+        Mail::create($mailData);
 
         return redirect()->route('mail-received.index')
-                         ->with('success', 'Mail created successfully.');
+                         ->with('success', 'Courrier entrant créé avec succès.');
     }
 
 
     public function createIncoming()
     {
         $typologies = MailTypology::all();
-        return view('mails.received.createIncoming', compact('typologies' ));
+        $priorities = MailPriority::all();
+        $mailActions = MailAction::orderBy('name')->get();
+
+        // Récupérer les contacts et organisations externes
+        $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
+        $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
+
+        return view('mails.received.createIncoming', compact(
+            'typologies',
+            'priorities',
+            'mailActions',
+            'externalContacts',
+            'externalOrganizations'
+        ));
     }
 
 

@@ -180,6 +180,12 @@
                         </a>
                     </div>
                     @endcan
+                    <!-- External contacts/organizations module -->
+                    <div class="header-nav-item">
+                        <a class="header-nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}">
+                            <i class="bi bi-people" style="font-size: 1.5rem;"></i>
+                        </a>
+                    </div>
                     @can('module_ai_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
@@ -295,6 +301,9 @@
                                             @break
                                         @case('mails')
                                             @include('submenu.mails')
+                                            @break
+                                        @case('external')
+                                            @include('submenu.external')
                                             @break
                                         @case('repositories')
                                             @include('submenu.repositories')

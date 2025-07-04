@@ -84,9 +84,29 @@
             </div>
 
             <div class="row">
+                <!-- Type d'expéditeur et de destinataire -->
+                <div class="col-12 mb-4">
+                    <h5 class="mt-3 mb-3">Type de destinataire</h5>
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="recipient_type" id="recipient_type_internal" value="internal" checked>
+                        <label class="form-check-label" for="recipient_type_internal">Interne</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="recipient_type" id="recipient_type_external_contact" value="external_contact">
+                        <label class="form-check-label" for="recipient_type_external_contact">Contact externe</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="recipient_type" id="recipient_type_external_organization" value="external_organization">
+                        <label class="form-check-label" for="recipient_type_external_organization">Organisation externe</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" id="internal_recipient">
                 <div class="col-md-6 mb-3">
                     <label for="recipient_organisation_id" class="form-label">Organisation de réception</label>
-                    <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select" required>
+                    <select name="recipient_organisation_id" id="recipient_organisation_id" class="form-select recipient-field internal-field" required>
                         <option value="">Choisir une organisation</option>
                         @foreach($recipientOrganisations as $organisation)
                             <option value="{{ $organisation->id }}">{{ $organisation->name }}</option>
@@ -95,10 +115,36 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="recipient_user_id" class="form-label">Utilisateur récepteur</label>
-                    <select name="recipient_user_id" id="recipient_user_id" class="form-select" required>
+                    <select name="recipient_user_id" id="recipient_user_id" class="form-select recipient-field internal-field" required>
                         <option value="">Choisir un utilisateur</option>
                         @foreach($users as $user)
                             <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="row d-none" id="external_contact_recipient">
+                <div class="col-md-12 mb-3">
+                    <label for="external_recipient_id" class="form-label">Contact externe destinataire</label>
+                    <select name="external_recipient_id" id="external_recipient_id" class="form-select recipient-field external-contact-field">
+                        <option value="">Choisir un contact externe</option>
+                        @foreach($externalContacts as $contact)
+                            <option value="{{ $contact->id }}" data-organization="{{ $contact->external_organization_id }}">
+                                {{ $contact->full_name }} {{ $contact->organization ? '(' . $contact->organization->name . ')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="row d-none" id="external_organization_recipient">
+                <div class="col-md-12 mb-3">
+                    <label for="external_recipient_organization_id" class="form-label">Organisation externe destinataire</label>
+                    <select name="external_recipient_organization_id" id="external_recipient_organization_id" class="form-select recipient-field external-org-field">
+                        <option value="">Choisir une organisation externe</option>
+                        @foreach($externalOrganizations as $org)
+                            <option value="{{ $org->id }}">{{ $org->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -190,7 +236,51 @@
             // Stockage des fichiers sélectionnés
             let selectedFiles = new DataTransfer();
 
-            // Event listeners
+            // Gestion des types de destinataires
+            const recipientTypeRadios = document.querySelectorAll('input[name="recipient_type"]');
+            const internalRecipientDiv = document.getElementById('internal_recipient');
+            const externalContactRecipientDiv = document.getElementById('external_contact_recipient');
+            const externalOrganizationRecipientDiv = document.getElementById('external_organization_recipient');
+
+            // Tous les champs de destinataires
+            const recipientFields = document.querySelectorAll('.recipient-field');
+
+            function handleRecipientTypeChange() {
+                const selectedType = document.querySelector('input[name="recipient_type"]:checked').value;
+
+                // Cacher tous les champs de destinataires et les rendre non requis
+                internalRecipientDiv.classList.add('d-none');
+                externalContactRecipientDiv.classList.add('d-none');
+                externalOrganizationRecipientDiv.classList.add('d-none');
+
+                recipientFields.forEach(field => {
+                    field.required = false;
+                });
+
+                // Afficher et rendre requis les champs correspondants au type sélectionné
+                if (selectedType === 'internal') {
+                    internalRecipientDiv.classList.remove('d-none');
+                    document.querySelectorAll('.internal-field').forEach(field => {
+                        field.required = true;
+                    });
+                } else if (selectedType === 'external_contact') {
+                    externalContactRecipientDiv.classList.remove('d-none');
+                    document.getElementById('external_recipient_id').required = true;
+                } else if (selectedType === 'external_organization') {
+                    externalOrganizationRecipientDiv.classList.remove('d-none');
+                    document.getElementById('external_recipient_organization_id').required = true;
+                }
+            }
+
+            // Écouter les changements de type de destinataire
+            recipientTypeRadios.forEach(radio => {
+                radio.addEventListener('change', handleRecipientTypeChange);
+            });
+
+            // Initialiser l'affichage au chargement
+            handleRecipientTypeChange();
+
+            // Event listeners pour la zone de glisser-déposer
             dropZone.addEventListener('drop', handleDrop);
             dropZone.addEventListener('dragover', handleDragOver);
             dropZone.addEventListener('dragleave', handleDragLeave);

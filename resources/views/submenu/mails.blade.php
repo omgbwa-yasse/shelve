@@ -111,7 +111,15 @@
 
     <!-- Note: La section Notifications & Suivi a été déplacée vers le menu workflow -->
     @can('module_mails_access')
-    <!-- Placeholder pour rétrocompatibilité si nécessaire -->
+    <div class="submenu-section mb-3">
+        <div class="submenu-content">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('external.contacts.index') }}">
+                    <i class="bi bi-person-rolodex"></i> Contacts & Organisations externes
+                </a>
+            </div>
+        </div>
+    </div>
     @endcan
 
     <!-- Recherche Section -->

@@ -33,8 +33,14 @@ class Mail extends Model
         'action_id',
         'sender_user_id',
         'sender_organisation_id',
+        'sender_type',
+        'external_sender_id',
+        'external_sender_organization_id',
         'recipient_user_id',
         'recipient_organisation_id',
+        'recipient_type',
+        'external_recipient_id',
+        'external_recipient_organization_id',
         'is_archived',
         'mail_type',
         'deadline',
@@ -128,6 +134,58 @@ class Mail extends Model
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    // Relations pour les entités externes
+    public function externalSender()
+    {
+        return $this->belongsTo(ExternalContact::class, 'external_sender_id');
+    }
+
+    public function externalSenderOrganization()
+    {
+        return $this->belongsTo(ExternalOrganization::class, 'external_sender_organization_id');
+    }
+
+    public function externalRecipient()
+    {
+        return $this->belongsTo(ExternalContact::class, 'external_recipient_id');
+    }
+
+    public function externalRecipientOrganization()
+    {
+        return $this->belongsTo(ExternalOrganization::class, 'external_recipient_organization_id');
+    }
+
+    // Méthodes polymorphiques pour obtenir l'expéditeur et le destinataire réels basés sur le type
+    public function getSenderAttribute()
+    {
+        if (!$this->sender_type) {
+            return null;
+        }
+
+        return match($this->sender_type) {
+            'user' => $this->sender_user_id ? $this->sender() : null,
+            'organisation' => $this->sender_organisation_id ? $this->senderOrganisation() : null,
+            'external_contact' => $this->external_sender_id ? $this->externalSender : null,
+            'external_organization' => $this->external_sender_organization_id ? $this->externalSenderOrganization : null,
+            default => null
+        };
+    }
+
+    public function getRecipientAttribute()
+    {
+        if (!$this->recipient_type) {
+            return null;
+        }
+
+        return match($this->recipient_type) {
+            'user' => $this->recipient_user_id ? $this->recipient() : null,
+            'organisation' => $this->recipient_organisation_id ? $this->recipientOrganisation() : null,
+            'external_contact' => $this->external_recipient_id ? $this->externalRecipient : null,
+            'external_organization' => $this->external_recipient_organization_id ? $this->externalRecipientOrganization : null,
+            default => null
+        };
     }
 
     public function assignedOrganisation()

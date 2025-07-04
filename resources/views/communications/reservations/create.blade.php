@@ -22,10 +22,7 @@
 
         <form action="{{ route('communications.reservations.store') }}" method="POST">
             @csrf
-            <div class="mb-3">
-                <label for="code" class="form-label">Code</label>
-                <input type="text" class="form-control" id="code" name="code" value="{{ old('code') }}" required>
-            </div>
+            <!-- Le code sera généré automatiquement lors de l'enregistrement -->
             <div class="mb-3">
                 <label for="name" class="form-label">Objet</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>

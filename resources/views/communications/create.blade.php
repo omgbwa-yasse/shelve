@@ -22,10 +22,7 @@
 
         <form action="{{ route('communications.transactions.store') }}" method="POST">
             @csrf
-            <div class="mb-3">
-                <label for="code" class="form-label">{{ __('Code') }}</label>
-                <input type="text" class="form-control" id="code" name="code" required>
-            </div>
+            <!-- Le code sera généré automatiquement lors de l'enregistrement -->
             <div class="mb-3">
                 <label for="name" class="form-label">{{ __('Object') }}</label>
                 <input type="text" class="form-control" id="name" name="name" required>

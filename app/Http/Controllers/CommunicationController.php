@@ -11,6 +11,7 @@ use App\Models\Dolly;
 use App\Models\DollyCommunication;
 use App\Models\Organisation;
 use App\Models\User;
+use App\Services\CodeGeneratorService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,9 +33,35 @@ class CommunicationController extends Controller
     public function create()
     {
         $users = User::all();
-        $statuses = Communication::statuses();
+        $statuses = $this->getFormattedStatuses();
         $organisations = Organisation::all();
+
+        // Le code sera généré au moment de l'enregistrement pour éviter les conflits
+
         return view('communications.create', compact('users', 'statuses', 'organisations'));
+    }
+
+    /**
+     * Get formatted statuses for forms
+     */
+    private function getFormattedStatuses(): array
+    {
+        $formattedStatuses = [];
+        foreach (\App\Enums\CommunicationStatus::getAll() as $status) {
+            $formattedStatuses[] = [
+                'value' => $status->value,
+                'label' => $status->label()
+            ];
+        }
+        return $formattedStatuses;
+    }
+
+    /**
+     * Get status values for validation
+     */
+    private function getStatusValues(): array
+    {
+        return array_map(fn($s) => $s->value, \App\Enums\CommunicationStatus::getAll());
     }
 
 
@@ -43,21 +70,24 @@ class CommunicationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date|after_or_equal:today',
             'user_organisation_id' => 'required|exists:organisations,id',
-            'status' => 'required|in:' . implode(',', Communication::statusValues()),
+            'status' => 'required|in:' . implode(',', $this->getStatusValues()),
         ]);
 
         if (!Auth::user()->current_organisation_id) {
             return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
         }
 
+        // Générer un code automatique uniquement au moment de l'enregistrement
+        $codeGenerator = new CodeGeneratorService();
+        $generatedCode = $codeGenerator->generateCommunicationCode();
+
         $communication = Communication::create([
-            'code' => $validated['code'],
+            'code' => $generatedCode,
             'name' => $validated['name'],
             'content' => $validated['content'] ?? null,
             'operator_id' => Auth::user()->id,
@@ -96,7 +126,7 @@ class CommunicationController extends Controller
         }
 
         $users = User::all();
-        $statuses = Communication::statuses();
+        $statuses = $this->getFormattedStatuses();
         $organisations = Organisation::all();
         return view('communications.edit', compact('organisations', 'communication', 'users', 'statuses'));
     }
@@ -203,7 +233,7 @@ class CommunicationController extends Controller
             'content' => 'nullable|string',
             'user_id' => 'required|exists:users,id',
             'return_date' => 'required|date',
-            'status' => 'required|in:' . implode(',', Communication::statusValues()),
+            'status' => 'required|in:' . implode(',', $this->getStatusValues()),
             'user_organisation_id' => 'required|exists:organisations,id',
         ]);
 

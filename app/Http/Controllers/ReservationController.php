@@ -10,6 +10,7 @@ use App\Models\Communication;
 use App\Enums\ReservationStatus;
 use App\Models\User;
 use App\Models\Organisation;
+use App\Services\CodeGeneratorService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,9 +50,13 @@ class ReservationController extends Controller
 
             Log::info('Réservation trouvée: ', ['id' => $reservation->id, 'code' => $reservation->code]);
 
+            // Générer un code automatique pour la communication
+            $codeGenerator = new CodeGeneratorService();
+            $communicationCode = $codeGenerator->generateCommunicationCode();
+
             // Créer la nouvelle communication
             $communication = Communication::create([
-                'code' => $reservation->code,
+                'code' => $communicationCode,
                 'name' => $reservation->name,
                 'content' => $reservation->content,
                 'operator_id' => Auth::user()->id,
@@ -123,6 +128,9 @@ class ReservationController extends Controller
             ];
         });
         $organisations = Organisation::all();
+
+        // Le code sera généré au moment de l'enregistrement pour éviter les conflits
+
         return view('communications.reservations.create', compact('operators', 'users', 'statuses', 'organisations'));
     }
 
@@ -134,7 +142,6 @@ class ReservationController extends Controller
     {
         try {
             $request->validate([
-                'code' => 'required|unique:reservations|max:10',
                 'name' => 'required|string|max:200',
                 'content' => 'nullable|string',
                 'user_id' => 'required|exists:users,id',
@@ -146,8 +153,12 @@ class ReservationController extends Controller
                 return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une réservation.'])->withInput();
             }
 
+            // Générer un code automatique
+            $codeGenerator = new CodeGeneratorService();
+            $generatedCode = $codeGenerator->generateReservationCode();
+
             Reservation::create([
-                'code' => $request->code,
+                'code' => $generatedCode,
                 'name' => $request->name,
                 'content' => $request->input('content'),
                 'operator_id' => Auth::user()->id,
