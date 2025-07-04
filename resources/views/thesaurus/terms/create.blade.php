@@ -148,6 +148,7 @@
     </div>
 @endsection
 
+@push('scripts')
     <style>
         .select-with-search {
             position: relative;
@@ -231,4 +232,4 @@
             });
         });
     </script>
-@endsection
+@endpush
