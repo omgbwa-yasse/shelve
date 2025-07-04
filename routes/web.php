@@ -618,13 +618,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('laws', LawController::class);
         Route::resource('laws.Articles', LawArticleController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
-        Route::resource('activities.communicabilities', activityCommunicabilityController::class);
-        Route::resource('thesaurus', ContainerStatusController::class);
-        Route::resource('organisations', OrganisationController::class);
-        Route::resource('organisations.rooms', OrganisationRoomController::class);
-        Route::resource('organisations.activities', OrganisationActivityController::class);
-        Route::resource('access', ContainerStatusController::class);
-        Route::resource('terms', TermController::class);
+
+        // Routes pour les codes-barres
+        Route::get('barcode', [BarcodeController::class, 'index'])->name('barcode.index');
+        Route::get('barcode/create', [BarcodeController::class, 'create'])->name('barcode.create');
+        Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
 
         // Nouvelles routes pour la gestion du thésaurus
         Route::resource('terms.non-descriptors', NonDescriptorController::class)->names('terms.non-descriptors');
