@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Term;
-use App\Models\Language;
-use App\Models\TermCategory;
-use App\Models\TermType;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,89 +10,91 @@ class TermController extends Controller
 {
     public function index()
     {
-        $terms = Term::all();
+        $terms = Term::orderBy('preferred_label')->get();
         return view('thesaurus.terms.index', compact('terms'));
     }
 
-
     public function create()
     {
-        $languages = Language::all();
-        $categories = TermCategory::all();
-        $types = TermType::all();
-        $parents = Term::all();
-        return view('thesaurus.terms.create', compact('languages', 'categories','types','parents'));
-    }
+        $languages = ['fr' => 'Français', 'en' => 'Anglais', 'es' => 'Espagnol',
+                      'de' => 'Allemand', 'it' => 'Italien', 'pt' => 'Portugais'];
+        $statuses = ['approved' => 'Approuvé', 'candidate' => 'Candidat', 'deprecated' => 'Obsolète'];
 
+        return view('thesaurus.terms.create', compact('languages', 'statuses'));
+    }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:100',
-            'description' => 'nullable|string',
-            'language_id' => 'required|exists:languages,id',
-            'category_id' => 'required|exists:term_categories,id',
-            'type_id' => 'required|exists:term_relation_types,id',
-            'parent_id' => 'nullable|exists:terms,id',
+            'preferred_label' => 'required|string|max:100',
+            'definition' => 'nullable|string',
+            'scope_note' => 'nullable|string',
+            'history_note' => 'nullable|string',
+            'example' => 'nullable|string',
+            'editorial_note' => 'nullable|string',
+            'language' => 'required|string|in:fr,en,es,de,it,pt',
+            'category' => 'nullable|string|max:100',
+            'status' => 'required|string|in:approved,candidate,deprecated',
+            'notation' => 'nullable|string|max:50',
+            'is_top_term' => 'boolean',
         ]);
 
-        Term::create($request->all());
+        $termData = $request->all();
+        $termData['is_top_term'] = $request->has('is_top_term');
+
+        Term::create($termData);
 
         return redirect()->route('terms.index')
-            ->with('success', 'Term created successfully.');
+            ->with('success', 'Terme créé avec succès.');
     }
-
-
-
-    public function edit(Term $term)
-    {
-        $languages = Language::all();
-        $categories = TermCategory::all();
-        $types = TermType::all();
-        $parents = Term::all();
-        $term->load('parent');
-        return view('thesaurus.terms.edit', compact('term', 'languages', 'categories','types','parents'));
-    }
-
-
-
 
     public function show(Term $term)
     {
-        $term->load('category', 'language','translations','equivalents','records','equivalentType','type','parent','children');
+        $term->load('broaderTerms', 'narrowerTerms', 'nonDescriptors', 'externalAlignments');
+
         return view('thesaurus.terms.show', compact('term'));
     }
 
+    public function edit(Term $term)
+    {
+        $languages = ['fr' => 'Français', 'en' => 'Anglais', 'es' => 'Espagnol',
+                      'de' => 'Allemand', 'it' => 'Italien', 'pt' => 'Portugais'];
+        $statuses = ['approved' => 'Approuvé', 'candidate' => 'Candidat', 'deprecated' => 'Obsolète'];
 
+        return view('thesaurus.terms.edit', compact('term', 'languages', 'statuses'));
+    }
 
     public function update(Request $request, Term $term)
-{
-    $request->validate([
-        'name' => 'required|string|max:100',
-        'description' => 'nullable|string',
-        'language_id' => 'required|exists:languages,id',
-        'category_id' => 'required|exists:term_categories,id',
-        'type_id' => 'required|exists:term_relation_types,id',
-        'parent_id' => ['nullable', Rule::exists('terms', 'id')->where(function ($query) use ($term) {
-            $query->where('id', '!=', $term->id);
-        })],
-    ]);
+    {
+        $request->validate([
+            'preferred_label' => 'required|string|max:100',
+            'definition' => 'nullable|string',
+            'scope_note' => 'nullable|string',
+            'history_note' => 'nullable|string',
+            'example' => 'nullable|string',
+            'editorial_note' => 'nullable|string',
+            'language' => 'required|string|in:fr,en,es,de,it,pt',
+            'category' => 'nullable|string|max:100',
+            'status' => 'required|string|in:approved,candidate,deprecated',
+            'notation' => 'nullable|string|max:50',
+            'is_top_term' => 'boolean',
+        ]);
 
-    $term->update($request->all());
+        $termData = $request->all();
+        $termData['is_top_term'] = $request->has('is_top_term');
 
-    return redirect()->route('terms.index')
-        ->with('success', 'Term updated successfully');
-}
+        $term->update($termData);
 
-
-
+        return redirect()->route('terms.index')
+            ->with('success', 'Terme mis à jour avec succès');
+    }
 
     public function destroy(Term $term)
     {
         $term->delete();
 
         return redirect()->route('terms.index')
-            ->with('success', 'Term deleted successfully');
+            ->with('success', 'Terme supprimé avec succès');
     }
 }
 

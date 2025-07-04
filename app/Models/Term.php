@@ -11,59 +11,79 @@ class Term extends Model
     use Searchable;
 
     protected $fillable = [
-        'name',
-        'description',
-        'language_id',
-        'category_id',
-        'type_id',
-        'parent_id',
+        'preferred_label',
+        'definition',
+        'scope_note',
+        'history_note',
+        'example',
+        'editorial_note',
+        'language',
+        'category',
+        'status',
+        'notation',
+        'is_top_term',
     ];
 
-    public $timestamps = false;
-
-    public function parent()
+    // Les termes génériques (parents) dans les relations hiérarchiques
+    public function broaderTerms()
     {
-        return $this->belongsTo(Term::class, 'parent_id');
+        return $this->belongsToMany(Term::class, 'hierarchical_relations', 'narrower_term_id', 'broader_term_id')
+                   ->withPivot('relation_type')
+                   ->withTimestamps();
     }
 
-    public function children()
+    // Les termes spécifiques (enfants) dans les relations hiérarchiques
+    public function narrowerTerms()
     {
-        return $this->hasMany(Term::class, 'parent_id');
+        return $this->belongsToMany(Term::class, 'hierarchical_relations', 'broader_term_id', 'narrower_term_id')
+                   ->withPivot('relation_type')
+                   ->withTimestamps();
     }
 
-    public function language()
+    // Les termes associés (TA)
+    public function associatedTerms()
     {
-        return $this->belongsTo(Language::class);
+        // Les termes où ce terme est term1_id
+        $related1 = $this->belongsToMany(Term::class, 'associative_relations', 'term1_id', 'term2_id')
+                         ->withPivot('relation_subtype')
+                         ->withTimestamps();
+
+        // Les termes où ce terme est term2_id
+        $related2 = $this->belongsToMany(Term::class, 'associative_relations', 'term2_id', 'term1_id')
+                         ->withPivot('relation_subtype')
+                         ->withTimestamps();
+
+        return $related1->union($related2->toBase());
     }
 
-    public function category()
+    // Les non-descripteurs (synonymes) associés à ce terme
+    public function nonDescriptors()
     {
-        return $this->belongsTo(TermCategory::class);
+        return $this->hasMany(NonDescriptor::class, 'descriptor_id');
     }
 
+    // Les traductions de ce terme
+    public function translationsSource()
+    {
+        return $this->belongsToMany(Term::class, 'translations', 'source_term_id', 'target_term_id')
+                    ->withTimestamps();
+    }
+
+    public function translationsTarget()
+    {
+        return $this->belongsToMany(Term::class, 'translations', 'target_term_id', 'source_term_id')
+                    ->withTimestamps();
+    }
+
+    // Les alignements externes
+    public function externalAlignments()
+    {
+        return $this->hasMany(ExternalAlignment::class);
+    }
+
+    // Pour compatibilité avec le code existant
     public function records()
     {
         return $this->belongsToMany(Record::class, 'record_term', 'term_id', 'record_id');
-    }
-
-    public function equivalentType()
-    {
-        return $this->belongsTo(TermEquivalentType::class);
-    }
-
-    public function equivalents()
-    {
-        return $this->hasMany(TermEquivalent::class, 'term_id');
-    }
-
-    public function type()
-    {
-        return $this->belongsTo(TermType::class, 'type_id');
-    }
-
-    public function translations()
-    {
-        return $this->hasMany(TermTranslation::class, 'term1_id')
-                    ->orWhere('term2_id', $this->id);
     }
 }
