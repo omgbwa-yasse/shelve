@@ -234,58 +234,7 @@
     </div>
     @endif
 
-    <!-- Config Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'config'))
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-gear"></i> {{ __('configuration') }}
-        </div>
-        <div class="submenu-section-content" id="configSection">
-            @if(Gate::allows('communication_config'))
-            <div class="submenu-item">
-                <a class="submenu-link" href="">
-                    <i class="bi bi-tags"></i> {{ __('types') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('statuses.index', ['module' => 'communications']) }}">
-                    <i class="bi bi-clipboard-check"></i> {{ __('statuses') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('workflows.index', ['module' => 'communications']) }}">
-                    <i class="bi bi-diagram-3"></i> {{ __('workflows') }}
-                </a>
-            </div>
-            @endif
-        </div>
-    </div>
-    @endif
-
-    <!-- Tools Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'tools'))
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-tools"></i> {{ __('tools') }}
-        </div>
-        <div class="submenu-section-content" id="toolsSection">
-            @if(Gate::allows('communication_export'))
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.export.index') }}">
-                    <i class="bi bi-file-earmark-arrow-down"></i> {{ __('export') }}
-                </a>
-            </div>
-            @endif
-            @if(Gate::allows('communication_view'))
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('reports.index', ['module' => 'communications']) }}">
-                    <i class="bi bi-bar-chart"></i> {{ __('statistics') }}
-                </a>
-            </div>
-            @endif
-        </div>
-    </div>
-    @endif
+    <!-- Les sections Configuration et Tools ont été retirées intentionnellement -->
 </div>
 
 <script>

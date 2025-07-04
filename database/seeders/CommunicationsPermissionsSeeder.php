@@ -18,7 +18,7 @@ class CommunicationsPermissionsSeeder extends Seeder
     public function run()
     {
         $now = Carbon::now();
-        
+
         // Définition des permissions manquantes pour le module communications
         $permissions = [
             [
@@ -75,11 +75,11 @@ class CommunicationsPermissionsSeeder extends Seeder
         if ($superadminRole) {
             // Attribuer toutes les nouvelles permissions au superadmin
             $createdPermissions = Permission::whereIn('name', array_column($permissions, 'name'))->get();
-            
+
             foreach ($createdPermissions as $permission) {
                 $superadminRole->givePermissionTo($permission);
             }
-            
+
             $this->command->info('✅ Permissions de communication attribuées au rôle superadmin');
         } else {
             $this->command->error('❌ Rôle superadmin non trouvé');

@@ -26,12 +26,12 @@ class UpdateCommunicationsPermissions extends Command
     public function handle(): int
     {
         $this->info('Mise à jour des permissions du module communications...');
-        
+
         $this->call('db:seed', [
-            '--class' => 'Database\\Seeders\\CommunicationPermissionsSeeder',
+            '--class' => 'Database\\Seeders\\CommunicationsPermissionsSeeder',
             '--force' => true,
         ]);
-        
+
         $this->info('Permissions mises à jour avec succès!');
         return Command::SUCCESS;
     }
