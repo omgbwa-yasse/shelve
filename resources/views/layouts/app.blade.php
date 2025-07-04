@@ -7,22 +7,32 @@
     <title>{{ config('app.name', 'Shelve') }}</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('favicon-v2.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('favicon-v2.ico') }    @stack('scripts')
+    @yield('scripts')
+
+    <!-- Scripts hébergés localement -->
+    <script src="{{ asset('js/vendor/jquery-3.5.1.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/popper.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/chart.min.js') }}"></script>
+
+    <script>
+        function openOrgModal() {age/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Icons (hébergés localement) -->
+    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap-icons.css') }}">
 
-    <!-- CSS Dependencies - Gardons la même version de Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- CSS Dependencies - Hébergés localement -->
+    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap.min.css') }}">
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Scripts (locaux) -->
+    <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <style>
@@ -372,13 +382,14 @@
 @endguest
 
     @stack('scripts')
+    @yield('scripts')
 
-    <!-- Scripts avec Popper.js inclus -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Scripts locaux -->
+    <script src="{{ asset('js/vendor/jquery-3.5.1.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/popper.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/sweetalert2.min.js') }}"></script>
+    <script src="{{ asset('js/vendor/chart.min.js') }}"></script>
 
     <script>
         function openOrgModal() {

@@ -123,6 +123,21 @@ class ThesaurusSearchController extends Controller
         $statuses = ['approved' => 'Approuvé', 'candidate' => 'Candidat', 'deprecated' => 'Obsolète'];
         $categories = Term::select('category')->whereNotNull('category')->distinct()->pluck('category');
 
+        // Si la requête est AJAX, retourner une réponse partielle ou JSON
+        if ($request->ajax()) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'html' => view('thesaurus.search.results_partial', compact('terms', 'languages', 'statuses', 'categories'))->render(),
+                    'total' => $terms->total(),
+                    'lastPage' => $terms->lastPage(),
+                    'currentPage' => $terms->currentPage()
+                ]);
+            } else {
+                return view('thesaurus.search.results_partial', compact('terms', 'languages', 'statuses', 'categories'));
+            }
+        }
+
+        // Sinon, retourner la vue complète
         return view('thesaurus.search.results', compact('terms', 'request', 'languages', 'statuses', 'categories'));
     }
 }

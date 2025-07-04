@@ -62,6 +62,7 @@
                     <div class="mt-4">
                         <h5>{{ $terms->total() }} résultats trouvés</h5>
 
+                        <div id="search-results-container">
                         @if($terms->count() > 0)
                             <div class="table-responsive">
                                 <table class="table table-hover">
@@ -124,7 +125,7 @@
                             </div>
 
                             <!-- Pagination -->
-                            <div class="d-flex justify-content-center mt-4">
+                            <div class="d-flex justify-content-center mt-4 ajax-pagination">
                                 {{ $terms->links() }}
                             </div>
                         @else
@@ -132,6 +133,7 @@
                                 Aucun terme trouvé correspondant aux critères de recherche.
                             </div>
                         @endif
+                        </div>
                     </div>
 
                     <!-- Actions d'export -->
@@ -151,4 +153,59 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Gestion de la pagination AJAX
+    setupAjaxPagination();
+
+    function setupAjaxPagination() {
+        $('.ajax-pagination a').on('click', function(e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            // Afficher un indicateur de chargement
+            $('#search-results-container').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div></div>');
+
+            // Effectuer la requête AJAX
+            $.ajax({
+                url: url,
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                success: function(response) {
+                    // Mettre à jour uniquement la partie des résultats
+                    $('#search-results-container').html(response.html);
+
+                    // Reconfigurer la pagination AJAX pour les nouveaux liens
+                    setupAjaxPagination();
+
+                    // Scroll jusqu'au début des résultats
+                    $('html, body').animate({
+                        scrollTop: $('#search-results-container').offset().top - 100
+                    }, 200);
+                },
+                error: function(xhr, status, error) {
+                    $('#search-results-container').html(`
+                        <div class="alert alert-danger">
+                            <h4>Erreur lors du chargement de la page</h4>
+                            <p>${error}</p>
+                            <button class="btn btn-outline-danger reload-btn">Réessayer</button>
+                        </div>
+                    `);
+
+                    $('.reload-btn').on('click', function() {
+                        window.location.href = url;
+                    });
+                }
+            });
+        });
+    }
+});
+</script>
 @endsection

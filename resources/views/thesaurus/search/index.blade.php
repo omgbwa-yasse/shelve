@@ -10,7 +10,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('thesaurus.search.results') }}" method="GET">
+                    <form action="{{ route('thesaurus.search.results') }}" method="GET" id="search-form">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -154,4 +154,139 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Conteneur des résultats
+    const resultsContainer = $('<div id="search-results" class="mt-4"></div>');
+    $('.card-body').append(resultsContainer);
+
+    // Gestion du formulaire en AJAX
+    $('#search-form').on('submit', function(e) {
+        e.preventDefault();
+
+        // Afficher un indicateur de chargement
+        $('#search-results').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div></div>');
+
+        // Récupérer les données du formulaire
+        const formData = $(this).serialize();
+
+        // Effectuer la requête AJAX
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'GET',
+            data: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
+            success: function(response) {
+                // Afficher les résultats
+                $('#search-results').html(`
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h4>Résultats de la recherche</h4>
+                            <div>
+                                <button id="new-search-btn" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa fa-search"></i> Modifier la recherche
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h5>${response.total} résultats trouvés</h5>
+                            </div>
+                            <div id="results-content">
+                                ${response.html}
+                            </div>
+
+                            <!-- Actions d'export -->
+                            <div class="mt-4">
+                                <h5>Exporter les résultats</h5>
+                                <div class="btn-group">
+                                    <a href="{{ route('thesaurus.export.skos') }}?${formData}" class="btn btn-outline-primary">
+                                        <i class="fa fa-download"></i> Export SKOS
+                                    </a>
+                                    <a href="{{ route('thesaurus.export.csv') }}?${formData}" class="btn btn-outline-success">
+                                        <i class="fa fa-file-excel"></i> Export CSV
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                // Gestion du bouton pour revenir au formulaire
+                $('#new-search-btn').on('click', function() {
+                    $('#search-results').hide();
+                    $('#search-form').closest('.card').show();
+                });
+
+                // Gestion de la pagination AJAX
+                setupAjaxPagination();
+
+                // Cacher le formulaire
+                $('#search-form').closest('.card').hide();
+            },
+            error: function(xhr, status, error) {
+                $('#search-results').html(`
+                    <div class="alert alert-danger">
+                        <h4>Erreur lors de la recherche</h4>
+                        <p>${error}</p>
+                        <button id="try-again-btn" class="btn btn-outline-danger">Réessayer</button>
+                    </div>
+                `);
+
+                $('#try-again-btn').on('click', function() {
+                    $('#search-form').submit();
+                });
+            }
+        });
+    });
+
+    // Fonction pour configurer la pagination AJAX
+    function setupAjaxPagination() {
+        $('.ajax-pagination a').on('click', function(e) {
+            e.preventDefault();
+
+            const url = $(this).attr('href');
+
+            // Afficher un indicateur de chargement
+            $('#results-content').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div></div>');
+
+            // Effectuer la requête AJAX
+            $.ajax({
+                url: url,
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                success: function(response) {
+                    // Mettre à jour uniquement la partie des résultats
+                    $('#results-content').html(response.html);
+
+                    // Reconfigurer la pagination AJAX pour les nouveaux liens
+                    setupAjaxPagination();
+                },
+                error: function(xhr, status, error) {
+                    $('#results-content').html(`
+                        <div class="alert alert-danger">
+                            <h4>Erreur lors du chargement de la page</h4>
+                            <p>${error}</p>
+                            <button class="btn btn-outline-danger reload-btn">Réessayer</button>
+                        </div>
+                    `);
+
+                    $('.reload-btn').on('click', function() {
+                        window.location.href = url;
+                    });
+                }
+            });
+        });
+    }
+});
+</script>
 @endsection
