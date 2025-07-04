@@ -625,48 +625,57 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('barcode/create', [BarcodeController::class, 'create'])->name('barcode.create');
         Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
 
-        // Nouvelles routes pour la gestion du thésaurus
-        Route::resource('terms.non-descriptors', NonDescriptorController::class)->names('terms.non-descriptors');
-        Route::resource('terms.external-alignments', ExternalAlignmentController::class)->names('terms.external-alignments');
 
-        // Routes pour les relations hiérarchiques
-        Route::get('terms/{term}/hierarchical-relations', [HierarchicalRelationController::class, 'index'])
-             ->name('terms.hierarchical-relations.index');
-        Route::get('terms/{term}/hierarchical-relations/broader/create', [HierarchicalRelationController::class, 'createBroader'])
-             ->name('terms.hierarchical-relations.broader.create');
-        Route::post('terms/{term}/hierarchical-relations/broader', [HierarchicalRelationController::class, 'storeBroader'])
-             ->name('terms.hierarchical-relations.broader.store');
-        Route::get('terms/{term}/hierarchical-relations/narrower/create', [HierarchicalRelationController::class, 'createNarrower'])
-             ->name('terms.hierarchical-relations.narrower.create');
-        Route::post('terms/{term}/hierarchical-relations/narrower', [HierarchicalRelationController::class, 'storeNarrower'])
-             ->name('terms.hierarchical-relations.narrower.store');
-        Route::delete('terms/{term}/hierarchical-relations/{relationType}/{relatedTermId}', [HierarchicalRelationController::class, 'destroyRelation'])
-             ->name('terms.hierarchical-relations.destroy');
 
-        // Routes pour les relations associatives
-        Route::get('terms/{term}/associative-relations', [AssociativeRelationController::class, 'index'])
-             ->name('terms.associative-relations.index');
-        Route::get('terms/{term}/associative-relations/create', [AssociativeRelationController::class, 'create'])
-             ->name('terms.associative-relations.create');
-        Route::post('terms/{term}/associative-relations', [AssociativeRelationController::class, 'store'])
-             ->name('terms.associative-relations.store');
-        Route::delete('terms/{term}/associative-relations/{relatedTermId}', [AssociativeRelationController::class, 'destroyRelation'])
-             ->name('terms.associative-relations.destroy');
+        // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
+        Route::prefix('thesaurus')->group(function () {
+            // Routes pour les termes
+            Route::resource('terms', TermController::class);
 
-        // Routes pour les traductions
-        Route::get('terms/{term}/translations', [TranslationController::class, 'index'])
-             ->name('terms.translations.index');
-        Route::get('terms/{term}/translations/create', [TranslationController::class, 'create'])
-             ->name('terms.translations.create');
-        Route::post('terms/{term}/translations', [TranslationController::class, 'store'])
-             ->name('terms.translations.store');
-        Route::delete('terms/{term}/translations/{relatedTermId}', [TranslationController::class, 'destroyTranslation'])
-             ->name('terms.translations.destroy');
+            // Routes pour les non-descripteurs
+            Route::resource('non-descriptors', NonDescriptorController::class);
 
-        // Routes existantes à conserver pour compatibilité
-        Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
-        Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
-        Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
+            // Routes pour les alignements externes
+            Route::resource('external-alignments', ExternalAlignmentController::class);
+
+            // Routes pour les relations hiérarchiques
+            Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index');
+            Route::get('hierarchical-relations/create/broader/{term}', [HierarchicalRelationController::class, 'createBroader'])->name('hierarchical_relations.create_broader');
+            Route::post('hierarchical-relations/store/broader/{term}', [HierarchicalRelationController::class, 'storeBroader'])->name('hierarchical_relations.store_broader');
+            Route::get('hierarchical-relations/create/narrower/{term}', [HierarchicalRelationController::class, 'createNarrower'])->name('hierarchical_relations.create_narrower');
+            Route::post('hierarchical-relations/store/narrower/{term}', [HierarchicalRelationController::class, 'storeNarrower'])->name('hierarchical_relations.store_narrower');
+            Route::delete('hierarchical-relations/destroy/{broaderTermId}/{narrowerTermId}', [HierarchicalRelationController::class, 'destroy'])->name('hierarchical_relations.destroy');
+
+            // Routes pour les relations associatives
+            Route::get('associative-relations', [AssociativeRelationController::class, 'index'])->name('associative_relations.index');
+            Route::get('associative-relations/create/{term}', [AssociativeRelationController::class, 'create'])->name('associative_relations.create');
+            Route::post('associative-relations/store/{term}', [AssociativeRelationController::class, 'store'])->name('associative_relations.store');
+            Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('associative_relations.destroy');
+
+            // Routes pour les traductions
+            Route::get('translations', [TranslationController::class, 'index'])->name('translations.index');
+            Route::get('translations/create/{term}', [TranslationController::class, 'create'])->name('translations.create');
+            Route::post('translations/store/{term}', [TranslationController::class, 'store'])->name('translations.store');
+            Route::delete('translations/destroy/{sourceTermId}/{targetTermId}', [TranslationController::class, 'destroy'])->name('translations.destroy');
+
+            // Routes pour la recherche avancée
+            Route::get('search', [App\Http\Controllers\ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
+            Route::get('search/results', [App\Http\Controllers\ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
+
+            // Route pour la page d'accueil d'import/export
+            Route::get('export-import', [App\Http\Controllers\ThesaurusExportImportController::class, 'index'])->name('thesaurus.export-import');
+
+            // Routes pour l'export
+            Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
+            Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
+
+            // Routes pour l'import
+            Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
+            Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
+            Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
+            Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
+        });
+
     });
 
 
@@ -861,54 +870,7 @@ Route::group(['middleware' => 'auth'], function () {
 });
 
 
-// Groupe de routes pour la gestion du thésaurus
-Route::group(['prefix' => 'thesaurus'], function () {
-    // Routes pour les termes
-    Route::resource('terms', TermController::class);
 
-    // Routes pour les non-descripteurs
-    Route::resource('non-descriptors', NonDescriptorController::class);
-
-    // Routes pour les alignements externes
-    Route::resource('external-alignments', ExternalAlignmentController::class);
-
-    // Routes pour les relations hiérarchiques
-    Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index');
-    Route::get('hierarchical-relations/create/broader/{term}', [HierarchicalRelationController::class, 'createBroader'])->name('hierarchical_relations.create_broader');
-    Route::post('hierarchical-relations/store/broader/{term}', [HierarchicalRelationController::class, 'storeBroader'])->name('hierarchical_relations.store_broader');
-    Route::get('hierarchical-relations/create/narrower/{term}', [HierarchicalRelationController::class, 'createNarrower'])->name('hierarchical_relations.create_narrower');
-    Route::post('hierarchical-relations/store/narrower/{term}', [HierarchicalRelationController::class, 'storeNarrower'])->name('hierarchical_relations.store_narrower');
-    Route::delete('hierarchical-relations/destroy/{broaderTermId}/{narrowerTermId}', [HierarchicalRelationController::class, 'destroy'])->name('hierarchical_relations.destroy');
-
-    // Routes pour les relations associatives
-    Route::get('associative-relations', [AssociativeRelationController::class, 'index'])->name('associative_relations.index');
-    Route::get('associative-relations/create/{term}', [AssociativeRelationController::class, 'create'])->name('associative_relations.create');
-    Route::post('associative-relations/store/{term}', [AssociativeRelationController::class, 'store'])->name('associative_relations.store');
-    Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('associative_relations.destroy');
-
-    // Routes pour les traductions
-    Route::get('translations', [TranslationController::class, 'index'])->name('translations.index');
-    Route::get('translations/create/{term}', [TranslationController::class, 'create'])->name('translations.create');
-    Route::post('translations/store/{term}', [TranslationController::class, 'store'])->name('translations.store');
-    Route::delete('translations/destroy/{sourceTermId}/{targetTermId}', [TranslationController::class, 'destroy'])->name('translations.destroy');
-
-    // Routes pour la recherche avancée
-    Route::get('search', [App\Http\Controllers\ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
-    Route::get('search/results', [App\Http\Controllers\ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
-
-    // Route pour la page d'accueil d'import/export
-    Route::get('export-import', [App\Http\Controllers\ThesaurusExportImportController::class, 'index'])->name('thesaurus.export-import');
-
-    // Routes pour l'export
-    Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
-    Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
-
-    // Routes pour l'import
-    Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
-    Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
-    Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
-    Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
-});
 
 // Route resource obsolète à supprimer (conflit avec le nouveau groupe de routes)
 // Route::resource('thesaurus', ContainerStatusController::class);
