@@ -140,7 +140,7 @@
     <div class="submenu-section mb-3">
         <div class="submenu-content">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('home') }}">
+                <a class="submenu-link" href="{{ url('/') }}">
                     <i class="bi bi-arrow-left"></i> Retour à l'accueil
                 </a>
             </div>

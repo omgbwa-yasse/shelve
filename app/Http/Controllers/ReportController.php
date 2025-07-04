@@ -310,7 +310,7 @@ class ReportController extends Controller
     {
         // Statistiques générales
         $totalCommunications = Communication::count();
-        $pendingCommunications = Communication::where('status_id', 1)->count(); // Supposons que 1 est le statut "en attente"
+        $pendingCommunications = Communication::where('status', \App\Enums\CommunicationStatus::PENDING->value)->count(); // Utilisation de l'enum de statut
         $completedCommunications = Communication::whereNotNull('return_effective')->count();
 
         // Communications par statut
@@ -562,14 +562,14 @@ class ReportController extends Controller
         // Statistiques générales
         $totalDollies = Dolly::count();
 
-        // Dollies par type
-        $dolliesByType = Dolly::select('type_id', DB::raw('count(*) as count'))
-            ->groupBy('type_id')
+        // Dollies par catégorie
+        $dolliesByType = Dolly::select('category', DB::raw('count(*) as count'))
+            ->groupBy('category')
             ->get();
-        $dollyTypeLabels = DollyType::whereIn('id', $dolliesByType->pluck('type_id'))
-            ->pluck('name', 'id')
-            ->toArray();
-        $dollyTypeData = $dolliesByType->pluck('count', 'type_id')->toArray();
+        $dollyTypeLabels = $dolliesByType->pluck('category')->mapWithKeys(function ($item) {
+            return [$item => ucfirst($item)];
+        })->toArray();
+        $dollyTypeData = $dolliesByType->pluck('count', 'category')->toArray();
 
         // Évolution du nombre de dollies
         $dolliesEvolution = Dolly::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
@@ -631,14 +631,14 @@ class ReportController extends Controller
     {
         // Communications
         $totalCommunications = Communication::count();
-        $pendingCommunications = Communication::where('status_id', 1)->count(); // Assuming 1 is pending status
+        $pendingCommunications = Communication::where('status', \App\Enums\CommunicationStatus::PENDING->value)->count(); // Using the status enum
 
         // Dollies
         $totalDollies = Dolly::count();
         $dolliesByType = Dolly::query()
-            ->select('type_id', DB::raw('count(*) as count'))
-            ->groupBy('type_id')
-            ->pluck('count', 'type_id');
+            ->select('category', DB::raw('count(*) as count'))
+            ->groupBy('category')
+            ->pluck('count', 'category');
 
         // Mails
         $totalMails = Mail::count();

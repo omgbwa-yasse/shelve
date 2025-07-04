@@ -58,7 +58,7 @@ use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
-use AppHttp\Controllers\RecordSupportController;
+use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\SearchCommunicationController;
 use App\Http\Controllers\CommunicationRecordController;
