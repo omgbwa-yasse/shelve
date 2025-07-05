@@ -626,7 +626,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
 
 
-
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
             // Routes pour les termes
@@ -646,11 +645,25 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('hierarchical-relations/store/narrower/{term}', [HierarchicalRelationController::class, 'storeNarrower'])->name('hierarchical_relations.store_narrower');
             Route::delete('hierarchical-relations/destroy/{broaderTermId}/{narrowerTermId}', [HierarchicalRelationController::class, 'destroy'])->name('hierarchical_relations.destroy');
 
+            // Routes additionnelles avec les noms attendus par les templates
+            Route::get('terms/{term}/hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('terms.hierarchical-relations.index');
+            Route::get('terms/{term}/hierarchical-relations/broader/create', [HierarchicalRelationController::class, 'createBroader'])->name('terms.hierarchical-relations.broader.create');
+            Route::post('terms/{term}/hierarchical-relations/broader/store', [HierarchicalRelationController::class, 'storeBroader'])->name('terms.hierarchical-relations.broader.store');
+            Route::get('terms/{term}/hierarchical-relations/narrower/create', [HierarchicalRelationController::class, 'createNarrower'])->name('terms.hierarchical-relations.narrower.create');
+            Route::post('terms/{term}/hierarchical-relations/narrower/store', [HierarchicalRelationController::class, 'storeNarrower'])->name('terms.hierarchical-relations.narrower.store');
+            Route::post('terms/{term}/hierarchical-relations/destroy/{relationType}/{relatedTermId}', [HierarchicalRelationController::class, 'destroyRelation'])->name('terms.hierarchical-relations.destroy');
+
             // Routes pour les relations associatives
             Route::get('associative-relations', [AssociativeRelationController::class, 'index'])->name('associative_relations.index');
             Route::get('associative-relations/create/{term}', [AssociativeRelationController::class, 'create'])->name('associative_relations.create');
             Route::post('associative-relations/store/{term}', [AssociativeRelationController::class, 'store'])->name('associative_relations.store');
             Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('associative_relations.destroy');
+
+            // Routes additionnelles avec les noms attendus par les templates pour les relations associatives
+            Route::get('terms/{term}/associative-relations', [AssociativeRelationController::class, 'index'])->name('terms.associative-relations.index');
+            Route::get('terms/{term}/associative-relations/create', [AssociativeRelationController::class, 'create'])->name('terms.associative-relations.create');
+            Route::post('terms/{term}/associative-relations/store', [AssociativeRelationController::class, 'store'])->name('terms.associative-relations.store');
+            Route::delete('terms/{term}/associative-relations/destroy/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('terms.associative-relations.destroy');
 
             // Routes pour les traductions
             Route::get('translations', [TranslationController::class, 'index'])->name('translations.index');
@@ -668,12 +681,15 @@ Route::group(['middleware' => 'auth'], function () {
             // Routes pour l'export
             Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
             Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
+            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
 
             // Routes pour l'import
             Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
             Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
             Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
             Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
+            Route::get('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
+            Route::post('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
         });
 
     });
@@ -874,6 +890,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 // Route resource obsolète à supprimer (conflit avec le nouveau groupe de routes)
 // Route::resource('thesaurus', ContainerStatusController::class);
+
+// API routes pour le thésaurus
+Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->group(function () {
+    Route::post('import/skos/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processSkosImport'])->name('import.skos.process');
+    Route::post('import/csv/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processCsvImport'])->name('import.csv.process');
+    Route::post('import/rdf/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processRdfImport'])->name('import.rdf.process');
+    Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
+});
 
 
 

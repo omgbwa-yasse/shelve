@@ -99,4 +99,13 @@ class HierarchicalRelationController extends Controller
         return redirect()->route('terms.hierarchical-relations.index', $term->id)
             ->with('success', 'Relation hiérarchique supprimée avec succès.');
     }
+
+    public function destroy($broaderTermId, $narrowerTermId)
+    {
+        $broaderTerm = Term::findOrFail($broaderTermId);
+        $broaderTerm->narrowerTerms()->detach($narrowerTermId);
+
+        return redirect()->back()
+            ->with('success', 'Relation hiérarchique supprimée avec succès.');
+    }
 }

@@ -723,424 +723,680 @@ class ThesaurusExportImportController extends Controller
     }
 
     /**
-     * Construit une requête de recherche à partir des paramètres de la requête
+     * Affiche le formulaire pour l'import de fichiers RDF
      */
-    private function buildSearchQuery(Request $request)
+    public function showImportRdfForm()
     {
-        // Initialiser la requête de base
-        $query = Term::query();
-
-        // Recherche par terme préféré ou non-descripteur
-        if ($request->filled('query')) {
-            $searchTerm = $request->input('query');
-
-            $query->where(function($q) use ($searchTerm) {
-                // Recherche dans le terme préféré
-                $q->where('preferred_label', 'LIKE', "%{$searchTerm}%");
-
-                // Recherche dans les non-descripteurs
-                $q->orWhereHas('nonDescriptors', function($subQuery) use ($searchTerm) {
-                    $subQuery->where('non_descriptor_label', 'LIKE', "%{$searchTerm}%");
-                });
-            });
-        }
-
-        // Filtres additionnels
-        if ($request->filled('language')) {
-            $query->where('language', $request->language);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->filled('is_top_term')) {
-            $query->where('is_top_term', true);
-        }
-
-        // Recherche dans les notes et définitions
-        if ($request->filled('content_search')) {
-            $contentSearch = $request->content_search;
-
-            $query->where(function($q) use ($contentSearch) {
-                $q->where('definition', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('scope_note', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('history_note', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('example', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('editorial_note', 'LIKE', "%{$contentSearch}%");
-            });
-        }
-
-        // Recherche par URI externe
-        if ($request->filled('external_uri')) {
-            $externalUri = $request->external_uri;
-
-            $query->whereHas('externalAlignments', function($q) use ($externalUri) {
-                $q->where('external_uri', 'LIKE', "%{$externalUri}%");
-            });
-        }
-
-        // Recherche par vocabulaire externe
-        if ($request->filled('external_vocabulary')) {
-            $externalVocabulary = $request->external_vocabulary;
-
-            $query->whereHas('externalAlignments', function($q) use ($externalVocabulary) {
-                $q->where('external_vocabulary', 'LIKE', "%{$externalVocabulary}%");
-            });
-        }
-
-        // Recherche par relations
-        if ($request->filled('has_narrower')) {
-            $query->whereHas('narrowerTerms');
-        }
-
-        if ($request->filled('has_broader')) {
-            $query->whereHas('broaderTerms');
-        }
-
-        if ($request->filled('has_related')) {
-            $query->whereHas('associatedTerms');
-        }
-
-        if ($request->filled('has_translations')) {
-            $query->where(function($q) {
-                $q->whereHas('translationsSource')
-                  ->orWhereHas('translationsTarget');
-            });
-        }
-
-        // Tri des résultats
-        $sortBy = $request->filled('sort_by') ? $request->sort_by : 'preferred_label';
-        $sortDirection = $request->filled('sort_direction') ? $request->sort_direction : 'asc';
-
-        $query->orderBy($sortBy, $sortDirection);
-
-        return $query;
+        return view('thesaurus.import.rdf');
     }
 
     /**
-     * Traite les relations hiérarchiques et associatives lors de l'import SKOS
+     * Importe un thésaurus au format RDF
      */
-    private function processRelationships($term, $rel, $uriToTermIdMap)
+    public function importRdf(Request $request)
     {
-        // Traiter les relations génériques (broader)
-        if (!empty($rel['broaderUris'])) {
-            foreach ($rel['broaderUris'] as $uri) {
-                $uriStr = (string)$uri;
-                if (isset($uriToTermIdMap[$uriStr])) {
-                    $broaderId = $uriToTermIdMap[$uriStr];
+        try {
+            // Log pour débogage
+            Log::info('Début de l\'import RDF traditionnel', [
+                'request_data' => $request->all(),
+                'has_file' => $request->hasFile('file')
+            ]);
 
-                    // Vérifier si la relation existe déjà
-                    $exists = DB::table('term_hierarchical_relations')
-                        ->where('narrower_term_id', $term->id)
-                        ->where('broader_term_id', $broaderId)
-                        ->exists();
+            // Validation de base
+            $validator = Validator::make($request->all(), [
+                'file' => 'required|file|mimes:xml,rdf,txt|max:10240', // 10MB max, formats acceptés
+            ]);
 
-                    if (!$exists) {
-                        DB::table('term_hierarchical_relations')->insert([
-                            'narrower_term_id' => $term->id,
-                            'broader_term_id' => $broaderId,
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]);
-                    }
-                }
+            if ($validator->fails()) {
+                Log::warning('Validation a échoué pour import RDF traditionnel', [
+                    'errors' => $validator->errors()->toArray()
+                ]);
+
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
             }
-        }
 
-        // Traiter les relations spécifiques (narrower)
-        if (!empty($rel['narrowerUris'])) {
-            foreach ($rel['narrowerUris'] as $uri) {
-                $uriStr = (string)$uri;
-                if (isset($uriToTermIdMap[$uriStr])) {
-                    $narrowerId = $uriToTermIdMap[$uriStr];
+            // Charger le fichier RDF
+            $file = $request->file('file');
+            Log::info('Fichier RDF reçu', [
+                'filename' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType()
+            ]);
 
-                    // Vérifier si la relation existe déjà
-                    $exists = DB::table('term_hierarchical_relations')
-                        ->where('narrower_term_id', $narrowerId)
-                        ->where('broader_term_id', $term->id)
-                        ->exists();
+            $content = file_get_contents($file->getPathname());
 
-                    if (!$exists) {
-                        DB::table('term_hierarchical_relations')->insert([
-                            'narrower_term_id' => $narrowerId,
-                            'broader_term_id' => $term->id,
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]);
-                    }
-                }
+            // Essayer de détecter l'encodage et convertir en UTF-8 si nécessaire
+            $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'ASCII'], true);
+            if ($encoding && $encoding !== 'UTF-8') {
+                Log::info('Conversion d\'encodage', ['from' => $encoding, 'to' => 'UTF-8']);
+                $content = mb_convert_encoding($content, 'UTF-8', $encoding);
             }
-        }
 
-        // Traiter les relations associatives
-        if (!empty($rel['relatedUris'])) {
-            foreach ($rel['relatedUris'] as $uri) {
-                $uriStr = (string)$uri;
-                if (isset($uriToTermIdMap[$uriStr])) {
-                    $relatedId = $uriToTermIdMap[$uriStr];
+            // Analyser le fichier RDF
+            try {
+                // Options pour éviter les problèmes d'analyse XML courants
+                $libxmlOpts = LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_NOCDATA | LIBXML_PARSEHUGE | LIBXML_BIGLINES;
 
-                    // Vérifier si la relation existe déjà (dans un sens ou dans l'autre)
-                    $exists = DB::table('term_associative_relations')
-                        ->where(function($query) use ($term, $relatedId) {
-                            $query->where('term_id', $term->id)
-                                  ->where('associated_term_id', $relatedId);
-                        })
-                        ->orWhere(function($query) use ($term, $relatedId) {
-                            $query->where('term_id', $relatedId)
-                                  ->where('associated_term_id', $term->id);
-                        })
-                        ->exists();
+                // Conserver les erreurs de libxml pour le débogage
+                libxml_use_internal_errors(true);
 
-                    if (!$exists) {
-                        DB::table('term_associative_relations')->insert([
-                            'term_id' => $term->id,
-                            'associated_term_id' => $relatedId,
-                            'created_at' => now(),
-                            'updated_at' => now()
-                        ]);
+                // Essayer de nettoyer le contenu XML si nécessaire (BOM, espaces, etc.)
+                $content = preg_replace('/^\xEF\xBB\xBF/', '', $content); // Suppression BOM UTF-8
+                $content = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $content); // Suppression caractères de contrôle
+
+                $xml = new \SimpleXMLElement($content, $libxmlOpts);
+
+                // Vérifier s'il y a eu des erreurs lors de l'analyse
+                $errors = libxml_get_errors();
+                if (!empty($errors)) {
+                    Log::warning('Avertissements XML lors de l\'analyse du fichier RDF', [
+                        'errors' => array_map(function($error) {
+                            return [
+                                'level' => $error->level,
+                                'code' => $error->code,
+                                'message' => trim($error->message),
+                                'line' => $error->line,
+                            ];
+                        }, $errors)
+                    ]);
+
+                    // Si erreurs graves, afficher les détails
+                    $fatalErrors = array_filter($errors, function($error) {
+                        return $error->level === LIBXML_ERR_FATAL;
+                    });
+
+                    if (!empty($fatalErrors)) {
+                        $errorMessages = array_map(function($error) {
+                            return "Ligne {$error->line}: " . trim($error->message);
+                        }, $fatalErrors);
+
+                        libxml_clear_errors();
+                        return redirect()->back()
+                            ->with('error', 'Erreurs critiques dans le fichier XML: ' . implode('; ', $errorMessages));
                     }
+
+                    libxml_clear_errors();
                 }
-            }
-        }
-    }
 
-    /**
-     * Traite les alignements externes lors de l'import SKOS
-     */
-    private function processExternalAlignments($term, $rel)
-    {
-        // Fonction pour traiter un ensemble d'alignements
-        $processAlignments = function ($uris, $relationType, $term) {
-            if (!empty($uris)) {
-                foreach ($uris as $uri) {
-                    $uriStr = (string)$uri;
+                // Enregistrer tous les namespaces possibles pour SKOS
+                $namespaces = [
+                    'rdf' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                    'rdfs' => 'http://www.w3.org/2000/01/rdf-schema#',
+                    'owl' => 'http://www.w3.org/2002/07/owl#',
+                    'dc' => 'http://purl.org/dc/elements/1.1/',
+                    'dcterms' => 'http://purl.org/dc/terms/',
+                    'skos' => 'http://www.w3.org/2004/02/skos/core#',
+                    'xl' => 'http://www.w3.org/2008/05/skos-xl#'
+                ];
 
-                    // Extraire le vocabulaire à partir de l'URI (domaine)
-                    $vocabulary = '';
-                    if (preg_match('/^https?:\/\/([^\/]+)/', $uriStr, $matches)) {
-                        $vocabulary = $matches[1];
-                    }
-
-                    // Vérifier si l'alignement existe déjà
-                    $exists = ExternalAlignment::where('term_id', $term->id)
-                        ->where('external_uri', $uriStr)
-                        ->exists();
-
-                    if (!$exists) {
-                        ExternalAlignment::create([
-                            'term_id' => $term->id,
-                            'external_vocabulary' => $vocabulary,
-                            'external_uri' => $uriStr,
-                            'relation_type' => $relationType
-                        ]);
-                    }
+                // Enregistrer les namespaces pour XPath
+                foreach ($namespaces as $prefix => $uri) {
+                    $xml->registerXPathNamespace($prefix, $uri);
                 }
-            }
-        };
 
-        // Traiter chaque type d'alignement
-        $processAlignments($rel['exactMatches'], 'exactMatch', $term);
-        $processAlignments($rel['closeMatches'], 'closeMatch', $term);
-        $processAlignments($rel['broadMatches'], 'broadMatch', $term);
-        $processAlignments($rel['narrowMatches'], 'narrowMatch', $term);
-        $processAlignments($rel['relatedMatches'], 'relatedMatch', $term);
-    }
+                // Détecter le type de structure RDF (il y a différentes façons d'encoder SKOS en RDF)
+                $structureInfo = $this->detectRdfStructure($xml);
+                Log::info('Structure RDF détectée', $structureInfo);
 
-    /**
-     * Traite les relations entre termes à partir des données CSV
-     */
-    private function processTermRelationsFromCsv($termRelations)
-    {
-        // Créer une correspondance label -> id pour rechercher les termes
-        $termLabelMap = [];
-        foreach (Term::all() as $existingTerm) {
-            $key = strtolower($existingTerm->preferred_label) . '_' . $existingTerm->language;
-            $termLabelMap[$key] = $existingTerm->id;
-        }
+                // Statistiques pour le rapport d'import
+                $stats = [
+                    'created' => 0,
+                    'updated' => 0,
+                    'errors' => 0,
+                    'relationships' => 0
+                ];
 
-        foreach ($termRelations as $termId => $relations) {
-            // Traiter les termes génériques
-            if (isset($relations['broader'])) {
-                foreach ($relations['broader'] as $broaderLabel) {
-                    $broaderLabel = trim($broaderLabel);
-                    if (!empty($broaderLabel)) {
-                        // Rechercher le terme dans différentes langues
-                        $broaderId = null;
-                        foreach (['fr', 'en', 'es', 'de', 'it', 'pt'] as $lang) {
-                            $key = strtolower($broaderLabel) . '_' . $lang;
-                            if (isset($termLabelMap[$key])) {
-                                $broaderId = $termLabelMap[$key];
+                // Pour stocker les relations à traiter après la création des termes
+                $relationships = [];
+
+                // Transaction DB pour s'assurer de l'intégrité des données
+                DB::beginTransaction();
+
+                try {
+                    // Rechercher les concepts selon la structure détectée
+                    if ($structureInfo['structure'] === 'standard') {
+                        // Format standard
+                        $concepts = $xml->xpath('//skos:Concept|//rdf:Description[rdf:type/@rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"]');
+                    } else if ($structureInfo['structure'] === 'alternate') {
+                        // Format alternatif
+                        $concepts = $xml->xpath($structureInfo['conceptPath']);
+                    } else {
+                        // Essayer plusieurs approches
+                        $concepts = $xml->xpath('//skos:Concept|//rdf:Description[rdf:type/@rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"]|//rdf:Description[skos:prefLabel]');
+                    }
+
+                    Log::info('Concepts RDF trouvés', ['count' => count($concepts)]);
+
+                    if (count($concepts) === 0) {
+                        DB::rollBack();
+                        Log::warning('Aucun concept trouvé dans le fichier RDF');
+                        return redirect()->back()->with('error', 'Aucun concept SKOS n\'a été trouvé dans le fichier. Vérifiez que le fichier est au format RDF/SKOS valide.');
+                    }
+
+                    // Premier passage : créer tous les termes
+                    foreach ($concepts as $concept) {
+                        // Obtenir l'URI du concept (plusieurs façons possibles)
+                        $uri = '';
+                        if (isset($concept->attributes('rdf', true)->about)) {
+                            $uri = (string)$concept->attributes('rdf', true)->about;
+                        } elseif (isset($concept->attributes('rdf', true)->ID)) {
+                            $uri = (string)$concept->attributes('rdf', true)->ID;
+                        } elseif (isset($concept->attributes('rdf', true)->resource)) {
+                            $uri = (string)$concept->attributes('rdf', true)->resource;
+                        } elseif (isset($concept['about'])) {
+                            $uri = (string)$concept['about'];
+                        }
+
+                        // Rechercher les propriétés du concept avec différentes structures possibles
+                        $prefLabels = $concept->xpath('.//skos:prefLabel');
+                        if (empty($prefLabels)) {
+                            $stats['errors']++;
+                            Log::warning('Concept sans prefLabel ignoré', ['uri' => $uri]);
+                            continue;
+                        }                        $prefLabel = '';
+                        $language = 'fr'; // Par défaut
+
+                        // Trouver le label préféré dans la langue désirée (fr par défaut)
+                        foreach ($prefLabels as $label) {
+                            $lang = '';
+                            if (isset($label->attributes('xml', true)->lang)) {
+                                $lang = (string)$label->attributes('xml', true)->lang;
+                            } elseif (isset($label['lang'])) {
+                                $lang = (string)$label['lang'];
+                            }
+
+                            // Standardiser le code de langue
+                            $shortLang = $this->standardizeLanguageCode($lang);
+
+                            if ($shortLang == 'fr') {
+                                $prefLabel = (string)$label;
+                                $language = 'fr';
                                 break;
+                            } else if (empty($prefLabel)) {
+                                $prefLabel = (string)$label;
+                                $language = $shortLang;
                             }
                         }
 
-                        if ($broaderId) {
-                            // Vérifier si la relation existe déjà
-                            $exists = DB::table('term_hierarchical_relations')
-                                ->where('narrower_term_id', $termId)
-                                ->where('broader_term_id', $broaderId)
-                                ->exists();
+                        // Tronquer le label préféré s'il est trop long pour la base de données
+                        $prefLabel = $this->truncateForDatabase($prefLabel, 100, true, 'preferred_label');
 
-                            if (!$exists) {
-                                DB::table('term_hierarchical_relations')->insert([
-                                    'narrower_term_id' => $termId,
-                                    'broader_term_id' => $broaderId,
-                                    'created_at' => now(),
-                                    'updated_at' => now()
-                                ]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Traiter les termes spécifiques
-            if (isset($relations['narrower'])) {
-                foreach ($relations['narrower'] as $narrowerLabel) {
-                    $narrowerLabel = trim($narrowerLabel);
-                    if (!empty($narrowerLabel)) {
-                        // Rechercher le terme dans différentes langues
-                        $narrowerId = null;
-                        foreach (['fr', 'en', 'es', 'de', 'it', 'pt'] as $lang) {
-                            $key = strtolower($narrowerLabel) . '_' . $lang;
-                            if (isset($termLabelMap[$key])) {
-                                $narrowerId = $termLabelMap[$key];
-                                break;
-                            }
-                        }
-
-                        if ($narrowerId) {
-                            // Vérifier si la relation existe déjà
-                            $exists = DB::table('term_hierarchical_relations')
-                                ->where('narrower_term_id', $narrowerId)
-                                ->where('broader_term_id', $termId)
-                                ->exists();
-
-                            if (!$exists) {
-                                DB::table('term_hierarchical_relations')->insert([
-                                    'narrower_term_id' => $narrowerId,
-                                    'broader_term_id' => $termId,
-                                    'created_at' => now(),
-                                    'updated_at' => now()
-                                ]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Traiter les termes associés
-            if (isset($relations['related'])) {
-                foreach ($relations['related'] as $relatedLabel) {
-                    $relatedLabel = trim($relatedLabel);
-                    if (!empty($relatedLabel)) {
-                        // Rechercher le terme dans différentes langues
-                        $relatedId = null;
-                        foreach (['fr', 'en', 'es', 'de', 'it', 'pt'] as $lang) {
-                            $key = strtolower($relatedLabel) . '_' . $lang;
-                            if (isset($termLabelMap[$key])) {
-                                $relatedId = $termLabelMap[$key];
-                                break;
-                            }
-                        }
-
-                        if ($relatedId) {
-                            // Vérifier si la relation existe déjà (dans un sens ou dans l'autre)
-                            $exists = DB::table('term_associative_relations')
-                                ->where(function($query) use ($termId, $relatedId) {
-                                    $query->where('term_id', $termId)
-                                          ->where('associated_term_id', $relatedId);
-                                })
-                                ->orWhere(function($query) use ($termId, $relatedId) {
-                                    $query->where('term_id', $relatedId)
-                                          ->where('associated_term_id', $termId);
-                                })
-                                ->exists();
-
-                            if (!$exists) {
-                                DB::table('term_associative_relations')->insert([
-                                    'term_id' => $termId,
-                                    'associated_term_id' => $relatedId,
-                                    'created_at' => now(),
-                                    'updated_at' => now()
-                                ]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Traite les non-descripteurs à partir des données CSV
-     */
-    private function processNonDescriptorsFromCsv($termNonDescriptors)
-    {
-        foreach ($termNonDescriptors as $termId => $nonDescriptors) {
-            foreach ($nonDescriptors as $label) {
-                $label = trim($label);
-                if (!empty($label)) {
-                    // Vérifier si le non-descripteur existe déjà
-                    $exists = NonDescriptor::where('term_id', $termId)
-                        ->where('non_descriptor_label', $label)
-                        ->exists();
-
-                    if (!$exists) {
-                        NonDescriptor::create([
-                            'term_id' => $termId,
-                            'non_descriptor_label' => $label
+                        // Log des informations sur la langue
+                        Log::debug('Traitement de la langue', [
+                            'original_lang' => $lang ?? 'non définie',
+                            'language_utilisée' => $language,
+                            'prefLabel' => $prefLabel
                         ]);
-                    }
-                }
-            }
-        }
-    }
 
-    /**
-     * Traite les alignements externes à partir des données CSV
-     */
-    private function processExternalAlignmentsFromCsv($termAlignments)
-    {
-        foreach ($termAlignments as $termId => $alignments) {
-            foreach ($alignments as $alignmentStr) {
-                $alignmentStr = trim($alignmentStr);
-                if (!empty($alignmentStr)) {
-                    // Format attendu : "type: vocabulaire - uri"
-                    if (preg_match('/^(.*?):\s*(.*?)\s*-\s*(.*)$/', $alignmentStr, $matches)) {
-                        $relationType = strtolower(trim($matches[1]));
-                        $vocabulary = trim($matches[2]);
-                        $uri = trim($matches[3]);
+                        if (empty($prefLabel)) {
+                            $stats['errors']++;
+                            Log::warning('Concept avec prefLabel vide ignoré', ['uri' => $uri]);
+                            continue;
+                        }
 
-                        // Normaliser le type de relation
-                        if (!in_array($relationType, ['exactmatch', 'closematch', 'broadmatch', 'narrowmatch', 'relatedmatch'])) {
-                            $relationType = 'exactMatch';
+                        // Vérifier si le terme existe déjà
+                        $term = Term::where('preferred_label', $prefLabel)
+                                    ->where('language', $language)
+                                    ->first();
+
+                        if (!$term) {
+                            // Créer un nouveau terme
+                            $term = new Term();
+                            $term->preferred_label = $prefLabel;
+                            $term->language = $language;
+                            $term->status = 'candidate'; // Par défaut
+                            $stats['created']++;
                         } else {
-                            // Convertir camelCase
-                            $relationType = lcfirst(str_replace(' ', '', ucwords(str_replace('match', ' match', $relationType))));
+                            // Le terme existe déjà, mettre à jour
+                            $term->preferred_label = $prefLabel;
+                            $term->language = $language;
+                            $stats['updated']++;
+                        }                        // Traiter les notes et définitions
+                        $definitions = $concept->xpath('.//skos:definition');
+                        if (!empty($definitions)) {
+                            foreach ($definitions as $def) {
+                                $lang = '';
+                                if (isset($def->attributes('xml', true)->lang)) {
+                                    $lang = (string)$def->attributes('xml', true)->lang;
+                                } elseif (isset($def['lang'])) {
+                                    $lang = (string)$def['lang'];
+                                }
+
+                                // Standardiser le code de langue
+                                $shortLang = $this->standardizeLanguageCode($lang);
+
+                                if (empty($lang) || $shortLang == substr($language, 0, 2)) {
+                                    // Pas de limite stricte pour TEXT mais on limite quand même pour éviter les problèmes
+                                    $term->definition = $this->truncateForDatabase((string)$def, 65535, true, 'definition');
+                                    break;
+                                }
+                            }
+                        }                        // Notes d'application
+                        $scopeNotes = $concept->xpath('.//skos:scopeNote');
+                        if (!empty($scopeNotes)) {
+                            foreach ($scopeNotes as $note) {
+                                $lang = '';
+                                if (isset($note->attributes('xml', true)->lang)) {
+                                    $lang = (string)$note->attributes('xml', true)->lang;
+                                } elseif (isset($note['lang'])) {
+                                    $lang = (string)$note['lang'];
+                                }
+
+                                // Standardiser le code de langue
+                                $shortLang = $this->standardizeLanguageCode($lang);
+
+                                if (empty($lang) || $shortLang == substr($language, 0, 2)) {
+                                    $term->scope_note = $this->truncateForDatabase((string)$note, 65535, true, 'scope_note');
+                                    break;
+                                }
+                            }
+                        }                        // Notes historiques
+                        $historyNotes = $concept->xpath('.//skos:historyNote');
+                        if (!empty($historyNotes)) {
+                            foreach ($historyNotes as $note) {
+                                $lang = '';
+                                if (isset($note->attributes('xml', true)->lang)) {
+                                    $lang = (string)$note->attributes('xml', true)->lang;
+                                } elseif (isset($note['lang'])) {
+                                    $lang = (string)$note['lang'];
+                                }
+
+                                // Standardiser le code de langue
+                                $shortLang = $this->standardizeLanguageCode($lang);
+
+                                if (empty($lang) || $shortLang == substr($language, 0, 2)) {
+                                    $term->history_note = $this->truncateForDatabase((string)$note, 65535, true, 'history_note');
+                                    break;
+                                }
+                            }
+                        }                        // Notes éditoriales
+                        $editorialNotes = $concept->xpath('.//skos:editorialNote');
+                        if (!empty($editorialNotes)) {
+                            foreach ($editorialNotes as $note) {
+                                $lang = '';
+                                if (isset($note->attributes('xml', true)->lang)) {
+                                    $lang = (string)$note->attributes('xml', true)->lang;
+                                } elseif (isset($note['lang'])) {
+                                    $lang = (string)$note['lang'];
+                                }
+
+                                // Standardiser le code de langue
+                                $shortLang = $this->standardizeLanguageCode($lang);
+
+                                if (empty($lang) || $shortLang == substr($language, 0, 2)) {
+                                    $term->editorial_note = $this->truncateForDatabase((string)$note, 65535, true, 'editorial_note');
+                                    break;
+                                }
+                            }
+                        }                        // Exemples
+                        $examples = $concept->xpath('.//skos:example');
+                        if (!empty($examples)) {
+                            foreach ($examples as $example) {
+                                $lang = '';
+                                if (isset($example->attributes('xml', true)->lang)) {
+                                    $lang = (string)$example->attributes('xml', true)->lang;
+                                } elseif (isset($example['lang'])) {
+                                    $lang = (string)$example['lang'];
+                                }
+
+                                // Standardiser le code de langue
+                                $shortLang = $this->standardizeLanguageCode($lang);
+
+                                if (empty($lang) || $shortLang == substr($language, 0, 2)) {
+                                    $term->example = $this->truncateForDatabase((string)$example, 65535, true, 'example');
+                                    break;
+                                }
+                            }
                         }
 
-                        // Vérifier si l'alignement existe déjà
-                        $exists = ExternalAlignment::where('term_id', $termId)
-                            ->where('external_uri', $uri)
-                            ->exists();
+                        // Vérifier si c'est un terme de tête (plusieurs structures possibles)
+                        $isTopTerm = false;
+                        $topConcepts = $xml->xpath('//skos:hasTopConcept/@rdf:resource|//skos:ConceptScheme/skos:hasTopConcept/@rdf:resource');
+                        $isTopTerm = in_array($uri, array_map('strval', $topConcepts));
 
-                        if (!$exists && !empty($uri)) {
-                            ExternalAlignment::create([
-                                'term_id' => $termId,
-                                'external_vocabulary' => $vocabulary,
-                                'external_uri' => $uri,
-                                'relation_type' => $relationType
-                            ]);
+                        // Autre façon de détecter les termes de tête
+                        if (!$isTopTerm) {
+                            $inScheme = $concept->xpath('.//skos:topConceptOf');
+                            $isTopTerm = count($inScheme) > 0;
+                        }
+
+                        $term->is_top_term = $isTopTerm;
+
+                        // Sauvegarder le terme
+                        $term->save();
+
+                        // Collecter les relations pour traitement ultérieur
+                        $broaderUris = array_merge(
+                            array_map('strval', $concept->xpath('.//skos:broader/@rdf:resource')),
+                            array_map('strval', $concept->xpath('./skos:broader/@rdf:resource'))
+                        );
+
+                        $narrowerUris = array_merge(
+                            array_map('strval', $concept->xpath('.//skos:narrower/@rdf:resource')),
+                            array_map('strval', $concept->xpath('./skos:narrower/@rdf:resource'))
+                        );
+
+                        $relatedUris = array_merge(
+                            array_map('strval', $concept->xpath('.//skos:related/@rdf:resource')),
+                            array_map('strval', $concept->xpath('./skos:related/@rdf:resource'))
+                        );
+
+                        $relationships[] = [
+                            'termId' => $term->id,
+                            'uri' => $uri,
+                            'broaderUris' => $broaderUris,
+                            'narrowerUris' => $narrowerUris,
+                            'relatedUris' => $relatedUris,                            'altLabels' => array_map(function($label) {
+                                $lang = '';
+                                if (isset($label->attributes('xml', true)->lang)) {
+                                    $lang = (string)$label->attributes('xml', true)->lang;
+                                } elseif (isset($label['lang'])) {
+                                    $lang = (string)$label['lang'];
+                                }
+
+                                return [
+                                    'label' => (string)$label,
+                                    'lang' => $lang // On garde la langue originale, la standardisation se fera au traitement
+                                ];
+                            }, $concept->xpath('.//skos:altLabel')),
+                            'exactMatches' => array_merge(
+                                array_map('strval', $concept->xpath('.//skos:exactMatch/@rdf:resource')),
+                                array_map('strval', $concept->xpath('./skos:exactMatch/@rdf:resource'))
+                            ),
+                            'closeMatches' => array_merge(
+                                array_map('strval', $concept->xpath('.//skos:closeMatch/@rdf:resource')),
+                                array_map('strval', $concept->xpath('./skos:closeMatch/@rdf:resource'))
+                            ),
+                            'broadMatches' => array_merge(
+                                array_map('strval', $concept->xpath('.//skos:broadMatch/@rdf:resource')),
+                                array_map('strval', $concept->xpath('./skos:broadMatch/@rdf:resource'))
+                            ),
+                            'narrowMatches' => array_merge(
+                                array_map('strval', $concept->xpath('.//skos:narrowMatch/@rdf:resource')),
+                                array_map('strval', $concept->xpath('./skos:narrowMatch/@rdf:resource'))
+                            ),
+                            'relatedMatches' => array_merge(
+                                array_map('strval', $concept->xpath('.//skos:relatedMatch/@rdf:resource')),
+                                array_map('strval', $concept->xpath('./skos:relatedMatch/@rdf:resource'))
+                            )
+                        ];
+                    }
+
+                    // Créer un mapping URI -> ID de terme
+                    $uriToTermMap = [];
+                    foreach ($relationships as $rel) {
+                        if (!empty($rel['uri'])) {
+                            $uriToTermMap[$rel['uri']] = $rel['termId'];
                         }
                     }
+
+                    // Traiter les relations entre termes
+                    foreach ($relationships as $rel) {
+                        $termId = $rel['termId'];
+                        $term = Term::find($termId);
+
+                        if (!$term) {
+                            continue;
+                        }
+
+                        // Traiter les termes génériques (broader)
+                        foreach ($rel['broaderUris'] as $broaderUri) {
+                            if (isset($uriToTermMap[$broaderUri])) {
+                                $broaderId = $uriToTermMap[$broaderUri];
+                                // Vérifier si la relation n'existe pas déjà
+                                $exists = DB::table('term_hierarchical_relations')
+                                    ->where('broader_term_id', $broaderId)
+                                    ->where('narrower_term_id', $termId)
+                                    ->exists();
+
+                                if (!$exists) {
+                                    DB::table('term_hierarchical_relations')->insert([
+                                        'broader_term_id' => $broaderId,
+                                        'narrower_term_id' => $termId,
+                                        'relation_type' => 'generic', // type par défaut
+                                        'created_at' => now(),
+                                        'updated_at' => now()
+                                    ]);
+                                    $stats['relationships']++;
+                                }
+                            }
+                        }
+
+                        // Traiter les termes spécifiques (narrower)
+                        foreach ($rel['narrowerUris'] as $narrowerUri) {
+                            if (isset($uriToTermMap[$narrowerUri])) {
+                                $narrowerId = $uriToTermMap[$narrowerUri];
+                                // Vérifier si la relation n'existe pas déjà
+                                $exists = DB::table('term_hierarchical_relations')
+                                    ->where('broader_term_id', $termId)
+                                    ->where('narrower_term_id', $narrowerId)
+                                    ->exists();
+
+                                if (!$exists) {
+                                    DB::table('term_hierarchical_relations')->insert([
+                                        'broader_term_id' => $termId,
+                                        'narrower_term_id' => $narrowerId,
+                                        'relation_type' => 'generic', // type par défaut
+                                        'created_at' => now(),
+                                        'updated_at' => now()
+                                    ]);
+                                    $stats['relationships']++;
+                                }
+                            }
+                        }
+
+                        // Traiter les termes associés (related)
+                        foreach ($rel['relatedUris'] as $relatedUri) {
+                            if (isset($uriToTermMap[$relatedUri])) {
+                                $relatedId = $uriToTermMap[$relatedUri];
+                                // Éviter les duplications (vérifier dans les deux sens)
+                                $exists = DB::table('term_associative_relations')
+                                    ->where(function($query) use ($termId, $relatedId) {
+                                        $query->where('term_id', $termId)
+                                              ->where('associated_term_id', $relatedId);
+                                    })
+                                    ->orWhere(function($query) use ($termId, $relatedId) {
+                                        $query->where('term_id', $relatedId)
+                                              ->where('associated_term_id', $termId);
+                                    })
+                                    ->exists();
+
+                                if (!$exists) {
+                                    DB::table('term_associative_relations')->insert([
+                                        'term_id' => $termId,
+                                        'associated_term_id' => $relatedId,
+                                        'created_at' => now(),
+                                        'updated_at' => now()
+                                    ]);
+                                    $stats['relationships']++;
+                                }
+                            }
+                        }
+
+                        // Traiter les non-descripteurs (altLabel)
+                        foreach ($rel['altLabels'] as $altLabel) {                            $label = $altLabel['label'];
+                            $rawLang = $altLabel['lang'] ?: $term->language; // Utiliser la langue du terme si non spécifiée
+
+                            // Standardiser le code de langue
+                            $lang = $this->standardizeLanguageCode($rawLang);
+
+                            // Tronquer le label si nécessaire (limité à 100 caractères comme dans la migration)
+                            $label = $this->truncateForDatabase($label, 100, true, 'non_descriptor_label');
+
+                            // Vérifier si le non-descripteur n'existe pas déjà
+                            $exists = NonDescriptor::where('non_descriptor_label', $label)
+                                ->where('language', $lang)
+                                ->exists();
+
+                            if (!$exists && !empty($label)) {
+                                NonDescriptor::create([
+                                    'term_id' => $termId,
+                                    'non_descriptor_label' => $label,
+                                    'language' => $lang
+                                ]);
+                                $stats['relationships']++;
+                            }
+                        }
+
+                        // Traiter les alignements externes
+                        $this->processExternalAlignments($term, [
+                            'exactMatches' => ['uris' => $rel['exactMatches'], 'type' => 'exactMatch'],
+                            'closeMatches' => ['uris' => $rel['closeMatches'], 'type' => 'closeMatch'],
+                            'broadMatches' => ['uris' => $rel['broadMatches'], 'type' => 'broadMatch'],
+                            'narrowMatches' => ['uris' => $rel['narrowMatches'], 'type' => 'narrowMatch'],
+                            'relatedMatches' => ['uris' => $rel['relatedMatches'], 'type' => 'relatedMatch']
+                        ]);
+                    }
+
+                    // Si tout s'est bien passé, valider la transaction
+                    DB::commit();
+
+                    Log::info('Import RDF terminé avec succès', ['stats' => $stats]);
+
+                    // Message de succès avec statistiques
+                    $message = "Import RDF réussi. {$stats['created']} termes créés, {$stats['updated']} termes mis à jour, {$stats['relationships']} relations établies, {$stats['errors']} erreurs.";
+                    return redirect()->route('thesaurus.export-import')->with('success', $message);
+
+                } catch (\Exception $e) {
+                    // Erreur pendant le traitement, annuler les modifications
+                    DB::rollBack();
+                    Log::error('Erreur lors de l\'import RDF: ' . $e->getMessage(), [
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    return redirect()->back()->with('error', 'Erreur lors du traitement du fichier RDF: ' . $e->getMessage());
                 }
+            } catch (\Exception $e) {
+                // Erreur de parsing XML
+                Log::error('Erreur de parsing du fichier RDF: ' . $e->getMessage(), [
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return redirect()->back()->with('error', 'Le fichier n\'est pas un document RDF valide: ' . $e->getMessage());
             }
+        } catch (\Exception $e) {
+            // Erreur générale
+            Log::error('Erreur lors de l\'import RDF: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Erreur lors de l\'import RDF: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Détecte la structure du fichier RDF
+     *
+     * @param \SimpleXMLElement $xml
+     * @return array Informations sur la structure RDF
+     */
+    private function detectRdfStructure(\SimpleXMLElement $xml)
+    {
+        $structure = [
+            'structure' => 'standard',
+            'conceptPath' => '',
+            'namespaces' => []
+        ];
+
+        // Tester les différentes structures possibles
+        $concepts = $xml->xpath('//skos:Concept');
+        if (count($concepts) > 0) {
+            $structure['structure'] = 'standard';
+            return $structure;
+        }
+
+        $concepts = $xml->xpath('//rdf:Description[rdf:type/@rdf:resource="http://www.w3.org/2004/02/skos/core#Concept"]');
+        if (count($concepts) > 0) {
+            $structure['structure'] = 'standard';
+            return $structure;
+        }
+
+        // Structure alternative
+        $concepts = $xml->xpath('//rdf:Description[skos:prefLabel]');
+        if (count($concepts) > 0) {
+            $structure['structure'] = 'alternate';
+            $structure['conceptPath'] = '//rdf:Description[skos:prefLabel]';
+            return $structure;
+        }
+
+        // Vérifier les namespaces
+        $namespaces = $xml->getNamespaces(true);
+        $structure['namespaces'] = $namespaces;
+
+        // Si on ne peut pas déterminer une structure standard
+        $structure['structure'] = 'unknown';
+        return $structure;
+    }
+
+    /**
+     * Convertit un code de langue étendu (fr-FR) en code court (fr) et vérifie sa validité
+     *
+     * @param string $langCode Code de langue original
+     * @return string Code de langue standardisé
+     */
+    private function standardizeLanguageCode($langCode)
+    {
+        // Si vide, utiliser la langue par défaut
+        if (empty($langCode)) {
+            return 'fr';
+        }
+
+        // Extraire les deux premiers caractères (code ISO 639-1)
+        $shortCode = strtolower(substr($langCode, 0, 2));
+
+        // Liste des langues supportées dans la base de données
+        $supportedLanguages = ['fr', 'en', 'es', 'de', 'it', 'pt'];
+
+        // Vérifier si le code est supporté
+        if (!in_array($shortCode, $supportedLanguages)) {
+            // Log pour information
+            Log::info("Code de langue non supporté standardisé: {$langCode} -> fr", [
+                'original' => $langCode,
+                'extracted' => $shortCode,
+                'supported' => $supportedLanguages
+            ]);
+            return 'fr'; // Code par défaut
+        }
+
+        return $shortCode;
+    }
+
+    /**
+     * Tronque une chaîne de caractères à la longueur spécifiée
+     *
+     * @param string $text Texte à tronquer
+     * @param int $maxLength Longueur maximale
+     * @param bool $logWarning Enregistrer un avertissement si tronqué
+     * @param string $fieldName Nom du champ pour le log
+     * @return string Texte tronqué
+     */
+    private function truncateForDatabase($text, $maxLength, $logWarning = true, $fieldName = 'field')
+    {
+        if (empty($text)) {
+            return $text;
+        }
+
+        if (strlen($text) > $maxLength) {
+            if ($logWarning) {
+                Log::warning("Texte tronqué car trop long pour la base de données", [
+                    'field' => $fieldName,
+                    'original_length' => strlen($text),
+                    'max_length' => $maxLength,
+                    'original_text' => substr($text, 0, 200) . (strlen($text) > 200 ? '...' : ''),
+                    'truncated_text' => substr($text, 0, $maxLength)
+                ]);
+            }
+            return substr($text, 0, $maxLength);
+        }
+
+        return $text;
     }
 }

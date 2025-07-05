@@ -23,6 +23,9 @@
                                 <a href="{{ route('thesaurus.export.csv') }}" class="btn btn-primary">
                                     <i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Exporter au format CSV') }}
                                 </a>
+                                <a href="{{ route('thesaurus.export.rdf') }}" class="btn btn-primary">
+                                    <i class="bi bi-file-earmark-code"></i> {{ __('Exporter au format RDF (XML)') }}
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -43,6 +46,9 @@
                                 </a>
                                 <a href="{{ route('thesaurus.import.csv.form') }}" class="btn btn-success">
                                     <i class="bi bi-cloud-arrow-up"></i> {{ __('Importer depuis un fichier CSV') }}
+                                </a>
+                                <a href="{{ route('thesaurus.import.rdf.form') }}" class="btn btn-success">
+                                    <i class="bi bi-cloud-arrow-up"></i> {{ __('Importer depuis un fichier RDF') }}
                                 </a>
                             </div>
                         </div>

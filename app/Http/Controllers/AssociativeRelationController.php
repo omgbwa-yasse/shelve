@@ -88,4 +88,26 @@ class AssociativeRelationController extends Controller
         return redirect()->route('terms.associative-relations.index', $term->id)
             ->with('success', 'Relation associative supprimée avec succès.');
     }
+
+    public function destroy($termId, $associatedTermId)
+    {
+        // On teste les deux directions possibles
+        $relation = DB::table('associative_relations')
+            ->where(function($query) use ($termId, $associatedTermId) {
+                $query->where('term1_id', $termId)
+                      ->where('term2_id', $associatedTermId);
+            })
+            ->orWhere(function($query) use ($termId, $associatedTermId) {
+                $query->where('term1_id', $associatedTermId)
+                      ->where('term2_id', $termId);
+            })
+            ->first();
+
+        if ($relation) {
+            DB::table('associative_relations')->delete($relation->id);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Relation associative supprimée avec succès.');
+    }
 }

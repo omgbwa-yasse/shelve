@@ -99,10 +99,10 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5>Relations hiérarchiques</h5>
                     <div>
-                        <a href="{{ route('terms.hierarchical-relations.broader.create', $term->id) }}" class="btn btn-sm btn-success">
+                        <a href="{{ route('hierarchical_relations.create_broader', $term->id) }}" class="btn btn-sm btn-success">
                             <i class="bi bi-plus-circle"></i> Ajouter TG
                         </a>
-                        <a href="{{ route('terms.hierarchical-relations.narrower.create', $term->id) }}" class="btn btn-sm btn-success">
+                        <a href="{{ route('hierarchical_relations.create_narrower', $term->id) }}" class="btn btn-sm btn-success">
                             <i class="bi bi-plus-circle"></i> Ajouter TS
                         </a>
                     </div>
