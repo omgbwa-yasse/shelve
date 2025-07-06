@@ -48,14 +48,12 @@ use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActivityController;
 use App\Http\Controllers\LanguageController;
-<<<<<<< HEAD
-=======
+
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
-// Nouveaux contrôleurs pour la gestion des termes
 use App\Http\Controllers\NonDescriptorController;
 use App\Http\Controllers\ExternalAlignmentController;
 use App\Http\Controllers\HierarchicalRelationController;
@@ -63,7 +61,6 @@ use App\Http\Controllers\AssociativeRelationController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
->>>>>>> dca5e7b964ebdbcb884312637a2455330519d076
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
@@ -617,7 +614,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('laws', LawController::class);
         Route::resource('laws.Articles', LawArticleController::class);
         Route::resource('communicabilities', CommunicabilityController::class);
-<<<<<<< HEAD
+
         Route::resource('activities.communicabilities', activityCommunicabilityController::class);
         Route::resource('thesaurus', ContainerStatusController::class);
         Route::resource('organisations', OrganisationController::class);
@@ -628,7 +625,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');
         Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
-=======
+
 
         // Routes pour les codes-barres
         Route::get('barcode', [BarcodeController::class, 'index'])->name('barcode.index');
@@ -702,7 +699,6 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
         });
 
->>>>>>> dca5e7b964ebdbcb884312637a2455330519d076
     });
 
 
