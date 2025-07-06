@@ -42,7 +42,7 @@ class SuperadminSeeder extends Seeder
 
         // 2. S'assurer que les permissions existent (exécuter NativePermissionSeeder)
         $this->command->info('📋 Vérification des permissions...');
-        $this->call(NativePermissionSeeder::class);
+        $this->call(PermissionCategorySeeder::class);
 
         // 3. Créer le rôle "superadmin" avec système natif
         $superadminRole = Role::firstOrCreate(
