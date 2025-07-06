@@ -245,22 +245,7 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('languages.index') }}">
-                    <i class="bi bi-translate"></i> {{ __('thesaurus_languages') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('term-categories.index') }}">
-                    <i class="bi bi-bookmark"></i> {{ __('thesaurus_categories') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('term-equivalent-types.index') }}">
-                    <i class="bi bi-arrows-angle-expand"></i> {{ __('thesaurus_equivalents') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('term-types.index') }}">
-                    <i class="bi bi-type"></i> {{ __('thesaurus_types') }}
+                    <i class="bi bi-translate"></i> {{ __('languages') }}
                 </a>
             </div>
         </div>

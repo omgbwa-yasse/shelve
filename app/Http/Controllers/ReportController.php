@@ -30,7 +30,7 @@ use App\Models\Slip;
 use App\Models\SlipRecord;
 use App\Models\SlipStatus;
 use App\Models\Sort;
-use App\Models\Term;
+
 use App\Models\TermCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

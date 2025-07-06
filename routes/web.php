@@ -47,14 +47,7 @@ use App\Http\Controllers\CommunicabilityController;
 use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActivityController;
-use App\Http\Controllers\TermCategoryController;
-use App\Http\Controllers\TermEquivalentTypeController;
 use App\Http\Controllers\LanguageController;
-use App\Http\Controllers\TermController;
-use App\Http\Controllers\TermTypeController;
-use App\Http\Controllers\TermEquivalentController;
-use App\Http\Controllers\TermRelatedController;
-use App\Http\Controllers\TermTranslationController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
@@ -571,9 +564,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('container-status', ContainerStatusController::class);
         Route::resource('container-property', ContainerPropertyController::class);
         Route::resource('sorts', SortController::class);
-        Route::resource('term-categories', TermCategoryController::class);
-        Route::resource('term-equivalent-types', TermEquivalentTypeController::class);
-        Route::resource('term-types', TermTypeController::class);
         Route::resource('languages', LanguageController::class);
         Route::resource('record-supports', RecordSupportController::class);
         Route::resource('record-statuses', RecordStatusController::class);
@@ -623,14 +613,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('organisations.activities', OrganisationActivityController::class);
         Route::resource('access', ContainerStatusController::class);
-        Route::resource('terms', TermController::class);
         Route::get('barcode', [BarcodeController::class,'create'])->name('barcode.create');
         Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');
         Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
-        Route::resource('terms.term-related', TermRelatedController::class)->names('term-related');
-        Route::resource('terms.term-equivalents', TermEquivalentController::class)->names('term-equivalents');
-        Route::resource('terms.term-translations', TermTranslationController::class)->names('term-translations');
     });
 
 

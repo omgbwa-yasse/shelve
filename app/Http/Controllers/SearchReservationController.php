@@ -13,7 +13,7 @@ use App\Models\Shelf;
 use App\Models\Floor;
 use App\Models\Container;
 use App\Models\RecordStatus;
-use App\Models\Term;
+
 use App\Models\CommunicationRecord;
 
 class SearchReservationController extends Controller

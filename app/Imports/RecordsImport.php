@@ -10,7 +10,6 @@ use App\Models\RecordStatus;
 use App\Models\RecordSupport;
 use App\Models\Activity;
 use App\Models\Author;
-use App\Models\Term;
 use App\Models\User;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -75,15 +74,6 @@ class RecordsImport implements ToModel, WithHeadingRow, WithValidation
             foreach ($authors as $authorName) {
                 $author = Author::firstOrCreate(['name' => trim($authorName)]);
                 $record->authors()->attach($author->id);
-            }
-        }
-
-        // Handle terms
-        if (isset($row['terms'])) {
-            $terms = explode(',', $row['terms']);
-            foreach ($terms as $termName) {
-                $term = Term::firstOrCreate(['name' => trim($termName)]);
-                $record->terms()->attach($term->id);
             }
         }
 

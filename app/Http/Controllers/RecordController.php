@@ -14,7 +14,7 @@ use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\Activity;
 use App\Models\Slip;
-use App\Models\Term;
+
 use App\Models\User;
 use App\Models\Accession;
 use App\Models\Author;
@@ -48,14 +48,14 @@ class RecordController extends Controller
         if (Gate::allows('viewAny', Record::class)) {
             // L'utilisateur a la permission de voir tous les records
             $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
+                'level', 'status', 'support', 'activity', 'containers', 'authors'
             ])->paginate(10);
         } else {
             // L'utilisateur ne peut voir que les records associés aux activités de son organisation actuelle
             $currentOrganisationId = auth::user()->current_organisation_id;
 
             $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors', 'terms'
+                'level', 'status', 'support', 'activity', 'containers', 'authors'
             ])
                 ->whereHas('activity', function($query) use ($currentOrganisationId) {
                     $query->whereHas('organisations', function($q) use ($currentOrganisationId) {
@@ -67,7 +67,7 @@ class RecordController extends Controller
 
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -94,10 +94,10 @@ class RecordController extends Controller
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('type')->get();
-        $terms = Term::all();
+        $terms
         $authorTypes = AuthorType::all();
         $parents = Author::all();
-        return view('records.create', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        return view('records.create', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
 
@@ -114,10 +114,10 @@ class RecordController extends Controller
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('type')->get();
-        $terms = Term::all();
+        $terms
         $authorTypes = AuthorType::all();
         $parents = Author::all();
-        return view('records.createFull', compact('authorTypes', 'parents','records','terms','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        return view('records.createFull', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
 
     public function store(Request $request)
@@ -235,13 +235,13 @@ class RecordController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $terms = Term::all();
+        $terms
 
 
         $author_ids = $record->authors->pluck('id')->toArray();
         $term_ids = $record->terms->pluck('id')->toArray();
 
-        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'terms', 'term_ids'));
+        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'term_ids'));
     }
 
 

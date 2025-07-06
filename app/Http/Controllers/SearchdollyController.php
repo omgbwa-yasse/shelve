@@ -13,7 +13,7 @@ use App\Models\BatchMail;
 use App\Models\MailArchiving;
 use App\Models\MailContainer;
 use App\Models\RecordStatus;
-use App\Models\Term;
+
 use App\Models\Slip;
 use App\Models\SlipRecord;
 

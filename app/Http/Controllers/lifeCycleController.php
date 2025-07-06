@@ -10,7 +10,6 @@ use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\Activity;
 use App\Models\SlipStatus;
-use App\Models\Term;
 use App\Models\Accession;
 use App\Models\Author;
 use App\Models\RecordLevel;
@@ -34,7 +33,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -59,7 +58,7 @@ class lifeCycleController extends Controller
         ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
         return view('records.index', compact('records', 'title',
@@ -87,7 +86,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -109,7 +108,7 @@ class lifeCycleController extends Controller
             })->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -137,7 +136,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -167,7 +166,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 

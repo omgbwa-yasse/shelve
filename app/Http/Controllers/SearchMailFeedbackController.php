@@ -10,7 +10,7 @@ use App\Models\Author;
 use App\Models\communicationRecord;
 use App\Models\MailTransaction;
 use App\Models\RecordStatus;
-use App\Models\Term;
+
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use App\Models\documentType;

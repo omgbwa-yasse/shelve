@@ -26,12 +26,6 @@ use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\Api\OrganisationApiController;
 
-// Routes API pour le thésaurus et la recherche de termes
-Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
-    Route::get('/search', [App\Http\Controllers\Api\TermApiController::class, 'search'])->name('search');
-    Route::get('/categories', [App\Http\Controllers\Api\TermApiController::class, 'categories'])->name('categories');
-});
-
 // Routes API pour l'enrichissement des records via Ollama MCP
 Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
     Route::get('status', [RecordEnricherController::class, 'status'])->name('status');
@@ -40,14 +34,12 @@ Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:s
     Route::post('{id}/format-title', [RecordEnricherController::class, 'formatTitle'])->name('format-title');
     Route::post('{id}/extract-keywords', [RecordEnricherController::class, 'extractKeywords'])->name('extract-keywords');
     Route::post('{id}/categorized-keywords', [RecordEnricherController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
-    Route::post('{id}/assign-terms', [RecordEnricherController::class, 'assignTerms'])->name('assign-terms');
 });
 
 // Routes API pour le proxy MCP
 Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(function () {
     Route::post('enrich/{id}', [McpProxyController::class, 'enrich'])->name('enrich');
     Route::post('extract-keywords/{id}', [McpProxyController::class, 'extractKeywords'])->name('extract-keywords');
-    Route::post('assign-terms/{id}', [McpProxyController::class, 'assignTerms'])->name('assign-terms');
     Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
     Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');

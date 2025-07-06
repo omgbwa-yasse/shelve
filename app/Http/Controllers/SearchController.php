@@ -13,7 +13,7 @@ use App\Models\MailType;
 use App\Models\Author;
 use App\Models\CommunicationRecord;
 use App\Models\RecordStatus;
-use App\Models\Term;
+
 use App\Models\Slip;
 use App\Models\SlipRecord;
 
@@ -48,7 +48,7 @@ class SearchController extends Controller
         if ($query) {
             if ($advanced) {
                 $records = Record::search($query)->query(function ($builder) {
-                    $builder->with(['status', 'support', 'level', 'activity', 'containers', 'authors', 'terms']);
+                    $builder->with(['status', 'support', 'level', 'activity', 'containers', 'authors']);
                 });
             } else {
                 $records = Record::search($query);
@@ -60,7 +60,7 @@ class SearchController extends Controller
         $records = $records->paginate(10);
 
         $statuses = RecordStatus::all();
-        $terms = Term::all();
+        $terms
         $users = User::select('id', 'name')->get();
 
         $queries = $this->convertStringToWords($request);

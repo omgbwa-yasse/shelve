@@ -146,11 +146,6 @@ class Record extends Model
         return $this->belongsToMany(Author::class, 'record_author');
     }
 
-    public function terms()
-    {
-        return $this->belongsToMany(Term::class);
-    }
-
     public function attachments()
     {
         return $this->belongsToMany(Attachment::class, 'record_attachment');
