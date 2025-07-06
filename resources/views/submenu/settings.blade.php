@@ -244,8 +244,23 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('terms.index') }}">
+                    <i class="bi bi-tag"></i> {{ __('thesaurus_terms') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('thesaurus.search.index') }}">
+                    <i class="bi bi-search"></i> {{ __('thesaurus_search') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('languages.index') }}">
                     <i class="bi bi-translate"></i> {{ __('languages') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('thesaurus.export-import') }}">
+                    <i class="bi bi-cloud-arrow-up-down"></i> {{ __('thesaurus_export_import') }}
                 </a>
             </div>
         </div>

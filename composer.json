@@ -8,6 +8,7 @@
         "php": "^8.2",
         "ext-zip": "*",
         "barryvdh/laravel-dompdf": "*",
+        "doctrine/dbal": "*",
         "intervention/image": "^3.8",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.1",

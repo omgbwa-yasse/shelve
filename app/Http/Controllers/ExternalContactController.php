@@ -72,8 +72,10 @@ class ExternalContactController extends Controller
     public function show(string $id)
     {
         $contact = ExternalContact::with('organization')->findOrFail($id);
-        $sentMails = $contact->sentMails()->with('recipient')->take(5)->get();
-        $receivedMails = $contact->receivedMails()->with('sender')->take(5)->get();
+
+        // These relations will return empty collections until migration is applied
+        $sentMails = collect(); // Empty collection for now
+        $receivedMails = collect(); // Empty collection for now
 
         return view('external.contacts.show', compact('contact', 'sentMails', 'receivedMails'));
     }

@@ -185,6 +185,42 @@
     </div>
     @endcan
 
+<<<<<<< HEAD
+=======
+    <!-- Thésaurus Section -->
+    @can('viewAny', App\Models\Term::class)
+    <div class="submenu-section">
+        <div class="submenu-heading" >
+            <i class="bi bi-book-half"></i> {{ __('thesaurus') }}
+        </div>
+        <div class="submenu-content" id="thesaurusMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('terms.index') }}">
+                    <i class="bi bi-tree"></i> {{ __('view_branches') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('thesaurus.search.index') }}">
+                    <i class="bi bi-search"></i> {{ __('search_thesaurus') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('thesaurus.export-import') }}">
+                    <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }}
+                </a>
+            </div>
+            @can('create', App\Models\Term::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('terms.create') }}">
+                    <i class="bi bi-plus-square"></i> {{ __('add_word') }}
+                </a>
+            </div>
+            @endcan
+        </div>
+    </div>
+    @endcan
+
+>>>>>>> dca5e7b964ebdbcb884312637a2455330519d076
     <!-- Boite à outils Section -->
     @auth
     <div class="submenu-section">
