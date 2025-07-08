@@ -60,7 +60,7 @@ class SearchController extends Controller
         $records = $records->paginate(10);
 
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
 
         $queries = $this->convertStringToWords($request);

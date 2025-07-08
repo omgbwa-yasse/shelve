@@ -61,6 +61,7 @@ use App\Http\Controllers\AssociativeRelationController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
+use App\Http\Controllers\ThesaurusToolController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
@@ -78,7 +79,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use App\Http\Controllers\DollyController;
+use AppHttp\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
@@ -904,6 +905,26 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::post('import/csv/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processCsvImport'])->name('import.csv.process');
     Route::post('import/rdf/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processRdfImport'])->name('import.rdf.process');
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
+});
+
+// Routes pour le module Thésaurus Tool
+Route::prefix('tool/thesaurus')->middleware(['auth', 'module_thesaurus_access'])->group(function () {
+    // Page d'accueil du module
+    Route::get('/', [ThesaurusToolController::class, 'index'])->name('tool.thesaurus.index');
+
+    // Gestion des imports/exports
+    Route::get('import-export', [ThesaurusToolController::class, 'importExport'])->name('tool.thesaurus.import-export');
+    Route::post('export-scheme', [ThesaurusToolController::class, 'exportScheme'])->name('tool.thesaurus.export-scheme');
+    Route::post('import-file', [ThesaurusToolController::class, 'importFile'])->name('tool.thesaurus.import-file');
+
+    // Association automatique avec les records
+    Route::post('auto-associate-concepts', [ThesaurusToolController::class, 'autoAssociateConcepts'])->name('tool.thesaurus.auto-associate-concepts');
+
+    // Relations entre records et concepts
+    Route::get('record-concept-relations', [ThesaurusToolController::class, 'recordConceptRelations'])->name('tool.thesaurus.record-concept-relations');
+
+    // Statistiques
+    Route::get('statistics', [ThesaurusToolController::class, 'statistics'])->name('tool.thesaurus.statistics');
 });
 
 

@@ -13,6 +13,7 @@ use App\Models\RecordAttachment;
 use App\Models\RecordSupport;
 use App\Models\Classification;
 use App\Models\User;
+use App\Models\ThesaurusConcept;
 
 class Record extends Model
 {
@@ -185,6 +186,40 @@ class Record extends Model
             'archivist_note' => $this->archivist_note,
             'rule_convention' => $this->rule_convention,
         ];
+    }
+
+    /**
+     * Relation avec les concepts du thésaurus
+     */
+    public function thesaurusConcepts()
+    {
+        return $this->belongsToMany(ThesaurusConcept::class, 'record_thesaurus_concept', 'record_id', 'concept_id')
+                    ->withPivot('weight', 'context', 'extraction_note')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relation avec les concepts du thésaurus ordonnés par poids
+     */
+    public function thesaurusConceptsByWeight()
+    {
+        return $this->thesaurusConcepts()->orderBy('weight', 'desc');
+    }
+
+    /**
+     * Relation avec les concepts principaux du thésaurus (poids >= 0.7)
+     */
+    public function mainThesaurusConcepts()
+    {
+        return $this->thesaurusConcepts()->wherePivot('weight', '>=', 0.7);
+    }
+
+    /**
+     * Relation avec les concepts secondaires du thésaurus (poids < 0.7)
+     */
+    public function secondaryThesaurusConcepts()
+    {
+        return $this->thesaurusConcepts()->wherePivot('weight', '<', 0.7);
     }
 
 }
