@@ -49,6 +49,7 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
 Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
     Route::get('schemes', [ThesaurusToolController::class, 'apiSchemes'])->name('schemes');
     Route::get('concepts', [ThesaurusToolController::class, 'apiConcepts'])->name('concepts');
+    Route::get('concepts/autocomplete', [ThesaurusToolController::class, 'apiConceptsAutocomplete'])->name('concepts.autocomplete');
     Route::get('schemes/{scheme}/concepts', [ThesaurusToolController::class, 'apiSchemesConcepts'])->name('schemes.concepts');
 });
 

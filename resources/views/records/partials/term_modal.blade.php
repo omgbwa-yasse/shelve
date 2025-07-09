@@ -9,47 +9,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Filtre par schéma -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="termAutocomplete" class="form-label">Rechercher et sélectionner des termes</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" id="termAutocomplete" 
+                                   placeholder="Tapez au moins 3 caractères pour rechercher...">
+                            <div id="autocompleteResults" class="autocomplete-results position-absolute w-100 bg-white border border-top-0 d-none" 
+                                 style="max-height: 200px; overflow-y: auto; z-index: 1000;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Termes sélectionnés -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">Termes sélectionnés</label>
+                        <div id="selectedTermsTags" class="selected-terms-tags p-2 border rounded" 
+                             style="min-height: 60px; background-color: #f8f9fa;">
+                            <div class="text-muted">Aucun terme sélectionné</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtre par schéma (optionnel) -->
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="schemeSelect" class="form-label">Schéma thésaurus</label>
-                        <select class="form-select" id="schemeSelect">
+                        <label for="schemeFilter" class="form-label">Filtrer par schéma (optionnel)</label>
+                        <select class="form-select" id="schemeFilter">
                             <option value="">Tous les schémas</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label for="termSearch" class="form-label">Rechercher un terme</label>
-                        <input type="text" class="form-control" id="termSearch" placeholder="Tapez pour rechercher...">
-                    </div>
-                </div>
-
-                <!-- Zone de résultats -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Termes disponibles</h6>
-                        <div id="availableTerms" class="border p-3" style="height: 300px; overflow-y: auto;">
-                            <div class="text-center text-muted">
-                                <i class="fas fa-spinner fa-spin"></i> Chargement...
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Termes sélectionnés</h6>
-                        <div id="selectedTerms" class="border p-3" style="height: 300px; overflow-y: auto;">
-                            <div class="text-center text-muted">
-                                Aucun terme sélectionné
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pagination -->
-                <div class="mt-3">
-                    <nav aria-label="Navigation des termes">
-                        <ul class="pagination justify-content-center" id="termsPagination">
-                            <!-- Pagination générée dynamiquement -->
-                        </ul>
-                    </nav>
                 </div>
             </div>
             <div class="modal-footer">
@@ -62,36 +52,56 @@
     </div>
 </div>
 
-<!-- Script pour la gestion des termes -->
+<!-- Script pour la gestion des termes avec autocomplétion -->
 <script>
 let selectedTermsData = [];
-let availableTermsData = [];
-let currentPage = 1;
-let totalPages = 1;
+let autocompleteTimeout;
 
 // Initialisation du modal
 document.addEventListener('DOMContentLoaded', function() {
     const termModal = document.getElementById('termModal');
-    const schemeSelect = document.getElementById('schemeSelect');
-    const termSearch = document.getElementById('termSearch');
+    const termAutocomplete = document.getElementById('termAutocomplete');
+    const autocompleteResults = document.getElementById('autocompleteResults');
+    const schemeFilter = document.getElementById('schemeFilter');
     
     // Charger les schémas au chargement
     loadSchemes();
     
     // Event listeners
     termModal.addEventListener('shown.bs.modal', function() {
-        loadTerms();
+        termAutocomplete.focus();
     });
     
-    schemeSelect.addEventListener('change', function() {
-        currentPage = 1;
-        loadTerms();
+    // Autocomplétion sur saisie
+    termAutocomplete.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            hideAutocompleteResults();
+            return;
+        }
+        
+        // Débounce pour éviter trop de requêtes
+        clearTimeout(autocompleteTimeout);
+        autocompleteTimeout = setTimeout(() => {
+            searchTermsAutocomplete(query);
+        }, 300);
     });
     
-    termSearch.addEventListener('input', debounce(function() {
-        currentPage = 1;
-        loadTerms();
-    }, 300));
+    // Cacher les résultats quand on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!termAutocomplete.contains(e.target) && !autocompleteResults.contains(e.target)) {
+            hideAutocompleteResults();
+        }
+    });
+    
+    // Filtrage par schéma
+    schemeFilter.addEventListener('change', function() {
+        const query = termAutocomplete.value.trim();
+        if (query.length >= 3) {
+            searchTermsAutocomplete(query);
+        }
+    });
     
     document.getElementById('saveTerms').addEventListener('click', saveSelectedTerms);
 });
@@ -101,157 +111,135 @@ function loadSchemes() {
     fetch('/api/thesaurus/schemes')
         .then(response => response.json())
         .then(data => {
-            const schemeSelect = document.getElementById('schemeSelect');
-            schemeSelect.innerHTML = '<option value="">Tous les schémas</option>';
+            const schemeFilter = document.getElementById('schemeFilter');
+            schemeFilter.innerHTML = '<option value="">Tous les schémas</option>';
             
             data.forEach(scheme => {
                 const option = document.createElement('option');
                 option.value = scheme.id;
                 option.textContent = scheme.title;
-                schemeSelect.appendChild(option);
+                schemeFilter.appendChild(option);
             });
         })
         .catch(error => {
             console.error('Erreur lors du chargement des schémas:', error);
-            showAlert('Erreur lors du chargement des schémas', 'danger');
         });
 }
 
-// Charger les termes avec pagination
-function loadTerms(page = 1) {
-    const schemeId = document.getElementById('schemeSelect').value;
-    const search = document.getElementById('termSearch').value;
+// Recherche d'autocomplétion
+function searchTermsAutocomplete(query) {
+    const schemeId = document.getElementById('schemeFilter').value;
     
     const params = new URLSearchParams({
-        page: page,
-        per_page: 20
+        search: query,
+        limit: 5
     });
     
-    if (schemeId) params.append('scheme_id', schemeId);
-    if (search) params.append('search', search);
+    if (schemeId) {
+        params.append('scheme_id', schemeId);
+    }
     
-    fetch(`/api/thesaurus/concepts?${params}`)
+    fetch(`/api/thesaurus/concepts/autocomplete?${params}`)
         .then(response => response.json())
         .then(data => {
-            availableTermsData = data.data;
-            currentPage = data.current_page;
-            totalPages = data.last_page;
-            
-            renderAvailableTerms();
-            renderPagination();
+            showAutocompleteResults(data);
         })
         .catch(error => {
-            console.error('Erreur lors du chargement des termes:', error);
-            document.getElementById('availableTerms').innerHTML = 
-                '<div class="text-center text-danger">Erreur lors du chargement</div>';
+            console.error('Erreur lors de la recherche:', error);
+            hideAutocompleteResults();
         });
 }
 
-// Afficher les termes disponibles
-function renderAvailableTerms() {
-    const container = document.getElementById('availableTerms');
+// Afficher les résultats d'autocomplétion
+function showAutocompleteResults(terms) {
+    const resultsContainer = document.getElementById('autocompleteResults');
     
-    if (availableTermsData.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted">Aucun terme trouvé</div>';
+    if (terms.length === 0) {
+        resultsContainer.innerHTML = '<div class="p-2 text-muted">Aucun terme trouvé</div>';
+        resultsContainer.classList.remove('d-none');
         return;
     }
     
-    container.innerHTML = availableTermsData.map(term => {
+    resultsContainer.innerHTML = terms.map(term => {
         const isSelected = selectedTermsData.find(selected => selected.id === term.id);
+        const displayTerm = term.specific_term || term; // Utiliser le terme spécifique si disponible
+        
         return `
-            <div class="term-item mb-2 p-2 border rounded ${isSelected ? 'bg-light' : ''}" 
-                 data-term-id="${term.id}">
+            <div class="autocomplete-item p-2 border-bottom ${isSelected ? 'bg-light text-muted' : 'cursor-pointer'}" 
+                 ${!isSelected ? `onclick="selectTermFromAutocomplete(${JSON.stringify(displayTerm).replace(/"/g, '&quot;')})"` : ''}>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>${term.pref_label}</strong>
-                        ${term.alt_labels ? `<br><small class="text-muted">${term.alt_labels}</small>` : ''}
-                        <br><small class="text-info">${term.scheme.title}</small>
+                        <strong>${displayTerm.pref_label}</strong>
+                        ${displayTerm.alt_labels ? `<br><small class="text-muted">${displayTerm.alt_labels}</small>` : ''}
+                        <br><small class="text-info">${displayTerm.scheme ? displayTerm.scheme.title : ''}</small>
+                        ${term.specific_term ? '<br><small class="text-warning">→ Terme spécifique proposé</small>' : ''}
                     </div>
-                    <button class="btn btn-sm ${isSelected ? 'btn-danger' : 'btn-primary'}" 
-                            onclick="${isSelected ? 'removeTerm' : 'addTerm'}(${term.id})">
-                        <i class="fas ${isSelected ? 'fa-minus' : 'fa-plus'}"></i>
-                    </button>
+                    <div>
+                        ${isSelected ? 
+                            '<i class="fas fa-check text-success"></i>' : 
+                            '<i class="fas fa-plus text-primary"></i>'
+                        }
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
+    
+    resultsContainer.classList.remove('d-none');
 }
 
-// Afficher les termes sélectionnés
-function renderSelectedTerms() {
-    const container = document.getElementById('selectedTerms');
+// Cacher les résultats d'autocomplétion
+function hideAutocompleteResults() {
+    document.getElementById('autocompleteResults').classList.add('d-none');
+}
+
+// Sélectionner un terme depuis l'autocomplétion
+function selectTermFromAutocomplete(term) {
+    // Vérifier si le terme n'est pas déjà sélectionné
+    if (selectedTermsData.find(selected => selected.id === term.id)) {
+        return;
+    }
+    
+    // Ajouter le terme à la sélection
+    selectedTermsData.push(term);
+    
+    // Mettre à jour l'affichage
+    updateSelectedTermsDisplay();
+    
+    // Vider le champ de recherche
+    document.getElementById('termAutocomplete').value = '';
+    
+    // Cacher les résultats
+    hideAutocompleteResults();
+    
+    // Feedback visuel
+    showAlert(`Terme "${term.pref_label}" ajouté`, 'success');
+}
+
+// Supprimer un terme sélectionné
+function removeTerm(termId) {
+    selectedTermsData = selectedTermsData.filter(term => term.id !== termId);
+    updateSelectedTermsDisplay();
+    showAlert('Terme supprimé', 'info');
+}
+
+// Mettre à jour l'affichage des termes sélectionnés
+function updateSelectedTermsDisplay() {
+    const container = document.getElementById('selectedTermsTags');
     
     if (selectedTermsData.length === 0) {
-        container.innerHTML = '<div class="text-center text-muted">Aucun terme sélectionné</div>';
+        container.innerHTML = '<div class="text-muted">Aucun terme sélectionné</div>';
         return;
     }
     
     container.innerHTML = selectedTermsData.map(term => `
-        <div class="term-item mb-2 p-2 border rounded bg-light" data-term-id="${term.id}">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>${term.pref_label}</strong>
-                    ${term.alt_labels ? `<br><small class="text-muted">${term.alt_labels}</small>` : ''}
-                    <br><small class="text-info">${term.scheme.title}</small>
-                </div>
-                <button class="btn btn-sm btn-danger" onclick="removeTerm(${term.id})">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
+        <span class="badge bg-primary me-2 mb-2 d-inline-flex align-items-center">
+            <span class="me-1">${term.pref_label}</span>
+            <button type="button" class="btn-close btn-close-white" 
+                    onclick="removeTerm(${term.id})" 
+                    aria-label="Supprimer ${term.pref_label}"></button>
+        </span>
     `).join('');
-}
-
-// Afficher la pagination
-function renderPagination() {
-    const container = document.getElementById('termsPagination');
-    
-    if (totalPages <= 1) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    let paginationHTML = '';
-    
-    // Bouton précédent
-    if (currentPage > 1) {
-        paginationHTML += `<li class="page-item">
-            <a class="page-link" href="#" onclick="loadTerms(${currentPage - 1})">Précédent</a>
-        </li>`;
-    }
-    
-    // Numéros de pages
-    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-        paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-            <a class="page-link" href="#" onclick="loadTerms(${i})">${i}</a>
-        </li>`;
-    }
-    
-    // Bouton suivant
-    if (currentPage < totalPages) {
-        paginationHTML += `<li class="page-item">
-            <a class="page-link" href="#" onclick="loadTerms(${currentPage + 1})">Suivant</a>
-        </li>`;
-    }
-    
-    container.innerHTML = paginationHTML;
-}
-
-// Ajouter un terme
-function addTerm(termId) {
-    const term = availableTermsData.find(t => t.id === termId);
-    if (term && !selectedTermsData.find(selected => selected.id === termId)) {
-        selectedTermsData.push(term);
-        renderSelectedTerms();
-        renderAvailableTerms();
-    }
-}
-
-// Supprimer un terme
-function removeTerm(termId) {
-    selectedTermsData = selectedTermsData.filter(term => term.id !== termId);
-    renderSelectedTerms();
-    renderAvailableTerms();
 }
 
 // Sauvegarder les termes sélectionnés
@@ -265,7 +253,7 @@ function saveSelectedTerms() {
     }
     
     // Mettre à jour l'affichage dans le formulaire principal
-    updateTermsDisplay();
+    updateMainFormDisplay();
     
     // Fermer le modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('termModal'));
@@ -274,32 +262,19 @@ function saveSelectedTerms() {
     showAlert(`${selectedTermsData.length} terme(s) sélectionné(s)`, 'success');
 }
 
-// Mettre à jour l'affichage des termes dans le formulaire
-function updateTermsDisplay() {
-    const displayContainer = document.getElementById('selected-terms-display');
-    if (!displayContainer) return;
+// Mettre à jour l'affichage des termes dans le formulaire principal
+function updateMainFormDisplay() {
+    const displayInput = document.getElementById('selected-terms-display');
+    if (!displayInput) return;
     
     if (selectedTermsData.length === 0) {
-        displayContainer.value = '';
-        displayContainer.placeholder = 'Aucun terme sélectionné';
+        displayInput.value = '';
+        displayInput.placeholder = 'Aucun terme sélectionné';
         return;
     }
     
     const termNames = selectedTermsData.map(term => term.pref_label).join(', ');
-    displayContainer.value = termNames;
-}
-
-// Fonction utilitaire pour le debouncing
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+    displayInput.value = termNames;
 }
 
 // Fonction utilitaire pour afficher les alertes
@@ -316,12 +291,12 @@ function showAlert(message, type = 'info') {
     
     document.body.appendChild(alertDiv);
     
-    // Supprimer automatiquement après 5 secondes
+    // Supprimer automatiquement après 3 secondes
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.parentNode.removeChild(alertDiv);
         }
-    }, 5000);
+    }, 3000);
 }
 
 // Fonction pour charger les termes déjà associés au record (si en mode édition)
@@ -332,8 +307,8 @@ function loadExistingTerms(recordId) {
         .then(response => response.json())
         .then(data => {
             selectedTermsData = data;
-            renderSelectedTerms();
-            updateTermsDisplay();
+            updateSelectedTermsDisplay();
+            updateMainFormDisplay();
         })
         .catch(error => {
             console.error('Erreur lors du chargement des termes existants:', error);
@@ -342,29 +317,43 @@ function loadExistingTerms(recordId) {
 </script>
 
 <style>
-.term-item {
-    transition: all 0.2s ease;
+.autocomplete-results {
+    border-top: none !important;
+    border-radius: 0 0 0.375rem 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.term-item:hover {
+.autocomplete-item {
+    transition: background-color 0.2s ease;
+}
+
+.autocomplete-item:hover:not(.bg-light) {
     background-color: #f8f9fa !important;
 }
 
-.pagination .page-link {
-    color: #0d6efd;
+.autocomplete-item.cursor-pointer {
+    cursor: pointer;
 }
 
-.pagination .page-item.active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
+.selected-terms-tags {
+    min-height: 80px;
 }
 
-#availableTerms, #selectedTerms {
-    border: 1px solid #dee2e6;
-    border-radius: 0.375rem;
+.selected-terms-tags .badge {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
 }
 
-.badge .btn-close {
-    font-size: 0.65em;
+.selected-terms-tags .btn-close {
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.position-relative {
+    position: relative;
+}
+
+#termAutocomplete:focus + .autocomplete-results {
+    border-color: #86b7fe;
 }
 </style>

@@ -619,4 +619,76 @@ class ThesaurusToolController extends Controller
             'message' => 'Terme dissocié avec succès'
         ]);
     }
+
+    /**
+     * API: Autocomplétion des concepts avec gestion des termes spécifiques
+     */
+    public function apiConceptsAutocomplete(Request $request)
+    {
+        $request->validate([
+            'search' => 'required|string|min:3',
+            'limit' => 'nullable|integer|min:1|max:10',
+            'scheme_id' => 'nullable|exists:thesaurus_schemes,id'
+        ]);
+
+        $search = $request->search;
+        $limit = $request->get('limit', 5);
+        $schemeId = $request->scheme_id;
+
+        $query = ThesaurusConcept::with(['scheme:id,title']);
+        
+        // Filtre par schéma si spécifié
+        if ($schemeId) {
+            $query->where('scheme_id', $schemeId);
+        }
+        
+        // Recherche textuelle dans les labels préférés et alternatifs
+        $query->where(function($q) use ($search) {
+            $q->whereHas('labels', function($labelQuery) use ($search) {
+                $labelQuery->where('label_value', 'like', "%{$search}%");
+            });
+        });
+        
+        $concepts = $query->orderBy('id')->limit($limit)->get();
+        
+        // Transformer les résultats pour inclure les termes spécifiques
+        $results = $concepts->map(function ($concept) {
+            $result = [
+                'id' => $concept->id,
+                'scheme_id' => $concept->scheme_id,
+                'uri' => $concept->uri,
+                'notation' => $concept->notation,
+                'pref_label' => $concept->pref_label,
+                'alt_labels' => $concept->alt_labels,
+                'definition' => $concept->definition,
+                'scheme' => $concept->scheme ? [
+                    'id' => $concept->scheme->id,
+                    'title' => $concept->scheme->title
+                ] : null
+            ];
+            
+            // Si c'est un terme générique, chercher un terme spécifique lié
+            $specificTerms = $concept->narrowerConcepts()->with('scheme:id,title')->first();
+            
+            if ($specificTerms) {
+                $result['specific_term'] = [
+                    'id' => $specificTerms->id,
+                    'scheme_id' => $specificTerms->scheme_id,
+                    'uri' => $specificTerms->uri,
+                    'notation' => $specificTerms->notation,
+                    'pref_label' => $specificTerms->pref_label,
+                    'alt_labels' => $specificTerms->alt_labels,
+                    'definition' => $specificTerms->definition,
+                    'scheme' => $specificTerms->scheme ? [
+                        'id' => $specificTerms->scheme->id,
+                        'title' => $specificTerms->scheme->title
+                    ] : null
+                ];
+            }
+            
+            return $result;
+        });
+        
+        return response()->json($results);
+    }
 }

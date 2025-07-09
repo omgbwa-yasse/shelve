@@ -68,43 +68,53 @@ class ThesaurusConcept extends Model
     }
 
     /**
-     * Concepts plus larges (broader)
-     */
-    public function broaderConcepts(): BelongsToMany
-    {
-        return $this->belongsToMany(ThesaurusConcept::class, 'thesaurus_concept_relations', 'target_concept_id', 'source_concept_id')
-                    ->wherePivot('relation_type', 'broader')
-                    ->withTimestamps();
-    }
-
-    /**
-     * Concepts plus étroits (narrower)
-     */
-    public function narrowerConcepts(): BelongsToMany
-    {
-        return $this->belongsToMany(ThesaurusConcept::class, 'thesaurus_concept_relations', 'source_concept_id', 'target_concept_id')
-                    ->wherePivot('relation_type', 'narrower')
-                    ->withTimestamps();
-    }
-
-    /**
-     * Concepts reliés (related)
-     */
-    public function relatedConcepts(): BelongsToMany
-    {
-        return $this->belongsToMany(ThesaurusConcept::class, 'thesaurus_concept_relations', 'source_concept_id', 'target_concept_id')
-                    ->wherePivot('relation_type', 'related')
-                    ->withTimestamps();
-    }
-
-    /**
-     * Relation avec les records
+     * Relation avec les records (pivot table)
      */
     public function records(): BelongsToMany
     {
-        return $this->belongsToMany(Record::class, 'record_thesaurus_concept', 'concept_id', 'record_id')
-                    ->withPivot('weight', 'context')
-                    ->withTimestamps();
+        return $this->belongsToMany(Record::class, 'record_thesaurus_concept', 'concept_id', 'record_id');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus larges
+     */
+    public function broaderConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'narrower_concept_id',
+            'broader_concept_id'
+        )->wherePivot('relation_type', 'broader');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus spécifiques
+     */
+    public function narrowerConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'broader_concept_id',
+            'narrower_concept_id'
+        )->wherePivot('relation_type', 'narrower');
+    }
+
+    /**
+     * Toutes les relations de concepts
+     */
+    public function conceptRelations(): HasMany
+    {
+        return $this->hasMany(ThesaurusConceptRelation::class, 'broader_concept_id');
+    }
+
+    /**
+     * Relations inverses de concepts
+     */
+    public function inverseConceptRelations(): HasMany
+    {
+        return $this->hasMany(ThesaurusConceptRelation::class, 'narrower_concept_id');
     }
 
     /**
@@ -170,5 +180,55 @@ class ThesaurusConcept extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 1);
+    }
+
+    /**
+     * Relation avec les records (pivot table)
+     */
+    public function records(): BelongsToMany
+    {
+        return $this->belongsToMany(Record::class, 'record_thesaurus_concept', 'concept_id', 'record_id');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus larges
+     */
+    public function broaderConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'narrower_concept_id',
+            'broader_concept_id'
+        )->wherePivot('relation_type', 'broader');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus spécifiques
+     */
+    public function narrowerConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'broader_concept_id',
+            'narrower_concept_id'
+        )->wherePivot('relation_type', 'narrower');
+    }
+
+    /**
+     * Toutes les relations de concepts
+     */
+    public function conceptRelations(): HasMany
+    {
+        return $this->hasMany(ThesaurusConceptRelation::class, 'broader_concept_id');
+    }
+
+    /**
+     * Relations inverses de concepts
+     */
+    public function inverseConceptRelations(): HasMany
+    {
+        return $this->hasMany(ThesaurusConceptRelation::class, 'narrower_concept_id');
     }
 }
