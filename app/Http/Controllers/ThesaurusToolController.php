@@ -510,4 +510,113 @@ class ThesaurusToolController extends Controller
             'message' => 'Import JSON pas encore implémenté',
         ];
     }
+
+    /**
+     * API: Obtenir tous les schémas thésaurus
+     */
+    public function apiSchemes()
+    {
+        $schemes = ThesaurusScheme::select('id', 'title', 'description', 'language', 'created_at')
+                                 ->get();
+        
+        return response()->json($schemes);
+    }
+
+    /**
+     * API: Obtenir tous les concepts avec pagination et filtres
+     */
+    public function apiConcepts(Request $request)
+    {
+        $query = ThesaurusConcept::with(['scheme:id,title', 'labels']);
+        
+        // Filtre par schéma
+        if ($request->has('scheme_id') && $request->scheme_id) {
+            $query->where('scheme_id', $request->scheme_id);
+        }
+        
+        // Recherche textuelle
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('pref_label', 'like', "%{$search}%")
+                  ->orWhere('alt_labels', 'like', "%{$search}%")
+                  ->orWhere('definition', 'like', "%{$search}%");
+            });
+        }
+        
+        // Pagination
+        $perPage = $request->get('per_page', 20);
+        $concepts = $query->orderBy('pref_label')->paginate($perPage);
+        
+        return response()->json($concepts);
+    }
+
+    /**
+     * API: Obtenir les concepts d'un schéma spécifique
+     */
+    public function apiSchemesConcepts(Request $request, $schemeId)
+    {
+        $query = ThesaurusConcept::with(['labels'])
+                                ->where('scheme_id', $schemeId);
+        
+        // Recherche textuelle
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('pref_label', 'like', "%{$search}%")
+                  ->orWhere('alt_labels', 'like', "%{$search}%")
+                  ->orWhere('definition', 'like', "%{$search}%");
+            });
+        }
+        
+        // Pagination
+        $perPage = $request->get('per_page', 20);
+        $concepts = $query->orderBy('pref_label')->paginate($perPage);
+        
+        return response()->json($concepts);
+    }
+
+    /**
+     * API: Obtenir les termes associés à un record
+     */
+    public function apiRecordTerms($recordId)
+    {
+        $record = Record::with(['thesaurusConcepts.scheme'])->findOrFail($recordId);
+        
+        return response()->json($record->thesaurusConcepts);
+    }
+
+    /**
+     * API: Associer des termes à un record
+     */
+    public function apiAssociateTerms(Request $request, $recordId)
+    {
+        $request->validate([
+            'concept_ids' => 'required|array',
+            'concept_ids.*' => 'exists:thesaurus_concepts,id'
+        ]);
+        
+        $record = Record::findOrFail($recordId);
+        
+        // Synchroniser les concepts (remplace les existants)
+        $record->thesaurusConcepts()->sync($request->concept_ids);
+        
+        return response()->json([
+            'message' => 'Termes associés avec succès',
+            'count' => count($request->concept_ids)
+        ]);
+    }
+
+    /**
+     * API: Dissocier un terme d'un record
+     */
+    public function apiDisassociateTerm($recordId, $conceptId)
+    {
+        $record = Record::findOrFail($recordId);
+        $record->thesaurusConcepts()->detach($conceptId);
+        
+        return response()->json([
+            'message' => 'Terme dissocié avec succès'
+        ]);
+    }
 }

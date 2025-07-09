@@ -67,7 +67,7 @@ class RecordController extends Controller
 
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -94,7 +94,7 @@ class RecordController extends Controller
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('type')->get();
-        $terms
+        $terms = [];
         $authorTypes = AuthorType::all();
         $parents = Author::all();
         return view('records.create', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
@@ -114,7 +114,7 @@ class RecordController extends Controller
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('type')->get();
-        $terms
+        $terms = [];
         $authorTypes = AuthorType::all();
         $parents = Author::all();
         return view('records.createFull', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
@@ -235,7 +235,7 @@ class RecordController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $terms
+        $terms = [];
 
 
         $author_ids = $record->authors->pluck('id')->toArray();

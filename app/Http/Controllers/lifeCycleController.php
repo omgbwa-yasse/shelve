@@ -33,7 +33,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -58,7 +58,7 @@ class lifeCycleController extends Controller
         ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
         return view('records.index', compact('records', 'title',
@@ -86,7 +86,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -108,7 +108,7 @@ class lifeCycleController extends Controller
             })->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -136,7 +136,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
@@ -166,7 +166,7 @@ class lifeCycleController extends Controller
             ->paginate(10);
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
-        $terms
+        $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 

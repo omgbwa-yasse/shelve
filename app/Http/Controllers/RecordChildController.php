@@ -32,7 +32,7 @@ class RecordChildController extends Controller
         $levels = RecordLevel::all();
         $records = Record::all();
         $authors = Author::with('type')->get();
-        $terms
+        $terms = [];
         $record = record::findOrFail($id);
         return view('records.child.create', compact('record','authors','levels','statuses', 'supports', 'activities', 'containers', 'users'));
 

@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
 use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
-use App\Http\Controllers\Api\OrganisationApiController;
+use App\Http\Controllers\ThesaurusToolController;
 
 // Routes API pour l'enrichissement des records via Ollama MCP
 Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
@@ -43,6 +43,20 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
     Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
     Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
+});
+
+// Routes API pour le thésaurus
+Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
+    Route::get('schemes', [ThesaurusToolController::class, 'apiSchemes'])->name('schemes');
+    Route::get('concepts', [ThesaurusToolController::class, 'apiConcepts'])->name('concepts');
+    Route::get('schemes/{scheme}/concepts', [ThesaurusToolController::class, 'apiSchemesConcepts'])->name('schemes.concepts');
+});
+
+// Routes API pour les records et leurs relations avec le thésaurus
+Route::prefix('records')->name('api.records.')->middleware('auth:sanctum')->group(function () {
+    Route::get('{record}/terms', [ThesaurusToolController::class, 'apiRecordTerms'])->name('terms');
+    Route::post('{record}/terms', [ThesaurusToolController::class, 'apiAssociateTerms'])->name('associate-terms');
+    Route::delete('{record}/terms/{concept}', [ThesaurusToolController::class, 'apiDisassociateTerm'])->name('disassociate-term');
 });
 
 // Routes API publiques pour l'interface frontend React
@@ -189,8 +203,7 @@ Route::prefix('public')->name('api.public.')->group(function () {
 
 // Routes API pour l'interface administrative
 Route::middleware('auth:sanctum')->group(function () {
-    // Organisations
-    Route::get('organisations/{organisation}/users', [OrganisationApiController::class, 'getUsers'])->name('api.organisations.users');
+    // Placeholder pour futures routes protégées
 });
 
 // Routes API pour le proxy MCP

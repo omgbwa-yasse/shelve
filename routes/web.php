@@ -49,7 +49,7 @@ use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActivityController;
 use App\Http\Controllers\LanguageController;
 
-use App\Http\Controllers\TermController;
+// use App\Http\Controllers\TermController;
 use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
@@ -79,7 +79,7 @@ use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\MailPriorityController;
-use AppHttp\Controllers\DollyController;
+use App\Http\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
 use App\Http\Controllers\DollyMailTransactionController;
 use App\Http\Controllers\BarcodeController;
@@ -637,7 +637,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
             // Routes pour les termes
-            Route::resource('terms', TermController::class);
+            // Route::resource('terms', TermController::class);
 
             // Routes pour les non-descripteurs
             Route::resource('non-descriptors', NonDescriptorController::class);
@@ -713,18 +713,18 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
         Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
-        Route::resource('actions', AiActionController::class)->names('ai.actions');
-        Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
-        Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
-        Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
-        Route::resource('resources', AiResourceController::class)->names('ai.resources');
+        // Route::resource('actions', AiActionController::class)->names('ai.actions');
+        // Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
+        // Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
+        // Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
+        // Route::resource('resources', AiResourceController::class)->names('ai.resources');
 
         // Routes de configuration AI protégées par la permission ai_configure
         Route::middleware(['can:ai_configure'])->group(function () {
             Route::resource('models', AiModelController::class)->names('ai.models');
             Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
             Route::get('models/name/{name}', [AiModelController::class, 'showByName'])->name('ai.models.show.by.name');
-            Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
+            // Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
             Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
             Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
             Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
