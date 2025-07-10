@@ -194,12 +194,12 @@
             <div class="submenu-divider"></div>
             <div class="submenu-category-title">Courrier externe</div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-outgoing.index') }}">
+                <a class="submenu-link" href="{{ route('mails.outgoing.index') }}">
                     <i class="bi bi-box-arrow-right"></i> Courrier sortant
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-incoming.index') }}">
+                <a class="submenu-link" href="{{ route('mails.incoming.index') }}">
                     <i class="bi bi-box-arrow-in-left"></i> Courrier entrant
                 </a>
             </div>
@@ -246,12 +246,12 @@
         </div>
         <div class="submenu-content" id="externMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-incoming.create') }}">
+                <a class="submenu-link" href="{{ route('mails.incoming.create') }}">
                     <i class="bi bi-box-arrow-in-down"></i> Recevoir courrier externe
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-outgoing.create') }}">
+                <a class="submenu-link" href="{{ route('mails.outgoing.create') }}">
                     <i class="bi bi-box-arrow-up"></i> Envoyer courrier externe
                 </a>
             </div>
