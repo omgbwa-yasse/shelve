@@ -20,8 +20,8 @@
                 <h5 class="card-title mb-4">Informations générales</h5>
 
                 <div class="col-md-4 mb-3">
-                    <label for="reference" class="form-label">Référence</label>
-                    <input type="text" id="reference" name="reference" class="form-control" required>
+                    <label for="code" class="form-label">Code</label>
+                    <input type="text" id="code" name="code" class="form-control" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>

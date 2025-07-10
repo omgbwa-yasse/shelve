@@ -239,32 +239,6 @@
     </div>
     @endif
 
-    <!-- Courrier externe Section -->
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-globe"></i> Courrier externe
-        </div>
-        <div class="submenu-content" id="externMenu">
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mails.incoming.create') }}">
-                    <i class="bi bi-box-arrow-in-down"></i> Recevoir courrier externe
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mails.outgoing.create') }}">
-                    <i class="bi bi-box-arrow-up"></i> Envoyer courrier externe
-                </a>
-            </div>
-            @can('module_mails_access')
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('external.contacts.index') }}">
-                    <i class="bi bi-person-rolodex"></i> Contacts & Organisations
-                </a>
-            </div>
-            @endcan
-        </div>
-    </div>
-
     <!-- Administration Section -->
     <div class="submenu-section add-section">
         <div class="submenu-heading">
