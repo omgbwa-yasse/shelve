@@ -45,20 +45,20 @@ class InitializeMailSystem extends Command
         // 1. Initialiser le système de courriers
         $this->info('📊 Initialisation du système de courriers...');
         $this->call('mail:seed', $fresh ? ['--force' => true] : []);
-        
+
         $this->newLine();
-        
+
         // 2. Vérifier les données externes
         $this->info('🌐 Vérification des données externes...');
         $this->call('external:check-data');
-        
+
         $this->newLine();
-        
+
         // 3. Résumé final
         $this->info('✅ INITIALISATION TERMINÉE AVEC SUCCÈS !');
         $this->info('========================================');
         $this->newLine();
-        
+
         $this->table(
             ['Composant', 'Statut'],
             [
@@ -70,7 +70,7 @@ class InitializeMailSystem extends Command
                 ['Activités', '✅ Configurées'],
             ]
         );
-        
+
         $this->newLine();
         $this->info('🎯 Le système de gestion des courriers est prêt à être utilisé !');
         $this->info('   Vous pouvez maintenant créer des courriers entrants et sortants');
@@ -88,7 +88,7 @@ class InitializeMailSystem extends Command
         \App\Models\MailTypology::truncate();
         \App\Models\MailAction::truncate();
         \App\Models\MailPriority::truncate();
-        
+
         $this->info('✅ Données existantes supprimées');
     }
 }

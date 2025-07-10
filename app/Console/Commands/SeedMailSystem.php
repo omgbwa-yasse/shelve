@@ -57,8 +57,8 @@ class SeedMailSystem extends Command
 
     private function hasExistingData()
     {
-        return \App\Models\MailTypology::count() > 0 || 
-               \App\Models\MailPriority::count() > 0 || 
+        return \App\Models\MailTypology::count() > 0 ||
+               \App\Models\MailPriority::count() > 0 ||
                \App\Models\MailAction::count() > 0 ||
                \App\Models\ExternalOrganization::count() > 0;
     }
