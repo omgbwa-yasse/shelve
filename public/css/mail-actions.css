@@ -1,0 +1,72 @@
+/* Styles pour les actions rapides des courriers */
+.mail-actions-bar {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.mail-actions-label {
+    font-weight: 600;
+    color: #495057;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+}
+
+.mail-actions-bar .btn {
+    margin: 0.125rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.mail-actions-bar .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.mail-actions-bar .gap-2 {
+    gap: 0.5rem !important;
+}
+
+/* Responsive design pour les actions */
+@media (max-width: 768px) {
+    .mail-actions-bar .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .mail-actions-bar .ms-auto {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+
+    .mail-actions-bar .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Amélioration des badges dans les actions */
+.mail-actions-bar .badge {
+    font-size: 0.7em;
+    vertical-align: middle;
+}
+
+/* Animation pour les boutons d'action */
+.mail-actions-bar .btn-sm {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Style spécial pour le bouton de suppression */
+.mail-actions-bar .btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.mail-actions-bar .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}

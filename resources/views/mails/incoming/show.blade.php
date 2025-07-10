@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+<link href="{{ asset('css/mail-actions.css') }}" rel="stylesheet">
+@endpush
+
 @section('content')
     <div class="container">
         <!-- En-tête avec navigation -->
@@ -20,27 +24,27 @@
                     <span class="mail-actions-label">
                         <i class="bi bi-lightning-fill text-warning"></i> Actions :
                     </span>
-                    
+
                     <a href="{{ route('mails.incoming.edit', $mail->id) }}" class="btn btn-primary btn-sm">
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
-                    
+
                     @if($mail->attachments->count() > 0)
                         <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#attachmentsModal">
                             <i class="bi bi-paperclip"></i> Pièces jointes
                             <span class="badge bg-white text-info">{{ $mail->attachments->count() }}</span>
                         </button>
                     @endif
-                    
+
                     <button class="btn btn-success btn-sm" onclick="window.print()">
                         <i class="bi bi-printer"></i> Imprimer
                     </button>
-                    
+
                     <button class="btn btn-secondary btn-sm" onclick="downloadPDF()">
                         <i class="bi bi-file-pdf"></i> PDF
                     </button>
                 </div>
-                
+
                 <!-- Action de suppression alignée à droite -->
                 <div class="ms-auto">
                     <form action="{{ route('mails.incoming.destroy', $mail->id) }}" method="POST" class="d-inline">
@@ -73,7 +77,7 @@
                                 <span class="ms-2">{{ $mail->date->format('d/m/Y') }}</span>
                             </div>
                         </div>
-                        
+
                         <div class="mb-3">
                             <strong>Nom :</strong>
                             <div class="mt-1">{{ $mail->name }}</div>

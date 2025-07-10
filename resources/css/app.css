@@ -45,17 +45,17 @@
     .mail-actions-bar {
         padding: 0.75rem 1rem;
     }
-    
+
     .mail-actions-bar .d-flex {
         flex-direction: column;
         gap: 0.75rem !important;
     }
-    
+
     .mail-actions-bar .ms-auto {
         margin-left: 0 !important;
         align-self: stretch;
     }
-    
+
     .mail-actions-label {
         margin-right: 0;
         margin-bottom: 0.5rem;

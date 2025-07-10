@@ -12,8 +12,7 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailArchiveController;
-use App\Http\Controllers\MailOutgoingController;
-use App\Http\Controllers\MailIncomingController;
+
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
@@ -59,6 +58,7 @@ use App\Http\Controllers\AssociativeRelationController;
 use App\Http\Controllers\TranslationController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
+use App\Http\Controllers\PublicSearchLogController;
 use App\Http\Controllers\ThesaurusToolController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
