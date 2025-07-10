@@ -115,7 +115,7 @@
                                                 {{ __('Ajouter une étape') }}
                                             </button>
                                         </div>
-                                        
+
                                         <!-- En-têtes des colonnes -->
                                         <div class="row bg-light p-2 rounded mb-2 small fw-bold">
                                             <div class="col-2">{{ __('ID Étape') }}</div>
@@ -225,15 +225,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let stepCounter = 0;
-    
+
     // Gestionnaire pour le formulaire avec conversion JSON
     document.querySelector('form').addEventListener('submit', function(event) {
         const jsonConfigEnabled = document.getElementById('enable_json_config').checked;
-        
+
         if (jsonConfigEnabled) {
             // Convertir les données du formulaire ou du JSON selon l'onglet actif
             const activeTab = document.querySelector('#configTabs .nav-link.active').id;
-            
+
             if (activeTab === 'form-tab') {
                 // Convertir depuis le formulaire
                 convertFormToLaravel(this);
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Fonctions globales
     window.addStepRow = function() {
         stepCounter++;
@@ -251,69 +251,69 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = createStepRow(stepCounter);
         container.appendChild(row);
     };
-    
+
     window.removeStepRow = function(rowId) {
         const row = document.getElementById(rowId);
         if (row) {
             row.remove();
         }
     };
-    
+
     window.validateFormConfig = function() {
         const steps = getFormSteps();
         const validation = validateSteps(steps);
         showValidationResult('form-validation-result', validation);
     };
-    
+
     window.clearAllSteps = function() {
         if (confirm('{{ __("Êtes-vous sûr de vouloir supprimer toutes les étapes ?") }}')) {
             document.getElementById('steps-container').innerHTML = '';
             stepCounter = 0;
         }
     };
-    
+
     window.previewFormAsJSON = function() {
         const steps = getFormSteps();
         const textarea = document.getElementById('configuration_json');
         textarea.value = JSON.stringify(steps, null, 2);
-        
+
         // Basculer vers l'onglet JSON
         const jsonTab = document.getElementById('json-tab');
         const tab = new bootstrap.Tab(jsonTab);
         tab.show();
     };
-    
+
     window.syncFromForm = function() {
         const steps = getFormSteps();
         const textarea = document.getElementById('configuration_json');
         textarea.value = JSON.stringify(steps, null, 2);
         showAlert('success', 'Configuration synchronisée depuis le formulaire');
     };
-    
+
     function createStepRow(id) {
         const div = document.createElement('div');
         div.className = 'row mb-2 step-row';
         div.id = `step-row-${id}`;
-        
+
         div.innerHTML = `
             <div class="col-2">
-                <input type="text" class="form-control form-control-sm" name="step_id_${id}" 
+                <input type="text" class="form-control form-control-sm" name="step_id_${id}"
                        placeholder="step_${id}" value="step_${id}" required>
             </div>
             <div class="col-3">
-                <input type="text" class="form-control form-control-sm" name="step_name_${id}" 
+                <input type="text" class="form-control form-control-sm" name="step_name_${id}"
                        placeholder="{{ __('Nom de l\'étape') }}" required>
             </div>
             <div class="col-1">
-                <input type="number" class="form-control form-control-sm" name="step_ordre_${id}" 
+                <input type="number" class="form-control form-control-sm" name="step_ordre_${id}"
                        value="${getNextOrder()}" min="1" required>
             </div>
             <div class="col-2">
-                <input type="number" class="form-control form-control-sm" name="step_action_id_${id}" 
+                <input type="number" class="form-control form-control-sm" name="step_action_id_${id}"
                        placeholder="1" min="1" required>
             </div>
             <div class="col-2">
-                <input type="number" class="form-control form-control-sm" name="step_organisation_id_${id}" 
+                <input type="number" class="form-control form-control-sm" name="step_organisation_id_${id}"
                        placeholder="{{ __('Optionnel') }}" min="1">
             </div>
             <div class="col-1">
@@ -327,24 +327,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </div>
         `;
-        
+
         return div;
     }
-    
+
     function getNextOrder() {
         const existingOrders = Array.from(document.querySelectorAll('[name^="step_ordre_"]'))
             .map(input => parseInt(input.value) || 0);
         return existingOrders.length > 0 ? Math.max(...existingOrders) + 1 : 1;
     }
-    
+
     function getFormSteps() {
         const steps = [];
         const stepRows = document.querySelectorAll('.step-row');
-        
+
         stepRows.forEach(row => {
             const getId = (name) => row.querySelector(`[name*="${name}"]`)?.value || '';
             const getChecked = (name) => row.querySelector(`[name*="${name}"]`)?.checked || false;
-            
+
             const step = {
                 id: getId('step_id_'),
                 name: getId('step_name_'),
@@ -356,38 +356,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 conditions: {},
                 metadata: {}
             };
-            
+
             if (step.id && step.name) {
                 steps.push(step);
             }
         });
-        
+
         return steps;
     }
-    
+
     function validateSteps(steps) {
         const errors = [];
         const warnings = [];
-        
+
         if (steps.length === 0) {
             errors.push('{{ __("Aucune étape définie") }}');
             return { errors, warnings };
         }
-        
+
         // Vérifier l'unicité des IDs
         const ids = steps.map(s => s.id);
         const uniqueIds = [...new Set(ids)];
         if (ids.length !== uniqueIds.length) {
             errors.push('{{ __("Les IDs des étapes doivent être uniques") }}');
         }
-        
+
         // Vérifier l'unicité des ordres
         const ordres = steps.map(s => s.ordre);
         const uniqueOrdres = [...new Set(ordres)];
         if (ordres.length !== uniqueOrdres.length) {
             errors.push('{{ __("Les ordres des étapes doivent être uniques") }}');
         }
-        
+
         // Vérifier la continuité des ordres
         const sortedOrdres = ordres.sort((a, b) => a - b);
         for (let i = 0; i < sortedOrdres.length; i++) {
@@ -396,13 +396,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             }
         }
-        
+
         return { errors, warnings };
     }
-    
+
     function convertFormToLaravel(form) {
         const steps = getFormSteps();
-        
+
         if (steps.length > 0) {
             try {
                 // Créer des champs cachés pour chaque étape
@@ -421,14 +421,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     function convertJSONToLaravel(form) {
         const jsonTextarea = document.getElementById('configuration_json');
-        
+
         if (jsonTextarea.value.trim()) {
             try {
                 const configData = JSON.parse(jsonTextarea.value);
-                
+
                 // Créer des champs cachés pour chaque élément de configuration
                 configData.forEach((step, index) => {
                     Object.keys(step).forEach(key => {
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         form.appendChild(input);
                     });
                 });
-                
+
                 // Vider le textarea pour éviter les conflits
                 jsonTextarea.value = '';
             } catch (error) {
@@ -448,28 +448,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     function showValidationResult(containerId, validation) {
         const container = document.getElementById(containerId) || createValidationContainer();
-        
+
         let html = '';
         if (validation.errors.length > 0) {
             html += `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>`;
             html += validation.errors.join('<br>') + '</div>';
         }
-        
+
         if (validation.warnings.length > 0) {
             html += `<div class="alert alert-warning"><i class="bi bi-exclamation-circle me-2"></i>`;
             html += validation.warnings.join('<br>') + '</div>';
         }
-        
+
         if (validation.errors.length === 0 && validation.warnings.length === 0) {
             html = `<div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>{{ __("Configuration valide !") }}</div>`;
         }
-        
+
         container.innerHTML = html;
     }
-    
+
     function createValidationContainer() {
         const container = document.createElement('div');
         container.id = 'form-validation-result';
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('form-config').appendChild(container);
         return container;
     }
-    
+
     // Ajouter une ligne par défaut
     addStepRow();
 });
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleJSONConfig() {
     const checkbox = document.getElementById('enable_json_config');
     const section = document.getElementById('json-config-section');
-    
+
     if (checkbox.checked) {
         section.classList.remove('d-none');
     } else {

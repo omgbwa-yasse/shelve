@@ -109,16 +109,16 @@
     .step-row .col-1 {
         margin-bottom: 0.5rem;
     }
-    
+
     #steps-container {
         max-height: 300px;
     }
-    
+
     .d-flex.gap-2 {
         flex-direction: column;
         gap: 0.5rem !important;
     }
-    
+
     .btn-group-sm {
         display: flex;
         flex-direction: column;
