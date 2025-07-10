@@ -57,7 +57,86 @@
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description" name="description" class="form-control" rows="3"></textarea>
             </div>
-            <div class="row">
+
+            <!-- Section Destinataire -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Destinataire</h5>
+
+                    <div class="mb-3">
+                        <label for="recipient_type" class="form-label">Type de destinataire</label>
+                        <select name="recipient_type" id="recipient_type" class="form-select" required>
+                            <option value="">Choisir le type de destinataire</option>
+                            <option value="external_contact">Contact externe</option>
+                            <option value="external_organization">Organisation externe</option>
+                        </select>
+                    </div>
+
+                    <div id="external_recipient_contact_section" class="mb-3" style="display: none;">
+                        <label for="external_recipient_id" class="form-label">Contact externe</label>
+                        <select name="external_recipient_id" id="external_recipient_id" class="form-select">
+                            <option value="">Choisir un contact externe</option>
+                            @foreach($externalContacts as $contact)
+                                <option value="{{ $contact->id }}">
+                                    {{ $contact->full_name }}
+                                    @if($contact->organization)
+                                        ({{ $contact->organization->name }})
+                                    @endif
+                                    @if($contact->email)
+                                        - {{ $contact->email }}
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="external_recipient_organization_section" class="mb-3" style="display: none;">
+                        <label for="external_recipient_organization_id" class="form-label">Organisation externe</label>
+                        <select name="external_recipient_organization_id" id="external_recipient_organization_id" class="form-select">
+                            <option value="">Choisir une organisation externe</option>
+                            @foreach($externalOrganizations as $organization)
+                                <option value="{{ $organization->id }}">
+                                    {{ $organization->name }}
+                                    @if($organization->city)
+                                        - {{ $organization->city }}
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Envoi -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Informations d'envoi</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="delivery_method" class="form-label">Méthode d'envoi</label>
+                            <select name="delivery_method" id="delivery_method" class="form-select">
+                                <option value="">Choisir une méthode</option>
+                                <option value="courrier">Courrier postal</option>
+                                <option value="email">Email</option>
+                                <option value="fax">Fax</option>
+                                <option value="en_main_propre">En main propre</option>
+                                <option value="porteur">Porteur</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="tracking_number" class="form-label">Numéro de suivi</label>
+                            <input type="text" name="tracking_number" id="tracking_number" class="form-control" placeholder="Numéro de suivi (optionnel)">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="sent_at" class="form-label">Date d'envoi effectif</label>
+                        <input type="datetime-local" name="sent_at" id="sent_at" class="form-control">
+                    </div>
+                </div>
             </div>
 
             <div class="card mb-4">
@@ -90,6 +169,9 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-send"></i> Créer le courrier sortant
                 </button>
+                <a href="{{ route('mail-outgoing.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
             </div>
         </form>
     </div>
@@ -98,6 +180,87 @@
 @push('styles')
     <style>
         .drop-zone {
+            min-height: 150px;
+            border: 2px dashed #ccc !important;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .drop-zone.dragover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd !important;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin: 5px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .file-item .delete-btn {
+            margin-left: auto;
+        }
+        .file-progress {
+            width: 100%;
+            height: 4px;
+            margin-top: 5px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .file-progress-bar {
+            height: 100%;
+            background-color: #0d6efd;
+            transition: width 0.3s ease;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const btnBrowse = document.querySelector('.btn-browse');
+            const maxFileSize = 10 * 1024 * 1024; // 10MB en bytes
+            const maxFiles = 5; // Nombre maximum de fichiers
+
+            // Stockage des fichiers sélectionnés
+            let selectedFiles = new DataTransfer();
+
+            // Event listeners
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+            btnBrowse.addEventListener('click', () => fileInput.click());
+
+            // Gestion du changement de type de destinataire
+            const recipientTypeSelect = document.getElementById('recipient_type');
+            const externalRecipientContactSection = document.getElementById('external_recipient_contact_section');
+            const externalRecipientOrganizationSection = document.getElementById('external_recipient_organization_section');
+
+            recipientTypeSelect.addEventListener('change', function() {
+                // Masquer toutes les sections
+                externalRecipientContactSection.style.display = 'none';
+                externalRecipientOrganizationSection.style.display = 'none';
+
+                // Réinitialiser les valeurs
+                document.getElementById('external_recipient_id').value = '';
+                document.getElementById('external_recipient_organization_id').value = '';
+
+                // Afficher la section appropriée
+                switch(this.value) {
+                    case 'external_contact':
+                        externalRecipientContactSection.style.display = 'block';
+                        break;
+                    case 'external_organization':
+                        externalRecipientOrganizationSection.style.display = 'block';
+                        break;
+                }
+            });
             min-height: 150px;
             border: 2px dashed #ccc !important;
             transition: all 0.3s ease;

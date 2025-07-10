@@ -47,8 +47,7 @@ class ExternalContact extends Model
      */
     public function sentMails()
     {
-        // Column doesn't exist yet - using empty query for now
-        return $this->hasOne(Mail::class)->whereRaw('1 = 0');
+        return $this->hasMany(Mail::class, 'external_sender_id');
     }
 
     /**
@@ -56,7 +55,6 @@ class ExternalContact extends Model
      */
     public function receivedMails()
     {
-        // Column doesn't exist yet - using empty query for now
-        return $this->hasOne(Mail::class)->whereRaw('1 = 0');
+        return $this->hasMany(Mail::class, 'external_recipient_id');
     }
 }

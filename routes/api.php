@@ -25,6 +25,8 @@ use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\ThesaurusToolController;
+use App\Http\Controllers\ExternalContactController;
+use App\Http\Controllers\ExternalOrganizationController;
 
 // Routes API pour l'enrichissement des records via Ollama MCP
 Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
@@ -368,4 +370,18 @@ Route::prefix('mcp-proxy')->name('api.mcp-proxy.')->middleware('auth:sanctum')->
     Route::post('stops-stops', [McpProxyController::class, 'stopsStops'])->name('stops-stops');
     Route::post('starts-starts', [McpProxyController::class, 'startsStarts'])->name('starts-starts');
     Route::post('restarts-restarts', [McpProxyController::class, 'restartsRestarts'])->name('restarts-restarts');
+});
+
+// Routes API pour les contacts externes
+Route::prefix('external-contacts')->name('api.external-contacts.')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [ExternalContactController::class, 'apiIndex'])->name('index');
+    Route::get('/search', [ExternalContactController::class, 'apiSearch'])->name('search');
+    Route::get('/{id}', [ExternalContactController::class, 'apiShow'])->name('show');
+});
+
+// Routes API pour les organisations externes
+Route::prefix('external-organizations')->name('api.external-organizations.')->middleware('auth:sanctum')->group(function () {
+    Route::get('/', [ExternalOrganizationController::class, 'apiIndex'])->name('index');
+    Route::get('/search', [ExternalOrganizationController::class, 'apiSearch'])->name('search');
+    Route::get('/{id}', [ExternalOrganizationController::class, 'apiShow'])->name('show');
 });

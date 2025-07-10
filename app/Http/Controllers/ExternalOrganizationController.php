@@ -133,4 +133,100 @@ class ExternalOrganizationController extends Controller
         return redirect()->route('external.organizations.index')
             ->with('success', 'Organisation externe supprimée avec succès.');
     }
+
+    /**
+     * API method to get organizations list
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = ExternalOrganization::query();
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('city', 'like', "%{$search}%")
+                  ->orWhere('legal_form', 'like', "%{$search}%");
+            });
+        }
+
+        $organizations = $query->orderBy('name')
+                               ->get()
+                               ->map(function($organization) {
+                                   return [
+                                       'id' => $organization->id,
+                                       'name' => $organization->name,
+                                       'legal_form' => $organization->legal_form,
+                                       'email' => $organization->email,
+                                       'phone' => $organization->phone,
+                                       'city' => $organization->city,
+                                       'country' => $organization->country,
+                                       'is_verified' => $organization->is_verified,
+                                   ];
+                               });
+
+        return response()->json(['organizations' => $organizations]);
+    }
+
+    /**
+     * API method to search organizations
+     */
+    public function apiSearch(Request $request)
+    {
+        $search = $request->input('q', '');
+
+        $organizations = ExternalOrganization::where('name', 'like', "%{$search}%")
+            ->orWhere('city', 'like', "%{$search}%")
+            ->orWhere('legal_form', 'like', "%{$search}%")
+            ->limit(20)
+            ->get()
+            ->map(function($organization) {
+                return [
+                    'id' => $organization->id,
+                    'text' => $organization->name .
+                             ($organization->city ? ' - ' . $organization->city : '') .
+                             ($organization->legal_form ? ' (' . $organization->legal_form . ')' : ''),
+                    'name' => $organization->name,
+                    'city' => $organization->city,
+                    'legal_form' => $organization->legal_form,
+                ];
+            });
+
+        return response()->json(['results' => $organizations]);
+    }
+
+    /**
+     * API method to show a specific organization
+     */
+    public function apiShow($id)
+    {
+        $organization = ExternalOrganization::with('contacts')->findOrFail($id);
+
+        return response()->json([
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'legal_form' => $organization->legal_form,
+                'registration_number' => $organization->registration_number,
+                'email' => $organization->email,
+                'phone' => $organization->phone,
+                'website' => $organization->website,
+                'address' => $organization->address,
+                'city' => $organization->city,
+                'postal_code' => $organization->postal_code,
+                'country' => $organization->country,
+                'is_verified' => $organization->is_verified,
+                'notes' => $organization->notes,
+                'contacts' => $organization->contacts->map(function($contact) {
+                    return [
+                        'id' => $contact->id,
+                        'full_name' => $contact->full_name,
+                        'email' => $contact->email,
+                        'position' => $contact->position,
+                        'is_primary_contact' => $contact->is_primary_contact,
+                    ];
+                }),
+            ]
+        ]);
+    }
 }

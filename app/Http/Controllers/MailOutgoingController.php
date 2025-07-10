@@ -8,6 +8,8 @@ use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\MailAction;
 use App\Models\Organisation;
+use App\Models\ExternalContact;
+use App\Models\ExternalOrganization;
 use App\Models\MailAttachment;
 use App\Models\Dolly;
 use Exception;
@@ -57,7 +59,14 @@ class MailOutgoingController extends Controller
     public function create()
     {
         $typologies = MailTypology::orderBy('name')->get();
-        return view('mails.outgoing.create', compact('typologies'));
+        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
+        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
+
+        return view('mails.outgoing.create', compact(
+            'typologies',
+            'externalContacts',
+            'externalOrganizations'
+        ));
     }
 
     /**
@@ -67,7 +76,6 @@ class MailOutgoingController extends Controller
 
     public function store(Request $request)
     {
-
         try {
             $validatedData = $request->validate([
                 'name' => 'required|max:150',
@@ -75,9 +83,14 @@ class MailOutgoingController extends Controller
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'recipient_type' => 'required|in:external_contact,external_organization',
+                'external_recipient_id' => 'nullable|exists:external_contacts,id',
+                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'sent_at' => 'nullable|date',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
-
 
             if(!isset($validatedData['code'])) {
                 $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
@@ -86,14 +99,13 @@ class MailOutgoingController extends Controller
                 $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
             }
 
-
             $mail = Mail::create($validatedData + [
-                'sender_organisation_id' => auth()->user()->current_organisation_id,
-                'sender_user_id' => auth()->id(),
+                'sender_organisation_id' => Auth::user()->current_organisation_id,
+                'sender_user_id' => Auth::id(),
+                'sender_type' => 'organisation',
                 'status' => 'transmitted',
                 'mail_type' => 'outgoing',
             ]);
-
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
@@ -161,17 +173,22 @@ class MailOutgoingController extends Controller
                 'description' => 'nullable',
                 'document_type' => 'required|in:original,duplicate,copy',
                 'typology_id' => 'required|exists:mail_typologies,id',
+                'recipient_type' => 'required|in:external_contact,external_organization',
+                'external_recipient_id' => 'nullable|exists:external_contacts,id',
+                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'sent_at' => 'nullable|date',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
-
-            $mail = Mail::update($validatedData + [
-                'sender_organisation_id' => auth()->user()->current_organisation_id,
-                'sender_user_id' => auth()->id(),
+            $mail->update($validatedData + [
+                'sender_organisation_id' => Auth::user()->current_organisation_id,
+                'sender_user_id' => Auth::id(),
+                'sender_type' => 'organisation',
                 'status' => 'in_progress',
                 'mail_type' => 'outgoing',
             ]);
-
 
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
@@ -241,7 +258,7 @@ class MailOutgoingController extends Controller
                 'crypt' => md5_file($file),
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
-                'creator_id' => auth()->id(),
+                'creator_id' => Auth::id(),
                 'type' => 'mail',
                 'mime_type' => $mimeType,
             ]);
@@ -255,7 +272,7 @@ class MailOutgoingController extends Controller
             }
 
             $mail->attachments()->attach($attachment->id, [
-                'added_by' => auth()->id(),
+                'added_by' => Auth::id(),
                 'created_at' => now(),
                 'updated_at' => now()
             ]);

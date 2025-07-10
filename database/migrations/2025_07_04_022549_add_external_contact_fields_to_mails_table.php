@@ -41,7 +41,19 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('mails', function (Blueprint $table) {
-            //
+            $table->dropForeign(['external_sender_id']);
+            $table->dropForeign(['external_recipient_id']);
+            $table->dropColumn([
+                'external_sender_id',
+                'external_recipient_id',
+                'sender_type',
+                'recipient_type',
+                'sent_at',
+                'received_at',
+                'delivery_method',
+                'tracking_number',
+                'receipt_confirmed'
+            ]);
         });
     }
 };

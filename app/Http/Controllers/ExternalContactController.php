@@ -149,4 +149,113 @@ class ExternalContactController extends Controller
         return redirect()->route('external.contacts.index')
             ->with('success', 'Contact externe supprimé avec succès.');
     }
+
+    /**
+     * API method to get contacts list
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = ExternalContact::with('organization');
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhereHas('organization', function($orgQuery) use ($search) {
+                      $orgQuery->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->has('organization_id')) {
+            $query->where('external_organization_id', $request->input('organization_id'));
+        }
+
+        $contacts = $query->orderBy('last_name')
+                         ->orderBy('first_name')
+                         ->get()
+                         ->map(function($contact) {
+                             return [
+                                 'id' => $contact->id,
+                                 'full_name' => $contact->full_name,
+                                 'first_name' => $contact->first_name,
+                                 'last_name' => $contact->last_name,
+                                 'email' => $contact->email,
+                                 'phone' => $contact->phone,
+                                 'position' => $contact->position,
+                                 'organization' => $contact->organization ? [
+                                     'id' => $contact->organization->id,
+                                     'name' => $contact->organization->name,
+                                     'city' => $contact->organization->city,
+                                 ] : null,
+                             ];
+                         });
+
+        return response()->json(['contacts' => $contacts]);
+    }
+
+    /**
+     * API method to search contacts
+     */
+    public function apiSearch(Request $request)
+    {
+        $search = $request->input('q', '');
+
+        $contacts = ExternalContact::with('organization')
+            ->where(function($query) use ($search) {
+                $query->where('first_name', 'like', "%{$search}%")
+                      ->orWhere('last_name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->orWhereHas('organization', function($orgQuery) use ($search) {
+                $orgQuery->where('name', 'like', "%{$search}%");
+            })
+            ->limit(20)
+            ->get()
+            ->map(function($contact) {
+                return [
+                    'id' => $contact->id,
+                    'text' => $contact->full_name .
+                             ($contact->organization ? ' (' . $contact->organization->name . ')' : '') .
+                             ($contact->email ? ' - ' . $contact->email : ''),
+                    'full_name' => $contact->full_name,
+                    'email' => $contact->email,
+                    'organization' => $contact->organization ? $contact->organization->name : null,
+                ];
+            });
+
+        return response()->json(['results' => $contacts]);
+    }
+
+    /**
+     * API method to show a specific contact
+     */
+    public function apiShow($id)
+    {
+        $contact = ExternalContact::with('organization')->findOrFail($id);
+
+        return response()->json([
+            'contact' => [
+                'id' => $contact->id,
+                'full_name' => $contact->full_name,
+                'first_name' => $contact->first_name,
+                'last_name' => $contact->last_name,
+                'email' => $contact->email,
+                'phone' => $contact->phone,
+                'position' => $contact->position,
+                'address' => $contact->address,
+                'is_primary_contact' => $contact->is_primary_contact,
+                'is_verified' => $contact->is_verified,
+                'notes' => $contact->notes,
+                'organization' => $contact->organization ? [
+                    'id' => $contact->organization->id,
+                    'name' => $contact->organization->name,
+                    'city' => $contact->organization->city,
+                    'address' => $contact->organization->address,
+                ] : null,
+            ]
+        ]);
+    }
 }
