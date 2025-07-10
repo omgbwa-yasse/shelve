@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>Modifier Courrier sortant</h1>
-    <form action="{{ route('mail-send.update', $mail->id) }}" method="POST">
+    <form action="{{ route('mails.incoming.update', $mail->id) }}" method="POST">
         @csrf
         @method('PUT')
 

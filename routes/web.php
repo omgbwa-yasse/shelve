@@ -8,10 +8,12 @@ use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailArchiveController;
 use App\Http\Controllers\MailOutgoingController;
+use App\Http\Controllers\MailIncomingController;
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
 use App\Http\Controllers\BatchController;
@@ -88,7 +90,6 @@ use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
 use App\Http\Controllers\MailNotificationController;
 use App\Http\Controllers\MailWorkflowController;
-use App\Http\Controllers\MailIncomingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
@@ -294,11 +295,27 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
 
-        Route::resource('outgoing', MailOutgoingController::class)->names('mail-outgoing');
+        // Routes pour les courriers entrants
+        Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
+        Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
+        Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
+        Route::get('incoming/{id}', [MailController::class, 'show'])->name('mails.incoming.show');
+        Route::get('incoming/{id}/edit', [MailController::class, 'edit'])->name('mails.incoming.edit');
+        Route::put('incoming/{id}', [MailController::class, 'update'])->name('mails.incoming.update');
+        Route::patch('incoming/{id}', [MailController::class, 'update']);
+        Route::delete('incoming/{id}', [MailController::class, 'destroy'])->name('mails.incoming.destroy');
+
+        // Routes pour les courriers sortants
+        Route::get('outgoing', [MailController::class, 'indexOutgoing'])->name('mails.outgoing.index');
+        Route::get('outgoing/create', [MailController::class, 'createOutgoing'])->name('mails.outgoing.create');
+        Route::post('outgoing', [MailController::class, 'storeOutgoing'])->name('mails.outgoing.store');
+        Route::get('outgoing/{id}', [MailController::class, 'show'])->name('mails.outgoing.show');
+        Route::get('outgoing/{id}/edit', [MailController::class, 'edit'])->name('mails.outgoing.edit');
+        Route::put('outgoing/{id}', [MailController::class, 'update'])->name('mails.outgoing.update');
+        Route::patch('outgoing/{id}', [MailController::class, 'update']);
+        Route::delete('outgoing/{id}', [MailController::class, 'destroy'])->name('mails.outgoing.destroy');
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
-
-        Route::resource('incoming', MailIncomingController::class)->names('mail-incoming');
 
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
@@ -638,7 +655,7 @@ Route::group(['middleware' => 'auth'], function () {
             // Routes pour les non-descripteurs - utiliser alternative_labels via ThesaurusToolController
             // Route::resource('non-descriptors', NonDescriptorController::class); // Obsolète
 
-            // Routes pour les alignements externes - utiliser external_alignments via ThesaurusToolController  
+            // Routes pour les alignements externes - utiliser external_alignments via ThesaurusToolController
             // Route::resource('external-alignments', ExternalAlignmentController::class); // Obsolète
 
             // Relations hiérarchiques - gérées par ThesaurusToolController
@@ -675,7 +692,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
             Route::get('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
             Route::post('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
-            
+
             // Routes AJAX pour l'import/export
             Route::post('export/ajax', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportAjax'])->name('thesaurus.export.ajax');
             Route::post('import/preview', [App\Http\Controllers\ThesaurusExportImportController::class, 'importPreview'])->name('thesaurus.import.preview');

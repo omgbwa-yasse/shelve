@@ -13,7 +13,7 @@
             </div>
         @endif
 
-        <form action="{{ route('mail-outgoing.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+        <form action="{{ route('mails.outgoing.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
             <h5 class="card-title mb-4">Informations générales</h5>
 
@@ -139,6 +139,28 @@
                 </div>
             </div>
 
+            <!-- Nouveaux champs pour priorité et action -->
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="priority_id" class="form-label">Priorité</label>
+                    <select name="priority_id" id="priority_id" class="form-select">
+                        <option value="">Choisir une priorité</option>
+                        @foreach($priorities as $priority)
+                            <option value="{{ $priority->id }}">{{ $priority->name }} ({{ $priority->duration }} jours)</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="action_id" class="form-label">Action à effectuer</label>
+                    <select name="action_id" id="action_id" class="form-select">
+                        <option value="">Choisir une action</option>
+                        @foreach($actions as $action)
+                            <option value="{{ $action->id }}">{{ $action->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Pièces jointes</h5>
@@ -169,7 +191,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-send"></i> Créer le courrier sortant
                 </button>
-                <a href="{{ route('mail-outgoing.index') }}" class="btn btn-secondary">
+                <a href="{{ route('mails.outgoing.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Retour
                 </a>
             </div>
