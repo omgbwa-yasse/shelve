@@ -49,13 +49,10 @@ use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActivityController;
 use App\Http\Controllers\LanguageController;
 
-// use App\Http\Controllers\TermController;
 use App\Http\Controllers\TermTypeController;
 use App\Http\Controllers\TermEquivalentController;
 use App\Http\Controllers\TermRelatedController;
 use App\Http\Controllers\TermTranslationController;
-use App\Http\Controllers\NonDescriptorController;
-use App\Http\Controllers\ExternalAlignmentController;
 use App\Http\Controllers\HierarchicalRelationController;
 use App\Http\Controllers\AssociativeRelationController;
 use App\Http\Controllers\TranslationController;
@@ -636,15 +633,8 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
-            // Routes pour les termes
-            // Route::resource('terms', TermController::class);
-
-            // Routes pour les non-descripteurs
-            Route::resource('non-descriptors', NonDescriptorController::class);
-
-            // Routes pour les alignements externes
-            Route::resource('external-alignments', ExternalAlignmentController::class);
-
+            // Routes pour les termes - utiliser ThesaurusToolController pour la nouvelle structure
+            
             // Routes pour les relations hiérarchiques
             Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index');
             Route::get('hierarchical-relations/create/broader/{term}', [HierarchicalRelationController::class, 'createBroader'])->name('hierarchical_relations.create_broader');
@@ -705,11 +695,8 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('import/process', [App\Http\Controllers\ThesaurusExportImportController::class, 'importProcess'])->name('thesaurus.import.process');
             Route::get('download/{filename}', [App\Http\Controllers\ThesaurusExportImportController::class, 'downloadExport'])->name('thesaurus.download.export');
 
-            // Routes pour les termes (décommenter pour activer le CRUD)
-            Route::resource('terms', App\Http\Controllers\TermController::class);
-            Route::get('terms/search/ajax', [App\Http\Controllers\TermController::class, 'search'])->name('terms.search');
-            Route::get('terms/hierarchy/tree', [App\Http\Controllers\TermController::class, 'hierarchyTree'])->name('terms.hierarchy');
-            Route::get('terms/autocomplete/ajax', [App\Http\Controllers\TermController::class, 'autocomplete'])->name('terms.autocomplete');
+            // Routes pour les termes - nouvelle structure utilisant ThesaurusToolController
+            // Note: L'ancienne structure avec TermController a été supprimée
         });
 
     });
