@@ -89,6 +89,7 @@ class MailOutgoingController extends Controller
                 'delivery_method' => 'nullable|string|max:50',
                 'tracking_number' => 'nullable|string|max:100',
                 'sent_at' => 'nullable|date',
+                'attachments' => 'nullable|array',
                 'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
             ]);
 
