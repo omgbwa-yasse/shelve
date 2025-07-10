@@ -185,10 +185,8 @@
     </div>
     @endcan
 
-<<<<<<< HEAD
-=======
     <!-- Thésaurus Section -->
-    @can('viewAny', App\Models\Term::class)
+
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-book-half"></i> {{ __('thesaurus') }}
@@ -200,28 +198,28 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('thesaurus.search.index') }}">
+                <a class="submenu-link" href="{{ route('terms.search') }}">
                     <i class="bi bi-search"></i> {{ __('search_thesaurus') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('thesaurus.export-import') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.export_import.index') }}">
                     <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }}
                 </a>
             </div>
-            @can('create', App\Models\Term::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('terms.create') }}">
                     <i class="bi bi-plus-square"></i> {{ __('add_word') }}
                 </a>
             </div>
-            @endcan
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('terms.hierarchy') }}">
+                    <i class="bi bi-diagram-2"></i> {{ __('term_hierarchy') }}
+                </a>
+            </div>
         </div>
     </div>
-    @endcan
 
->>>>>>> dca5e7b964ebdbcb884312637a2455330519d076
-    <!-- Boite à outils Section -->
     @auth
     <div class="submenu-section">
         <div class="submenu-heading" >

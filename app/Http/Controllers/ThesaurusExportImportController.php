@@ -17,7 +17,238 @@ class ThesaurusExportImportController extends Controller
      */
     public function index()
     {
-        return view('thesaurus.export_import.index');
+        return view('thesaurus.export_import.ajax_index');
+    }
+
+    /**
+     * Export AJAX - gère tous les formats d'export via AJAX
+     */
+    public function exportAjax(Request $request)
+    {
+        try {
+            $format = $request->input('format');
+
+            switch ($format) {
+                case 'skos':
+                    return $this->exportSkosAjax($request);
+                case 'csv':
+                    return $this->exportCsvAjax($request);
+                case 'rdf':
+                    return $this->exportRdfAjax($request);
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Format d\'export non supporté'
+                    ], 400);
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'export AJAX: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'export: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Export SKOS via AJAX
+     */
+    private function exportSkosAjax(Request $request)
+    {
+        $termsQuery = $this->buildSearchQuery($request);
+        $terms = $termsQuery->get();
+
+        // Générer le fichier SKOS
+        $filename = 'thesaurus_export_' . date('Y-m-d_H-i-s') . '.xml';
+        $filepath = storage_path('app/exports/' . $filename);
+
+        // Créer le dossier s'il n'existe pas
+        if (!file_exists(dirname($filepath))) {
+            mkdir(dirname($filepath), 0755, true);
+        }
+
+        // Générer le contenu SKOS
+        $xml = $this->generateSkosXml($terms);
+        file_put_contents($filepath, $xml);
+
+        return response()->json([
+            'success' => true,
+            'message' => count($terms) . ' termes exportés avec succès au format SKOS',
+            'download_url' => route('thesaurus.download.export', ['filename' => $filename])
+        ]);
+    }
+
+    /**
+     * Export CSV via AJAX
+     */
+    private function exportCsvAjax(Request $request)
+    {
+        $termsQuery = $this->buildSearchQuery($request);
+        $terms = $termsQuery->get();
+
+        $filename = 'thesaurus_export_' . date('Y-m-d_H-i-s') . '.csv';
+        $filepath = storage_path('app/exports/' . $filename);
+
+        // Créer le dossier s'il n'existe pas
+        if (!file_exists(dirname($filepath))) {
+            mkdir(dirname($filepath), 0755, true);
+        }
+
+        // Générer le contenu CSV
+        $csvContent = $this->generateCsvContent($terms);
+        file_put_contents($filepath, $csvContent);
+
+        return response()->json([
+            'success' => true,
+            'message' => count($terms) . ' termes exportés avec succès au format CSV',
+            'download_url' => route('thesaurus.download.export', ['filename' => $filename])
+        ]);
+    }
+
+    /**
+     * Export RDF via AJAX
+     */
+    private function exportRdfAjax(Request $request)
+    {
+        $termsQuery = $this->buildSearchQuery($request);
+        $terms = $termsQuery->get();
+
+        $filename = 'thesaurus_export_' . date('Y-m-d_H-i-s') . '.rdf';
+        $filepath = storage_path('app/exports/' . $filename);
+
+        // Créer le dossier s'il n'existe pas
+        if (!file_exists(dirname($filepath))) {
+            mkdir(dirname($filepath), 0755, true);
+        }
+
+        // Générer le contenu RDF
+        $rdf = $this->generateRdfXml($terms);
+        file_put_contents($filepath, $rdf);
+
+        return response()->json([
+            'success' => true,
+            'message' => count($terms) . ' termes exportés avec succès au format RDF',
+            'download_url' => route('thesaurus.download.export', ['filename' => $filename])
+        ]);
+    }
+
+    /**
+     * Prévisualisation d'import via AJAX
+     */
+    public function importPreview(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'import_format' => 'required|in:skos,csv,rdf',
+                'import_file' => 'required|file',
+                'import_mode' => 'required|in:add,update,replace,merge'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Données invalides',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $format = $request->input('import_format');
+            $file = $request->file('import_file');
+            $mode = $request->input('import_mode');
+
+            // Analyser le fichier selon le format
+            $previewData = $this->analyzeImportFile($file, $format);
+
+            if (!$previewData) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impossible d\'analyser le fichier'
+                ]);
+            }
+
+            // Générer le HTML de prévisualisation
+            $previewHtml = view('thesaurus.import.preview', [
+                'data' => $previewData,
+                'format' => $format,
+                'mode' => $mode,
+                'filename' => $file->getClientOriginalName()
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'preview' => $previewHtml
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la prévisualisation d\'import: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'analyse: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Traitement d'import via AJAX
+     */
+    public function importProcess(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'import_format' => 'required|in:skos,csv,rdf',
+                'import_file' => 'required|file',
+                'import_mode' => 'required|in:add,update,replace,merge'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Données invalides',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $format = $request->input('import_format');
+            $file = $request->file('import_file');
+            $mode = $request->input('import_mode');
+
+            // Traiter l'import selon le format
+            $result = $this->processImportFile($file, $format, $mode);
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $result['message'],
+                    'stats' => $result['stats'] ?? null
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message']
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'import: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'import: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Téléchargement des fichiers d'export
+     */
+    public function downloadExport($filename)
+    {
+        $filepath = storage_path('app/exports/' . $filename);
+
+        if (!file_exists($filepath)) {
+            abort(404, 'Fichier non trouvé');
+        }
+
+        return response()->download($filepath)->deleteFileAfterSend(true);
     }
 
     /**
@@ -687,8 +918,8 @@ class ThesaurusExportImportController extends Controller
                 }
 
                 // Stocker les non-descripteurs pour traitement ultérieur
-                if ($columnMap['non_descriptors'] !== false && !empty($data[$columnMap['non_descriptors']])) {
-                    $termNonDescriptors[$term->id] = explode(';', $data[$columnMap['non_descriptors']]);
+                if ($columnMap['non_descriptors'] !== false && !empty($data[$columnMap['non_descripteurs']])) {
+                    $termNonDescriptors[$term->id] = explode(';', $data[$columnMap['non_descripteurs']]);
                 }
 
                 // Stocker les alignements externes pour traitement ultérieur
@@ -1268,7 +1499,7 @@ class ThesaurusExportImportController extends Controller
                         'line' => $e->getLine(),
                         'trace' => $e->getTraceAsString()
                     ]);
-                    return redirect()->back()->with('error', 'Erreur lors du traitement du fichier RDF: ' . $e->getMessage());
+                    return redirect()->back()->with('error', 'Erreur lors de l\'import RDF: ' . $e->getMessage());
                 }
             } catch (\Exception $e) {
                 // Erreur de parsing XML
@@ -1398,5 +1629,411 @@ class ThesaurusExportImportController extends Controller
         }
 
         return $text;
+    }
+
+    /**
+     * Génère le contenu XML SKOS
+     */
+    private function generateSkosXml($terms)
+    {
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:dc="http://purl.org/dc/elements/1.1/"></rdf:RDF>');
+
+        foreach ($terms as $term) {
+            $concept = $xml->addChild('skos:Concept');
+            $concept->addAttribute('rdf:about', url('/terms/' . $term->id));
+
+            $prefLabel = $concept->addChild('skos:prefLabel', htmlspecialchars($term->preferred_label));
+            $prefLabel->addAttribute('xml:lang', $term->language);
+
+            // Ajouter les non-descripteurs
+            foreach ($term->nonDescriptors as $nonDescriptor) {
+                $altLabel = $concept->addChild('skos:altLabel', htmlspecialchars($nonDescriptor->non_descriptor_label));
+                $altLabel->addAttribute('xml:lang', $term->language);
+            }
+
+            if ($term->scope_note) {
+                $concept->addChild('skos:scopeNote', htmlspecialchars($term->scope_note));
+            }
+        }
+
+        return $xml->asXML();
+    }
+
+    /**
+     * Génère le contenu CSV
+     */
+    private function generateCsvContent($terms)
+    {
+        $csv = "ID,Preferred Label,Language,Scope Note,Non Descriptors\n";
+
+        foreach ($terms as $term) {
+            $nonDescriptors = $term->nonDescriptors->pluck('non_descriptor_label')->implode(';');
+            $csv .= sprintf(
+                "%d,\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                $term->id,
+                str_replace('"', '""', $term->preferred_label),
+                $term->language,
+                str_replace('"', '""', $term->scope_note ?? ''),
+                str_replace('"', '""', $nonDescriptors)
+            );
+        }
+
+        return $csv;
+    }
+
+    /**
+     * Génère le contenu RDF XML
+     */
+    private function generateRdfXml($terms)
+    {
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:dc="http://purl.org/dc/elements/1.1/"></rdf:RDF>');
+
+        foreach ($terms as $term) {
+            $description = $xml->addChild('rdf:Description');
+            $description->addAttribute('rdf:about', url('/terms/' . $term->id));
+
+            $description->addChild('rdfs:label', htmlspecialchars($term->preferred_label));
+            $description->addChild('dc:language', $term->language);
+
+            if ($term->scope_note) {
+                $description->addChild('rdfs:comment', htmlspecialchars($term->scope_note));
+            }
+        }
+
+        return $xml->asXML();
+    }
+
+    /**
+     * Analyse un fichier d'import pour prévisualisation
+     */
+    private function analyzeImportFile($file, $format)
+    {
+        switch ($format) {
+            case 'csv':
+                return $this->analyzeCsvFile($file);
+            case 'skos':
+                return $this->analyzeSkosFile($file);
+            case 'rdf':
+                return $this->analyzeRdfFile($file);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Analyse un fichier CSV
+     */
+    private function analyzeCsvFile($file)
+    {
+        $content = file_get_contents($file->getPathname());
+        $lines = explode("\n", $content);
+        $header = str_getcsv(array_shift($lines));
+
+        $data = [];
+        $count = 0;
+        foreach ($lines as $line) {
+            if (trim($line) && $count < 10) { // Limite à 10 lignes pour la préview
+                $data[] = array_combine($header, str_getcsv($line));
+                $count++;
+            }
+        }
+
+        return [
+            'format' => 'csv',
+            'total_lines' => count($lines),
+            'header' => $header,
+            'sample_data' => $data,
+            'estimated_terms' => count($lines) - 1
+        ];
+    }
+
+    /**
+     * Analyse un fichier SKOS
+     */
+    private function analyzeSkosFile($file)
+    {
+        $content = file_get_contents($file->getPathname());
+        $xml = simplexml_load_string($content);
+
+        if (!$xml) {
+            return null;
+        }
+
+        $concepts = $xml->xpath('//skos:Concept');
+        $sampleData = [];
+
+        foreach (array_slice($concepts, 0, 10) as $concept) {
+            $prefLabels = $concept->xpath('skos:prefLabel');
+            $altLabels = $concept->xpath('skos:altLabel');
+
+            $sampleData[] = [
+                'preferred_label' => (string) ($prefLabels[0] ?? ''),
+                'alternative_labels' => array_map('strval', $altLabels),
+                'about' => (string) $concept['about']
+            ];
+        }
+
+        return [
+            'format' => 'skos',
+            'total_concepts' => count($concepts),
+            'sample_data' => $sampleData,
+            'estimated_terms' => count($concepts)
+        ];
+    }
+
+    /**
+     * Analyse un fichier RDF
+     */
+    private function analyzeRdfFile($file)
+    {
+        $content = file_get_contents($file->getPathname());
+        $xml = simplexml_load_string($content);
+
+        if (!$xml) {
+            return null;
+        }
+
+        $descriptions = $xml->xpath('//rdf:Description');
+        $sampleData = [];
+
+        foreach (array_slice($descriptions, 0, 10) as $description) {
+            $labels = $description->xpath('rdfs:label');
+            $comments = $description->xpath('rdfs:comment');
+
+            $sampleData[] = [
+                'label' => (string) ($labels[0] ?? ''),
+                'comment' => (string) ($comments[0] ?? ''),
+                'about' => (string) $description['about']
+            ];
+        }
+
+        return [
+            'format' => 'rdf',
+            'total_descriptions' => count($descriptions),
+            'sample_data' => $sampleData,
+            'estimated_terms' => count($descriptions)
+        ];
+    }
+
+    /**
+     * Traite un fichier d'import
+     */
+    private function processImportFile($file, $format, $mode)
+    {
+        switch ($format) {
+            case 'csv':
+                return $this->processCsvImport($file, $mode);
+            case 'skos':
+                return $this->processSkosImport($file, $mode);
+            case 'rdf':
+                return $this->processRdfImport($file, $mode);
+            default:
+                return ['success' => false, 'message' => 'Format non supporté'];
+        }
+    }
+
+    /**
+     * Traite l'import CSV
+     */
+    private function processCsvImport($file, $mode)
+    {
+        try {
+            $content = file_get_contents($file->getPathname());
+            $lines = explode("\n", $content);
+            $header = str_getcsv(array_shift($lines));
+
+            $imported = 0;
+            $updated = 0;
+            $errors = [];
+
+            if ($mode === 'replace') {
+                Term::truncate();
+            }
+
+            foreach ($lines as $lineNumber => $line) {
+                if (!trim($line)) continue;
+
+                $data = array_combine($header, str_getcsv($line));
+
+                if (empty($data['Preferred Label'])) {
+                    $errors[] = "Ligne " . ($lineNumber + 2) . ": Label requis";
+                    continue;
+                }
+
+                $existingTerm = Term::where('preferred_label', $data['Preferred Label'])->first();
+
+                if ($existingTerm) {
+                    if (in_array($mode, ['update', 'merge'])) {
+                        $existingTerm->update([
+                            'scope_note' => $data['Scope Note'] ?? null,
+                            'language' => $data['Language'] ?? 'fr'
+                        ]);
+                        $updated++;
+                    }
+                } else {
+                    if (in_array($mode, ['add', 'merge', 'replace'])) {
+                        Term::create([
+                            'preferred_label' => $data['Preferred Label'],
+                            'scope_note' => $data['Scope Note'] ?? null,
+                            'language' => $data['Language'] ?? 'fr'
+                        ]);
+                        $imported++;
+                    }
+                }
+            }
+
+            $message = "Import terminé: {$imported} termes ajoutés, {$updated} mis à jour";
+            if (!empty($errors)) {
+                $message .= ". " . count($errors) . " erreurs détectées.";
+            }
+
+            return [
+                'success' => true,
+                'message' => $message,
+                'stats' => "{$imported} ajoutés, {$updated} mis à jour"
+            ];
+
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Erreur lors de l\'import CSV: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Traite l'import SKOS
+     */
+    private function processSkosImport($file, $mode)
+    {
+        try {
+            $content = file_get_contents($file->getPathname());
+            $xml = simplexml_load_string($content);
+
+            if (!$xml) {
+                return ['success' => false, 'message' => 'Fichier SKOS invalide'];
+            }
+
+            $concepts = $xml->xpath('//skos:Concept');
+            $imported = 0;
+            $updated = 0;
+
+            if ($mode === 'replace') {
+                Term::truncate();
+            }
+
+            foreach ($concepts as $concept) {
+                $prefLabels = $concept->xpath('skos:prefLabel');
+                if (empty($prefLabels)) continue;
+
+                $preferredLabel = (string) $prefLabels[0];
+                $scopeNotes = $concept->xpath('skos:scopeNote');
+                $scopeNote = !empty($scopeNotes) ? (string) $scopeNotes[0] : null;
+
+                $existingTerm = Term::where('preferred_label', $preferredLabel)->first();
+
+                if ($existingTerm) {
+                    if (in_array($mode, ['update', 'merge'])) {
+                        $existingTerm->update(['scope_note' => $scopeNote]);
+                        $updated++;
+                    }
+                } else {
+                    if (in_array($mode, ['add', 'merge', 'replace'])) {
+                        Term::create([
+                            'preferred_label' => $preferredLabel,
+                            'scope_note' => $scopeNote,
+                            'language' => 'fr'
+                        ]);
+                        $imported++;
+                    }
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => "Import SKOS terminé: {$imported} termes ajoutés, {$updated} mis à jour",
+                'stats' => "{$imported} ajoutés, {$updated} mis à jour"
+            ];
+
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Erreur lors de l\'import SKOS: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Traite l'import RDF
+     */
+    private function processRdfImport($file, $mode)
+    {
+        try {
+            $content = file_get_contents($file->getPathname());
+            $xml = simplexml_load_string($content);
+
+            if (!$xml) {
+                return ['success' => false, 'message' => 'Fichier RDF invalide'];
+            }
+
+            $descriptions = $xml->xpath('//rdf:Description');
+            $imported = 0;
+            $updated = 0;
+
+            if ($mode === 'replace') {
+                Term::truncate();
+            }
+
+            foreach ($descriptions as $description) {
+                $labels = $description->xpath('rdfs:label');
+                if (empty($labels)) continue;
+
+                $label = (string) $labels[0];
+                $comments = $description->xpath('rdfs:comment');
+                $comment = !empty($comments) ? (string) $comments[0] : null;
+
+                $existingTerm = Term::where('preferred_label', $label)->first();
+
+                if ($existingTerm) {
+                    if (in_array($mode, ['update', 'merge'])) {
+                        $existingTerm->update(['scope_note' => $comment]);
+                        $updated++;
+                    }
+                } else {
+                    if (in_array($mode, ['add', 'merge', 'replace'])) {
+                        Term::create([
+                            'preferred_label' => $label,
+                            'scope_note' => $comment,
+                            'language' => 'fr'
+                        ]);
+                        $imported++;
+                    }
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => "Import RDF terminé: {$imported} termes ajoutés, {$updated} mis à jour",
+                'stats' => "{$imported} ajoutés, {$updated} mis à jour"
+            ];
+
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Erreur lors de l\'import RDF: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Construit la requête de recherche pour l'export
+     */
+    private function buildSearchQuery(Request $request)
+    {
+        $query = Term::query();
+
+        // Ajouter des filtres si nécessaires
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where('preferred_label', 'LIKE', "%{$search}%")
+                  ->orWhere('scope_note', 'LIKE', "%{$search}%");
+        }
+
+        if ($request->has('language')) {
+            $query->where('language', $request->input('language'));
+        }
+
+        return $query;
     }
 }
