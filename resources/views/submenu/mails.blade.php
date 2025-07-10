@@ -195,12 +195,12 @@
             <div class="submenu-category-title">Courrier externe</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.outgoing.index') }}">
-                    <i class="bi bi-box-arrow-right"></i> Courrier sortant
+                    <i class="bi bi-box-arrow-right"></i> Courriers sortants externes
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.incoming.index') }}">
-                    <i class="bi bi-box-arrow-in-left"></i> Courrier entrant
+                    <i class="bi bi-box-arrow-in-left"></i> Courriers entrants externes
                 </a>
             </div>
 
