@@ -102,7 +102,7 @@ class ThesaurusConcept extends Model
     }
 
     /**
-     * Relations associatives
+     * Relations associatives (pour la compatibilité avec les vues)
      */
     public function relatedConcepts(): BelongsToMany
     {
@@ -112,70 +112,6 @@ class ThesaurusConcept extends Model
             'source_concept_id',
             'target_concept_id'
         )->wherePivot('relation_type', 'related');
-    }
-
-    /**
-     * Obtenir le label préféré dans une langue donnée
-     */
-    public function getPreferredLabel($language = 'fr-fr')
-    {
-        return $this->labels()
-                    ->where('label_type', 'prefLabel')
-                    ->where('language', $language)
-                    ->first();
-    }
-
-    /**
-     * Obtenir tous les labels alternatifs dans une langue donnée
-     */
-    public function getAlternativeLabels($language = 'fr-fr')
-    {
-        return $this->labels()
-                    ->where('label_type', 'altLabel')
-                    ->where('language', $language)
-                    ->get();
-    }
-
-    /**
-     * Vérifier si c'est un concept de tête
-     */
-    public function isTopConcept()
-    {
-        return $this->belongsToMany(ThesaurusScheme::class, 'thesaurus_top_concepts', 'concept_id', 'scheme_id')->exists();
-    }
-
-    /**
-     * Accessor pour la compatibilité avec les vues - preferred_label
-     */
-    public function getPreferredLabelAttribute()
-    {
-        $label = $this->getPreferredLabel();
-        return $label ? $label->label_value : $this->uri;
-    }
-
-    /**
-     * Accessor pour la compatibilité avec les vues - language
-     */
-    public function getLanguageAttribute()
-    {
-        $label = $this->getPreferredLabel();
-        return $label ? $label->language : 'fr-fr';
-    }
-
-    /**
-     * Accessor pour la compatibilité avec les vues - is_top_term
-     */
-    public function getIsTopTermAttribute()
-    {
-        return $this->isTopConcept();
-    }
-
-    /**
-     * Accessor pour la compatibilité avec les vues - category
-     */
-    public function getCategoryAttribute()
-    {
-        return $this->scheme ? $this->scheme->title : null;
     }
 
     /**
@@ -226,6 +162,70 @@ class ThesaurusConcept extends Model
     }
 
     /**
+     * Obtenir le label préféré dans une langue donnée
+     */
+    public function getPreferredLabel($language = 'fr-fr')
+    {
+        return $this->labels()
+                    ->where('label_type', 'prefLabel')
+                    ->where('language', $language)
+                    ->first();
+    }
+
+    /**
+     * Accessor pour la compatibilité avec les vues - preferred_label
+     */
+    public function getPreferredLabelAttribute()
+    {
+        $label = $this->getPreferredLabel();
+        return $label ? $label->label_value : $this->uri;
+    }
+
+    /**
+     * Accessor pour la compatibilité avec les vues - language
+     */
+    public function getLanguageAttribute()
+    {
+        $label = $this->getPreferredLabel();
+        return $label ? $label->language : 'fr-fr';
+    }
+
+    /**
+     * Accessor pour la compatibilité avec les vues - is_top_term
+     */
+    public function getIsTopTermAttribute()
+    {
+        return $this->isTopConcept();
+    }
+
+    /**
+     * Accessor pour la compatibilité avec les vues - category
+     */
+    public function getCategoryAttribute()
+    {
+        return $this->scheme ? $this->scheme->title : null;
+    }
+
+    /**
+     * Obtenir une note d'un type spécifique
+     */
+    public function getNote($noteType, $language = 'fr-fr')
+    {
+        return $this->notes()
+                    ->where('note_type', $noteType)
+                    ->where('language', $language)
+                    ->first();
+    }
+
+    /**
+     * Vérifier si c'est un concept de tête
+     */
+    public function isTopConcept()
+    {
+        return $this->belongsToMany(ThesaurusScheme::class, 'thesaurus_top_concepts', 'concept_id', 'scheme_id')->exists();
+    }
+
+    /**
      * Scope pour filtrer par schéma
      */
     public function scopeByScheme($query, $schemeId)
@@ -247,5 +247,99 @@ class ThesaurusConcept extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 1);
+    }
+
+    /**
+     * Relation avec les records (pivot table)
+     */
+    public function records(): BelongsToMany
+    {
+        return $this->belongsToMany(Record::class, 'record_thesaurus_concept', 'concept_id', 'record_id');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus larges
+     */
+    public function broaderConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'narrower_concept_id',
+            'broader_concept_id'
+        )->wherePivot('relation_type', 'broader');
+    }
+
+    /**
+     * Relations hiérarchiques - concepts plus spécifiques
+     */
+    public function narrowerConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'broader_concept_id',
+            'narrower_concept_id'
+        )->wherePivot('relation_type', 'narrower');
+    }
+
+    /**
+     * Relations associatives (pour la compatibilité avec les vues)
+     */
+    public function relatedConcepts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'source_concept_id',
+            'target_concept_id'
+        )->wherePivot('relation_type', 'related');
+    }
+
+    /**
+     * Aliases pour la compatibilité avec les anciennes vues
+     */
+    public function broaderTerms()
+    {
+        return $this->broaderConcepts();
+    }
+
+    public function narrowerTerms()
+    {
+        return $this->narrowerConcepts();
+    }
+
+    public function associatedTerms()
+    {
+        return $this->relatedConcepts();
+    }
+
+    public function nonDescriptors()
+    {
+        // Les non-descripteurs sont maintenant des labels alternatifs
+        return $this->labels()->where('label_type', 'altLabel');
+    }
+
+    public function translationsSource()
+    {
+        // Les traductions peuvent être gérées via les relations avec d'autres concepts
+        return $this->relatedConcepts()->wherePivot('relation_type', 'translation');
+    }
+
+    public function translationsTarget()
+    {
+        // Relations inverses de traduction
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'thesaurus_concept_relations',
+            'target_concept_id',
+            'source_concept_id'
+        )->wherePivot('relation_type', 'translation');
+    }
+
+    public function externalAlignments()
+    {
+        // Les alignements externes sont gérés via les propriétés
+        return $this->properties()->where('property_key', 'LIKE', 'external_%');
     }
 }

@@ -641,35 +641,16 @@ Route::group(['middleware' => 'auth'], function () {
             // Routes pour les alignements externes - utiliser external_alignments via ThesaurusToolController  
             // Route::resource('external-alignments', ExternalAlignmentController::class); // Obsolète
 
-            // Routes pour les relations hiérarchiques
-            Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index');
-            Route::get('hierarchical-relations/create/broader/{term}', [HierarchicalRelationController::class, 'createBroader'])->name('hierarchical_relations.create_broader');
-            Route::post('hierarchical-relations/store/broader/{term}', [HierarchicalRelationController::class, 'storeBroader'])->name('hierarchical_relations.store_broader');
-            Route::get('hierarchical-relations/create/narrower/{term}', [HierarchicalRelationController::class, 'createNarrower'])->name('hierarchical_relations.create_narrower');
-            Route::post('hierarchical-relations/store/narrower/{term}', [HierarchicalRelationController::class, 'storeNarrower'])->name('hierarchical_relations.store_narrower');
-            Route::delete('hierarchical-relations/destroy/{broaderTermId}/{narrowerTermId}', [HierarchicalRelationController::class, 'destroy'])->name('hierarchical_relations.destroy');
+            // Relations hiérarchiques - gérées par ThesaurusToolController
+            // Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index'); // Obsolète
 
-            // Routes additionnelles avec les noms attendus par les templates
-            Route::get('terms/{term}/hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('terms.hierarchical-relations.index');
-            Route::get('terms/{term}/hierarchical-relations/broader/create', [HierarchicalRelationController::class, 'createBroader'])->name('terms.hierarchical-relations.broader.create');
-            Route::post('terms/{term}/hierarchical-relations/broader/store', [HierarchicalRelationController::class, 'storeBroader'])->name('terms.hierarchical-relations.broader.store');
-            Route::get('terms/{term}/hierarchical-relations/narrower/create', [HierarchicalRelationController::class, 'createNarrower'])->name('terms.hierarchical-relations.narrower.create');
-            Route::post('terms/{term}/hierarchical-relations/narrower/store', [HierarchicalRelationController::class, 'storeNarrower'])->name('terms.hierarchical-relations.narrower.store');
-            Route::post('terms/{term}/hierarchical-relations/destroy/{relationType}/{relatedTermId}', [HierarchicalRelationController::class, 'destroyRelation'])->name('terms.hierarchical-relations.destroy');
-
-            // Routes pour les relations associatives
+            // Relations associatives - contrôleur existe
             Route::get('associative-relations', [AssociativeRelationController::class, 'index'])->name('associative_relations.index');
             Route::get('associative-relations/create/{term}', [AssociativeRelationController::class, 'create'])->name('associative_relations.create');
             Route::post('associative-relations/store/{term}', [AssociativeRelationController::class, 'store'])->name('associative_relations.store');
             Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('associative_relations.destroy');
 
-            // Routes additionnelles avec les noms attendus par les templates pour les relations associatives
-            Route::get('terms/{term}/associative-relations', [AssociativeRelationController::class, 'index'])->name('terms.associative-relations.index');
-            Route::get('terms/{term}/associative-relations/create', [AssociativeRelationController::class, 'create'])->name('terms.associative-relations.create');
-            Route::post('terms/{term}/associative-relations/store', [AssociativeRelationController::class, 'store'])->name('terms.associative-relations.store');
-            Route::delete('terms/{term}/associative-relations/destroy/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('terms.associative-relations.destroy');
-
-            // Routes pour les traductions
+            // Routes pour les traductions - contrôleur existe
             Route::get('translations', [TranslationController::class, 'index'])->name('translations.index');
             Route::get('translations/create/{term}', [TranslationController::class, 'create'])->name('translations.create');
             Route::post('translations/store/{term}', [TranslationController::class, 'store'])->name('translations.store');
@@ -685,7 +666,9 @@ Route::group(['middleware' => 'auth'], function () {
             // Routes pour l'export
             Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
             Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
-            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');            // Routes pour l'import/export
+            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
+
+            // Routes pour l'import/export
             Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
             Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
             Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Term;
-use App\Models\NonDescriptor;
-use App\Models\ExternalAlignment;
+use App\Models\ThesaurusConcept;
+use App\Models\ThesaurusLabel;
+use App\Models\ThesaurusScheme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,10 +12,12 @@ class ThesaurusSearchController extends Controller
 {
     public function index()
     {
-        $languages = ['fr' => 'Français', 'en' => 'Anglais', 'es' => 'Espagnol',
-                      'de' => 'Allemand', 'it' => 'Italien', 'pt' => 'Portugais'];
+        $languages = ['fr-fr' => 'Français', 'en-us' => 'Anglais', 'es-es' => 'Espagnol',
+                      'de-de' => 'Allemand', 'it-it' => 'Italien', 'pt-pt' => 'Portugais'];
         $statuses = ['approved' => 'Approuvé', 'candidate' => 'Candidat', 'deprecated' => 'Obsolète'];
-        $categories = Term::select('category')->whereNotNull('category')->distinct()->pluck('category');
+        
+        // Get categories from existing concept properties or schemes
+        $categories = ThesaurusScheme::select('title')->distinct()->pluck('title');
 
         return view('thesaurus.search.index', compact('languages', 'statuses', 'categories'));
     }
@@ -23,26 +25,22 @@ class ThesaurusSearchController extends Controller
     public function search(Request $request)
     {
         // Initialiser la requête de base
-        $query = Term::query();
+        $query = ThesaurusConcept::with(['labels', 'scheme', 'notes', 'sourceRelations', 'targetRelations']);
 
-        // Recherche par terme préféré ou non-descripteur
+        // Recherche par terme préféré dans les labels
         if ($request->filled('query')) {
             $searchTerm = $request->input('query');
 
-            $query->where(function($q) use ($searchTerm) {
-                // Recherche dans le terme préféré
-                $q->where('preferred_label', 'LIKE', "%{$searchTerm}%");
-
-                // Recherche dans les non-descripteurs
-                $q->orWhereHas('nonDescriptors', function($subQuery) use ($searchTerm) {
-                    $subQuery->where('non_descriptor_label', 'LIKE', "%{$searchTerm}%");
-                });
+            $query->whereHas('labels', function($q) use ($searchTerm) {
+                $q->where('label_value', 'LIKE', "%{$searchTerm}%");
             });
         }
 
         // Filtres additionnels
         if ($request->filled('language')) {
-            $query->where('language', $request->language);
+            $query->whereHas('labels', function($q) use ($request) {
+                $q->where('language', $request->language);
+            });
         }
 
         if ($request->filled('status')) {
@@ -50,32 +48,27 @@ class ThesaurusSearchController extends Controller
         }
 
         if ($request->filled('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->filled('is_top_term')) {
-            $query->where('is_top_term', true);
+            $query->whereHas('scheme', function($q) use ($request) {
+                $q->where('title', 'LIKE', "%{$request->category}%");
+            });
         }
 
         // Recherche dans les notes et définitions
         if ($request->filled('content_search')) {
             $contentSearch = $request->content_search;
 
-            $query->where(function($q) use ($contentSearch) {
-                $q->where('definition', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('scope_note', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('history_note', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('example', 'LIKE', "%{$contentSearch}%")
-                  ->orWhere('editorial_note', 'LIKE', "%{$contentSearch}%");
+            $query->whereHas('notes', function($q) use ($contentSearch) {
+                $q->where('note_value', 'LIKE', "%{$contentSearch}%");
             });
         }
 
-        // Recherche par URI externe
+        // Recherche par URI externe (dans les propriétés)
         if ($request->filled('external_uri')) {
             $externalUri = $request->external_uri;
 
-            $query->whereHas('externalAlignments', function($q) use ($externalUri) {
-                $q->where('external_uri', 'LIKE', "%{$externalUri}%");
+            $query->whereHas('properties', function($q) use ($externalUri) {
+                $q->where('property_key', 'external_uri')
+                  ->where('property_value', 'LIKE', "%{$externalUri}%");
             });
         }
 
@@ -83,61 +76,53 @@ class ThesaurusSearchController extends Controller
         if ($request->filled('external_vocabulary')) {
             $externalVocabulary = $request->external_vocabulary;
 
-            $query->whereHas('externalAlignments', function($q) use ($externalVocabulary) {
-                $q->where('external_vocabulary', 'LIKE', "%{$externalVocabulary}%");
+            $query->whereHas('properties', function($q) use ($externalVocabulary) {
+                $q->where('property_key', 'external_vocabulary')
+                  ->where('property_value', 'LIKE', "%{$externalVocabulary}%");
             });
         }
 
         // Recherche par relations
         if ($request->filled('has_narrower')) {
-            $query->whereHas('narrowerTerms');
+            $query->whereHas('narrowerConcepts');
         }
 
         if ($request->filled('has_broader')) {
-            $query->whereHas('broaderTerms');
+            $query->whereHas('broaderConcepts');
         }
 
         if ($request->filled('has_related')) {
-            $query->whereHas('associatedTerms');
+            $query->whereHas('relatedConcepts');
         }
 
-        if ($request->filled('has_translations')) {
-            $query->where(function($q) {
-                $q->whereHas('translationsSource')
-                  ->orWhereHas('translationsTarget');
-            });
+        // Top termes (concepts sans parent)
+        if ($request->filled('is_top_term')) {
+            $query->whereDoesntHave('broaderConcepts');
         }
 
-        // Tri des résultats
-        $sortBy = $request->filled('sort_by') ? $request->sort_by : 'preferred_label';
-        $sortDirection = $request->filled('sort_direction') ? $request->sort_direction : 'asc';
+        // Ordonner par pertinence puis par label préféré
+        $concepts = $query->paginate(50);
 
-        $query->orderBy($sortBy, $sortDirection);
-
-        // Pagination
-        $terms = $query->paginate(20)->withQueryString();
-
-        // Préparer les filtres pour la vue
-        $languages = ['fr' => 'Français', 'en' => 'Anglais', 'es' => 'Espagnol',
-                      'de' => 'Allemand', 'it' => 'Italien', 'pt' => 'Portugais'];
+        // Préparer les données pour la vue
+        $languages = ['fr-fr' => 'Français', 'en-us' => 'Anglais', 'es-es' => 'Espagnol'];
         $statuses = ['approved' => 'Approuvé', 'candidate' => 'Candidat', 'deprecated' => 'Obsolète'];
-        $categories = Term::select('category')->whereNotNull('category')->distinct()->pluck('category');
+        $categories = ThesaurusScheme::select('title')->distinct()->pluck('title');
 
-        // Si la requête est AJAX, retourner une réponse partielle ou JSON
+        // Pour la compatibilité avec la vue existante, on renomme $concepts en $terms
+        $terms = $concepts;
+
+        // Réponse AJAX vs réponse normale
         if ($request->ajax()) {
-            if ($request->wantsJson()) {
+            if ($request->get('action') === 'search') {
                 return response()->json([
                     'html' => view('thesaurus.search.results_partial', compact('terms', 'languages', 'statuses', 'categories'))->render(),
-                    'total' => $terms->total(),
-                    'lastPage' => $terms->lastPage(),
-                    'currentPage' => $terms->currentPage()
+                    'count' => $terms->total()
                 ]);
             } else {
                 return view('thesaurus.search.results_partial', compact('terms', 'languages', 'statuses', 'categories'));
             }
         }
 
-        // Sinon, retourner la vue complète
         return view('thesaurus.search.results', compact('terms', 'request', 'languages', 'statuses', 'categories'));
     }
 }
