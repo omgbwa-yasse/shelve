@@ -67,7 +67,8 @@
                             <tr>
                                 <th>{{ __('Nom') }}</th>
                                 <th>{{ __('Catégorie') }}</th>
-                                <th class="text-center">{{ __('Étapes') }}</th>
+                                <th class="text-center">{{ __('Étapes DB') }}</th>
+                                <th class="text-center">{{ __('Config JSON') }}</th>
                                 <th class="text-center">{{ __('Instances') }}</th>
                                 <th>{{ __('Statut') }}</th>
                                 <th>{{ __('Créé par') }}</th>
@@ -87,6 +88,21 @@
                                     <td>{{ $template->category }}</td>
                                     <td class="text-center">
                                         <span class="badge badge-pill badge-primary">{{ $template->steps_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if(!empty($template->configuration))
+                                            <span class="badge badge-pill badge-success"
+                                                  data-bs-toggle="tooltip"
+                                                  title="{{ count($template->configuration) }} étape(s) configurée(s)">
+                                                {{ count($template->configuration) }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-pill badge-secondary"
+                                                  data-bs-toggle="tooltip"
+                                                  title="Aucune configuration JSON">
+                                                -
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <span class="badge badge-pill badge-secondary">{{ $template->instances_count }}</span>

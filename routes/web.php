@@ -818,12 +818,18 @@ Route::group(['middleware' => 'auth'], function () {
         return view('workflow.logo-test');
     })->name('logo-test');
 
+
+
     // Routes pour le module Workflow
     Route::prefix('workflows')->name('workflows.')->group(function () {
         // Routes pour les templates de workflow
         Route::resource('templates', WorkflowTemplateController::class);
         Route::post('templates/{template}/toggle-active', [WorkflowTemplateController::class, 'toggleActive'])->name('templates.toggle-active');
         Route::post('templates/{template}/duplicate', [WorkflowTemplateController::class, 'duplicate'])->name('templates.duplicate');
+
+        // Routes supplémentaires pour la configuration JSON
+        Route::get('templates/{template}/configuration/form', [WorkflowTemplateController::class, 'getConfigurationForForm'])->name('templates.configuration.form');
+        Route::post('templates/{template}/configuration/sync', [WorkflowTemplateController::class, 'syncConfigurationWithSteps'])->name('templates.configuration.sync');
 
         // Routes pour les étapes de workflow
         Route::resource('templates.steps', WorkflowStepController::class)->shallow();

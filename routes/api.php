@@ -350,26 +350,6 @@ Route::prefix('mcp-proxy')->name('api.mcp-proxy.')->middleware('auth:sanctum')->
     Route::post('stops-stops', [McpProxyController::class, 'stopsStops'])->name('stops-stops');
     Route::post('starts-starts', [McpProxyController::class, 'startsStarts'])->name('starts-starts');
     Route::post('restarts-restarts', [McpProxyController::class, 'restartsRestarts'])->name('restarts-restarts');
-    Route::post('deletes-deletes', [McpProxyController::class, 'deletesDeletes'])->name('deletes-deletes');
-    Route::post('creates-creates', [McpProxyController::class, 'createsCreates'])->name('creates-creates');
-    Route::post('imports-imports', [McpProxyController::class, 'importsImports'])->name('imports-imports');
-    Route::post('exports-exports', [McpProxyController::class, 'exportsExports'])->name('exports-exports');
-    Route::post('saves-saves', [McpProxyController::class, 'savesSaves'])->name('saves-saves');
-    Route::post('backs-backs', [McpProxyController::class, 'backsBacks'])->name('backs-backs');
-    Route::post('forwards-forwards', [McpProxyController::class, 'forwardsForwards'])->name('forwards-forwards');
-    Route::post('ups-ups', [McpProxyController::class, 'upsUps'])->name('ups-ups');
-    Route::post('downs-downs', [McpProxyController::class, 'downsDowns'])->name('downs-downs');
-    Route::post('lefts-lefts', [McpProxyController::class, 'leftsLefts'])->name('lefts-lefts');
-    Route::post('rights-rights', [McpProxyController::class, 'rightsRights'])->name('rights-rights');
-    Route::post('zooms-zooms', [McpProxyController::class, 'zoomsZooms'])->name('zooms-zooms');
-    Route::post('rotates-rotates', [McpProxyController::class, 'rotatesRotates'])->name('rotates-rotates');
-    Route::post('flips-flips', [McpProxyController::class, 'flipsFlips'])->name('flips-flips');
-    Route::post('crops-crops', [McpProxyController::class, 'cropsCrops'])->name('crops-crops');
-    Route::post('pauses-pauses', [McpProxyController::class, 'pausesPauses'])->name('pauses-pauses');
-    Route::post('resumes-resumes', [McpProxyController::class, 'resumesResumes'])->name('resumes-resumes');
-    Route::post('stops-stops', [McpProxyController::class, 'stopsStops'])->name('stops-stops');
-    Route::post('starts-starts', [McpProxyController::class, 'startsStarts'])->name('starts-starts');
-    Route::post('restarts-restarts', [McpProxyController::class, 'restartsRestarts'])->name('restarts-restarts');
 });
 
 // Routes API pour les contacts externes
@@ -384,4 +364,20 @@ Route::prefix('external-organizations')->name('api.external-organizations.')->mi
     Route::get('/', [ExternalOrganizationController::class, 'apiIndex'])->name('index');
     Route::get('/search', [ExternalOrganizationController::class, 'apiSearch'])->name('search');
     Route::get('/{id}', [ExternalOrganizationController::class, 'apiShow'])->name('show');
+});
+
+// Routes API pour la gestion de la configuration JSON des templates de workflow
+Route::prefix('workflows/templates')->name('api.workflows.templates.')->middleware('auth:sanctum')->group(function () {
+    // Configuration complète
+    Route::get('{template}/configuration', [App\Http\Controllers\WorkflowTemplateController::class, 'getConfiguration'])->name('configuration.show');
+    Route::put('{template}/configuration', [App\Http\Controllers\WorkflowTemplateController::class, 'updateConfiguration'])->name('configuration.update');
+    Route::post('{template}/configuration/validate', [App\Http\Controllers\WorkflowTemplateController::class, 'validateConfiguration'])->name('configuration.validate');
+
+    // Gestion des étapes individuelles
+    Route::post('{template}/configuration/steps', [App\Http\Controllers\WorkflowTemplateController::class, 'addConfigurationStep'])->name('configuration.steps.store');
+    Route::put('{template}/configuration/steps/{stepId}', [App\Http\Controllers\WorkflowTemplateController::class, 'updateConfigurationStep'])->name('configuration.steps.update');
+    Route::delete('{template}/configuration/steps/{stepId}', [App\Http\Controllers\WorkflowTemplateController::class, 'deleteConfigurationStep'])->name('configuration.steps.destroy');
+
+    // Réorganisation des étapes
+    Route::put('{template}/configuration/reorder', [App\Http\Controllers\WorkflowTemplateController::class, 'reorderConfigurationSteps'])->name('configuration.reorder');
 });
