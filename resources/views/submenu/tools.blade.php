@@ -193,12 +193,12 @@
         </div>
         <div class="submenu-content" id="thesaurusMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('terms.index') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.hierarchy') }}">
                     <i class="bi bi-tree"></i> {{ __('view_branches') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('terms.search') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.search.index') }}">
                     <i class="bi bi-search"></i> {{ __('search_thesaurus') }}
                 </a>
             </div>
@@ -208,12 +208,12 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('terms.create') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.concepts') }}">
                     <i class="bi bi-plus-square"></i> {{ __('add_word') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('terms.hierarchy') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.concepts') }}">
                     <i class="bi bi-diagram-2"></i> {{ __('term_hierarchy') }}
                 </a>
             </div>
