@@ -13,17 +13,15 @@ class DatabaseSeeder extends Seeder
 
             PermissionCategorySeeder::class, // Seeder avec catégories et nomenclature unifiée
              // Mise à jour des permissions du module Records/Repositories
-            CommunicationsPermissionsSeeder::class, // Ajout des permissions manquantes pour le module Communications
-
-            ActivitySeeder::class,
-            AuthorSeeder::class,
-
-            CommonDataSeeder::class,
-
-            CommunicationSeeder::class,
-            BulletinBoardSeeder::class,
 
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
+
+            ExternalContactsSeeder::class, // Seeder pour les contacts externes
+
+            MailSystemSeeder::class, // Seeder pour le système de courriers
+
+
+
         ]);
     }
 }

@@ -42,4 +42,8 @@ class Activity extends Model
         return $this->belongsTo(Communicability::class, 'communicability_id');
     }
 
+    public function mailTypologies()
+    {
+        return $this->hasMany(MailTypology::class, 'activity_id');
+    }
 }
