@@ -685,27 +685,25 @@ Route::group(['middleware' => 'auth'], function () {
             // Routes pour l'export
             Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
             Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
-            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
-
-            // Routes pour l'import
+            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');            // Routes pour l'import/export
             Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
             Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
             Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
             Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
             Route::get('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
             Route::post('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
-
+            
             // Routes AJAX pour l'import/export
             Route::post('export/ajax', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportAjax'])->name('thesaurus.export.ajax');
             Route::post('import/preview', [App\Http\Controllers\ThesaurusExportImportController::class, 'importPreview'])->name('thesaurus.import.preview');
             Route::post('import/process', [App\Http\Controllers\ThesaurusExportImportController::class, 'importProcess'])->name('thesaurus.import.process');
             Route::get('download/{filename}', [App\Http\Controllers\ThesaurusExportImportController::class, 'downloadExport'])->name('thesaurus.download.export');
 
-            // Routes pour les termes (décommenter pour activer le CRUD)
-            Route::resource('terms', App\Http\Controllers\TermController::class);
-            Route::get('terms/search/ajax', [App\Http\Controllers\TermController::class, 'search'])->name('terms.search');
-            Route::get('terms/hierarchy/tree', [App\Http\Controllers\TermController::class, 'hierarchyTree'])->name('terms.hierarchy');
-            Route::get('terms/autocomplete/ajax', [App\Http\Controllers\TermController::class, 'autocomplete'])->name('terms.autocomplete');
+            // Routes pour les fonctionnalités thésaurus (via ThesaurusToolController)
+            Route::get('concepts', [App\Http\Controllers\ThesaurusToolController::class, 'concepts'])->name('thesaurus.concepts');
+            Route::get('concepts/{concept}', [App\Http\Controllers\ThesaurusToolController::class, 'showConcept'])->name('thesaurus.concepts.show');
+            Route::get('hierarchy', [App\Http\Controllers\ThesaurusToolController::class, 'hierarchy'])->name('thesaurus.hierarchy');
+            Route::get('search/autocomplete', [App\Http\Controllers\ThesaurusToolController::class, 'autocomplete'])->name('thesaurus.autocomplete');
         });
 
     });
