@@ -2,17 +2,60 @@
 
 @push('styles')
 <link href="{{ asset('css/mail-actions.css') }}" rel="stylesheet">
+<!-- CSS pour l'export PDF -->
+<style>
+    @media print {
+        .mail-actions-bar,
+        .btn-group,
+        .no-print {
+            display: none !important;
+        }
+
+        .container {
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+
+        .badge {
+            border: 1px solid #6c757d !important;
+        }
+    }
+
+    .pdf-content {
+        background: white;
+        padding: 20px;
+    }
+</style>
+@endpush
+
+@push('scripts')
+<!-- Script pour l'export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 @endpush
 
 @section('content')
-    <div class="container">
+    <div class="container pdf-content" id="mailContent">
         <!-- En-tête avec navigation -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
             <h1 class="h3">Détails du courrier entrant</h1>
             <div class="btn-group">
                 <a href="{{ route('mails.incoming.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Retour à la liste
                 </a>
+            </div>
+        </div>
+
+        <!-- En-tête pour PDF -->
+        <div class="d-print-block d-none mb-4">
+            <div class="text-center">
+                <h2>Détails du courrier entrant</h2>
+                <p class="text-muted">Généré le {{ now()->format('d/m/Y à H:i') }}</p>
             </div>
         </div>
 
@@ -36,7 +79,7 @@
                         </button>
                     @endif
 
-                    <button class="btn btn-success btn-sm" onclick="window.print()">
+                    <button class="btn btn-success btn-sm" onclick="printMail()">
                         <i class="bi bi-printer"></i> Imprimer
                     </button>
 
@@ -286,8 +329,74 @@
 
     <script>
         function downloadPDF() {
-            // Fonction pour exporter en PDF (à implémenter selon vos besoins)
-            alert('Fonctionnalité d\'export PDF à implémenter');
+            // Configuration pour l'export PDF
+            const element = document.getElementById('mailContent');
+            const options = {
+                margin: [10, 10, 10, 10],
+                filename: `courrier-entrant-${@json($mail->code ?? 'sans-code')}-${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                }
+            };
+
+            // Afficher un indicateur de chargement
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.innerHTML = `
+                <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                     style="background: rgba(0,0,0,0.5); z-index: 9999;">
+                    <div class="bg-white p-4 rounded shadow">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+                            <span>Génération du PDF en cours...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingIndicator);
+
+            // Générer et télécharger le PDF
+            html2pdf().set(options).from(element).save().then(() => {
+                // Supprimer l'indicateur de chargement
+                document.body.removeChild(loadingIndicator);
+            }).catch(error => {
+                console.error('Erreur lors de la génération du PDF:', error);
+                document.body.removeChild(loadingIndicator);
+                alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+            });
+        }
+
+        // Fonction alternative d'export via le serveur (si besoin)
+        function downloadServerPDF() {
+            const mailId = @json($mail->id);
+            window.open(`/mails/incoming/${mailId}/pdf`, '_blank');
+        }
+
+        // Fonction pour l'impression optimisée
+        function printMail() {
+            // Masquer temporairement les éléments non imprimables
+            const norintElements = document.querySelectorAll('.no-print');
+            const originalDisplay = [];
+
+            norintElements.forEach((el, index) => {
+                originalDisplay[index] = el.style.display;
+                el.style.display = 'none';
+            });
+
+            // Lancer l'impression
+            window.print();
+
+            // Restaurer l'affichage des éléments
+            norintElements.forEach((el, index) => {
+                el.style.display = originalDisplay[index];
+            });
         }
     </script>
 @endsection

@@ -483,5 +483,13 @@
     "search_name_prompt": "Search name:",
     "search_saved_successfully": "Search saved successfully",
     "search_deleted": "Search deleted",
-    "select_option": "Select an option"
+    "select_option": "Select an option",
+    "advanced_search": "Advanced search",
+    "date_search": "Date search",
+    "in_progress": "In progress",
+    "return_available": "Return available",
+    "date_selection": "Date selection",
+    "pending_reservations": "Pending reservations",
+    "approved_reservations": "Approved reservations",
+    "approved_with_communications": "Approved with communications"
 }

@@ -113,13 +113,13 @@
     </style>
 
     <!-- Communications Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'search'))
+    @if(Gate::allows('communications_view'))
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-chat-dots"></i> {{ __('communications') }}
         </div>
         <div class="submenu-section-content" id="communicationsSection">
-            @can('viewAny', App\Models\Communication::class)
+            @can('communications_view')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.index')}}">
                     <i class="bi bi-inbox"></i> {{ __('view_all') }}
@@ -166,13 +166,13 @@
     @endif
 
     <!-- Reservations Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'search'))
+    @if(Gate::allows('reservations_view'))
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-calendar-check"></i> {{ __('reservations') }}
         </div>
         <div class="submenu-section-content" id="reservationsSection">
-            @can('viewAny', App\Models\Reservation::class)
+            @can('reservations_view')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.index')}}">
                     <i class="bi bi-list-ul"></i> {{ __('view_all') }}
@@ -188,6 +188,8 @@
                     <i class="bi bi-clock-history"></i> {{ __('pending_reservations') }}
                 </a>
             </div>
+            @endcan
+            @can('reservations_manage')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.approved.reservations')}}">
                     <i class="bi bi-check-circle-fill"></i> {{ __('approved_reservations') }}
@@ -209,21 +211,20 @@
     @endif
 
     <!-- Add Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('communications', 'add'))
+    @if(Gate::allows('communications_create') || Gate::allows('reservations_create'))
     <div class="submenu-section add-section">
         <div class="submenu-heading">
             <i class="bi bi-plus-circle"></i> {{ __('add') }}
         </div>
         <div class="submenu-section-content" id="addSection">
-            @can('create', App\Models\Communication::class)
+            @can('communications_create')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.transactions.create')}}">
                     <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
                 </a>
             </div>
             @endcan
-
-            @can('create', App\Models\Reservation::class)
+            @can('reservations_create')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.create')}}">
                     <i class="bi bi-calendar-plus"></i> {{ __('add_reservation') }}
