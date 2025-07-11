@@ -126,6 +126,7 @@ use App\Http\Controllers\PublicResponseAttachmentController;
 use App\Http\Controllers\PublicFeedbackController;
 use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AiChatMessageController;
+use App\Http\Controllers\AiConfigurationController;
 use App\Http\Controllers\AiFeedbackController;
 use App\Http\Controllers\AiIntegrationController;
 use App\Http\Controllers\AiInteractionController;
@@ -716,8 +717,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('chats', AiChatController::class)->names('ai.chats');
         Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
         Route::get('chats/check-ollama-status', [AiChatController::class, 'checkOllamaStatus'])->name('ai.chats.check-ollama-status');
+
+        // Route personnalisée pour storeForChat (doit être avant la route resource)
         Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
-        Route::resource('chats.messages', AiChatMessageController::class)->shallow()->names('ai.chats.messages');
+
+        // Route resource pour les messages (sans le store pour éviter les conflits)
+        Route::resource('chats.messages', AiChatMessageController::class)->except(['store'])->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
         // Route::resource('actions', AiActionController::class)->names('ai.actions');
         // Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
@@ -727,6 +732,15 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Routes de configuration AI protégées par la permission ai_configure
         Route::middleware(['can:ai_configure'])->group(function () {
+            // Configuration AI
+            Route::get('configuration', [AiConfigurationController::class, 'index'])->name('ai.configuration.index');
+            Route::post('configuration/settings', [AiConfigurationController::class, 'updateSettings'])->name('ai.configuration.settings');
+            Route::post('configuration/api-model', [AiConfigurationController::class, 'storeApiModel'])->name('ai.configuration.api-model');
+            Route::post('configuration/sync-ollama', [AiConfigurationController::class, 'syncOllamaModels'])->name('ai.configuration.sync-ollama');
+            Route::post('configuration/api-models/{model}/test', [AiConfigurationController::class, 'testApiModel'])->name('ai.configuration.test-api-model');
+            Route::delete('configuration/api-models/{model}', [AiConfigurationController::class, 'destroyApiModel'])->name('ai.configuration.destroy-api-model');
+
+            // Autres routes de configuration
             Route::resource('models', AiModelController::class)->names('ai.models');
             Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
             Route::get('models/name/{name}', [AiModelController::class, 'showByName'])->name('ai.models.show.by.name');

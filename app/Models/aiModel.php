@@ -15,19 +15,26 @@ class AiModel extends Model
         'name', 'provider', 'version', 'api_type', 'capabilities', 'is_active',
         'model_family', 'parameter_size', 'file_size', 'quantization',
         'model_modified_at', 'digest', 'model_details', 'supports_streaming',
-        'max_context_length', 'default_temperature'
+        'max_context_length', 'default_temperature', 'api_endpoint', 'api_key',
+        'api_headers', 'api_parameters', 'external_model_id', 'cost_per_token_input',
+        'cost_per_token_output', 'is_default', 'model_type'
     ];
 
     protected $casts = [
         'capabilities' => 'array',
         'model_details' => 'array',
+        'api_headers' => 'array',
+        'api_parameters' => 'array',
         'is_active' => 'boolean',
+        'is_default' => 'boolean',
         'supports_streaming' => 'boolean',
         'model_modified_at' => 'datetime',
         'parameter_size' => 'integer',
         'file_size' => 'integer',
         'max_context_length' => 'integer',
-        'default_temperature' => 'decimal:2'
+        'default_temperature' => 'decimal:2',
+        'cost_per_token_input' => 'decimal:8',
+        'cost_per_token_output' => 'decimal:8'
     ];
 
 
@@ -143,6 +150,95 @@ class AiModel extends Model
             'average_response_time' => $this->interactions()->where('created_at', '>=', $fromDate)->where('total_duration', '>', 0)->avg('total_duration'),
             'total_tokens' => $this->interactions()->where('created_at', '>=', $fromDate)->sum('tokens_used'),
         ];
+    }
+
+    // Méthodes pour les modèles API
+    public function isApiModel(): bool
+    {
+        return $this->model_type === 'api';
+    }
+
+    public function isLocalModel(): bool
+    {
+        return $this->model_type === 'local';
+    }
+
+    public function getApiEndpoint(): ?string
+    {
+        return $this->api_endpoint;
+    }
+
+    public function getApiKey(): ?string
+    {
+        if ($this->api_key) {
+            try {
+                return decrypt($this->api_key);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public function setApiKey(?string $apiKey): void
+    {
+        $this->api_key = $apiKey ? encrypt($apiKey) : null;
+    }
+
+    public function hasValidApiConfig(): bool
+    {
+        return $this->isApiModel() && $this->api_endpoint && $this->getApiKey();
+    }
+
+    // Scope pour les modèles par défaut
+    public function scopeDefault($query)
+    {
+        return $query->where('is_default', true);
+    }
+
+    public function scopeApiModels($query)
+    {
+        return $query->where('model_type', 'api');
+    }
+
+    public function scopeLocalModels($query)
+    {
+        return $query->where('model_type', 'local');
+    }
+
+    // Méthode statique pour récupérer le modèle par défaut
+    public static function getDefaultModel(): ?self
+    {
+        // Essayer d'abord par la table de configuration
+        $defaultId = \App\Models\AiGlobalSetting::getDefaultModelId();
+        if ($defaultId) {
+            $model = static::find($defaultId);
+            if ($model && $model->is_active) {
+                return $model;
+            }
+        }
+
+        // Fallback: premier modèle marqué comme défaut
+        $model = static::where('is_default', true)->where('is_active', true)->first();
+        if ($model) {
+            return $model;
+        }
+
+        // Dernier fallback: premier modèle actif Ollama
+        return static::where('provider', 'ollama')->where('is_active', true)->first();
+    }
+
+    // Calculer le coût estimé pour un nombre de tokens
+    public function estimateCost(int $inputTokens, int $outputTokens = 0): float
+    {
+        if (!$this->isApiModel()) {
+            return 0.0; // Les modèles locaux sont gratuits
+        }
+
+        $inputCost = ($this->cost_per_token_input ?? 0) * $inputTokens;
+        $outputCost = ($this->cost_per_token_output ?? 0) * $outputTokens;
+
+        return $inputCost + $outputCost;
     }
 
 }

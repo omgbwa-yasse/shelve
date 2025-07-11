@@ -221,6 +221,13 @@
                 messageForm.addEventListener('submit', function(e) {
                     e.preventDefault();
 
+                    // Validation côté client
+                    const messageText = messageContent.value.trim();
+                    if (!messageText) {
+                        showSystemMessage('warning', 'Veuillez saisir un message avant d\'envoyer.');
+                        return;
+                    }
+
                     // Disable form while processing
                     sendButton.disabled = true;
                     messageContent.disabled = true;
@@ -229,25 +236,33 @@
                     typingIndicator.classList.remove('d-none');
                     scrollToBottom();
 
-                    // Get form data
-                    const formData = new FormData(messageForm);
+                    // Prepare form data manually to ensure all fields are included
+                    const formData = new FormData();
+                    formData.append('content', messageText);
+                    formData.append('role', 'user');
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    // Debug logging
+                    console.log('Sending message:', messageText);
+                    console.log('Form action:', messageForm.action);
 
                     // Send message
                     fetch(messageForm.action, {
                         method: 'POST',
                         body: formData,
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
                     })
                     .then(response => {
+                        console.log('Response status:', response.status);
                         if (!response.ok) {
-                            throw new Error('Erreur réseau');
+                            throw new Error(`Erreur HTTP ${response.status}: ${response.statusText}`);
                         }
                         return response.json();
                     })
                     .then(data => {
+                        console.log('Response data:', data);
                         if (data.success) {
                             // Add user message to chat
                             const userMessageHtml = createMessageHtml(data.userMessage);
@@ -261,11 +276,13 @@
 
                             // Clear the form
                             messageContent.value = '';
+                            showSystemMessage('success', 'Message envoyé avec succès!');
                         } else {
                             showSystemMessage('danger', data.error || 'Une erreur est survenue.');
                         }
                     })
                     .catch(error => {
+                        console.error('Erreur de communication:', error);
                         showSystemMessage('danger', 'Erreur de communication: ' + error.message);
                     })
                     .finally(() => {

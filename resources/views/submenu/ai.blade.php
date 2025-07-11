@@ -167,12 +167,17 @@
     </div>
 
     <!-- Configuration IA Section -->
-    @can('ai_configure')
+
     <div class="submenu-section ai.config-section">
         <div class="submenu-heading">
             <i class="bi bi-sliders"></i> {{ __('ai_configuration') }}
         </div>
         <div class="submenu-content" id="aiConfigMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('ai.configuration.index') }}">
+                    <i class="bi bi-gear"></i> {{ __('ai_configuration') }}
+                </a>
+            </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.models.index') }}">
                     <i class="bi bi-box"></i> {{ __('ai_models') }}
@@ -202,7 +207,6 @@
             </div>
         </div>
     </div>
-    @endcan
     @endauth
 
 </div>
