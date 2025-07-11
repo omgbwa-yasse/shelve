@@ -135,26 +135,34 @@
                     <i class="bi bi-arrow-left-right"></i> {{ __('ai_interactions') }}
                 </a>
             </div>
+            {{-- Commenté car la route ai.actions.index n'est pas définie
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.actions.index') }}">
                     <i class="bi bi-lightning"></i> {{ __('ai_actions') }}
                 </a>
             </div>
+            --}}
+            {{-- Commenté car la route ai.action-batches.index n'est pas définie
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.action-batches.index') }}">
                     <i class="bi bi-collection"></i> {{ __('ai_action_batches') }}
                 </a>
             </div>
+            --}}
+            {{-- Commenté car la route ai.jobs.index n'est pas définie
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.jobs.index') }}">
                     <i class="bi bi-cpu"></i> {{ __('ai_jobs') }}
                 </a>
             </div>
+            --}}
+            {{-- Commenté car la route ai.feedback.index n'est pas définie
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.feedback.index') }}">
                     <i class="bi bi-star"></i> {{ __('ai_feedback') }}
                 </a>
             </div>
+            --}}
         </div>
     </div>
 
@@ -170,11 +178,13 @@
                     <i class="bi bi-box"></i> {{ __('ai_models') }}
                 </a>
             </div>
+            {{-- Commenté car la route ai.action-types.index n'est pas définie
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.action-types.index') }}">
                     <i class="bi bi-tag"></i> {{ __('ai_action_types') }}
                 </a>
             </div>
+            --}}
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('ai.prompt-templates.index') }}">
                     <i class="bi bi-file-text"></i> {{ __('ai_prompt_templates') }}
