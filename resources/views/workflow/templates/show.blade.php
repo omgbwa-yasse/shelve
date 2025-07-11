@@ -641,19 +641,23 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.importFromSteps = function() {
-        const steps = @json($template->steps->map(function($step) {
-            return [
-                'id' => 'step_' . $step->id,
-                'name' => $step->name,
-                'ordre' => $step->order_index + 1,
-                'action_id' => 1, // Valeur par défaut
-                'organisation_id' => null,
-                'auto_assign' => false,
-                'timeout_hours' => $step->estimated_duration ? $step->estimated_duration * 24 : 24,
-                'conditions' => [],
-                'metadata' => []
-            ];
-        }));
+        @php
+            $stepsData = $template->steps->map(function($step) {
+                return [
+                    'id' => 'step_' . $step->id,
+                    'name' => $step->name,
+                    'ordre' => $step->order_index + 1,
+                    'action_id' => 1,
+                    'organisation_id' => null,
+                    'auto_assign' => false,
+                    'timeout_hours' => $step->estimated_duration ? $step->estimated_duration * 24 : 24,
+                    'conditions' => [],
+                    'metadata' => []
+                ];
+            })->toArray();
+        @endphp
+
+        const steps = @json($stepsData);
 
         if (steps.length === 0) {
             showAlert('warning', 'Aucune étape trouvée à importer');

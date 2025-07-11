@@ -496,28 +496,6 @@ function toggleJSONConfig() {
 }
 
 function validateJSONConfig() {
-    // ...existing code...
-}
-
-function formatJSONConfig() {
-    // ...existing code...
-}
-
-function addJSONExample() {
-    // ...existing code...
-}
-
-function showAlert(type, message) {
-    // ...existing code...
-}
-
-function importFromFile(event) {
-    // ...existing code...
-}
-</script>
-@endsection
-
-function validateJSONConfig() {
     const textarea = document.getElementById('configuration_json');
     const resultDiv = document.getElementById('json-validation-result');
 
