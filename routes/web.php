@@ -163,8 +163,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/authors', [AuthorController::class, 'indexApi']);
         Route::post('/authors', [AuthorController::class, 'storeApi']);
         Route::get('/author-types', [AuthorController::class, 'authorTypesApi']);
+        Route::get('/organisations', function() {
+            return \App\Models\Organisation::orderBy('name')->get(['id', 'name']);
+        });
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
-            return $organisation->users;
+            return $organisation->users()->orderBy('name')->get(['id', 'name', 'email']);
         });
     });
 

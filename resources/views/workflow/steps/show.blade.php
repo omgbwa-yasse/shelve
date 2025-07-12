@@ -19,8 +19,8 @@
                     {{ __('Retour au modèle') }}
                 </a>
 
-                @can('workflow.step.update', $step)
-                <a href="{{ route('workflows.steps.edit', $step) }}" class="btn btn-outline-primary">
+                @can('update', $step->template)
+                <a href="{{ route('workflows.steps.edit', [$step->template, $step]) }}" class="btn btn-outline-primary">
                     <i class="bi bi-pencil me-1"></i>
                     {{ __('Modifier') }}
                 </a>
@@ -43,104 +43,100 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-3 fw-bold">{{ __('Type d\'étape') }}</div>
-                        <div class="col-md-9">{{ $step->type->label() }}</div>
+                        <div class="col-md-9">{{ $step->step_type->label() }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">{{ __('Ordre') }}</div>
-                        <div class="col-md-9">{{ $step->order }}</div>
+                        <div class="col-md-3 fw-bold">{{ __('Position') }}</div>
+                        <div class="col-md-9">{{ $step->order_index + 1 }}</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">{{ __('Délai d\'exécution') }}</div>
+                        <div class="col-md-3 fw-bold">{{ __('Durée estimée') }}</div>
                         <div class="col-md-9">
-                            @if($step->deadline_days)
-                                {{ $step->deadline_days }} {{ __('jours') }}
+                            @if($step->estimated_duration)
+                                {{ $step->estimated_duration }} {{ __('jour(s)') }}
                             @else
-                                {{ __('Aucun délai spécifié') }}
+                                {{ __('Non définie') }}
                             @endif
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">{{ __('Exige une approbation') }}</div>
+                        <div class="col-md-3 fw-bold">{{ __('Obligatoire') }}</div>
                         <div class="col-md-9">
-                            @if($step->requires_approval)
-                                <span class="badge bg-success">{{ __('Oui') }}</span>
-                            @else
-                                <span class="badge bg-secondary">{{ __('Non') }}</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">{{ __('Étape bloquante') }}</div>
-                        <div class="col-md-9">
-                            @if($step->is_blocker)
-                                <span class="badge bg-danger">{{ __('Oui') }}</span>
+                            @if($step->is_required)
+                                <span class="badge bg-warning text-dark">{{ __('Oui') }}</span>
                             @else
                                 <span class="badge bg-secondary">{{ __('Non') }}</span>
                             @endif
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">{{ __('Action automatique') }}</div>
+                        <div class="col-md-3 fw-bold">{{ __('Peut être ignorée') }}</div>
                         <div class="col-md-9">
-                            @if($step->action_class)
-                                <code>{{ $step->action_class }}</code>
+                            @if($step->can_be_skipped)
+                                <span class="badge bg-info">{{ __('Oui') }}</span>
                             @else
-                                {{ __('Aucune action automatique définie') }}
+                                <span class="badge bg-secondary">{{ __('Non') }}</span>
                             @endif
                         </div>
                     </div>
+                    @if($step->configuration)
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">{{ __('Configuration') }}</div>
+                        <div class="col-md-9">
+                            <pre class="bg-light p-2 rounded"><code>{{ json_encode($step->configuration, JSON_PRETTY_PRINT) }}</code></pre>
+                        </div>
+                    </div>
+                    @endif
+                    @if($step->conditions)
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">{{ __('Conditions') }}</div>
+                        <div class="col-md-9">
+                            <pre class="bg-light p-2 rounded"><code>{{ json_encode($step->conditions, JSON_PRETTY_PRINT) }}</code></pre>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 
-            <div class="card shadow-sm mb-4">
+            <!-- Assignations -->
+            <div class="card shadow-sm">
                 <div class="card-header">
-                    <h5 class="mb-0">{{ __('Options avancées') }}</h5>
+                    <h5 class="mb-0">{{ __('Assignations') }}</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">{{ __('Condition de succès') }}</div>
-                        <div class="col-md-8">
-                            @if($step->success_condition)
-                                <code>{{ $step->success_condition }}</code>
-                            @else
-                                {{ __('Aucune condition définie') }}
-                            @endif
+                    @forelse($step->assignments as $assignment)
+                    <div class="assignment-item mb-3 p-3 border rounded">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <span class="badge bg-primary">{{ ucfirst($assignment->assignee_type) }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                @if($assignment->assignee_type == 'user' && $assignment->user)
+                                    <strong>{{ $assignment->user->name }}</strong>
+                                    <div class="text-muted small">{{ $assignment->user->email }}</div>
+                                @elseif($assignment->assignee_type == 'organisation' && $assignment->organisation)
+                                    <strong>{{ $assignment->organisation->name }}</strong>
+                                    <div class="text-muted small">{{ __('Organisation') }}</div>
+                                @else
+                                    <span class="text-muted">{{ __('Non assigné') }}</span>
+                                @endif
+                            </div>
+                            <div class="col-md-3">
+                                @if($assignment->assignment_rules && isset($assignment->assignment_rules['role']))
+                                    <span class="badge bg-secondary">{{ $assignment->assignment_rules['role'] }}</span>
+                                @endif
+                                @if($assignment->allow_reassignment)
+                                    <span class="badge bg-info">{{ __('Réassignable') }}</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">{{ __('Condition d\'échec') }}</div>
-                        <div class="col-md-8">
-                            @if($step->failure_condition)
-                                <code>{{ $step->failure_condition }}</code>
-                            @else
-                                {{ __('Aucune condition définie') }}
-                            @endif
-                        </div>
+                    @empty
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+                        {{ __('Aucune assignation définie pour cette étape') }}
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">{{ __('Prochaine étape (succès)') }}</div>
-                        <div class="col-md-8">
-                            @if($step->nextStepOnSuccess)
-                                <a href="{{ route('workflows.steps.show', $step->nextStepOnSuccess) }}">
-                                    {{ $step->nextStepOnSuccess->name }}
-                                </a>
-                            @else
-                                {{ __('Étape suivante séquentielle') }}
-                            @endif
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">{{ __('Prochaine étape (échec)') }}</div>
-                        <div class="col-md-8">
-                            @if($step->nextStepOnFailure)
-                                <a href="{{ route('workflows.steps.show', $step->nextStepOnFailure) }}">
-                                    {{ $step->nextStepOnFailure->name }}
-                                </a>
-                            @else
-                                {{ __('Étape suivante séquentielle') }}
-                            @endif
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
             </div>
         </div>
@@ -149,179 +145,49 @@
         <div class="col-md-4">
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">{{ __('Assignations') }}</h5>
+                    <h6 class="mb-0">{{ __('Actions') }}</h6>
                 </div>
                 <div class="card-body">
-                    @if($step->assignments->isEmpty())
-                        <div class="alert alert-info">
-                            {{ __('Aucune assignation pour cette étape.') }}
-                        </div>
-                    @else
-                        <div class="list-group list-group-flush">
-                            @foreach($step->assignments as $assignment)
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>{{ str_replace('App\\Models\\', '', $assignment->assignee_type) }}</strong><br>
-                                        <span class="text-muted">
-                                            @if($assignment->assignee_type === 'App\\Models\\User')
-                                                {{ $assignment->assignee->name ?? $assignment->assignee_id }}
-                                            @elseif($assignment->assignee_type === 'App\\Models\\Role')
-                                                {{ $assignment->assignee->name ?? $assignment->assignee_id }}
-                                            @elseif($assignment->assignee_type === 'App\\Models\\Department')
-                                                {{ $assignment->assignee->name ?? $assignment->assignee_id }}
-                                            @else
-                                                {{ $assignment->assignee_id }}
-                                            @endif
-                                        </span>
-                                        @if($assignment->role)
-                                            <br><span class="badge bg-info">{{ $assignment->role }}</span>
-                                        @endif
-                                    </div>
-                                    @can('workflow.step.manageAssignments', $step)
-                                    <form action="{{ route('workflows.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette assignation?') }}')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endcan
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
+                    @can('update', $step->template)
+                    <a href="{{ route('workflows.steps.edit', [$step->template, $step]) }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-pencil me-1"></i>
+                        {{ __('Modifier l\'étape') }}
+                    </a>
+                    @endcan
 
-                    @can('workflow.step.manageAssignments', $step)
-                    <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#assignModal">
-                            <i class="bi bi-person-plus me-1"></i> {{ __('Ajouter une assignation') }}
+                    @can('update', $step->template)
+                    <form action="{{ route('workflows.steps.destroy', [$step->template, $step]) }}" method="POST" class="d-inline w-100" onsubmit="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette étape ?') }}')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                            <i class="bi bi-trash me-1"></i>
+                            {{ __('Supprimer l\'étape') }}
                         </button>
-                    </div>
+                    </form>
                     @endcan
                 </div>
             </div>
 
-            <div class="card shadow-sm mb-4">
+            <div class="card shadow-sm">
                 <div class="card-header">
-                    <h5 class="mb-0">{{ __('Historique d\'utilisation') }}</h5>
+                    <h6 class="mb-0">{{ __('Informations système') }}</h6>
                 </div>
                 <div class="card-body">
-                    @if($step->instances_count > 0)
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>{{ __('Instances en cours') }}</div>
-                            <span class="badge bg-primary">{{ $step->active_instances_count }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>{{ __('Instances complétées') }}</div>
-                            <span class="badge bg-success">{{ $step->completed_instances_count }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>{{ __('Temps moyen d\'exécution') }}</div>
-                            <span class="badge bg-info">{{ $step->average_completion_time ?? '-' }} {{ __('jours') }}</span>
-                        </div>
-                    @else
-                        <div class="alert alert-info">
-                            {{ __('Cette étape n\'a jamais été utilisée dans des instances de workflow.') }}
-                        </div>
-                    @endif
+                    <div class="row mb-2">
+                        <div class="col-5 fw-bold small">{{ __('Créé le') }}</div>
+                        <div class="col-7 small">{{ $step->created_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-5 fw-bold small">{{ __('Modifié le') }}</div>
+                        <div class="col-7 small">{{ $step->updated_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-5 fw-bold small">{{ __('ID') }}</div>
+                        <div class="col-7 small">#{{ $step->id }}</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@can('workflow.step.manageAssignments', $step)
-<!-- Modal d'assignation -->
-<div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="assignModalLabel">{{ __('Ajouter une assignation') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="{{ route('workflows.steps.assignments.store', $step) }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label for="assignee_type" class="form-label">{{ __('Type d\'assignation') }} <span class="text-danger">*</span></label>
-                        <select class="form-control" id="assignee_type" name="assignee_type" required>
-                            <option value="App\Models\User">{{ __('Utilisateur') }}</option>
-                            <option value="App\Models\Role">{{ __('Rôle') }}</option>
-                            <option value="App\Models\Department">{{ __('Département') }}</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3" id="userSelect">
-                        <label for="user_id" class="form-label">{{ __('Utilisateur') }} <span class="text-danger">*</span></label>
-                        <select class="form-control" id="user_id" name="user_id">
-                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
-                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3 d-none" id="roleSelect">
-                        <label for="role_id" class="form-label">{{ __('Rôle') }} <span class="text-danger">*</span></label>
-                        <select class="form-control" id="role_id" name="role_id">
-                            <option value="">{{ __('Sélectionner un rôle') }}</option>
-                            @foreach(\App\Models\Role::orderBy('name')->get() as $role)
-                                <option value="{{ $role->id }}">{{ $role->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3 d-none" id="departmentSelect">
-                        <label for="department_id" class="form-label">{{ __('Département') }} <span class="text-danger">*</span></label>
-                        <select class="form-control" id="department_id" name="department_id">
-                            <option value="">{{ __('Sélectionner un département') }}</option>
-                            @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                                <option value="{{ $department->id }}">{{ $department->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <label for="role" class="form-label">{{ __('Rôle dans l\'étape') }}</label>
-                        <input type="text" class="form-control" id="role" name="role" placeholder="{{ __('Par exemple: Approbateur, Vérificateur...') }}">
-                        <small class="form-text text-muted">{{ __('Champ optionnel pour spécifier le rôle de cet assigné dans l\'étape') }}</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
-                    <button type="submit" class="btn btn-primary">{{ __('Ajouter') }}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endcan
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Gestion des sélecteurs d'assignation dynamiques
-        const assigneeType = document.getElementById('assignee_type');
-        const userSelect = document.getElementById('userSelect');
-        const roleSelect = document.getElementById('roleSelect');
-        const departmentSelect = document.getElementById('departmentSelect');
-
-        if (assigneeType) {
-            assigneeType.addEventListener('change', function() {
-                userSelect.classList.add('d-none');
-                roleSelect.classList.add('d-none');
-                departmentSelect.classList.add('d-none');
-
-                if (this.value === 'App\\Models\\User') {
-                    userSelect.classList.remove('d-none');
-                } else if (this.value === 'App\\Models\\Role') {
-                    roleSelect.classList.remove('d-none');
-                } else if (this.value === 'App\\Models\\Department') {
-                    departmentSelect.classList.remove('d-none');
-                }
-            });
-        }
-    });
-</script>
-@endpush
 @endsection

@@ -107,20 +107,32 @@
 
                     <div class="col-md-6">
                         <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="allow_comments" name="allow_comments" value="1"
-                                   {{ old('allow_comments', true) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="allow_comments">{{ __('Autoriser les commentaires') }}</label>
+                            <input class="form-check-input" type="checkbox" id="can_be_skipped" name="can_be_skipped" value="1"
+                                   {{ old('can_be_skipped', false) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="can_be_skipped">{{ __('Peut être ignorée') }}</label>
+                            <div class="form-text text-muted small">{{ __('L\'étape peut être ignorée sous certaines conditions') }}</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="completion_rules" class="form-label">{{ __('Règles de complétion') }}</label>
-                    <textarea id="completion_rules" name="completion_rules" class="form-control @error('completion_rules') is-invalid @enderror"
-                              rows="3" placeholder="{{ __('Ex: Critères pour marquer cette étape comme terminée') }}">{{ old('completion_rules') }}</textarea>
-                    @error('completion_rules')
+                    <label for="configuration" class="form-label">{{ __('Configuration') }}</label>
+                    <textarea id="configuration" name="configuration" class="form-control @error('configuration') is-invalid @enderror"
+                              rows="3" placeholder="{{ __('Configuration JSON pour cette étape (optionnel)') }}">{{ old('configuration') }}</textarea>
+                    @error('configuration')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                    <div class="form-text text-muted small">{{ __('Format JSON pour les paramètres spécifiques de l\'étape') }}</div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="conditions" class="form-label">{{ __('Conditions') }}</label>
+                    <textarea id="conditions" name="conditions" class="form-control @error('conditions') is-invalid @enderror"
+                              rows="3" placeholder="{{ __('Conditions d\'exécution de l\'étape (optionnel)') }}">{{ old('conditions') }}</textarea>
+                    @error('conditions')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text text-muted small">{{ __('Format JSON pour définir les conditions d\'activation de l\'étape') }}</div>
                 </div>
 
                 <div class="border-top pt-3 mt-4 mb-3">
@@ -144,17 +156,14 @@
                                 <div class="col-md-6">
                                     <div class="form-group assignee-user">
                                         <label class="form-label">{{ __('Utilisateur') }}</label>
-                                        <select name="assignments[0][assignee_id]" class="form-control">
-                                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
-                                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
-                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                            @endforeach
+                                        <select name="assignments[0][assignee_id]" class="form-control user-select" disabled>
+                                            <option value="">{{ __('Chargement des utilisateurs...') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group assignee-organisation" style="display: none;">
                                         <label class="form-label">{{ __('Organisation') }}</label>
-                                        <select name="assignments[0][organisation_id]" class="form-control">
+                                        <select name="assignments[0][organisation_id]" class="form-control organisation-select">
                                             <option value="">{{ __('Sélectionner une organisation') }}</option>
                                             @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
                                                 <option value="{{ $org->id }}">{{ $org->name }}</option>
@@ -164,8 +173,17 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-2">
-                                <div class="col-md-12">
+                            <div class="row mt-2 organisation-users" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
+                                        <select name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
+                                            <option value="">{{ __('Sélectionner une organisation d\'abord') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">{{ __('Rôle / Note') }}</label>
                                         <input type="text" name="assignments[0][role]" class="form-control"
@@ -213,15 +231,141 @@
                 const row = select.closest('.assignment-row');
                 const userDiv = row.querySelector('.assignee-user');
                 const orgDiv = row.querySelector('.assignee-organisation');
+                const orgUsersDiv = row.querySelector('.organisation-users');
 
                 if (select.value === 'user') {
+                    // Mode utilisateur : afficher tous les utilisateurs
                     userDiv.style.display = 'block';
                     orgDiv.style.display = 'none';
+                    if (orgUsersDiv) orgUsersDiv.style.display = 'none';
+
+                    // Charger tous les utilisateurs
+                    const userSelect = row.querySelector('.user-select');
+                    if (userSelect) {
+                        loadAllUsers(userSelect);
+                    }
                 } else {
+                    // Mode organisation : afficher organisation puis utilisateurs de l'organisation
                     userDiv.style.display = 'none';
                     orgDiv.style.display = 'block';
+                    if (orgUsersDiv) orgUsersDiv.style.display = 'block';
+
+                    // Réinitialiser le select des utilisateurs d'organisation
+                    const orgUserSelect = row.querySelector('.organisation-user-select');
+                    if (orgUserSelect) {
+                        orgUserSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
+                        orgUserSelect.disabled = true;
+                    }
                 }
             });
+        }
+
+        function loadAllUsers(userSelect) {
+            const loadingOption = '<option value="">{{ __("Chargement...") }}</option>';
+            userSelect.innerHTML = loadingOption;
+            userSelect.disabled = true;
+
+            // Récupérer toutes les organisations et leurs utilisateurs
+            fetch('/api/organisations', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(orgs => {
+                    const allUsersPromises = orgs.map(org =>
+                        fetch(`/api/organisations/${org.id}/users`, {
+                            method: 'GET',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        }).then(r => {
+                            if (!r.ok) {
+                                throw new Error(`HTTP error! status: ${r.status}`);
+                            }
+                            return r.json();
+                        })
+                    );
+                    return Promise.all(allUsersPromises);
+                })
+                .then(userArrays => {
+                    const allUsers = userArrays.flat();
+                    // Supprimer les doublons par ID
+                    const uniqueUsers = allUsers.filter((user, index, self) =>
+                        index === self.findIndex(u => u.id === user.id)
+                    );
+
+                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
+                    uniqueUsers.sort((a, b) => a.name.localeCompare(b.name)).forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                        userSelect.appendChild(option);
+                    });
+                    userSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des utilisateurs:', error);
+                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                    userSelect.disabled = false;
+                    alert('Erreur lors du chargement des utilisateurs. Vérifiez la console pour plus de détails.');
+                });
+        }
+
+        function loadUsersForOrganisation(organisationId, userSelect) {
+            if (!organisationId) {
+                userSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
+                userSelect.disabled = true;
+                return;
+            }
+
+            const loadingOption = '<option value="">{{ __("Chargement...") }}</option>';
+            userSelect.innerHTML = loadingOption;
+            userSelect.disabled = true;
+
+            fetch(`/api/organisations/${organisationId}/users`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                        userSelect.appendChild(option);
+                    });
+                    userSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des utilisateurs:', error);
+                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                    userSelect.disabled = false;
+                    alert('Erreur lors du chargement des utilisateurs pour l\'organisation. Vérifiez la console.');
+                });
         }
 
         // Initialiser l'affichage
@@ -231,6 +375,17 @@
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('assignee-type-select')) {
                 updateAssigneeTypeVisibility();
+            }
+
+            // Gestion du changement d'organisation pour charger ses utilisateurs
+            if (e.target.classList.contains('organisation-select')) {
+                const row = e.target.closest('.assignment-row');
+                const orgUserSelect = row.querySelector('.organisation-user-select');
+                const organisationId = e.target.value;
+
+                if (orgUserSelect) {
+                    loadUsersForOrganisation(organisationId, orgUserSelect);
+                }
             }
         });
 
@@ -252,6 +407,20 @@
                     input.value = '';
                 }
             });
+
+            // Réinitialiser l'état des selects utilisateurs
+            const userSelect = template.querySelector('.user-select');
+            const orgUserSelect = template.querySelector('.organisation-user-select');
+
+            if (userSelect) {
+                userSelect.innerHTML = '<option value="">{{ __("Chargement des utilisateurs...") }}</option>';
+                userSelect.disabled = true;
+            }
+
+            if (orgUserSelect) {
+                orgUserSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
+                orgUserSelect.disabled = true;
+            }
 
             // Afficher le bouton de suppression
             template.querySelector('.remove-assignment').style.display = 'inline-block';

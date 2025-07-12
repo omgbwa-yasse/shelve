@@ -56,7 +56,7 @@ class WorkflowStepController extends Controller
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'order_index' => 'required|integer|min:0',
-            'step_type' => [
+            'type' => [
                 'required',
                 Rule::enum(WorkflowStepType::class),
             ],
@@ -65,10 +65,11 @@ class WorkflowStepController extends Controller
             'is_required' => 'boolean',
             'can_be_skipped' => 'boolean',
             'conditions' => 'nullable|array',
-            'assignee_type.*' => 'required|string',
-            'assignee_user_id.*' => 'nullable|exists:users,id',
-            'assignee_organisation_id.*' => 'nullable|exists:organisations,id',
-            'assignment_rules.*' => 'nullable|array',
+            'assignments' => 'nullable|array',
+            'assignments.*.assignee_type' => 'required|string',
+            'assignments.*.assignee_id' => 'nullable|exists:users,id',
+            'assignments.*.organisation_id' => 'nullable|exists:organisations,id',
+            'assignments.*.role' => 'nullable|string',
         ]);
 
         // Réordonner les étapes existantes si nécessaire
@@ -79,10 +80,11 @@ class WorkflowStepController extends Controller
 
         // Créer l'étape
         $step = new WorkflowStep([
+            'workflow_template_id' => $template->id,
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'order_index' => $orderIndex,
-            'step_type' => $validated['step_type'],
+            'step_type' => $validated['type'],
             'configuration' => $validated['configuration'] ?? null,
             'estimated_duration' => $validated['estimated_duration'] ?? null,
             'is_required' => $validated['is_required'] ?? true,
@@ -90,16 +92,16 @@ class WorkflowStepController extends Controller
             'conditions' => $validated['conditions'] ?? null,
         ]);
 
-        $template->steps()->save($step);
+        $step->save();
 
         // Créer les assignations
-        if (!empty($validated['assignee_type'])) {
-            foreach ($validated['assignee_type'] as $key => $type) {
+        if (!empty($validated['assignments'])) {
+            foreach ($validated['assignments'] as $assignmentData) {
                 $assignment = new WorkflowStepAssignment([
-                    'assignee_type' => $type,
-                    'assignee_user_id' => $validated['assignee_user_id'][$key] ?? null,
-                    'assignee_organisation_id' => $validated['assignee_organisation_id'][$key] ?? null,
-                    'assignment_rules' => $validated['assignment_rules'][$key] ?? null,
+                    'assignee_type' => $assignmentData['assignee_type'],
+                    'assignee_user_id' => $assignmentData['assignee_id'] ?? null,
+                    'assignee_organisation_id' => $assignmentData['organisation_id'] ?? null,
+                    'assignment_rules' => null,
                     'allow_reassignment' => true,
                 ]);
 
@@ -159,11 +161,12 @@ class WorkflowStepController extends Controller
             'is_required' => 'boolean',
             'can_be_skipped' => 'boolean',
             'conditions' => 'nullable|array',
-            'assignee_type.*' => 'required|string',
-            'assignee_user_id.*' => 'nullable|exists:users,id',
-            'assignee_organisation_id.*' => 'nullable|exists:organisations,id',
-            'assignment_rules.*' => 'nullable|array',
-            'assignment_id.*' => 'nullable|exists:workflow_step_assignments,id',
+            'assignments' => 'nullable|array',
+            'assignments.*.assignee_type' => 'required|string',
+            'assignments.*.assignee_id' => 'nullable|exists:users,id',
+            'assignments.*.organisation_id' => 'nullable|exists:organisations,id',
+            'assignments.*.role' => 'nullable|string',
+            'assignments.*.assignment_id' => 'nullable|exists:workflow_step_assignments,id',
         ]);
 
         // Gérer la réorganisation
@@ -198,25 +201,25 @@ class WorkflowStepController extends Controller
         $existingIds = $step->assignments->pluck('id')->toArray();
         $updatedIds = [];
 
-        if (!empty($validated['assignee_type'])) {
-            foreach ($validated['assignee_type'] as $key => $type) {
-                $assignmentId = $validated['assignment_id'][$key] ?? null;
+        if (!empty($validated['assignments'])) {
+            foreach ($validated['assignments'] as $assignmentData) {
+                $assignmentId = $assignmentData['assignment_id'] ?? null;
 
                 if ($assignmentId) {
                     $assignment = WorkflowStepAssignment::find($assignmentId);
                     $assignment->update([
-                        'assignee_type' => $type,
-                        'assignee_user_id' => $validated['assignee_user_id'][$key] ?? null,
-                        'assignee_organisation_id' => $validated['assignee_organisation_id'][$key] ?? null,
-                        'assignment_rules' => $validated['assignment_rules'][$key] ?? null,
+                        'assignee_type' => $assignmentData['assignee_type'],
+                        'assignee_user_id' => $assignmentData['assignee_id'] ?? null,
+                        'assignee_organisation_id' => $assignmentData['organisation_id'] ?? null,
+                        'assignment_rules' => $assignmentData['role'] ? ['role' => $assignmentData['role']] : null,
                     ]);
                     $updatedIds[] = $assignment->id;
                 } else {
                     $assignment = new WorkflowStepAssignment([
-                        'assignee_type' => $type,
-                        'assignee_user_id' => $validated['assignee_user_id'][$key] ?? null,
-                        'assignee_organisation_id' => $validated['assignee_organisation_id'][$key] ?? null,
-                        'assignment_rules' => $validated['assignment_rules'][$key] ?? null,
+                        'assignee_type' => $assignmentData['assignee_type'],
+                        'assignee_user_id' => $assignmentData['assignee_id'] ?? null,
+                        'assignee_organisation_id' => $assignmentData['organisation_id'] ?? null,
+                        'assignment_rules' => $assignmentData['role'] ? ['role' => $assignmentData['role']] : null,
                         'allow_reassignment' => true,
                     ]);
 
@@ -245,7 +248,7 @@ class WorkflowStepController extends Controller
         $this->authorize('update', $template);
 
         // Vérifier si cette étape est utilisée dans des workflows actifs
-        if ($step->stepInstances()->whereHas('workflowInstance', function ($query) {
+        if ($step->instances()->whereHas('workflowInstance', function ($query) {
             $query->where('status', '!=', 'completed');
         })->exists()) {
             return redirect()

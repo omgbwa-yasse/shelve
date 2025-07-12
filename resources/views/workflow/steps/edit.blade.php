@@ -14,7 +14,7 @@
         </div>
         <div class="col-auto">
             <div class="btn-group">
-                <a href="{{ route('workflows.steps.show', $step) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('workflows.steps.show', [$step->template, $step]) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>
                     {{ __('Annuler et retourner') }}
                 </a>
@@ -24,7 +24,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('workflows.steps.update', $step) }}" method="POST">
+            <form action="{{ route('workflows.steps.update', [$step->template, $step]) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -48,276 +48,440 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mb-3">
-                            <label for="type" class="form-label">{{ __('Type d\'étape') }} <span class="text-danger">*</span></label>
-                            <select class="form-control @error('type') is-invalid @enderror" id="type" name="type" required>
+                            <label for="step_type" class="form-label">{{ __('Type d\'étape') }} <span class="text-danger">*</span></label>
+                            <select class="form-control @error('step_type') is-invalid @enderror" id="step_type" name="step_type" required>
                                 @foreach(\App\Enums\WorkflowStepType::cases() as $type)
-                                    <option value="{{ $type->value }}" {{ old('type', $step->type->value) == $type->value ? 'selected' : '' }}>{{ $type->label() }}</option>
+                                    <option value="{{ $type->value }}" {{ old('step_type', $step->step_type->value) == $type->value ? 'selected' : '' }}>{{ $type->label() }}</option>
                                 @endforeach
                             </select>
-                            @error('type')
+                            @error('step_type')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="deadline_days" class="form-label">{{ __('Délai d\'exécution (jours)') }}</label>
-                            <input type="number" class="form-control @error('deadline_days') is-invalid @enderror" id="deadline_days" name="deadline_days" value="{{ old('deadline_days', $step->deadline_days) }}" min="0">
-                            @error('deadline_days')
+                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (jours)') }}</label>
+                            <input type="number" class="form-control @error('estimated_duration') is-invalid @enderror" id="estimated_duration" name="estimated_duration" value="{{ old('estimated_duration', $step->estimated_duration) }}" min="0" step="0.5">
+                            @error('estimated_duration')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="form-text text-muted">{{ __('Laissez vide pour ne pas définir de délai.') }}</small>
+                            <small class="form-text text-muted">{{ __('Durée estimée en jours pour compléter cette étape.') }}</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="order_index" class="form-label">{{ __('Position') }}</label>
+                            <input type="number" class="form-control @error('order_index') is-invalid @enderror" id="order_index" name="order_index" value="{{ old('order_index', $step->order_index) }}" min="0" required>
+                            @error('order_index')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label for="action_class" class="form-label">{{ __('Classe d\'action automatique') }}</label>
-                            <input type="text" class="form-control @error('action_class') is-invalid @enderror" id="action_class" name="action_class" value="{{ old('action_class', $step->action_class) }}">
-                            @error('action_class')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">{{ __('Classe PHP exécutée automatiquement pour cette étape (optionnel).') }}</small>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="is_required" name="is_required" value="1" {{ old('is_required', $step->is_required) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_required">{{ __('Étape obligatoire') }}</label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="can_be_skipped" name="can_be_skipped" value="1" {{ old('can_be_skipped', $step->can_be_skipped) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="can_be_skipped">{{ __('Peut être ignorée') }}</label>
+                            <small class="form-text d-block text-muted">{{ __('L\'étape peut être ignorée sous certaines conditions.') }}</small>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-check form-switch mt-4">
-                            <input class="form-check-input" type="checkbox" id="requires_approval" name="requires_approval" value="1" {{ old('requires_approval', $step->requires_approval) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="requires_approval">{{ __('Nécessite une approbation') }}</label>
+                        <div class="form-group mb-3">
+                            <label for="configuration" class="form-label">{{ __('Configuration') }}</label>
+                            <textarea class="form-control @error('configuration') is-invalid @enderror" id="configuration" name="configuration" rows="3">{{ old('configuration', json_encode($step->configuration, JSON_PRETTY_PRINT)) }}</textarea>
+                            @error('configuration')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">{{ __('Configuration JSON pour cette étape (optionnel).') }}</small>
                         </div>
 
-                        <div class="form-check form-switch mt-3">
-                            <input class="form-check-input" type="checkbox" id="is_blocker" name="is_blocker" value="1" {{ old('is_blocker', $step->is_blocker) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="is_blocker">{{ __('Étape bloquante') }}</label>
-                            <small class="form-text d-block text-muted">{{ __('Si activé, le workflow ne peut pas continuer tant que cette étape n\'est pas complétée.') }}</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">{{ __('Options avancées') }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="failure_condition" class="form-label">{{ __('Condition d\'échec') }}</label>
-                                    <input type="text" class="form-control @error('failure_condition') is-invalid @enderror" id="failure_condition" name="failure_condition" value="{{ old('failure_condition', $step->failure_condition) }}">
-                                    @error('failure_condition')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted">{{ __('Expression conditionnelle pour déterminer un échec automatique.') }}</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="success_condition" class="form-label">{{ __('Condition de succès') }}</label>
-                                    <input type="text" class="form-control @error('success_condition') is-invalid @enderror" id="success_condition" name="success_condition" value="{{ old('success_condition', $step->success_condition) }}">
-                                    @error('success_condition')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <small class="form-text text-muted">{{ __('Expression conditionnelle pour déterminer un succès automatique.') }}</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="next_step_on_failure" class="form-label">{{ __('Étape suivante en cas d\'échec') }}</label>
-                                    <select class="form-control @error('next_step_on_failure') is-invalid @enderror" id="next_step_on_failure" name="next_step_on_failure">
-                                        <option value="">{{ __('Étape suivante par défaut') }}</option>
-                                        @foreach($step->template->steps as $nextStep)
-                                            @if($nextStep->id !== $step->id)
-                                                <option value="{{ $nextStep->id }}" {{ old('next_step_on_failure', $step->next_step_on_failure) == $nextStep->id ? 'selected' : '' }}>{{ $nextStep->name }}</option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                    @error('next_step_on_failure')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="next_step_on_success" class="form-label">{{ __('Étape suivante en cas de succès') }}</label>
-                                    <select class="form-control @error('next_step_on_success') is-invalid @enderror" id="next_step_on_success" name="next_step_on_success">
-                                        <option value="">{{ __('Étape suivante par défaut') }}</option>
-                                        @foreach($step->template->steps as $nextStep)
-                                            @if($nextStep->id !== $step->id)
-                                                <option value="{{ $nextStep->id }}" {{ old('next_step_on_success', $step->next_step_on_success) == $nextStep->id ? 'selected' : '' }}>{{ $nextStep->name }}</option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                    @error('next_step_on_success')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                        <div class="form-group mb-3">
+                            <label for="conditions" class="form-label">{{ __('Conditions') }}</label>
+                            <textarea class="form-control @error('conditions') is-invalid @enderror" id="conditions" name="conditions" rows="3">{{ old('conditions', json_encode($step->conditions, JSON_PRETTY_PRINT)) }}</textarea>
+                            @error('conditions')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">{{ __('Conditions d\'exécution de l\'étape (optionnel).') }}</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i> {{ __('Enregistrer les modifications') }}
+                <div class="border-top pt-3 mt-4 mb-3">
+                    <h4>{{ __('Assignations') }}</h4>
+                    <p class="text-muted">{{ __('Qui doit effectuer cette étape ?') }}</p>
+
+                    <div id="assignments-container">
+                        @forelse($step->assignments as $index => $assignment)
+                        <div class="assignment-row mb-3 border p-3 rounded-3">
+                            <input type="hidden" name="assignments[{{ $index }}][assignment_id]" value="{{ $assignment->id }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
+                                        <select name="assignments[{{ $index }}][assignee_type]" class="form-control assignee-type-select">
+                                            <option value="user" {{ $assignment->assignee_type == 'user' ? 'selected' : '' }}>{{ __('Utilisateur') }}</option>
+                                            <option value="organisation" {{ $assignment->assignee_type == 'organisation' ? 'selected' : '' }}>{{ __('Organisation') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group assignee-user" style="{{ $assignment->assignee_type == 'user' ? 'display: block;' : 'display: none;' }}">
+                                        <label class="form-label">{{ __('Utilisateur') }}</label>
+                                        <select name="assignments[{{ $index }}][assignee_id]" class="form-control user-select">
+                                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
+                                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                                <option value="{{ $user->id }}" {{ $assignment->assignee_user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group assignee-organisation" style="{{ $assignment->assignee_type == 'organisation' ? 'display: block;' : 'display: none;' }}">
+                                        <label class="form-label">{{ __('Organisation') }}</label>
+                                        <select name="assignments[{{ $index }}][organisation_id]" class="form-control organisation-select">
+                                            <option value="">{{ __('Sélectionner une organisation') }}</option>
+                                            @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
+                                                <option value="{{ $org->id }}" {{ $assignment->assignee_organisation_id == $org->id ? 'selected' : '' }}>{{ $org->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2 organisation-users" style="{{ $assignment->assignee_type == 'organisation' ? 'display: block;' : 'display: none;' }}">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
+                                        <select name="assignments[{{ $index }}][assignee_id]" class="form-control organisation-user-select">
+                                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
+                                            @if($assignment->assignee_type == 'organisation' && $assignment->assignee_organisation_id)
+                                                @foreach(\App\Models\Organisation::find($assignment->assignee_organisation_id)?->users ?? [] as $user)
+                                                    <option value="{{ $user->id }}" {{ $assignment->assignee_user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Rôle / Note') }}</label>
+                                        <input type="text" name="assignments[{{ $index }}][role]" class="form-control"
+                                               value="{{ $assignment->assignment_rules['role'] ?? '' }}"
+                                               placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-assignment" style="{{ count($step->assignments) > 1 ? 'display: inline-block;' : 'display: none;' }}">
+                                    <i class="bi bi-trash me-1"></i>{{ __('Retirer cette assignation') }}
+                                </button>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="assignment-row mb-3 border p-3 rounded-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
+                                        <select name="assignments[0][assignee_type]" class="form-control assignee-type-select">
+                                            <option value="user">{{ __('Utilisateur') }}</option>
+                                            <option value="organisation">{{ __('Organisation') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group assignee-user">
+                                        <label class="form-label">{{ __('Utilisateur') }}</label>
+                                        <select name="assignments[0][assignee_id]" class="form-control user-select" disabled>
+                                            <option value="">{{ __('Chargement des utilisateurs...') }}</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group assignee-organisation" style="display: none;">
+                                        <label class="form-label">{{ __('Organisation') }}</label>
+                                        <select name="assignments[0][organisation_id]" class="form-control organisation-select">
+                                            <option value="">{{ __('Sélectionner une organisation') }}</option>
+                                            @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
+                                                <option value="{{ $org->id }}">{{ $org->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2 organisation-users" style="display: none;">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
+                                        <select name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
+                                            <option value="">{{ __('Sélectionner une organisation d\'abord') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">{{ __('Rôle / Note') }}</label>
+                                        <input type="text" name="assignments[0][role]" class="form-control"
+                                               placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-danger remove-assignment" style="display: none;">
+                                    <i class="bi bi-trash me-1"></i>{{ __('Retirer cette assignation') }}
+                                </button>
+                            </div>
+                        </div>
+                        @endforelse
+                    </div>
+
+                    <button type="button" id="add-assignment" class="btn btn-outline-primary mt-2">
+                        <i class="bi bi-plus-circle me-1"></i>{{ __('Ajouter une assignation') }}
                     </button>
+                </div>
+
+                <div class="border-top pt-3 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>
+                        {{ __('Mettre à jour l\'étape') }}
+                    </button>
+                    <a href="{{ route('workflows.steps.show', [$step->template, $step]) }}" class="btn btn-outline-secondary ms-2">
+                        {{ __('Annuler') }}
+                    </a>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Section Assignations -->
-    @can('workflow.step.manageAssignments', $step)
-    <div class="card shadow-sm mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">{{ __('Assignations') }}</h5>
-            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#assignModal">
-                <i class="bi bi-person-plus me-1"></i> {{ __('Ajouter une assignation') }}
-            </button>
-        </div>
-        <div class="card-body">
-            @if($step->assignments->isEmpty())
-                <div class="alert alert-info">{{ __('Aucune assignation pour cette étape.') }}</div>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Type') }}</th>
-                                <th>{{ __('Assigné à') }}</th>
-                                <th>{{ __('Rôle') }}</th>
-                                <th class="text-end">{{ __('Actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($step->assignments as $assignment)
-                                <tr>
-                                    <td>{{ str_replace('App\\Models\\', '', $assignment->assignee_type) }}</td>
-                                    <td>
-                                        @if($assignment->assignee_type === 'App\\Models\\User')
-                                            {{ $assignment->assignee->name ?? 'N/A' }}
-                                        @elseif($assignment->assignee_type === 'App\\Models\\Role')
-                                            {{ $assignment->assignee->name ?? 'N/A' }}
-                                        @elseif($assignment->assignee_type === 'App\\Models\\Department')
-                                            {{ $assignment->assignee->name ?? 'N/A' }}
-                                        @else
-                                            {{ $assignment->assignee_id }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $assignment->role }}</td>
-                                    <td class="text-end">
-                                        <form action="{{ route('workflows.steps.assignments.destroy', ['step' => $step, 'assignment' => $assignment]) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette assignation?') }}')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    <!-- Modal d'assignation -->
-    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="assignModalLabel">{{ __('Ajouter une assignation') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('workflows.steps.assignments.store', $step) }}" method="POST">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="form-group mb-3">
-                            <label for="assignee_type" class="form-label">{{ __('Type d\'assignation') }} <span class="text-danger">*</span></label>
-                            <select class="form-control" id="assignee_type" name="assignee_type" required>
-                                <option value="App\Models\User">{{ __('Utilisateur') }}</option>
-                                <option value="App\Models\Role">{{ __('Rôle') }}</option>
-                                <option value="App\Models\Department">{{ __('Département') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3" id="userSelect">
-                            <label for="user_id" class="form-label">{{ __('Utilisateur') }} <span class="text-danger">*</span></label>
-                            <select class="form-control" id="user_id" name="user_id">
-                                <option value="">{{ __('Sélectionner un utilisateur') }}</option>
-                                @foreach(\App\Models\User::orderBy('name')->get() as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3 d-none" id="roleSelect">
-                            <label for="role_id" class="form-label">{{ __('Rôle') }} <span class="text-danger">*</span></label>
-                            <select class="form-control" id="role_id" name="role_id">
-                                <option value="">{{ __('Sélectionner un rôle') }}</option>
-                                @foreach(\Spatie\Permission\Models\Role::orderBy('name')->get() as $role)
-                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3 d-none" id="departmentSelect">
-                            <label for="department_id" class="form-label">{{ __('Département') }} <span class="text-danger">*</span></label>
-                            <select class="form-control" id="department_id" name="department_id">
-                                <option value="">{{ __('Sélectionner un département') }}</option>
-                                @foreach(\App\Models\Department::orderBy('name')->get() as $department)
-                                    <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="role" class="form-label">{{ __('Rôle dans l\'étape') }}</label>
-                            <input type="text" class="form-control" id="role" name="role" placeholder="{{ __('Par exemple: Approbateur, Vérificateur...') }}">
-                            <small class="form-text text-muted">{{ __('Champ optionnel pour spécifier le rôle de cet assigné dans l\'étape') }}</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
-                        <button type="submit" class="btn btn-primary">{{ __('Ajouter') }}</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    @endcan
 </div>
+@endsection
 
-@push('scripts')
+@section('js')
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Gestion des sélecteurs d'assignation dynamiques
-        const assigneeType = document.getElementById('assignee_type');
-        const userSelect = document.getElementById('userSelect');
-        const roleSelect = document.getElementById('roleSelect');
-        const departmentSelect = document.getElementById('departmentSelect');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion des assignations
+        let assignmentIndex = {{ $step->assignments->count() }};
 
-        if (assigneeType) {
-            assigneeType.addEventListener('change', function() {
-                userSelect.classList.add('d-none');
-                roleSelect.classList.add('d-none');
-                departmentSelect.classList.add('d-none');
+        function updateAssigneeTypeVisibility() {
+            document.querySelectorAll('.assignee-type-select').forEach(select => {
+                const row = select.closest('.assignment-row');
+                const userDiv = row.querySelector('.assignee-user');
+                const orgDiv = row.querySelector('.assignee-organisation');
+                const orgUsersDiv = row.querySelector('.organisation-users');
 
-                if (this.value === 'App\\Models\\User') {
-                    userSelect.classList.remove('d-none');
-                } else if (this.value === 'App\\Models\\Role') {
-                    roleSelect.classList.remove('d-none');
-                } else if (this.value === 'App\\Models\\Department') {
-                    departmentSelect.classList.remove('d-none');
+                if (select.value === 'user') {
+                    // Mode utilisateur : afficher tous les utilisateurs
+                    userDiv.style.display = 'block';
+                    orgDiv.style.display = 'none';
+                    if (orgUsersDiv) orgUsersDiv.style.display = 'none';
+
+                    // Charger tous les utilisateurs
+                    const userSelect = row.querySelector('.user-select');
+                    if (userSelect) {
+                        loadUsersForOrganisation(null, userSelect, true, userSelect.value);
+                    }
+                } else {
+                    // Mode organisation : afficher organisation puis utilisateurs de l'organisation
+                    userDiv.style.display = 'none';
+                    orgDiv.style.display = 'block';
+                    if (orgUsersDiv) orgUsersDiv.style.display = 'block';
+
+                    // Charger les utilisateurs de l'organisation si une organisation est sélectionnée
+                    const orgSelect = row.querySelector('.organisation-select');
+                    const orgUserSelect = row.querySelector('.organisation-user-select');
+                    if (orgSelect && orgUserSelect && orgSelect.value) {
+                        loadUsersForOrganisation(orgSelect.value, orgUserSelect, false, orgUserSelect.value);
+                    }
                 }
             });
         }
+
+        function loadUsersForOrganisation(organisationId, userSelect, showAllUsers = false, selectedUserId = null) {
+            const loadingOption = '<option value="">{{ __("Chargement...") }}</option>';
+            userSelect.innerHTML = loadingOption;
+            userSelect.disabled = true;
+
+            let url;
+            if (showAllUsers || !organisationId) {
+                url = '/api/organisations';
+            } else {
+                url = `/api/organisations/${organisationId}/users`;
+            }
+
+            const fetchOptions = {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            };
+
+            fetch(url, fetchOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
+
+                    if (showAllUsers || !organisationId) {
+                        // Si on affiche tous les utilisateurs, on fait un appel pour récupérer tous les utilisateurs
+                        return fetch('/api/organisations', fetchOptions)
+                            .then(r => {
+                                if (!r.ok) {
+                                    throw new Error(`HTTP error! status: ${r.status}`);
+                                }
+                                return r.json();
+                            })
+                            .then(orgs => {
+                                const allUsersPromises = orgs.map(org =>
+                                    fetch(`/api/organisations/${org.id}/users`, fetchOptions)
+                                        .then(r => {
+                                            if (!r.ok) {
+                                                throw new Error(`HTTP error! status: ${r.status}`);
+                                            }
+                                            return r.json();
+                                        })
+                                );
+                                return Promise.all(allUsersPromises).then(userArrays => {
+                                    const allUsers = userArrays.flat();
+                                    // Supprimer les doublons par ID
+                                    const uniqueUsers = allUsers.filter((user, index, self) =>
+                                        index === self.findIndex(u => u.id === user.id)
+                                    );
+                                    return uniqueUsers.sort((a, b) => a.name.localeCompare(b.name));
+                                });
+                            });
+                    } else {
+                        return data;
+                    }
+                })
+                .then(users => {
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                        if (selectedUserId && user.id == selectedUserId) {
+                            option.selected = true;
+                        }
+                        userSelect.appendChild(option);
+                    });
+                    userSelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des utilisateurs:', error);
+                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                    userSelect.disabled = false;
+                    alert('Erreur lors du chargement des utilisateurs. Vérifiez la console pour plus de détails.');
+                });
+        }
+
+        // Initialiser l'affichage et charger les utilisateurs pour les assignations existantes
+        updateAssigneeTypeVisibility();
+
+        // Écouter les changements de type d'assigné
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('assignee-type-select')) {
+                updateAssigneeTypeVisibility();
+            }
+
+            // Gestion du changement d'organisation pour charger ses utilisateurs
+            if (e.target.classList.contains('organisation-select')) {
+                const row = e.target.closest('.assignment-row');
+                const orgUserSelect = row.querySelector('.organisation-user-select');
+                const organisationId = e.target.value;
+
+                if (orgUserSelect) {
+                    loadUsersForOrganisation(organisationId, orgUserSelect);
+                }
+            }
+        });
+
+        // Ajouter une nouvelle assignation
+        document.getElementById('add-assignment').addEventListener('click', function() {
+            assignmentIndex++;
+
+            const template = document.querySelector('.assignment-row').cloneNode(true);
+
+            // Supprimer l'input hidden d'ID pour les nouvelles assignations
+            const hiddenInput = template.querySelector('input[type="hidden"]');
+            if (hiddenInput) {
+                hiddenInput.remove();
+            }
+
+            // Mettre à jour les noms des champs avec le nouvel index
+            template.querySelectorAll('[name]').forEach(input => {
+                const name = input.getAttribute('name');
+                input.setAttribute('name', name.replace(/assignments\[\d+\]/, `assignments[${assignmentIndex}]`));
+
+                // Réinitialiser les valeurs
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                } else if (input.tagName === 'INPUT') {
+                    input.value = '';
+                }
+            });
+
+            // Réinitialiser l'état des selects utilisateurs
+            const userSelect = template.querySelector('.user-select');
+            const orgUserSelect = template.querySelector('.organisation-user-select');
+
+            if (userSelect) {
+                userSelect.innerHTML = '<option value="">{{ __("Chargement des utilisateurs...") }}</option>';
+                userSelect.disabled = true;
+            }
+
+            if (orgUserSelect) {
+                orgUserSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
+                orgUserSelect.disabled = true;
+            }
+
+            // Afficher le bouton de suppression
+            template.querySelector('.remove-assignment').style.display = 'inline-block';
+
+            document.getElementById('assignments-container').appendChild(template);
+
+            // Mettre à jour l'affichage en fonction du type d'assigné sélectionné
+            updateAssigneeTypeVisibility();
+
+            // Activer le bouton de suppression pour toutes les assignations si > 1
+            if (document.querySelectorAll('.assignment-row').length > 1) {
+                document.querySelectorAll('.assignment-row .remove-assignment').forEach(btn => {
+                    btn.style.display = 'inline-block';
+                });
+            }
+        });
+
+        // Supprimer une assignation
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-assignment') || e.target.parentElement.classList.contains('remove-assignment')) {
+                const row = e.target.closest('.assignment-row');
+
+                // Ne pas supprimer s'il n'y a qu'une seule assignation
+                if (document.querySelectorAll('.assignment-row').length > 1) {
+                    row.remove();
+                }
+
+                // Masquer le bouton de suppression s'il ne reste qu'une seule assignation
+                if (document.querySelectorAll('.assignment-row').length === 1) {
+                    document.querySelector('.assignment-row .remove-assignment').style.display = 'none';
+                }
+            }
+        });
     });
 </script>
-@endpush
 @endsection
