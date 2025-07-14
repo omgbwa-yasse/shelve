@@ -937,7 +937,7 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
 });
 
 // Routes pour le module Thésaurus Tool
-Route::prefix('tool/thesaurus')->middleware(['auth', 'module_thesaurus_access'])->group(function () {
+Route::prefix('tool/thesaurus')->middleware(['auth'])->group(function () {
     // Page d'accueil du module
     Route::get('/', [ThesaurusToolController::class, 'index'])->name('tool.thesaurus.index');
 

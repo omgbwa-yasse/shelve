@@ -372,10 +372,10 @@ class ThesaurusToolController extends Controller
         foreach ($labels as $label) {
             $literalForm = $label->literal_form;
             $pattern = '/\b' . preg_quote($literalForm, '/') . '\b/ui';
-            
+
             if (preg_match($pattern, $text, $matches)) {
                 $weight = $this->calculateWeight($literalForm, $text, $label->label_type);
-                
+
                 if ($weight >= $minWeight) {
                     $concepts[] = [
                         'id' => $label->concept_id,
@@ -401,7 +401,7 @@ class ThesaurusToolController extends Controller
     private function calculateWeight($label, $text, $labelType)
     {
         $baseWeight = 0.5;
-        
+
         // Bonus selon le type de label
         switch ($labelType) {
             case 'prefLabel':
@@ -518,7 +518,7 @@ class ThesaurusToolController extends Controller
     {
         $schemes = ThesaurusScheme::select('id', 'title', 'description', 'language', 'created_at')
                                  ->get();
-        
+
         return response()->json($schemes);
     }
 
@@ -528,12 +528,12 @@ class ThesaurusToolController extends Controller
     public function apiConcepts(Request $request)
     {
         $query = ThesaurusConcept::with(['scheme:id,title', 'labels']);
-        
+
         // Filtre par schéma
         if ($request->has('scheme_id') && $request->scheme_id) {
             $query->where('scheme_id', $request->scheme_id);
         }
-        
+
         // Recherche textuelle
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -543,11 +543,11 @@ class ThesaurusToolController extends Controller
                   ->orWhere('definition', 'like', "%{$search}%");
             });
         }
-        
+
         // Pagination
         $perPage = $request->get('per_page', 20);
         $concepts = $query->orderBy('pref_label')->paginate($perPage);
-        
+
         return response()->json($concepts);
     }
 
@@ -558,7 +558,7 @@ class ThesaurusToolController extends Controller
     {
         $query = ThesaurusConcept::with(['labels'])
                                 ->where('scheme_id', $schemeId);
-        
+
         // Recherche textuelle
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -568,11 +568,11 @@ class ThesaurusToolController extends Controller
                   ->orWhere('definition', 'like', "%{$search}%");
             });
         }
-        
+
         // Pagination
         $perPage = $request->get('per_page', 20);
         $concepts = $query->orderBy('pref_label')->paginate($perPage);
-        
+
         return response()->json($concepts);
     }
 
@@ -582,7 +582,7 @@ class ThesaurusToolController extends Controller
     public function apiRecordTerms($recordId)
     {
         $record = Record::with(['thesaurusConcepts.scheme'])->findOrFail($recordId);
-        
+
         return response()->json($record->thesaurusConcepts);
     }
 
@@ -595,12 +595,12 @@ class ThesaurusToolController extends Controller
             'concept_ids' => 'required|array',
             'concept_ids.*' => 'exists:thesaurus_concepts,id'
         ]);
-        
+
         $record = Record::findOrFail($recordId);
-        
+
         // Synchroniser les concepts (remplace les existants)
         $record->thesaurusConcepts()->sync($request->concept_ids);
-        
+
         return response()->json([
             'message' => 'Termes associés avec succès',
             'count' => count($request->concept_ids)
@@ -614,7 +614,7 @@ class ThesaurusToolController extends Controller
     {
         $record = Record::findOrFail($recordId);
         $record->thesaurusConcepts()->detach($conceptId);
-        
+
         return response()->json([
             'message' => 'Terme dissocié avec succès'
         ]);
@@ -636,21 +636,21 @@ class ThesaurusToolController extends Controller
         $schemeId = $request->scheme_id;
 
         $query = ThesaurusConcept::with(['scheme:id,title']);
-        
+
         // Filtre par schéma si spécifié
         if ($schemeId) {
             $query->where('scheme_id', $schemeId);
         }
-        
+
         // Recherche textuelle dans les labels préférés et alternatifs
         $query->where(function($q) use ($search) {
             $q->whereHas('labels', function($labelQuery) use ($search) {
                 $labelQuery->where('label_value', 'like', "%{$search}%");
             });
         });
-        
+
         $concepts = $query->orderBy('id')->limit($limit)->get();
-        
+
         // Transformer les résultats pour inclure les termes spécifiques
         $results = $concepts->map(function ($concept) {
             $result = [
@@ -666,10 +666,10 @@ class ThesaurusToolController extends Controller
                     'title' => $concept->scheme->title
                 ] : null
             ];
-            
+
             // Si c'est un terme générique, chercher un terme spécifique lié
             $specificTerms = $concept->narrowerConcepts()->with('scheme:id,title')->first();
-            
+
             if ($specificTerms) {
                 $result['specific_term'] = [
                     'id' => $specificTerms->id,
@@ -685,10 +685,155 @@ class ThesaurusToolController extends Controller
                     ] : null
                 ];
             }
-            
+
             return $result;
         });
-        
+
         return response()->json($results);
+    }
+
+    /**
+     * Autocomplete search for concepts (web interface)
+     */
+    public function autocomplete(Request $request)
+    {
+        $query = $request->get('q', '');
+        $schemeId = $request->get('scheme_id');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $conceptsQuery = ThesaurusConcept::with(['labels', 'scheme'])
+            ->whereHas('labels', function($q) use ($query) {
+                $q->where('value', 'LIKE', "%{$query}%");
+            });
+
+        if ($schemeId) {
+            $conceptsQuery->where('scheme_id', $schemeId);
+        }
+
+        $concepts = $conceptsQuery->limit(20)->get();
+
+        $results = $concepts->map(function($concept) {
+            $preferredLabel = $concept->labels->where('type', 'preferred')->first();
+            return [
+                'id' => $concept->id,
+                'text' => $preferredLabel ? $preferredLabel->value : 'No label',
+                'scheme' => $concept->scheme ? $concept->scheme->title : null
+            ];
+        });
+
+        return response()->json($results);
+    }
+
+    /**
+     * Display a listing of concepts
+     */
+    public function concepts(Request $request)
+    {
+        $query = ThesaurusConcept::with(['labels', 'scheme', 'notes']);
+
+        // Filter by scheme if provided
+        if ($request->has('scheme_id') && $request->scheme_id) {
+            $query->where('scheme_id', $request->scheme_id);
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->whereHas('labels', function($q) use ($search) {
+                $q->where('value', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $concepts = $query->paginate(20);
+        $schemes = ThesaurusScheme::all();
+
+        return view('thesaurus.terms.search', compact('concepts', 'schemes'));
+    }
+
+    /**
+     * Display the specified concept
+     */
+    public function showConcept(ThesaurusConcept $concept)
+    {
+        $concept->load([
+            'labels',
+            'notes',
+            'scheme',
+            'sourceRelations.targetConcept.labels',
+            'targetRelations.sourceConcept.labels',
+            'records'
+        ]);
+
+        return view('thesaurus.terms.show', compact('concept'));
+    }
+
+    /**
+     * Display hierarchical view of concepts
+     */
+    public function hierarchy(Request $request)
+    {
+        $schemeId = $request->get('scheme_id');
+
+        if ($schemeId) {
+            $scheme = ThesaurusScheme::with([
+                'concepts' => function($query) {
+                    $query->with(['labels', 'sourceRelations.targetConcept.labels', 'targetRelations.sourceConcept.labels']);
+                }
+            ])->findOrFail($schemeId);
+
+            // Build hierarchy tree
+            $hierarchyData = $this->buildHierarchyTree($scheme->concepts);
+        } else {
+            $scheme = null;
+            $hierarchyData = [];
+        }
+
+        $schemes = ThesaurusScheme::all();
+
+        return view('thesaurus.terms.hierarchy', compact('scheme', 'hierarchyData', 'schemes'));
+    }
+
+    /**
+     * Build hierarchy tree from concepts
+     */
+    private function buildHierarchyTree($concepts)
+    {
+        $tree = [];
+        $conceptsById = $concepts->keyBy('id');
+
+        // Find root concepts (concepts without broader relations)
+        foreach ($concepts as $concept) {
+            $hasBroader = $concept->sourceRelations()->where('relation_type', 'broader')->exists();
+            if (!$hasBroader) {
+                $tree[] = $this->buildConceptNode($concept, $conceptsById);
+            }
+        }
+
+        return $tree;
+    }
+
+    /**
+     * Build a concept node with its children
+     */
+    private function buildConceptNode($concept, $conceptsById)
+    {
+        $node = [
+            'concept' => $concept,
+            'children' => []
+        ];
+
+        // Find narrower concepts
+        $narrowerRelations = $concept->targetRelations()->where('relation_type', 'narrower')->get();
+        foreach ($narrowerRelations as $relation) {
+            if (isset($conceptsById[$relation->source_concept_id])) {
+                $childConcept = $conceptsById[$relation->source_concept_id];
+                $node['children'][] = $this->buildConceptNode($childConcept, $conceptsById);
+            }
+        }
+
+        return $node;
     }
 }
