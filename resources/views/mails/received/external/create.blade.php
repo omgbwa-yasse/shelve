@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1 class="mb-4">Enregistrer un courrier reçu externe</h1>
+    <!-- Harmonisation des styles du formulaire et suppression du champ code -->
+    <div class="container shadow-sm p-4 bg-white rounded">
+        <h1 class="mb-4 text-primary">Enregistrer un courrier reçu externe</h1>
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -15,16 +16,16 @@
 
         <form action="{{ route('mails.received.external.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
-            <h5 class="card-title mb-4">Informations générales</h5>
+            <h5 class="card-title mb-4 text-secondary">Informations générales</h5>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
-                    <input type="date" id="date" name="date" class="form-control" value="{{ old('date') }}" required>
+                    <input type="date" id="date" name="date" class="form-control border-primary" value="{{ old('date') }}" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="typology_id" class="form-label">Typologie</label>
-                    <select name="typology_id" id="typology_id" class="form-select" required>
+                    <select name="typology_id" id="typology_id" class="form-select border-primary" required>
                         <option value="">Choisir une typologie</option>
                         @foreach($typologies as $typology)
                             <option value="{{ $typology->id }}" {{ old('typology_id') == $typology->id ? 'selected' : '' }}>
@@ -35,7 +36,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
-                    <select name="document_type" id="document_type" class="form-select" required>
+                    <select name="document_type" id="document_type" class="form-select border-primary" required>
                         <option value="">Choisir le type de document</option>
                         <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
                         <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
@@ -47,7 +48,7 @@
             <div class="row">
                 <div class="col-md-8 mb-3">
                     <label for="name" class="form-label">Nom/Objet du courrier</label>
-                    <input type="text" id="name" name="name" class="form-control" value="{{ old('name') }}" required>
+                    <input type="text" id="name" name="name" class="form-control border-primary" value="{{ old('name') }}" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="priority_id" class="form-label">Priorité</label>
@@ -67,16 +68,15 @@
                 <textarea id="description" name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
             </div>
 
-            <h5 class="card-title mb-4 mt-4">Expéditeur</h5>
+            <h5 class="card-title mb-4 mt-4">Destinataire externe</h5>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label for="sender_type" class="form-label">Type d'expéditeur</label>
-                    <select name="sender_type" id="sender_type" class="form-select" required>
-                        <option value="">Choisir le type d'expéditeur</option>
-                        <option value="external_contact" {{ old('sender_type') == 'external_contact' ? 'selected' : '' }}>Contact externe</option>
-                        <option value="external_organization" {{ old('sender_type') == 'external_organization' ? 'selected' : '' }}>Organisation externe</option>
-                        <option value="organisation" {{ old('sender_type') == 'organisation' ? 'selected' : '' }}>Organisation</option>
+                    <label for="recipient_type" class="form-label">Type de destinataire</label>
+                    <select name="recipient_type" id="recipient_type" class="form-select" required>
+                        <option value="">Choisir le type de destinataire</option>
+                        <option value="external_contact" {{ old('recipient_type') == 'external_contact' ? 'selected' : '' }}>Contact externe</option>
+                        <option value="external_organization" {{ old('recipient_type') == 'external_organization' ? 'selected' : '' }}>Organisation externe</option>
                     </select>
                 </div>
             </div>
@@ -85,11 +85,11 @@
             <div id="external-contact-section" style="display: none;">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="external_sender_id" class="form-label">Contact externe</label>
-                        <select name="external_sender_id" id="external_sender_id" class="form-select">
+                        <label for="external_recipient_id" class="form-label">Contact externe</label>
+                        <select name="external_recipient_id" id="external_recipient_id" class="form-select">
                             <option value="">Sélectionner un contact externe</option>
                             @foreach($externalContacts as $contact)
-                                <option value="{{ $contact->id }}" {{ old('external_sender_id') == $contact->id ? 'selected' : '' }}>
+                                <option value="{{ $contact->id }}" {{ old('external_recipient_id') == $contact->id ? 'selected' : '' }}>
                                     {{ $contact->first_name }} {{ $contact->last_name }}
                                     @if($contact->organization)
                                         ({{ $contact->organization->name }})
@@ -105,11 +105,11 @@
             <div id="external-organization-section" style="display: none;">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="external_sender_organization_id" class="form-label">Organisation externe</label>
-                        <select name="external_sender_organization_id" id="external_sender_organization_id" class="form-select">
+                        <label for="external_recipient_organization_id" class="form-label">Organisation externe</label>
+                        <select name="external_recipient_organization_id" id="external_recipient_organization_id" class="form-select">
                             <option value="">Sélectionner une organisation externe</option>
                             @foreach($externalOrganizations as $organization)
-                                <option value="{{ $organization->id }}" {{ old('external_sender_organization_id') == $organization->id ? 'selected' : '' }}>
+                                <option value="{{ $organization->id }}" {{ old('external_recipient_organization_id') == $organization->id ? 'selected' : '' }}>
                                     {{ $organization->name }}
                                 </option>
                             @endforeach
@@ -118,20 +118,38 @@
                 </div>
             </div>
 
-            <!-- Section Organisation -->
-            <div id="organization-section" style="display: none;">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="sender_organisation_id" class="form-label">Organisation</label>
-                        <select name="sender_organisation_id" id="sender_organisation_id" class="form-select">
-                            <option value="">Sélectionner une organisation</option>
-                            @foreach($senderOrganisations as $organization)
-                                <option value="{{ $organization->id }}" {{ old('sender_organisation_id') == $organization->id ? 'selected' : '' }}>
-                                    {{ $organization->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+            <h5 class="card-title mb-4 mt-4">Informations complémentaires</h5>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="delivery_method" class="form-label">Méthode de livraison</label>
+                    <input type="text" id="delivery_method" name="delivery_method" class="form-control" value="{{ old('delivery_method') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="tracking_number" class="form-label">Numéro de suivi</label>
+                    <input type="text" id="tracking_number" name="tracking_number" class="form-control" value="{{ old('tracking_number') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="action_id" class="form-label">Action</label>
+                    <select name="action_id" id="action_id" class="form-select">
+                        <option value="">Aucune action</option>
+                        @foreach($actions as $action)
+                            <option value="{{ $action->id }}" {{ old('action_id') == $action->id ? 'selected' : '' }}>
+                                {{ $action->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="deadline" class="form-label">Date limite</label>
+                    <input type="date" id="deadline" name="deadline" class="form-control" value="{{ old('deadline') }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="estimated_processing_time" class="form-label">Temps de traitement estimé (jours)</label>
+                    <input type="number" id="estimated_processing_time" name="estimated_processing_time" class="form-control" min="1" value="{{ old('estimated_processing_time') }}">
                 </div>
             </div>
 
@@ -158,12 +176,13 @@
                 <a href="{{ route('mails.received.external.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Retour
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-success">
                     <i class="bi bi-save"></i> Enregistrer le courrier
                 </button>
             </div>
         </form>
     </div>
+@endsection
 
 @push('styles')
 <style>
@@ -418,4 +437,4 @@
             toggleSenderSections();
         });
     </script>
-@endsection
+@endpush

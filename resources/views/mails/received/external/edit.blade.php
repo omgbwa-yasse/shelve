@@ -154,7 +154,9 @@
             </div>
         </form>
     </div>
+@endsection
 
+@push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const senderTypeSelect = document.getElementById('sender_type');
@@ -186,4 +188,4 @@
             toggleSenderSections();
         });
     </script>
-@endsection
+@endpush

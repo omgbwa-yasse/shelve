@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1 class="mb-4">Créer Courrier sortant externe</h1>
+    <!-- Harmonisation des styles du formulaire -->
+    <div class="container shadow-sm p-4 bg-white rounded">
+        <h1 class="mb-4 text-primary">Créer Courrier sortant externe</h1>
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -15,23 +16,23 @@
 
         <form action="{{ route('mails.send.external.store') }}" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
             @csrf
-            <h5 class="card-title mb-4">Informations générales</h5>
+            <h5 class="card-title mb-4 text-secondary">Informations générales</h5>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label for="code" class="form-label"><strong>Code existant</strong>, à défaut un nouveau sera créé</label>
-                    <input type="text" id="code" name="code" class="form-control" value="{{ old('code') }}">
+                    <label for="code" class="form-label">Code existant</label>
+                    <input type="text" id="code" name="code" class="form-control border-primary" value="{{ old('code') }}">
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label for="date" class="form-label">Date du courrier</label>
-                    <input type="date" id="date" name="date" class="form-control" value="{{ old('date') }}" required>
+                    <input type="date" id="date" name="date" class="form-control border-primary" value="{{ old('date') }}" required>
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="typology_id" class="form-label">Typologie</label>
-                    <select name="typology_id" id="typology_id" class="form-select" required>
+                    <select name="typology_id" id="typology_id" class="form-select border-primary" required>
                         <option value="">Choisir une typologie</option>
                         @foreach($typologies as $typology)
                             <option value="{{ $typology->id }}" {{ old('typology_id') == $typology->id ? 'selected' : '' }}>
@@ -42,7 +43,7 @@
                 </div>
                 <div class="col-md-4 mb-3">
                     <label for="document_type" class="form-label">Type de document</label>
-                    <select name="document_type" id="document_type" class="form-select" required>
+                    <select name="document_type" id="document_type" class="form-select border-primary" required>
                         <option value="">Choisir le type de document</option>
                         <option value="original" {{ old('document_type') == 'original' ? 'selected' : '' }}>Original</option>
                         <option value="duplicate" {{ old('document_type') == 'duplicate' ? 'selected' : '' }}>Duplicata</option>
@@ -128,10 +129,6 @@
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label for="delivery_method" class="form-label">Méthode de livraison</label>
-                    <input type="text" id="delivery_method" name="delivery_method" class="form-control" value="{{ old('delivery_method') }}">
-                </div>
-                <div class="col-md-4 mb-3">
                     <label for="tracking_number" class="form-label">Numéro de suivi</label>
                     <input type="text" id="tracking_number" name="tracking_number" class="form-control" value="{{ old('tracking_number') }}">
                 </div>
@@ -188,6 +185,7 @@
             </div>
         </form>
     </div>
+@endsection
 
 @push('styles')
 <style>
@@ -431,4 +429,4 @@
             toggleRecipientSections();
         });
     </script>
-@endsection
+@endpush

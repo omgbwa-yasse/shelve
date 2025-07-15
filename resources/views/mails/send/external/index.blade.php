@@ -38,12 +38,12 @@
     @endif
 
     <!-- Liste des courriers -->
-    <div class="card">
+    <div class="card shadow-sm border-0 rounded">
         <div class="card-body">
             @if($mails->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Code</th>
                                 <th>Nom</th>
@@ -58,7 +58,7 @@
                             @foreach($mails as $mail)
                                 <tr>
                                     <td>
-                                        <span class="badge bg-secondary">{{ $mail->code }}</span>
+                                        <span class="badge bg-dark text-white">{{ $mail->code }}</span>
                                     </td>
                                     <td>
                                         <strong>{{ $mail->name }}</strong>
@@ -71,12 +71,12 @@
                                     </td>
                                     <td>
                                         @if($mail->typology)
-                                            <span class="badge bg-info">{{ $mail->typology->name }}</span>
+                                            <span class="badge bg-primary">{{ $mail->typology->name }}</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($mail->externalRecipient)
-                                            <i class="bi bi-person text-primary"></i>
+                                            <i class="bi bi-person-circle text-primary"></i>
                                             {{ $mail->externalRecipient->first_name }} {{ $mail->externalRecipient->last_name }}
                                         @elseif($mail->externalRecipientOrganization)
                                             <i class="bi bi-building text-warning"></i>
@@ -107,26 +107,22 @@
                                         <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
                                     </td>
                                     <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('mails.send.external.show', $mail->id) }}"
-                                               class="btn btn-outline-primary" title="Voir">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ route('mails.send.external.edit', $mail->id) }}"
-                                               class="btn btn-outline-warning" title="Modifier">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('mails.send.external.destroy', $mail->id) }}"
-                                                  method="POST"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <a href="{{ route('mails.send.external.show', $mail->id) }}" class="btn btn-sm btn-outline-info" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('mails.send.external.edit', $mail->id) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('mails.send.external.destroy', $mail->id) }}"
+                                              method="POST"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

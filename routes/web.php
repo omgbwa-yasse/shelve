@@ -298,10 +298,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
 
-        Route::resource('send', MailSendController::class)->names('mail-send');
-        Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
-
-        // Routes pour les courriers entrants externes
+        // Routes pour les courriers entrants externes (spécifiques en premier)
         Route::prefix('received/external')->name('mails.received.external.')->group(function () {
             Route::get('/', [MailReceivedExternalController::class, 'index'])->name('index');
             Route::get('/create', [MailReceivedExternalController::class, 'create'])->name('create');
@@ -313,7 +310,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::delete('/{id}', [MailReceivedExternalController::class, 'destroy'])->name('destroy');
         });
 
-        // Routes pour les courriers sortants externes
+        // Routes pour les courriers sortants externes (spécifiques en premier)
         Route::prefix('send/external')->name('mails.send.external.')->group(function () {
             Route::get('/', [MailSendExternalController::class, 'index'])->name('index');
             Route::get('/create', [MailSendExternalController::class, 'create'])->name('create');
@@ -324,6 +321,10 @@ Route::group(['middleware' => 'auth'], function () {
             Route::patch('/{id}', [MailSendExternalController::class, 'update']);
             Route::delete('/{id}', [MailSendExternalController::class, 'destroy'])->name('destroy');
         });
+
+        // Routes génériques (après les routes spécifiques)
+        Route::resource('send', MailSendController::class)->names('mail-send');
+        Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
 
         // Routes anciennes (compatibilité temporaire)
         Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');

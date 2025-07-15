@@ -1,21 +1,26 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Courrier reçu externe : {{ $mail->code }}</h1>
-            <div>
-                <a href="{{ route('mails.received.external.edit', $mail->id) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Modifier
-                </a>
-                <a href="{{ route('mails.received.external.index') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Retour
-                </a>
-            </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            @include('submenu.mails')
         </div>
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Courrier reçu externe : {{ $mail->code }}</h1>
+                <div>
+                    <a href="{{ route('mails.received.external.edit', $mail->id) }}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <a href="{{ route('mails.received.external.index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
 
-        <div class="card">
-            <div class="card-body">
+            <div class="card">
+                <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <h5>Informations générales</h5>
