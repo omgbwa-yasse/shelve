@@ -370,6 +370,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
         Route::get('batch-send/logs', [BatchSendController::class, 'logs'] )->name('batch-send-log');
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
+        Route::post('mail-transaction/import', [MailTransactionController::class, 'import'])->name('mail-transaction.import');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
 
         /*

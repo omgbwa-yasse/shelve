@@ -37,19 +37,48 @@
         </div>
     @endif
 
+    <!-- Bandeau d'actions -->
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3 rounded">
+        <div class="d-flex align-items-center gap-2">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                <i class="bi bi-cart me-1"></i>
+                Chariot
+            </a>
+            <a href="#" id="exportBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.export') }}">
+                <i class="bi bi-download me-1"></i>
+                Exporter
+            </a>
+            <a href="#" id="printBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.print') }}">
+                <i class="bi bi-printer me-1"></i>
+                Imprimer
+            </a>
+            <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
+                <i class="bi bi-archive me-1"></i>
+                Archiver
+            </a>
+        </div>
+        <div class="d-flex align-items-center">
+            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                <i class="bi bi-check-square me-1"></i>
+                Tout cocher
+            </a>
+        </div>
+    </div>
+
     <!-- Liste des courriers -->
-    <div class="card">
+    <div class="card shadow-sm border-0 rounded">
         <div class="card-body">
             @if($mails->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
                             <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
                                 <th>Code</th>
                                 <th>Nom</th>
                                 <th>Date</th>
                                 <th>Typologie</th>
-                                <th>Expéditeur</th>
+                                <th>Destinataire</th>
                                 <th>Statut</th>
                                 <th>Actions</th>
                             </tr>
@@ -57,8 +86,9 @@
                         <tbody>
                             @foreach($mails as $mail)
                                 <tr>
+                                    <td><input type="checkbox" class="mail-checkbox" value="{{ $mail->id }}"></td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ $mail->code }}</span>
+                                        <span class="badge bg-dark text-white">{{ $mail->code }}</span>
                                     </td>
                                     <td>
                                         <strong>{{ $mail->name }}</strong>
@@ -71,19 +101,16 @@
                                     </td>
                                     <td>
                                         @if($mail->typology)
-                                            <span class="badge bg-info">{{ $mail->typology->name }}</span>
+                                            <span class="badge bg-primary">{{ $mail->typology->name }}</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($mail->externalSender)
-                                            <i class="bi bi-person text-primary"></i>
-                                            {{ $mail->externalSender->first_name }} {{ $mail->externalSender->last_name }}
-                                        @elseif($mail->externalSenderOrganization)
+                                        @if($mail->externalRecipient)
+                                            <i class="bi bi-person-circle text-primary"></i>
+                                            {{ $mail->externalRecipient->first_name }} {{ $mail->externalRecipient->last_name }}
+                                        @elseif($mail->externalRecipientOrganization)
                                             <i class="bi bi-building text-warning"></i>
-                                            {{ $mail->externalSenderOrganization->name }}
-                                        @elseif($mail->senderOrganisation)
-                                            <i class="bi bi-building text-info"></i>
-                                            {{ $mail->senderOrganisation->name }}
+                                            {{ $mail->externalRecipientOrganization->name }}
                                         @else
                                             <span class="text-muted">Non défini</span>
                                         @endif
@@ -91,45 +118,41 @@
                                     <td>
                                         @php
                                             $statusClass = match($mail->status->value ?? '') {
-                                                'transmitted' => 'bg-info',
-                                                'received' => 'bg-success',
-                                                'processing' => 'bg-warning',
-                                                'processed' => 'bg-primary',
-                                                'archived' => 'bg-secondary',
+                                                'draft' => 'bg-secondary',
+                                                'pending' => 'bg-warning',
+                                                'approved' => 'bg-success',
+                                                'sent' => 'bg-primary',
+                                                'rejected' => 'bg-danger',
                                                 default => 'bg-light text-dark'
                                             };
                                             $statusText = match($mail->status->value ?? '') {
-                                                'transmitted' => 'Transmis',
-                                                'received' => 'Reçu',
-                                                'processing' => 'En traitement',
-                                                'processed' => 'Traité',
-                                                'archived' => 'Archivé',
+                                                'draft' => 'Brouillon',
+                                                'pending' => 'En attente',
+                                                'approved' => 'Approuvé',
+                                                'sent' => 'Envoyé',
+                                                'rejected' => 'Rejeté',
                                                 default => 'Inconnu'
                                             };
                                         @endphp
                                         <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
                                     </td>
                                     <td>
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('mails.received.external.show', $mail->id) }}"
-                                               class="btn btn-outline-primary" title="Voir">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            <a href="{{ route('mails.received.external.edit', $mail->id) }}"
-                                               class="btn btn-outline-warning" title="Modifier">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('mails.received.external.destroy', $mail->id) }}"
-                                                  method="POST"
-                                                  class="d-inline"
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <a href="{{ route('mails.send.external.show', $mail->id) }}" class="btn btn-sm btn-outline-info" title="Voir">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('mails.send.external.edit', $mail->id) }}" class="btn btn-sm btn-outline-warning" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('mails.send.external.destroy', $mail->id) }}"
+                                              method="POST"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach
@@ -143,14 +166,45 @@
                 </div>
             @else
                 <div class="text-center py-4">
-                    <i class="bi bi-inbox fs-1 text-muted"></i>
-                    <h4 class="text-muted mt-2">Aucun courrier reçu externe</h4>
-                    <p class="text-muted">Commencez par enregistrer votre premier courrier reçu externe.</p>
-                    <a href="{{ route('mails.received.external.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Enregistrer un courrier reçu
+                    <i class="bi bi-envelope-slash fs-1 text-muted"></i>
+                    <h4 class="text-muted mt-2">Aucun courrier sortant externe</h4>
+                    <p class="text-muted">Commencez par créer votre premier courrier externe.</p>
+                    <a href="{{ route('mails.send.external.create') }}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Créer un courrier externe
                     </a>
                 </div>
             @endif
         </div>
     </div>
+
+    <!-- Modals and JavaScript -->
+    <div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archiver les documents</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="archiveForm">
+                        <div class="mb-3">
+                            <label for="containerId" class="form-label">Conteneur d'archives</label>
+                            <select class="form-select" id="containerId" required>
+                                <option value="" selected disabled>Sélectionner un conteneur</option>
+                                <!-- Les conteneurs seront chargés dynamiquement ici -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmArchiveBtn">Confirmer l'archivage</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script src="{{ asset('js/mails.js') }}"></script>
+    @endpush
 @endsection

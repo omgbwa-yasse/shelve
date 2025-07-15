@@ -37,6 +37,34 @@
         </div>
     @endif
 
+    <!-- Bandeau d'actions -->
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3 rounded">
+        <div class="d-flex align-items-center gap-2">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                <i class="bi bi-cart me-1"></i>
+                Chariot
+            </a>
+            <a href="#" id="exportBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.export') }}">
+                <i class="bi bi-download me-1"></i>
+                Exporter
+            </a>
+            <a href="#" id="printBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.print') }}">
+                <i class="bi bi-printer me-1"></i>
+                Imprimer
+            </a>
+            <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
+                <i class="bi bi-archive me-1"></i>
+                Archiver
+            </a>
+        </div>
+        <div class="d-flex align-items-center">
+            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                <i class="bi bi-check-square me-1"></i>
+                Tout cocher
+            </a>
+        </div>
+    </div>
+
     <!-- Liste des courriers -->
     <div class="card shadow-sm border-0 rounded">
         <div class="card-body">
@@ -45,6 +73,7 @@
                     <table class="table table-striped">
                         <thead class="table-dark">
                             <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
                                 <th>Code</th>
                                 <th>Nom</th>
                                 <th>Date</th>
@@ -57,6 +86,7 @@
                         <tbody>
                             @foreach($mails as $mail)
                                 <tr>
+                                    <td><input type="checkbox" class="mail-checkbox" value="{{ $mail->id }}"></td>
                                     <td>
                                         <span class="badge bg-dark text-white">{{ $mail->code }}</span>
                                     </td>
@@ -146,4 +176,35 @@
             @endif
         </div>
     </div>
+
+    <!-- Modals and JavaScript -->
+    <div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archiver les documents</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="archiveForm">
+                        <div class="mb-3">
+                            <label for="containerId" class="form-label">Conteneur d'archives</label>
+                            <select class="form-select" id="containerId" required>
+                                <option value="" selected disabled>Sélectionner un conteneur</option>
+                                <!-- Les conteneurs seront chargés dynamiquement ici -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmArchiveBtn">Confirmer l'archivage</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script src="{{ asset('js/mails.js') }}"></script>
+    @endpush
 @endsection
