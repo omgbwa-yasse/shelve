@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 use FFMpeg\FFMpeg;
 
-class MailController extends Controller
+class MailReceivedExternalController extends Controller
 {
     protected $allowedMimeTypes = [
         'application/pdf',
@@ -40,7 +40,7 @@ class MailController extends Controller
     /**
      * Display a listing of incoming mails.
      */
-    public function indexIncoming()
+    public function index()
     {
         $organisationId = Auth::user()->current_organisation_id;
         $mails = Mail::where('recipient_organisation_id', $organisationId)
@@ -51,27 +51,13 @@ class MailController extends Controller
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.incoming.index', compact('mails', 'dollies', 'categories', 'users'));
-    }
-
-    /**
-     * Display a listing of outgoing mails.
-     */
-    public function indexOutgoing()
-    {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::where('sender_organisation_id', $organisationId)
-            ->where('mail_type', Mail::TYPE_OUTGOING)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        return view('mails.outgoing.index', compact('mails'));
+        return view('mails.received.external.index', compact('mails', 'dollies', 'categories', 'users'));
     }
 
     /**
      * Show the form for creating a new incoming mail.
      */
-    public function createIncoming()
+    public function create()
     {
         $typologies = MailTypology::orderBy('name')->get();
         $priorities = MailPriority::orderBy('duration')->get();
@@ -80,7 +66,7 @@ class MailController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
-        return view('mails.incoming.create', compact(
+        return view('mails.received.external.create', compact(
             'typologies',
             'priorities',
             'actions',
@@ -91,31 +77,9 @@ class MailController extends Controller
     }
 
     /**
-     * Show the form for creating a new outgoing mail.
-     */
-    public function createOutgoing()
-    {
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
-
-        return view('mails.outgoing.create', compact(
-            'typologies',
-            'priorities',
-            'actions',
-            'externalContacts',
-            'externalOrganizations'
-        ));
-    }
-
-
-
-    /**
      * Store a newly created incoming mail in storage.
      */
-    public function storeIncoming(Request $request)
+    public function store(Request $request)
     {
         try {
             $validatedData = $request->validate([
@@ -159,7 +123,6 @@ class MailController extends Controller
 
             $mailCode = $this->generateMailCode($validatedData['typology_id']);
 
-
             $mail = Mail::create($validatedData + [
                 'code' => $mailCode,
                 'recipient_organisation_id' => Auth::user()->current_organisation_id,
@@ -179,93 +142,16 @@ class MailController extends Controller
             $mail->initializeWorkflow();
 
             // Log the action
-            $mail->logAction('created', null, null, null, 'Courrier entrant créé');
+            $mail->logAction('created', null, null, null, 'Courrier entrant externe créé');
 
-            return redirect()->route('mails.incoming.index')
-                ->with('success', 'Courrier entrant créé avec succès');
-
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la création du courrier entrant : ' . $e->getMessage());
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Une erreur est survenue lors de la création du courrier entrant.');
-        }
-    }
-
-    /**
-     * Store a newly created outgoing mail in storage.
-     */
-    public function storeOutgoing(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'code' => 'nullable|max:10',
-                'name' => 'required|max:150',
-                'date' => 'required|date',
-                'description' => 'nullable',
-                'document_type' => 'required|in:original,duplicate,copy',
-                'typology_id' => 'required|exists:mail_typologies,id',
-                'priority_id' => 'nullable|exists:mail_priorities,id',
-                'action_id' => 'nullable|exists:mail_actions,id',
-                'recipient_type' => 'required|in:external_contact,external_organization',
-                'external_recipient_id' => 'nullable|exists:external_contacts,id',
-                'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
-                'delivery_method' => 'nullable|string|max:50',
-                'tracking_number' => 'nullable|string|max:100',
-                'deadline' => 'nullable|date|after:today',
-                'estimated_processing_time' => 'nullable|integer|min:1',
-                'attachments' => 'nullable|array',
-                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
-            ]);
-
-            // Validation conditionnelle selon le type de destinataire
-            if ($validatedData['recipient_type'] === 'external_contact' && empty($validatedData['external_recipient_id'])) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['external_recipient_id' => 'Veuillez sélectionner un contact externe.']);
-            }
-
-            if ($validatedData['recipient_type'] === 'external_organization' && empty($validatedData['external_recipient_organization_id'])) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['external_recipient_organization_id' => 'Veuillez sélectionner une organisation externe.']);
-            }
-
-            if($validatedData['code'] == null) {
-                $mailCode = $this->generateMailCode($validatedData['typology_id']);
-            }else{
-                $mailCode = $validatedData['code'];
-            }
-
-            $mail = Mail::create($validatedData + [
-                'code' => $mailCode,
-                'sender_organisation_id' => Auth::user()->current_organisation_id,
-                'sender_user_id' => Auth::id(),
-                'sender_type' => 'organisation',
-                'status' => MailStatusEnum::DRAFT,
-                'mail_type' => Mail::TYPE_OUTGOING,
-            ]);
-
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $this->handleFileUpload($file, $mail);
-                }
-            }
-
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
-
-            // Log the action
-            $mail->logAction('created', null, null, null, 'Courrier sortant créé');
-
-            return redirect()->route('mails.outgoing.index')
-                ->with('success', 'Courrier sortant créé avec succès');
+            return redirect()->route('mails.received.external.index')
+                ->with('success', 'Courrier entrant externe créé avec succès');
 
         } catch (Exception $e) {
-            Log::error('Erreur lors de la création du courrier sortant : ' . $e->getMessage());
+            Log::error('Erreur lors de la création du courrier entrant externe : ' . $e->getMessage());
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Une erreur est survenue lors de la création du courrier sortant.');
+                ->with('error', 'Une erreur est survenue lors de la création du courrier entrant externe.');
         }
     }
 
@@ -289,8 +175,7 @@ class MailController extends Controller
             'externalRecipientOrganization'
         ])->findOrFail($id);
 
-        $viewName = $mail->mail_type === 'incoming' ? 'mails.incoming.show' : 'mails.outgoing.show';
-        return view($viewName, compact('mail'));
+        return view('mails.received.external.show', compact('mail'));
     }
 
     /**
@@ -320,8 +205,7 @@ class MailController extends Controller
         $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
         $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
-        $viewName = $mail->mail_type === 'incoming' ? 'mails.incoming.edit' : 'mails.outgoing.edit';
-        return view($viewName, compact(
+        return view('mails.received.external.edit', compact(
             'mail',
             'typologies',
             'priorities',
@@ -340,112 +224,52 @@ class MailController extends Controller
         try {
             $mail = Mail::findOrFail($id);
 
-            if ($mail->mail_type === 'incoming') {
-                return $this->updateIncoming($request, $mail);
-            } else {
-                return $this->updateOutgoing($request, $mail);
+            $validatedData = $request->validate([
+                'code' => 'required|exists:mails,code,' . $mail->id,
+                'name' => 'required|max:150',
+                'date' => 'required|date',
+                'description' => 'nullable',
+                'document_type' => 'required|in:original,duplicate,copy',
+                'typology_id' => 'required|exists:mail_typologies,id',
+                'priority_id' => 'nullable|exists:mail_priorities,id',
+                'action_id' => 'nullable|exists:mail_actions,id',
+                'sender_type' => 'required|in:external_contact,external_organization,organisation',
+                'external_sender_id' => 'nullable|exists:external_contacts,id',
+                'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
+                'sender_organisation_id' => 'nullable|exists:organisations,id',
+                'delivery_method' => 'nullable|string|max:50',
+                'tracking_number' => 'nullable|string|max:100',
+                'deadline' => 'nullable|date|after:today',
+                'estimated_processing_time' => 'nullable|integer|min:1',
+                'attachments' => 'nullable|array',
+                'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
+            ]);
+
+            $mail->update($validatedData + [
+                'recipient_organisation_id' => Auth::user()->current_organisation_id,
+                'recipient_user_id' => Auth::id(),
+                'recipient_type' => 'organisation',
+                'mail_type' => Mail::TYPE_INCOMING,
+            ]);
+
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $this->handleFileUpload($file, $mail);
+                }
             }
+
+            // Log the update action
+            $mail->logAction('updated', null, null, null, 'Courrier entrant externe mis à jour');
+
+            return redirect()->route('mails.received.external.index')
+                ->with('success', 'Courrier entrant externe mis à jour avec succès');
 
         } catch (Exception $e) {
-            Log::error('Erreur lors de la mise à jour du courrier : ' . $e->getMessage());
+            Log::error('Erreur lors de la mise à jour du courrier entrant externe : ' . $e->getMessage());
             return redirect()->back()
                 ->withInput()
-                ->with('error', 'Une erreur est survenue lors de la mise à jour du courrier.');
+                ->with('error', 'Une erreur est survenue lors de la mise à jour du courrier entrant externe.');
         }
-    }
-
-    /**
-     * Update incoming mail.
-     */
-    protected function updateIncoming(Request $request, Mail $mail)
-    {
-        $validatedData = $request->validate([
-            'code' => 'required|exists:mails,code,' . $mail->id,
-            'name' => 'required|max:150',
-            'date' => 'required|date',
-            'description' => 'nullable',
-            'document_type' => 'required|in:original,duplicate,copy',
-            'typology_id' => 'required|exists:mail_typologies,id',
-            'priority_id' => 'nullable|exists:mail_priorities,id',
-            'action_id' => 'nullable|exists:mail_actions,id',
-            'sender_type' => 'required|in:user,external_contact,external_organization,organisation',
-            'sender_user_id' => 'nullable|exists:users,id',
-            'external_sender_id' => 'nullable|exists:external_contacts,id',
-            'external_sender_organization_id' => 'nullable|exists:external_organizations,id',
-            'sender_organisation_id' => 'nullable|exists:organisations,id',
-            'delivery_method' => 'nullable|string|max:50',
-            'tracking_number' => 'nullable|string|max:100',
-            'deadline' => 'nullable|date|after:today',
-            'estimated_processing_time' => 'nullable|integer|min:1',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
-        ]);
-
-        $mail->update($validatedData + [
-            'recipient_organisation_id' => Auth::user()->current_organisation_id,
-            'recipient_user_id' => Auth::id(),
-            'recipient_type' => 'organisation',
-            'mail_type' => Mail::TYPE_INCOMING,
-        ]);
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $this->handleFileUpload($file, $mail);
-            }
-        }
-
-        // Log the update action
-        $mail->logAction('updated', null, null, null, 'Courrier entrant mis à jour');
-
-        return redirect()->route('mails.incoming.index')
-            ->with('success', 'Courrier entrant mis à jour avec succès');
-    }
-
-    /**
-     * Update outgoing mail.
-     */
-    protected function updateOutgoing(Request $request, Mail $mail)
-    {
-        $validatedData = $request->validate([
-            'code' => 'required|exists:mails,code,' . $mail->id,
-            'name' => 'required|max:150',
-            'date' => 'required|date',
-            'description' => 'nullable',
-            'document_type' => 'required|in:original,duplicate,copy',
-            'typology_id' => 'required|exists:mail_typologies,id',
-            'priority_id' => 'nullable|exists:mail_priorities,id',
-            'action_id' => 'nullable|exists:mail_actions,id',
-            'recipient_type' => 'required|in:user,external_contact,external_organization,organisation',
-            'recipient_user_id' => 'nullable|exists:users,id',
-            'external_recipient_id' => 'nullable|exists:external_contacts,id',
-            'external_recipient_organization_id' => 'nullable|exists:external_organizations,id',
-            'recipient_organisation_id' => 'nullable|exists:organisations,id',
-            'delivery_method' => 'nullable|string|max:50',
-            'tracking_number' => 'nullable|string|max:100',
-            'deadline' => 'nullable|date|after:today',
-            'estimated_processing_time' => 'nullable|integer|min:1',
-            'attachments' => 'nullable|array',
-            'attachments.*' => 'file|max:20480|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,gif,mp4,mov,avi',
-        ]);
-
-        $mail->update($validatedData + [
-            'sender_organisation_id' => Auth::user()->current_organisation_id,
-            'sender_user_id' => Auth::id(),
-            'sender_type' => 'organisation',
-            'mail_type' => Mail::TYPE_OUTGOING,
-        ]);
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $this->handleFileUpload($file, $mail);
-            }
-        }
-
-        // Log the update action
-        $mail->logAction('updated', null, null, null, 'Courrier sortant mis à jour');
-
-        return redirect()->route('mails.outgoing.index')
-            ->with('success', 'Courrier sortant mis à jour avec succès');
     }
 
     /**
@@ -455,7 +279,6 @@ class MailController extends Controller
     {
         try {
             $mail = Mail::findOrFail($id);
-            $mailType = $mail->mail_type;
             $mailCode = $mail->code;
 
             // Log the deletion action before deleting
@@ -473,9 +296,8 @@ class MailController extends Controller
 
             $mail->delete();
 
-            $route = $mailType === 'incoming' ? 'mails.incoming.index' : 'mails.outgoing.index';
-            return redirect()->route($route)
-                ->with('success', "Courrier {$mailCode} supprimé avec succès");
+            return redirect()->route('mails.received.external.index')
+                ->with('success', "Courrier externe {$mailCode} supprimé avec succès");
 
         } catch (Exception $e) {
             Log::error('Erreur lors de la suppression du courrier : ' . $e->getMessage());

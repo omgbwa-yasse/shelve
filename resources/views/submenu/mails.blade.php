@@ -194,13 +194,26 @@
             <div class="submenu-divider"></div>
             <div class="submenu-category-title">Courrier externe</div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.send.external.index') }}">
+                    <i class="bi bi-send"></i> Courriers envoyés externes
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.received.external.index') }}">
+                    <i class="bi bi-inbox"></i> Courriers reçus externes
+                </a>
+            </div>
+
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">Courrier classique (compatibilité)</div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.outgoing.index') }}">
-                    <i class="bi bi-box-arrow-right"></i> Courriers sortants externes
+                    <i class="bi bi-box-arrow-right"></i> Courriers sortants
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.incoming.index') }}">
-                    <i class="bi bi-box-arrow-in-left"></i> Courriers entrants externes
+                    <i class="bi bi-box-arrow-in-left"></i> Courriers entrants
                 </a>
             </div>
 

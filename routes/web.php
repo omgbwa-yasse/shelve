@@ -12,6 +12,8 @@ use App\Http\Controllers\MailController;
 use App\Http\Controllers\MailSendController;
 use App\Http\Controllers\MailReceivedController;
 use App\Http\Controllers\MailArchiveController;
+use App\Http\Controllers\MailSendExternalController;
+use App\Http\Controllers\MailReceivedExternalController;
 
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
@@ -299,7 +301,31 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('send', MailSendController::class)->names('mail-send');
         Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
 
-        // Routes pour les courriers entrants
+        // Routes pour les courriers entrants externes
+        Route::prefix('received/external')->name('mails.received.external.')->group(function () {
+            Route::get('/', [MailReceivedExternalController::class, 'index'])->name('index');
+            Route::get('/create', [MailReceivedExternalController::class, 'create'])->name('create');
+            Route::post('/', [MailReceivedExternalController::class, 'store'])->name('store');
+            Route::get('/{id}', [MailReceivedExternalController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [MailReceivedExternalController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [MailReceivedExternalController::class, 'update'])->name('update');
+            Route::patch('/{id}', [MailReceivedExternalController::class, 'update']);
+            Route::delete('/{id}', [MailReceivedExternalController::class, 'destroy'])->name('destroy');
+        });
+
+        // Routes pour les courriers sortants externes
+        Route::prefix('send/external')->name('mails.send.external.')->group(function () {
+            Route::get('/', [MailSendExternalController::class, 'index'])->name('index');
+            Route::get('/create', [MailSendExternalController::class, 'create'])->name('create');
+            Route::post('/', [MailSendExternalController::class, 'store'])->name('store');
+            Route::get('/{id}', [MailSendExternalController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [MailSendExternalController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [MailSendExternalController::class, 'update'])->name('update');
+            Route::patch('/{id}', [MailSendExternalController::class, 'update']);
+            Route::delete('/{id}', [MailSendExternalController::class, 'destroy'])->name('destroy');
+        });
+
+        // Routes anciennes (compatibilité temporaire)
         Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
         Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
         Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
@@ -309,7 +335,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::patch('incoming/{id}', [MailController::class, 'update']);
         Route::delete('incoming/{id}', [MailController::class, 'destroy'])->name('mails.incoming.destroy');
 
-        // Routes pour les courriers sortants
         Route::get('outgoing', [MailController::class, 'indexOutgoing'])->name('mails.outgoing.index');
         Route::get('outgoing/create', [MailController::class, 'createOutgoing'])->name('mails.outgoing.create');
         Route::post('outgoing', [MailController::class, 'storeOutgoing'])->name('mails.outgoing.store');
