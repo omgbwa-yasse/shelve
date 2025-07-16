@@ -51,7 +51,8 @@ class MailController extends Controller
         $dollies = Dolly::all();
         $categories = Dolly::categories();
         $users = User::all();
-        return view('mails.incoming.index', compact('mails', 'dollies', 'categories', 'users'));
+        $type = 'received';
+        return view('mails.index', compact('mails', 'dollies', 'categories', 'users', 'type'));
     }
 
     /**
@@ -65,7 +66,8 @@ class MailController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return view('mails.outgoing.index', compact('mails'));
+        $type = 'send';
+        return view('mails.index', compact('mails', 'type'));
     }
 
     /**

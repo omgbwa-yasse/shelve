@@ -149,10 +149,9 @@ class SearchMailController extends Controller
             'containers' => MailContainer::all(),
         ];
 
-        // Déterminer la vue en fonction du type de courrier
-        $viewType = in_array($request->type, ['send', 'received']) ? $request->type : 'received';
+        $type = in_array($request->type, ['send', 'received']) ? $request->type : 'received';
 
-        return view("mails.{$viewType}.index", compact('mails', 'title', 'data'));
+        return view("mails.index", compact('mails', 'title', 'data', 'type'));
     }
 
 
