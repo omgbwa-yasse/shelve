@@ -11,6 +11,7 @@
             'send' => 'Courriers envoyés',
             'received_external' => 'Courriers reçus externes',
             'send_external' => 'Courriers envoyés externes'
+
         ];
         $currentTitle = $titles[$type ?? 'received'] ?? 'Courriers';
     @endphp
@@ -92,11 +93,11 @@
     <!-- Bandeau d'actions -->
     <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3 rounded">
         <div class="d-flex align-items-center gap-2">
-            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#cartModal">
                 <i class="bi bi-cart me-1"></i>
                 Chariot
             </a>
-            <a href="#" id="exportBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.export') }}">
+            <a href="#" id="exportBtn" class="btn btn-light btn-sm">
                 <i class="bi bi-download me-1"></i>
                 Exporter
             </a>
@@ -119,13 +120,13 @@
 
     <div id="mailList" class="mb-4">
         @foreach ($mails as $mail)
-            <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
-                <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+            <div class="card mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                <div class="card-header bg-light d-flex align-items-center py-2">
                     <div class="form-check me-3">
                         <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" name="selected_mail[]" />
                     </div>
 
-                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#mail-{{ $mail->id }}" aria-expanded="false" aria-controls="mail-{{ $mail->id }}">
+                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $mail->id }}" aria-expanded="false" aria-controls="collapse{{ $mail->id }}">
                         <i class="bi bi-chevron-down fs-5"></i>
                     </button>
 
@@ -174,7 +175,7 @@
                     </h4>
                 </div>
 
-                <div class="collapse" id="mail-{{ $mail->id }}">
+                <div class="collapse" id="collapse{{ $mail->id }}">
                     <div class="card-body bg-white">
                         @if($mail->description)
                             <div class="mb-3">
@@ -320,18 +321,64 @@
     </div>
 
     <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="cartModalLabel">{{ __('add_to_cart') }}</h5>
+                    <h5 class="modal-title" id="cartModalLabel">Ajouter au chariot</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>{{ __('add_to_cart') }}</p>
+                    <p>Sélectionnez le chariot qui recevra les <span id="selectedMailsCountCart">0</span> courrier(s) sélectionné(s) :</p>
+
+                    <!-- Zone de chargement -->
+                    <div id="dolliesLoading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Chargement des chariots...</p>
+                    </div>
+
+                    <!-- Liste des chariots -->
+                    <div id="dolliesList" class="d-none">
+                        <div class="row" id="dolliesGrid">
+                            <!-- Les chariots seront ajoutés ici via JavaScript -->
+                        </div>
+
+                        <!-- Option pour créer un nouveau chariot -->
+                        <div class="border-top pt-3 mt-3">
+                            <h6>Ou créer un nouveau chariot :</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="newDollyName" placeholder="Nom du chariot" maxlength="70">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="newDollyDescription" placeholder="Description (optionnel)" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="cart_option" value="new" id="newDollyOption">
+                                <label class="form-check-label fw-semibold" for="newDollyOption">
+                                    Créer un nouveau chariot avec ces courriers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message d'erreur -->
+                    <div id="dolliesError" class="alert alert-danger d-none">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des chariots.
+                    </div>
+
+                    <!-- Informations -->
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Les courriers seront ajoutés au chariot sélectionné pour faciliter leur gestion groupée.
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cancel') }}</button>
-                    <button type="button" class="btn btn-primary" id="confirmCart">{{ __('confirm') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmCart" disabled>Ajouter au chariot</button>
                 </div>
             </div>
         </div>
@@ -354,90 +401,474 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for Archive -->
+    <div class="modal fade" id="archiveModal" tabindex="-1" aria-labelledby="archiveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="archiveModalLabel">Archiver les courriers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Sélectionnez la boîte d'archives qui recevra les <span id="selectedMailsCount">0</span> courrier(s) sélectionné(s) :</p>
+
+                    <!-- Zone de chargement -->
+                    <div id="containersLoading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Chargement des boîtes d'archives...</p>
+                    </div>
+
+                    <!-- Liste des conteneurs -->
+                    <div id="containersList" class="d-none">
+                        <div class="row" id="containersGrid">
+                            <!-- Les conteneurs seront ajoutés ici via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Message d'erreur -->
+                    <div id="containersError" class="alert alert-danger d-none">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des boîtes d'archives.
+                    </div>
+
+                    <!-- Informations -->
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Les courriers archivés seront déplacés vers la boîte sélectionnée et ne seront plus visibles dans cette liste.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="confirmArchive" disabled>Archiver</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 
 
 @push('scripts')
+    <style>
+        .container-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .container-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+
+        .container-card:has(.container-radio:checked) {
+            background-color: #e3f2fd;
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+        }
+
+        .container-radio:checked + label {
+            color: #0056b3;
+        }
+
+        #containersGrid .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        /* Styles pour les chariots */
+        .dolly-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .dolly-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #28a745;
+        }
+
+        .dolly-card:has(.dolly-radio:checked) {
+            background-color: #d4edda;
+            border-color: #28a745;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+        }
+
+        .dolly-radio:checked + label {
+            color: #155724;
+        }
+
+        #dolliesGrid .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+    </style>
     <script>
+        console.log('Script chargé');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+
+            // Test direct des boutons collapse
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    console.log('Bouton collapse cliqué:', this.getAttribute('data-bs-target'));
+                });
+            });
+        });
+
         document.getElementById('cartBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
             if (checkedRecords.length === 0) {
-                alert('Veuillez sélectionner au moins un enregistrement.');
+                alert('Veuillez sélectionner au moins un courrier.');
                 return;
             }
 
+            console.log('IDs sélectionnés pour le chariot:', checkedRecords);
+
+            // Mettre à jour le compteur
+            document.getElementById('selectedMailsCountCart').textContent = checkedRecords.length;
+
+            // Afficher le modal
             var cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
             cartModal.show();
+
+            // Charger les chariots
+            loadDollies();
         });
 
         document.getElementById('confirmCart').addEventListener('click', function() {
-            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
-            fetch('{{ route("dolly.createWithRecords") }}', {
+            // Vérifier l'option sélectionnée
+            const selectedDolly = document.querySelector('input[name="cart_option"]:checked');
+
+            if (!selectedDolly) {
+                alert('Veuillez sélectionner un chariot ou créer un nouveau chariot.');
+                return;
+            }
+
+            // Désactiver le bouton pendant l'opération
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
+
+            if (selectedDolly.value === 'new') {
+                // Créer un nouveau chariot
+                const dollyName = document.getElementById('newDollyName').value.trim();
+                if (!dollyName) {
+                    alert('Veuillez saisir un nom pour le nouveau chariot.');
+                    this.disabled = false;
+                    this.innerHTML = 'Ajouter au chariot';
+                    return;
+                }
+
+                const dollyDescription = document.getElementById('newDollyDescription').value.trim();
+
+                // Créer le chariot puis ajouter les mails
+                createNewDollyWithMails(dollyName, dollyDescription, checkedRecords);
+            } else {
+                // Ajouter aux chariot existant
+                addMailsToDolly(selectedDolly.value, checkedRecords);
+            }
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un courrier à exporter.');
+                return;
+            }
+
+            console.log('IDs sélectionnés pour export:', checkedRecords);
+
+            fetch('{{ route("mail-transaction.export") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ records: checkedRecords })
+                body: JSON.stringify({ selectedIds: checkedRecords })
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Un nouveau chariot a été créé avec les enregistrements sélectionnés.');
-                    } else {
-                        alert('Une erreur est survenue lors de la création du chariot.');
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
                     }
-                });
+                    return response.blob();
+                })
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'courriers_export.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
 
-            var cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
-            cartModal.hide();
+                    // Décocher tous les checkboxes après export
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(cb => cb.checked = false);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'export:', error);
+                    alert('Erreur lors de l\'export: ' + error.message);
+                });
         });
 
         document.getElementById('printBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
             if (checkedRecords.length === 0) {
-                alert('Veuillez sélectionner au moins un enregistrement à imprimer.');
+                alert('Veuillez sélectionner au moins un courrier à imprimer.');
                 return;
             }
 
+            console.log('IDs sélectionnés pour impression:', checkedRecords);
             var printModal = new bootstrap.Modal(document.getElementById('printModal'));
             printModal.show();
         });
 
         document.getElementById('confirmPrint').addEventListener('click', function() {
-            let checkedRecords = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
-            fetch('{{ route("records.print") }}', {
+            console.log('Envoi des IDs pour impression:', checkedRecords);
+
+            fetch('{{ route("mail-transaction.print") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify({ records: checkedRecords })
+                body: JSON.stringify({ selectedIds: checkedRecords })
             })
-                .then(response => response.blob())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
+                    }
+                    return response.blob();
+                })
                 .then(blob => {
                     let url = window.URL.createObjectURL(blob);
                     let a = document.createElement('a');
                     a.href = url;
-                    a.download = 'records_print.pdf';
+                    a.download = 'courriers_impression.pdf';
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
+
+                    // Décocher tous les checkboxes après impression
+                    document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(cb => cb.checked = false);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'impression:', error);
+                    alert('Erreur lors de l\'impression: ' + error.message);
                 });
 
             var printModal = bootstrap.Modal.getInstance(document.getElementById('printModal'));
             printModal.hide();
+        });
+
+        document.getElementById('archiveBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un courrier à archiver.');
+                return;
+            }
+
+            console.log('IDs sélectionnés pour archivage:', checkedRecords);
+
+            // Mettre à jour le compteur
+            document.getElementById('selectedMailsCount').textContent = checkedRecords.length;
+
+            // Afficher le modal
+            var archiveModal = new bootstrap.Modal(document.getElementById('archiveModal'));
+            archiveModal.show();
+
+            // Charger les conteneurs
+            loadContainers();
+        });
+
+        function loadContainers() {
+            // Afficher le loading
+            document.getElementById('containersLoading').classList.remove('d-none');
+            document.getElementById('containersList').classList.add('d-none');
+            document.getElementById('containersError').classList.add('d-none');
+
+            // Réinitialiser le bouton
+            document.getElementById('confirmArchive').disabled = true;
+
+            fetch('{{ route("mail-container.list") }}', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayContainers(data.containers || data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des conteneurs:', error);
+                    document.getElementById('containersLoading').classList.add('d-none');
+                    document.getElementById('containersError').classList.remove('d-none');
+                });
+        }
+
+        function displayContainers(containers) {
+            document.getElementById('containersLoading').classList.add('d-none');
+
+            if (!containers || containers.length === 0) {
+                document.getElementById('containersError').innerHTML =
+                    '<i class="bi bi-exclamation-triangle me-2"></i>Aucune boîte d\'archives disponible.';
+                document.getElementById('containersError').classList.remove('d-none');
+                return;
+            }
+
+            const grid = document.getElementById('containersGrid');
+            grid.innerHTML = '';
+
+            containers.forEach(container => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'col-md-6 col-lg-4 mb-3';
+
+                colDiv.innerHTML = `
+                    <div class="card container-card h-100" style="cursor: pointer;" data-container-id="${container.id}">
+                        <div class="card-body p-3">
+                            <div class="form-check">
+                                <input class="form-check-input container-radio" type="radio" name="selected_container" value="${container.id}" id="container_${container.id}">
+                                <label class="form-check-label w-100" for="container_${container.id}">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            <i class="bi bi-box-seam fs-4 text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-semibold">${container.code || 'Code non défini'}</div>
+                                            <div class="text-muted small">${container.name || 'Nom non défini'}</div>
+                                            ${container.description ? `<div class="text-muted small mt-1">${container.description.substring(0, 50)}${container.description.length > 50 ? '...' : ''}</div>` : ''}
+                                            <div class="mt-2">
+                                                <span class="badge bg-info">ID: ${container.id}</span>
+                                                ${container.location ? `<span class="badge bg-secondary ms-1">${container.location}</span>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(colDiv);
+            });
+
+            document.getElementById('containersList').classList.remove('d-none');
+
+            // Ajouter les événements
+            setupContainerSelection();
+        }
+
+        function setupContainerSelection() {
+            // Sélection par clic sur la carte
+            document.querySelectorAll('.container-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.type !== 'radio') {
+                        const radio = this.querySelector('.container-radio');
+                        radio.checked = true;
+                        updateConfirmButton();
+                    }
+                });
+            });
+
+            // Sélection par radio button
+            document.querySelectorAll('.container-radio').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateConfirmButton();
+                });
+            });
+        }
+
+        function updateConfirmButton() {
+            const selectedContainer = document.querySelector('input[name="archive_container"]:checked');
+            document.getElementById('confirmArchive').disabled = !selectedContainer;
+        }
+
+        document.getElementById('confirmArchive').addEventListener('click', function() {
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            const selectedContainer = document.querySelector('input[name="archive_container"]:checked');
+
+            if (!selectedContainer) {
+                alert('Veuillez sélectionner une boîte d\'archives.');
+                return;
+            }
+
+            console.log('Envoi des IDs pour archivage:', checkedRecords);
+            console.log('Conteneur sélectionné:', selectedContainer.value);
+
+            // Désactiver le bouton pendant l'opération
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Archivage...';
+
+            fetch('{{ route("mail-transaction.archive") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    mail_ids: checkedRecords,
+                    container_id: selectedContainer.value
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Les courriers ont été archivés avec succès.');
+                        // Recharger la page pour voir les changements
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de l\'archivage: ' + (data.message || 'Erreur inconnue'));
+                        // Réactiver le bouton
+                        this.disabled = false;
+                        this.innerHTML = 'Archiver';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'archivage:', error);
+                    alert('Erreur lors de l\'archivage: ' + error.message);
+                    // Réactiver le bouton
+                    this.disabled = false;
+                    this.innerHTML = 'Archiver';
+                });
+
+            var archiveModal = bootstrap.Modal.getInstance(document.getElementById('archiveModal'));
+            archiveModal.hide();
         });
 
         function confirmDelete(mailId) {
@@ -445,6 +876,184 @@
                 document.getElementById('delete-form-' + mailId).submit();
             }
         }
+        function loadDollies() {
+            // Afficher le loading
+            document.getElementById('dolliesLoading').classList.remove('d-none');
+            document.getElementById('dolliesList').classList.add('d-none');
+            document.getElementById('dolliesError').classList.add('d-none');
+
+            // Réinitialiser le bouton
+            document.getElementById('confirmCart').disabled = true;
+
+            fetch('/dolly-handler/list?category=mail', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayDollies(data.dollies || data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des chariots:', error);
+                    document.getElementById('dolliesLoading').classList.add('d-none');
+                    document.getElementById('dolliesError').classList.remove('d-none');
+                });
+        }
+
+        function displayDollies(dollies) {
+            document.getElementById('dolliesLoading').classList.add('d-none');
+
+            const grid = document.getElementById('dolliesGrid');
+            grid.innerHTML = '';
+
+            if (dollies && dollies.length > 0) {
+                dollies.forEach(dolly => {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'col-md-6 col-lg-4 mb-3';
+
+                    colDiv.innerHTML = `
+                        <div class="card dolly-card h-100" data-dolly-id="${dolly.id}">
+                            <div class="card-body p-3">
+                                <div class="form-check">
+                                    <input class="form-check-input dolly-radio" type="radio" name="cart_option" value="${dolly.id}" id="dolly_${dolly.id}">
+                                    <label class="form-check-label w-100" for="dolly_${dolly.id}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-2">
+                                                <i class="bi bi-cart-fill fs-4 text-success"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">${dolly.name || 'Nom non défini'}</div>
+                                                ${dolly.description ? `<div class="text-muted small">${dolly.description.substring(0, 50)}${dolly.description.length > 50 ? '...' : ''}</div>` : ''}
+                                                <div class="mt-2">
+                                                    <span class="badge bg-success">ID: ${dolly.id}</span>
+                                                    ${dolly.category ? `<span class="badge bg-secondary ms-1">${dolly.category}</span>` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    grid.appendChild(colDiv);
+                });
+            }
+
+            document.getElementById('dolliesList').classList.remove('d-none');
+
+            // Ajouter les événements
+            setupDollySelection();
+        }
+
+        function setupDollySelection() {
+            // Sélection par clic sur la carte
+            document.querySelectorAll('.dolly-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.type !== 'radio') {
+                        const radio = this.querySelector('.dolly-radio');
+                        radio.checked = true;
+                        updateCartConfirmButton();
+                    }
+                });
+            });
+
+            // Sélection par radio button
+            document.querySelectorAll('input[name="cart_option"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateCartConfirmButton();
+                });
+            });
+        }
+
+        function updateCartConfirmButton() {
+            const selectedOption = document.querySelector('input[name="cart_option"]:checked');
+            document.getElementById('confirmCart').disabled = !selectedOption;
+        }
+
+        function createNewDollyWithMails(name, description, mailIds) {
+            fetch('/dolly-handler/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    category: 'mail'
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Ajouter les mails au nouveau chariot
+                        addMailsToDolly(data.data.id, mailIds);
+                    } else {
+                        alert('Erreur lors de la création du chariot: ' + (data.message || 'Erreur inconnue'));
+                        resetCartButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la création du chariot:', error);
+                    alert('Erreur lors de la création du chariot: ' + error.message);
+                    resetCartButton();
+                });
+        }
+
+        function addMailsToDolly(dollyId, mailIds) {
+            fetch('/dolly-handler/add-items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    dolly_id: dollyId,
+                    category: 'mail',
+                    items: mailIds
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success || response.ok) {
+                        alert(`${mailIds.length} courrier(s) ajouté(s) au chariot avec succès.`);
+
+                        // Fermer le modal
+                        var cartModal = bootstrap.Modal.getInstance(document.getElementById('cartModal'));
+                        cartModal.hide();
+
+                        // Décocher tous les checkboxes
+                        document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(cb => cb.checked = false);
+
+                        // Réinitialiser le bouton
+                        resetCartButton();
+                    } else {
+                        alert('Erreur lors de l\'ajout au chariot: ' + (data.message || 'Erreur inconnue'));
+                        resetCartButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'ajout au chariot:', error);
+                    alert('Erreur lors de l\'ajout au chariot: ' + error.message);
+                    resetCartButton();
+                });
+        }
+
+        function resetCartButton() {
+            const confirmButton = document.getElementById('confirmCart');
+            confirmButton.disabled = false;
+            confirmButton.innerHTML = 'Ajouter au chariot';
+        }
+
         let checkAllBtn = document.getElementById('checkAllBtn');
         checkAllBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -458,6 +1067,8 @@
             this.innerHTML = allChecked ?
                 '<i class="bi bi-check-square me-1"></i>Tout cocher' :
                 '<i class="bi bi-square me-1"></i>Tout décocher';
+
+            console.log('Tous les courriers', allChecked ? 'décochés' : 'cochés');
         });
 
         document.getElementById('searchInput').addEventListener('keyup', function() {
@@ -482,11 +1093,23 @@
             collapseElements.forEach(collapse => {
                 collapse.addEventListener('show.bs.collapse', function () {
                     const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-down', 'bi-chevron-up');
+                    if(button) {
+                        const icon = button.querySelector('i');
+                        if(icon) {
+                            icon.classList.remove('bi-chevron-down');
+                            icon.classList.add('bi-chevron-up');
+                        }
+                    }
                 });
                 collapse.addEventListener('hide.bs.collapse', function () {
                     const button = document.querySelector(`[data-bs-target="#${this.id}"]`);
-                    button.querySelector('i').classList.replace('bi-chevron-up', 'bi-chevron-down');
+                    if(button) {
+                        const icon = button.querySelector('i');
+                        if(icon) {
+                            icon.classList.remove('bi-chevron-up');
+                            icon.classList.add('bi-chevron-down');
+                        }
+                    }
                 });
             });
 

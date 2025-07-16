@@ -62,11 +62,44 @@ class MailTransactionController extends Controller
 
     private function generatePdfHtml($mails) // Accepter les mails en paramètre
     {
-        return view('mails.print', [ // Adapter le nom de la vue
+        return view('mails.print.index', [ // Nouveau chemin de la vue
             'mails' => $mails, // Passer les mails à la vue
             'generatedAt' => now()->format('d/m/Y H:i'),
             'totalCount' => $mails->count(),
         ])->render();
+    }
+
+    public function archive(Request $request)
+    {
+        // Valider les données
+        $request->validate([
+            'mail_ids' => 'required|array',
+            'mail_ids.*' => 'exists:mails,id',
+            'container_id' => 'required|exists:mail_containers,id'
+        ]);
+
+        try {
+            $mailIds = $request->input('mail_ids');
+            $containerId = $request->input('container_id');
+
+            // Mettre à jour les courriers avec le container sélectionné
+            Mail::whereIn('id', $mailIds)->update([
+                'mail_container_id' => $containerId,
+                'archived_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Courriers archivés avec succès',
+                'count' => count($mailIds)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'archivage: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
 }

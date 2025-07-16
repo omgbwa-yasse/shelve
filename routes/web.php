@@ -372,6 +372,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('mail-transaction/export', [MailTransactionController::class, 'export'])->name('mail-transaction.export');
         Route::post('mail-transaction/import', [MailTransactionController::class, 'import'])->name('mail-transaction.import');
         Route::post('mail-transaction/print', [MailTransactionController::class, 'print'])->name('mail-transaction.print');
+        Route::post('mails/archive', [MailTransactionController::class, 'archive'])->name('mail-transaction.archive');
 
         /*
 

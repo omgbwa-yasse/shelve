@@ -8,7 +8,7 @@
                 <div class="d-flex align-items-center mb-1">
                     <i class="bi bi-envelope-open text-primary me-2"></i>
                     <h5 class="mb-0">{{ $mail->name ?? 'N/A' }}</h5>
-                    @if(isset($mail->priority) && $mail->priority->level === 'high')
+                    @if($mail->priority && $mail->priority->level === 'high')
                         <span class="badge bg-danger ms-2">Urgent</span>
                     @endif
                 </div>
@@ -79,23 +79,23 @@
                                     </div>
                                     <div>
                                         {{-- Gestion des différents types d'expéditeurs --}}
-                                        @if(isset($mail->sender))
+                                        @if($mail->sender)
                                             {{-- Expéditeur interne --}}
-                                            <div class="fw-semibold">{{ $mail->sender->name }}</div>
+                                            <div class="fw-semibold">{{ $mail->sender->name ?? 'N/A' }}</div>
                                             @if($mail->senderOrganisation)
-                                                <div class="text-muted small">{{ $mail->senderOrganisation->name }}</div>
+                                                <div class="text-muted small">{{ $mail->senderOrganisation->name ?? 'N/A' }}</div>
                                             @endif
-                                        @elseif(isset($mail->externalSender))
+                                        @elseif($mail->externalSender)
                                             {{-- Expéditeur externe (contact) --}}
                                             <div class="fw-semibold">
-                                                {{ $mail->externalSender->first_name }} {{ $mail->externalSender->last_name }}
+                                                {{ $mail->externalSender->first_name ?? 'N/A' }} {{ $mail->externalSender->last_name ?? '' }}
                                             </div>
                                             @if($mail->externalSenderOrganization)
-                                                <div class="text-muted small">{{ $mail->externalSenderOrganization->name }}</div>
+                                                <div class="text-muted small">{{ $mail->externalSenderOrganization->name ?? 'N/A' }}</div>
                                             @endif
-                                        @elseif(isset($mail->externalSenderOrganization))
+                                        @elseif($mail->externalSenderOrganization)
                                             {{-- Expéditeur externe (organisation) --}}
-                                            <div class="fw-semibold">{{ $mail->externalSenderOrganization->name }}</div>
+                                            <div class="fw-semibold">{{ $mail->externalSenderOrganization->name ?? 'N/A' }}</div>
                                         @else
                                             <div class="text-muted">Non défini</div>
                                         @endif
@@ -114,23 +114,23 @@
                                     </div>
                                     <div>
                                         {{-- Gestion des différents types de destinataires --}}
-                                        @if(isset($mail->recipient))
+                                        @if($mail->recipient)
                                             {{-- Destinataire interne --}}
-                                            <div class="fw-semibold">{{ $mail->recipient->name }}</div>
+                                            <div class="fw-semibold">{{ $mail->recipient->name ?? 'N/A' }}</div>
                                             @if($mail->recipientOrganisation)
-                                                <div class="text-muted small">{{ $mail->recipientOrganisation->name }}</div>
+                                                <div class="text-muted small">{{ $mail->recipientOrganisation->name ?? 'N/A' }}</div>
                                             @endif
-                                        @elseif(isset($mail->externalRecipient))
+                                        @elseif($mail->externalRecipient)
                                             {{-- Destinataire externe (contact) --}}
                                             <div class="fw-semibold">
-                                                {{ $mail->externalRecipient->first_name }} {{ $mail->externalRecipient->last_name }}
+                                                {{ $mail->externalRecipient->first_name ?? 'N/A' }} {{ $mail->externalRecipient->last_name ?? '' }}
                                             </div>
                                             @if($mail->externalRecipientOrganization)
-                                                <div class="text-muted small">{{ $mail->externalRecipientOrganization->name }}</div>
+                                                <div class="text-muted small">{{ $mail->externalRecipientOrganization->name ?? 'N/A' }}</div>
                                             @endif
-                                        @elseif(isset($mail->externalRecipientOrganization))
+                                        @elseif($mail->externalRecipientOrganization)
                                             {{-- Destinataire externe (organisation) --}}
-                                            <div class="fw-semibold">{{ $mail->externalRecipientOrganization->name }}</div>
+                                            <div class="fw-semibold">{{ $mail->externalRecipientOrganization->name ?? 'N/A' }}</div>
                                         @else
                                             <div class="text-muted">Non défini</div>
                                         @endif
@@ -219,26 +219,26 @@
                             </div>
 
                             {{-- Typologie --}}
-                            @if(isset($mail->typology))
+                            @if($mail->typology)
                                 <div class="col-12">
                                     <div class="text-muted">Typologie</div>
-                                    <div class="fw-semibold">{{ $mail->typology->name }}</div>
+                                    <div class="fw-semibold">{{ $mail->typology->name ?? 'N/A' }}</div>
                                 </div>
                             @endif
 
                             {{-- Action --}}
-                            @if(isset($mail->action))
+                            @if($mail->action)
                                 <div class="col-12">
                                     <div class="text-muted">Action</div>
-                                    <div class="fw-semibold">{{ $mail->action->name }}</div>
+                                    <div class="fw-semibold">{{ $mail->action->name ?? 'N/A' }}</div>
                                 </div>
                             @endif
 
                             {{-- Priorité --}}
-                            @if(isset($mail->priority))
+                            @if($mail->priority)
                                 <div class="col-12">
                                     <div class="text-muted">Priorité</div>
-                                    <div class="fw-semibold">{{ $mail->priority->name }}</div>
+                                    <div class="fw-semibold">{{ $mail->priority->name ?? 'N/A' }}</div>
                                 </div>
                             @endif
 
@@ -251,7 +251,7 @@
                             @endif
 
                             {{-- Containers archivés --}}
-                            @if(isset($mail->containers) && $mail->containers->count() > 0)
+                            @if($mail->containers && $mail->containers->count() > 0)
                                 <div class="col-12">
                                     <div class="text-muted">Archives</div>
                                     <div class="fw-semibold">
