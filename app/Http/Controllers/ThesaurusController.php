@@ -534,11 +534,19 @@ class ThesaurusController extends Controller
         $schemeId = $request->get('scheme_id');
 
         $stats = [
-            'total_schemes' => ThesaurusScheme::count(),
-            'total_concepts' => ThesaurusConcept::count(),
-            'total_labels' => ThesaurusLabel::count(),
-            'total_relations' => ThesaurusConceptRelation::count(),
-            'records_with_concepts' => Record::has('thesaurusConcepts')->count(),
+            'total_schemes' => DB::table('concept_schemes')->count(),
+            'total_concepts' => DB::table('concepts')->count(),
+            'total_labels' => DB::table('xl_labels')->count() + DB::table('alternative_labels')->count(),
+            'total_relations' => DB::table('hierarchical_relations')->count() +
+                              DB::table('associative_relations')->count() +
+                              DB::table('mapping_relations')->count(),
+            'records_with_concepts' => DB::table('record_thesaurus_concept')
+                                    ->select('record_id')
+                                    ->distinct()
+                                    ->count(),
+            'notes' => DB::table('thesaurus_concept_notes')->count(), // Compte réel des notes
+            'organizations' => DB::table('thesaurus_organizations')->count(), // Compte réel des organisations
+            'total_record_concept_relations' => DB::table('record_thesaurus_concept')->count(),
         ];
 
         if ($schemeId) {
@@ -550,13 +558,70 @@ class ThesaurusController extends Controller
             $stats['scheme_relations'] = ThesaurusConceptRelation::whereHas('sourceConcept', function($query) use ($schemeId) {
                 $query->where('scheme_id', $schemeId);
             })->count();
+            $stats['scheme_notes'] = ThesaurusConceptNote::whereHas('concept', function($query) use ($schemeId) {
+                $query->where('scheme_id', $schemeId);
+            })->count();
+            $stats['scheme_organizations'] = $scheme->organizations()->count();
         } else {
             $scheme = null;
         }
 
         $schemes = ThesaurusScheme::all();
 
-        return view('thesaurus.tool.statistics', compact('stats', 'schemes', 'scheme'));
+        // Statistiques par schéma
+        $schemeStats = ThesaurusScheme::select(['id', 'title', 'identifier']) // Ajout des champs nécessaires
+            ->withCount([
+            'concepts',
+            'concepts as top_concepts_count' => function($query) {
+                $query->whereDoesntHave('sourceRelations', function($q) {
+                    $q->where('relation_type', 'broader');
+                });
+            }
+        ])->get();
+
+        // Statistiques par type de relation
+        // Utiliser l'union des différentes tables de relations avec des noms compatibles avec la vue
+        $relationStats = DB::table('hierarchical_relations')
+            ->select(DB::raw("'broader' as relation_type, COUNT(*) as count")) // "broader" au lieu de "hierarchical"
+            ->union(
+                DB::table('associative_relations')
+                ->select(DB::raw("'related' as relation_type, COUNT(*) as count")) // "related" au lieu de "associative"
+            )
+            ->union(
+                DB::table('mapping_relations')
+                ->select(DB::raw("'exactMatch' as relation_type, COUNT(*) as count")) // "exactMatch" au lieu de "mapping"
+            )
+            ->orderByDesc('count')
+            ->get();
+
+        // Statistiques par type de label
+        $labelStats = DB::table('xl_labels')
+            ->select('label_type', DB::raw('count(*) as count'))
+            ->groupBy('label_type')
+            ->orderByDesc('count')
+            ->get();
+
+        // Top 10 des records les plus associés à des concepts
+        $topRecords = Record::select('id', 'name', 'code')
+            ->withCount('thesaurusConcepts as thesaurus_concepts_count') // Utilise le nom correct pour la vue
+            ->has('thesaurusConcepts')
+            ->orderByDesc('thesaurus_concepts_count')
+            ->limit(10)
+            ->get();
+
+        // Top 10 des concepts les plus utilisés
+        $topConcepts = ThesaurusConcept::with(['labels', 'scheme']) // Chargement des relations nécessaires
+            ->select('thesaurus_concepts.*', DB::raw('COUNT(record_thesaurus_concept.record_id) as records_count'))
+            ->join('record_thesaurus_concept', 'thesaurus_concepts.id', '=', 'record_thesaurus_concept.concept_id')
+            ->groupBy('thesaurus_concepts.id')
+            ->orderByDesc('records_count')
+            ->limit(10)
+            ->get();
+
+        return view('thesaurus.tool.statistics', compact(
+            'stats', 'schemes', 'scheme', 'schemeStats', 'relationStats',
+            'labelStats', 'topRecords', 'topConcepts'
+        ));
     }
 
     /**
@@ -606,7 +671,7 @@ class ThesaurusController extends Controller
     {
         $term->load([
             'broaderConcepts',
-            'narrowerConcepts', 
+            'narrowerConcepts',
             'scheme'
         ]);
 
@@ -635,7 +700,7 @@ class ThesaurusController extends Controller
         ]);
 
         $broaderTerm = ThesaurusConcept::findOrFail($request->broader_term_id);
-        
+
         // Create the hierarchical relation
         ThesaurusConceptRelation::create([
             'source_concept_id' => $term->id,
@@ -669,7 +734,7 @@ class ThesaurusController extends Controller
         ]);
 
         $narrowerTerm = ThesaurusConcept::findOrFail($request->narrower_term_id);
-        
+
         // Create the hierarchical relation
         ThesaurusConceptRelation::create([
             'source_concept_id' => $narrowerTerm->id,
@@ -700,7 +765,6 @@ class ThesaurusController extends Controller
 
         return redirect()->route('thesaurus.hierarchical_relations.index', $term->id)
                         ->with('success', 'Relation hiérarchique supprimée avec succès.');
-    }
     }
 
     // Méthodes privées pour l'extraction de concepts et autres fonctionnalités...

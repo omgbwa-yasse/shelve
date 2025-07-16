@@ -22,7 +22,7 @@
                         <div class="col-md-3">
                             <div class="card text-white bg-primary">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ $stats['schemes'] }}</h5>
+                                    <h5 class="card-title">{{ $stats['total_schemes'] }}</h5>
                                     <p class="card-text">Schémas</p>
                                 </div>
                             </div>
@@ -30,7 +30,7 @@
                         <div class="col-md-3">
                             <div class="card text-white bg-success">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ $stats['concepts'] }}</h5>
+                                    <h5 class="card-title">{{ $stats['total_concepts'] }}</h5>
                                     <p class="card-text">Concepts</p>
                                 </div>
                             </div>
@@ -38,7 +38,7 @@
                         <div class="col-md-3">
                             <div class="card text-white bg-info">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ $stats['labels'] }}</h5>
+                                    <h5 class="card-title">{{ $stats['total_labels'] }}</h5>
                                     <p class="card-text">Labels</p>
                                 </div>
                             </div>
@@ -46,7 +46,7 @@
                         <div class="col-md-3">
                             <div class="card text-white bg-warning">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ $stats['relations'] }}</h5>
+                                    <h5 class="card-title">{{ $stats['total_relations'] }}</h5>
                                     <p class="card-text">Relations</p>
                                 </div>
                             </div>
