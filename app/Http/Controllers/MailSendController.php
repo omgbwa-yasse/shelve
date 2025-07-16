@@ -40,21 +40,7 @@ class MailSendController extends Controller
 
     public function index()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::with(['action', 'recipient', 'recipientOrganisation', 'attachments'])
-            ->where('sender_organisation_id', $organisationId)
-            ->where('status', '!=', 'draft')
-            ->orderBy('created_at', 'desc')
-            ->OrWhereHas('containers', function($q) {
-                $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
-            })
-            ->get();
-
-
-        $dollies = Dolly::all();
-        $categories = Dolly::categories();
-        $users = User::all();
-        return view('mails.send.index', compact('mails', 'dollies', 'categories', 'users'));
+        return app(MailController::class)->index('send');
     }
 
 
@@ -367,17 +353,7 @@ class MailSendController extends Controller
 
     public function show(int $id)
     {
-        $mail = Mail::with([
-            'action',
-            'sender',
-            'senderOrganisation',
-            'recipient',
-            'recipientOrganisation',
-
-            'attachments'
-        ])->findOrFail($id);
-
-        return view('mails.send.show', compact('mail'));
+        return app(MailController::class)->show('send', $id);
     }
 
     public function edit(int $id)

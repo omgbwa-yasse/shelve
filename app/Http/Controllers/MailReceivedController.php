@@ -17,18 +17,7 @@ class MailReceivedController extends Controller
 {
     public function index()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
-                ->where('recipient_organisation_id', $organisationId)
-                ->where('status', '!=', ['draft','reject'])
-                ->OrWhereHas('containers', function($q) {
-                    $q->where('creator_organisation_id', Auth::user()->current_organisation_id);
-                })
-                ->get();
-        $dollies = Dolly::all();
-        $categories = Dolly::categories();
-        $users = User::all();
-        return view('mails.received.index', compact('mails','dollies', 'categories','users'));
+        return app(MailController::class)->index('received');
     }
 
 
@@ -322,15 +311,7 @@ class MailReceivedController extends Controller
 
     public function show(INT $mail_id)
     {
-        $mail=Mail::findOrFail($mail_id)->load([
-                            'action',
-                            'sender',
-                            'senderOrganisation',
-                            'recipient',
-                            'recipientOrganisation',
-                            'attachments'
-                        ]);
-        return view('mails.received.show', compact('mail'));
+        return app(MailController::class)->show('received', $mail_id);
     }
 
 

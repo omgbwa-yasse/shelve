@@ -270,66 +270,117 @@ class MailController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Méthode centralisée pour afficher la liste des courriers
+     * @param string $type Type de courrier : 'received', 'send', 'received_external', 'send_external'
+     * @return \Illuminate\View\View
      */
-    public function show(string $id)
+    public function index($type = 'received')
     {
-        $mail = Mail::with([
-            'sender',
-            'senderOrganisation',
-            'recipient',
-            'recipientOrganisation',
-            'typology',
-            'priority',
-            'action',
-            'attachments',
-            'externalSender',
-            'externalSenderOrganization',
-            'externalRecipient',
-            'externalRecipientOrganization'
-        ])->findOrFail($id);
+        $organisationId = Auth::user()->current_organisation_id;
+        $query = Mail::query();
 
-        $viewName = $mail->mail_type === 'incoming' ? 'mails.incoming.show' : 'mails.outgoing.show';
-        return view($viewName, compact('mail'));
+        // Configuration selon le type
+        switch ($type) {
+            case 'received':
+                $query->with(['action', 'sender', 'senderOrganisation', 'attachments', 'containers'])
+                      ->where('recipient_organisation_id', $organisationId)
+                      ->where('status', '!=', ['draft', 'reject'])
+                      ->OrWhereHas('containers', function($q) use ($organisationId) {
+                          $q->where('creator_organisation_id', $organisationId);
+                      });
+                break;
+
+            case 'send':
+                $query->with(['action', 'recipient', 'recipientOrganisation', 'attachments', 'containers'])
+                      ->where('sender_organisation_id', $organisationId)
+                      ->where('status', '!=', 'draft')
+                      ->OrWhereHas('containers', function($q) use ($organisationId) {
+                          $q->where('creator_organisation_id', $organisationId);
+                      });
+                break;
+
+            case 'received_external':
+                $query->with(['typology', 'externalSender', 'externalSenderOrganization', 'attachments', 'containers'])
+                      ->where('recipient_organisation_id', $organisationId)
+                      ->where('mail_type', Mail::TYPE_INCOMING);
+                break;
+
+            case 'send_external':
+                $query->with(['typology', 'externalRecipient', 'externalRecipientOrganization', 'attachments', 'containers'])
+                      ->where('sender_organisation_id', $organisationId)
+                      ->where('mail_type', Mail::TYPE_OUTGOING);
+                break;
+
+            default:
+                abort(404);
+        }
+
+        $mails = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        // Données communes
+        $dollies = Dolly::all();
+        $categories = Dolly::categories();
+        $users = User::all();
+
+        // Vue centralisée unique
+        return view('mails.index', compact('mails', 'dollies', 'categories', 'users', 'type'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Méthode centralisée pour afficher un courrier
+     * @param string $type Type de courrier
+     * @param int $id ID du courrier
+     * @return \Illuminate\View\View
      */
-    public function edit(string $id)
+    public function show($type, $id)
     {
-        $mail = Mail::with([
-            'typology',
-            'priority',
-            'action',
-            'attachments',
-            'sender',
-            'senderOrganisation',
-            'recipient',
-            'recipientOrganisation',
-            'externalSender',
-            'externalSenderOrganization',
-            'externalRecipient',
-            'externalRecipientOrganization'
-        ])->findOrFail($id);
+        $organisationId = Auth::user()->current_organisation_id;
 
-        $typologies = MailTypology::orderBy('name')->get();
-        $priorities = MailPriority::orderBy('duration')->get();
-        $actions = MailAction::orderBy('name')->get();
-        $senderOrganisations = Organisation::orderBy('name')->get();
-        $externalContacts = ExternalContact::with('organization')->orderBy('last_name')->get();
-        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
+        // Configuration des relations selon le type
+        $relations = [];
+        switch ($type) {
+            case 'received':
+                $relations = ['action', 'sender', 'senderOrganisation', 'attachments', 'containers'];
+                break;
+            case 'send':
+                $relations = ['action', 'recipient', 'recipientOrganisation', 'attachments', 'containers'];
+                break;
+            case 'received_external':
+                $relations = ['typology', 'externalSender', 'externalSenderOrganization', 'attachments', 'containers'];
+                break;
+            case 'send_external':
+                $relations = ['typology', 'externalRecipient', 'externalRecipientOrganization', 'attachments', 'containers'];
+                break;
+            default:
+                abort(404);
+        }
 
-        $viewName = $mail->mail_type === 'incoming' ? 'mails.incoming.edit' : 'mails.outgoing.edit';
-        return view($viewName, compact(
-            'mail',
-            'typologies',
-            'priorities',
-            'actions',
-            'senderOrganisations',
-            'externalContacts',
-            'externalOrganizations'
-        ));
+        $mail = Mail::with($relations)->findOrFail($id);
+
+        // Vérification des permissions
+        if (!$this->canAccessMail($mail, $organisationId, $type)) {
+            abort(403);
+        }
+
+        // Vue centralisée unique
+        return view('mails.show', compact('mail', 'type'));
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut accéder au courrier
+     */
+    private function canAccessMail($mail, $organisationId, $type)
+    {
+        switch ($type) {
+            case 'received':
+            case 'received_external':
+                return $mail->recipient_organisation_id == $organisationId;
+            case 'send':
+            case 'send_external':
+                return $mail->sender_organisation_id == $organisationId;
+            default:
+                return false;
+        }
     }
 
     /**

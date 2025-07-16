@@ -42,16 +42,7 @@ class MailReceivedExternalController extends Controller
      */
     public function index()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::where('recipient_organisation_id', $organisationId)
-            ->where('mail_type', Mail::TYPE_INCOMING)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        $dollies = Dolly::all();
-        $categories = Dolly::categories();
-        $users = User::all();
-        return view('mails.received.external.index', compact('mails', 'dollies', 'categories', 'users'));
+        return app(MailController::class)->index('received_external');
     }
 
     /**
@@ -160,22 +151,7 @@ class MailReceivedExternalController extends Controller
      */
     public function show(string $id)
     {
-        $mail = Mail::with([
-            'sender',
-            'senderOrganisation',
-            'recipient',
-            'recipientOrganisation',
-            'typology',
-            'priority',
-            'action',
-            'attachments',
-            'externalSender',
-            'externalSenderOrganization',
-            'externalRecipient',
-            'externalRecipientOrganization'
-        ])->findOrFail($id);
-
-        return view('mails.received.external.show', compact('mail'));
+        return app(MailController::class)->show('received_external', $id);
     }
 
     /**

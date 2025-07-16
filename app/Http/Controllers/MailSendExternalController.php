@@ -39,13 +39,7 @@ class MailSendExternalController extends Controller
      */
     public function index()
     {
-        $organisationId = Auth::user()->current_organisation_id;
-        $mails = Mail::where('sender_organisation_id', $organisationId)
-            ->where('mail_type', Mail::TYPE_OUTGOING)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        return view('mails.send.external.index', compact('mails'));
+        return app(MailController::class)->index('send_external');
     }
 
     /**
@@ -150,22 +144,7 @@ class MailSendExternalController extends Controller
      */
     public function show(string $id)
     {
-        $mail = Mail::with([
-            'sender',
-            'senderOrganisation',
-            'recipient',
-            'recipientOrganisation',
-            'typology',
-            'priority',
-            'action',
-            'attachments',
-            'externalSender',
-            'externalSenderOrganization',
-            'externalRecipient',
-            'externalRecipientOrganization'
-        ])->findOrFail($id);
-
-        return view('mails.send.external.show', compact('mail'));
+        return app(MailController::class)->show('send_external', $id);
     }
 
     /**

@@ -2,91 +2,269 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container-fluid">
-        <h1 class="mb-4"><i class="bi bi-envelope-fill me-2"></i>{{ __('mails') }}
-            @if(isset($title))
-                {{ $title }}
+<div id="mailList">
+
+    {{-- Titre dynamique selon le type --}}
+    @php
+        $titles = [
+            'received' => 'Courriers reçus',
+            'send' => 'Courriers envoyés',
+            'received_external' => 'Courriers reçus externes',
+            'send_external' => 'Courriers envoyés externes'
+        ];
+        $currentTitle = $titles[$type ?? 'received'] ?? 'Courriers';
+    @endphp
+
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">{{ $currentTitle }}</h1>
+
+    <!-- Bandeau de recherche avec icônes -->
+    <div class="d-flex justify-content-start align-items-center bg-light p-2 mb-2 rounded overflow-auto">
+        <div class="d-flex align-items-center gap-3 px-2">
+            {{-- Navigation adaptée selon le type --}}
+            @if(in_array($type ?? '', ['received_external', 'send_external']))
+                {{-- Navigation pour courriers externes --}}
+                <a href="{{ route('mails.received.external.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers reçus externes">
+                    <i class="bi bi-inbox fs-5 text-primary"></i>
+                    <span class="small {{ ($type ?? '') === 'received_external' ? 'fw-bold' : '' }}">Reçus</span>
+                </a>
+                <a href="{{ route('mails.send.external.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers envoyés externes">
+                    <i class="bi bi-envelope fs-5 text-primary"></i>
+                    <span class="small {{ ($type ?? '') === 'send_external' ? 'fw-bold' : '' }}">Envoyés</span>
+                </a>
+            @else
+                {{-- Navigation pour courriers internes --}}
+                <a href="{{ route('mail-received.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers reçus">
+                    <i class="bi bi-inbox fs-5 text-primary"></i>
+                    <span class="small {{ ($type ?? '') === 'received' ? 'fw-bold' : '' }}">Reçus</span>
+                </a>
+                <a href="{{ route('mail-send.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers envoyés">
+                    <i class="bi bi-envelope fs-5 text-primary"></i>
+                    <span class="small {{ ($type ?? '') === 'send' ? 'fw-bold' : '' }}">Envoyés</span>
+                </a>
             @endif
-        </h1>
-        <div id="mailList">
-            <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
-                <div class="d-flex align-items-center">
-                    <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-cart me-1"></i>
-                        {{ __('cart') }}
-                    </a>
-                    <a href="#" id="exportBtn" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-download me-1"></i>
-                        {{ __('export') }}
-                    </a>
-                    <a href="#" id="printBtn" class="btn btn-light btn-sm me-2">
-                        <i class="bi bi-printer me-1"></i>
-                        {{ __('print') }}
-                    </a>
-                </div>
-                <div class="d-flex align-items-center">
-                    <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
-                        <i class="bi bi-check-square me-1"></i>
-                        {{ __('check_all') }}
-                    </a>
-                </div>
-            </div>
 
-            <div id="mailList" class="mb-4">
-                @foreach ($mails as $mail)
-                    <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
-                        <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail-{{ $mail->id }}" name="selected_mail[]" />
-                            </div>
-                            <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ $mail->id }}" aria-expanded="false" aria-controls="details-{{ $mail->id }}">
-                                <i class="bi bi-chevron-down fs-5"></i>
-                            </button>
-                            <h4 class="card-title flex-grow-1 m-0 text-primary" for="mail-{{ $mail->id }}">
-                                <a href="" class="text-decoration-none text-dark">
-                                    <span class="fs-5 fw-semibold">{{ $mail->code }}</span>
-                                    <span class="fs-5"> - {{ $mail->name }}</span>
+            <a href="{{ route('mails.archived') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers archivés">
+                <i class="bi bi-archive fs-5 text-primary"></i>
+                <span class="small">Archives</span>
+            </a>
+            <div class="vr mx-1"></div>
+            <a href="{{ route('mail-select-date') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche par dates">
+                <i class="bi bi-calendar fs-5 text-primary"></i>
+                <span class="small">Dates</span>
+            </a>
+            <a href="{{ route('mail-container.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Boîtes d'archives">
+                <i class="bi bi-box fs-5 text-primary"></i>
+                <span class="small">Boîtes</span>
+            </a>
+            <div class="vr mx-1"></div>
+            <a href="{{ route('mails.advanced.form') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche avancée">
+                <i class="bi bi-sliders fs-5 text-primary"></i>
+                <span class="small">Avancée</span>
+            </a>
+        </div>
+
+        <div class="ms-auto pe-2">
+            <form class="d-flex" action="{{ route('mails.search') }}" method="GET">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm" placeholder="Recherche rapide..." name="q" aria-label="Recherche">
+                    <button class="btn btn-outline-secondary" type="submit" title="Rechercher">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Bandeau d'actions -->
+    <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3 rounded">
+        <div class="d-flex align-items-center gap-2">
+            <a href="#" id="cartBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#dolliesModal">
+                <i class="bi bi-cart me-1"></i>
+                Chariot
+            </a>
+            <a href="#" id="exportBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.export') }}">
+                <i class="bi bi-download me-1"></i>
+                Exporter
+            </a>
+            <a href="#" id="printBtn" class="btn btn-light btn-sm" data-route="{{ route('mail-transaction.print') }}">
+                <i class="bi bi-printer me-1"></i>
+                Imprimer
+            </a>
+            <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
+                <i class="bi bi-archive me-1"></i>
+                Archiver
+            </a>
+        </div>
+        <div class="d-flex align-items-center">
+            <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
+                <i class="bi bi-check-square me-1"></i>
+                Tout cocher
+            </a>
+        </div>
+    </div>
+
+    <div id="mailList" class="mb-4">
+        @foreach ($mails as $mail)
+            <div class="mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
+                <div class="card-header bg-light d-flex align-items-center py-2" style="border-bottom: 1px solid rgba(0,0,0,0.125);">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" name="selected_mail[]" />
+                    </div>
+
+                    <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3" type="button" data-bs-toggle="collapse" data-bs-target="#mail-{{ $mail->id }}" aria-expanded="false" aria-controls="mail-{{ $mail->id }}">
+                        <i class="bi bi-chevron-down fs-5"></i>
+                    </button>
+
+                    <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
+                        @php
+                            $showRoute = match($type ?? 'received') {
+                                'received_external' => route('mails.received.external.show', $mail),
+                                'send_external' => route('mails.send.external.show', $mail),
+                                'received' => route('mail-received.show', $mail),
+                                'send' => route('mail-send.show', $mail),
+                                default => '#'
+                            };
+                        @endphp
+                        <a href="{{ $showRoute }}" class="text-decoration-none text-dark">
+                            <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
+                            <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
+
+                            {{-- Badges adaptés selon le type --}}
+                            @if(in_array($type ?? '', ['received_external', 'send_external']))
+                                {{-- Pour les courriers externes, afficher la typologie --}}
+                                @if($mail->typology)
+                                    <span class="badge bg-danger ms-2">{{ $mail->typology->name ?? '' }}</span>
+                                @endif
+                            @else
+                                {{-- Pour les courriers internes, afficher l'action --}}
+                                @if($mail->action)
+                                    <span class="badge bg-danger ms-2">{{ $mail->action->name ?? '' }}</span>
+                                @endif
+                                {{-- Ou la priorité si pas d'action --}}
+                                @if(!$mail->action && $mail->priority)
                                     <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }} ms-2">{{ $mail->priority->name ?? '' }}</span>
-                                </a>
-                            </h4>
-                        </div>
-                        <div class="collapse" id="details-{{ $mail->id }}">
-                            <div class="card-body bg-white">
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <p class="mb-2"><i class="bi bi-card-text me-2 text-primary"></i><strong>{{ __('description') }}:</strong> {{ $mail->description }}</p>
-                                    </div>
-                                    <div class="col-md-9">
-                                        <p class="mb-2">
-                                            <i class="bi bi-person-fill me-2 text-primary"></i><strong>{{ __('author') }}:</strong>
+                                @endif
+                            @endif
 
+                            {{-- Badge archives (commun à tous) --}}
+                            @if ($mail->containers && $mail->containers->count() > 1)
+                            <span class="badge bg-primary ms-2">
+                                copies {{ $mail->containers->count() }} archivées
+                            </span>
+                            @elseif ($mail->containers && $mail->containers->count() == 1)
+                            <span class="badge bg-primary ms-2">
+                                copie {{ $mail->containers->count() }} archivée
+                            </span>
+                            @endif
+                        </a>
+                    </h4>
+                </div>
+
+                <div class="collapse" id="mail-{{ $mail->id }}">
+                    <div class="card-body bg-white">
+                        @if($mail->description)
+                            <div class="mb-3">
+                                <p class="mb-2">
+                                    <i class="bi bi-card-text me-2 text-primary"></i>
+                                    <strong>Description:</strong> {{ $mail->description }}
+                                </p>
+                            </div>
+                        @endif
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <p class="mb-2">
+                                    {{-- Affichage adapté selon le type --}}
+                                    @if(in_array($type ?? '', ['received_external', 'send_external']))
+                                        {{-- Courriers externes --}}
+                                        @if($mail->externalSender)
+                                            <i class="bi bi-person-fill me-2 text-primary"></i>
+                                            <strong>Envoyé par:</strong>
+                                            {{ $mail->externalSender->first_name ?? 'N/A' }} {{ $mail->externalSender->last_name ?? '' }}
+                                            @if($mail->externalSenderOrganization)
+                                                ({{ $mail->externalSenderOrganization->name ?? 'N/A' }})
+                                            @endif
                                             <br>
-                                            <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('date') }}:</strong> <a href="{{ route('mails.sort') }}?categ=dates&date_exact={{ $mail->date }}">{{ $mail->date }}</a>
-
-                                            <i class="bi bi-exclamation-triangle-fill me-2 text-primary"></i><strong>{{ __('priority') }}:</strong> <a href="{{ route('mails.sort') }}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority->name ?? '' }}</a>
-
-{{--                                            <i class="bi bi-envelope-fill me-2 text-primary"></i><strong>{{ __('mail_type') }}:</strong> <a href="{{ route('mails.sort') }}?categ=priority&id={{ $mail->type->id }}">{{ $mail->type->name ?? '' }}</a>--}}
-
-                                            <i class="bi bi-diagram-3-fill me-2 text-primary"></i><strong>{{ __('typology') }}:</strong> <a href="{{ route('mails.sort') }}?categ=typology&id={{ $mail->typology->id }}">{{ $mail->typology->name ?? '' }}</a>
-                                            <br>
-{{--                                            <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i><strong>{{ __('copy') }}:</strong> <a href="{{ route('mails.sort') }}?categ=documentType&id={{ $mail->documentType->id }}">{{ $mail->documentType->name ?? '' }}</a>--}}
-                                        </p>
-                                    </div>
-                                    <div class="col-md-3 text-md-end">
-                                        @if($mail->attachments->count() > 0)
-                                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#attachmentsModal{{ $mail->id }}">
-                                                {{ $mail->attachments->count() }} <i class="bi bi-paperclip"></i>
-                                            </button>
-                                        @else
-                                            <span class="text-muted"><i class="bi bi-paperclip"></i> 0</span>
                                         @endif
-                                    </div>
-                                </div>
+
+                                        @if($mail->externalRecipient)
+                                            <i class="bi bi-person-fill me-2 text-primary"></i>
+                                            <strong>Reçu par:</strong>
+                                            {{ $mail->externalRecipient->first_name ?? 'N/A' }} {{ $mail->externalRecipient->last_name ?? '' }}
+                                            @if($mail->externalRecipientOrganization)
+                                                ({{ $mail->externalRecipientOrganization->name ?? 'N/A' }})
+                                            @endif
+                                            <br>
+                                        @endif
+
+                                        @if($mail->typology)
+                                            <i class="bi bi-file-earmark-text-fill me-2 text-primary"></i>
+                                            <strong>Type de document:</strong>
+                                            {{ $mail->typology->name ?? 'N/A' }}
+                                            <br>
+                                        @endif
+                                    @else
+                                        {{-- Courriers internes --}}
+                                        @if($mail->sender)
+                                            <i class="bi bi-person-fill me-2 text-primary"></i>
+                                            <strong>Envoyé par:</strong>
+                                            {{ $mail->sender->name ?? 'N/A' }}
+                                            @if($mail->senderOrganisation)
+                                                ({{ $mail->senderOrganisation->name ?? 'N/A' }})
+                                            @endif
+                                            <br>
+                                        @endif
+
+                                        @if($mail->recipient)
+                                            <i class="bi bi-person-fill me-2 text-primary"></i>
+                                            <strong>Reçu par:</strong>
+                                            {{ $mail->recipient->name ?? 'N/A' }}
+                                            @if($mail->recipientOrganisation)
+                                                ({{ $mail->recipientOrganisation->name ?? 'N/A' }})
+                                            @endif
+                                            <br>
+                                        @endif
+
+                                        @if($mail->action)
+                                            <i class="bi bi-exclamation-triangle-fill me-2 text-primary"></i>
+                                            <strong>Action:</strong>
+                                            {{ $mail->action->name ?? 'N/A' }}
+                                            <br>
+                                        @endif
+
+                                        @if($mail->priority)
+                                            <i class="bi bi-exclamation-triangle-fill me-2 text-primary"></i>
+                                            <strong>Priorité:</strong>
+                                            {{ $mail->priority->name ?? 'N/A' }}
+                                            <br>
+                                        @endif
+                                    @endif
+
+                                    <i class="bi bi-calendar-event me-2 text-primary"></i>
+                                    <strong>Date:</strong>
+                                    {{ $mail->date ? \Carbon\Carbon::parse($mail->date)->format('d/m/Y') : 'N/A' }}
+                                </p>
                             </div>
                         </div>
                     </div>
-                @endforeach
+                </div>
             </div>
+        @endforeach
+    </div>
         </div>
 
         <!-- Pagination -->
