@@ -18,6 +18,7 @@ use App\Models\Organisation;
 use App\Models\RecordSupport;
 use App\Models\User;
 use App\Models\RecordLevel;
+use App\Models\ThesaurusConcept;
 use Illuminate\Support\Facades\Auth;
 
 class SearchRecordController extends Controller
@@ -28,7 +29,12 @@ class SearchRecordController extends Controller
             'rooms' => Room::select('id', 'name', 'code')->get(),
             'shelve' => Shelf::select('id', 'code')->get(),
             'activities' => Activity::select('id', 'name')->get(),
-            'terms' => Term::select('id', 'name')->get(),
+            'terms' => ThesaurusConcept::with('labels')->get()->map(function($concept) {
+                return [
+                    'id' => $concept->id,
+                    'name' => $concept->preferred_label
+                ];
+            }),
             'authors' => Author::select('id', 'name')->get(),
             'creators' => User::select('id', 'name')->get(),
             'statues' => RecordStatus::select('id', 'name')->get(),
@@ -102,7 +108,7 @@ class SearchRecordController extends Controller
             'records' => $records,
             'statuses' => RecordStatus::all(),
             'slipStatuses' => SlipStatus::all(),
-            'terms' => Term::all(),
+            'terms' => ThesaurusConcept::with('labels')->get(),
             'users' => User::select('id', 'name')->get(),
             'organisations' => Organisation::select('id', 'name')->get(),
         ];
@@ -235,8 +241,8 @@ class SearchRecordController extends Controller
 
             case "term":
                 $termId = $request->input('id');
-                $query->whereHas('terms', function ($q) use ($termId) {
-                    $q->where('terms.id', $termId);
+                $query->whereHas('thesaurusConcepts', function ($q) use ($termId) {
+                    $q->where('thesaurus_concepts.id', $termId);
                 });
                 break;
 
@@ -277,7 +283,7 @@ class SearchRecordController extends Controller
             'records' => $records,
             'statuses' => RecordStatus::all(),
             'slipStatuses' => SlipStatus::all(),
-            'terms' => Term::all(),
+            'terms' => ThesaurusConcept::with('labels')->get(),
             'users' => User::select('id', 'name')->get(),
             'organisations' => Organisation::select('id', 'name')->get(),
             'supports' => RecordSupport::all(),
@@ -312,7 +318,7 @@ class SearchRecordController extends Controller
             'records' => $records,
             'statuses' => RecordStatus::all(),
             'slipStatuses' => SlipStatus::all(),
-            'terms' => Term::all(),
+            'terms' => ThesaurusConcept::with('labels')->get(),
             'users' => User::select('id', 'name')->get(),
             'organisations' => Organisation::select('id', 'name')->get()
         ];
@@ -358,7 +364,7 @@ class SearchRecordController extends Controller
     public function selectWord()
     {
         return view('search.record.wordSearch', [
-            'terms' => Term::with(['parent', 'children', 'language', 'category', 'records', 'equivalentType', 'type'])->paginate(50)
+            'terms' => ThesaurusConcept::with('labels')->paginate(50)
         ]);
     }
 

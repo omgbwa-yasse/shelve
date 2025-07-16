@@ -1,8 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container">
-        <h1>{{ __('create_description') }}</h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>{{ __('create_description') }}</h1>
+            <a href="{{ route('records.create') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-file-alt me-1"></i>Fiche simplifiée
+            </a>
+        </div>
 
         @if ($errors->any())
             <div class="alert alert-danger">
@@ -214,25 +220,32 @@
 
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
                     <div class="mb-3">
-                        <label for="term_id" class="form-label">{{ __('thesaurus') }}</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="selected-terms-display" readonly>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#termModal">
-                                {{ __('select') }}
-                            </button>
+                        <label class="form-label">{{ __('thesaurus') }} *</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control form-control-sm" id="thesaurus-search" placeholder="Rechercher dans le thésaurus..." autocomplete="off">
+                            <div id="thesaurus-suggestions" class="position-absolute w-100 bg-white border border-top-0 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
+                                <!-- Les suggestions apparaîtront ici -->
+                            </div>
                         </div>
-                        <input type="hidden" name="term_ids[]" id="term-ids">
+                        <small class="text-muted">Tapez au moins 3 caractères pour rechercher. Cliquez sur un terme pour l'ajouter.</small>
+
+                        <!-- Zone d'affichage des termes sélectionnés -->
+                        <div id="selected-terms-container" class="mt-2">
+                            <!-- Les termes sélectionnés apparaîtront ici -->
+                        </div>
+
+                        <input type="hidden" name="term_ids[]" id="term-ids" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="activity_id" class="form-label">{{ __('activities') }}</label>
-                        <div class="input-group">
+                        <label class="form-label">{{ __('activities') }} *</label>
+                        <div class="input-group input-group-sm">
                             <input type="text" class="form-control" id="selected-activity-display" readonly>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#activityModal">
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#activityModal">
                                 {{ __('select') }}
                             </button>
                         </div>
-                        <input type="hidden" name="activity_id" id="activity-id">
+                        <input type="hidden" name="activity_id" id="activity-id" required>
                     </div>
                 </div>
             </div>
@@ -240,270 +253,94 @@
         </form>
     </div>
 
-    <div class="modal fade" id="authorModal" tabindex="-1" aria-labelledby="authorModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="authorModalLabel">{{ __('select_producers') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="author-search" class="form-control mb-3" placeholder="{{ __('search_producer') }}">
-                    <div id="author-list" class="list-group">
-                        @foreach ($authors as $author)
-                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $author->id }}">
-                                {{ $author->name }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
-                    <button type="button" class="btn btn-primary" id="save-authors">{{ __('save') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Modals - inclus une seule fois -->
+    @include('records.partials.author_modal')
+    @include('records.partials.activity_modal')
 
-    <div class="modal fade" id="termModal" tabindex="-1" aria-labelledby="termModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="termModalLabel">{{ __('select_thesaurus_terms') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="term-search" class="form-control mb-3" placeholder="{{ __('search_term') }}">
-                    <div id="term-list" class="list-group">
-                        @foreach ($terms as $term)
-                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $term->id }}">
-                                {{ $term->name }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
-                    <button type="button" class="btn btn-primary" id="save-terms">{{ __('save') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <style>
+        /* Styles pour les onglets et les formulaires */
+        .nav-tabs .nav-link { padding: 0.75rem 1.25rem; }
+        .nav-tabs .nav-link.active {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+        }
+        .nav-tabs .nav-link:hover {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+        }
+        .form-label { margin-bottom: 0.2rem; }
+        .tab-content { padding: 1rem; border: 1px solid #dee2e6; border-top: none; }
+        .form-control-sm, .form-select-sm { padding: 0.25rem 0.5rem; }
+        .input-group-sm > .form-control { padding: 0.25rem 0.5rem; }
+        .btn-sm { padding: 0.25rem 0.5rem; }
 
-    <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="activityModalLabel">{{ __('select_activity') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="activity-search" class="form-control mb-3" placeholder="{{ __('search_activity') }}">
-                    <div id="activity-list" class="list-group">
-                        @foreach ($activities as $activity)
-                            <a href="#" class="list-group-item list-group-item-action" data-id="{{ $activity->id }}">
-                                {{ $activity->code }} - {{ $activity->name }}
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
-                    <button type="button" class="btn btn-primary" id="save-activity">{{ __('save') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <script>
-        // Ajoutez le code JavaScript pour gérer les champs dynamiques, comme dans le formulaire de création
-        const authors = @json($authors);
-
-        document.getElementById('author').addEventListener('input', function () {
-            let query = this.value.toLowerCase();
-            let suggestions = document.getElementById('suggestions');
-            suggestions.innerHTML = '';
-
-            if (query.length >= 2) {
-                let filteredProducers = authors.filter(author => author.name.toLowerCase().includes(query));
-                filteredProducers.forEach(author => {
-                    let item = document.createElement('a');
-                    item.classList.add('list-group-item', 'list-group-item-action');
-                    item.textContent = author.name;
-                    item.onclick = function () {
-                        addProducer(author);
-                    };
-                    suggestions.appendChild(item);
-                });
-            }
-        });
-
-        function addProducer(author) {
-            let selectedProducers = document.getElementById('selected-authors');
-            let authorItem = document.createElement('div');
-            authorItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            let authorName = document.createElement('span');
-            authorName.textContent = author.name;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                authorItem.remove();
-            };
-
-            authorItem.appendChild(authorName);
-            authorItem.appendChild(removeButton);
-            selectedProducers.appendChild(authorItem);
-            document.getElementById('suggestions').innerHTML = '';
-            document.getElementById('author').value = '';
-
-            // Ajouter l'ID de l'auteur au champ caché author_ids[]
-            let authorIdsInput = document.getElementById('author-ids');
-            authorIdsInput.value += author.id + ',';
+        /* Styles pour le thésaurus AJAX */
+        .thesaurus-suggestion {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        const terms = @json($terms);
-
-        document.getElementById('term_id').addEventListener('change', function () {
-            let selectedOptions = Array.from(this.selectedOptions);
-            selectedOptions.forEach(option => {
-                addTerm(option.text, option.value);
-            });
-            this.selectedOptions = [];
-        });
-
-        function addTerm(termName, termId) {
-            let selectedTerms = document.getElementById('selected-terms');
-            let termItem = document.createElement('div');
-            termItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            let termNameSpan = document.createElement('span');
-            termNameSpan.textContent = termName;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                termItem.remove();
-            };
-
-            termItem.appendChild(termNameSpan);
-            termItem.appendChild(removeButton);
-            selectedTerms.appendChild(termItem);
-
-            let termIdsInput = document.getElementById('term-ids');
-            termIdsInput.value += termId + ',';
+        .thesaurus-suggestion:hover {
+            background-color: #f8f9fa;
         }
-    </script>
+
+        .thesaurus-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .selected-term {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+        }
+
+        .selected-term .remove-term {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-term .remove-term:hover {
+            color: #dc3545;
+        }
+
+        #thesaurus-search:focus + #thesaurus-suggestions {
+            display: block;
+        }
+
+        /* Style pour l'état d'erreur du champ thésaurus */
+        #thesaurus-search.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .invalid-feedback {
+            display: block !important;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+
+    <script src="{{ asset('js/records.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Fonction pour filtrer les éléments d'une liste
-            function filterList(searchInput, listItems) {
-                const filter = searchInput.value.toLowerCase();
-                listItems.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(filter) ? '' : 'none';
-                });
-            }
-
-            // Gestionnaire pour le modal des producteurs
-            const authorModal = document.getElementById('authorModal');
-            const authorSearch = document.getElementById('author-search');
-            const authorList = document.getElementById('author-list');
-            const authorItems = authorList.querySelectorAll('.list-group-item');
-            const saveAuthors = document.getElementById('save-authors');
-            const selectedAuthorsDisplay = document.getElementById('selected-authors-display');
-            const authorIds = document.getElementById('author-ids');
-
-            let selectedAuthors = new Set();
-
-            authorSearch.addEventListener('input', () => filterList(authorSearch, authorItems));
-
-            authorItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    item.classList.toggle('active');
-                    const authorId = item.dataset.id;
-                    if (selectedAuthors.has(authorId)) {
-                        selectedAuthors.delete(authorId);
-                    } else {
-                        selectedAuthors.add(authorId);
-                    }
-                });
-            });
-
-            saveAuthors.addEventListener('click', () => {
-                const selectedAuthorNames = Array.from(authorItems)
-                    .filter(item => item.classList.contains('active'))
-                    .map(item => item.textContent.trim());
-                selectedAuthorsDisplay.value = selectedAuthorNames.join('; ');
-                authorIds.value = Array.from(selectedAuthors).join(',');
-                bootstrap.Modal.getInstance(authorModal).hide();
-            });
-
-            // Gestionnaire pour le modal du thésaurus (similaire aux producteurs)
-            const termModal = document.getElementById('termModal');
-            const termSearch = document.getElementById('term-search');
-            const termList = document.getElementById('term-list');
-            const termItems = termList.querySelectorAll('.list-group-item');
-            const saveTerms = document.getElementById('save-terms');
-            const selectedTermsDisplay = document.getElementById('selected-terms-display');
-            const termIds = document.getElementById('term-ids');
-
-            let selectedTerms = new Set();
-
-            termSearch.addEventListener('input', () => filterList(termSearch, termItems));
-
-            termItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    item.classList.toggle('active');
-                    const termId = item.dataset.id;
-                    if (selectedTerms.has(termId)) {
-                        selectedTerms.delete(termId);
-                    } else {
-                        selectedTerms.add(termId);
-                    }
-                });
-            });
-
-            saveTerms.addEventListener('click', () => {
-                const selectedTermNames = Array.from(termItems)
-                    .filter(item => item.classList.contains('active'))
-                    .map(item => item.textContent.trim());
-                selectedTermsDisplay.value = selectedTermNames.join(', ');
-                termIds.value = Array.from(selectedTerms).join(',');
-                bootstrap.Modal.getInstance(termModal).hide();
-            });
-
-            // Gestionnaire pour le modal des activités
-            const activityModal = document.getElementById('activityModal');
-            const activitySearch = document.getElementById('activity-search');
-            const activityList = document.getElementById('activity-list');
-            const activityItems = activityList.querySelectorAll('.list-group-item');
-            const saveActivity = document.getElementById('save-activity');
-            const selectedActivityDisplay = document.getElementById('selected-activity-display');
-            const activityId = document.getElementById('activity-id');
-
-            activitySearch.addEventListener('input', () => filterList(activitySearch, activityItems));
-
-            activityItems.forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    activityItems.forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                });
-            });
-
-            saveActivity.addEventListener('click', () => {
-                const selectedActivity = activityList.querySelector('.list-group-item.active');
-                if (selectedActivity) {
-                    selectedActivityDisplay.value = selectedActivity.textContent.trim();
-                    activityId.value = selectedActivity.dataset.id;
-                }
-                bootstrap.Modal.getInstance(activityModal).hide();
-            });
+            // Initialiser le gestionnaire de records avec le thésaurus AJAX et les modals
+            initRecordsManager();
         });
     </script>
 @endsection

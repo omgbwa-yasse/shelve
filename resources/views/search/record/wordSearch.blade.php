@@ -1,17 +1,15 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
-    <h1>Selectionner un term</h1>
+    <h1>Sélectionner un terme du thésaurus</h1>
     <table class="table">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Nom</th>
-                <th>Type </th>
-                <th>Parent </th>
-                <th>Description</th>
-                <th>Langue</th>
-                <th>Actions</th>
+                <th>Notation</th>
+                <th>URI</th>
+                <th>Statut</th>
             </tr>
         </thead>
         <tbody>
@@ -20,16 +18,12 @@
                     <td>{{ $term->id }}</td>
                     <td>
                         <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id }}">
-                            {{ $term->name }}
+                            {{ $term->preferred_label ?? $term->uri }}
                         </a>
                     </td>
-                    <td>{{ $term->type->code }} - {{ $term->type->name }}</td>
-                    <td>{{ $term->parent->name ?? 'Debut de la branche' }}</td>
-                    <td>{{ $term->description }}</td>
-                    <td>{{ $term->language->name }}</td>
-                    <td>
-                        <a href="{{ route('terms.show', $term->id) }}" class="btn btn-info">Paramètres</a>
-                    </td>
+                    <td>{{ $term->notation ?? '-' }}</td>
+                    <td>{{ Str::limit($term->uri, 50) }}</td>
+                    <td>{{ $term->status }}</td>
                 </tr>
             @endforeach
         </tbody>

@@ -15,6 +15,12 @@ function initRecordsManager() {
     initTransferButton();
     initCommunicateButton();
     initContentToggleButtons();
+
+    // Initialisation du thésaurus AJAX (si présent sur la page)
+    initThesaurusAjax();
+
+    // Initialisation des modals (si présents sur la page)
+    initModals();
 }
 
 /**
@@ -172,7 +178,7 @@ function initTransferButton() {
 
         let selectedRecordsContainer = document.querySelector('#transferSelectedRecords');
         if (!selectedRecordsContainer) return;
-        
+
         selectedRecordsContainer.innerHTML = '';
 
         checkedRecords.forEach(checkbox => {
@@ -211,7 +217,7 @@ function initCommunicateButton() {
 
         let selectedRecordsContainer = document.querySelector('#communicationSelectedRecords');
         if (!selectedRecordsContainer) return;
-        
+
         selectedRecordsContainer.innerHTML = '';
 
         checkedRecords.forEach(checkbox => {
@@ -267,6 +273,210 @@ function initContentToggleButtons() {
 }
 
 /**
+ * Initialise le système de thésaurus AJAX
+ */
+function initThesaurusAjax() {
+    // Gestion du thésaurus AJAX
+    let selectedTerms = new Map(); // Map pour stocker les termes sélectionnés (id -> {name, thesaurus})
+    let searchTimeout;
+
+    const thesaurusSearch = document.getElementById('thesaurus-search');
+    const thesaurusSuggestions = document.getElementById('thesaurus-suggestions');
+    const selectedTermsContainer = document.getElementById('selected-terms-container');
+    const termIdsInput = document.getElementById('term-ids');
+
+    if (!thesaurusSearch || !thesaurusSuggestions || !selectedTermsContainer || !termIdsInput) {
+        return; // Éléments non trouvés, probablement pas sur la page de création
+    }
+
+    // Recherche AJAX avec délai
+    thesaurusSearch.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        // Effacer le timeout précédent
+        clearTimeout(searchTimeout);
+
+        if (query.length < 3) {
+            hideSuggestions();
+            return;
+        }
+
+        // Attendre 300ms avant de faire la recherche
+        searchTimeout = setTimeout(() => {
+            searchThesaurus(query);
+        }, 300);
+    });
+
+    // Masquer les suggestions quand on clique ailleurs
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#thesaurus-search') && !e.target.closest('#thesaurus-suggestions')) {
+            hideSuggestions();
+        }
+    });
+
+    // Afficher les suggestions quand on focus le champ
+    thesaurusSearch.addEventListener('focus', function() {
+        if (this.value.trim().length >= 3) {
+            showSuggestions();
+        }
+    });
+
+    function searchThesaurus(query) {
+        fetch(`/api/thesaurus/concepts/autocomplete?search=${encodeURIComponent(query)}&limit=5`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displaySuggestions(data);
+        })
+        .catch(error => {
+            console.error('Erreur lors de la recherche dans le thésaurus:', error);
+            hideSuggestions();
+        });
+    }
+
+    function displaySuggestions(terms) {
+        thesaurusSuggestions.innerHTML = '';
+
+        if (terms.length === 0) {
+            const noResult = document.createElement('div');
+            noResult.className = 'thesaurus-suggestion text-muted';
+            noResult.textContent = 'Aucun résultat trouvé';
+            thesaurusSuggestions.appendChild(noResult);
+        } else {
+            terms.forEach(term => {
+                const suggestion = document.createElement('div');
+                suggestion.className = 'thesaurus-suggestion';
+                suggestion.dataset.id = term.id;
+                suggestion.dataset.name = term.pref_label || 'Sans nom';
+                suggestion.dataset.thesaurus = term.scheme ? term.scheme.title : 'Thésaurus';
+
+                // Format: motLabel - thésaurus ou motlabel[termeassocié] - thésaurus
+                let displayText = term.pref_label || 'Sans nom';
+
+                // Si il y a un terme spécifique associé, l'ajouter entre crochets
+                if (term.specific_term && term.specific_term.pref_label) {
+                    displayText += `[${term.specific_term.pref_label}]`;
+                }
+
+                // Ajouter le nom du thésaurus
+                displayText += ` - ${term.scheme ? term.scheme.title : 'Thésaurus'}`;
+
+                suggestion.textContent = displayText;
+
+                suggestion.addEventListener('click', function() {
+                    selectTerm(
+                        term.id,
+                        term.pref_label || 'Sans nom',
+                        term.scheme ? term.scheme.title : 'Thésaurus'
+                    );
+                });
+
+                thesaurusSuggestions.appendChild(suggestion);
+            });
+        }
+
+        showSuggestions();
+    }
+
+    function selectTerm(id, name, thesaurus) {
+        // Vérifier si le terme n'est pas déjà sélectionné
+        if (selectedTerms.has(id)) {
+            return;
+        }
+
+        // Ajouter le terme aux sélectionnés
+        selectedTerms.set(id, { name, thesaurus });
+
+        // Créer l'élément visuel
+        const termElement = document.createElement('span');
+        termElement.className = 'selected-term';
+        termElement.dataset.id = id;
+
+        const termText = document.createElement('span');
+        termText.textContent = `${name} - ${thesaurus}`;
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'remove-term';
+        removeButton.innerHTML = '×';
+        removeButton.title = 'Supprimer ce terme';
+
+        removeButton.addEventListener('click', function() {
+            removeTerm(id);
+        });
+
+        termElement.appendChild(termText);
+        termElement.appendChild(removeButton);
+        selectedTermsContainer.appendChild(termElement);
+
+        // Mettre à jour le champ caché
+        updateHiddenInput();
+
+        // Vider le champ de recherche et masquer les suggestions
+        thesaurusSearch.value = '';
+        hideSuggestions();
+
+        // Enlever la classe d'erreur si elle existe
+        thesaurusSearch.classList.remove('is-invalid');
+    }
+
+    function removeTerm(id) {
+        // Supprimer de la Map
+        selectedTerms.delete(id);
+
+        // Supprimer l'élément visuel
+        const termElement = selectedTermsContainer.querySelector(`[data-id="${id}"]`);
+        if (termElement) {
+            termElement.remove();
+        }
+
+        // Mettre à jour le champ caché
+        updateHiddenInput();
+
+        // Ajouter la classe d'erreur si aucun terme n'est sélectionné
+        if (selectedTerms.size === 0) {
+            thesaurusSearch.classList.add('is-invalid');
+        }
+    }
+
+    function updateHiddenInput() {
+        const ids = Array.from(selectedTerms.keys());
+        termIdsInput.value = ids.join(',');
+    }
+
+    function showSuggestions() {
+        thesaurusSuggestions.style.display = 'block';
+    }
+
+    function hideSuggestions() {
+        thesaurusSuggestions.style.display = 'none';
+    }
+
+    // Validation du formulaire
+    const recordForm = document.getElementById('recordForm');
+    if (recordForm) {
+        recordForm.addEventListener('submit', function(e) {
+            // Vérifier que au moins un terme du thésaurus est sélectionné
+            if (selectedTerms.size === 0) {
+                e.preventDefault();
+                alert('Veuillez sélectionner au moins un terme du thésaurus.');
+                thesaurusSearch.classList.add('is-invalid');
+                thesaurusSearch.focus();
+                return false;
+            }
+
+            // Si tout est OK, on peut soumettre
+            return true;
+        });
+    }
+}
+
+/**
  * Récupère les IDs des records sélectionnés
  * @returns {Array} Tableau d'IDs
  */
@@ -297,9 +507,119 @@ function getTranslation(key) {
         'original': 'Original',
         'content': 'Contenu'
     };
-    
+
     return translations[key] || key;
 }
 
 // Exposer la fonction getSelectedRecordIds pour une utilisation par d'autres scripts
 window.getSelectedRecordIds = getSelectedRecordIds;
+
+/**
+ * Initialise les modals pour la sélection d'auteurs et d'activités
+ */
+function initModals() {
+    // Configuration des modals
+    const modals = [
+        {
+            modalId: 'authorModal',
+            searchId: 'author-search',
+            listId: 'author-list',
+            displayId: 'selected-authors-display',
+            hiddenInputId: 'author-ids',
+            saveButtonId: 'save-authors',
+            multiSelect: true
+        },
+        {
+            modalId: 'activityModal',
+            searchId: 'activity-search',
+            listId: 'activity-list',
+            displayId: 'selected-activity-display',
+            hiddenInputId: 'activity-id',
+            saveButtonId: 'save-activity',
+            multiSelect: false,
+            required: true
+        }
+    ];
+
+    // Initialiser chaque modal
+    modals.forEach(config => {
+        const modal = document.getElementById(config.modalId);
+        const search = document.getElementById(config.searchId);
+        const list = document.getElementById(config.listId);
+        const saveButton = document.getElementById(config.saveButtonId);
+        const displayInput = document.getElementById(config.displayId);
+        const hiddenInput = document.getElementById(config.hiddenInputId);
+
+        if (!modal || !search || !list || !saveButton || !displayInput || !hiddenInput) {
+            console.log(`Elements manquants pour ${config.modalId}:`, {
+                modal: !!modal,
+                search: !!search,
+                list: !!list,
+                saveButton: !!saveButton,
+                displayInput: !!displayInput,
+                hiddenInput: !!hiddenInput
+            });
+            return;
+        }
+
+        console.log(`Initialisation du modal ${config.modalId}`);
+
+        // Fonctionnalité de recherche standard
+        const items = list.querySelectorAll('.list-group-item');
+        search.addEventListener('input', () => filterList(search, items));
+
+        // Sélection d'éléments
+        items.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log(`Click sur item ${item.dataset.id} dans ${config.modalId}`);
+
+                if (config.multiSelect) {
+                    item.classList.toggle('active');
+                } else {
+                    // Pour single select, enlever active de tous les autres et l'ajouter à celui-ci
+                    items.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                }
+
+                console.log(`Item ${item.dataset.id} actif:`, item.classList.contains('active'));
+            });
+        });
+
+        // Sauvegarder la sélection
+        saveButton.addEventListener('click', () => {
+            const selectedItems = list.querySelectorAll('.list-group-item.active');
+            console.log(`Sauvegarde pour ${config.modalId}, items sélectionnés:`, selectedItems.length);
+
+            const selectedNames = Array.from(selectedItems).map(item => item.textContent.trim());
+            const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
+
+            displayInput.value = selectedNames.join('; ');
+            if (config.multiSelect) {
+                hiddenInput.value = selectedIds.join(',');
+            } else {
+                hiddenInput.value = selectedIds[0] || '';
+            }
+
+            console.log(`Valeurs sauvegardées - Display: "${displayInput.value}", Hidden: "${hiddenInput.value}"`);
+
+            // Ajouter une classe de validation si requis
+            if (config.required && hiddenInput.value === '') {
+                displayInput.classList.add('is-invalid');
+            } else {
+                displayInput.classList.remove('is-invalid');
+            }
+
+            bootstrap.Modal.getInstance(modal).hide();
+        });
+    });
+
+    // Fonction pour filtrer les éléments de liste dans les modals
+    function filterList(searchInput, listItems) {
+        const filter = searchInput.value.toLowerCase();
+        listItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(filter) ? '' : 'none';
+        });
+    }
+}

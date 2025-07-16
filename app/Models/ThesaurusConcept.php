@@ -83,8 +83,8 @@ class ThesaurusConcept extends Model
         return $this->belongsToMany(
             ThesaurusConcept::class,
             'thesaurus_concept_relations',
-            'narrower_concept_id',
-            'broader_concept_id'
+            'concept_id',
+            'related_concept_id'
         )->wherePivot('relation_type', 'broader');
     }
 
@@ -96,8 +96,8 @@ class ThesaurusConcept extends Model
         return $this->belongsToMany(
             ThesaurusConcept::class,
             'thesaurus_concept_relations',
-            'broader_concept_id',
-            'narrower_concept_id'
+            'concept_id',
+            'related_concept_id'
         )->wherePivot('relation_type', 'narrower');
     }
 
@@ -109,8 +109,8 @@ class ThesaurusConcept extends Model
         return $this->belongsToMany(
             ThesaurusConcept::class,
             'thesaurus_concept_relations',
-            'source_concept_id',
-            'target_concept_id'
+            'concept_id',
+            'related_concept_id'
         )->wherePivot('relation_type', 'related');
     }
 
@@ -120,7 +120,7 @@ class ThesaurusConcept extends Model
     public function getPreferredLabel($language = 'fr-fr')
     {
         return $this->labels()
-                    ->where('label_type', 'prefLabel')
+                    ->where('type', 'prefLabel')
                     ->where('language', $language)
                     ->first();
     }
@@ -131,7 +131,7 @@ class ThesaurusConcept extends Model
     public function getAlternativeLabels($language = 'fr-fr')
     {
         return $this->labels()
-                    ->where('label_type', 'altLabel')
+                    ->where('type', 'altLabel')
                     ->where('language', $language)
                     ->get();
     }
@@ -150,7 +150,7 @@ class ThesaurusConcept extends Model
     public function getPreferredLabelAttribute()
     {
         $label = $this->getPreferredLabel();
-        return $label ? $label->label_value : $this->uri;
+        return $label ? $label->literal_form : $this->uri;
     }
 
     /**

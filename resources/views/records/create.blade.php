@@ -4,8 +4,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container-fluid">
         <div class="row mb-3">
-            <div class="col">
+            <div class="col-md-8">
                 <h4 class="mb-3">{{ __('create_description') }}</h4>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ route('records.create.full') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-file-earmark-text me-1"></i>
+                    Afficher une fiche complète
+                </a>
             </div>
         </div>
 
@@ -19,7 +25,7 @@
             </div>
         @endif
 
-        <form action="{{ route('records.store') }}" method="POST">
+        <form action="{{ route('records.store') }}" method="POST" id="recordForm">
             @csrf
             @if (!empty($record))
                 <input type="hidden" name="parent_id" value="{{$record->id}}">
@@ -144,12 +150,19 @@
 
                             <div class="mb-2">
                                 <label class="form-label small">{{ __('thesaurus') }} *</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control" id="selected-terms-display" readonly>
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#termModal">
-                                        {{ __('select') }}
-                                    </button>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm" id="thesaurus-search" placeholder="Rechercher dans le thésaurus..." autocomplete="off">
+                                    <div id="thesaurus-suggestions" class="position-absolute w-100 bg-white border border-top-0 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
+                                        <!-- Les suggestions apparaîtront ici -->
+                                    </div>
                                 </div>
+                                <small class="text-muted">Tapez au moins 3 caractères pour rechercher. Cliquez sur un terme pour l'ajouter.</small>
+
+                                <!-- Zone d'affichage des termes sélectionnés -->
+                                <div id="selected-terms-container" class="mt-2">
+                                    <!-- Les termes sélectionnés apparaîtront ici -->
+                                </div>
+
                                 <input type="hidden" name="term_ids[]" id="term-ids" required>
                             </div>
 
@@ -193,7 +206,6 @@
 
     <!-- Modals - inclus une seule fois -->
     @include('records.partials.author_modal')
-    @include('records.partials.term_modal')
     @include('records.partials.activity_modal')
 
     <style>
@@ -259,10 +271,77 @@
         .accordion-collapse:not(.show) {
             opacity: 0.95 !important;
         }
+
+        /* Styles pour le thésaurus AJAX */
+        .thesaurus-suggestion {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .thesaurus-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+
+        .thesaurus-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .selected-term {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+        }
+
+        .selected-term .remove-term {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-term .remove-term:hover {
+            color: #dc3545;
+        }
+
+        #thesaurus-search:focus + #thesaurus-suggestions {
+            display: block;
+        }
+
+        /* Style pour l'état d'erreur du champ thésaurus */
+        #thesaurus-search.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .invalid-feedback {
+            display: block !important;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
     </style>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+    <script src="{{ asset('js/records.js') }}"></script>
+    <script>        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le gestionnaire de records avec le thésaurus AJAX
+            initRecordsManager();
+
+            // Configuration spécifique pour les accordéons sur cette page
+            initAccordionBehavior();
+        });
+
+        function initAccordionBehavior() {
             // Configurer l'accordéon pour permettre plusieurs panneaux ouverts et tous les ouvrir par défaut
             const accordionPanels = document.querySelectorAll('.accordion-collapse');
             accordionPanels.forEach(panel => {
@@ -306,261 +385,6 @@
                 });
             });
 
-            // Fonction pour filtrer les éléments de liste dans les modals
-            function filterList(searchInput, listItems) {
-                const filter = searchInput.value.toLowerCase();
-                listItems.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    item.style.display = text.includes(filter) ? '' : 'none';
-                });
-            }
-
-            // Charger les catégories de termes pour le filtre
-            function loadTermCategories() {
-                const categorySelect = document.getElementById('term-category-filter');
-                if (!categorySelect) return;
-
-                fetch('/api/thesaurus/categories', {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Vider les options existantes sauf la première
-                    while (categorySelect.options.length > 1) {
-                        categorySelect.options.remove(1);
-                    }
-
-                    // Ajouter les catégories comme options
-                    data.forEach(category => {
-                        const option = document.createElement('option');
-                        option.value = category.id;
-                        option.textContent = category.name;
-                        categorySelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Erreur lors du chargement des catégories:', error));
-            }
-
-            // Fonction pour rechercher des termes via AJAX
-            function searchTerms(keyword = '', categoryId = '') {
-                const termList = document.getElementById('term-list');
-                const loadingIndicator = document.getElementById('term-loading');
-                const noResultsMessage = document.getElementById('term-no-results');
-
-                if (!termList || !loadingIndicator || !noResultsMessage) return;
-
-                // Afficher l'indicateur de chargement
-                termList.style.display = 'none';
-                noResultsMessage.style.display = 'none';
-                loadingIndicator.style.display = 'block';
-
-                // Construire l'URL avec les paramètres de recherche
-                let searchUrl = `/api/thesaurus/search?keyword=${encodeURIComponent(keyword)}`;
-                if (categoryId) {
-                    searchUrl += `&category_id=${categoryId}`;
-                }
-
-                fetch(searchUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Cacher l'indicateur de chargement
-                    loadingIndicator.style.display = 'none';
-
-                    // Vider la liste de résultats
-                    termList.innerHTML = '';
-
-                    if (data.length === 0) {
-                        // Afficher le message "aucun résultat"
-                        noResultsMessage.style.display = 'block';
-                    } else {
-                        // Afficher la liste des résultats
-                        termList.style.display = 'block';                        // Ajouter chaque terme à la liste
-                        data.forEach(term => {
-                            const item = document.createElement('a');
-                            item.href = '#';
-                            item.className = 'list-group-item list-group-item-action';
-                            item.dataset.id = term.id;
-                            if (term.category_id) {
-                                item.dataset.category = term.category_id;
-                            }
-                            // Stocker le nom formaté pour l'affichage
-                            item.dataset.formattedName = term.formatted_name || term.name;
-
-                            // Créer un span pour le nom du terme
-                            const nameSpan = document.createElement('span');
-                            nameSpan.textContent = term.name;
-
-                            // Si une catégorie est disponible, ajouter un span pour celle-ci
-                            if (term.category_name) {
-                                nameSpan.textContent = term.name;
-
-                                const categorySpan = document.createElement('span');
-                                categorySpan.className = 'ms-1 text-muted';
-                                categorySpan.textContent = '(' + term.category_name + ')';
-
-                                item.appendChild(nameSpan);
-                                item.appendChild(categorySpan);
-                            } else {
-                                item.appendChild(nameSpan);
-                            }
-
-                            termList.appendChild(item);
-
-                            // Ajouter les gestionnaires d'événements pour la sélection
-                            item.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                item.classList.toggle('active');
-                            });
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la recherche de termes:', error);
-                    loadingIndicator.style.display = 'none';
-                    noResultsMessage.style.display = 'block';
-                    noResultsMessage.textContent = 'Erreur lors de la recherche. Veuillez réessayer.';
-                });
-            }
-
-            // Configuration des modals
-            const modals = [
-                {
-                    modalId: 'authorModal',
-                    searchId: 'author-search',
-                    listId: 'author-list',
-                    displayId: 'selected-authors-display',
-                    hiddenInputId: 'author-ids',
-                    saveButtonId: 'save-authors',
-                    multiSelect: true
-                },
-                {
-                    modalId: 'termModal',
-                    searchId: 'term-search-input',
-                    listId: 'term-list',
-                    displayId: 'selected-terms-display',
-                    hiddenInputId: 'term-ids',
-                    saveButtonId: 'save-terms',
-                    searchButtonId: 'term-search-button',
-                    categoryFilterId: 'term-category-filter',
-                    multiSelect: true,
-                    required: true,
-                    useAjax: true
-                },
-                {
-                    modalId: 'activityModal',
-                    searchId: 'activity-search',
-                    listId: 'activity-list',
-                    displayId: 'selected-activity-display',
-                    hiddenInputId: 'activity-id',
-                    saveButtonId: 'save-activity',
-                    multiSelect: false,
-                    required: true
-                }
-            ];
-
-            // Initialiser chaque modal
-            modals.forEach(config => {
-                const modal = document.getElementById(config.modalId);
-                const search = document.getElementById(config.searchId);
-                const list = document.getElementById(config.listId);
-                const saveButton = document.getElementById(config.saveButtonId);
-                const displayInput = document.getElementById(config.displayId);
-                const hiddenInput = document.getElementById(config.hiddenInputId);
-
-                if (!modal || !search || !list || !saveButton || !displayInput || !hiddenInput) return;
-
-                // Configuration spécifique pour le modal de termes avec AJAX
-                if (config.useAjax) {
-                    // Charger les catégories lors de l'ouverture du modal
-                    modal.addEventListener('show.bs.modal', function() {
-                        loadTermCategories();
-                    });
-
-                    // Configurer la recherche AJAX
-                    const searchButton = document.getElementById(config.searchButtonId);
-                    const categoryFilter = document.getElementById(config.categoryFilterId);
-
-                    if (searchButton && categoryFilter) {
-                        // Recherche lorsqu'on clique sur le bouton
-                        searchButton.addEventListener('click', function() {
-                            searchTerms(search.value, categoryFilter.value);
-                        });
-
-                        // Recherche lorsqu'on appuie sur Entrée dans le champ de recherche
-                        search.addEventListener('keypress', function(e) {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                searchTerms(search.value, categoryFilter.value);
-                            }
-                        });
-
-                        // Recherche lorsqu'on change de catégorie
-                        categoryFilter.addEventListener('change', function() {
-                            searchTerms(search.value, categoryFilter.value);
-                        });
-
-                        // Recherche initiale avec des termes vides
-                        modal.addEventListener('shown.bs.modal', function() {
-                            searchTerms('', '');
-                        });
-                    }
-                } else {
-                    // Fonctionnalité de recherche standard pour les autres modaux
-                    const items = list.querySelectorAll('.list-group-item');
-                    search.addEventListener('input', () => filterList(search, items));
-
-                    // Sélection d'éléments pour les modaux standard
-                    items.forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (config.multiSelect) {
-                                item.classList.toggle('active');
-                            } else {
-                                items.forEach(i => i.classList.remove('active'));
-                                item.classList.add('active');
-                            }
-                        });
-                    });
-                }
-
-                // Sauvegarder la sélection (commun à tous les modals)
-                saveButton.addEventListener('click', () => {
-                    const selectedItems = list.querySelectorAll('.list-group-item.active');
-                    // Utiliser le nom formaté stocké dans data-formatted-name s'il existe
-                    const selectedNames = Array.from(selectedItems).map(item => {
-                        // Utiliser le format leMot(PremiereLeMajusculeCategorie)
-                        return item.dataset.formattedName || item.textContent.trim();
-                    });
-                    const selectedIds = Array.from(selectedItems).map(item => item.dataset.id);
-
-                    displayInput.value = selectedNames.join('; ');
-                    if (config.multiSelect) {
-                        hiddenInput.value = selectedIds.join(',');
-                    } else {
-                        hiddenInput.value = selectedIds[0] || '';
-                    }
-
-                    // Ajouter une classe de validation si requis
-                    if (config.required && hiddenInput.value === '') {
-                        displayInput.classList.add('is-invalid');
-                    } else {
-                        displayInput.classList.remove('is-invalid');
-                    }
-
-                    bootstrap.Modal.getInstance(modal).hide();
-                });
-            });
-
             // Fonction pour s'assurer que tous les champs d'une section sont visibles
             function ensureFieldsVisibility() {
                 document.querySelectorAll('.accordion-collapse.show').forEach(panel => {
@@ -577,14 +401,6 @@
             // Exécuter au chargement pour les sections déjà ouvertes
             ensureFieldsVisibility();
 
-            // Exécuter après chaque clic sur une section accordéon
-            document.querySelectorAll('.accordion-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    // Délai pour laisser Bootstrap traiter les transitions
-                    setTimeout(ensureFieldsVisibility, 400);
-                });
-            });
-
             // Observer les mutations pour détecter les changements de classe .show
             const observer = new MutationObserver(mutations => {
                 mutations.forEach(mutation => {
@@ -600,6 +416,9 @@
             document.querySelectorAll('.accordion-collapse').forEach(panel => {
                 observer.observe(panel, { attributes: true });
             });
-        });
+        }
+
+        // Appel direct depuis initRecordsManager dans records.js
+        // La fonction initModals() est maintenant dans records.js
     </script>
 @endsection
