@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Term;
+use App\Models\ThesaurusConcept;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class AssociativeRelationController extends Controller
+class ThesaurusAssociativeRelationController extends Controller
 {
-    public function index(Term $term)
+    public function index(ThesaurusConcept $term)
     {
         $associatedTerms = $term->associatedTerms;
         return view('thesaurus.associative_relations.index', compact('term', 'associatedTerms'));
     }
 
-    public function create(Term $term)
+    public function create(ThesaurusConcept $term)
     {
         $relationSubtypes = [
             'cause_effect' => 'Cause/Effet',
@@ -34,7 +34,7 @@ class AssociativeRelationController extends Controller
             'general' => 'Association générale'
         ];
 
-        $terms = Term::where('id', '!=', $term->id)
+        $terms = ThesaurusConcept::where('id', '!=', $term->id)
                      ->where('language', $term->language)
                      ->orderBy('preferred_label')
                      ->get();
@@ -42,7 +42,7 @@ class AssociativeRelationController extends Controller
         return view('thesaurus.associative_relations.create', compact('term', 'terms', 'relationSubtypes'));
     }
 
-    public function store(Request $request, Term $term)
+    public function store(Request $request, ThesaurusConcept $term)
     {
         $request->validate([
             'related_term_id' => 'required|exists:terms,id',
@@ -56,7 +56,7 @@ class AssociativeRelationController extends Controller
         }
 
         // Ajoute la relation associative
-        $term->belongsToMany(Term::class, 'associative_relations', 'term1_id', 'term2_id')
+        $term->belongsToMany(ThesaurusConcept::class, 'associative_relations', 'term1_id', 'term2_id')
              ->withPivot('relation_subtype')
              ->withTimestamps()
              ->attach($request->related_term_id, [
@@ -67,7 +67,7 @@ class AssociativeRelationController extends Controller
             ->with('success', 'Relation associative ajoutée avec succès.');
     }
 
-    public function destroyRelation(Term $term, $relatedTermId)
+    public function destroyRelation(ThesaurusConcept $term, $relatedTermId)
     {
         // On teste les deux directions possibles
         $relation = DB::table('associative_relations')

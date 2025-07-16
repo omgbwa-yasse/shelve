@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Term;
+use App\Models\ThesaurusConcept;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class TranslationController extends Controller
+class ThesaurusTranslationController extends Controller
 {
-    public function index(Term $term)
+    public function index(ThesaurusConcept $term)
     {
         $translations = $term->translationsSource->merge($term->translationsTarget);
         return view('thesaurus.translations.index', compact('term', 'translations'));
     }
 
-    public function create(Term $term)
+    public function create(ThesaurusConcept $term)
     {
         // Liste des termes dans d'autres langues
-        $terms = Term::where('id', '!=', $term->id)
+        $terms = ThesaurusConcept::where('id', '!=', $term->id)
                      ->where('language', '!=', $term->language)
                      ->orderBy('preferred_label')
                      ->get();
@@ -25,10 +25,10 @@ class TranslationController extends Controller
         return view('thesaurus.translations.create', compact('term', 'terms'));
     }
 
-    public function store(Request $request, Term $term)
+    public function store(Request $request, ThesaurusConcept $term)
     {
         $request->validate([
-            'target_term_id' => 'required|exists:terms,id',
+            'target_term_id' => 'required|exists:thesaurus_concepts,id',
         ]);
 
         // Vérifie que la traduction n'existe pas déjà
@@ -54,21 +54,21 @@ class TranslationController extends Controller
             ->with('success', 'Traduction ajoutée avec succès.');
     }
 
-    public function destroyTranslation(Term $term, $relatedTermId)
+    public function destroy($sourceTermId, $targetTermId)
     {
         // Supprime la traduction dans les deux sens
         DB::table('translations')
-            ->where(function($query) use ($term, $relatedTermId) {
-                $query->where('source_term_id', $term->id)
-                      ->where('target_term_id', $relatedTermId);
+            ->where(function($query) use ($sourceTermId, $targetTermId) {
+                $query->where('source_term_id', $sourceTermId)
+                      ->where('target_term_id', $targetTermId);
             })
-            ->orWhere(function($query) use ($term, $relatedTermId) {
-                $query->where('source_term_id', $relatedTermId)
-                      ->where('target_term_id', $term->id);
+            ->orWhere(function($query) use ($sourceTermId, $targetTermId) {
+                $query->where('source_term_id', $targetTermId)
+                      ->where('target_term_id', $sourceTermId);
             })
             ->delete();
 
-        return redirect()->route('terms.translations.index', $term->id)
+        return redirect()->back()
             ->with('success', 'Traduction supprimée avec succès.');
     }
 }

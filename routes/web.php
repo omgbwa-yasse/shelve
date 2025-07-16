@@ -55,13 +55,13 @@ use App\Http\Controllers\LanguageController;
 // use App\Http\Controllers\TermController; // Obsolète - contrôleur supprimé
 // use App\Http\Controllers\NonDescriptorController; // Obsolète - contrôleur supprimé
 // use App\Http\Controllers\ExternalAlignmentController; // Obsolète - contrôleur supprimé
-use App\Http\Controllers\HierarchicalRelationController;
-use App\Http\Controllers\AssociativeRelationController;
-use App\Http\Controllers\TranslationController;
+// use App\Http\Controllers\HierarchicalRelationController; // Obsolète - contrôleur supprimé
+use App\Http\Controllers\ThesaurusAssociativeRelationController;
+use App\Http\Controllers\ThesaurusTranslationController;
+use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
 use App\Http\Controllers\PublicSearchLogController;
-use App\Http\Controllers\ThesaurusToolController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\lifeCycleController;
 use App\Http\Controllers\RecordChildController;
@@ -681,61 +681,53 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
-            // Les routes pour les termes sont gérées par ThesaurusToolController
-            // Route::resource('terms', TermController::class); // Obsolète
 
-            // Routes pour les non-descripteurs - utiliser alternative_labels via ThesaurusToolController
-            // Route::resource('non-descriptors', NonDescriptorController::class); // Obsolète
-
-            // Routes pour les alignements externes - utiliser external_alignments via ThesaurusToolController
-            // Route::resource('external-alignments', ExternalAlignmentController::class); // Obsolète
-
-            // Relations hiérarchiques - gérées par ThesaurusToolController
-            // Route::get('hierarchical-relations', [HierarchicalRelationController::class, 'index'])->name('hierarchical_relations.index'); // Obsolète
+            // Page d'accueil du module
+            Route::resource('/',ThesaurusController::class)->names('thesaurus');
 
             // Relations associatives - contrôleur existe
-            Route::get('associative-relations', [AssociativeRelationController::class, 'index'])->name('associative_relations.index');
-            Route::get('associative-relations/create/{term}', [AssociativeRelationController::class, 'create'])->name('associative_relations.create');
-            Route::post('associative-relations/store/{term}', [AssociativeRelationController::class, 'store'])->name('associative_relations.store');
-            Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [AssociativeRelationController::class, 'destroy'])->name('associative_relations.destroy');
+            Route::get('associative-relations', [ThesaurusAssociativeRelationController::class, 'index'])->name('thesaurus.associative_relations.index');
+            Route::get('associative-relations/create/{term}', [ThesaurusAssociativeRelationController::class, 'create'])->name('thesaurus.associative_relations.create');
+            Route::post('associative-relations/store/{term}', [ThesaurusAssociativeRelationController::class, 'store'])->name('thesaurus.associative_relations.store');
+            Route::delete('associative-relations/destroy/{termId}/{associatedTermId}', [ThesaurusAssociativeRelationController::class, 'destroy'])->name('thesaurus.associative_relations.destroy');
 
             // Routes pour les traductions - contrôleur existe
-            Route::get('translations', [TranslationController::class, 'index'])->name('translations.index');
-            Route::get('translations/create/{term}', [TranslationController::class, 'create'])->name('translations.create');
-            Route::post('translations/store/{term}', [TranslationController::class, 'store'])->name('translations.store');
-            Route::delete('translations/destroy/{sourceTermId}/{targetTermId}', [TranslationController::class, 'destroy'])->name('translations.destroy');
+            Route::get('translations', [ThesaurusTranslationController::class, 'index'])->name('thesaurus.translations.index');
+            Route::get('translations/create/{term}', [ThesaurusTranslationController::class, 'create'])->name('thesaurus.translations.create');
+            Route::post('translations/store/{term}', [ThesaurusTranslationController::class, 'store'])->name('thesaurus.translations.store');
+            Route::delete('translations/destroy/{sourceTermId}/{targetTermId}', [ThesaurusTranslationController::class, 'destroy'])->name('thesaurus.translations.destroy');
 
             // Routes pour la recherche avancée
-            Route::get('search', [App\Http\Controllers\ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
-            Route::get('search/results', [App\Http\Controllers\ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
+            Route::get('search', [ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
+            Route::get('search/results', [ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
 
             // Route pour la page d'accueil d'import/export
-            Route::get('export-import', [App\Http\Controllers\ThesaurusExportImportController::class, 'index'])->name('thesaurus.export_import.index');
+            Route::get('export-import', [ThesaurusExportImportController::class, 'index'])->name('thesaurus.export_import.index');
 
             // Routes pour l'export
-            Route::get('export/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
-            Route::get('export/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
-            Route::get('export/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
+            Route::get('export/skos', [ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
+            Route::get('export/csv', [ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
+            Route::get('export/rdf', [ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
 
             // Routes pour l'import/export
-            Route::get('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
-            Route::post('import/skos', [App\Http\Controllers\ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
-            Route::get('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
-            Route::post('import/csv', [App\Http\Controllers\ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
-            Route::get('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
-            Route::post('import/rdf', [App\Http\Controllers\ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
+            Route::get('import/skos', [ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
+            Route::post('import/skos', [ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
+            Route::get('import/csv', [ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
+            Route::post('import/csv', [ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
+            Route::get('import/rdf', [ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
+            Route::post('import/rdf', [ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
 
             // Routes AJAX pour l'import/export
-            Route::post('export/ajax', [App\Http\Controllers\ThesaurusExportImportController::class, 'exportAjax'])->name('thesaurus.export.ajax');
-            Route::post('import/preview', [App\Http\Controllers\ThesaurusExportImportController::class, 'importPreview'])->name('thesaurus.import.preview');
-            Route::post('import/process', [App\Http\Controllers\ThesaurusExportImportController::class, 'importProcess'])->name('thesaurus.import.process');
-            Route::get('download/{filename}', [App\Http\Controllers\ThesaurusExportImportController::class, 'downloadExport'])->name('thesaurus.download.export');
+            Route::post('export/ajax', [ThesaurusExportImportController::class, 'exportAjax'])->name('thesaurus.export.ajax');
+            Route::post('import/preview', [ThesaurusExportImportController::class, 'importPreview'])->name('thesaurus.import.preview');
+            Route::post('import/process', [ThesaurusExportImportController::class, 'importProcess'])->name('thesaurus.import.process');
+            Route::get('download/{filename}', [ThesaurusExportImportController::class, 'downloadExport'])->name('thesaurus.download.export');
 
-            // Routes pour les fonctionnalités thésaurus (via ThesaurusToolController)
-            Route::get('concepts', [App\Http\Controllers\ThesaurusToolController::class, 'concepts'])->name('thesaurus.concepts');
-            Route::get('concepts/{concept}', [App\Http\Controllers\ThesaurusToolController::class, 'showConcept'])->name('thesaurus.concepts.show');
-            Route::get('hierarchy', [App\Http\Controllers\ThesaurusToolController::class, 'hierarchy'])->name('thesaurus.hierarchy');
-            Route::get('search/autocomplete', [App\Http\Controllers\ThesaurusToolController::class, 'autocomplete'])->name('thesaurus.autocomplete');
+            // Routes pour les fonctionnalités thésaurus (via ThesaurusController)
+            Route::get('concepts', [ThesaurusController::class, 'concepts'])->name('thesaurus.concepts');
+            Route::get('concepts/{concept}', [ThesaurusController::class, 'showConcept'])->name('thesaurus.concepts.show');
+            Route::get('hierarchy', [ThesaurusController::class, 'hierarchy'])->name('thesaurus.hierarchy');
+            Route::get('search/autocomplete', [ThesaurusController::class, 'autocomplete'])->name('thesaurus.autocomplete');
         });
 
     });
@@ -964,25 +956,7 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
 
-// Routes pour le module Thésaurus Tool
-Route::prefix('tool/thesaurus')->middleware(['auth'])->group(function () {
-    // Page d'accueil du module
-    Route::get('/', [ThesaurusToolController::class, 'index'])->name('tool.thesaurus.index');
 
-    // Gestion des imports/exports
-    Route::get('import-export', [ThesaurusToolController::class, 'importExport'])->name('tool.thesaurus.import-export');
-    Route::post('export-scheme', [ThesaurusToolController::class, 'exportScheme'])->name('tool.thesaurus.export-scheme');
-    Route::post('import-file', [ThesaurusToolController::class, 'importFile'])->name('tool.thesaurus.import-file');
-
-    // Association automatique avec les records
-    Route::post('auto-associate-concepts', [ThesaurusToolController::class, 'autoAssociateConcepts'])->name('tool.thesaurus.auto-associate-concepts');
-
-    // Relations entre records et concepts
-    Route::get('record-concept-relations', [ThesaurusToolController::class, 'recordConceptRelations'])->name('tool.thesaurus.record-concept-relations');
-
-    // Statistiques
-    Route::get('statistics', [ThesaurusToolController::class, 'statistics'])->name('tool.thesaurus.statistics');
-});
 
 
 

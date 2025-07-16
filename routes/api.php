@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
 use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
-use App\Http\Controllers\ThesaurusToolController;
+use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
 
@@ -49,17 +49,17 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
 
 // Routes API pour le thésaurus
 Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
-    Route::get('schemes', [ThesaurusToolController::class, 'apiSchemes'])->name('schemes');
-    Route::get('concepts', [ThesaurusToolController::class, 'apiConcepts'])->name('concepts');
-    Route::get('concepts/autocomplete', [ThesaurusToolController::class, 'apiConceptsAutocomplete'])->name('concepts.autocomplete');
-    Route::get('schemes/{scheme}/concepts', [ThesaurusToolController::class, 'apiSchemesConcepts'])->name('schemes.concepts');
+    Route::get('schemes', [ThesaurusController::class, 'apiSchemes'])->name('schemes');
+    Route::get('concepts', [ThesaurusController::class, 'apiConcepts'])->name('concepts');
+    Route::get('concepts/autocomplete', [ThesaurusController::class, 'apiConceptsAutocomplete'])->name('concepts.autocomplete');
+    Route::get('schemes/{scheme}/concepts', [ThesaurusController::class, 'apiSchemesConcepts'])->name('schemes.concepts');
 });
 
 // Routes API pour les records et leurs relations avec le thésaurus
 Route::prefix('records')->name('api.records.')->middleware('auth:sanctum')->group(function () {
-    Route::get('{record}/terms', [ThesaurusToolController::class, 'apiRecordTerms'])->name('terms');
-    Route::post('{record}/terms', [ThesaurusToolController::class, 'apiAssociateTerms'])->name('associate-terms');
-    Route::delete('{record}/terms/{concept}', [ThesaurusToolController::class, 'apiDisassociateTerm'])->name('disassociate-term');
+    Route::get('{record}/terms', [ThesaurusController::class, 'apiRecordTerms'])->name('terms');
+    Route::post('{record}/terms', [ThesaurusController::class, 'apiAssociateTerms'])->name('associate-terms');
+    Route::delete('{record}/terms/{concept}', [ThesaurusController::class, 'apiDisassociateTerm'])->name('disassociate-term');
 });
 
 // Routes API publiques pour l'interface frontend React

@@ -193,6 +193,11 @@
         </div>
         <div class="submenu-content" id="thesaurusMenu">
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('tool.thesaurus.index') }}">
+                    <i class="bi bi-house"></i> {{ __('thesaurus_home') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('thesaurus.hierarchy') }}">
                     <i class="bi bi-tree"></i> {{ __('view_branches') }}
                 </a>
