@@ -7,13 +7,13 @@
     <h1>Relations hiérarchiques pour "{{ $term->preferred_label }}"</h1>
 
     <div class="mb-3">
-        <a href="{{ route('terms.show', $term->id) }}" class="btn btn-secondary">
+        <a href="{{ route('thesaurus.show', $term->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Retour au terme
         </a>
-        <a href="{{ route('terms.hierarchical-relations.broader.create', $term->id) }}" class="btn btn-success">
+        <a href="{{ route('thesaurus.hierarchical_relations.broader.create', $term->id) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajouter un terme générique (TG)
         </a>
-        <a href="{{ route('terms.hierarchical-relations.narrower.create', $term->id) }}" class="btn btn-success">
+        <a href="{{ route('thesaurus.hierarchical_relations.narrower.create', $term->id) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajouter un terme spécifique (TS)
         </a>
     </div>
@@ -29,7 +29,7 @@
                         @forelse($broaderTerms as $broaderTerm)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <a href="{{ route('terms.show', $broaderTerm->id) }}">{{ $broaderTerm->preferred_label }}</a>
+                                    <a href="{{ route('thesaurus.show', $broaderTerm->id) }}">{{ $broaderTerm->preferred_label }}</a>
                                     <span class="badge bg-info">
                                         @switch($broaderTerm->pivot->relation_type)
                                             @case('generic')
@@ -46,7 +46,7 @@
                                         @endswitch
                                     </span>
                                 </div>
-                                <form action="{{ route('terms.hierarchical-relations.destroy', [$term->id, 'broader', $broaderTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
+                                <form action="{{ route('thesaurus.hierarchical_relations.destroy', [$term->id, 'broader', $broaderTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
@@ -70,7 +70,7 @@
                         @forelse($narrowerTerms as $narrowerTerm)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
-                                    <a href="{{ route('terms.show', $narrowerTerm->id) }}">{{ $narrowerTerm->preferred_label }}</a>
+                                    <a href="{{ route('thesaurus.show', $narrowerTerm->id) }}">{{ $narrowerTerm->preferred_label }}</a>
                                     <span class="badge bg-info">
                                         @switch($narrowerTerm->pivot->relation_type)
                                             @case('generic')
@@ -87,7 +87,7 @@
                                         @endswitch
                                     </span>
                                 </div>
-                                <form action="{{ route('terms.hierarchical-relations.destroy', [$term->id, 'narrower', $narrowerTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
+                                <form action="{{ route('thesaurus.hierarchical_relations.destroy', [$term->id, 'narrower', $narrowerTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>

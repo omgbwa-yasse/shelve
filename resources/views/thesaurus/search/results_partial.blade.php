@@ -45,10 +45,10 @@
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a href="{{ route('terms.show', $term->id) }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('thesaurus.show', $term->id) }}" class="btn btn-sm btn-primary">
                                     <i class="fa fa-eye"></i>
                                 </a>
-                                <a href="{{ route('terms.edit', $term->id) }}" class="btn btn-sm btn-secondary">
+                                <a href="{{ route('thesaurus.edit', $term->id) }}" class="btn btn-sm btn-secondary">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>

@@ -9,7 +9,7 @@
             @if($concept->scheme)
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('tool.thesaurus.index') }}">{{ __('Thesaurus') }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('thesaurus.index') }}">{{ __('Thesaurus') }}</a></li>
                         <li class="breadcrumb-item"><a href="{{ route('thesaurus.concepts') }}">{{ __('Concepts') }}</a></li>
                         <li class="breadcrumb-item active" aria-current="page">{{ $concept->pref_label ?? $concept->id }}</li>
                     </ol>

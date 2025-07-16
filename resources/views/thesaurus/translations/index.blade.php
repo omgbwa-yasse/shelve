@@ -7,10 +7,10 @@
     <h1>Traductions pour "{{ $term->preferred_label }}"</h1>
 
     <div class="mb-3">
-        <a href="{{ route('terms.show', $term->id) }}" class="btn btn-secondary">
+        <a href="{{ route('thesaurus.show', $term->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Retour au terme
         </a>
-        <a href="{{ route('terms.translations.create', $term->id) }}" class="btn btn-success">
+        <a href="{{ route('thesaurus.translations.create', $term->id) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajouter une traduction
         </a>
     </div>
@@ -33,7 +33,7 @@
                         @forelse($translations as $translation)
                             <tr>
                                 <td>
-                                    <a href="{{ route('terms.show', $translation->id) }}">
+                                    <a href="{{ route('thesaurus.show', $translation->id) }}">
                                         {{ $translation->preferred_label }}
                                     </a>
                                 </td>
@@ -62,7 +62,7 @@
                                     @endswitch
                                 </td>
                                 <td>
-                                    <form action="{{ route('terms.translations.destroy', [$term->id, $translation->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette traduction?');">
+                                    <form action="{{ route('thesaurus.translations.destroy', [$term->id, $translation->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette traduction?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">

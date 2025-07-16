@@ -114,7 +114,7 @@
                                                                 onclick="showConceptDetails({{ $term->id }})" title="Voir les détails">
                                                             <i class="fa fa-eye"></i>
                                                         </button>
-                                                        <a href="{{ route('tool.thesaurus.record-concept-relations', ['concept_id' => $term->id]) }}"
+                                                        <a href="{{ route('thesaurus.record-concept-relations', ['concept_id' => $term->id]) }}"
                                                            class="btn btn-sm btn-secondary" title="Voir les relations">
                                                             <i class="fa fa-link"></i>
                                                         </a>
@@ -213,7 +213,7 @@ $(document).ready(function() {
 // Fonction pour afficher les détails d'un concept
 function showConceptDetails(conceptId) {
     // Pour l'instant, on redirige vers la page des relations
-    window.location.href = '{{ route("tool.thesaurus.record-concept-relations") }}?concept_id=' + conceptId;
+    window.location.href = '{{ route("thesaurus.record-concept-relations") }}?concept_id=' + conceptId;
 }
 </script>
 @endsection

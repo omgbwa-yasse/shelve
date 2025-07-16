@@ -7,10 +7,10 @@
     <h1>Relations associatives pour "{{ $term->preferred_label }}"</h1>
 
     <div class="mb-3">
-        <a href="{{ route('terms.show', $term->id) }}" class="btn btn-secondary">
+        <a href="{{ route('thesaurus.show', $term->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Retour au terme
         </a>
-        <a href="{{ route('terms.associative-relations.create', $term->id) }}" class="btn btn-success">
+        <a href="{{ route('thesaurus.associative_relations.create', $term->id) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajouter une relation associative
         </a>
     </div>
@@ -24,7 +24,7 @@
                 @forelse($associatedTerms as $associatedTerm)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <a href="{{ route('terms.show', $associatedTerm->id) }}">{{ $associatedTerm->preferred_label }}</a>
+                            <a href="{{ route('thesaurus.show', $associatedTerm->id) }}">{{ $associatedTerm->preferred_label }}</a>
                             <span class="badge bg-info">
                                 @switch($associatedTerm->pivot->relation_subtype)
                                     @case('cause_effect')
@@ -74,7 +74,7 @@
                                 @endswitch
                             </span>
                         </div>
-                        <form action="{{ route('terms.associative-relations.destroy', [$term->id, $associatedTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
+                        <form action="{{ route('thesaurus.associative_relations.destroy', [$term->id, $associatedTerm->id]) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette relation?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>

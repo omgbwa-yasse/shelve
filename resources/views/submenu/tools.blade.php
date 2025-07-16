@@ -193,7 +193,7 @@
         </div>
         <div class="submenu-content" id="thesaurusMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('tool.thesaurus.index') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.index') }}">
                     <i class="bi bi-house"></i> {{ __('thesaurus_home') }}
                 </a>
             </div>
@@ -208,7 +208,7 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('thesaurus.export_import.index') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.export-import') }}">
                     <i class="bi bi-arrow-down-up"></i> {{ __('import_export') }}
                 </a>
             </div>

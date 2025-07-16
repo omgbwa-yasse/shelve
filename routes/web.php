@@ -728,6 +728,22 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('concepts/{concept}', [ThesaurusController::class, 'showConcept'])->name('thesaurus.concepts.show');
             Route::get('hierarchy', [ThesaurusController::class, 'hierarchy'])->name('thesaurus.hierarchy');
             Route::get('search/autocomplete', [ThesaurusController::class, 'autocomplete'])->name('thesaurus.autocomplete');
+            
+            // Routes manquantes pour les fonctionnalités du thésaurus
+            Route::get('export-import', [ThesaurusController::class, 'importExport'])->name('thesaurus.export-import');
+            Route::get('record-concept-relations', [ThesaurusController::class, 'recordConceptRelations'])->name('thesaurus.record-concept-relations');
+            Route::get('statistics', [ThesaurusController::class, 'statistics'])->name('thesaurus.statistics');
+            Route::post('export-scheme', [ThesaurusController::class, 'exportScheme'])->name('thesaurus.export-scheme');
+            Route::post('import-file', [ThesaurusController::class, 'importFile'])->name('thesaurus.import-file');
+            Route::post('auto-associate-concepts', [ThesaurusController::class, 'autoAssociateConcepts'])->name('thesaurus.auto-associate-concepts');
+            
+            // Routes pour les relations hiérarchiques
+            Route::get('hierarchical-relations/{term}', [ThesaurusController::class, 'hierarchicalRelationsIndex'])->name('thesaurus.hierarchical_relations.index');
+            Route::get('hierarchical-relations/{term}/broader/create', [ThesaurusController::class, 'createBroaderRelation'])->name('thesaurus.hierarchical_relations.broader.create');
+            Route::post('hierarchical-relations/{term}/broader/store', [ThesaurusController::class, 'storeBroaderRelation'])->name('thesaurus.hierarchical_relations.broader.store');
+            Route::get('hierarchical-relations/{term}/narrower/create', [ThesaurusController::class, 'createNarrowerRelation'])->name('thesaurus.hierarchical_relations.narrower.create');
+            Route::post('hierarchical-relations/{term}/narrower/store', [ThesaurusController::class, 'storeNarrowerRelation'])->name('thesaurus.hierarchical_relations.narrower.store');
+            Route::delete('hierarchical-relations/{term}/{relationType}/{relatedTerm}', [ThesaurusController::class, 'destroyHierarchicalRelation'])->name('thesaurus.hierarchical_relations.destroy');
         });
 
     });

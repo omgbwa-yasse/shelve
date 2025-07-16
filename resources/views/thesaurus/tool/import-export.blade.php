@@ -8,7 +8,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Import/Export de thésaurus</h3>
                     <div class="card-tools">
-                        <a href="{{ route('tool.thesaurus.index') }}" class="btn btn-sm btn-secondary">
+                        <a href="{{ route('thesaurus.index') }}" class="btn btn-sm btn-secondary">
                             <i class="fas fa-arrow-left"></i> Retour
                         </a>
                     </div>
@@ -40,7 +40,7 @@
                                     <h4 class="card-title">Import</h4>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="{{ route('tool.thesaurus.import-file') }}" enctype="multipart/form-data">
+                                    <form method="POST" action="{{ route('thesaurus.import-file') }}" enctype="multipart/form-data">
                                         @csrf
                                         <div class="form-group">
                                             <label for="file">Fichier à importer</label>
@@ -119,7 +119,7 @@
                                     <h4 class="card-title">Export</h4>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="{{ route('tool.thesaurus.export-scheme') }}">
+                                    <form method="POST" action="{{ route('thesaurus.export-scheme') }}">
                                         @csrf
                                         <div class="form-group">
                                             <label for="export_scheme_id">Schéma à exporter</label>

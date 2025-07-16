@@ -50,7 +50,7 @@ class ThesaurusTranslationController extends Controller
         // Ajoute la traduction
         $term->translationsSource()->attach($request->target_term_id);
 
-        return redirect()->route('terms.translations.index', $term->id)
+        return redirect()->route('thesaurus.translations.index', $term->id)
             ->with('success', 'Traduction ajoutée avec succès.');
     }
 

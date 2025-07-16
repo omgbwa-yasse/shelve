@@ -58,7 +58,7 @@
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa fa-upload"></i> Importer
                             </button>
-                            <a href="{{ route('terms.index') }}" class="btn btn-secondary">
+                            <a href="{{ route('thesaurus.index') }}" class="btn btn-secondary">
                                 Annuler
                             </a>
                         </div>

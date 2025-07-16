@@ -8,7 +8,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('terms.translations.store', $term->id) }}" method="POST">
+            <form action="{{ route('thesaurus.translations.store', $term->id) }}" method="POST">
                 @csrf
 
                 <div class="row mb-3">
@@ -32,7 +32,7 @@
 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    <a href="{{ route('terms.translations.index', $term->id) }}" class="btn btn-secondary">Annuler</a>
+                    <a href="{{ route('thesaurus.translations.index', $term->id) }}" class="btn btn-secondary">Annuler</a>
                 </div>
             </form>
         </div>

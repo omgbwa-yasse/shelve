@@ -63,7 +63,7 @@ class ThesaurusAssociativeRelationController extends Controller
                 'relation_subtype' => $request->relation_subtype,
              ]);
 
-        return redirect()->route('terms.associative-relations.index', $term->id)
+        return redirect()->route('thesaurus.associative_relations.index', $term->id)
             ->with('success', 'Relation associative ajoutée avec succès.');
     }
 
@@ -85,7 +85,7 @@ class ThesaurusAssociativeRelationController extends Controller
             DB::table('associative_relations')->delete($relation->id);
         }
 
-        return redirect()->route('terms.associative-relations.index', $term->id)
+        return redirect()->route('thesaurus.associative_relations.index', $term->id)
             ->with('success', 'Relation associative supprimée avec succès.');
     }
 

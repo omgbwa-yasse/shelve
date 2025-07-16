@@ -8,7 +8,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Relations Records - Concepts du thésaurus</h3>
                     <div class="card-tools">
-                        <a href="{{ route('tool.thesaurus.index') }}" class="btn btn-sm btn-secondary">
+                        <a href="{{ route('thesaurus.index') }}" class="btn btn-sm btn-secondary">
                             <i class="fas fa-arrow-left"></i> Retour
                         </a>
                     </div>
@@ -40,7 +40,7 @@
                                     <h4 class="card-title">Association automatique</h4>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="{{ route('tool.thesaurus.auto-associate-concepts') }}">
+                                    <form method="POST" action="{{ route('thesaurus.auto-associate-concepts') }}">
                                         @csrf
                                         <div class="row">
                                             <div class="col-md-3">
@@ -97,7 +97,7 @@
                     <!-- Filtres -->
                     <div class="row mb-4">
                         <div class="col-md-12">
-                            <form method="GET" action="{{ route('tool.thesaurus.record-concept-relations') }}">
+                            <form method="GET" action="{{ route('thesaurus.record-concept-relations') }}">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
@@ -227,7 +227,7 @@ function reassociateConcepts(recordId) {
         // Créer un formulaire pour la réassociation
         let form = document.createElement('form');
         form.method = 'POST';
-        form.action = '{{ route("tool.thesaurus.auto-associate-concepts") }}';
+        form.action = '{{ route("thesaurus.auto-associate-concepts") }}';
         
         let csrfToken = document.createElement('input');
         csrfToken.type = 'hidden';

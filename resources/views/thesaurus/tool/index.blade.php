@@ -58,13 +58,13 @@
                         <div class="col-md-12">
                             <h4>Actions rapides</h4>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('tool.thesaurus.import-export') }}" class="btn btn-primary">
+                                <a href="{{ route('thesaurus.export-import') }}" class="btn btn-primary">
                                     <i class="fas fa-exchange-alt"></i> Import/Export
                                 </a>
-                                <a href="{{ route('tool.thesaurus.record-concept-relations') }}" class="btn btn-success">
+                                <a href="{{ route('thesaurus.record-concept-relations') }}" class="btn btn-success">
                                     <i class="fas fa-link"></i> Relations Records-Concepts
                                 </a>
-                                <a href="{{ route('tool.thesaurus.statistics') }}" class="btn btn-info">
+                                <a href="{{ route('thesaurus.statistics') }}" class="btn btn-info">
                                     <i class="fas fa-chart-bar"></i> Statistiques détaillées
                                 </a>
                             </div>
@@ -105,7 +105,7 @@
                                                                 onclick="exportScheme({{ $scheme->id }})">
                                                             <i class="fas fa-download"></i> Export
                                                         </button>
-                                                        <a href="{{ route('tool.thesaurus.record-concept-relations', ['scheme_id' => $scheme->id]) }}" 
+                                                        <a href="{{ route('thesaurus.record-concept-relations', ['scheme_id' => $scheme->id]) }}" 
                                                            class="btn btn-outline-success btn-sm">
                                                             <i class="fas fa-link"></i> Relations
                                                         </a>
@@ -132,7 +132,7 @@
 <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="POST" action="{{ route('tool.thesaurus.export-scheme') }}">
+            <form method="POST" action="{{ route('thesaurus.export-scheme') }}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title" id="exportModalLabel">Exporter un schéma</h5>

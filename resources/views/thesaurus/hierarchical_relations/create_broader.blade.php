@@ -8,7 +8,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('terms.hierarchical-relations.broader.store', $term->id) }}" method="POST">
+            <form action="{{ route('thesaurus.hierarchical_relations.broader.store', $term->id) }}" method="POST">
                 @csrf
 
                 <div class="row mb-3">
@@ -44,7 +44,7 @@
 
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Enregistrer</button>
-                    <a href="{{ route('terms.hierarchical-relations.index', $term->id) }}" class="btn btn-secondary">Annuler</a>
+                    <a href="{{ route('thesaurus.hierarchical_relations.index', $term->id) }}" class="btn btn-secondary">Annuler</a>
                 </div>
             </form>
         </div>

@@ -244,7 +244,7 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('terms.index') }}">
+                <a class="submenu-link" href="{{ route('thesaurus.index') }}">
                     <i class="bi bi-tag"></i> {{ __('thesaurus_terms') }}
                 </a>
             </div>
