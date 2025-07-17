@@ -9,15 +9,12 @@ import {
   FaHistory
 } from 'react-icons/fa';
 import { recordsApi, eventsApi, newsApi, searchApi } from '../services/AllServices';
-import { theme } from '../styles/AppStyles';
 import {
   SearchSection,
   SearchContainer,
   SearchForm,
   SearchInput,
   SearchButton,
-  FiltersContainer,
-  FilterButton,
   MainContent,
   ContentArea,
   Sidebar,
@@ -32,7 +29,6 @@ import {
 // Composant HomePage
 function HomePage({ theme }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
   const [records, setRecords] = useState([]);
   const [events, setEvents] = useState([]);
   const [news, setNews] = useState([]);
@@ -116,7 +112,6 @@ function HomePage({ theme }) {
       // Utiliser l'API de recherche
       const searchResponse = await searchApi.search({
         query: searchQuery,
-        type: activeFilter !== 'all' ? activeFilter : undefined,
         limit: 20
       });
 
@@ -136,37 +131,10 @@ function HomePage({ theme }) {
     }
   };
 
-  const handleFilterChange = async (filter) => {
-    setActiveFilter(filter);
-
-    if (searchQuery) {
-      // Si il y a une recherche active, relancer la recherche avec le nouveau filtre
-      handleSearch({ preventDefault: () => {} });
-    } else {
-      // Sinon, recharger les données avec le filtre
-      setLoading(true);
-      try {
-        const recordsResponse = await recordsApi.getRecords({
-          limit: 10,
-          type: filter !== 'all' ? filter : undefined
-        });
-        setRecords(recordsResponse.data.data || recordsResponse.data || []);
-      } catch (error) {
-        console.error('Filter error:', error);
-        toast.error('Erreur lors du filtrage des données.');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   return (
     <>
       <SearchSection>
         <SearchContainer>
-          <h2>Explorez notre patrimoine documentaire</h2>
-          <p>Recherchez dans nos collections d'archives historiques, documents patrimoniaux et ressources numériques</p>
-
           <SearchForm onSubmit={handleSearch}>
             <SearchInput
               type="text"
@@ -179,39 +147,6 @@ function HomePage({ theme }) {
               Rechercher
             </SearchButton>
           </SearchForm>
-
-          <FiltersContainer>
-            <FilterButton
-              active={activeFilter === 'all'}
-              onClick={() => handleFilterChange('all')}
-            >
-              Tout
-            </FilterButton>
-            <FilterButton
-              active={activeFilter === 'documents'}
-              onClick={() => handleFilterChange('documents')}
-            >
-              Documents
-            </FilterButton>
-            <FilterButton
-              active={activeFilter === 'photos'}
-              onClick={() => handleFilterChange('photos')}
-            >
-              Photos
-            </FilterButton>
-            <FilterButton
-              active={activeFilter === 'manuscripts'}
-              onClick={() => handleFilterChange('manuscripts')}
-            >
-              Manuscrits
-            </FilterButton>
-            <FilterButton
-              active={activeFilter === 'maps'}
-              onClick={() => handleFilterChange('maps')}
-            >
-              Cartes
-            </FilterButton>
-          </FiltersContainer>
         </SearchContainer>
       </SearchSection>
 
@@ -279,7 +214,7 @@ function HomePage({ theme }) {
             {popularSearches.map((search, index) => (
               <div key={index} style={{
                 padding: '0.5rem',
-                background: theme.colors.light,
+                background: '#F8F8F8',
                 marginBottom: '0.5rem',
                 borderRadius: '4px',
                 cursor: 'pointer'
@@ -298,14 +233,14 @@ function HomePage({ theme }) {
               <div key={article.id || index} style={{ marginBottom: '1rem' }}>
                 <div style={{
                   fontWeight: 'bold',
-                  color: theme.colors.primary,
+                  color: '#8B4513',
                   marginBottom: '0.25rem'
                 }}>
                   {article.title || article.name || 'Article'}
                 </div>
                 <div style={{
                   fontSize: '0.9rem',
-                  color: theme.colors.text
+                  color: '#2F4F4F'
                 }}>
                   {article.excerpt || article.content || article.description || 'Extrait non disponible'}
                 </div>
