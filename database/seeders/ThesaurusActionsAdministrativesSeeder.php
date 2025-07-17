@@ -1,19 +1,54 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+class ThesaurusActionsAdministrativesSeeder extends Seeder
 {
     /**
-     * Run the migrations.
+     * Run the database seeds.
      */
-    public function up(): void
+    public function run(): void
     {
-        // Insérer le schéma de thésaurus basé sur le référentiel des Archives de France
-        $schemeId = DB::table('thesaurus_schemes')->insertGetId([
+        // Encapsulation de toutes les opérations dans une transaction
+        DB::beginTransaction();
+
+        try {
+            // Vérifier si le thésaurus existe déjà
+            $existingScheme = DB::table('thesaurus_schemes')
+                ->where('uri', 'https://archives.gouv.fr/thesaurus/actions-administratives')
+                ->first();
+
+            if ($existingScheme) {
+                $this->command->info('Le thésaurus des actions administratives existe déjà. Seeder ignoré.');
+                return;
+            }
+
+            $schemeId = $this->createThesaurusScheme();
+            $conceptIds = $this->createConcepts($schemeId);
+            $this->createSubConcepts($schemeId, $conceptIds);
+            $this->createRelatedConcepts($conceptIds);
+            $this->createOrganizationAndNamespaces();
+            $this->addScopeNotes($conceptIds);
+
+            DB::commit();
+            $this->command->info('Thésaurus des actions administratives importé avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->command->error('Erreur lors de l\'import du thésaurus: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create the thesaurus scheme
+     *
+     * @return int The ID of the created scheme
+     */
+    private function createThesaurusScheme(): int
+    {
+        return DB::table('thesaurus_schemes')->insertGetId([
             'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives',
             'identifier' => 'SIAF-ACTIONS-2011',
             'title' => 'Thésaurus pour la description et l\'indexation des archives locales anciennes, modernes et contemporaines - Liste d\'autorité Actions',
@@ -23,8 +58,28 @@ return new class extends Migration
             'updated_at' => now(),
         ]);
 
+    }
+
+    /**
+     * Create all main concepts
+     * @param int $schemeId
+     * @return array IDs of created concepts
+     */
+    private function createConcepts(int $schemeId): array
+    {
+        $concepts = $this->getConceptsDefinition();
+        return $this->insertConcepts($schemeId, $concepts);
+    }
+
+    /**
+     * Get the definition of all concepts
+     *
+     * @return array Array of concept definitions
+     */
+    private function getConceptsDefinition(): array
+    {
         // Concepts principaux avec leurs relations EM/EP/TA
-        $concepts = [
+        return [
             // Groupe A
             'ABOLITION' => [
                 'uri' => 'https://archives.gouv.fr/thesaurus/actions-administratives/abolition',
@@ -464,7 +519,17 @@ return new class extends Migration
                 'definition' => 'Exercice d\'une tutelle financière sur un organisme'
             ]
         ];
+    }
 
+    /**
+     * Insert concepts into the database
+     *
+     * @param int $schemeId
+     * @param array $concepts
+     * @return array Concept IDs
+     */
+    private function insertConcepts(int $schemeId, array $concepts): array
+    {
         $conceptIds = [];
 
         // Insérer tous les concepts principaux
@@ -515,6 +580,16 @@ return new class extends Migration
             }
         }
 
+        return $conceptIds;
+    }
+
+    /**
+     * Create sub-concepts and establish hierarchical relationships
+     * @param int $schemeId
+     * @param array $conceptIds
+     */
+    private function createSubConcepts(int $schemeId, array $conceptIds): void
+    {
         // Créer les concepts spécialisés (sous-concepts)
         $subConcepts = [
             'abrogation' => [
@@ -577,87 +652,179 @@ return new class extends Migration
 
         // Insérer les sous-concepts et créer les relations hiérarchiques
         foreach ($subConcepts as $key => $subConcept) {
-            $subConceptId = DB::table('thesaurus_concepts')->insertGetId([
-                'scheme_id' => $schemeId,
-                'uri' => $subConcept['uri'],
-                'notation' => $subConcept['notation'],
-                'status' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            // Vérifier si ce sous-concept existe déjà (au cas où)
+            $existingConcept = DB::table('thesaurus_concepts')
+                ->where('uri', $subConcept['uri'])
+                ->first();
 
-            // Labels et définitions
-            DB::table('thesaurus_labels')->insert([
-                'concept_id' => $subConceptId,
-                'type' => 'prefLabel',
-                'literal_form' => $subConcept['prefLabel'],
-                'language' => 'fr-fr',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::table('thesaurus_concept_notes')->insert([
-                'concept_id' => $subConceptId,
-                'type' => 'definition',
-                'note' => $subConcept['definition'],
-                'language' => 'fr-fr',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // Relations hiérarchiques avec le concept parent
-            $parentId = $conceptIds[$subConcept['parent']];
-
-            // Relation broader (le sous-concept a un terme plus large)
-            DB::table('thesaurus_concept_relations')->insert([
-                'concept_id' => $subConceptId,
-                'related_concept_id' => $parentId,
-                'relation_type' => 'broader',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            // Relation narrower (le concept parent a un terme plus spécifique)
-            DB::table('thesaurus_concept_relations')->insert([
-                'concept_id' => $parentId,
-                'related_concept_id' => $subConceptId,
-                'relation_type' => 'narrower',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        // Créer les relations associées (TA - Terme associé) basées sur le thésaurus
-        $relatedConcepts = [
-            ['AMENAGEMENT', 'CONSTRUCTION'],
-            ['GESTION_COMPTABLE', 'RECOUVREMENT'],
-            ['GESTION_DU_PERSONNEL', 'RECRUTEMENT'],
-            ['EQUIPEMENT_MATERIEL', 'INFORMATISATION']
-        ];
-
-        foreach ($relatedConcepts as $relation) {
-            if (isset($conceptIds[$relation[0]]) && isset($conceptIds[$relation[1]])) {
-                // Relation bidirectionnelle
-                DB::table('thesaurus_concept_relations')->insert([
-                    'concept_id' => $conceptIds[$relation[0]],
-                    'related_concept_id' => $conceptIds[$relation[1]],
-                    'relation_type' => 'related',
+            if ($existingConcept) {
+                $subConceptId = $existingConcept->id;
+            } else {
+                $subConceptId = DB::table('thesaurus_concepts')->insertGetId([
+                    'scheme_id' => $schemeId,
+                    'uri' => $subConcept['uri'],
+                    'notation' => $subConcept['notation'],
+                    'status' => 1,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+            }
 
+            // S'assurer qu'il n'y a pas de collision de clés
+            if (!isset($conceptIds[$key])) {
+                $conceptIds[$key] = $subConceptId;
+            } else {
+                // Si la clé existe déjà, utiliser une clé différente pour éviter l'écrasement
+                $uniqueKey = $key . '_SUB';
+                $conceptIds[$uniqueKey] = $subConceptId;
+            }
+
+            // Labels et définitions
+            // Vérifier si le label existe déjà
+            $existingLabel = DB::table('thesaurus_labels')
+                ->where('concept_id', $subConceptId)
+                ->where('type', 'prefLabel')
+                ->where('language', 'fr-fr')
+                ->first();
+
+            if (!$existingLabel) {
+                DB::table('thesaurus_labels')->insert([
+                    'concept_id' => $subConceptId,
+                    'type' => 'prefLabel',
+                    'literal_form' => $subConcept['prefLabel'],
+                    'language' => 'fr-fr',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Vérifier si la définition existe déjà
+            $existingNote = DB::table('thesaurus_concept_notes')
+                ->where('concept_id', $subConceptId)
+                ->where('type', 'definition')
+                ->where('language', 'fr-fr')
+                ->first();
+
+            if (!$existingNote) {
+                DB::table('thesaurus_concept_notes')->insert([
+                    'concept_id' => $subConceptId,
+                    'type' => 'definition',
+                    'note' => $subConcept['definition'],
+                    'language' => 'fr-fr',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Relations hiérarchiques avec le concept parent
+            if (!isset($conceptIds[$subConcept['parent']])) {
+                throw new \Exception('Le concept parent "' . $subConcept['parent'] . '" n\'existe pas pour le sous-concept "' . $key . '"');
+            }
+
+            $parentId = $conceptIds[$subConcept['parent']];
+
+            // Vérifier si la relation broader existe déjà
+            $existingBroader = DB::table('thesaurus_concept_relations')
+                ->where('concept_id', $subConceptId)
+                ->where('related_concept_id', $parentId)
+                ->where('relation_type', 'broader')
+                ->first();
+
+            if (!$existingBroader) {
+                // Relation broader (le sous-concept a un terme plus large)
                 DB::table('thesaurus_concept_relations')->insert([
-                    'concept_id' => $conceptIds[$relation[1]],
-                    'related_concept_id' => $conceptIds[$relation[0]],
-                    'relation_type' => 'related',
+                    'concept_id' => $subConceptId,
+                    'related_concept_id' => $parentId,
+                    'relation_type' => 'broader',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            // Vérifier si la relation narrower existe déjà
+            $existingNarrower = DB::table('thesaurus_concept_relations')
+                ->where('concept_id', $parentId)
+                ->where('related_concept_id', $subConceptId)
+                ->where('relation_type', 'narrower')
+                ->first();
+
+            if (!$existingNarrower) {
+                // Relation narrower (le concept parent a un terme plus spécifique)
+                DB::table('thesaurus_concept_relations')->insert([
+                    'concept_id' => $parentId,
+                    'related_concept_id' => $subConceptId,
+                    'relation_type' => 'narrower',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             }
         }
+    }
 
+    /**
+     * Create related concept relationships
+     *
+     * @param array $conceptIds
+     */
+    private function createRelatedConcepts(array $conceptIds): void
+    {
+        // Créer les relations associées (TA - Terme associé) basées sur le thésaurus
+        $relatedConcepts = [
+            ['AMENAGEMENT', 'CONSTRUCTION'],
+            ['GESTION_COMPTABLE', 'RECOUVREMENT'],
+            ['GESTION_DU_PERSONNEL', 'RECRUTEMENT'],
+            ['EQUIPEMENT_MATERIEL', 'INFORMATISATION'],
+            ['INFORMATISATION', 'NUMERISATION']
+        ];
+
+        foreach ($relatedConcepts as $relation) {
+            if (isset($conceptIds[$relation[0]]) && isset($conceptIds[$relation[1]])) {
+                // Vérifier si la relation existe déjà dans un sens
+                $existingRelation1 = DB::table('thesaurus_concept_relations')
+                    ->where('concept_id', $conceptIds[$relation[0]])
+                    ->where('related_concept_id', $conceptIds[$relation[1]])
+                    ->where('relation_type', 'related')
+                    ->first();
+
+                if (!$existingRelation1) {
+                    // Relation bidirectionnelle - sens 1
+                    DB::table('thesaurus_concept_relations')->insert([
+                        'concept_id' => $conceptIds[$relation[0]],
+                        'related_concept_id' => $conceptIds[$relation[1]],
+                        'relation_type' => 'related',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                // Vérifier si la relation existe déjà dans l'autre sens
+                $existingRelation2 = DB::table('thesaurus_concept_relations')
+                    ->where('concept_id', $conceptIds[$relation[1]])
+                    ->where('related_concept_id', $conceptIds[$relation[0]])
+                    ->where('relation_type', 'related')
+                    ->first();
+
+                if (!$existingRelation2) {
+                    // Relation bidirectionnelle - sens 2
+                    DB::table('thesaurus_concept_relations')->insert([
+                        'concept_id' => $conceptIds[$relation[1]],
+                        'related_concept_id' => $conceptIds[$relation[0]],
+                        'relation_type' => 'related',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Create organization and namespace entries
+     */
+    private function createOrganizationAndNamespaces(): void
+    {
         // Ajouter l'organisation responsable
-        $orgId = DB::table('thesaurus_organizations')->insertGetId([
+        DB::table('thesaurus_organizations')->insertGetId([
             'name' => 'Service Interministériel des Archives de France',
             'homepage' => 'https://archives.gouv.fr',
             'email' => 'contact@archives.gouv.fr',
@@ -680,7 +847,15 @@ return new class extends Migration
                 'updated_at' => now(),
             ]
         ]);
+    }
 
+    /**
+     * Add scope notes to concepts
+     *
+     * @param array $conceptIds
+     */
+    private function addScopeNotes(array $conceptIds): void
+    {
         // Ajouter des notes d'application spécifiques du thésaurus
         $scopeNotes = [
             'CLASSEMENT' => 'S\'emploie pour les installations classées, les bâtiments recevant du public, les hôtels et les campings... Ne s\'emploie pas pour le patrimoine (voir PROTECTION).',
@@ -701,41 +876,25 @@ return new class extends Migration
 
         foreach ($scopeNotes as $conceptKey => $note) {
             if (isset($conceptIds[$conceptKey])) {
-                DB::table('thesaurus_concept_notes')->insert([
-                    'concept_id' => $conceptIds[$conceptKey],
-                    'type' => 'scopeNote',
-                    'note' => $note,
-                    'language' => 'fr-fr',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                // Vérifier si la note existe déjà
+                $existingScopeNote = DB::table('thesaurus_concept_notes')
+                    ->where('concept_id', $conceptIds[$conceptKey])
+                    ->where('type', 'scopeNote')
+                    ->where('language', 'fr-fr')
+                    ->first();
+
+                if (!$existingScopeNote) {
+                    DB::table('thesaurus_concept_notes')->insert([
+                        'concept_id' => $conceptIds[$conceptKey],
+                        'type' => 'scopeNote',
+                        'note' => $note,
+                        'language' => 'fr-fr',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        // Supprimer le thésaurus des Archives de France
-        $scheme = DB::table('thesaurus_schemes')
-            ->where('uri', 'https://archives.gouv.fr/thesaurus/actions-administratives')
-            ->first();
-
-        if ($scheme) {
-            // Les relations CASCADE s'occuperont de supprimer les concepts et leurs dépendances
-            DB::table('thesaurus_schemes')->where('id', $scheme->id)->delete();
-        }
-
-        // Supprimer l'organisation ajoutée
-        DB::table('thesaurus_organizations')
-            ->where('name', 'Service Interministériel des Archives de France')
-            ->delete();
-
-        // Supprimer les namespaces ajoutés
-        DB::table('thesaurus_namespaces')
-            ->whereIn('prefix', ['skos', 'siaf'])
-            ->delete();
-    }
-};
+}
