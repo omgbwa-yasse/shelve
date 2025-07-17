@@ -823,30 +823,56 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
      */
     private function createOrganizationAndNamespaces(): void
     {
-        // Ajouter l'organisation responsable
-        DB::table('thesaurus_organizations')->insertGetId([
-            'name' => 'Service Interministériel des Archives de France',
-            'homepage' => 'https://archives.gouv.fr',
-            'email' => 'contact@archives.gouv.fr',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Vérifier si l'organisation existe déjà
+        $existingOrg = DB::table('thesaurus_organizations')
+            ->where('name', 'Service Interministériel des Archives de France')
+            ->first();
 
-        // Ajouter les namespaces SKOS
-        DB::table('thesaurus_namespaces')->insert([
-            [
+        if (!$existingOrg) {
+            // Ajouter l'organisation responsable si elle n'existe pas
+            DB::table('thesaurus_organizations')->insertGetId([
+                'name' => 'Service Interministériel des Archives de France',
+                'homepage' => 'https://archives.gouv.fr',
+                'email' => 'contact@archives.gouv.fr',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Vérifier si les namespaces existent déjà
+        $skosExists = DB::table('thesaurus_namespaces')
+            ->where('prefix', 'skos')
+            ->exists();
+
+        $siafExists = DB::table('thesaurus_namespaces')
+            ->where('prefix', 'siaf')
+            ->exists();
+
+        $namespacesToInsert = [];
+
+        // N'ajouter que les namespaces qui n'existent pas encore
+        if (!$skosExists) {
+            $namespacesToInsert[] = [
                 'prefix' => 'skos',
                 'namespace_uri' => 'http://www.w3.org/2004/02/skos/core#',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-            [
+            ];
+        }
+
+        if (!$siafExists) {
+            $namespacesToInsert[] = [
                 'prefix' => 'siaf',
                 'namespace_uri' => 'https://archives.gouv.fr/thesaurus/',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
-        ]);
+            ];
+        }
+
+        // Insérer les namespaces manquants s'il y en a
+        if (!empty($namespacesToInsert)) {
+            DB::table('thesaurus_namespaces')->insert($namespacesToInsert);
+        }
     }
 
     /**
