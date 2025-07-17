@@ -123,7 +123,7 @@ export const MenuButton = styled.button`
     color: ${props => props.theme.colors.primary};
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    
+
     &::before {
       transform: scaleX(1);
     }
@@ -139,7 +139,7 @@ export const MenuButton = styled.button`
     margin-left: 0.5rem;
     background: rgba(255,255,255,0.1);
     backdrop-filter: blur(10px);
-    
+
     &:hover {
       background: rgba(255,255,255,0.95);
       color: ${props => props.theme.colors.primary};
@@ -151,7 +151,7 @@ export const MenuButton = styled.button`
   &.register-button {
     background: linear-gradient(135deg, ${props => props.theme.colors.accent} 0%, ${props => props.theme.colors.secondary} 100%);
     border: 1px solid rgba(255,255,255,0.2);
-    
+
     &:hover {
       background: rgba(255,255,255,0.95);
       color: ${props => props.theme.colors.primary};
@@ -211,7 +211,7 @@ export const MobileMenuButton = styled.button`
     background: rgba(255,255,255,0.2);
     transform: scale(1.05);
     box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    
+
     &::before {
       transform: scale(1);
     }
