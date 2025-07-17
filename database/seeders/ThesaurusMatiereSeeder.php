@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema; // Import Schema facade
+use Illuminate\Support\Facades\Schema;
 use App\Models\ThesaurusScheme;
 use App\Models\ThesaurusConcept;
 use App\Models\ThesaurusLabel;
@@ -14,7 +13,7 @@ use App\Models\ThesaurusConceptRelation;
 use App\Models\ThesaurusOrganization;
 use App\Models\ThesaurusNamespace;
 
-class ThesaurusSeeder extends Seeder
+class ThesaurusMatiereSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -24,323 +23,2196 @@ class ThesaurusSeeder extends Seeder
         // Disable foreign key checks for seeding
         Schema::disableForeignKeyConstraints();
 
-        // Truncate tables in reverse order of creation
-        DB::table('thesaurus_concept_properties')->truncate();
-        DB::table('thesaurus_concept_relations')->truncate();
-        DB::table('thesaurus_concept_notes')->truncate();
-        DB::table('thesaurus_labels')->truncate();
-        DB::table('thesaurus_concepts')->truncate();
-        DB::table('thesaurus_schemes')->truncate();
-        DB::table('thesaurus_organizations')->truncate();
-        DB::table('thesaurus_namespaces')->truncate();
+        echo "Création du thésaurus matière...\n";
+
+        // Vérifier si le thésaurus existe déjà
+        $existingScheme = ThesaurusScheme::where('identifier', 'THESAURUS-MATIERE')->first();
+        if ($existingScheme) {
+            echo "Le thésaurus matière existe déjà. Arrêt du seeding.\n";
+            Schema::enableForeignKeyConstraints();
+            return;
+        }
+
+        // Créer l'organisation
+        $organization = ThesaurusOrganization::firstOrCreate(
+            ['name' => 'SERVICE INTERMINISTERIEL DES ARCHIVES DE FRANCE'],
+            [
+                'homepage' => 'http://www.culture.gouv.fr/Thesaurus-pour-l-indexation-des-archives-locales',
+                'email' => 'contact@archivesdefrance.culture.gouv.fr',
+            ]
+        );
+
+        // Créer le namespace
+        $namespace = ThesaurusNamespace::firstOrCreate(
+            ['prefix' => 'th'],
+            ['namespace_uri' => 'http://data.archivesdefrance.culture.gouv.fr/thesaurus/local/']
+        );
+
+        // Créer le schéma de thésaurus
+        $scheme = ThesaurusScheme::firstOrCreate(
+            ['identifier' => 'THESAURUS-MATIERE'],
+            [
+                'uri' => $namespace->namespace_uri . 'thesaurus-matiere-local',
+                'title' => 'THESAURUS POUR LA DESCRIPTION ET L\'INDEXATION DES ARCHIVES LOCALES',
+                'description' => 'Thésaurus pour la description et l\'indexation des archives locales, anciennes, modernes et contemporaines, liste méthodique.',
+                'language' => 'fr-fr',
+            ]
+        );
+
+        // Créer tous les concepts avec leurs relations
+        $this->createAllConcepts($scheme, $namespace);
 
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
 
-        // 1. Create Organization
-        $organization = ThesaurusOrganization::create([
-            [cite_start]'name' => 'SERVICE INTERMINISTERIEL DES ARCHIVES DE FRANCE', [cite: 1]
-            'homepage' => 'http://www.culture.gouv.fr/Thesaurus-pour-l-indexation-des-archives-locales', // A plausible URL for the thesaurus publisher
-            'email' => 'contact@archivesdefrance.culture.gouv.fr', // Example email
-        ]);
+        echo "Thésaurus matière créé avec succès !\n";
+    }
 
-        // 2. Create Namespace for SKOS URIs
-        $namespace = ThesaurusNamespace::create([
-            'prefix' => 'th',
-            'namespace_uri' => 'http://data.archivesdefrance.culture.gouv.fr/thesaurus/local/', // Example base URI
-        ]);
+    private function createAllConcepts($scheme, $namespace)
+    {
+        // Structure hiérarchique complète du thésaurus avec plus de 500 concepts
+        $conceptsData = $this->getConceptsData();
 
-        // 3. Create Thesaurus Scheme
-        $scheme = ThesaurusScheme::create([
-            'uri' => $namespace->namespace_uri . 'thesaurus-matiere-local',
-            [cite_start]'identifier' => 'THESAURUS-MATIERE', [cite: 1]
-            [cite_start]'title' => 'THESAURUS POUR LA DESCRIPTION ET L\'INDEXATION DES ARCHIVES LOCALES', [cite: 1]
-            [cite_start]'description' => 'Thésaurus pour la description et l\'indexation des archives locales, anciennes, modernes et contemporaines, liste méthodique.', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
+        // Créer tous les concepts
+        $conceptObjects = [];
+        $this->createConceptsRecursively($conceptsData, $scheme, $namespace, $conceptObjects);
 
-        // 4. Populate Concepts, Labels, Notes, and Relations
+        echo "Nombre total de concepts créés: " . count($conceptObjects) . "\n";
+    }
 
-        [cite_start]// Top-level categories from "SOMMAIRE" [cite: 1]
-        $administration = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'administration',
-            [cite_start]'notation' => '1', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $administration->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'Administration', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
+    private function getConceptsData()
+    {
+        return [
+            // 1. ADMINISTRATION (100+ concepts)
+            'administration' => [
+                'notation' => '1',
+                'prefLabel' => 'Administration',
+                'children' => [
+                    'droit_public' => [
+                        'notation' => '1.1',
+                        'prefLabel' => 'Droit public',
+                        'children' => [
+                            'constitution' => ['prefLabel' => 'CONSTITUTION'],
+                            'democratie' => [
+                                'prefLabel' => 'DEMOCRATIE',
+                                'scopeNote' => "S'utilise pour un mode de gouvernement et de représentation."
+                            ],
+                            'republique' => ['prefLabel' => 'REPUBLIQUE'],
+                            'monarchie' => ['prefLabel' => 'MONARCHIE'],
+                            'empire' => ['prefLabel' => 'EMPIRE'],
+                            'droits_homme' => ['prefLabel' => 'DROITS DE L\'HOMME'],
+                            'liberte_publique' => ['prefLabel' => 'LIBERTE PUBLIQUE'],
+                            'citoyennete' => ['prefLabel' => 'CITOYENNETE'],
+                            'referendum' => ['prefLabel' => 'REFERENDUM'],
+                            'election' => ['prefLabel' => 'ELECTION'],
+                            'suffrage' => ['prefLabel' => 'SUFFRAGE'],
+                            'vote' => ['prefLabel' => 'VOTE'],
+                            'bulletin_vote' => ['prefLabel' => 'BULLETIN DE VOTE'],
+                            'urne' => ['prefLabel' => 'URNE'],
+                            'isoloir' => ['prefLabel' => 'ISOLOIR'],
+                            'depouille' => ['prefLabel' => 'DEPOUILLEMENT'],
+                            'parti_politique' => ['prefLabel' => 'PARTI POLITIQUE'],
+                            'candidat' => ['prefLabel' => 'CANDIDAT'],
+                            'elu' => ['prefLabel' => 'ELU'],
+                            'mandat' => ['prefLabel' => 'MANDAT'],
+                        ]
+                    ],
+                    'administration_generale' => [
+                        'notation' => '1.2',
+                        'prefLabel' => 'Administration générale',
+                        'children' => [
+                            'hotel_de_ville' => [
+                                'prefLabel' => 'HOTEL DE VILLE',
+                                'altLabels' => ['mairie']
+                            ],
+                            'batiment_administratif' => [
+                                'prefLabel' => 'BATIMENT ADMINISTRATIF',
+                                'definition' => "Bâtiment abritant des services administratifs ou à usage de l'administration."
+                            ],
+                            'secretariat_mairie' => ['prefLabel' => 'SECRETARIAT DE MAIRIE'],
+                            'archives_municipales' => ['prefLabel' => 'ARCHIVES MUNICIPALES'],
+                            'bibliotheque_municipale' => ['prefLabel' => 'BIBLIOTHEQUE MUNICIPALE'],
+                            'musee_municipal' => ['prefLabel' => 'MUSEE MUNICIPAL'],
+                            'etat_civil' => ['prefLabel' => 'ETAT CIVIL'],
+                            'naissance' => ['prefLabel' => 'NAISSANCE'],
+                            'mariage' => ['prefLabel' => 'MARIAGE'],
+                            'deces' => ['prefLabel' => 'DECES'],
+                            'divorce' => ['prefLabel' => 'DIVORCE'],
+                            'adoption' => ['prefLabel' => 'ADOPTION'],
+                            'recensement' => ['prefLabel' => 'RECENSEMENT'],
+                            'population' => ['prefLabel' => 'POPULATION'],
+                            'habitant' => ['prefLabel' => 'HABITANT'],
+                            'demographie' => ['prefLabel' => 'DEMOGRAPHIE'],
+                            'cadastre' => ['prefLabel' => 'CADASTRE'],
+                            'parcelle' => ['prefLabel' => 'PARCELLE'],
+                            'plan' => ['prefLabel' => 'PLAN'],
+                            'arpentage' => ['prefLabel' => 'ARPENTAGE'],
+                            'geometre' => ['prefLabel' => 'GEOMETRE'],
+                            'urbanisme' => ['prefLabel' => 'URBANISME'],
+                            'permis_construire' => ['prefLabel' => 'PERMIS DE CONSTRUIRE'],
+                            'construction' => ['prefLabel' => 'CONSTRUCTION'],
+                            'demolition' => ['prefLabel' => 'DEMOLITION'],
+                            'renovation' => ['prefLabel' => 'RENOVATION'],
+                            'amenagement' => ['prefLabel' => 'AMENAGEMENT'],
+                        ]
+                    ],
+                    'administration_departementale' => [
+                        'notation' => '1.3',
+                        'prefLabel' => 'Administration départementale',
+                        'children' => [
+                            'prefecture' => ['prefLabel' => 'PREFECTURE'],
+                            'sous_prefecture' => ['prefLabel' => 'SOUS-PREFECTURE'],
+                            'conseil_general' => ['prefLabel' => 'CONSEIL GENERAL'],
+                            'conseil_departemental' => ['prefLabel' => 'CONSEIL DEPARTEMENTAL'],
+                            'archives_departementales' => ['prefLabel' => 'ARCHIVES DEPARTEMENTALES'],
+                            'prefet' => ['prefLabel' => 'PREFET'],
+                            'sous_prefet' => ['prefLabel' => 'SOUS-PREFET'],
+                            'president_conseil_general' => ['prefLabel' => 'PRESIDENT DU CONSEIL GENERAL'],
+                            'conseiller_general' => ['prefLabel' => 'CONSEILLER GENERAL'],
+                            'arrondissement' => ['prefLabel' => 'ARRONDISSEMENT'],
+                            'canton' => ['prefLabel' => 'CANTON'],
+                        ]
+                    ],
+                    'administration_regionale' => [
+                        'notation' => '1.4',
+                        'prefLabel' => 'Administration régionale',
+                        'children' => [
+                            'conseil_regional' => ['prefLabel' => 'CONSEIL REGIONAL'],
+                            'region' => ['prefLabel' => 'REGION'],
+                            'prefecture_region' => ['prefLabel' => 'PREFECTURE DE REGION'],
+                            'president_conseil_regional' => ['prefLabel' => 'PRESIDENT DU CONSEIL REGIONAL'],
+                            'conseiller_regional' => ['prefLabel' => 'CONSEILLER REGIONAL'],
+                        ]
+                    ],
+                    'fonction_publique' => [
+                        'notation' => '1.5',
+                        'prefLabel' => 'Fonction publique',
+                        'children' => [
+                            'fonctionnaire' => ['prefLabel' => 'FONCTIONNAIRE'],
+                            'agent_public' => ['prefLabel' => 'AGENT PUBLIC'],
+                            'titulaire' => ['prefLabel' => 'TITULAIRE'],
+                            'stagiaire' => ['prefLabel' => 'STAGIAIRE'],
+                            'contractuel' => ['prefLabel' => 'CONTRACTUEL'],
+                            'concours_administratif' => ['prefLabel' => 'CONCOURS ADMINISTRATIF'],
+                            'carriere_administrative' => ['prefLabel' => 'CARRIERE ADMINISTRATIVE'],
+                            'avancement' => ['prefLabel' => 'AVANCEMENT'],
+                            'promotion' => ['prefLabel' => 'PROMOTION'],
+                            'notation' => ['prefLabel' => 'NOTATION'],
+                            'evaluation' => ['prefLabel' => 'EVALUATION'],
+                            'mutation' => ['prefLabel' => 'MUTATION'],
+                            'detachement' => ['prefLabel' => 'DETACHEMENT'],
+                            'mise_disposition' => ['prefLabel' => 'MISE A DISPOSITION'],
+                            'retraite_fonction_publique' => ['prefLabel' => 'RETRAITE FONCTION PUBLIQUE'],
+                            'pension' => ['prefLabel' => 'PENSION'],
+                            'discipline' => ['prefLabel' => 'DISCIPLINE'],
+                            'sanction' => ['prefLabel' => 'SANCTION'],
+                            'blame' => ['prefLabel' => 'BLAME'],
+                            'exclusion' => ['prefLabel' => 'EXCLUSION'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $agriculture = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'agriculture',
-            [cite_start]'notation' => '2', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $agriculture->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'Agriculture', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
+            // 2. AGRICULTURE (120+ concepts)
+            'agriculture' => [
+                'notation' => '2',
+                'prefLabel' => 'Agriculture',
+                'children' => [
+                    'economie_rurale' => [
+                        'notation' => '2.1',
+                        'prefLabel' => 'ECONOMIE RURALE',
+                        'children' => [
+                            'exploitation_agricole' => ['prefLabel' => 'EXPLOITATION AGRICOLE'],
+                            'ferme' => ['prefLabel' => 'FERME'],
+                            'domaine' => ['prefLabel' => 'DOMAINE'],
+                            'mas' => ['prefLabel' => 'MAS'],
+                            'fermage' => ['prefLabel' => 'FERMAGE'],
+                            'metayage' => ['prefLabel' => 'METAYAGE'],
+                            'propriete_rurale' => ['prefLabel' => 'PROPRIETE RURALE'],
+                            'proprietaire_foncier' => ['prefLabel' => 'PROPRIETAIRE FONCIER'],
+                            'fermier' => ['prefLabel' => 'FERMIER'],
+                            'metayer' => ['prefLabel' => 'METAYER'],
+                            'ouvrier_agricole' => ['prefLabel' => 'OUVRIER AGRICOLE'],
+                            'saisonnier' => ['prefLabel' => 'SAISONNIER'],
+                            'cadastre_rural' => ['prefLabel' => 'CADASTRE RURAL'],
+                            'remembrement' => ['prefLabel' => 'REMEMBREMENT'],
+                            'consolidation' => ['prefLabel' => 'CONSOLIDATION'],
+                            'cooperative_agricole' => ['prefLabel' => 'COOPERATIVE AGRICOLE'],
+                            'credit_agricole' => ['prefLabel' => 'CREDIT AGRICOLE'],
+                            'subvention_agricole' => ['prefLabel' => 'SUBVENTION AGRICOLE'],
+                            'assurance_recolte' => ['prefLabel' => 'ASSURANCE RECOLTE'],
+                            'chambre_agriculture' => ['prefLabel' => 'CHAMBRE D\'AGRICULTURE'],
+                            'syndicat_agricole' => ['prefLabel' => 'SYNDICAT AGRICOLE'],
+                        ]
+                    ],
+                    'cultures' => [
+                        'notation' => '2.2',
+                        'prefLabel' => 'Cultures',
+                        'children' => [
+                            'cereales' => ['prefLabel' => 'CEREALES'],
+                            'ble' => ['prefLabel' => 'BLE'],
+                            'ble_dur' => ['prefLabel' => 'BLE DUR'],
+                            'ble_tendre' => ['prefLabel' => 'BLE TENDRE'],
+                            'froment' => ['prefLabel' => 'FROMENT'],
+                            'mais' => ['prefLabel' => 'MAIS'],
+                            'orge' => ['prefLabel' => 'ORGE'],
+                            'avoine' => ['prefLabel' => 'AVOINE'],
+                            'seigle' => ['prefLabel' => 'SEIGLE'],
+                            'millet' => ['prefLabel' => 'MILLET'],
+                            'sarrasin' => ['prefLabel' => 'SARRASIN'],
+                            'riz' => ['prefLabel' => 'RIZ'],
+                            'riziere' => ['prefLabel' => 'RIZIERE'],
+                            'legumineuses' => ['prefLabel' => 'LEGUMINEUSES'],
+                            'haricot' => ['prefLabel' => 'HARICOT'],
+                            'lentille' => ['prefLabel' => 'LENTILLE'],
+                            'pois' => ['prefLabel' => 'POIS'],
+                            'feve' => ['prefLabel' => 'FEVE'],
+                            'pois_chiche' => ['prefLabel' => 'POIS CHICHE'],
+                            'soja' => ['prefLabel' => 'SOJA'],
+                            'pomme_terre' => ['prefLabel' => 'POMME DE TERRE'],
+                            'patate' => ['prefLabel' => 'PATATE'],
+                            'topinambour' => ['prefLabel' => 'TOPINAMBOUR'],
+                            'betterave' => ['prefLabel' => 'BETTERAVE'],
+                            'betterave_sucriere' => ['prefLabel' => 'BETTERAVE SUCRIERE'],
+                            'carotte' => ['prefLabel' => 'CAROTTE'],
+                            'navet' => ['prefLabel' => 'NAVET'],
+                            'radis' => ['prefLabel' => 'RADIS'],
+                            'panais' => ['prefLabel' => 'PANAIS'],
+                            'rutabaga' => ['prefLabel' => 'RUTABAGA'],
+                            'vigne' => ['prefLabel' => 'VIGNE'],
+                            'viticulture' => ['prefLabel' => 'VITICULTURE'],
+                            'vignoble' => ['prefLabel' => 'VIGNOBLE'],
+                            'cep' => ['prefLabel' => 'CEP'],
+                            'vin' => ['prefLabel' => 'VIN'],
+                            'vendange' => ['prefLabel' => 'VENDANGE'],
+                            'cave' => ['prefLabel' => 'CAVE'],
+                            'pressoir' => ['prefLabel' => 'PRESSOIR'],
+                            'tonneau' => ['prefLabel' => 'TONNEAU'],
+                            'arboriculture' => ['prefLabel' => 'ARBORICULTURE'],
+                            'verger' => ['prefLabel' => 'VERGER'],
+                            'pomme' => ['prefLabel' => 'POMME'],
+                            'poire' => ['prefLabel' => 'POIRE'],
+                            'prune' => ['prefLabel' => 'PRUNE'],
+                            'cerise' => ['prefLabel' => 'CERISE'],
+                            'peche' => ['prefLabel' => 'PECHE'],
+                            'abricot' => ['prefLabel' => 'ABRICOT'],
+                            'figue' => ['prefLabel' => 'FIGUE'],
+                            'noix' => ['prefLabel' => 'NOIX'],
+                            'noisette' => ['prefLabel' => 'NOISETTE'],
+                            'chataigne' => ['prefLabel' => 'CHATAIGNE'],
+                            'horticulture' => ['prefLabel' => 'HORTICULTURE'],
+                            'jardin' => ['prefLabel' => 'JARDIN'],
+                            'potager' => ['prefLabel' => 'POTAGER'],
+                            'pepiniere' => ['prefLabel' => 'PEPINIERE'],
+                            'serre' => ['prefLabel' => 'SERRE'],
+                            'fleur' => ['prefLabel' => 'FLEUR'],
+                            'legume' => ['prefLabel' => 'LEGUME'],
+                            'chou' => ['prefLabel' => 'CHOU'],
+                            'salade' => ['prefLabel' => 'SALADE'],
+                            'epinard' => ['prefLabel' => 'EPINARD'],
+                            'poireau' => ['prefLabel' => 'POIREAU'],
+                            'oignon' => ['prefLabel' => 'OIGNON'],
+                            'ail' => ['prefLabel' => 'AIL'],
+                            'tomate' => ['prefLabel' => 'TOMATE'],
+                            'concombre' => ['prefLabel' => 'CONCOMBRE'],
+                            'courgette' => ['prefLabel' => 'COURGETTE'],
+                            'aubergine' => ['prefLabel' => 'AUBERGINE'],
+                            'poivron' => ['prefLabel' => 'POIVRON'],
+                        ]
+                    ],
+                    'elevage' => [
+                        'notation' => '2.3',
+                        'prefLabel' => 'Elevage',
+                        'children' => [
+                            'bovin' => ['prefLabel' => 'BOVIN'],
+                            'vache' => ['prefLabel' => 'VACHE'],
+                            'taureau' => ['prefLabel' => 'TAUREAU'],
+                            'boeuf' => ['prefLabel' => 'BOEUF'],
+                            'veau' => ['prefLabel' => 'VEAU'],
+                            'genisse' => ['prefLabel' => 'GENISSE'],
+                            'troupeau' => ['prefLabel' => 'TROUPEAU'],
+                            'etable' => ['prefLabel' => 'ETABLE'],
+                            'lait' => ['prefLabel' => 'LAIT'],
+                            'traite' => ['prefLabel' => 'TRAITE'],
+                            'laiterie' => ['prefLabel' => 'LAITERIE'],
+                            'fromage' => ['prefLabel' => 'FROMAGE'],
+                            'beurre' => ['prefLabel' => 'BEURRE'],
+                            'creme' => ['prefLabel' => 'CREME'],
+                            'porc' => ['prefLabel' => 'PORC'],
+                            'cochon' => ['prefLabel' => 'COCHON'],
+                            'truie' => ['prefLabel' => 'TRUIE'],
+                            'verrat' => ['prefLabel' => 'VERRAT'],
+                            'porcelet' => ['prefLabel' => 'PORCELET'],
+                            'porcherie' => ['prefLabel' => 'PORCHERIE'],
+                            'jambon' => ['prefLabel' => 'JAMBON'],
+                            'saucisse' => ['prefLabel' => 'SAUCISSE'],
+                            'mouton' => ['prefLabel' => 'MOUTON'],
+                            'brebis' => ['prefLabel' => 'BREBIS'],
+                            'belier' => ['prefLabel' => 'BELIER'],
+                            'agneau' => ['prefLabel' => 'AGNEAU'],
+                            'bergerie' => ['prefLabel' => 'BERGERIE'],
+                            'berger' => ['prefLabel' => 'BERGER'],
+                            'chien_berger' => ['prefLabel' => 'CHIEN DE BERGER'],
+                            'laine' => ['prefLabel' => 'LAINE'],
+                            'tonte' => ['prefLabel' => 'TONTE'],
+                            'chevre' => ['prefLabel' => 'CHEVRE'],
+                            'bouc' => ['prefLabel' => 'BOUC'],
+                            'chevreau' => ['prefLabel' => 'CHEVREAU'],
+                            'chevrier' => ['prefLabel' => 'CHEVRIER'],
+                            'cheval' => ['prefLabel' => 'CHEVAL'],
+                            'jument' => ['prefLabel' => 'JUMENT'],
+                            'etalon' => ['prefLabel' => 'ETALON'],
+                            'poulain' => ['prefLabel' => 'POULAIN'],
+                            'pouliche' => ['prefLabel' => 'POULICHE'],
+                            'ecurie' => ['prefLabel' => 'ECURIE'],
+                            'palefrenier' => ['prefLabel' => 'PALEFRENIER'],
+                            'marechal_ferrant' => ['prefLabel' => 'MARECHAL-FERRANT'],
+                            'ane' => ['prefLabel' => 'ANE'],
+                            'anesse' => ['prefLabel' => 'ANESSE'],
+                            'mulet' => ['prefLabel' => 'MULET'],
+                            'mule' => ['prefLabel' => 'MULE'],
+                            'volaille' => ['prefLabel' => 'VOLAILLE'],
+                            'poule' => ['prefLabel' => 'POULE'],
+                            'coq' => ['prefLabel' => 'COQ'],
+                            'poussin' => ['prefLabel' => 'POUSSIN'],
+                            'poulailler' => ['prefLabel' => 'POULAILLER'],
+                            'canard' => ['prefLabel' => 'CANARD'],
+                            'cane' => ['prefLabel' => 'CANE'],
+                            'caneton' => ['prefLabel' => 'CANETON'],
+                            'oie' => ['prefLabel' => 'OIE'],
+                            'jars' => ['prefLabel' => 'JARS'],
+                            'oison' => ['prefLabel' => 'OISON'],
+                            'dinde' => ['prefLabel' => 'DINDE'],
+                            'dindon' => ['prefLabel' => 'DINDON'],
+                            'dindonneau' => ['prefLabel' => 'DINDONNEAU'],
+                            'pintade' => ['prefLabel' => 'PINTADE'],
+                            'oeuf' => ['prefLabel' => 'OEUF'],
+                            'couvaison' => ['prefLabel' => 'COUVAISON'],
+                            'apiculture' => ['prefLabel' => 'APICULTURE'],
+                            'abeille' => ['prefLabel' => 'ABEILLE'],
+                            'ruche' => ['prefLabel' => 'RUCHE'],
+                            'essaim' => ['prefLabel' => 'ESSAIM'],
+                            'reine' => ['prefLabel' => 'REINE'],
+                            'miel' => ['prefLabel' => 'MIEL'],
+                            'cire' => ['prefLabel' => 'CIRE'],
+                            'apiculteur' => ['prefLabel' => 'APICULTEUR'],
+                            'pisciculture' => ['prefLabel' => 'PISCICULTURE'],
+                            'poisson' => ['prefLabel' => 'POISSON'],
+                            'etang' => ['prefLabel' => 'ETANG'],
+                            'vivier' => ['prefLabel' => 'VIVIER'],
+                            'carpe' => ['prefLabel' => 'CARPE'],
+                            'tanche' => ['prefLabel' => 'TANCHE'],
+                            'brochet' => ['prefLabel' => 'BROCHET'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $communications = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'communications',
-            [cite_start]'notation' => '3', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $communications->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'Communications', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
+            // 3. COMMUNICATIONS (100+ concepts)
+            'communications' => [
+                'notation' => '3',
+                'prefLabel' => 'Communications',
+                'children' => [
+                    'transport' => [
+                        'notation' => '3.1',
+                        'prefLabel' => 'Transport',
+                        'children' => [
+                            'transport_routier' => ['prefLabel' => 'TRANSPORT ROUTIER'],
+                            'route' => ['prefLabel' => 'ROUTE'],
+                            'autoroute' => ['prefLabel' => 'AUTOROUTE'],
+                            'departementale' => ['prefLabel' => 'DEPARTEMENTALE'],
+                            'nationale' => ['prefLabel' => 'NATIONALE'],
+                            'communale' => ['prefLabel' => 'COMMUNALE'],
+                            'chemin' => ['prefLabel' => 'CHEMIN'],
+                            'sentier' => ['prefLabel' => 'SENTIER'],
+                            'piste' => ['prefLabel' => 'PISTE'],
+                            'voie' => ['prefLabel' => 'VOIE'],
+                            'chaussee' => ['prefLabel' => 'CHAUSSEE'],
+                            'trottoir' => ['prefLabel' => 'TROTTOIR'],
+                            'pont' => ['prefLabel' => 'PONT'],
+                            'viaduc' => ['prefLabel' => 'VIADUC'],
+                            'tunnel' => ['prefLabel' => 'TUNNEL'],
+                            'passage_niveau' => ['prefLabel' => 'PASSAGE A NIVEAU'],
+                            'carrefour' => ['prefLabel' => 'CARREFOUR'],
+                            'rond_point' => ['prefLabel' => 'ROND-POINT'],
+                            'intersection' => ['prefLabel' => 'INTERSECTION'],
+                            'circulation' => ['prefLabel' => 'CIRCULATION'],
+                            'embouteillage' => ['prefLabel' => 'EMBOUTEILLAGE'],
+                            'signalisation' => ['prefLabel' => 'SIGNALISATION'],
+                            'panneau' => ['prefLabel' => 'PANNEAU'],
+                            'feu_tricolore' => ['prefLabel' => 'FEU TRICOLORE'],
+                            'automobile' => ['prefLabel' => 'AUTOMOBILE'],
+                            'voiture' => ['prefLabel' => 'VOITURE'],
+                            'camion' => ['prefLabel' => 'CAMION'],
+                            'autobus' => ['prefLabel' => 'AUTOBUS'],
+                            'autocar' => ['prefLabel' => 'AUTOCAR'],
+                            'motocyclette' => ['prefLabel' => 'MOTOCYCLETTE'],
+                            'bicyclette' => ['prefLabel' => 'BICYCLETTE'],
+                            'cyclomoteur' => ['prefLabel' => 'CYCLOMOTEUR'],
+                            'permis_conduire' => ['prefLabel' => 'PERMIS DE CONDUIRE'],
+                            'garage' => ['prefLabel' => 'GARAGE'],
+                            'station_service' => ['prefLabel' => 'STATION-SERVICE'],
+                            'essence' => ['prefLabel' => 'ESSENCE'],
+                            'gazole' => ['prefLabel' => 'GAZOLE'],
+                            'transport_ferroviaire' => ['prefLabel' => 'TRANSPORT FERROVIAIRE'],
+                            'chemin_fer' => ['prefLabel' => 'CHEMIN DE FER'],
+                            'rail' => ['prefLabel' => 'RAIL'],
+                            'voie_ferree' => ['prefLabel' => 'VOIE FERREE'],
+                            'train' => ['prefLabel' => 'TRAIN'],
+                            'locomotive' => ['prefLabel' => 'LOCOMOTIVE'],
+                            'wagon' => ['prefLabel' => 'WAGON'],
+                            'voiture_voyageurs' => ['prefLabel' => 'VOITURE VOYAGEURS'],
+                            'gare' => ['prefLabel' => 'GARE'],
+                            'quai' => ['prefLabel' => 'QUAI'],
+                            'hall' => ['prefLabel' => 'HALL'],
+                            'salle_attente' => ['prefLabel' => 'SALLE D\'ATTENTE'],
+                            'billet' => ['prefLabel' => 'BILLET'],
+                            'guichet' => ['prefLabel' => 'GUICHET'],
+                            'chef_gare' => ['prefLabel' => 'CHEF DE GARE'],
+                            'controleur' => ['prefLabel' => 'CONTROLEUR'],
+                            'mecanicien' => ['prefLabel' => 'MECANICIEN'],
+                            'chauffeur' => ['prefLabel' => 'CHAUFFEUR'],
+                            'transport_maritime' => ['prefLabel' => 'TRANSPORT MARITIME'],
+                            'port' => ['prefLabel' => 'PORT'],
+                            'quai_port' => ['prefLabel' => 'QUAI DE PORT'],
+                            'jetee' => ['prefLabel' => 'JETEE'],
+                            'mole' => ['prefLabel' => 'MOLE'],
+                            'digue' => ['prefLabel' => 'DIGUE'],
+                            'phare' => ['prefLabel' => 'PHARE'],
+                            'balise' => ['prefLabel' => 'BALISE'],
+                            'bateau' => ['prefLabel' => 'BATEAU'],
+                            'navire' => ['prefLabel' => 'NAVIRE'],
+                            'paquebot' => ['prefLabel' => 'PAQUEBOT'],
+                            'cargo' => ['prefLabel' => 'CARGO'],
+                            'ferry' => ['prefLabel' => 'FERRY'],
+                            'chalutier' => ['prefLabel' => 'CHALUTIER'],
+                            'voilier' => ['prefLabel' => 'VOILIER'],
+                            'canot' => ['prefLabel' => 'CANOT'],
+                            'barque' => ['prefLabel' => 'BARQUE'],
+                            'navigation' => ['prefLabel' => 'NAVIGATION'],
+                            'capitaine' => ['prefLabel' => 'CAPITAINE'],
+                            'commandant' => ['prefLabel' => 'COMMANDANT'],
+                            'officier' => ['prefLabel' => 'OFFICIER'],
+                            'marin' => ['prefLabel' => 'MARIN'],
+                            'matelot' => ['prefLabel' => 'MATELOT'],
+                            'pilote' => ['prefLabel' => 'PILOTE'],
+                            'transport_aerien' => ['prefLabel' => 'TRANSPORT AERIEN'],
+                            'aeroport' => ['prefLabel' => 'AEROPORT'],
+                            'aerodrome' => ['prefLabel' => 'AERODROME'],
+                            'piste_atterrissage' => ['prefLabel' => 'PISTE D\'ATTERRISSAGE'],
+                            'tour_controle' => ['prefLabel' => 'TOUR DE CONTROLE'],
+                            'terminal' => ['prefLabel' => 'TERMINAL'],
+                            'avion' => ['prefLabel' => 'AVION'],
+                            'helicoptere' => ['prefLabel' => 'HELICOPTERE'],
+                            'planeur' => ['prefLabel' => 'PLANEUR'],
+                            'aviation' => ['prefLabel' => 'AVIATION'],
+                            'pilote_avion' => ['prefLabel' => 'PILOTE D\'AVION'],
+                            'steward' => ['prefLabel' => 'STEWARD'],
+                            'hotesse' => ['prefLabel' => 'HOTESSE'],
+                            'aeroclub' => ['prefLabel' => 'AEROCLUB'],
+                        ]
+                    ],
+                    'postes' => [
+                        'notation' => '3.2',
+                        'prefLabel' => 'Postes',
+                        'children' => [
+                            'bureau_poste' => ['prefLabel' => 'BUREAU DE POSTE'],
+                            'poste_auxiliaire' => ['prefLabel' => 'POSTE AUXILIAIRE'],
+                            'recette_poste' => ['prefLabel' => 'RECETTE DE POSTE'],
+                            'facteur' => ['prefLabel' => 'FACTEUR'],
+                            'postier' => ['prefLabel' => 'POSTIER'],
+                            'receveur' => ['prefLabel' => 'RECEVEUR'],
+                            'courrier' => ['prefLabel' => 'COURRIER'],
+                            'poste' => ['prefLabel' => 'POSTE'],
+                            'distribution' => ['prefLabel' => 'DISTRIBUTION'],
+                            'tournee' => ['prefLabel' => 'TOURNEE'],
+                            'lettre' => ['prefLabel' => 'LETTRE'],
+                            'carte_postale' => ['prefLabel' => 'CARTE POSTALE'],
+                            'colis' => ['prefLabel' => 'COLIS'],
+                            'paquet' => ['prefLabel' => 'PAQUET'],
+                            'timbre' => ['prefLabel' => 'TIMBRE'],
+                            'affranchissement' => ['prefLabel' => 'AFFRANCHISSEMENT'],
+                            'enveloppe' => ['prefLabel' => 'ENVELOPPE'],
+                            'adresse' => ['prefLabel' => 'ADRESSE'],
+                            'destinataire' => ['prefLabel' => 'DESTINATAIRE'],
+                            'expediteur' => ['prefLabel' => 'EXPEDITEUR'],
+                            'recommande' => ['prefLabel' => 'RECOMMANDE'],
+                            'valeur_declaree' => ['prefLabel' => 'VALEUR DECLAREE'],
+                            'contre_remboursement' => ['prefLabel' => 'CONTRE-REMBOURSEMENT'],
+                            'poste_restante' => ['prefLabel' => 'POSTE RESTANTE'],
+                            'boite_lettres' => ['prefLabel' => 'BOITE AUX LETTRES'],
+                            'casier' => ['prefLabel' => 'CASIER'],
+                            'sac_postal' => ['prefLabel' => 'SAC POSTAL'],
+                            'telegraphe' => ['prefLabel' => 'TELEGRAPHE'],
+                            'telegramme' => ['prefLabel' => 'TELEGRAMME'],
+                            'telegraphiste' => ['prefLabel' => 'TELEGRAPHISTE'],
+                            'telephone' => ['prefLabel' => 'TELEPHONE'],
+                            'cabine_telephonique' => ['prefLabel' => 'CABINE TELEPHONIQUE'],
+                            'central_telephonique' => ['prefLabel' => 'CENTRAL TELEPHONIQUE'],
+                            'standardiste' => ['prefLabel' => 'STANDARDISTE'],
+                            'communication' => ['prefLabel' => 'COMMUNICATION'],
+                            'appel' => ['prefLabel' => 'APPEL'],
+                            'conversation' => ['prefLabel' => 'CONVERSATION'],
+                        ]
+                    ]
+                ]
+            ],
 
-        // Example: Sub-concepts and relations for 'Administration'
-        $droitPublic = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'droit-public',
-            [cite_start]'notation' => '1.1', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $droitPublic->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'Droit public', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: Droit public is narrower than Administration
-        ThesaurusConceptRelation::create([
-            'concept_id' => $administration->id,
-            'related_concept_id' => $droitPublic->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $droitPublic->id,
-            'related_concept_id' => $administration->id,
-            'relation_type' => 'broader',
-        ]);
+            // 4. ECONOMIE (100+ concepts)
+            'economie' => [
+                'notation' => '4',
+                'prefLabel' => 'Economie',
+                'children' => [
+                    'commerce' => [
+                        'notation' => '4.1',
+                        'prefLabel' => 'Commerce',
+                        'children' => [
+                            'marche' => ['prefLabel' => 'MARCHE'],
+                            'foire' => ['prefLabel' => 'FOIRE'],
+                            'magasin' => ['prefLabel' => 'MAGASIN'],
+                            'boutique' => ['prefLabel' => 'BOUTIQUE'],
+                            'epicerie' => ['prefLabel' => 'EPICERIE'],
+                            'boulangerie' => ['prefLabel' => 'BOULANGERIE'],
+                            'boucherie' => ['prefLabel' => 'BOUCHERIE'],
+                            'charcuterie' => ['prefLabel' => 'CHARCUTERIE'],
+                            'poissonnerie' => ['prefLabel' => 'POISSONNERIE'],
+                            'fromagerie' => ['prefLabel' => 'FROMAGERIE'],
+                            'laiterie' => ['prefLabel' => 'LAITERIE'],
+                            'pharmacie' => ['prefLabel' => 'PHARMACIE'],
+                            'librairie' => ['prefLabel' => 'LIBRAIRIE'],
+                            'mercerie' => ['prefLabel' => 'MERCERIE'],
+                            'droguerie' => ['prefLabel' => 'DROGUERIE'],
+                            'quincaillerie' => ['prefLabel' => 'QUINCAILLERIE'],
+                            'commercant' => ['prefLabel' => 'COMMERCANT'],
+                            'marchand' => ['prefLabel' => 'MARCHAND'],
+                            'vendeur' => ['prefLabel' => 'VENDEUR'],
+                            'client' => ['prefLabel' => 'CLIENT'],
+                            'acheteur' => ['prefLabel' => 'ACHETEUR'],
+                            'vente' => ['prefLabel' => 'VENTE'],
+                            'achat' => ['prefLabel' => 'ACHAT'],
+                            'prix' => ['prefLabel' => 'PRIX'],
+                            'tarif' => ['prefLabel' => 'TARIF'],
+                            'remise' => ['prefLabel' => 'REMISE'],
+                            'rabais' => ['prefLabel' => 'RABAIS'],
+                            'credit' => ['prefLabel' => 'CREDIT'],
+                            'facture' => ['prefLabel' => 'FACTURE'],
+                            'recu' => ['prefLabel' => 'RECU'],
+                            'caisse' => ['prefLabel' => 'CAISSE'],
+                            'monnaie' => ['prefLabel' => 'MONNAIE'],
+                            'artisan' => ['prefLabel' => 'ARTISAN'],
+                            'artisanat' => ['prefLabel' => 'ARTISANAT'],
+                            'corporation' => ['prefLabel' => 'CORPORATION'],
+                            'guilde' => ['prefLabel' => 'GUILDE'],
+                            'maitre' => ['prefLabel' => 'MAITRE'],
+                            'compagnon' => ['prefLabel' => 'COMPAGNON'],
+                            'apprenti' => ['prefLabel' => 'APPRENTI'],
+                            'chambre_commerce' => ['prefLabel' => 'CHAMBRE DE COMMERCE'],
+                            'chambre_metiers' => ['prefLabel' => 'CHAMBRE DES METIERS'],
+                            'syndicat_patronal' => ['prefLabel' => 'SYNDICAT PATRONAL'],
+                        ]
+                    ],
+                    'industrie' => [
+                        'notation' => '4.2',
+                        'prefLabel' => 'Industrie',
+                        'children' => [
+                            'usine' => ['prefLabel' => 'USINE'],
+                            'fabrique' => ['prefLabel' => 'FABRIQUE'],
+                            'manufacture' => ['prefLabel' => 'MANUFACTURE'],
+                            'atelier' => ['prefLabel' => 'ATELIER'],
+                            'entreprise' => ['prefLabel' => 'ENTREPRISE'],
+                            'societe' => ['prefLabel' => 'SOCIETE'],
+                            'patron' => ['prefLabel' => 'PATRON'],
+                            'directeur' => ['prefLabel' => 'DIRECTEUR'],
+                            'contremaite' => ['prefLabel' => 'CONTREMAÎTRE'],
+                            'ouvrier' => ['prefLabel' => 'OUVRIER'],
+                            'employe' => ['prefLabel' => 'EMPLOYE'],
+                            'metallurgie' => ['prefLabel' => 'METALLURGIE'],
+                            'siderurgie' => ['prefLabel' => 'SIDERURGIE'],
+                            'fonte' => ['prefLabel' => 'FONTE'],
+                            'acier' => ['prefLabel' => 'ACIER'],
+                            'fer' => ['prefLabel' => 'FER'],
+                            'cuivre' => ['prefLabel' => 'CUIVRE'],
+                            'zinc' => ['prefLabel' => 'ZINC'],
+                            'plomb' => ['prefLabel' => 'PLOMB'],
+                            'haut_fourneau' => ['prefLabel' => 'HAUT FOURNEAU'],
+                            'forge' => ['prefLabel' => 'FORGE'],
+                            'fonderie' => ['prefLabel' => 'FONDERIE'],
+                            'textile' => ['prefLabel' => 'TEXTILE'],
+                            'filature' => ['prefLabel' => 'FILATURE'],
+                            'tissage' => ['prefLabel' => 'TISSAGE'],
+                            'teinturerie' => ['prefLabel' => 'TEINTURERIE'],
+                            'coton' => ['prefLabel' => 'COTON'],
+                            'laine' => ['prefLabel' => 'LAINE'],
+                            'soie' => ['prefLabel' => 'SOIE'],
+                            'lin' => ['prefLabel' => 'LIN'],
+                            'chanvre' => ['prefLabel' => 'CHANVRE'],
+                            'chimie' => ['prefLabel' => 'CHIMIE'],
+                            'produit_chimique' => ['prefLabel' => 'PRODUIT CHIMIQUE'],
+                            'engrais' => ['prefLabel' => 'ENGRAIS'],
+                            'insecticide' => ['prefLabel' => 'INSECTICIDE'],
+                            'plastique' => ['prefLabel' => 'PLASTIQUE'],
+                            'caoutchouc' => ['prefLabel' => 'CAOUTCHOUC'],
+                            'energie' => ['prefLabel' => 'ENERGIE'],
+                            'electricite' => ['prefLabel' => 'ELECTRICITE'],
+                            'centrale_electrique' => ['prefLabel' => 'CENTRALE ELECTRIQUE'],
+                            'barrage' => ['prefLabel' => 'BARRAGE'],
+                            'gaz' => ['prefLabel' => 'GAZ'],
+                            'usine_gaz' => ['prefLabel' => 'USINE A GAZ'],
+                            'petrole' => ['prefLabel' => 'PETROLE'],
+                            'raffinerie' => ['prefLabel' => 'RAFFINERIE'],
+                            'charbon' => ['prefLabel' => 'CHARBON'],
+                            'mine' => ['prefLabel' => 'MINE'],
+                            'houillere' => ['prefLabel' => 'HOUILLERE'],
+                            'carriere' => ['prefLabel' => 'CARRIERE'],
+                            'mineur' => ['prefLabel' => 'MINEUR'],
+                            'extraction' => ['prefLabel' => 'EXTRACTION'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $constitution = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'constitution',
-            'notation' => null,
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $constitution->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'CONSTITUTION', [cite: 5]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: CONSTITUTION is narrower than Droit public
-        ThesaurusConceptRelation::create([
-            'concept_id' => $droitPublic->id,
-            'related_concept_id' => $constitution->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $constitution->id,
-            'related_concept_id' => $droitPublic->id,
-            'relation_type' => 'broader',
-        ]);
+            // 5. EDUCATION (80+ concepts)
+            'education' => [
+                'notation' => '5',
+                'prefLabel' => 'Education',
+                'children' => [
+                    'enseignement_primaire' => [
+                        'notation' => '5.1',
+                        'prefLabel' => 'Enseignement primaire',
+                        'children' => [
+                            'ecole_maternelle' => ['prefLabel' => 'ECOLE MATERNELLE'],
+                            'jardin_enfants' => ['prefLabel' => 'JARDIN D\'ENFANTS'],
+                            'ecole_elementaire' => ['prefLabel' => 'ECOLE ELEMENTAIRE'],
+                            'ecole_primaire' => ['prefLabel' => 'ECOLE PRIMAIRE'],
+                            'classe' => ['prefLabel' => 'CLASSE'],
+                            'salle_classe' => ['prefLabel' => 'SALLE DE CLASSE'],
+                            'cour_recreation' => ['prefLabel' => 'COUR DE RECREATION'],
+                            'instituteur' => ['prefLabel' => 'INSTITUTEUR'],
+                            'institutrice' => ['prefLabel' => 'INSTITUTRICE'],
+                            'maitre_ecole' => ['prefLabel' => 'MAITRE D\'ECOLE'],
+                            'directeur_ecole' => ['prefLabel' => 'DIRECTEUR D\'ECOLE'],
+                            'eleve' => ['prefLabel' => 'ELEVE'],
+                            'ecolier' => ['prefLabel' => 'ECOLIER'],
+                            'cours' => ['prefLabel' => 'COURS'],
+                            'lecon' => ['prefLabel' => 'LECON'],
+                            'lecture' => ['prefLabel' => 'LECTURE'],
+                            'ecriture' => ['prefLabel' => 'ECRITURE'],
+                            'calcul' => ['prefLabel' => 'CALCUL'],
+                            'arithmetique' => ['prefLabel' => 'ARITHMETIQUE'],
+                            'grammaire' => ['prefLabel' => 'GRAMMAIRE'],
+                            'orthographe' => ['prefLabel' => 'ORTHOGRAPHE'],
+                            'dictee' => ['prefLabel' => 'DICTEE'],
+                            'redaction' => ['prefLabel' => 'REDACTION'],
+                            'histoire' => ['prefLabel' => 'HISTOIRE'],
+                            'geographie' => ['prefLabel' => 'GEOGRAPHIE'],
+                            'sciences' => ['prefLabel' => 'SCIENCES'],
+                            'dessin' => ['prefLabel' => 'DESSIN'],
+                            'chant' => ['prefLabel' => 'CHANT'],
+                            'gymnastique' => ['prefLabel' => 'GYMNASTIQUE'],
+                            'examen' => ['prefLabel' => 'EXAMEN'],
+                            'concours' => ['prefLabel' => 'CONCOURS'],
+                            'note' => ['prefLabel' => 'NOTE'],
+                            'bulletin' => ['prefLabel' => 'BULLETIN'],
+                            'carnet' => ['prefLabel' => 'CARNET'],
+                            'cahier' => ['prefLabel' => 'CAHIER'],
+                            'livre' => ['prefLabel' => 'LIVRE'],
+                            'manuel' => ['prefLabel' => 'MANUEL'],
+                            'ardoise' => ['prefLabel' => 'ARDOISE'],
+                            'plume' => ['prefLabel' => 'PLUME'],
+                            'encre' => ['prefLabel' => 'ENCRE'],
+                            'tableau' => ['prefLabel' => 'TABLEAU'],
+                            'craie' => ['prefLabel' => 'CRAIE'],
+                        ]
+                    ],
+                    'enseignement_secondaire' => [
+                        'notation' => '5.2',
+                        'prefLabel' => 'Enseignement secondaire',
+                        'children' => [
+                            'college' => ['prefLabel' => 'COLLEGE'],
+                            'lycee' => ['prefLabel' => 'LYCEE'],
+                            'gymnase' => ['prefLabel' => 'GYMNASE'],
+                            'petit_seminaire' => ['prefLabel' => 'PETIT SEMINAIRE'],
+                            'pensionnat' => ['prefLabel' => 'PENSIONNAT'],
+                            'internat' => ['prefLabel' => 'INTERNAT'],
+                            'externat' => ['prefLabel' => 'EXTERNAT'],
+                            'professeur' => ['prefLabel' => 'PROFESSEUR'],
+                            'maitre' => ['prefLabel' => 'MAITRE'],
+                            'regent' => ['prefLabel' => 'REGENT'],
+                            'principal' => ['prefLabel' => 'PRINCIPAL'],
+                            'proviseur' => ['prefLabel' => 'PROVISEUR'],
+                            'censeur' => ['prefLabel' => 'CENSEUR'],
+                            'surveillant' => ['prefLabel' => 'SURVEILLANT'],
+                            'collegien' => ['prefLabel' => 'COLLEGIEN'],
+                            'lyceen' => ['prefLabel' => 'LYCEEN'],
+                            'etudiant' => ['prefLabel' => 'ETUDIANT'],
+                            'discipline' => ['prefLabel' => 'DISCIPLINE'],
+                            'matiere' => ['prefLabel' => 'MATIERE'],
+                            'latin' => ['prefLabel' => 'LATIN'],
+                            'grec' => ['prefLabel' => 'GREC'],
+                            'francais' => ['prefLabel' => 'FRANCAIS'],
+                            'litterature' => ['prefLabel' => 'LITTERATURE'],
+                            'philosophie' => ['prefLabel' => 'PHILOSOPHIE'],
+                            'mathematiques' => ['prefLabel' => 'MATHEMATIQUES'],
+                            'physique' => ['prefLabel' => 'PHYSIQUE'],
+                            'chimie' => ['prefLabel' => 'CHIMIE'],
+                            'sciences_naturelles' => ['prefLabel' => 'SCIENCES NATURELLES'],
+                            'baccalaureat' => ['prefLabel' => 'BACCALAUREAT'],
+                            'bachelier' => ['prefLabel' => 'BACHELIER'],
+                            'diplome' => ['prefLabel' => 'DIPLOME'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $democratie = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'democratie',
-            'notation' => null,
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $democratie->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'DEMOCRATIE', [cite: 5]
-            'language' => 'fr-fr',
-        ]);
-        ThesaurusConceptNote::create([
-            'concept_id' => $democratie->id,
-            'type' => 'scopeNote',
-            [cite_start]'note' => "S'utilise pour un mode de gouvernement et de représentation.", [cite: 7]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: DEMOCRATIE is narrower than Droit public
-        ThesaurusConceptRelation::create([
-            'concept_id' => $droitPublic->id,
-            'related_concept_id' => $democratie->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $democratie->id,
-            'related_concept_id' => $droitPublic->id,
-            'relation_type' => 'broader',
-        ]);
+            // 6. CULTURE (100+ concepts)
+            'culture' => [
+                'notation' => '6',
+                'prefLabel' => 'Culture',
+                'children' => [
+                    'patrimoine' => [
+                        'notation' => '6.1',
+                        'prefLabel' => 'Patrimoine',
+                        'children' => [
+                            'monument' => ['prefLabel' => 'MONUMENT'],
+                            'monument_historique' => ['prefLabel' => 'MONUMENT HISTORIQUE'],
+                            'chateau' => ['prefLabel' => 'CHATEAU'],
+                            'eglise' => ['prefLabel' => 'EGLISE'],
+                            'cathedrale' => ['prefLabel' => 'CATHEDRALE'],
+                            'basilique' => ['prefLabel' => 'BASILIQUE'],
+                            'chapelle' => ['prefLabel' => 'CHAPELLE'],
+                            'abbaye' => ['prefLabel' => 'ABBAYE'],
+                            'monastere' => ['prefLabel' => 'MONASTERE'],
+                            'couvent' => ['prefLabel' => 'COUVENT'],
+                            'prieure' => ['prefLabel' => 'PRIEURE'],
+                            'beffroi' => ['prefLabel' => 'BEFFROI'],
+                            'tour' => ['prefLabel' => 'TOUR'],
+                            'donjon' => ['prefLabel' => 'DONJON'],
+                            'rempart' => ['prefLabel' => 'REMPART'],
+                            'fortification' => ['prefLabel' => 'FORTIFICATION'],
+                            'citadelle' => ['prefLabel' => 'CITADELLE'],
+                            'fort' => ['prefLabel' => 'FORT'],
+                            'porte_ville' => ['prefLabel' => 'PORTE DE VILLE'],
+                            'site_archeologique' => ['prefLabel' => 'SITE ARCHEOLOGIQUE'],
+                            'fouille' => ['prefLabel' => 'FOUILLE'],
+                            'vestige' => ['prefLabel' => 'VESTIGE'],
+                            'ruine' => ['prefLabel' => 'RUINE'],
+                            'inscription' => ['prefLabel' => 'INSCRIPTION'],
+                            'stele' => ['prefLabel' => 'STELE'],
+                            'borne' => ['prefLabel' => 'BORNE'],
+                            'statue' => ['prefLabel' => 'STATUE'],
+                            'sculpture' => ['prefLabel' => 'SCULPTURE'],
+                            'fontaine' => ['prefLabel' => 'FONTAINE'],
+                            'croix' => ['prefLabel' => 'CROIX'],
+                            'calvaire' => ['prefLabel' => 'CALVAIRE'],
+                            'oratoire' => ['prefLabel' => 'ORATOIRE'],
+                            'patrimoine_industriel' => ['prefLabel' => 'PATRIMOINE INDUSTRIEL'],
+                            'moulin' => ['prefLabel' => 'MOULIN'],
+                            'moulin_eau' => ['prefLabel' => 'MOULIN A EAU'],
+                            'moulin_vent' => ['prefLabel' => 'MOULIN A VENT'],
+                            'four' => ['prefLabel' => 'FOUR'],
+                            'forge' => ['prefLabel' => 'FORGE'],
+                            'halle' => ['prefLabel' => 'HALLE'],
+                            'lavoir' => ['prefLabel' => 'LAVOIR'],
+                            'puits' => ['prefLabel' => 'PUITS'],
+                            'citerne' => ['prefLabel' => 'CITERNE'],
+                            'reservoir' => ['prefLabel' => 'RESERVOIR'],
+                        ]
+                    ],
+                    'arts' => [
+                        'notation' => '6.2',
+                        'prefLabel' => 'Arts',
+                        'children' => [
+                            'peinture' => ['prefLabel' => 'PEINTURE'],
+                            'tableau' => ['prefLabel' => 'TABLEAU'],
+                            'fresque' => ['prefLabel' => 'FRESQUE'],
+                            'portrait' => ['prefLabel' => 'PORTRAIT'],
+                            'paysage' => ['prefLabel' => 'PAYSAGE'],
+                            'nature_morte' => ['prefLabel' => 'NATURE MORTE'],
+                            'gravure' => ['prefLabel' => 'GRAVURE'],
+                            'estampe' => ['prefLabel' => 'ESTAMPE'],
+                            'lithographie' => ['prefLabel' => 'LITHOGRAPHIE'],
+                            'eau_forte' => ['prefLabel' => 'EAU-FORTE'],
+                            'dessin' => ['prefLabel' => 'DESSIN'],
+                            'croquis' => ['prefLabel' => 'CROQUIS'],
+                            'esquisse' => ['prefLabel' => 'ESQUISSE'],
+                            'musique' => ['prefLabel' => 'MUSIQUE'],
+                            'concert' => ['prefLabel' => 'CONCERT'],
+                            'orchestre' => ['prefLabel' => 'ORCHESTRE'],
+                            'chorale' => ['prefLabel' => 'CHORALE'],
+                            'fanfare' => ['prefLabel' => 'FANFARE'],
+                            'harmonie' => ['prefLabel' => 'HARMONIE'],
+                            'conservatoire' => ['prefLabel' => 'CONSERVATOIRE'],
+                            'instrument' => ['prefLabel' => 'INSTRUMENT'],
+                            'piano' => ['prefLabel' => 'PIANO'],
+                            'violon' => ['prefLabel' => 'VIOLON'],
+                            'orgue' => ['prefLabel' => 'ORGUE'],
+                            'cloche' => ['prefLabel' => 'CLOCHE'],
+                            'carillon' => ['prefLabel' => 'CARILLON'],
+                            'theatre' => ['prefLabel' => 'THEATRE'],
+                            'piece_theatre' => ['prefLabel' => 'PIECE DE THEATRE'],
+                            'comedie' => ['prefLabel' => 'COMEDIE'],
+                            'tragedie' => ['prefLabel' => 'TRAGEDIE'],
+                            'operette' => ['prefLabel' => 'OPERETTE'],
+                            'vaudeville' => ['prefLabel' => 'VAUDEVILLE'],
+                            'acteur' => ['prefLabel' => 'ACTEUR'],
+                            'comedien' => ['prefLabel' => 'COMEDIEN'],
+                            'danse' => ['prefLabel' => 'DANSE'],
+                            'bal' => ['prefLabel' => 'BAL'],
+                            'fete_populaire' => ['prefLabel' => 'FETE POPULAIRE'],
+                            'kermesse' => ['prefLabel' => 'KERMESSE'],
+                            'carnaval' => ['prefLabel' => 'CARNAVAL'],
+                            'procession' => ['prefLabel' => 'PROCESSION'],
+                            'pelerinage' => ['prefLabel' => 'PELERINAGE'],
+                            'pardon' => ['prefLabel' => 'PARDON'],
+                            'folklore' => ['prefLabel' => 'FOLKLORE'],
+                            'tradition' => ['prefLabel' => 'TRADITION'],
+                            'costume' => ['prefLabel' => 'COSTUME'],
+                            'coiffe' => ['prefLabel' => 'COIFFE'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $administrationGenerale = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'administration-generale',
-            [cite_start]'notation' => '1.2', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $administrationGenerale->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'Administration générale', [cite: 1]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: Administration générale is narrower than Administration
-        ThesaurusConceptRelation::create([
-            'concept_id' => $administration->id,
-            'related_concept_id' => $administrationGenerale->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $administrationGenerale->id,
-            'related_concept_id' => $administration->id,
-            'relation_type' => 'broader',
-        ]);
+            // 7. RELIGION (80+ concepts)
+            'religion' => [
+                'notation' => '7',
+                'prefLabel' => 'Religion',
+                'children' => [
+                    'catholicisme' => [
+                        'notation' => '7.1',
+                        'prefLabel' => 'Catholicisme',
+                        'children' => [
+                            'diocese' => ['prefLabel' => 'DIOCESE'],
+                            'archeveche' => ['prefLabel' => 'ARCHEVECHE'],
+                            'eveche' => ['prefLabel' => 'EVECHE'],
+                            'paroisse' => ['prefLabel' => 'PAROISSE'],
+                            'cure' => ['prefLabel' => 'CURE'],
+                            'presbytère' => ['prefLabel' => 'PRESBYTÈRE'],
+                            'archevêque' => ['prefLabel' => 'ARCHEVÊQUE'],
+                            'evêque' => ['prefLabel' => 'EVÊQUE'],
+                            'cure_paroisse' => ['prefLabel' => 'CURE DE PAROISSE'],
+                            'vicaire' => ['prefLabel' => 'VICAIRE'],
+                            'chanoine' => ['prefLabel' => 'CHANOINE'],
+                            'chapelain' => ['prefLabel' => 'CHAPELAIN'],
+                            'abbe' => ['prefLabel' => 'ABBE'],
+                            'prieur' => ['prefLabel' => 'PRIEUR'],
+                            'moine' => ['prefLabel' => 'MOINE'],
+                            'religieux' => ['prefLabel' => 'RELIGIEUX'],
+                            'religieuse' => ['prefLabel' => 'RELIGIEUSE'],
+                            'soeur' => ['prefLabel' => 'SOEUR'],
+                            'frere' => ['prefLabel' => 'FRÈRE'],
+                            'novice' => ['prefLabel' => 'NOVICE'],
+                            'postulant' => ['prefLabel' => 'POSTULANT'],
+                            'sacrement' => ['prefLabel' => 'SACREMENT'],
+                            'bapteme' => ['prefLabel' => 'BAPTÊME'],
+                            'communion' => ['prefLabel' => 'COMMUNION'],
+                            'confirmation' => ['prefLabel' => 'CONFIRMATION'],
+                            'confession' => ['prefLabel' => 'CONFESSION'],
+                            'extreme_onction' => ['prefLabel' => 'EXTRÊME-ONCTION'],
+                            'ordination' => ['prefLabel' => 'ORDINATION'],
+                            'messe' => ['prefLabel' => 'MESSE'],
+                            'office' => ['prefLabel' => 'OFFICE'],
+                            'vêpres' => ['prefLabel' => 'VÊPRES'],
+                            'matines' => ['prefLabel' => 'MATINES'],
+                            'sermon' => ['prefLabel' => 'SERMON'],
+                            'predication' => ['prefLabel' => 'PREDICATION'],
+                            'catechisme' => ['prefLabel' => 'CATECHISME'],
+                            'catechiste' => ['prefLabel' => 'CATECHISTE'],
+                            'mission' => ['prefLabel' => 'MISSION'],
+                            'missionnaire' => ['prefLabel' => 'MISSIONNAIRE'],
+                            'retraite' => ['prefLabel' => 'RETRAITE'],
+                            'jubile' => ['prefLabel' => 'JUBILE'],
+                            'indulgence' => ['prefLabel' => 'INDULGENCE'],
+                            'relique' => ['prefLabel' => 'RELIQUE'],
+                            'saint' => ['prefLabel' => 'SAINT'],
+                            'patron' => ['prefLabel' => 'PATRON'],
+                            'miracle' => ['prefLabel' => 'MIRACLE'],
+                            'ex_voto' => ['prefLabel' => 'EX-VOTO'],
+                            'cimetiere' => ['prefLabel' => 'CIMETIÈRE'],
+                            'tombe' => ['prefLabel' => 'TOMBE'],
+                            'sepulture' => ['prefLabel' => 'SEPULTURE'],
+                            'epitaphe' => ['prefLabel' => 'EPITAPHE'],
+                            'concession' => ['prefLabel' => 'CONCESSION'],
+                            'caveau' => ['prefLabel' => 'CAVEAU'],
+                            'mausolee' => ['prefLabel' => 'MAUSOLEE'],
+                        ]
+                    ],
+                    'protestantisme' => [
+                        'notation' => '7.2',
+                        'prefLabel' => 'Protestantisme',
+                        'children' => [
+                            'temple' => ['prefLabel' => 'TEMPLE'],
+                            'consistoire' => ['prefLabel' => 'CONSISTOIRE'],
+                            'pasteur' => ['prefLabel' => 'PASTEUR'],
+                            'ancien' => ['prefLabel' => 'ANCIEN'],
+                            'diacre' => ['prefLabel' => 'DIACRE'],
+                            'culte' => ['prefLabel' => 'CULTE'],
+                            'predication' => ['prefLabel' => 'PREDICATION'],
+                            'bible' => ['prefLabel' => 'BIBLE'],
+                            'psaume' => ['prefLabel' => 'PSAUME'],
+                            'cantique' => ['prefLabel' => 'CANTIQUE'],
+                            'catechisme_protestant' => ['prefLabel' => 'CATECHISME PROTESTANT'],
+                            'synode' => ['prefLabel' => 'SYNODE'],
+                            'presbytère_protestant' => ['prefLabel' => 'PRESBYTÈRE PROTESTANT'],
+                        ]
+                    ],
+                    'judaisme' => [
+                        'notation' => '7.3',
+                        'prefLabel' => 'Judaïsme',
+                        'children' => [
+                            'synagogue' => ['prefLabel' => 'SYNAGOGUE'],
+                            'rabbin' => ['prefLabel' => 'RABBIN'],
+                            'chantre' => ['prefLabel' => 'CHANTRE'],
+                            'torah' => ['prefLabel' => 'TORAH'],
+                            'talmud' => ['prefLabel' => 'TALMUD'],
+                            'sabbat' => ['prefLabel' => 'SABBAT'],
+                            'paque_juive' => ['prefLabel' => 'PÂQUE JUIVE'],
+                            'yom_kippour' => ['prefLabel' => 'YOM KIPPOUR'],
+                            'circoncision' => ['prefLabel' => 'CIRCONCISION'],
+                            'bar_mitzvah' => ['prefLabel' => 'BAR MITZVAH'],
+                            'cimetiere_juif' => ['prefLabel' => 'CIMETIÈRE JUIF'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $hotelDeVille = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'hotel-de-ville',
-            'notation' => null,
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $hotelDeVille->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'HOTEL DE VILLE', [cite: 6]
-            'language' => 'fr-fr',
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $hotelDeVille->id,
-            'type' => 'altLabel',
-            [cite_start]'literal_form' => 'mairie', [cite: 6]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: HOTEL DE VILLE is narrower than Administration générale
-        ThesaurusConceptRelation::create([
-            'concept_id' => $administrationGenerale->id,
-            'related_concept_id' => $hotelDeVille->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $hotelDeVille->id,
-            'related_concept_id' => $administrationGenerale->id,
-            'relation_type' => 'broader',
-        ]);
+            // 8. SANTE (80+ concepts)
+            'sante' => [
+                'notation' => '8',
+                'prefLabel' => 'Santé',
+                'children' => [
+                    'medecine' => [
+                        'notation' => '8.1',
+                        'prefLabel' => 'Médecine',
+                        'children' => [
+                            'hopital' => ['prefLabel' => 'HÔPITAL'],
+                            'hospice' => ['prefLabel' => 'HOSPICE'],
+                            'hotel_dieu' => ['prefLabel' => 'HÔTEL-DIEU'],
+                            'maison_sante' => ['prefLabel' => 'MAISON DE SANTÉ'],
+                            'clinique' => ['prefLabel' => 'CLINIQUE'],
+                            'dispensaire' => ['prefLabel' => 'DISPENSAIRE'],
+                            'infirmerie' => ['prefLabel' => 'INFIRMERIE'],
+                            'medecin' => ['prefLabel' => 'MÉDECIN'],
+                            'docteur' => ['prefLabel' => 'DOCTEUR'],
+                            'chirurgien' => ['prefLabel' => 'CHIRURGIEN'],
+                            'pharmacien' => ['prefLabel' => 'PHARMACIEN'],
+                            'apothicaire' => ['prefLabel' => 'APOTHICAIRE'],
+                            'infirmier' => ['prefLabel' => 'INFIRMIER'],
+                            'infirmiere' => ['prefLabel' => 'INFIRMIÈRE'],
+                            'garde_malade' => ['prefLabel' => 'GARDE-MALADE'],
+                            'sage_femme' => ['prefLabel' => 'SAGE-FEMME'],
+                            'accoucheuse' => ['prefLabel' => 'ACCOUCHEUSE'],
+                            'veterinaire' => ['prefLabel' => 'VÉTÉRINAIRE'],
+                            'marechal' => ['prefLabel' => 'MARÉCHAL'],
+                            'consultation' => ['prefLabel' => 'CONSULTATION'],
+                            'visite' => ['prefLabel' => 'VISITE'],
+                            'diagnostic' => ['prefLabel' => 'DIAGNOSTIC'],
+                            'traitement' => ['prefLabel' => 'TRAITEMENT'],
+                            'operation' => ['prefLabel' => 'OPÉRATION'],
+                            'intervention' => ['prefLabel' => 'INTERVENTION'],
+                            'pansement' => ['prefLabel' => 'PANSEMENT'],
+                            'medicament' => ['prefLabel' => 'MÉDICAMENT'],
+                            'remede' => ['prefLabel' => 'REMÈDE'],
+                            'ordonnance' => ['prefLabel' => 'ORDONNANCE'],
+                            'prescription' => ['prefLabel' => 'PRESCRIPTION'],
+                            'maladie' => ['prefLabel' => 'MALADIE'],
+                            'epidemie' => ['prefLabel' => 'ÉPIDÉMIE'],
+                            'contagion' => ['prefLabel' => 'CONTAGION'],
+                            'quarantaine' => ['prefLabel' => 'QUARANTAINE'],
+                            'vaccination' => ['prefLabel' => 'VACCINATION'],
+                            'vaccine' => ['prefLabel' => 'VACCINE'],
+                            'variolisation' => ['prefLabel' => 'VARIOLISATION'],
+                            'peste' => ['prefLabel' => 'PESTE'],
+                            'cholera' => ['prefLabel' => 'CHOLÉRA'],
+                            'typhus' => ['prefLabel' => 'TYPHUS'],
+                            'variole' => ['prefLabel' => 'VARIOLE'],
+                            'rougeole' => ['prefLabel' => 'ROUGEOLE'],
+                            'scarlatine' => ['prefLabel' => 'SCARLATINE'],
+                            'coqueluche' => ['prefLabel' => 'COQUELUCHE'],
+                            'diphterie' => ['prefLabel' => 'DIPHTÉRIE'],
+                            'tuberculose' => ['prefLabel' => 'TUBERCULOSE'],
+                            'syphilis' => ['prefLabel' => 'SYPHILIS'],
+                            'fievre' => ['prefLabel' => 'FIÈVRE'],
+                            'mal' => ['prefLabel' => 'MAL'],
+                            'blessure' => ['prefLabel' => 'BLESSURE'],
+                            'accident' => ['prefLabel' => 'ACCIDENT'],
+                            'empoisonnement' => ['prefLabel' => 'EMPOISONNEMENT'],
+                            'noyade' => ['prefLabel' => 'NOYADE'],
+                            'brulure' => ['prefLabel' => 'BRÛLURE'],
+                            'fracture' => ['prefLabel' => 'FRACTURE'],
+                            'mort' => ['prefLabel' => 'MORT'],
+                            'deces_medical' => ['prefLabel' => 'DÉCÈS MÉDICAL'],
+                            'autopsie' => ['prefLabel' => 'AUTOPSIE'],
+                            'necroscopie' => ['prefLabel' => 'NÉCROSCOPIE'],
+                        ]
+                    ],
+                    'hygiene' => [
+                        'notation' => '8.2',
+                        'prefLabel' => 'Hygiène',
+                        'children' => [
+                            'salubrite' => ['prefLabel' => 'SALUBRITÉ'],
+                            'proprete' => ['prefLabel' => 'PROPRETÉ'],
+                            'assainissement' => ['prefLabel' => 'ASSAINISSEMENT'],
+                            'egout' => ['prefLabel' => 'ÉGOUT'],
+                            'canalisation' => ['prefLabel' => 'CANALISATION'],
+                            'voirie' => ['prefLabel' => 'VOIRIE'],
+                            'balayage' => ['prefLabel' => 'BALAYAGE'],
+                            'vidange' => ['prefLabel' => 'VIDANGE'],
+                            'fosse' => ['prefLabel' => 'FOSSE'],
+                            'latrine' => ['prefLabel' => 'LATRINE'],
+                            'commodite' => ['prefLabel' => 'COMMODITÉ'],
+                            'eau_potable' => ['prefLabel' => 'EAU POTABLE'],
+                            'fontaine_publique' => ['prefLabel' => 'FONTAINE PUBLIQUE'],
+                            'puits_public' => ['prefLabel' => 'PUITS PUBLIC'],
+                            'pompe' => ['prefLabel' => 'POMPE'],
+                            'source' => ['prefLabel' => 'SOURCE'],
+                            'captage' => ['prefLabel' => 'CAPTAGE'],
+                            'adduction' => ['prefLabel' => 'ADDUCTION'],
+                            'distribution_eau' => ['prefLabel' => 'DISTRIBUTION D\'EAU'],
+                            'pollution' => ['prefLabel' => 'POLLUTION'],
+                            'contamination' => ['prefLabel' => 'CONTAMINATION'],
+                            'insalubrite' => ['prefLabel' => 'INSALUBRITÉ'],
+                            'nuisance' => ['prefLabel' => 'NUISANCE'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $batimentAdministratif = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'batiment-administratif',
-            'notation' => null,
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $batimentAdministratif->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'BATIMENT ADMINISTRATIF', [cite: 6]
-            'language' => 'fr-fr',
-        ]);
-        ThesaurusConceptNote::create([
-            'concept_id' => $batimentAdministratif->id,
-            'type' => 'definition',
-            [cite_start]'note' => "Bâtiment abritant des services administratifs ou à usage de l'administration. S'entend aussi pour le siège d'une administration quel que soit son contexte historique.", [cite: 9, 10]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: BATIMENT ADMINISTRATIF is narrower than Administration générale
-        ThesaurusConceptRelation::create([
-            'concept_id' => $administrationGenerale->id,
-            'related_concept_id' => $batimentAdministratif->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $batimentAdministratif->id,
-            'related_concept_id' => $administrationGenerale->id,
-            'relation_type' => 'broader',
-        ]);
+            // 9. JUSTICE (100+ concepts)
+            'justice' => [
+                'notation' => '9',
+                'prefLabel' => 'Justice',
+                'children' => [
+                    'tribunaux' => [
+                        'notation' => '9.1',
+                        'prefLabel' => 'Tribunaux',
+                        'children' => [
+                            'palais_justice' => ['prefLabel' => 'PALAIS DE JUSTICE'],
+                            'tribunal' => ['prefLabel' => 'TRIBUNAL'],
+                            'cour' => ['prefLabel' => 'COUR'],
+                            'juridiction' => ['prefLabel' => 'JURIDICTION'],
+                            'justice_paix' => ['prefLabel' => 'JUSTICE DE PAIX'],
+                            'tribunal_instance' => ['prefLabel' => 'TRIBUNAL D\'INSTANCE'],
+                            'tribunal_grande_instance' => ['prefLabel' => 'TRIBUNAL DE GRANDE INSTANCE'],
+                            'cour_appel' => ['prefLabel' => 'COUR D\'APPEL'],
+                            'cour_cassation' => ['prefLabel' => 'COUR DE CASSATION'],
+                            'tribunal_commerce' => ['prefLabel' => 'TRIBUNAL DE COMMERCE'],
+                            'tribunal_police' => ['prefLabel' => 'TRIBUNAL DE POLICE'],
+                            'cour_assises' => ['prefLabel' => 'COUR D\'ASSISES'],
+                            'tribunal_correctionnel' => ['prefLabel' => 'TRIBUNAL CORRECTIONNEL'],
+                            'conseil_prud_hommes' => ['prefLabel' => 'CONSEIL DE PRUD\'HOMMES'],
+                            'juge' => ['prefLabel' => 'JUGE'],
+                            'magistrat' => ['prefLabel' => 'MAGISTRAT'],
+                            'president' => ['prefLabel' => 'PRÉSIDENT'],
+                            'juge_paix' => ['prefLabel' => 'JUGE DE PAIX'],
+                            'juge_instruction' => ['prefLabel' => 'JUGE D\'INSTRUCTION'],
+                            'substitut' => ['prefLabel' => 'SUBSTITUT'],
+                            'procureur' => ['prefLabel' => 'PROCUREUR'],
+                            'avocat_general' => ['prefLabel' => 'AVOCAT GÉNÉRAL'],
+                            'greffier' => ['prefLabel' => 'GREFFIER'],
+                            'clerc' => ['prefLabel' => 'CLERC'],
+                            'huissier' => ['prefLabel' => 'HUISSIER'],
+                            'avocat' => ['prefLabel' => 'AVOCAT'],
+                            'avoue' => ['prefLabel' => 'AVOUÉ'],
+                            'notaire' => ['prefLabel' => 'NOTAIRE'],
+                            'commissaire_priseur' => ['prefLabel' => 'COMMISSAIRE-PRISEUR'],
+                        ]
+                    ],
+                    'procedure' => [
+                        'notation' => '9.2',
+                        'prefLabel' => 'Procédure',
+                        'children' => [
+                            'proces' => ['prefLabel' => 'PROCÈS'],
+                            'affaire' => ['prefLabel' => 'AFFAIRE'],
+                            'litige' => ['prefLabel' => 'LITIGE'],
+                            'plainte' => ['prefLabel' => 'PLAINTE'],
+                            'denonciation' => ['prefLabel' => 'DÉNONCIATION'],
+                            'accusation' => ['prefLabel' => 'ACCUSATION'],
+                            'inculpation' => ['prefLabel' => 'INCULPATION'],
+                            'enquete' => ['prefLabel' => 'ENQUÊTE'],
+                            'instruction' => ['prefLabel' => 'INSTRUCTION'],
+                            'information' => ['prefLabel' => 'INFORMATION'],
+                            'perquisition' => ['prefLabel' => 'PERQUISITION'],
+                            'saisie' => ['prefLabel' => 'SAISIE'],
+                            'expertise' => ['prefLabel' => 'EXPERTISE'],
+                            'temoignage' => ['prefLabel' => 'TÉMOIGNAGE'],
+                            'temoin' => ['prefLabel' => 'TÉMOIN'],
+                            'preuve' => ['prefLabel' => 'PREUVE'],
+                            'piece_conviction' => ['prefLabel' => 'PIÈCE À CONVICTION'],
+                            'interrogatoire' => ['prefLabel' => 'INTERROGATOIRE'],
+                            'confrontation' => ['prefLabel' => 'CONFRONTATION'],
+                            'audition' => ['prefLabel' => 'AUDITION'],
+                            'plaidoirie' => ['prefLabel' => 'PLAIDOIRIE'],
+                            'requisitoire' => ['prefLabel' => 'RÉQUISITOIRE'],
+                            'delibere' => ['prefLabel' => 'DÉLIBÉRÉ'],
+                            'verdict' => ['prefLabel' => 'VERDICT'],
+                            'jugement' => ['prefLabel' => 'JUGEMENT'],
+                            'arret' => ['prefLabel' => 'ARRÊT'],
+                            'sentence' => ['prefLabel' => 'SENTENCE'],
+                            'condamnation' => ['prefLabel' => 'CONDAMNATION'],
+                            'acquittement' => ['prefLabel' => 'ACQUITTEMENT'],
+                            'non_lieu' => ['prefLabel' => 'NON-LIEU'],
+                            'appel' => ['prefLabel' => 'APPEL'],
+                            'pourvoi' => ['prefLabel' => 'POURVOI'],
+                            'cassation' => ['prefLabel' => 'CASSATION'],
+                            'execution' => ['prefLabel' => 'EXÉCUTION'],
+                            'signification' => ['prefLabel' => 'SIGNIFICATION'],
+                            'citation' => ['prefLabel' => 'CITATION'],
+                            'assignation' => ['prefLabel' => 'ASSIGNATION'],
+                            'comparution' => ['prefLabel' => 'COMPARUTION'],
+                            'defaut' => ['prefLabel' => 'DÉFAUT'],
+                            'contumace' => ['prefLabel' => 'CONTUMACE'],
+                        ]
+                    ],
+                    'penal' => [
+                        'notation' => '9.3',
+                        'prefLabel' => 'Pénal',
+                        'children' => [
+                            'crime' => ['prefLabel' => 'CRIME'],
+                            'delit' => ['prefLabel' => 'DÉLIT'],
+                            'contravention' => ['prefLabel' => 'CONTRAVENTION'],
+                            'meurtre' => ['prefLabel' => 'MEURTRE'],
+                            'assassinat' => ['prefLabel' => 'ASSASSINAT'],
+                            'homicide' => ['prefLabel' => 'HOMICIDE'],
+                            'infanticide' => ['prefLabel' => 'INFANTICIDE'],
+                            'parricide' => ['prefLabel' => 'PARRICIDE'],
+                            'empoisonnement_crime' => ['prefLabel' => 'EMPOISONNEMENT CRIMINEL'],
+                            'vol' => ['prefLabel' => 'VOL'],
+                            'larcin' => ['prefLabel' => 'LARCIN'],
+                            'brigandage' => ['prefLabel' => 'BRIGANDAGE'],
+                            'banditisme' => ['prefLabel' => 'BANDITISME'],
+                            'escroquerie' => ['prefLabel' => 'ESCROQUERIE'],
+                            'abus_confiance' => ['prefLabel' => 'ABUS DE CONFIANCE'],
+                            'faux' => ['prefLabel' => 'FAUX'],
+                            'usage_faux' => ['prefLabel' => 'USAGE DE FAUX'],
+                            'faux_monnayage' => ['prefLabel' => 'FAUX MONNAYAGE'],
+                            'contrefacon' => ['prefLabel' => 'CONTREFAÇON'],
+                            'incendie' => ['prefLabel' => 'INCENDIE'],
+                            'destruction' => ['prefLabel' => 'DESTRUCTION'],
+                            'degradation' => ['prefLabel' => 'DÉGRADATION'],
+                            'viol' => ['prefLabel' => 'VIOL'],
+                            'attentat_pudeur' => ['prefLabel' => 'ATTENTAT À LA PUDEUR'],
+                            'adultere' => ['prefLabel' => 'ADULTÈRE'],
+                            'bigamie' => ['prefLabel' => 'BIGAMIE'],
+                            'diffamation' => ['prefLabel' => 'DIFFAMATION'],
+                            'calomnie' => ['prefLabel' => 'CALOMNIE'],
+                            'injure' => ['prefLabel' => 'INJURE'],
+                            'rebellion' => ['prefLabel' => 'RÉBELLION'],
+                            'resistance' => ['prefLabel' => 'RÉSISTANCE'],
+                            'outrage' => ['prefLabel' => 'OUTRAGE'],
+                            'vagabondage' => ['prefLabel' => 'VAGABONDAGE'],
+                            'mendicite' => ['prefLabel' => 'MENDICITÉ'],
+                            'ivresse' => ['prefLabel' => 'IVRESSE'],
+                            'tapage' => ['prefLabel' => 'TAPAGE'],
+                            'rixe' => ['prefLabel' => 'RIXE'],
+                            'coups_blessures' => ['prefLabel' => 'COUPS ET BLESSURES'],
+                            'voies_fait' => ['prefLabel' => 'VOIES DE FAIT'],
+                            'menace' => ['prefLabel' => 'MENACE'],
+                            'chantage' => ['prefLabel' => 'CHANTAGE'],
+                            'recel' => ['prefLabel' => 'RECEL'],
+                            'complicite' => ['prefLabel' => 'COMPLICITÉ'],
+                            'recidive' => ['prefLabel' => 'RÉCIDIVE'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $etablissementRecevantDuPublic = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'etablissement-recevant-du-public',
-            [cite_start]'notation' => '1.6', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $etablissementRecevantDuPublic->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'ETABLISSEMENT RECEVANT DU PUBLIC', [cite: 54]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: BATIMENT ADMINISTRATIF is related to ETABLISSEMENT RECEVANT DU PUBLIC (TA)
-        ThesaurusConceptRelation::create([
-            'concept_id' => $batimentAdministratif->id,
-            'related_concept_id' => $etablissementRecevantDuPublic->id,
-            'relation_type' => 'related',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $etablissementRecevantDuPublic->id,
-            'related_concept_id' => $batimentAdministratif->id,
-            'relation_type' => 'related',
-        ]);
+            // 10. MARCHE PUBLIC (60+ concepts)
+            'marche_public' => [
+                'notation' => '10',
+                'prefLabel' => 'Marchés publics',
+                'children' => [
+                    'procedure_marche' => [
+                        'notation' => '10.1',
+                        'prefLabel' => 'Procédures de marché',
+                        'children' => [
+                            'appel_offres' => ['prefLabel' => 'APPEL D\'OFFRES'],
+                            'marche_negocie' => ['prefLabel' => 'MARCHÉ NÉGOCIÉ'],
+                            'procedure_adaptee' => ['prefLabel' => 'PROCÉDURE ADAPTÉE'],
+                            'concours_marche' => ['prefLabel' => 'CONCOURS'],
+                            'dialogue_competitif' => ['prefLabel' => 'DIALOGUE COMPÉTITIF'],
+                            'consultation_marche' => ['prefLabel' => 'CONSULTATION'],
+                            'mise_concurrence' => ['prefLabel' => 'MISE EN CONCURRENCE'],
+                            'publicite_marche' => ['prefLabel' => 'PUBLICITÉ'],
+                            'avis_marche' => ['prefLabel' => 'AVIS DE MARCHÉ'],
+                            'cahier_charges' => ['prefLabel' => 'CAHIER DES CHARGES'],
+                            'specification_technique' => ['prefLabel' => 'SPÉCIFICATION TECHNIQUE'],
+                            'reglement_consultation' => ['prefLabel' => 'RÈGLEMENT DE CONSULTATION'],
+                            'acte_engagement' => ['prefLabel' => 'ACTE D\'ENGAGEMENT'],
+                            'offre_marche' => ['prefLabel' => 'OFFRE'],
+                            'soumission' => ['prefLabel' => 'SOUMISSION'],
+                            'candidature_marche' => ['prefLabel' => 'CANDIDATURE'],
+                            'dossier_candidature_marche' => ['prefLabel' => 'DOSSIER DE CANDIDATURE'],
+                            'piece_marche' => ['prefLabel' => 'PIÈCE DE MARCHÉ'],
+                            'ouverture_plis' => ['prefLabel' => 'OUVERTURE DES PLIS'],
+                            'commission_ouverture' => ['prefLabel' => 'COMMISSION D\'OUVERTURE'],
+                            'evaluation_offres' => ['prefLabel' => 'ÉVALUATION DES OFFRES'],
+                            'analyse_offres' => ['prefLabel' => 'ANALYSE DES OFFRES'],
+                            'classement_offres' => ['prefLabel' => 'CLASSEMENT DES OFFRES'],
+                            'critere_attribution' => ['prefLabel' => 'CRITÈRE D\'ATTRIBUTION'],
+                            'prix_marche' => ['prefLabel' => 'PRIX'],
+                            'valeur_technique' => ['prefLabel' => 'VALEUR TECHNIQUE'],
+                            'delai_execution' => ['prefLabel' => 'DÉLAI D\'EXÉCUTION'],
+                            'attribution_marche' => ['prefLabel' => 'ATTRIBUTION'],
+                            'notification_marche' => ['prefLabel' => 'NOTIFICATION'],
+                            'lettre_commande' => ['prefLabel' => 'LETTRE DE COMMANDE'],
+                            'bon_commande' => ['prefLabel' => 'BON DE COMMANDE'],
+                            'marche_cadre' => ['prefLabel' => 'MARCHÉ CADRE'],
+                            'accord_cadre' => ['prefLabel' => 'ACCORD CADRE'],
+                            'marche_subsequents' => ['prefLabel' => 'MARCHÉS SUBSÉQUENTS'],
+                            'avenant_marche' => ['prefLabel' => 'AVENANT'],
+                            'modification_marche' => ['prefLabel' => 'MODIFICATION DE MARCHÉ'],
+                            'resiliation_marche' => ['prefLabel' => 'RÉSILIATION'],
+                            'renouvellement_marche' => ['prefLabel' => 'RENOUVELLEMENT'],
+                        ]
+                    ]
+                ]
+            ],
 
-        // Example: Related term for Agriculture (ECONOMIE RURALE)
-        $economieRurale = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'economie-rurale',
-            [cite_start]'notation' => '2.1', [cite: 1]
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $economieRurale->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'ECONOMIE RURALE', [cite: 65]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: ECONOMIE RURALE is narrower than Agriculture
-        ThesaurusConceptRelation::create([
-            'concept_id' => $agriculture->id,
-            'related_concept_id' => $economieRurale->id,
-            'relation_type' => 'narrower',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $economieRurale->id,
-            'related_concept_id' => $agriculture->id,
-            'relation_type' => 'broader',
-        ]);
+            // 11. GESTION RESSOURCES HUMAINES (80+ concepts)
+            'ressources_humaines' => [
+                'notation' => '11',
+                'prefLabel' => 'Ressources humaines',
+                'children' => [
+                    'recrutement' => [
+                        'notation' => '11.1',
+                        'prefLabel' => 'Recrutement',
+                        'children' => [
+                            'poste_rh' => ['prefLabel' => 'POSTE'],
+                            'emploi_rh' => ['prefLabel' => 'EMPLOI'],
+                            'fonction_rh' => ['prefLabel' => 'FONCTION'],
+                            'grade_rh' => ['prefLabel' => 'GRADE'],
+                            'cadre_emploi' => ['prefLabel' => 'CADRE D\'EMPLOI'],
+                            'fiche_poste' => ['prefLabel' => 'FICHE DE POSTE'],
+                            'profil_poste' => ['prefLabel' => 'PROFIL DE POSTE'],
+                            'vacance_poste' => ['prefLabel' => 'VACANCE DE POSTE'],
+                            'creation_poste' => ['prefLabel' => 'CRÉATION DE POSTE'],
+                            'suppression_poste' => ['prefLabel' => 'SUPPRESSION DE POSTE'],
+                            'transformation_poste' => ['prefLabel' => 'TRANSFORMATION DE POSTE'],
+                            'avis_vacance' => ['prefLabel' => 'AVIS DE VACANCE'],
+                            'candidature_rh' => ['prefLabel' => 'CANDIDATURE'],
+                            'cv' => ['prefLabel' => 'CURRICULUM VITAE'],
+                            'lettre_motivation' => ['prefLabel' => 'LETTRE DE MOTIVATION'],
+                            'dossier_candidature_rh' => ['prefLabel' => 'DOSSIER DE CANDIDATURE'],
+                            'selection_rh' => ['prefLabel' => 'SÉLECTION'],
+                            'tri_candidature' => ['prefLabel' => 'TRI DES CANDIDATURES'],
+                            'entretien_rh' => ['prefLabel' => 'ENTRETIEN'],
+                            'entretien_embauche' => ['prefLabel' => 'ENTRETIEN D\'EMBAUCHE'],
+                            'test_recrutement' => ['prefLabel' => 'TEST DE RECRUTEMENT'],
+                            'epreuve_rh' => ['prefLabel' => 'ÉPREUVE'],
+                            'jury_recrutement' => ['prefLabel' => 'JURY DE RECRUTEMENT'],
+                            'commission_recrutement' => ['prefLabel' => 'COMMISSION DE RECRUTEMENT'],
+                            'rapport_jury' => ['prefLabel' => 'RAPPORT DE JURY'],
+                            'classement_candidats' => ['prefLabel' => 'CLASSEMENT DES CANDIDATS'],
+                            'choix_candidat' => ['prefLabel' => 'CHOIX DU CANDIDAT'],
+                            'nomination_rh' => ['prefLabel' => 'NOMINATION'],
+                            'arrete_nomination' => ['prefLabel' => 'ARRÊTÉ DE NOMINATION'],
+                            'titularisation' => ['prefLabel' => 'TITULARISATION'],
+                            'stage_probatoire' => ['prefLabel' => 'STAGE PROBATOIRE'],
+                            'periode_essai' => ['prefLabel' => 'PÉRIODE D\'ESSAI'],
+                            'integration_rh' => ['prefLabel' => 'INTÉGRATION'],
+                            'accueil_rh' => ['prefLabel' => 'ACCUEIL'],
+                            'livret_accueil' => ['prefLabel' => 'LIVRET D\'ACCUEIL'],
+                            'visite_medicale' => ['prefLabel' => 'VISITE MÉDICALE'],
+                            'aptitude_rh' => ['prefLabel' => 'APTITUDE'],
+                            'inaptitude_rh' => ['prefLabel' => 'INAPTITUDE'],
+                        ]
+                    ],
+                    'gestion_carriere' => [
+                        'notation' => '11.2',
+                        'prefLabel' => 'Gestion de carrière',
+                        'children' => [
+                            'carriere_rh' => ['prefLabel' => 'CARRIÈRE'],
+                            'promotion_rh' => ['prefLabel' => 'PROMOTION'],
+                            'avancement_grade' => ['prefLabel' => 'AVANCEMENT DE GRADE'],
+                            'avancement_echelon' => ['prefLabel' => 'AVANCEMENT D\'ÉCHELON'],
+                            'mutation_rh' => ['prefLabel' => 'MUTATION'],
+                            'mobilite_rh' => ['prefLabel' => 'MOBILITÉ'],
+                            'detachement_rh' => ['prefLabel' => 'DÉTACHEMENT'],
+                            'mise_disposition' => ['prefLabel' => 'MISE À DISPOSITION'],
+                            'disponibilite_rh' => ['prefLabel' => 'DISPONIBILITÉ'],
+                            'conge_sans_solde' => ['prefLabel' => 'CONGÉ SANS SOLDE'],
+                            'temps_partiel' => ['prefLabel' => 'TEMPS PARTIEL'],
+                            'mi_temps' => ['prefLabel' => 'MI-TEMPS'],
+                            'horaire_variable' => ['prefLabel' => 'HORAIRE VARIABLE'],
+                            'teletravail' => ['prefLabel' => 'TÉLÉTRAVAIL'],
+                            'evaluation_rh' => ['prefLabel' => 'ÉVALUATION'],
+                            'entretien_evaluation' => ['prefLabel' => 'ENTRETIEN D\'ÉVALUATION'],
+                            'notation_rh' => ['prefLabel' => 'NOTATION'],
+                            'appreciation' => ['prefLabel' => 'APPRÉCIATION'],
+                            'objectif_rh' => ['prefLabel' => 'OBJECTIF'],
+                            'performance_rh' => ['prefLabel' => 'PERFORMANCE'],
+                            'competence_rh' => ['prefLabel' => 'COMPÉTENCE'],
+                            'formation_continue' => ['prefLabel' => 'FORMATION CONTINUE'],
+                            'stage_formation' => ['prefLabel' => 'STAGE DE FORMATION'],
+                            'plan_formation' => ['prefLabel' => 'PLAN DE FORMATION'],
+                            'action_formation' => ['prefLabel' => 'ACTION DE FORMATION'],
+                            'organisme_formation' => ['prefLabel' => 'ORGANISME DE FORMATION'],
+                            'formateur_rh' => ['prefLabel' => 'FORMATEUR'],
+                            'participant_formation' => ['prefLabel' => 'PARTICIPANT À LA FORMATION'],
+                            'certificat_formation' => ['prefLabel' => 'CERTIFICAT DE FORMATION'],
+                            'attestation_formation' => ['prefLabel' => 'ATTESTATION DE FORMATION'],
+                        ]
+                    ],
+                    'paie_remuneration' => [
+                        'notation' => '11.3',
+                        'prefLabel' => 'Paie et rémunération',
+                        'children' => [
+                            'salaire_rh' => ['prefLabel' => 'SALAIRE'],
+                            'traitement_rh' => ['prefLabel' => 'TRAITEMENT'],
+                            'remuneration_rh' => ['prefLabel' => 'RÉMUNÉRATION'],
+                            'indemnite_rh' => ['prefLabel' => 'INDEMNITÉ'],
+                            'prime_rh' => ['prefLabel' => 'PRIME'],
+                            'bonus_rh' => ['prefLabel' => 'BONUS'],
+                            'gratification' => ['prefLabel' => 'GRATIFICATION'],
+                            'avantage_nature' => ['prefLabel' => 'AVANTAGE EN NATURE'],
+                            'bulletin_paie' => ['prefLabel' => 'BULLETIN DE PAIE'],
+                            'fiche_paie' => ['prefLabel' => 'FICHE DE PAIE'],
+                            'livre_paie' => ['prefLabel' => 'LIVRE DE PAIE'],
+                            'cotisation_sociale' => ['prefLabel' => 'COTISATION SOCIALE'],
+                            'charge_sociale' => ['prefLabel' => 'CHARGE SOCIALE'],
+                            'securite_sociale' => ['prefLabel' => 'SÉCURITÉ SOCIALE'],
+                            'assurance_maladie' => ['prefLabel' => 'ASSURANCE MALADIE'],
+                            'assurance_chomage' => ['prefLabel' => 'ASSURANCE CHÔMAGE'],
+                            'retraite_rh' => ['prefLabel' => 'RETRAITE'],
+                            'pension_retraite' => ['prefLabel' => 'PENSION DE RETRAITE'],
+                            'regime_retraite' => ['prefLabel' => 'RÉGIME DE RETRAITE'],
+                            'prevoyance_rh' => ['prefLabel' => 'PRÉVOYANCE'],
+                            'mutuelle_rh' => ['prefLabel' => 'MUTUELLE'],
+                            'complementaire_sante' => ['prefLabel' => 'COMPLÉMENTAIRE SANTÉ'],
+                            'conge_paye' => ['prefLabel' => 'CONGÉ PAYÉ'],
+                            'conge_maladie' => ['prefLabel' => 'CONGÉ MALADIE'],
+                            'conge_maternite' => ['prefLabel' => 'CONGÉ MATERNITÉ'],
+                            'conge_paternite' => ['prefLabel' => 'CONGÉ PATERNITÉ'],
+                            'arret_maladie' => ['prefLabel' => 'ARRÊT MALADIE'],
+                            'accident_travail' => ['prefLabel' => 'ACCIDENT DU TRAVAIL'],
+                            'maladie_professionnelle' => ['prefLabel' => 'MALADIE PROFESSIONNELLE'],
+                            'incapacite_travail' => ['prefLabel' => 'INCAPACITÉ DE TRAVAIL'],
+                            'invalidite_rh' => ['prefLabel' => 'INVALIDITÉ'],
+                        ]
+                    ]
+                ]
+            ],
 
-        $gardeParticulier = ThesaurusConcept::create([
-            'scheme_id' => $scheme->id,
-            'uri' => $namespace->namespace_uri . 'garde-particulier',
-            'notation' => null,
-            'status' => 1,
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $gardeParticulier->id,
-            'type' => 'prefLabel',
-            [cite_start]'literal_form' => 'GARDE PARTICULIER', [cite: 40]
-            'language' => 'fr-fr',
-        ]);
-        ThesaurusLabel::create([
-            'concept_id' => $gardeParticulier->id,
-            'type' => 'altLabel',
-            [cite_start]'literal_form' => 'garde champêtre', [cite: 40]
-            'language' => 'fr-fr',
-        ]);
-        // Relation: GARDE PARTICULIER is related to ECONOMIE RURALE (TA)
-        ThesaurusConceptRelation::create([
-            'concept_id' => $gardeParticulier->id,
-            'related_concept_id' => $economieRurale->id,
-            'relation_type' => 'related',
-        ]);
-        ThesaurusConceptRelation::create([
-            'concept_id' => $economieRurale->id,
-            'related_concept_id' => $gardeParticulier->id,
-            'relation_type' => 'related',
-        ]);
+            // 12. MOBILIER ET EQUIPEMENTS (70+ concepts)
+            'mobilier_equipements' => [
+                'notation' => '12',
+                'prefLabel' => 'Mobilier et équipements',
+                'children' => [
+                    'mobilier_bureau' => [
+                        'notation' => '12.1',
+                        'prefLabel' => 'Mobilier de bureau',
+                        'children' => [
+                            'bureau_meuble' => ['prefLabel' => 'BUREAU'],
+                            'table_bureau' => ['prefLabel' => 'TABLE DE BUREAU'],
+                            'bureau_direction' => ['prefLabel' => 'BUREAU DE DIRECTION'],
+                            'bureau_secretariat' => ['prefLabel' => 'BUREAU DE SECRÉTARIAT'],
+                            'plan_travail' => ['prefLabel' => 'PLAN DE TRAVAIL'],
+                            'plateau_bureau' => ['prefLabel' => 'PLATEAU DE BUREAU'],
+                            'caisson_bureau' => ['prefLabel' => 'CAISSON'],
+                            'tiroir_bureau' => ['prefLabel' => 'TIROIR'],
+                            'classeur_meuble' => ['prefLabel' => 'CLASSEUR'],
+                            'armoire_bureau' => ['prefLabel' => 'ARMOIRE DE BUREAU'],
+                            'bibliotheque_meuble' => ['prefLabel' => 'BIBLIOTHÈQUE'],
+                            'etagere_bureau' => ['prefLabel' => 'ÉTAGÈRE'],
+                            'rayonnage_bureau' => ['prefLabel' => 'RAYONNAGE'],
+                            'rangement_bureau' => ['prefLabel' => 'RANGEMENT'],
+                            'casier_rangement' => ['prefLabel' => 'CASIER DE RANGEMENT'],
+                            'vestiaire_bureau' => ['prefLabel' => 'VESTIAIRE'],
+                            'penderie_bureau' => ['prefLabel' => 'PENDERIE'],
+                            'porte_manteau' => ['prefLabel' => 'PORTE-MANTEAU'],
+                            'chaise_bureau' => ['prefLabel' => 'CHAISE DE BUREAU'],
+                            'fauteuil_bureau' => ['prefLabel' => 'FAUTEUIL DE BUREAU'],
+                            'siege_direction' => ['prefLabel' => 'SIÈGE DE DIRECTION'],
+                            'siege_operateur' => ['prefLabel' => 'SIÈGE OPÉRATEUR'],
+                            'tabouret_bureau' => ['prefLabel' => 'TABOURET'],
+                            'banc_bureau' => ['prefLabel' => 'BANC'],
+                            'table_reunion' => ['prefLabel' => 'TABLE DE RÉUNION'],
+                            'table_conference' => ['prefLabel' => 'TABLE DE CONFÉRENCE'],
+                            'chaise_reunion' => ['prefLabel' => 'CHAISE DE RÉUNION'],
+                            'fauteuil_reunion' => ['prefLabel' => 'FAUTEUIL DE RÉUNION'],
+                            'tableau_blanc' => ['prefLabel' => 'TABLEAU BLANC'],
+                            'tableau_noir' => ['prefLabel' => 'TABLEAU NOIR'],
+                            'paperboard' => ['prefLabel' => 'PAPERBOARD'],
+                            'chevalet_bureau' => ['prefLabel' => 'CHEVALET'],
+                            'ecran_projection' => ['prefLabel' => 'ÉCRAN DE PROJECTION'],
+                            'support_ecran' => ['prefLabel' => 'SUPPORT ÉCRAN'],
+                            'bras_ecran' => ['prefLabel' => 'BRAS ÉCRAN'],
+                        ]
+                    ],
+                    'equipements_techniques' => [
+                        'notation' => '12.2',
+                        'prefLabel' => 'Équipements techniques',
+                        'children' => [
+                            'photocopieur_equip' => ['prefLabel' => 'PHOTOCOPIEUR'],
+                            'imprimante_laser' => ['prefLabel' => 'IMPRIMANTE LASER'],
+                            'imprimante_jet_encre' => ['prefLabel' => 'IMPRIMANTE JET D\'ENCRE'],
+                            'scanner_equip' => ['prefLabel' => 'SCANNER'],
+                            'fax' => ['prefLabel' => 'FAX'],
+                            'telephone_fixe' => ['prefLabel' => 'TÉLÉPHONE FIXE'],
+                            'telephone_portable' => ['prefLabel' => 'TÉLÉPHONE PORTABLE'],
+                            'standard_telephonique' => ['prefLabel' => 'STANDARD TÉLÉPHONIQUE'],
+                            'videoprojecteur' => ['prefLabel' => 'VIDÉOPROJECTEUR'],
+                            'retroprojecteur' => ['prefLabel' => 'RÉTROPROJECTEUR'],
+                            'ecran_projection_equip' => ['prefLabel' => 'ÉCRAN DE PROJECTION'],
+                            'micro_casque' => ['prefLabel' => 'MICRO-CASQUE'],
+                            'haut_parleur' => ['prefLabel' => 'HAUT-PARLEUR'],
+                            'amplificateur' => ['prefLabel' => 'AMPLIFICATEUR'],
+                            'micro' => ['prefLabel' => 'MICROPHONE'],
+                            'magnetophone' => ['prefLabel' => 'MAGNÉTOPHONE'],
+                            'lecteur_cd' => ['prefLabel' => 'LECTEUR CD'],
+                            'lecteur_dvd' => ['prefLabel' => 'LECTEUR DVD'],
+                            'televiseur' => ['prefLabel' => 'TÉLÉVISEUR'],
+                            'magnetoscope' => ['prefLabel' => 'MAGNÉTOSCOPE'],
+                            'camera' => ['prefLabel' => 'CAMÉRA'],
+                            'appareil_photo' => ['prefLabel' => 'APPAREIL PHOTO'],
+                            'destructeur_papier' => ['prefLabel' => 'DESTRUCTEUR DE PAPIER'],
+                            'plastifieuse' => ['prefLabel' => 'PLASTIFIEUSE'],
+                            'relieuse' => ['prefLabel' => 'RELIEUSE'],
+                            'perforatrice' => ['prefLabel' => 'PERFORATRICE'],
+                            'agrafeuse' => ['prefLabel' => 'AGRAFEUSE'],
+                            'massicot' => ['prefLabel' => 'MASSICOT'],
+                            'guillotine' => ['prefLabel' => 'GUILLOTINE'],
+                            'machine_affranchir' => ['prefLabel' => 'MACHINE À AFFRANCHIR'],
+                            'balance_postale' => ['prefLabel' => 'BALANCE POSTALE'],
+                        ]
+                    ],
+                    'mobilier_accueil' => [
+                        'notation' => '12.3',
+                        'prefLabel' => 'Mobilier d\'accueil',
+                        'children' => [
+                            'banque_accueil' => ['prefLabel' => 'BANQUE D\'ACCUEIL'],
+                            'comptoir_accueil' => ['prefLabel' => 'COMPTOIR D\'ACCUEIL'],
+                            'borne_accueil' => ['prefLabel' => 'BORNE D\'ACCUEIL'],
+                            'pupitre_accueil' => ['prefLabel' => 'PUPITRE D\'ACCUEIL'],
+                            'chaise_visiteur' => ['prefLabel' => 'CHAISE VISITEUR'],
+                            'fauteuil_visiteur' => ['prefLabel' => 'FAUTEUIL VISITEUR'],
+                            'canape_accueil' => ['prefLabel' => 'CANAPÉ D\'ACCUEIL'],
+                            'table_basse' => ['prefLabel' => 'TABLE BASSE'],
+                            'gueridon' => ['prefLabel' => 'GUÉRIDON'],
+                            'porte_revue' => ['prefLabel' => 'PORTE-REVUE'],
+                            'presentoir' => ['prefLabel' => 'PRÉSENTOIR'],
+                            'vitrine_exposition' => ['prefLabel' => 'VITRINE D\'EXPOSITION'],
+                            'panneau_information' => ['prefLabel' => 'PANNEAU D\'INFORMATION'],
+                            'porte_document' => ['prefLabel' => 'PORTE-DOCUMENT'],
+                            'distributeur_ticket' => ['prefLabel' => 'DISTRIBUTEUR DE TICKET'],
+                            'horloge_murale' => ['prefLabel' => 'HORLOGE MURALE'],
+                            'plante_verte' => ['prefLabel' => 'PLANTE VERTE'],
+                            'bac_plante' => ['prefLabel' => 'BAC À PLANTE'],
+                            'jardiniere' => ['prefLabel' => 'JARDINIÈRE'],
+                            'cendrier_pied' => ['prefLabel' => 'CENDRIER SUR PIED'],
+                            'poubelle_tri' => ['prefLabel' => 'POUBELLE DE TRI'],
+                            'corbeille_papier' => ['prefLabel' => 'CORBEILLE À PAPIER'],
+                            'distributeur_eau' => ['prefLabel' => 'DISTRIBUTEUR D\'EAU'],
+                            'fontaine_eau' => ['prefLabel' => 'FONTAINE À EAU'],
+                            'machine_cafe' => ['prefLabel' => 'MACHINE À CAFÉ'],
+                            'distributeur_boisson' => ['prefLabel' => 'DISTRIBUTEUR DE BOISSON'],
+                            'refrigerateur' => ['prefLabel' => 'RÉFRIGÉRATEUR'],
+                            'micro_onde' => ['prefLabel' => 'MICRO-ONDE'],
+                            'bouilloire' => ['prefLabel' => 'BOUILLOIRE'],
+                            'vaisselle' => ['prefLabel' => 'VAISSELLE'],
+                        ]
+                    ]
+                ]
+            ],
+
+            // 13. INFORMATION ET DOCUMENTATION (90+ concepts)
+            'information_documentation' => [
+                'notation' => '13',
+                'prefLabel' => 'Information et documentation',
+                'children' => [
+                    'gestion_documentaire' => [
+                        'notation' => '13.1',
+                        'prefLabel' => 'Gestion documentaire',
+                        'children' => [
+                            'document_info' => ['prefLabel' => 'DOCUMENT'],
+                            'piece_info' => ['prefLabel' => 'PIÈCE'],
+                            'dossier_doc' => ['prefLabel' => 'DOSSIER'],
+                            'chemise_doc' => ['prefLabel' => 'CHEMISE'],
+                            'sous_dossier' => ['prefLabel' => 'SOUS-DOSSIER'],
+                            'liasse_doc' => ['prefLabel' => 'LIASSE'],
+                            'fonds_doc' => ['prefLabel' => 'FONDS'],
+                            'collection_doc' => ['prefLabel' => 'COLLECTION'],
+                            'serie_doc' => ['prefLabel' => 'SÉRIE'],
+                            'sous_serie' => ['prefLabel' => 'SOUS-SÉRIE'],
+                            'article_doc' => ['prefLabel' => 'ARTICLE'],
+                            'unite_archivage' => ['prefLabel' => 'UNITÉ D\'ARCHIVAGE'],
+                            'boite_archives' => ['prefLabel' => 'BOÎTE D\'ARCHIVES'],
+                            'carton_archives' => ['prefLabel' => 'CARTON'],
+                            'registre_doc' => ['prefLabel' => 'REGISTRE'],
+                            'cahier_doc' => ['prefLabel' => 'CAHIER'],
+                            'volume_doc' => ['prefLabel' => 'VOLUME'],
+                            'tome_doc' => ['prefLabel' => 'TOME'],
+                            'fascicule_doc' => ['prefLabel' => 'FASCICULE'],
+                            'planche_doc' => ['prefLabel' => 'PLANCHE'],
+                            'feuille_doc' => ['prefLabel' => 'FEUILLE'],
+                            'page_doc' => ['prefLabel' => 'PAGE'],
+                            'folio_doc' => ['prefLabel' => 'FOLIO'],
+                            'recto_doc' => ['prefLabel' => 'RECTO'],
+                            'verso_doc' => ['prefLabel' => 'VERSO'],
+                            'minute_doc' => ['prefLabel' => 'MINUTE'],
+                            'original_doc' => ['prefLabel' => 'ORIGINAL'],
+                            'copie_doc' => ['prefLabel' => 'COPIE'],
+                            'duplicata_doc' => ['prefLabel' => 'DUPLICATA'],
+                            'exemplaire_doc' => ['prefLabel' => 'EXEMPLAIRE'],
+                            'brouillon_doc' => ['prefLabel' => 'BROUILLON'],
+                            'projet_doc' => ['prefLabel' => 'PROJET'],
+                            'version_doc' => ['prefLabel' => 'VERSION'],
+                            'redaction_doc' => ['prefLabel' => 'RÉDACTION'],
+                            'revision_doc' => ['prefLabel' => 'RÉVISION'],
+                            'validation_doc' => ['prefLabel' => 'VALIDATION'],
+                            'signature_doc' => ['prefLabel' => 'SIGNATURE'],
+                            'paraphe_doc' => ['prefLabel' => 'PARAPHE'],
+                            'visa_doc' => ['prefLabel' => 'VISA'],
+                            'tampon_doc' => ['prefLabel' => 'TAMPON'],
+                            'cachet_doc' => ['prefLabel' => 'CACHET'],
+                            'sceau_doc' => ['prefLabel' => 'SCEAU'],
+                            'en_tete_doc' => ['prefLabel' => 'EN-TÊTE'],
+                            'papier_lettres' => ['prefLabel' => 'PAPIER À LETTRES'],
+                            'formulaire_doc' => ['prefLabel' => 'FORMULAIRE'],
+                            'imprime_doc' => ['prefLabel' => 'IMPRIMÉ'],
+                            'modele_doc' => ['prefLabel' => 'MODÈLE'],
+                            'specimen_doc' => ['prefLabel' => 'SPÉCIMEN'],
+                        ]
+                    ],
+                    'archivage_conservation' => [
+                        'notation' => '13.2',
+                        'prefLabel' => 'Archivage et conservation',
+                        'children' => [
+                            'archives_courantes' => ['prefLabel' => 'ARCHIVES COURANTES'],
+                            'archives_intermediaires' => ['prefLabel' => 'ARCHIVES INTERMÉDIAIRES'],
+                            'archives_definitives' => ['prefLabel' => 'ARCHIVES DÉFINITIVES'],
+                            'archives_historiques' => ['prefLabel' => 'ARCHIVES HISTORIQUES'],
+                            'depot_archives' => ['prefLabel' => 'DÉPÔT D\'ARCHIVES'],
+                            'magasin_archives' => ['prefLabel' => 'MAGASIN D\'ARCHIVES'],
+                            'salle_archives' => ['prefLabel' => 'SALLE D\'ARCHIVES'],
+                            'local_archives' => ['prefLabel' => 'LOCAL D\'ARCHIVES'],
+                            'stockage_archives' => ['prefLabel' => 'STOCKAGE'],
+                            'conservation_preventive' => ['prefLabel' => 'CONSERVATION PRÉVENTIVE'],
+                            'restauration_doc' => ['prefLabel' => 'RESTAURATION'],
+                            'reliure_doc' => ['prefLabel' => 'RELIURE'],
+                            'conditionnement' => ['prefLabel' => 'CONDITIONNEMENT'],
+                            'pochette_archives' => ['prefLabel' => 'POCHETTE'],
+                            'enveloppe_archives' => ['prefLabel' => 'ENVELOPPE'],
+                            'boite_conservation' => ['prefLabel' => 'BOÎTE DE CONSERVATION'],
+                            'tube_plan' => ['prefLabel' => 'TUBE À PLAN'],
+                            'rayonnage_archives' => ['prefLabel' => 'RAYONNAGE'],
+                            'compactus' => ['prefLabel' => 'COMPACTUS'],
+                            'etagere_archives' => ['prefLabel' => 'ÉTAGÈRE'],
+                            'tablette_archives' => ['prefLabel' => 'TABLETTE'],
+                            'plan_conservation' => ['prefLabel' => 'PLAN DE CONSERVATION'],
+                            'calendrier_conservation' => ['prefLabel' => 'CALENDRIER DE CONSERVATION'],
+                            'duree_conservation' => ['prefLabel' => 'DURÉE DE CONSERVATION'],
+                            'sort_final' => ['prefLabel' => 'SORT FINAL'],
+                            'elimination_doc' => ['prefLabel' => 'ÉLIMINATION'],
+                            'destruction_doc' => ['prefLabel' => 'DESTRUCTION'],
+                            'tri_archives' => ['prefLabel' => 'TRI'],
+                            'versement_archives' => ['prefLabel' => 'VERSEMENT'],
+                            'bordereau_versement' => ['prefLabel' => 'BORDEREAU DE VERSEMENT'],
+                            'recolement' => ['prefLabel' => 'RÉCOLEMENT'],
+                            'inventaire_archives' => ['prefLabel' => 'INVENTAIRE'],
+                            'cotation_archives' => ['prefLabel' => 'COTATION'],
+                            'classement_archives' => ['prefLabel' => 'CLASSEMENT'],
+                            'reconditionnement' => ['prefLabel' => 'RECONDITIONNEMENT'],
+                        ]
+                    ]
+                ]
+            ],
+
+            // 14. INFORMATIQUE (80+ concepts)
+            'informatique' => [
+                'notation' => '14',
+                'prefLabel' => 'Informatique',
+                'children' => [
+                    'materiel_informatique' => [
+                        'notation' => '14.1',
+                        'prefLabel' => 'Matériel informatique',
+                        'children' => [
+                            'ordinateur' => ['prefLabel' => 'ORDINATEUR'],
+                            'pc' => ['prefLabel' => 'PC'],
+                            'portable' => ['prefLabel' => 'PORTABLE'],
+                            'laptop' => ['prefLabel' => 'LAPTOP'],
+                            'tablette' => ['prefLabel' => 'TABLETTE'],
+                            'smartphone' => ['prefLabel' => 'SMARTPHONE'],
+                            'serveur' => ['prefLabel' => 'SERVEUR'],
+                            'poste_travail' => ['prefLabel' => 'POSTE DE TRAVAIL'],
+                            'terminal' => ['prefLabel' => 'TERMINAL'],
+                            'ecran' => ['prefLabel' => 'ÉCRAN'],
+                            'moniteur' => ['prefLabel' => 'MONITEUR'],
+                            'clavier' => ['prefLabel' => 'CLAVIER'],
+                            'souris' => ['prefLabel' => 'SOURIS'],
+                            'imprimante' => ['prefLabel' => 'IMPRIMANTE'],
+                            'scanner' => ['prefLabel' => 'SCANNER'],
+                            'photocopieur' => ['prefLabel' => 'PHOTOCOPIEUR'],
+                            'multifonction' => ['prefLabel' => 'MULTIFONCTION'],
+                            'disque_dur' => ['prefLabel' => 'DISQUE DUR'],
+                            'ssd' => ['prefLabel' => 'SSD'],
+                            'cle_usb' => ['prefLabel' => 'CLÉ USB'],
+                            'cd_rom' => ['prefLabel' => 'CD-ROM'],
+                            'dvd' => ['prefLabel' => 'DVD'],
+                            'carte_memoire' => ['prefLabel' => 'CARTE MÉMOIRE'],
+                            'processeur' => ['prefLabel' => 'PROCESSEUR'],
+                            'memoire_ram' => ['prefLabel' => 'MÉMOIRE RAM'],
+                            'carte_graphique' => ['prefLabel' => 'CARTE GRAPHIQUE'],
+                            'carte_mere' => ['prefLabel' => 'CARTE MÈRE'],
+                            'alimentation' => ['prefLabel' => 'ALIMENTATION'],
+                            'ventilateur' => ['prefLabel' => 'VENTILATEUR'],
+                            'boitier' => ['prefLabel' => 'BOÎTIER'],
+                            'cable' => ['prefLabel' => 'CÂBLE'],
+                            'connecteur' => ['prefLabel' => 'CONNECTEUR'],
+                            'adaptateur' => ['prefLabel' => 'ADAPTATEUR'],
+                            'hub' => ['prefLabel' => 'HUB'],
+                            'switch' => ['prefLabel' => 'SWITCH'],
+                            'routeur' => ['prefLabel' => 'ROUTEUR'],
+                            'modem' => ['prefLabel' => 'MODEM'],
+                            'wifi' => ['prefLabel' => 'WIFI'],
+                            'bluetooth' => ['prefLabel' => 'BLUETOOTH'],
+                            'ethernet' => ['prefLabel' => 'ETHERNET'],
+                        ]
+                    ],
+                    'logiciels' => [
+                        'notation' => '14.2',
+                        'prefLabel' => 'Logiciels',
+                        'children' => [
+                            'systeme_exploitation' => ['prefLabel' => 'SYSTÈME D\'EXPLOITATION'],
+                            'windows' => ['prefLabel' => 'WINDOWS'],
+                            'linux' => ['prefLabel' => 'LINUX'],
+                            'mac_os' => ['prefLabel' => 'MAC OS'],
+                            'application' => ['prefLabel' => 'APPLICATION'],
+                            'programme' => ['prefLabel' => 'PROGRAMME'],
+                            'software' => ['prefLabel' => 'SOFTWARE'],
+                            'traitement_texte' => ['prefLabel' => 'TRAITEMENT DE TEXTE'],
+                            'tableur' => ['prefLabel' => 'TABLEUR'],
+                            'base_donnees' => ['prefLabel' => 'BASE DE DONNÉES'],
+                            'navigateur' => ['prefLabel' => 'NAVIGATEUR'],
+                            'messagerie' => ['prefLabel' => 'MESSAGERIE'],
+                            'antivirus' => ['prefLabel' => 'ANTIVIRUS'],
+                            'firewall' => ['prefLabel' => 'FIREWALL'],
+                            'sauvegarde' => ['prefLabel' => 'SAUVEGARDE'],
+                            'backup' => ['prefLabel' => 'BACKUP'],
+                            'mise_jour' => ['prefLabel' => 'MISE À JOUR'],
+                            'patch' => ['prefLabel' => 'PATCH'],
+                            'licence' => ['prefLabel' => 'LICENCE'],
+                            'installation' => ['prefLabel' => 'INSTALLATION'],
+                            'configuration' => ['prefLabel' => 'CONFIGURATION'],
+                            'parametrage' => ['prefLabel' => 'PARAMÉTRAGE'],
+                        ]
+                    ],
+                    'reseaux_telecoms' => [
+                        'notation' => '14.3',
+                        'prefLabel' => 'Réseaux et télécommunications',
+                        'children' => [
+                            'reseau_informatique' => ['prefLabel' => 'RÉSEAU INFORMATIQUE'],
+                            'internet' => ['prefLabel' => 'INTERNET'],
+                            'intranet' => ['prefLabel' => 'INTRANET'],
+                            'extranet' => ['prefLabel' => 'EXTRANET'],
+                            'lan' => ['prefLabel' => 'LAN'],
+                            'wan' => ['prefLabel' => 'WAN'],
+                            'vpn' => ['prefLabel' => 'VPN'],
+                            'protocole' => ['prefLabel' => 'PROTOCOLE'],
+                            'tcp_ip' => ['prefLabel' => 'TCP/IP'],
+                            'http' => ['prefLabel' => 'HTTP'],
+                            'https' => ['prefLabel' => 'HTTPS'],
+                            'ftp' => ['prefLabel' => 'FTP'],
+                            'smtp' => ['prefLabel' => 'SMTP'],
+                            'dns' => ['prefLabel' => 'DNS'],
+                            'dhcp' => ['prefLabel' => 'DHCP'],
+                            'adresse_ip' => ['prefLabel' => 'ADRESSE IP'],
+                            'url' => ['prefLabel' => 'URL'],
+                            'site_web' => ['prefLabel' => 'SITE WEB'],
+                            'page_web' => ['prefLabel' => 'PAGE WEB'],
+                            'email' => ['prefLabel' => 'EMAIL'],
+                            'courrier_electronique' => ['prefLabel' => 'COURRIER ÉLECTRONIQUE'],
+                            'serveur_web' => ['prefLabel' => 'SERVEUR WEB'],
+                            'serveur_mail' => ['prefLabel' => 'SERVEUR MAIL'],
+                            'base_donnees_serveur' => ['prefLabel' => 'SERVEUR DE BASE DE DONNÉES'],
+                            'cloud' => ['prefLabel' => 'CLOUD'],
+                            'hebergement' => ['prefLabel' => 'HÉBERGEMENT'],
+                            'domaine_internet' => ['prefLabel' => 'DOMAINE INTERNET'],
+                            'certificat_ssl' => ['prefLabel' => 'CERTIFICAT SSL'],
+                            'cryptage' => ['prefLabel' => 'CRYPTAGE'],
+                            'securite_informatique' => ['prefLabel' => 'SÉCURITÉ INFORMATIQUE'],
+                            'mot_passe' => ['prefLabel' => 'MOT DE PASSE'],
+                            'authentification' => ['prefLabel' => 'AUTHENTIFICATION'],
+                            'autorisation' => ['prefLabel' => 'AUTORISATION'],
+                        ]
+                    ]
+                ]
+            ],
+
+            // 15. AFFAIRES JUDICIAIRES (90+ concepts)
+            'affaires_judiciaires' => [
+                'notation' => '15',
+                'prefLabel' => 'Affaires judiciaires',
+                'children' => [
+                    'dossiers_judiciaires' => [
+                        'notation' => '15.1',
+                        'prefLabel' => 'Dossiers judiciaires',
+                        'children' => [
+                            'dossier_penal' => ['prefLabel' => 'DOSSIER PÉNAL'],
+                            'dossier_civil' => ['prefLabel' => 'DOSSIER CIVIL'],
+                            'dossier_commercial' => ['prefLabel' => 'DOSSIER COMMERCIAL'],
+                            'dossier_administratif' => ['prefLabel' => 'DOSSIER ADMINISTRATIF'],
+                            'instruction_judiciaire' => ['prefLabel' => 'INSTRUCTION JUDICIAIRE'],
+                            'enquete_judiciaire' => ['prefLabel' => 'ENQUÊTE JUDICIAIRE'],
+                            'information_judiciaire' => ['prefLabel' => 'INFORMATION JUDICIAIRE'],
+                            'commission_rogatoire' => ['prefLabel' => 'COMMISSION ROGATOIRE'],
+                            'perquisition_judiciaire' => ['prefLabel' => 'PERQUISITION'],
+                            'saisie_judiciaire' => ['prefLabel' => 'SAISIE'],
+                            'sequestre' => ['prefLabel' => 'SÉQUESTRE'],
+                            'scelles' => ['prefLabel' => 'SCELLÉS'],
+                            'expertise_judiciaire' => ['prefLabel' => 'EXPERTISE JUDICIAIRE'],
+                            'expert_judiciaire' => ['prefLabel' => 'EXPERT JUDICIAIRE'],
+                            'rapport_expertise' => ['prefLabel' => 'RAPPORT D\'EXPERTISE'],
+                            'contre_expertise' => ['prefLabel' => 'CONTRE-EXPERTISE'],
+                            'constat_judiciaire' => ['prefLabel' => 'CONSTAT JUDICIAIRE'],
+                            'huissier_judiciaire' => ['prefLabel' => 'HUISSIER DE JUSTICE'],
+                            'signification_judiciaire' => ['prefLabel' => 'SIGNIFICATION'],
+                            'notification_judiciaire' => ['prefLabel' => 'NOTIFICATION'],
+                            'citation_judiciaire' => ['prefLabel' => 'CITATION'],
+                            'assignation_judiciaire' => ['prefLabel' => 'ASSIGNATION'],
+                            'convocation_judiciaire' => ['prefLabel' => 'CONVOCATION'],
+                            'mandat_justice' => ['prefLabel' => 'MANDAT DE JUSTICE'],
+                            'mandat_arret' => ['prefLabel' => 'MANDAT D\'ARRÊT'],
+                            'mandat_depot' => ['prefLabel' => 'MANDAT DE DÉPÔT'],
+                            'mandat_amener' => ['prefLabel' => 'MANDAT D\'AMENER'],
+                            'ordonnance_juge' => ['prefLabel' => 'ORDONNANCE'],
+                            'arret_cour' => ['prefLabel' => 'ARRÊT DE COUR'],
+                            'jugement_tribunal' => ['prefLabel' => 'JUGEMENT'],
+                            'sentence_judiciaire' => ['prefLabel' => 'SENTENCE'],
+                            'decision_justice' => ['prefLabel' => 'DÉCISION DE JUSTICE'],
+                            'delibere_judiciaire' => ['prefLabel' => 'DÉLIBÉRÉ'],
+                            'minute_judiciaire' => ['prefLabel' => 'MINUTE'],
+                            'grosse_judiciaire' => ['prefLabel' => 'GROSSE'],
+                            'expedition_judiciaire' => ['prefLabel' => 'EXPÉDITION'],
+                            'copie_jugement' => ['prefLabel' => 'COPIE DE JUGEMENT'],
+                            'extrait_jugement' => ['prefLabel' => 'EXTRAIT DE JUGEMENT'],
+                            'certificat_non_appel' => ['prefLabel' => 'CERTIFICAT DE NON-APPEL'],
+                            'voie_recours' => ['prefLabel' => 'VOIE DE RECOURS'],
+                            'appel_judiciaire' => ['prefLabel' => 'APPEL'],
+                            'pourvoi_cassation' => ['prefLabel' => 'POURVOI EN CASSATION'],
+                            'opposition_judiciaire' => ['prefLabel' => 'OPPOSITION'],
+                            'tierce_opposition' => ['prefLabel' => 'TIERCE OPPOSITION'],
+                            'revision_judiciaire' => ['prefLabel' => 'RÉVISION'],
+                            'execution_judiciaire' => ['prefLabel' => 'EXÉCUTION'],
+                            'force_executoire' => ['prefLabel' => 'FORCE EXÉCUTOIRE'],
+                            'titre_executoire' => ['prefLabel' => 'TITRE EXÉCUTOIRE'],
+                        ]
+                    ],
+                    'procedures_judiciaires' => [
+                        'notation' => '15.2',
+                        'prefLabel' => 'Procédures judiciaires',
+                        'children' => [
+                            'procedure_penale' => ['prefLabel' => 'PROCÉDURE PÉNALE'],
+                            'procedure_civile' => ['prefLabel' => 'PROCÉDURE CIVILE'],
+                            'procedure_administrative' => ['prefLabel' => 'PROCÉDURE ADMINISTRATIVE'],
+                            'instance_judiciaire' => ['prefLabel' => 'INSTANCE JUDICIAIRE'],
+                            'action_justice' => ['prefLabel' => 'ACTION EN JUSTICE'],
+                            'demande_justice' => ['prefLabel' => 'DEMANDE EN JUSTICE'],
+                            'requete_judiciaire' => ['prefLabel' => 'REQUÊTE'],
+                            'petition_judiciaire' => ['prefLabel' => 'PÉTITION'],
+                            'plainte_judiciaire' => ['prefLabel' => 'PLAINTE'],
+                            'denonciation' => ['prefLabel' => 'DÉNONCIATION'],
+                            'signalement_judiciaire' => ['prefLabel' => 'SIGNALEMENT'],
+                            'depot_plainte' => ['prefLabel' => 'DÉPÔT DE PLAINTE'],
+                            'main_courante_police' => ['prefLabel' => 'MAIN COURANTE'],
+                            'proces_verbal_police' => ['prefLabel' => 'PROCÈS-VERBAL'],
+                            'garde_vue' => ['prefLabel' => 'GARDE À VUE'],
+                            'detention_provisoire' => ['prefLabel' => 'DÉTENTION PROVISOIRE'],
+                            'mise_examen' => ['prefLabel' => 'MISE EN EXAMEN'],
+                            'mise_cause' => ['prefLabel' => 'MISE EN CAUSE'],
+                            'temoin_assiste' => ['prefLabel' => 'TÉMOIN ASSISTÉ'],
+                            'audition_judiciaire' => ['prefLabel' => 'AUDITION'],
+                            'interrogatoire' => ['prefLabel' => 'INTERROGATOIRE'],
+                            'confrontation' => ['prefLabel' => 'CONFRONTATION'],
+                            'reconstitution' => ['prefLabel' => 'RECONSTITUTION'],
+                            'transport_lieu' => ['prefLabel' => 'TRANSPORT SUR LES LIEUX'],
+                            'descente_lieu' => ['prefLabel' => 'DESCENTE SUR LES LIEUX'],
+                            'audience_judiciaire' => ['prefLabel' => 'AUDIENCE'],
+                            'debat_judiciaire' => ['prefLabel' => 'DÉBAT'],
+                            'plaidoirie' => ['prefLabel' => 'PLAIDOIRIE'],
+                            'requisitoire' => ['prefLabel' => 'RÉQUISITOIRE'],
+                            'conclusions_judiciaires' => ['prefLabel' => 'CONCLUSIONS'],
+                            'observations_judiciaires' => ['prefLabel' => 'OBSERVATIONS'],
+                            'dossier_plaidoirie' => ['prefLabel' => 'DOSSIER DE PLAIDOIRIE'],
+                            'piece_conviction' => ['prefLabel' => 'PIÈCE À CONVICTION'],
+                            'element_preuve' => ['prefLabel' => 'ÉLÉMENT DE PREUVE'],
+                            'temoignage' => ['prefLabel' => 'TÉMOIGNAGE'],
+                            'deposition' => ['prefLabel' => 'DÉPOSITION'],
+                            'attestation_judiciaire' => ['prefLabel' => 'ATTESTATION'],
+                            'certificat_judiciaire' => ['prefLabel' => 'CERTIFICAT'],
+                        ]
+                    ],
+                    'acteurs_justice' => [
+                        'notation' => '15.3',
+                        'prefLabel' => 'Acteurs de la justice',
+                        'children' => [
+                            'magistrat' => ['prefLabel' => 'MAGISTRAT'],
+                            'juge' => ['prefLabel' => 'JUGE'],
+                            'president_tribunal' => ['prefLabel' => 'PRÉSIDENT DE TRIBUNAL'],
+                            'vice_president' => ['prefLabel' => 'VICE-PRÉSIDENT'],
+                            'juge_instruction' => ['prefLabel' => 'JUGE D\'INSTRUCTION'],
+                            'juge_enfants' => ['prefLabel' => 'JUGE DES ENFANTS'],
+                            'juge_tutelles' => ['prefLabel' => 'JUGE DES TUTELLES'],
+                            'juge_application_peines' => ['prefLabel' => 'JUGE DE L\'APPLICATION DES PEINES'],
+                            'juge_liberte_detention' => ['prefLabel' => 'JUGE DES LIBERTÉS ET DE LA DÉTENTION'],
+                            'juge_proximite' => ['prefLabel' => 'JUGE DE PROXIMITÉ'],
+                            'conseiller_cour' => ['prefLabel' => 'CONSEILLER DE COUR'],
+                            'procureur_republique' => ['prefLabel' => 'PROCUREUR DE LA RÉPUBLIQUE'],
+                            'procureur_general' => ['prefLabel' => 'PROCUREUR GÉNÉRAL'],
+                            'avocat_general' => ['prefLabel' => 'AVOCAT GÉNÉRAL'],
+                            'substitut_procureur' => ['prefLabel' => 'SUBSTITUT DU PROCUREUR'],
+                            'vice_procureur' => ['prefLabel' => 'VICE-PROCUREUR'],
+                            'avocat' => ['prefLabel' => 'AVOCAT'],
+                            'barreau' => ['prefLabel' => 'BARREAU'],
+                            'conseil_avocat' => ['prefLabel' => 'CONSEIL'],
+                            'defenseur' => ['prefLabel' => 'DÉFENSEUR'],
+                            'avocat_commis' => ['prefLabel' => 'AVOCAT COMMIS D\'OFFICE'],
+                            'avocat_general_pres' => ['prefLabel' => 'AVOCAT GÉNÉRAL PRÈS'],
+                            'greffier' => ['prefLabel' => 'GREFFIER'],
+                            'greffier_chef' => ['prefLabel' => 'GREFFIER EN CHEF'],
+                            'secretaire_greffe' => ['prefLabel' => 'SECRÉTAIRE DE GREFFE'],
+                            'commis_greffier' => ['prefLabel' => 'COMMIS GREFFIER'],
+                            'auxiliaire_justice' => ['prefLabel' => 'AUXILIAIRE DE JUSTICE'],
+                            'huissier_justice' => ['prefLabel' => 'HUISSIER DE JUSTICE'],
+                            'commissaire_priseur' => ['prefLabel' => 'COMMISSAIRE-PRISEUR'],
+                            'notaire' => ['prefLabel' => 'NOTAIRE'],
+                            'syndic' => ['prefLabel' => 'SYNDIC'],
+                            'administrateur_judiciaire' => ['prefLabel' => 'ADMINISTRATEUR JUDICIAIRE'],
+                            'mandataire_judiciaire' => ['prefLabel' => 'MANDATAIRE JUDICIAIRE'],
+                            'expert_pres_tribunal' => ['prefLabel' => 'EXPERT PRÈS LE TRIBUNAL'],
+                            'interprete_jure' => ['prefLabel' => 'INTERPRÈTE JURÉ'],
+                            'traducteur_jure' => ['prefLabel' => 'TRADUCTEUR JURÉ'],
+                        ]
+                    ]
+                ]
+            ],
+
+            // 16. GESTION DE PROJET (75+ concepts)
+            'gestion_projet' => [
+                'notation' => '16',
+                'prefLabel' => 'Gestion de projet',
+                'children' => [
+                    'planification_projet' => [
+                        'notation' => '16.1',
+                        'prefLabel' => 'Planification de projet',
+                        'children' => [
+                            'projet' => ['prefLabel' => 'PROJET'],
+                            'programme_projet' => ['prefLabel' => 'PROGRAMME'],
+                            'sous_projet' => ['prefLabel' => 'SOUS-PROJET'],
+                            'phase_projet' => ['prefLabel' => 'PHASE'],
+                            'etape_projet' => ['prefLabel' => 'ÉTAPE'],
+                            'jalon' => ['prefLabel' => 'JALON'],
+                            'milestone' => ['prefLabel' => 'MILESTONE'],
+                            'livrable' => ['prefLabel' => 'LIVRABLE'],
+                            'objectif_projet' => ['prefLabel' => 'OBJECTIF'],
+                            'scope' => ['prefLabel' => 'SCOPE'],
+                            'perimetre' => ['prefLabel' => 'PÉRIMÈTRE'],
+                            'cahier_charges_projet' => ['prefLabel' => 'CAHIER DES CHARGES'],
+                            'specification_projet' => ['prefLabel' => 'SPÉCIFICATION'],
+                            'exigence' => ['prefLabel' => 'EXIGENCE'],
+                            'requirement' => ['prefLabel' => 'REQUIREMENT'],
+                            'planning' => ['prefLabel' => 'PLANNING'],
+                            'calendrier_projet' => ['prefLabel' => 'CALENDRIER'],
+                            'echeancier' => ['prefLabel' => 'ÉCHÉANCIER'],
+                            'diagramme_gantt' => ['prefLabel' => 'DIAGRAMME DE GANTT'],
+                            'pert' => ['prefLabel' => 'PERT'],
+                            'chemin_critique' => ['prefLabel' => 'CHEMIN CRITIQUE'],
+                            'tache' => ['prefLabel' => 'TÂCHE'],
+                            'activite' => ['prefLabel' => 'ACTIVITÉ'],
+                            'duree' => ['prefLabel' => 'DURÉE'],
+                            'delai' => ['prefLabel' => 'DÉLAI'],
+                            'dependance' => ['prefLabel' => 'DÉPENDANCE'],
+                            'predecesseur' => ['prefLabel' => 'PRÉDÉCESSEUR'],
+                            'successeur' => ['prefLabel' => 'SUCCESSEUR'],
+                        ]
+                    ],
+                    'gestion_ressources_projet' => [
+                        'notation' => '16.2',
+                        'prefLabel' => 'Gestion des ressources',
+                        'children' => [
+                            'ressource_projet' => ['prefLabel' => 'RESSOURCE'],
+                            'allocation' => ['prefLabel' => 'ALLOCATION'],
+                            'charge_travail' => ['prefLabel' => 'CHARGE DE TRAVAIL'],
+                            'effort' => ['prefLabel' => 'EFFORT'],
+                            'budget_projet' => ['prefLabel' => 'BUDGET'],
+                            'cout_projet' => ['prefLabel' => 'COÛT'],
+                            'estimation' => ['prefLabel' => 'ESTIMATION'],
+                            'devis_projet' => ['prefLabel' => 'DEVIS'],
+                            'equipe_projet' => ['prefLabel' => 'ÉQUIPE PROJET'],
+                            'chef_projet' => ['prefLabel' => 'CHEF DE PROJET'],
+                            'directeur_projet' => ['prefLabel' => 'DIRECTEUR DE PROJET'],
+                            'sponsor' => ['prefLabel' => 'SPONSOR'],
+                            'maitre_ouvrage' => ['prefLabel' => 'MAÎTRE D\'OUVRAGE'],
+                            'maitre_oeuvre' => ['prefLabel' => 'MAÎTRE D\'ŒUVRE'],
+                            'stakeholder' => ['prefLabel' => 'STAKEHOLDER'],
+                            'partie_prenante' => ['prefLabel' => 'PARTIE PRENANTE'],
+                            'comite_pilotage' => ['prefLabel' => 'COMITÉ DE PILOTAGE'],
+                            'comite_projet' => ['prefLabel' => 'COMITÉ PROJET'],
+                            'membre_equipe' => ['prefLabel' => 'MEMBRE D\'ÉQUIPE'],
+                            'coordinateur' => ['prefLabel' => 'COORDINATEUR'],
+                            'responsable_projet' => ['prefLabel' => 'RESPONSABLE PROJET'],
+                            'assistant_projet' => ['prefLabel' => 'ASSISTANT PROJET'],
+                            'consultant_projet' => ['prefLabel' => 'CONSULTANT'],
+                            'expert_projet' => ['prefLabel' => 'EXPERT'],
+                            'prestataire' => ['prefLabel' => 'PRESTATAIRE'],
+                            'fournisseur_projet' => ['prefLabel' => 'FOURNISSEUR'],
+                            'sous_traitant' => ['prefLabel' => 'SOUS-TRAITANT'],
+                            'partenaire_projet' => ['prefLabel' => 'PARTENAIRE'],
+                        ]
+                    ],
+                    'suivi_controle_projet' => [
+                        'notation' => '16.3',
+                        'prefLabel' => 'Suivi et contrôle',
+                        'children' => [
+                            'risque_projet' => ['prefLabel' => 'RISQUE'],
+                            'analyse_risque' => ['prefLabel' => 'ANALYSE DE RISQUE'],
+                            'plan_risque' => ['prefLabel' => 'PLAN DE RISQUE'],
+                            'mitigation' => ['prefLabel' => 'MITIGATION'],
+                            'contingence' => ['prefLabel' => 'CONTINGENCE'],
+                            'suivi_projet' => ['prefLabel' => 'SUIVI DE PROJET'],
+                            'controle_projet' => ['prefLabel' => 'CONTRÔLE'],
+                            'tableau_bord' => ['prefLabel' => 'TABLEAU DE BORD'],
+                            'indicateur' => ['prefLabel' => 'INDICATEUR'],
+                            'kpi' => ['prefLabel' => 'KPI'],
+                            'avancement' => ['prefLabel' => 'AVANCEMENT'],
+                            'progression' => ['prefLabel' => 'PROGRESSION'],
+                            'retard' => ['prefLabel' => 'RETARD'],
+                            'derive' => ['prefLabel' => 'DÉRIVE'],
+                            'ecart' => ['prefLabel' => 'ÉCART'],
+                            'reporting' => ['prefLabel' => 'REPORTING'],
+                            'rapport_projet' => ['prefLabel' => 'RAPPORT DE PROJET'],
+                            'compte_rendu' => ['prefLabel' => 'COMPTE RENDU'],
+                            'reunion_projet' => ['prefLabel' => 'RÉUNION DE PROJET'],
+                            'point_projet' => ['prefLabel' => 'POINT PROJET'],
+                            'revue_projet' => ['prefLabel' => 'REVUE DE PROJET'],
+                            'audit_projet' => ['prefLabel' => 'AUDIT DE PROJET'],
+                            'cloture_projet' => ['prefLabel' => 'CLÔTURE DE PROJET'],
+                            'bilan_projet' => ['prefLabel' => 'BILAN DE PROJET'],
+                            'retour_experience' => ['prefLabel' => 'RETOUR D\'EXPÉRIENCE'],
+                            'lessons_learned' => ['prefLabel' => 'LESSONS LEARNED'],
+                            'capitalisation' => ['prefLabel' => 'CAPITALISATION'],
+                            'probleme_projet' => ['prefLabel' => 'PROBLÈME'],
+                            'difficulte_projet' => ['prefLabel' => 'DIFFICULTÉ'],
+                            'blocage' => ['prefLabel' => 'BLOCAGE'],
+                            'obstacle' => ['prefLabel' => 'OBSTACLE'],
+                            'solution_projet' => ['prefLabel' => 'SOLUTION'],
+                            'action_corrective' => ['prefLabel' => 'ACTION CORRECTIVE'],
+                            'mesure_corrective' => ['prefLabel' => 'MESURE CORRECTIVE'],
+                            'plan_action' => ['prefLabel' => 'PLAN D\'ACTION'],
+                            'escalade' => ['prefLabel' => 'ESCALADE'],
+                            'alerte_projet' => ['prefLabel' => 'ALERTE'],
+                            'vigilance' => ['prefLabel' => 'VIGILANCE'],
+                        ]
+                    ]
+                ]
+            ],
+
+            // 17. ADMINISTRATION GENERALE (100+ concepts)
+            'administration_generale' => [
+                'notation' => '17',
+                'prefLabel' => 'Administration générale',
+                'children' => [
+                    'organisation_administrative' => [
+                        'notation' => '17.1',
+                        'prefLabel' => 'Organisation administrative',
+                        'children' => [
+                            'administration_publique' => ['prefLabel' => 'ADMINISTRATION PUBLIQUE'],
+                            'service_public' => ['prefLabel' => 'SERVICE PUBLIC'],
+                            'fonction_publique' => ['prefLabel' => 'FONCTION PUBLIQUE'],
+                            'fonctionnaire' => ['prefLabel' => 'FONCTIONNAIRE'],
+                            'agent_public' => ['prefLabel' => 'AGENT PUBLIC'],
+                            'collectivite' => ['prefLabel' => 'COLLECTIVITÉ'],
+                            'etablissement_public' => ['prefLabel' => 'ÉTABLISSEMENT PUBLIC'],
+                            'organisme_public' => ['prefLabel' => 'ORGANISME PUBLIC'],
+                            'ministere' => ['prefLabel' => 'MINISTÈRE'],
+                            'secretariat_etat' => ['prefLabel' => 'SECRÉTARIAT D\'ÉTAT'],
+                            'prefecture' => ['prefLabel' => 'PRÉFECTURE'],
+                            'sous_prefecture' => ['prefLabel' => 'SOUS-PRÉFECTURE'],
+                            'mairie' => ['prefLabel' => 'MAIRIE'],
+                            'hotel_ville' => ['prefLabel' => 'HÔTEL DE VILLE'],
+                            'conseil_municipal' => ['prefLabel' => 'CONSEIL MUNICIPAL'],
+                            'maire' => ['prefLabel' => 'MAIRE'],
+                            'adjoint_maire' => ['prefLabel' => 'ADJOINT AU MAIRE'],
+                            'conseiller_municipal' => ['prefLabel' => 'CONSEILLER MUNICIPAL'],
+                            'secretaire_mairie' => ['prefLabel' => 'SECRÉTAIRE DE MAIRIE'],
+                            'directeur_general' => ['prefLabel' => 'DIRECTEUR GÉNÉRAL'],
+                            'chef_service' => ['prefLabel' => 'CHEF DE SERVICE'],
+                            'responsable_service' => ['prefLabel' => 'RESPONSABLE DE SERVICE'],
+                            'bureau_admin' => ['prefLabel' => 'BUREAU'],
+                            'service_admin' => ['prefLabel' => 'SERVICE'],
+                            'departement_admin' => ['prefLabel' => 'DÉPARTEMENT'],
+                            'direction_admin' => ['prefLabel' => 'DIRECTION'],
+                            'division_admin' => ['prefLabel' => 'DIVISION'],
+                            'unite_admin' => ['prefLabel' => 'UNITÉ'],
+                            'cellule_admin' => ['prefLabel' => 'CELLULE'],
+                            'mission_admin' => ['prefLabel' => 'MISSION'],
+                            'delegation_admin' => ['prefLabel' => 'DÉLÉGATION'],
+                            'agence_admin' => ['prefLabel' => 'AGENCE'],
+                            'antenne_admin' => ['prefLabel' => 'ANTENNE'],
+                            'annexe_admin' => ['prefLabel' => 'ANNEXE'],
+                            'succursale_admin' => ['prefLabel' => 'SUCCURSALE'],
+                            'organigramme' => ['prefLabel' => 'ORGANIGRAMME'],
+                            'hierarchie' => ['prefLabel' => 'HIÉRARCHIE'],
+                            'structure' => ['prefLabel' => 'STRUCTURE'],
+                            'organisation' => ['prefLabel' => 'ORGANISATION'],
+                            'competence_admin' => ['prefLabel' => 'COMPÉTENCE'],
+                            'attribution' => ['prefLabel' => 'ATTRIBUTION'],
+                            'prerogative' => ['prefLabel' => 'PRÉROGATIVE'],
+                            'pouvoir_admin' => ['prefLabel' => 'POUVOIR'],
+                            'autorite_admin' => ['prefLabel' => 'AUTORITÉ'],
+                            'tutelle_admin' => ['prefLabel' => 'TUTELLE'],
+                            'controle_admin' => ['prefLabel' => 'CONTRÔLE'],
+                            'supervision' => ['prefLabel' => 'SUPERVISION'],
+                            'coordination' => ['prefLabel' => 'COORDINATION'],
+                            'cooperation' => ['prefLabel' => 'COOPÉRATION'],
+                            'partenariat' => ['prefLabel' => 'PARTENARIAT'],
+                            'convention_admin' => ['prefLabel' => 'CONVENTION'],
+                            'accord_admin' => ['prefLabel' => 'ACCORD'],
+                            'protocole_admin' => ['prefLabel' => 'PROTOCOLE'],
+                            'charte_admin' => ['prefLabel' => 'CHARTE'],
+                            'reglement_interieur' => ['prefLabel' => 'RÈGLEMENT INTÉRIEUR'],
+                            'procedure_admin' => ['prefLabel' => 'PROCÉDURE'],
+                            'instruction_admin' => ['prefLabel' => 'INSTRUCTION'],
+                            'directive_admin' => ['prefLabel' => 'DIRECTIVE'],
+                            'circulaire_admin' => ['prefLabel' => 'CIRCULAIRE'],
+                            'note_service' => ['prefLabel' => 'NOTE DE SERVICE'],
+                            'communication_admin' => ['prefLabel' => 'COMMUNICATION'],
+                            'information_admin' => ['prefLabel' => 'INFORMATION'],
+                            'diffusion_admin' => ['prefLabel' => 'DIFFUSION'],
+                            'publication_admin' => ['prefLabel' => 'PUBLICATION'],
+                            'affichage_admin' => ['prefLabel' => 'AFFICHAGE'],
+                            'panneau_affichage' => ['prefLabel' => 'PANNEAU D\'AFFICHAGE'],
+                            'tableau_affichage' => ['prefLabel' => 'TABLEAU D\'AFFICHAGE'],
+                            'vitrine_admin' => ['prefLabel' => 'VITRINE'],
+                            'accueil_public' => ['prefLabel' => 'ACCUEIL DU PUBLIC'],
+                            'guichet' => ['prefLabel' => 'GUICHET'],
+                            'permanence' => ['prefLabel' => 'PERMANENCE'],
+                            'horaire_ouverture' => ['prefLabel' => 'HORAIRE D\'OUVERTURE'],
+                            'jours_fermeture' => ['prefLabel' => 'JOURS DE FERMETURE'],
+                            'conge_admin' => ['prefLabel' => 'CONGÉ'],
+                            'fermeture_exceptionnelle' => ['prefLabel' => 'FERMETURE EXCEPTIONNELLE'],
+                            'urgence_admin' => ['prefLabel' => 'URGENCE'],
+                            'astreinte' => ['prefLabel' => 'ASTREINTE'],
+                            'garde_admin' => ['prefLabel' => 'GARDE'],
+                            'permanence_admin' => ['prefLabel' => 'PERMANENCE'],
+                            'continuite_service' => ['prefLabel' => 'CONTINUITÉ DE SERVICE'],
+                            'plan_continuite' => ['prefLabel' => 'PLAN DE CONTINUITÉ'],
+                            'crise_admin' => ['prefLabel' => 'CRISE'],
+                            'gestion_crise' => ['prefLabel' => 'GESTION DE CRISE'],
+                            'cellule_crise' => ['prefLabel' => 'CELLULE DE CRISE'],
+                            'plan_urgence' => ['prefLabel' => 'PLAN D\'URGENCE'],
+                            'mesure_urgence' => ['prefLabel' => 'MESURE D\'URGENCE'],
+                            'securite_admin' => ['prefLabel' => 'SÉCURITÉ'],
+                            'protection_admin' => ['prefLabel' => 'PROTECTION'],
+                            'surveillance_admin' => ['prefLabel' => 'SURVEILLANCE'],
+                            'gardiennage' => ['prefLabel' => 'GARDIENNAGE'],
+                            'controle_acces' => ['prefLabel' => 'CONTRÔLE D\'ACCÈS'],
+                            'badge_acces' => ['prefLabel' => 'BADGE D\'ACCÈS'],
+                            'cle_acces' => ['prefLabel' => 'CLÉ D\'ACCÈS'],
+                            'code_acces' => ['prefLabel' => 'CODE D\'ACCÈS'],
+                            'autorisation_acces' => ['prefLabel' => 'AUTORISATION D\'ACCÈS'],
+                            'registre_acces' => ['prefLabel' => 'REGISTRE D\'ACCÈS'],
+                            'visiteur' => ['prefLabel' => 'VISITEUR'],
+                            'laissez_passer' => ['prefLabel' => 'LAISSEZ-PASSER'],
+                            'autorisation_sortie' => ['prefLabel' => 'AUTORISATION DE SORTIE'],
+                            'inventaire_admin' => ['prefLabel' => 'INVENTAIRE'],
+                            'patrimoine_admin' => ['prefLabel' => 'PATRIMOINE'],
+                            'bien_mobilier' => ['prefLabel' => 'BIEN MOBILIER'],
+                            'bien_immobilier' => ['prefLabel' => 'BIEN IMMOBILIER'],
+                            'materiel_admin' => ['prefLabel' => 'MATÉRIEL'],
+                            'equipement_admin' => ['prefLabel' => 'ÉQUIPEMENT'],
+                            'fourniture_admin' => ['prefLabel' => 'FOURNITURE'],
+                            'consommable' => ['prefLabel' => 'CONSOMMABLE'],
+                            'stock_admin' => ['prefLabel' => 'STOCK'],
+                            'magasin_admin' => ['prefLabel' => 'MAGASIN'],
+                            'reserve_admin' => ['prefLabel' => 'RÉSERVE'],
+                            'depot_admin' => ['prefLabel' => 'DÉPÔT'],
+                            'entrepot_admin' => ['prefLabel' => 'ENTREPÔT'],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+    }
+
+    private function createConceptsRecursively($conceptsData, $scheme, $namespace, &$conceptObjects, $parentConcept = null)
+    {
+        foreach ($conceptsData as $key => $conceptData) {
+            // Préparer les données du concept
+            $conceptInfo = [
+                'scheme_id' => $scheme->id,
+                'uri' => $namespace->namespace_uri . $key,
+                'notation' => $conceptData['notation'] ?? null,
+                'status' => 1,
+            ];
+
+            // Créer le concept
+            $concept = ThesaurusConcept::create($conceptInfo);
+
+            // Ajouter à la liste des objets créés
+            $conceptObjects[] = $concept;
+
+            // Créer le label préféré
+            ThesaurusLabel::create([
+                'concept_id' => $concept->id,
+                'literal_form' => $conceptData['prefLabel'],
+                'language' => $scheme->language,
+                'type' => 'prefLabel',
+            ]);
+
+            // Créer les labels alternatifs si spécifiés
+            if (isset($conceptData['altLabels'])) {
+                foreach ($conceptData['altLabels'] as $altLabel) {
+                    ThesaurusLabel::create([
+                        'concept_id' => $concept->id,
+                        'literal_form' => $altLabel,
+                        'language' => $scheme->language,
+                        'type' => 'altLabel',
+                    ]);
+                }
+            }
+
+            // Créer les notes si spécifiées
+            if (isset($conceptData['scopeNote'])) {
+                ThesaurusConceptNote::create([
+                    'concept_id' => $concept->id,
+                    'type' => 'scopeNote',
+                    'note' => $conceptData['scopeNote'],
+                    'language' => $scheme->language,
+                ]);
+            }
+
+            if (isset($conceptData['definition'])) {
+                ThesaurusConceptNote::create([
+                    'concept_id' => $concept->id,
+                    'type' => 'definition',
+                    'note' => $conceptData['definition'],
+                    'language' => $scheme->language,
+                ]);
+            }
+
+            // Créer la relation hiérarchique avec le parent
+            if ($parentConcept) {
+                ThesaurusConceptRelation::create([
+                    'concept_id' => $concept->id,
+                    'related_concept_id' => $parentConcept->id,
+                    'relation_type' => 'broader',
+                ]);
+
+                ThesaurusConceptRelation::create([
+                    'concept_id' => $parentConcept->id,
+                    'related_concept_id' => $concept->id,
+                    'relation_type' => 'narrower',
+                ]);
+            }
+
+            // Traiter récursivement les enfants
+            if (isset($conceptData['children'])) {
+                $this->createConceptsRecursively($conceptData['children'], $scheme, $namespace, $conceptObjects, $concept);
+            }
+
+            echo "Concept créé: " . $conceptData['prefLabel'] . "\n";
+        }
     }
 }

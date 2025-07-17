@@ -1,16 +1,17 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+class ThesaurusGeographiqueSeeder extends Seeder
 {
     /**
-     * Run the migrations.
+     * Run the database seeds.
      */
-    public function up(): void
+    public function run(): void
     {
         // Créer le schéma de thésaurus géographique
         $schemeId = DB::table('thesaurus_schemes')->insertGetId([
@@ -2214,6 +2215,16 @@ return new class extends Migration
                 'properties' => ['chef_lieu' => 'Bétaré-Oya', 'type' => 'Rural']
             ]
         ];
+
+        // Combiner tous les concepts
+        $allConcepts = array_merge(
+            $geoHierarchy,
+            $regions,
+            $departements,
+            $arrondissements,
+            $villes
+        );
+
         $conceptIds = [];
 
         // Insérer tous les concepts
@@ -2381,29 +2392,4 @@ return new class extends Migration
             ]
         ]);
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        // Supprimer le thésaurus géographique
-        $scheme = DB::table('thesaurus_schemes')
-            ->where('uri', 'https://geo.cameroun.cm/thesaurus/geographique')
-            ->first();
-
-        if ($scheme) {
-            DB::table('thesaurus_schemes')->where('id', $scheme->id)->delete();
-        }
-
-        // Supprimer l'organisation
-        DB::table('thesaurus_organizations')
-            ->where('name', 'Institut National de Cartographie du Cameroun')
-            ->delete();
-
-        // Supprimer les namespaces
-        DB::table('thesaurus_namespaces')
-            ->whereIn('prefix', ['geo', 'geonames'])
-            ->delete();
-    }
-};
+}
