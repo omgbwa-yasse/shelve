@@ -56,7 +56,7 @@ class ThesaurusConcept extends Model
      */
     public function sourceRelations(): HasMany
     {
-        return $this->hasMany(ThesaurusConceptRelation::class, 'source_concept_id');
+        return $this->hasMany(ThesaurusConceptRelation::class, 'concept_id'); // Correction de la clé étrangère
     }
 
     /**
@@ -64,7 +64,7 @@ class ThesaurusConcept extends Model
      */
     public function targetRelations(): HasMany
     {
-        return $this->hasMany(ThesaurusConceptRelation::class, 'target_concept_id');
+        return $this->hasMany(ThesaurusConceptRelation::class, 'related_concept_id'); // Correction de la clé étrangère
     }
 
     /**
