@@ -11,7 +11,6 @@ import {
 import { newsApi } from '../services/AllServices';
 import {
   NewsContainer,
-  NewsHeader,
   NewsGrid,
   MainNewsSection,
   NewsCard,
@@ -151,14 +150,6 @@ const NewsPage = () => {
 
   return (
     <NewsContainer>
-      <NewsHeader>
-        <h1>Actualités</h1>
-        <p>
-          Suivez l'actualité de nos archives : nouvelles acquisitions, projets de numérisation,
-          événements et innovations dans le domaine de la préservation du patrimoine.
-        </p>
-      </NewsHeader>
-
       <NewsCategories>
         {categories.map(category => (
           <CategoryFilter

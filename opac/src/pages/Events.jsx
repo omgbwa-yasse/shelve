@@ -10,7 +10,6 @@ import {
 import { eventsApi } from '../services/AllServices';
 import {
   EventsContainer,
-  EventsHeader,
   EventsGrid,
   EventCard,
   EventButton,
@@ -163,14 +162,6 @@ const EventsPage = () => {
 
   return (
     <EventsContainer>
-      <EventsHeader>
-        <h1>Événements</h1>
-        <p>
-          Découvrez notre programmation culturelle et scientifique. Conférences, expositions,
-          ateliers et journées d'étude pour approfondir vos connaissances du patrimoine historique.
-        </p>
-      </EventsHeader>
-
       <FilterTabs>
         <FilterTab
           active={activeFilter === 'all'}
