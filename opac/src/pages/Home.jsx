@@ -9,6 +9,7 @@ import {
   FaHistory
 } from 'react-icons/fa';
 import { recordsApi, eventsApi, newsApi, searchApi } from '../services/AllServices';
+import { theme } from '../styles/AppStyles';
 import {
   SearchSection,
   SearchContainer,
