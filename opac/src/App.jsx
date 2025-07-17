@@ -9,6 +9,9 @@ import {
 } from 'react-icons/fa';
 import CataloguePage from './pages/Catalogue';
 import HomePage from './pages/Home';
+import EventsPage from './pages/Events';
+import NewsPage from './pages/News';
+import AboutPage from './pages/About';
 import {
   theme,
   Container,
