@@ -22,10 +22,15 @@ export const Container = styled.div`
 `;
 
 export const Header = styled.header`
-  background: ${props => props.theme.colors.primary};
+  background: linear-gradient(135deg, ${props => props.theme.colors.primary} 0%, ${props => props.theme.colors.secondary} 100%);
   color: ${props => props.theme.colors.white};
   padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 `;
 
 export const HeaderContent = styled.div`
@@ -57,59 +62,109 @@ export const Logo = styled.div`
 
 export const Navigation = styled.nav`
   display: flex;
-  gap: 2rem;
+  gap: 0.5rem;
   align-items: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 0.5rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
 
   @media (max-width: 768px) {
     display: ${props => props.isOpen ? 'flex' : 'none'};
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
-    background: ${props => props.theme.colors.primary};
+    left: 1rem;
+    right: 1rem;
+    background: rgba(139, 69, 19, 0.95);
     flex-direction: column;
-    padding: 1rem 0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(15px);
+    gap: 0.5rem;
   }
 `;
 
 export const MenuButton = styled.button`
-  color: ${props => props.theme.colors.white};
-  background: ${props => props.$active ? props.theme.colors.secondary : 'transparent'};
+  color: ${props => props.$active ? props.theme.colors.primary : props.theme.colors.white};
+  background: ${props => props.$active ? 'rgba(255,255,255,0.9)' : 'transparent'};
   border: none;
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  transition: background 0.3s;
+  padding: 0.75rem 1.25rem;
+  border-radius: 10px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.1);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: -1;
+  }
 
   &:hover {
-    background: ${props => props.theme.colors.secondary};
+    background: rgba(255,255,255,0.9);
+    color: ${props => props.theme.colors.primary};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    
+    &::before {
+      transform: scaleX(1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   /* Styles spécifiques pour les boutons de connexion */
   &.auth-button {
-    border: 1px solid ${props => props.theme.colors.white};
+    border: 1px solid rgba(255,255,255,0.3);
     margin-left: 0.5rem;
-
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    
     &:hover {
-      background: ${props => props.theme.colors.white};
+      background: rgba(255,255,255,0.95);
       color: ${props => props.theme.colors.primary};
+      border-color: rgba(255,255,255,0.5);
     }
   }
 
   /* Style spécifique pour le bouton d'inscription */
   &.register-button {
-    background: ${props => props.theme.colors.accent};
-
+    background: linear-gradient(135deg, ${props => props.theme.colors.accent} 0%, ${props => props.theme.colors.secondary} 100%);
+    border: 1px solid rgba(255,255,255,0.2);
+    
     &:hover {
-      background: ${props => props.theme.colors.white};
+      background: rgba(255,255,255,0.95);
       color: ${props => props.theme.colors.primary};
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    margin: 0.25rem 0;
   }
 `;
 
@@ -125,13 +180,46 @@ export const NavLink = styled(Link)`
   }
 `;
 
-export const MobileMenuToggle = styled.button`
+export const MobileMenuButton = styled.button`
   display: none;
-  background: none;
-  border: none;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
   color: ${props => props.theme.colors.white};
-  font-size: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 10px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255,255,255,0.1);
+    transform: scale(0);
+    transition: transform 0.3s ease;
+    border-radius: 10px;
+    z-index: -1;
+  }
+
+  &:hover {
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    
+    &::before {
+      transform: scale(1);
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 
   @media (max-width: 768px) {
     display: block;
