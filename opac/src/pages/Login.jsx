@@ -40,7 +40,7 @@ const LoginPage = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -70,7 +70,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -83,13 +83,13 @@ const LoginPage = () => {
     try {
       // Simulation d'une requête API
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // Simulation d'une connexion réussie
       toast.success('Connexion réussie ! Bienvenue dans votre espace personnel.');
-      
+
       // Redirection vers la page d'accueil ou dashboard
       // window.location.href = '/';
-      
+
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Erreur de connexion. Vérifiez vos identifiants.');
@@ -140,7 +140,7 @@ const LoginPage = () => {
               placeholder="Votre mot de passe"
               hasError={!!errors.password}
             />
-            <PasswordToggle 
+            <PasswordToggle
               type="button"
               onClick={() => setShowPassword(!showPassword)}
             >

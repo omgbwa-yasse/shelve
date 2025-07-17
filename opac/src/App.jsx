@@ -80,12 +80,12 @@ function App() {
             </MenuButton>
           </Link>
           <Link to="/login" onClick={() => setActiveMenu('login')}>
-            <MenuButton $active={activeMenu === 'login'}>
+            <MenuButton $active={activeMenu === 'login'} className="auth-button">
               <FaSignInAlt /> Connexion
             </MenuButton>
           </Link>
           <Link to="/register" onClick={() => setActiveMenu('register')}>
-            <MenuButton $active={activeMenu === 'register'}>
+            <MenuButton $active={activeMenu === 'register'} className="auth-button register-button">
               <FaUserPlus /> Inscription
             </MenuButton>
           </Link>
@@ -102,6 +102,8 @@ function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/news" element={<NewsPage />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
             </Routes>            <Footer>
               <p>&copy; 2024 Archives Historiques. Tous droits réservés.</p>
               <p>Préservation du patrimoine documentaire pour les générations futures</p>

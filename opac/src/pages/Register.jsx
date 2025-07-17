@@ -49,7 +49,7 @@ const RegisterPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -97,7 +97,7 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -110,13 +110,13 @@ const RegisterPage = () => {
     try {
       // Simulation d'une requête API
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Simulation d'une inscription réussie
       toast.success('Inscription réussie ! Un email de confirmation vous a été envoyé.');
-      
+
       // Redirection vers la page de connexion
       // window.location.href = '/login';
-      
+
     } catch (error) {
       console.error('Register error:', error);
       toast.error('Erreur lors de l\'inscription. Veuillez réessayer.');
@@ -205,7 +205,7 @@ const RegisterPage = () => {
               placeholder="Votre mot de passe"
               hasError={!!errors.password}
             />
-            <PasswordToggle 
+            <PasswordToggle
               type="button"
               onClick={() => setShowPassword(!showPassword)}
             >
@@ -230,7 +230,7 @@ const RegisterPage = () => {
               placeholder="Confirmez votre mot de passe"
               hasError={!!errors.confirmPassword}
             />
-            <PasswordToggle 
+            <PasswordToggle
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >

@@ -90,6 +90,27 @@ export const MenuButton = styled.button`
   &:hover {
     background: ${props => props.theme.colors.secondary};
   }
+
+  /* Styles spécifiques pour les boutons de connexion */
+  &.auth-button {
+    border: 1px solid ${props => props.theme.colors.white};
+    margin-left: 0.5rem;
+
+    &:hover {
+      background: ${props => props.theme.colors.white};
+      color: ${props => props.theme.colors.primary};
+    }
+  }
+
+  /* Style spécifique pour le bouton d'inscription */
+  &.register-button {
+    background: ${props => props.theme.colors.accent};
+
+    &:hover {
+      background: ${props => props.theme.colors.white};
+      color: ${props => props.theme.colors.primary};
+    }
+  }
 `;
 
 export const NavLink = styled(Link)`
