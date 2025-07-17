@@ -127,7 +127,7 @@ const EventsPage = () => {
   const getEventStatus = (eventDate) => {
     const today = new Date();
     const eventDay = new Date(eventDate);
-    
+
     if (eventDay > today) return 'upcoming';
     if (eventDay.toDateString() === today.toDateString()) return 'ongoing';
     return 'past';
@@ -166,7 +166,7 @@ const EventsPage = () => {
       <EventsHeader>
         <h1>Événements</h1>
         <p>
-          Découvrez notre programmation culturelle et scientifique. Conférences, expositions, 
+          Découvrez notre programmation culturelle et scientifique. Conférences, expositions,
           ateliers et journées d'étude pour approfondir vos connaissances du patrimoine historique.
         </p>
       </EventsHeader>
@@ -254,10 +254,10 @@ const EventsPage = () => {
       )}
 
       {filteredEvents.length === 0 && !loading && (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '3rem', 
-          color: '#666' 
+        <div style={{
+          textAlign: 'center',
+          padding: '3rem',
+          color: '#666'
         }}>
           Aucun événement trouvé pour cette catégorie.
         </div>

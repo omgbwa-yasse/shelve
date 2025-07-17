@@ -110,8 +110,8 @@ const AboutPage = () => {
         <h1>À propos de nous</h1>
         <div className="subtitle">Service de documentation et patrimoine historique</div>
         <p className="description">
-          Depuis plus de 25 ans, notre service œuvre pour la préservation, la valorisation et la 
-          mise à disposition du patrimoine documentaire historique. Nous sommes les gardiens de 
+          Depuis plus de 25 ans, notre service œuvre pour la préservation, la valorisation et la
+          mise à disposition du patrimoine documentaire historique. Nous sommes les gardiens de
           la mémoire collective et les facilitateurs de la recherche historique.
         </p>
       </AboutHeader>
@@ -121,8 +121,8 @@ const AboutPage = () => {
           <ContentSection>
             <h2>Notre Mission</h2>
             <p>
-              Le Service des Archives Historiques a pour mission principale de collecter, conserver, 
-              classer et communiquer les documents d'archives publiques et privées présentant un 
+              Le Service des Archives Historiques a pour mission principale de collecter, conserver,
+              classer et communiquer les documents d'archives publiques et privées présentant un
               intérêt historique, administratif ou culturel.
             </p>
             <p>
@@ -141,19 +141,19 @@ const AboutPage = () => {
             <h2>Nos Collections</h2>
             <h3>Archives Anciennes (avant 1790)</h3>
             <p>
-              Registres paroissiaux, chartes, titres de propriété, comptabilités seigneuriales 
+              Registres paroissiaux, chartes, titres de propriété, comptabilités seigneuriales
               et documents relatifs à l'Ancien Régime.
             </p>
-            
+
             <h3>Archives Modernes (1790-1940)</h3>
             <p>
-              États civils, registres de délibérations, correspondances administratives, 
+              États civils, registres de délibérations, correspondances administratives,
               plans cadastraux et documents de l'époque révolutionnaire et post-révolutionnaire.
             </p>
-            
+
             <h3>Archives Contemporaines (après 1940)</h3>
             <p>
-              Documents administratifs récents, témoignages oraux, photographies et 
+              Documents administratifs récents, témoignages oraux, photographies et
               collections privées d'intérêt historique.
             </p>
           </ContentSection>
@@ -173,7 +173,7 @@ const AboutPage = () => {
           <ContentSection>
             <h2>Notre Équipe</h2>
             <p>
-              Notre équipe pluridisciplinaire réunit des compétences variées au service de la 
+              Notre équipe pluridisciplinaire réunit des compétences variées au service de la
               préservation et de la valorisation du patrimoine.
             </p>
             <TeamGrid>

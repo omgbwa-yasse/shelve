@@ -73,6 +73,25 @@ export const Navigation = styled.nav`
   }
 `;
 
+export const MenuButton = styled.button`
+  color: ${props => props.theme.colors.white};
+  background: ${props => props.$active ? props.theme.colors.secondary : 'transparent'};
+  border: none;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+
+  &:hover {
+    background: ${props => props.theme.colors.secondary};
+  }
+`;
+
 export const NavLink = styled(Link)`
   color: ${props => props.theme.colors.white};
   text-decoration: none;

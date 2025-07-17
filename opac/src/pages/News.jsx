@@ -145,8 +145,8 @@ const NewsPage = () => {
     { id: 'partenariat', label: 'Partenariat', count: news.filter(n => n.category === 'Partenariat').length }
   ];
 
-  const filteredNews = activeCategory === 'all' 
-    ? news 
+  const filteredNews = activeCategory === 'all'
+    ? news
     : news.filter(article => article.category.toLowerCase() === activeCategory.toLowerCase());
 
   return (
@@ -154,7 +154,7 @@ const NewsPage = () => {
       <NewsHeader>
         <h1>Actualités</h1>
         <p>
-          Suivez l'actualité de nos archives : nouvelles acquisitions, projets de numérisation, 
+          Suivez l'actualité de nos archives : nouvelles acquisitions, projets de numérisation,
           événements et innovations dans le domaine de la préservation du patrimoine.
         </p>
       </NewsHeader>
@@ -239,17 +239,17 @@ const NewsPage = () => {
             <SidebarSection>
               <h3>Catégories</h3>
               {categories.filter(cat => cat.id !== 'all').map(category => (
-                <div key={category.id} style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
+                <div key={category.id} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '0.5rem 0',
                   borderBottom: '1px solid #eee'
                 }}>
                   <span>{category.label}</span>
-                  <span style={{ 
-                    background: '#f8f9fa', 
-                    padding: '0.25rem 0.5rem', 
+                  <span style={{
+                    background: '#f8f9fa',
+                    padding: '0.25rem 0.5rem',
                     borderRadius: '12px',
                     fontSize: '0.8rem'
                   }}>
@@ -273,10 +273,10 @@ const NewsPage = () => {
       )}
 
       {filteredNews.length === 0 && !loading && (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '3rem', 
-          color: '#666' 
+        <div style={{
+          textAlign: 'center',
+          padding: '3rem',
+          color: '#666'
         }}>
           Aucune actualité trouvée pour cette catégorie.
         </div>
