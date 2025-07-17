@@ -3,8 +3,9 @@ import styled from 'styled-components';
 // Styles pour la page d'accueil
 export const SearchSection = styled.section`
   background: ${props => props.theme.colors.white};
-  padding: 3rem 0;
+  padding: 1rem 0;
   text-align: center;
+  border-bottom: 1px solid ${props => props.theme.colors.light};
 `;
 
 export const SearchContainer = styled.div`
@@ -16,7 +17,6 @@ export const SearchContainer = styled.div`
 export const SearchForm = styled.form`
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -25,9 +25,9 @@ export const SearchForm = styled.form`
 
 export const SearchInput = styled.input`
   flex: 1;
-  padding: 1rem;
+  padding: 0.75rem;
   border: 2px solid ${props => props.theme.colors.accent};
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 1rem;
 
   &:focus {
@@ -40,8 +40,8 @@ export const SearchButton = styled.button`
   background: ${props => props.theme.colors.primary};
   color: ${props => props.theme.colors.white};
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
   display: flex;
@@ -51,29 +51,6 @@ export const SearchButton = styled.button`
 
   &:hover {
     background: ${props => props.theme.colors.secondary};
-  }
-`;
-
-export const FiltersContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-`;
-
-export const FilterButton = styled.button`
-  background: ${props => props.active ? props.theme.colors.secondary : props.theme.colors.light};
-  color: ${props => props.active ? props.theme.colors.white : props.theme.colors.text};
-  border: 1px solid ${props => props.theme.colors.accent};
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.3s;
-
-  &:hover {
-    background: ${props => props.theme.colors.secondary};
-    color: ${props => props.theme.colors.white};
   }
 `;
 

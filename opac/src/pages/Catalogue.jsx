@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import {
   FaFilter,
@@ -7,12 +7,19 @@ import {
   FaDownload,
   FaExternalLinkAlt,
   FaArrowLeft,
-  FaArrowRight
+  FaArrowRight,
+  FaSearch
 } from 'react-icons/fa';
-import { recordsApi } from '../services/AllServices';
+import { recordsApi, searchApi } from '../services/AllServices';
+import {
+  SearchSection,
+  SearchContainer,
+  SearchForm,
+  SearchInput,
+  SearchButton
+} from '../styles/HomeStyles';
 import {
   CatalogueContainer,
-  CatalogueHeader,
   CatalogueControls,
   SortControls,
   SortButton,
@@ -31,6 +38,7 @@ import {
 const CataloguePage = () => {
   const [catalogueRecords, setCatalogueRecords] = useState([]);
   const [catalogueLoading, setCatalogueLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,11 +47,7 @@ const CataloguePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const recordsPerPage = 12;
 
-  useEffect(() => {
-    loadCatalogueData();
-  }, [currentPage, sortBy, sortOrder, activeFilter]);
-
-  const loadCatalogueData = async () => {
+  const loadCatalogueData = useCallback(async () => {
     setCatalogueLoading(true);
     try {
       const response = await recordsApi.getRecords({
@@ -81,6 +85,47 @@ const CataloguePage = () => {
     } finally {
       setCatalogueLoading(false);
     }
+  }, [currentPage, recordsPerPage, sortBy, sortOrder, activeFilter]);
+
+  useEffect(() => {
+    loadCatalogueData();
+  }, [loadCatalogueData]);
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) {
+      // Si la recherche est vide, recharger toutes les données
+      loadCatalogueData();
+      return;
+    }
+
+    setCatalogueLoading(true);
+    try {
+      const searchResponse = await searchApi.search({
+        query: searchQuery,
+        type: activeFilter !== 'all' ? activeFilter : undefined,
+        limit: recordsPerPage,
+        page: currentPage
+      });
+
+      setCatalogueRecords(searchResponse.data.data || searchResponse.data || []);
+      setTotalRecords(searchResponse.data.total || searchResponse.data.length || 0);
+      setTotalPages(Math.ceil((searchResponse.data.total || searchResponse.data.length || 0) / recordsPerPage));
+    } catch (error) {
+      console.error('Search error:', error);
+      toast.error('Erreur lors de la recherche. Recherche locale effectuée.');
+
+      // Fallback avec recherche locale
+      const filtered = catalogueRecords.filter(record =>
+        record.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        record.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setCatalogueRecords(filtered);
+      setTotalRecords(filtered.length);
+      setTotalPages(Math.ceil(filtered.length / recordsPerPage));
+    } finally {
+      setCatalogueLoading(false);
+    }
   };
 
   const handleSort = (field) => {
@@ -114,10 +159,22 @@ const CataloguePage = () => {
 
   return (
     <CatalogueContainer>
-      <CatalogueHeader>
-        <h1>Catalogue des Archives</h1>
-        <p>Explorez notre collection complète de documents historiques, organisés et numérisés pour faciliter vos recherches.</p>
-      </CatalogueHeader>
+      <SearchSection>
+        <SearchContainer>
+          <SearchForm onSubmit={handleSearch}>
+            <SearchInput
+              type="text"
+              placeholder="Rechercher dans le catalogue..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <SearchButton type="submit">
+              <FaSearch />
+              Rechercher
+            </SearchButton>
+          </SearchForm>
+        </SearchContainer>
+      </SearchSection>
 
       <CatalogueControls>
         <SortControls>
