@@ -244,15 +244,18 @@ class ThesaurusController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('pref_label', 'like', "%{$search}%")
-                  ->orWhere('alt_labels', 'like', "%{$search}%")
-                  ->orWhere('definition', 'like', "%{$search}%");
+                $q->whereHas('labels', function($labelQuery) use ($search) {
+                    $labelQuery->where('literal_form', 'like', "%{$search}%");
+                })
+                ->orWhereHas('notes', function($noteQuery) use ($search) {
+                    $noteQuery->where('content', 'like', "%{$search}%");
+                });
             });
         }
 
         // Pagination
         $perPage = $request->get('per_page', 20);
-        $concepts = $query->orderBy('pref_label')->paginate($perPage);
+        $concepts = $query->orderBy('id')->paginate($perPage);
 
         return response()->json($concepts);
     }
@@ -269,15 +272,18 @@ class ThesaurusController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('pref_label', 'like', "%{$search}%")
-                  ->orWhere('alt_labels', 'like', "%{$search}%")
-                  ->orWhere('definition', 'like', "%{$search}%");
+                $q->whereHas('labels', function($labelQuery) use ($search) {
+                    $labelQuery->where('literal_form', 'like', "%{$search}%");
+                })
+                ->orWhereHas('notes', function($noteQuery) use ($search) {
+                    $noteQuery->where('content', 'like', "%{$search}%");
+                });
             });
         }
 
         // Pagination
         $perPage = $request->get('per_page', 20);
-        $concepts = $query->orderBy('pref_label')->paginate($perPage);
+        $concepts = $query->orderBy('id')->paginate($perPage);
 
         return response()->json($concepts);
     }
@@ -331,71 +337,109 @@ class ThesaurusController extends Controller
      */
     public function apiConceptsAutocomplete(Request $request)
     {
-        $request->validate([
-            'search' => 'required|string|min:3',
-            'limit' => 'nullable|integer|min:1|max:10',
-            'scheme_id' => 'nullable|exists:thesaurus_schemes,id'
-        ]);
+        try {
+            $request->validate([
+                'search' => 'required|string|min:2',
+                'limit' => 'nullable|integer|min:1|max:10',
+                'scheme_id' => 'nullable|exists:thesaurus_schemes,id'
+            ]);
 
-        $search = $request->search;
-        $limit = $request->get('limit', 5);
-        $schemeId = $request->scheme_id;
+            $search = $request->search;
+            $limit = $request->get('limit', 5);
+            $schemeId = $request->scheme_id;
 
-        $query = ThesaurusConcept::with(['scheme:id,title']);
+            // Log pour le débogage
+            \Illuminate\Support\Facades\Log::info("Recherche thésaurus: {$search}, limit: {$limit}, scheme_id: {$schemeId}");
 
-        // Filtre par schéma si spécifié
-        if ($schemeId) {
-            $query->where('scheme_id', $schemeId);
-        }
+            $query = ThesaurusConcept::with(['scheme:id,title', 'labels']);
 
-        // Recherche textuelle dans les labels préférés et alternatifs
-        $query->where(function($q) use ($search) {
-            $q->whereHas('labels', function($labelQuery) use ($search) {
-                $labelQuery->where('label_value', 'like', "%{$search}%");
-            });
-        });
-
-        $concepts = $query->orderBy('id')->limit($limit)->get();
-
-        // Transformer les résultats pour inclure les termes spécifiques
-        $results = $concepts->map(function ($concept) {
-            $result = [
-                'id' => $concept->id,
-                'scheme_id' => $concept->scheme_id,
-                'uri' => $concept->uri,
-                'notation' => $concept->notation,
-                'pref_label' => $concept->pref_label,
-                'alt_labels' => $concept->alt_labels,
-                'definition' => $concept->definition,
-                'scheme' => $concept->scheme ? [
-                    'id' => $concept->scheme->id,
-                    'title' => $concept->scheme->title
-                ] : null
-            ];
-
-            // Si c'est un terme générique, chercher un terme spécifique lié
-            $specificTerms = $concept->narrowerConcepts()->with('scheme:id,title')->first();
-
-            if ($specificTerms) {
-                $result['specific_term'] = [
-                    'id' => $specificTerms->id,
-                    'scheme_id' => $specificTerms->scheme_id,
-                    'uri' => $specificTerms->uri,
-                    'notation' => $specificTerms->notation,
-                    'pref_label' => $specificTerms->pref_label,
-                    'alt_labels' => $specificTerms->alt_labels,
-                    'definition' => $specificTerms->definition,
-                    'scheme' => $specificTerms->scheme ? [
-                        'id' => $specificTerms->scheme->id,
-                        'title' => $specificTerms->scheme->title
-                    ] : null
-                ];
+            // Filtre par schéma si spécifié
+            if ($schemeId) {
+                $query->where('scheme_id', $schemeId);
             }
 
-            return $result;
-        });
+            // Recherche textuelle dans les labels préférés et alternatifs
+            $query->where(function($q) use ($search) {
+                $q->whereHas('labels', function($labelQuery) use ($search) {
+                    $labelQuery->where('literal_form', 'like', "%{$search}%");
+                    \Illuminate\Support\Facades\Log::info("SQL search: literal_form LIKE %{$search}%");
+                });
+            });
 
-        return response()->json($results);
+            $concepts = $query->orderBy('id')->limit($limit)->get();
+
+            // Transformer les résultats pour inclure les termes spécifiques
+            $results = $concepts->map(function ($concept) {
+                try {
+                    // Obtenir le label préféré
+                    $prefLabel = $concept->getPreferredLabel();
+                    // Obtenir les labels alternatifs
+                    $altLabels = $concept->getAlternativeLabels();
+                    $altLabelsStr = $altLabels->pluck('literal_form')->implode(', ');
+
+                    $result = [
+                        'id' => $concept->id,
+                        'scheme_id' => $concept->scheme_id,
+                        'uri' => $concept->uri,
+                        'notation' => $concept->notation,
+                        'pref_label' => $prefLabel ? $prefLabel->literal_form : $concept->uri,
+                        'alt_labels' => $altLabelsStr,
+                        'definition' => $concept->notes()->where('type', 'definition')->first()->content ?? null,
+                        'scheme' => $concept->scheme ? [
+                            'id' => $concept->scheme->id,
+                            'title' => $concept->scheme->title
+                        ] : null
+                    ];
+
+                    // Si c'est un terme générique, chercher un terme spécifique lié
+                    $specificTerms = $concept->narrowerConcepts()->with('scheme:id,title')->first();
+
+                    if ($specificTerms) {
+                        // Obtenir le label préféré pour le terme spécifique
+                        $specificPrefLabel = $specificTerms->getPreferredLabel();
+                        // Obtenir les labels alternatifs pour le terme spécifique
+                        $specificAltLabels = $specificTerms->getAlternativeLabels();
+                        $specificAltLabelsStr = $specificAltLabels->pluck('literal_form')->implode(', ');
+
+                        $result['specific_term'] = [
+                            'id' => $specificTerms->id,
+                            'scheme_id' => $specificTerms->scheme_id,
+                            'uri' => $specificTerms->uri,
+                            'notation' => $specificTerms->notation,
+                            'pref_label' => $specificPrefLabel ? $specificPrefLabel->literal_form : $specificTerms->uri,
+                            'alt_labels' => $specificAltLabelsStr,
+                            'definition' => $specificTerms->notes()->where('type', 'definition')->first()->content ?? null,
+                            'scheme' => $specificTerms->scheme ? [
+                                'id' => $specificTerms->scheme->id,
+                                'title' => $specificTerms->scheme->title
+                            ] : null
+                        ];
+                    }
+
+                    return $result;
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error("Erreur lors du traitement du concept {$concept->id}: " . $e->getMessage());
+                    return [
+                        'id' => $concept->id,
+                        'scheme_id' => $concept->scheme_id,
+                        'uri' => $concept->uri,
+                        'notation' => $concept->notation,
+                        'pref_label' => $concept->uri,
+                        'alt_labels' => '',
+                        'error' => 'Erreur lors du traitement du concept'
+                    ];
+                }
+            });
+
+            return response()->json($results);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Erreur lors de la recherche dans le thésaurus: " . $e->getMessage());
+            return response()->json([
+                'error' => 'Une erreur est survenue lors de la recherche',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -412,7 +456,7 @@ class ThesaurusController extends Controller
 
         $conceptsQuery = ThesaurusConcept::with(['labels', 'scheme'])
             ->whereHas('labels', function($q) use ($query) {
-                $q->where('value', 'LIKE', "%{$query}%");
+                $q->where('literal_form', 'LIKE', "%{$query}%");
             });
 
         if ($schemeId) {
@@ -422,10 +466,10 @@ class ThesaurusController extends Controller
         $concepts = $conceptsQuery->limit(20)->get();
 
         $results = $concepts->map(function($concept) {
-            $preferredLabel = $concept->labels->where('type', 'preferred')->first();
+            $preferredLabel = $concept->labels->where('type', 'prefLabel')->first();
             return [
                 'id' => $concept->id,
-                'text' => $preferredLabel ? $preferredLabel->value : 'No label',
+                'text' => $preferredLabel ? $preferredLabel->literal_form : 'No label',
                 'scheme' => $concept->scheme ? $concept->scheme->title : null
             ];
         });
@@ -449,7 +493,7 @@ class ThesaurusController extends Controller
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->whereHas('labels', function($q) use ($search) {
-                $q->where('value', 'LIKE', "%{$search}%");
+                $q->where('literal_form', 'LIKE', "%{$search}%");
             });
         }
 

@@ -14,7 +14,7 @@ use App\Models\RecordStatus;
 use App\Models\Container;
 use App\Models\Activity;
 use App\Models\Slip;
-
+use App\Models\ThesaurusConcept;
 use App\Models\User;
 use App\Models\Accession;
 use App\Models\Author;
@@ -689,5 +689,38 @@ class RecordController extends Controller
             'success' => true,
             'data' => $suggestions
         ]);
+    }
+
+    /**
+     * Get autocomplete suggestions for thesaurus terms
+     */
+    public function autocompleteTerms(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:3|max:255',
+            'limit' => 'nullable|integer|min:1|max:10',
+        ]);
+
+        $query = $request->get('q');
+        $limit = $request->get('limit', 5);
+
+        // Utiliser le même modèle que le ThesaurusController
+        $concepts = ThesaurusConcept::with(['labels', 'scheme'])
+            ->whereHas('labels', function($q) use ($query) {
+                $q->where('literal_form', 'LIKE', "%{$query}%");
+            })
+            ->limit($limit)
+            ->get();
+
+        $results = $concepts->map(function($concept) {
+            $preferredLabel = $concept->labels->where('type', 'prefLabel')->first();
+            return [
+                'id' => $concept->id,
+                'text' => $preferredLabel ? $preferredLabel->literal_form : 'No label',
+                'scheme' => $concept->scheme ? $concept->scheme->title : null
+            ];
+        });
+
+        return response()->json($results);
     }
 }

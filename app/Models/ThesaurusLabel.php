@@ -13,10 +13,9 @@ class ThesaurusLabel extends Model
     protected $fillable = [
         'concept_id',
         'uri',
-        'label_type',
+        'type',
         'literal_form',
         'language',
-        'status',
     ];
 
     /**
@@ -32,7 +31,7 @@ class ThesaurusLabel extends Model
      */
     public function scopeByType($query, $type)
     {
-        return $query->where('label_type', $type);
+        return $query->where('type', $type);
     }
 
     /**
@@ -56,7 +55,7 @@ class ThesaurusLabel extends Model
      */
     public function scopePreferred($query)
     {
-        return $query->where('label_type', 'prefLabel');
+        return $query->where('type', 'prefLabel');
     }
 
     /**

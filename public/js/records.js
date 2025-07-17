@@ -322,14 +322,23 @@ function initThesaurusAjax() {
     });
 
     function searchThesaurus(query) {
-        fetch(`/api/thesaurus/concepts/autocomplete?search=${encodeURIComponent(query)}&limit=5`, {
+        fetch(`/repositories/records/terms/autocomplete?q=${encodeURIComponent(query)}&limit=5`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La réponse n\'est pas au format JSON');
+            }
+            return response.json();
+        })
         .then(data => {
             displaySuggestions(data);
         })
@@ -352,11 +361,16 @@ function initThesaurusAjax() {
                 const suggestion = document.createElement('div');
                 suggestion.className = 'thesaurus-suggestion';
                 suggestion.dataset.id = term.id;
-                suggestion.dataset.name = term.pref_label || 'Sans nom';
-                suggestion.dataset.thesaurus = term.scheme ? term.scheme.title : 'Thésaurus';
+
+                // Adaptation pour le nouveau format d'API
+                const termLabel = term.text || term.pref_label || 'Sans nom';
+                const schemeTitle = term.scheme || (term.scheme && term.scheme.title) || 'Thésaurus';
+
+                suggestion.dataset.name = termLabel;
+                suggestion.dataset.thesaurus = schemeTitle;
 
                 // Format: motLabel - thésaurus ou motlabel[termeassocié] - thésaurus
-                let displayText = term.pref_label || 'Sans nom';
+                let displayText = termLabel;
 
                 // Si il y a un terme spécifique associé, l'ajouter entre crochets
                 if (term.specific_term && term.specific_term.pref_label) {
@@ -364,15 +378,15 @@ function initThesaurusAjax() {
                 }
 
                 // Ajouter le nom du thésaurus
-                displayText += ` - ${term.scheme ? term.scheme.title : 'Thésaurus'}`;
+                displayText += ` - ${schemeTitle}`;
 
                 suggestion.textContent = displayText;
 
                 suggestion.addEventListener('click', function() {
                     selectTerm(
                         term.id,
-                        term.pref_label || 'Sans nom',
-                        term.scheme ? term.scheme.title : 'Thésaurus'
+                        termLabel,
+                        schemeTitle
                     );
                 });
 

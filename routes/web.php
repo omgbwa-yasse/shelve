@@ -509,6 +509,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
+        Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::resource('records', RecordController::class);
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
@@ -728,7 +729,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('concepts/{concept}', [ThesaurusController::class, 'showConcept'])->name('thesaurus.concepts.show');
             Route::get('hierarchy', [ThesaurusController::class, 'hierarchy'])->name('thesaurus.hierarchy');
             Route::get('search/autocomplete', [ThesaurusController::class, 'autocomplete'])->name('thesaurus.autocomplete');
-            
+
             // Routes manquantes pour les fonctionnalités du thésaurus
             Route::get('export-import', [ThesaurusController::class, 'importExport'])->name('thesaurus.export-import');
             Route::get('record-concept-relations', [ThesaurusController::class, 'recordConceptRelations'])->name('thesaurus.record-concept-relations');
@@ -736,7 +737,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('export-scheme', [ThesaurusController::class, 'exportScheme'])->name('thesaurus.export-scheme');
             Route::post('import-file', [ThesaurusController::class, 'importFile'])->name('thesaurus.import-file');
             Route::post('auto-associate-concepts', [ThesaurusController::class, 'autoAssociateConcepts'])->name('thesaurus.auto-associate-concepts');
-            
+
             // Routes pour les relations hiérarchiques
             Route::get('hierarchical-relations/{term}', [ThesaurusController::class, 'hierarchicalRelationsIndex'])->name('thesaurus.hierarchical_relations.index');
             Route::get('hierarchical-relations/{term}/broader/create', [ThesaurusController::class, 'createBroaderRelation'])->name('thesaurus.hierarchical_relations.broader.create');
