@@ -106,16 +106,6 @@ const AboutPage = () => {
 
   return (
     <AboutContainer>
-      <AboutHeader>
-        <h1>À propos de nous</h1>
-        <div className="subtitle">Service de documentation et patrimoine historique</div>
-        <p className="description">
-          Depuis plus de 25 ans, notre service œuvre pour la préservation, la valorisation et la
-          mise à disposition du patrimoine documentaire historique. Nous sommes les gardiens de
-          la mémoire collective et les facilitateurs de la recherche historique.
-        </p>
-      </AboutHeader>
-
       <AboutContent>
         <MainContent>
           <ContentSection>
