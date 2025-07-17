@@ -12,7 +12,6 @@ import {
 } from 'react-icons/fa';
 import {
   AboutContainer,
-  AboutHeader,
   AboutContent,
   MainContent,
   ContentSection,

@@ -10,13 +10,17 @@ import {
   FaBook,
   FaCalendarAlt,
   FaNewspaper,
-  FaInfoCircle
+  FaInfoCircle,
+  FaSignInAlt,
+  FaUserPlus
 } from 'react-icons/fa';
 import CataloguePage from './pages/Catalogue';
 import HomePage from './pages/Home';
 import EventsPage from './pages/Events';
 import NewsPage from './pages/News';
 import AboutPage from './pages/About';
+import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
 import {
   theme,
   Container,
@@ -73,6 +77,16 @@ function App() {
           <Link to="/about" onClick={() => setActiveMenu('about')}>
             <MenuButton $active={activeMenu === 'about'}>
               <FaInfoCircle /> À propos
+            </MenuButton>
+          </Link>
+          <Link to="/login" onClick={() => setActiveMenu('login')}>
+            <MenuButton $active={activeMenu === 'login'}>
+              <FaSignInAlt /> Connexion
+            </MenuButton>
+          </Link>
+          <Link to="/register" onClick={() => setActiveMenu('register')}>
+            <MenuButton $active={activeMenu === 'register'}>
+              <FaUserPlus /> Inscription
             </MenuButton>
           </Link>
         </Navigation>
