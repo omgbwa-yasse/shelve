@@ -1,6 +1,7 @@
 // Schémas de validation Zod pour le serveur MCP
 const { z } = require('zod');
 const { AiServiceInterface, RecordsServiceInterface, TermsServiceInterface } = require('./interfaces');
+const { RecordSchema, RecordSimplifiedSchema, ThesaurusConceptSchema } = require('./models');
 
 // Schéma pour la requête de formatage de titre
 const FormatTitleSchema = z.object({
@@ -18,15 +19,7 @@ const FormatTitleSchema = z.object({
 // Schéma pour la génération d'un résumé
 const SummarizeRequestSchema = z.object({
   recordId: z.number().int().positive(),
-  recordData: z.object({
-    id: z.number().int().positive(),
-    name: z.string(),
-    content: z.string().optional(),
-    biographical_history: z.string().optional(),
-    archival_history: z.string().optional(),
-    note: z.string().optional(),
-    description: z.string().optional()
-  }),
+  recordData: RecordSimplifiedSchema, // Utilisation du schéma simplifié du record
   maxLength: z.number().int().positive().optional(),
   modelName: z.string().optional()
 });
@@ -42,16 +35,7 @@ const ThesaurusSearchSchema = z.object({
 // Schéma pour l'extraction de mots-clés catégorisés
 const CategorizedKeywordsSchema = z.object({
   recordId: z.number().int().positive(),
-  recordData: z.object({
-    id: z.number().int().positive(),
-    name: z.string(),
-    content: z.string().optional(),
-    biographical_history: z.string().optional(),
-    archival_history: z.string().optional(),
-    note: z.string().optional(),
-    date_start: z.string().optional(),
-    date_end: z.string().optional(),
-  }),
+  recordData: RecordSimplifiedSchema, // Utilisation du schéma simplifié du record
   modelName: z.string().optional(),
   autoAssign: z.boolean().optional(),
 });
@@ -59,11 +43,7 @@ const CategorizedKeywordsSchema = z.object({
 // Schéma pour l'assignation de termes à un record
 const AssignTermsSchema = z.object({
   recordId: z.number().int().positive(),
-  terms: z.array(z.object({
-    id: z.number().int().positive(),
-    name: z.string(),
-    type: z.string()
-  })),
+  terms: z.array(ThesaurusConceptSchema),
 });
 
 // Schéma pour le formatage de titre est déjà défini plus haut
@@ -129,12 +109,20 @@ const TransferRecordSchema = z.object({
   ).optional()
 });
 
+// Schéma pour un record complet (pour les endpoints qui manipulent des records entiers)
+const RecordRequestSchema = z.object({
+  recordId: z.number().int().positive(),
+  recordData: RecordSchema, // Utilisation du schéma complet du record
+  modelName: z.string().optional()
+});
+
 module.exports = {
   FormatTitleSchema,
   SummarizeRequestSchema,
   ThesaurusSearchSchema,
   CategorizedKeywordsSchema,
   AssignTermsSchema,
+  RecordRequestSchema,
   // Exporter les interfaces
   AiServiceInterface,
   RecordsServiceInterface,

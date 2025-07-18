@@ -1,11 +1,13 @@
-// Contrôleur pour les fonctionnalités d'enrichissement des records
+// Contrôleur pour les fonctionnalités de gestion des records
 const recordsService = require('../services/records.service');
 const aiService = require('../services/ai.service');
+const { RecordsControllerInterface } = require('../schemas/interfaces');
 
 /**
- * Contrôleur pour les opérations d'enrichissement de records
+ * Contrôleur pour les opérations de gestion des records
+ * @implements {RecordsControllerInterface}
  */
-class EnrichmentController {
+class RecordsController {
   /**
    * Formater le titre d'un record selon le format: objet, action administrative : typologie documentaire (date?)
    * @param {Object} req - Requête Express
@@ -172,4 +174,4 @@ class EnrichmentController {
   }
 }
 
-module.exports = new EnrichmentController();
+module.exports = new RecordsController();

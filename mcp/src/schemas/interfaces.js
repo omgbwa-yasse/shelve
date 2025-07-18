@@ -82,8 +82,70 @@ const TermsServiceInterface = {
   assignTermsToRecord: async (recordId, categorizedTerms) => {}
 };
 
+/**
+ * Interface pour le contrôleur de gestion des records
+ * @interface
+ */
+const RecordsControllerInterface = {
+  /**
+   * Formater le titre d'un record
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  formatRecordTitle: async (req, res, next) => {},
+
+  /**
+   * Générer un résumé pour un record
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  generateSummary: async (req, res, next) => {},
+
+  /**
+   * Extraire des mots-clés catégorisés d'un record
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  extractCategorizedKeywords: async (req, res, next) => {},
+
+  /**
+   * Rechercher des termes dans le thésaurus
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  searchThesaurus: async (req, res, next) => {},
+
+  /**
+   * Assigner des termes à un record
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  assignTerms: async (req, res, next) => {},
+
+  /**
+   * Vérifier la disponibilité d'Ollama
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   * @param {Function} next - Fonction next d'Express
+   */
+  checkOllama: async (req, res, next) => {},
+
+  /**
+   * Vérifier l'état de santé de l'API
+   * @param {Object} req - Requête Express
+   * @param {Object} res - Réponse Express
+   */
+  healthCheck: (req, res) => {}
+};
+
 module.exports = {
   AiServiceInterface,
   RecordsServiceInterface,
-  TermsServiceInterface
+  TermsServiceInterface,
+  RecordsControllerInterface
 };

@@ -4,7 +4,7 @@ const express = require('express');
 const config = require('./src/config');
 const apiRoutes = require('./src/routes/api.routes');
 const authMiddleware = require('./src/middleware/auth.middleware');
-const enrichmentController = require('./src/controllers/enrichment.controller');
+const recordsController = require('./src/controllers/records.controller');
 
 // Initialiser l'application Express
 const app = express();
@@ -13,7 +13,7 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 
 // Routes de santé (publiques)
-app.get('/health', enrichmentController.healthCheck);
+app.get('/health', recordsController.healthCheck);
 
 // Middleware d'authentification pour les routes API
 app.use('/api', authMiddleware);
