@@ -1,7 +1,12 @@
 // Service d'interaction avec les modèles d'IA
 const axios = require('axios');
 const config = require('../config');
+const { AiServiceInterface } = require('../schemas/validation');
 
+/**
+ * Service d'interaction avec les modèles d'IA
+ * @implements {AiServiceInterface}
+ */
 class AiService {
   constructor() {
     this.baseUrl = config.ollama.baseUrl;

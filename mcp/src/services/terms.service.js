@@ -1,7 +1,12 @@
 // Service pour interagir avec l'API Laravel et gérer les termes du thésaurus
 const axios = require('axios');
 const config = require('../config');
+const { TermsServiceInterface } = require('../schemas/validation');
 
+/**
+ * Service pour interagir avec l'API Laravel et gérer les termes du thésaurus
+ * @implements {TermsServiceInterface}
+ */
 class TermsService {
   constructor() {
     this.apiUrl = config.laravel.apiUrl;

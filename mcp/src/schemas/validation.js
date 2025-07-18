@@ -1,5 +1,6 @@
 // Schémas de validation Zod pour le serveur MCP
 const { z } = require('zod');
+const { AiServiceInterface, RecordsServiceInterface, TermsServiceInterface } = require('./interfaces');
 
 // Schéma pour la requête de formatage de titre
 const FormatTitleSchema = z.object({
@@ -65,18 +66,7 @@ const AssignTermsSchema = z.object({
   })),
 });
 
-// Schéma pour le formatage de titre (mis à jour)
-const FormatTitleSchema = z.object({
-  recordId: z.number().int().positive(),
-  title: z.string(),
-  context: z.object({
-    administrative_action: z.string().optional(),
-    document_type: z.string().optional(),
-    date_start: z.string().optional(),
-    date_end: z.string().optional()
-  }).optional(),
-  modelName: z.string().optional()
-});
+// Schéma pour le formatage de titre est déjà défini plus haut
 
 // Fin des schémas de validation pour le MCP
 
@@ -144,5 +134,9 @@ module.exports = {
   SummarizeRequestSchema,
   ThesaurusSearchSchema,
   CategorizedKeywordsSchema,
-  AssignTermsSchema
+  AssignTermsSchema,
+  // Exporter les interfaces
+  AiServiceInterface,
+  RecordsServiceInterface,
+  TermsServiceInterface
 };
