@@ -19,7 +19,12 @@ class DatabaseSeeder extends Seeder
 
             // Seeders pour les thésaurus
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
-            ThesaurusActionsAdministrativesSeeder::class // Seeder pour le thésaurus des actions administratives
+            ThesaurusActionsAdministrativesSeeder::class, // Seeder pour le thésaurus des actions administratives
+
+            // Seeders pour les données records
+            RecordStatusSeeder::class, // Seeder pour les statuts des dossiers
+            RecordLevelSeeder::class,  // Seeder pour les niveaux hiérarchiques
+            RecordSupportSeeder::class, // Seeder pour les supports physiques
         ]);
     }
 }

@@ -208,6 +208,44 @@
                     </div>
 
                     <div class="col-12">
+                        <div class="card bg-primary bg-opacity-10 border-primary">
+                            <div class="card-header bg-primary bg-opacity-25 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="bi bi-robot me-2"></i>{{ __('intelligence') ?? 'Intelligence' }}
+                                </h5>
+                                <button id="btn-run-all-ai" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-lightning-charge me-1"></i>{{ __('run_all_processes') ?? 'Run All Processes' }}
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text small">{{ __('ai_intelligence_desc') ?? 'Use MCP AI to enhance record quality with one click - summarize content, reformat titles, extract keywords, and associate with thesaurus terms.' }}</p>
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-format-title">
+                                            <i class="bi bi-type"></i> {{ __('format_title') ?? 'Format Title' }}
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-generate-summary">
+                                            <i class="bi bi-card-text"></i> {{ __('generate_summary') ?? 'Generate Summary' }}
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-extract-keywords-mcp">
+                                            <i class="bi bi-hash"></i> {{ __('extract_keywords_mcp') ?? 'Extract Keywords' }}
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-assign-thesaurus">
+                                            <i class="bi bi-link-45deg"></i> {{ __('assign_thesaurus') ?? 'Assign Thesaurus' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
                         <div id="ai-results-container" class="border rounded p-3" style="display: none;">
                             <h6 class="border-bottom pb-2 mb-3">
                                 <i class="bi bi-stars me-1"></i><span id="ai-results-title">{{ __('ai_results') ?? 'AI Results' }}</span>
@@ -732,6 +770,805 @@
                     `;
 
                     showResults('Generated Report', resultsHTML);
+                } catch (error) {
+                    handleApiError(error);
+                }
+            });
+
+            // Format Record Title with MCP
+            document.getElementById('btn-format-title').addEventListener('click', async () => {
+                try {
+                    showResults('Title Formatting', '<div class="text-center">Formatting record title...</div>');
+                    showLoading('ai-results-content', 'Analyzing and reformatting title...');
+
+                    const response = await fetch(`${apiBaseUrl}/format-title`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            recordId: recordId,
+                            title: '{{ addslashes($record->name) }}',
+                            context: {
+                                date_start: '{{ $record->date_start }}',
+                                date_end: '{{ $record->date_end }}'
+                            }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    let resultsHTML = `
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Title successfully reformatted!
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light d-flex justify-content-between">
+                                <h6 class="mb-0">Title Format Results</h6>
+                                <button class="btn btn-sm btn-outline-success btn-apply-title" data-title="${data.formattedTitle}">
+                                    <i class="bi bi-check"></i> Apply
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Original Title:</h6>
+                                        <p class="p-2 border rounded bg-light">${data.originalTitle || '{{ addslashes($record->name) }}'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Formatted Title:</h6>
+                                        <p class="p-2 border rounded bg-light fw-bold">${data.formattedTitle}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    showResults('Title Format Results', resultsHTML);
+
+                    // Add event listener for apply button
+                    document.querySelector('.btn-apply-title').addEventListener('click', async (e) => {
+                        const newTitle = e.target.closest('button').getAttribute('data-title');
+
+                        try {
+                            const response = await fetch(`/api/records/${recordId}/update-title`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ title: newTitle })
+                            });
+
+                            if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                            // Update the UI without page reload
+                            document.querySelector('.card-header h4.mb-0').textContent = newTitle;
+
+                            // Update button state
+                            const button = e.target.closest('button');
+                            button.innerHTML = '<i class="bi bi-check-circle"></i> Applied';
+                            button.classList.remove('btn-outline-success');
+                            button.classList.add('btn-success');
+                            button.disabled = true;
+
+                            showResults('Title Updated', `
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Title successfully updated!
+                                </div>
+                            `);
+                        } catch (error) {
+                            console.error('Error updating title:', error);
+                            alert('Failed to update title. Please try again.');
+                        }
+                    });
+
+                } catch (error) {
+                    handleApiError(error);
+                }
+            });
+
+            // Generate Summary with MCP
+            document.getElementById('btn-generate-summary').addEventListener('click', async () => {
+                try {
+                    showResults('Summary Generation', '<div class="text-center">Generating record summary...</div>');
+                    showLoading('ai-results-content', 'Analyzing record content...');
+
+                    const response = await fetch(`${apiBaseUrl}/summarize`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            recordId: recordId,
+                            recordData: {
+                                id: recordId,
+                                name: '{{ addslashes($record->name) }}',
+                                content: '{{ addslashes($record->content) }}',
+                                biographical_history: '{{ addslashes($record->biographical_history) }}',
+                                archival_history: '{{ addslashes($record->archival_history) }}',
+                                note: '{{ addslashes($record->note) }}'
+                            },
+                            maxLength: 500
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    let resultsHTML = `
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Summary successfully generated!
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light d-flex justify-content-between">
+                                <h6 class="mb-0">Summary Results</h6>
+                                <button class="btn btn-sm btn-outline-success btn-apply-summary" data-summary="${data.summary}">
+                                    <i class="bi bi-check"></i> Apply as Content
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <h6>Generated Summary:</h6>
+                                <div class="p-3 border rounded bg-light">
+                                    ${data.summary}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    showResults('Summary Results', resultsHTML);
+
+                    // Add event listener for apply button
+                    document.querySelector('.btn-apply-summary').addEventListener('click', async (e) => {
+                        const newContent = e.target.closest('button').getAttribute('data-summary');
+
+                        try {
+                            const response = await fetch(`/api/records/${recordId}/update-content`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ content: newContent })
+                            });
+
+                            if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                            // Update the UI without page reload
+                            const contentElement = document.querySelector('dt:contains("{{ __('content') }}")').nextElementSibling;
+                            if (contentElement) {
+                                contentElement.textContent = newContent;
+                            }
+
+                            // Update button state
+                            const button = e.target.closest('button');
+                            button.innerHTML = '<i class="bi bi-check-circle"></i> Applied';
+                            button.classList.remove('btn-outline-success');
+                            button.classList.add('btn-success');
+                            button.disabled = true;
+
+                            showResults('Content Updated', `
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    Content successfully updated!
+                                </div>
+                            `);
+                        } catch (error) {
+                            console.error('Error updating content:', error);
+                            alert('Failed to update content. Please try again.');
+                        }
+                    });
+
+                } catch (error) {
+                    handleApiError(error);
+                }
+            });
+
+            // Extract Keywords with MCP (Categorized)
+            document.getElementById('btn-extract-keywords-mcp').addEventListener('click', async () => {
+                try {
+                    showResults('Keyword Extraction (MCP)', '<div class="text-center">Extracting categorized keywords...</div>');
+                    showLoading('ai-results-content', 'Analyzing record content for keywords...');
+
+                    const response = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            recordId: recordId,
+                            recordData: {
+                                id: recordId,
+                                name: '{{ addslashes($record->name) }}',
+                                content: '{{ addslashes($record->content) }}',
+                                biographical_history: '{{ addslashes($record->biographical_history) }}',
+                                archival_history: '{{ addslashes($record->archival_history) }}',
+                                note: '{{ addslashes($record->note) }}',
+                                date_start: '{{ $record->date_start }}',
+                                date_end: '{{ $record->date_end }}'
+                            }
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    // Create categorized keywords HTML
+                    const categoryNames = {
+                        geographic: 'Geographic',
+                        thematic: 'Thematic',
+                        typologic: 'Typology'
+                    };
+
+                    let categoriesHTML = '';
+
+                    for (const [category, keywords] of Object.entries(data.extraction.extractedKeywords)) {
+                        categoriesHTML += `
+                            <div class="col-md-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">${categoryNames[category] || category}</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex flex-wrap gap-1">
+                                            ${keywords.map(keyword =>
+                                                `<span class="badge bg-light text-dark border">${keyword}</span>`
+                                            ).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    let resultsHTML = `
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Keywords successfully extracted!
+                        </div>
+
+                        <div class="mb-4">
+                            <h6>Extracted Keywords:</h6>
+                            <div class="row g-3">
+                                ${categoriesHTML}
+                            </div>
+                        </div>
+                    `;
+
+                    // Add matched thesaurus terms if available
+                    if (data.thesaurus_results && Object.values(data.thesaurus_results).some(arr => arr.length > 0)) {
+                        resultsHTML += `
+                            <div>
+                                <h6>Matched Thesaurus Terms:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Term</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+
+                        let hasTerms = false;
+
+                        for (const [category, terms] of Object.entries(data.thesaurus_results)) {
+                            if (terms.length > 0) {
+                                hasTerms = true;
+                                terms.forEach(term => {
+                                    resultsHTML += `
+                                        <tr>
+                                            <td>${categoryNames[category] || category}</td>
+                                            <td>${term.name}</td>
+                                            <td>
+                                                <button class="btn btn-xs btn-outline-primary btn-apply-term"
+                                                        data-term-id="${term.id}" data-term-name="${term.name}">
+                                                    <i class="bi bi-plus-circle"></i> Apply
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                            }
+                        }
+
+                        if (!hasTerms) {
+                            resultsHTML += `
+                                <tr>
+                                    <td colspan="3" class="text-center">No matching thesaurus terms found</td>
+                                </tr>
+                            `;
+                        }
+
+                        resultsHTML += `
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    showResults('Keyword Extraction Results (MCP)', resultsHTML);
+
+                    // Add event listeners for apply term buttons
+                    document.querySelectorAll('.btn-apply-term').forEach(button => {
+                        button.addEventListener('click', async (e) => {
+                            const termId = e.target.closest('button').getAttribute('data-term-id');
+                            const termName = e.target.closest('button').getAttribute('data-term-name');
+
+                            try {
+                                const response = await fetch(`/api/records/${recordId}/add-term/${termId}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                });
+
+                                if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                                // Update UI
+                                e.target.closest('button').innerHTML = '<i class="bi bi-check"></i> Applied';
+                                e.target.closest('button').classList.remove('btn-outline-primary');
+                                e.target.closest('button').classList.add('btn-success');
+                                e.target.closest('button').disabled = true;
+                            } catch (error) {
+                                console.error('Error applying term:', error);
+                                alert('Failed to apply term. Please try again.');
+                            }
+                        });
+                    });
+
+                } catch (error) {
+                    handleApiError(error);
+                }
+            });
+
+            // Assign Thesaurus Terms with MCP
+            document.getElementById('btn-assign-thesaurus').addEventListener('click', async () => {
+                try {
+                    showResults('Thesaurus Term Assignment', '<div class="text-center">Finding and assigning thesaurus terms...</div>');
+                    showLoading('ai-results-content', 'Analyzing content and searching thesaurus...');
+
+                    const response = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            recordId: recordId,
+                            recordData: {
+                                id: recordId,
+                                name: '{{ addslashes($record->name) }}',
+                                content: '{{ addslashes($record->content) }}',
+                                biographical_history: '{{ addslashes($record->biographical_history) }}',
+                                archival_history: '{{ addslashes($record->archival_history) }}',
+                                note: '{{ addslashes($record->note) }}',
+                                date_start: '{{ $record->date_start }}',
+                                date_end: '{{ $record->date_end }}'
+                            },
+                            autoAssign: true  // Request automatic assignment
+                        })
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    // Count assigned terms
+                    let totalAssigned = 0;
+                    if (data.assignment && data.assignment.assigned) {
+                        totalAssigned = data.assignment.assigned.length;
+                    }
+
+                    let resultsHTML = `
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Thesaurus terms analysis complete!
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Assignment Results</h6>
+                            </div>
+                            <div class="card-body">
+                                <p>${data.assignment ? data.assignment.message : 'No terms were assigned.'}</p>
+
+                                ${totalAssigned > 0 ? `
+                                <h6 class="mt-3">Assigned Terms:</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Term</th>
+                                                <th>Category</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${data.assignment.assigned.map(term => `
+                                                <tr>
+                                                    <td>${term.name}</td>
+                                                    <td>${term.type}</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                ` : ''}
+
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-primary" id="btn-refresh-terms">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh Terms List
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    showResults('Thesaurus Term Assignment Results', resultsHTML);
+
+                    // Add refresh button event listener
+                    document.getElementById('btn-refresh-terms').addEventListener('click', () => {
+                        window.location.reload();
+                    });
+
+                } catch (error) {
+                    handleApiError(error);
+                }
+            });
+
+            // Run All Processes - Comprehensive MCP Enhancement
+            document.getElementById('btn-run-all-ai').addEventListener('click', async () => {
+                try {
+                    showResults('AI Processing', '<div class="text-center">Running all AI processes...</div>');
+                    showLoading('ai-results-content', 'Processing record with MCP AI engine...');
+
+                    // Step 1: Format title
+                    let titleResult = null;
+                    try {
+                        const titleResponse = await fetch(`${apiBaseUrl}/format-title`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                recordId: recordId,
+                                title: '{{ addslashes($record->name) }}',
+                                context: {
+                                    date_start: '{{ $record->date_start }}',
+                                    date_end: '{{ $record->date_end }}'
+                                }
+                            })
+                        });
+
+                        if (titleResponse.ok) {
+                            titleResult = await titleResponse.json();
+                        }
+                    } catch (error) {
+                        console.error('Error formatting title:', error);
+                    }
+
+                    // Step 2: Generate summary
+                    let summaryResult = null;
+                    try {
+                        const summaryResponse = await fetch(`${apiBaseUrl}/summarize`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                recordId: recordId,
+                                recordData: {
+                                    id: recordId,
+                                    name: '{{ addslashes($record->name) }}',
+                                    content: '{{ addslashes($record->content) }}',
+                                    biographical_history: '{{ addslashes($record->biographical_history) }}',
+                                    archival_history: '{{ addslashes($record->archival_history) }}',
+                                    note: '{{ addslashes($record->note) }}'
+                                },
+                                maxLength: 500
+                            })
+                        });
+
+                        if (summaryResponse.ok) {
+                            summaryResult = await summaryResponse.json();
+                        }
+                    } catch (error) {
+                        console.error('Error generating summary:', error);
+                    }
+
+                    // Step 3: Extract and assign thesaurus terms
+                    let termsResult = null;
+                    try {
+                        const termsResponse = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                recordId: recordId,
+                                recordData: {
+                                    id: recordId,
+                                    name: titleResult?.formattedTitle || '{{ addslashes($record->name) }}',
+                                    content: summaryResult?.summary || '{{ addslashes($record->content) }}',
+                                    biographical_history: '{{ addslashes($record->biographical_history) }}',
+                                    archival_history: '{{ addslashes($record->archival_history) }}',
+                                    note: '{{ addslashes($record->note) }}',
+                                    date_start: '{{ $record->date_start }}',
+                                    date_end: '{{ $record->date_end }}'
+                                },
+                                autoAssign: true
+                            })
+                        });
+
+                        if (termsResponse.ok) {
+                            termsResult = await termsResponse.json();
+                        }
+                    } catch (error) {
+                        console.error('Error assigning terms:', error);
+                    }
+
+                    // Generate comprehensive results HTML
+                    let resultsHTML = `
+                        <div class="alert alert-success mb-4">
+                            <h5><i class="bi bi-check-circle-fill me-2"></i>AI Processing Complete</h5>
+                            <p class="mb-0">The record has been enhanced with AI-generated improvements.</p>
+                        </div>
+
+                        <div class="accordion" id="aiResultsAccordion">
+                            <!-- Title Formatting Results -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#titleResults">
+                                        <i class="bi bi-type me-2"></i>Title Formatting
+                                        ${titleResult?.success ?
+                                            '<span class="badge bg-success ms-2">Success</span>' :
+                                            '<span class="badge bg-danger ms-2">Failed</span>'}
+                                    </button>
+                                </h2>
+                                <div id="titleResults" class="accordion-collapse collapse show" data-bs-parent="#aiResultsAccordion">
+                                    <div class="accordion-body">
+                                        ${titleResult ? `
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <h6>Original Title:</h6>
+                                                    <p class="p-2 border rounded bg-light">${titleResult.originalTitle || '{{ addslashes($record->name) }}'}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h6>Formatted Title:</h6>
+                                                    <p class="p-2 border rounded bg-light fw-bold">${titleResult.formattedTitle}</p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-success btn-apply-title" data-title="${titleResult.formattedTitle}">
+                                                    <i class="bi bi-check"></i> Apply New Title
+                                                </button>
+                                            </div>
+                                        ` : `
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                Unable to format the title. Please try again later.
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Summary Results -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#summaryResults">
+                                        <i class="bi bi-card-text me-2"></i>Content Summary
+                                        ${summaryResult?.success ?
+                                            '<span class="badge bg-success ms-2">Success</span>' :
+                                            '<span class="badge bg-danger ms-2">Failed</span>'}
+                                    </button>
+                                </h2>
+                                <div id="summaryResults" class="accordion-collapse collapse" data-bs-parent="#aiResultsAccordion">
+                                    <div class="accordion-body">
+                                        ${summaryResult ? `
+                                            <div class="mb-3">
+                                                <h6>Generated Summary:</h6>
+                                                <div class="p-3 border rounded bg-light">
+                                                    ${summaryResult.summary}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-success btn-apply-summary" data-summary="${summaryResult.summary}">
+                                                    <i class="bi bi-check"></i> Apply as Content
+                                                </button>
+                                            </div>
+                                        ` : `
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                Unable to generate summary. Please try again later.
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Terms Assignment Results -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#termsResults">
+                                        <i class="bi bi-tags me-2"></i>Thesaurus Terms
+                                        ${termsResult ?
+                                            '<span class="badge bg-success ms-2">Success</span>' :
+                                            '<span class="badge bg-danger ms-2">Failed</span>'}
+                                    </button>
+                                </h2>
+                                <div id="termsResults" class="accordion-collapse collapse" data-bs-parent="#aiResultsAccordion">
+                                    <div class="accordion-body">
+                                        ${termsResult ? `
+                                            <div class="mb-3">
+                                                <h6>Assignment Results:</h6>
+                                                <p>${termsResult.assignment ? termsResult.assignment.message : 'No terms were assigned.'}</p>
+                                            </div>
+                                            ${termsResult.assignment && termsResult.assignment.assigned && termsResult.assignment.assigned.length > 0 ? `
+                                                <div class="mb-3">
+                                                    <h6>Assigned Terms:</h6>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-sm">
+                                                            <thead class="table-light">
+                                                                <tr>
+                                                                    <th>Term</th>
+                                                                    <th>Category</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                ${termsResult.assignment.assigned.map(term => `
+                                                                    <tr>
+                                                                        <td>${term.name}</td>
+                                                                        <td>${term.type}</td>
+                                                                    </tr>
+                                                                `).join('')}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            ` : ''}
+                                        ` : `
+                                            <div class="alert alert-warning">
+                                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                                Unable to assign thesaurus terms. Please try again later.
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-primary" id="btn-apply-all-changes">
+                                <i class="bi bi-lightning-charge me-2"></i>Apply All Changes & Refresh
+                            </button>
+                        </div>
+                    `;
+
+                    showResults('AI Processing Results', resultsHTML);
+
+                    // Add event listeners for individual apply buttons
+                    if (titleResult) {
+                        document.querySelector('.btn-apply-title').addEventListener('click', async (e) => {
+                            const newTitle = e.target.closest('button').getAttribute('data-title');
+                            try {
+                                await fetch(`/api/records/${recordId}/update-title`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    },
+                                    body: JSON.stringify({ title: newTitle })
+                                });
+
+                                e.target.closest('button').innerHTML = '<i class="bi bi-check-circle"></i> Applied';
+                                e.target.closest('button').classList.remove('btn-outline-success');
+                                e.target.closest('button').classList.add('btn-success');
+                                e.target.closest('button').disabled = true;
+                            } catch (error) {
+                                console.error('Error updating title:', error);
+                            }
+                        });
+                    }
+
+                    if (summaryResult) {
+                        document.querySelector('.btn-apply-summary').addEventListener('click', async (e) => {
+                            const newContent = e.target.closest('button').getAttribute('data-summary');
+                            try {
+                                await fetch(`/api/records/${recordId}/update-content`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    },
+                                    body: JSON.stringify({ content: newContent })
+                                });
+
+                                e.target.closest('button').innerHTML = '<i class="bi bi-check-circle"></i> Applied';
+                                e.target.closest('button').classList.remove('btn-outline-success');
+                                e.target.closest('button').classList.add('btn-success');
+                                e.target.closest('button').disabled = true;
+                            } catch (error) {
+                                console.error('Error updating content:', error);
+                            }
+                        });
+                    }
+
+                    // Add event listener for apply all button
+                    document.getElementById('btn-apply-all-changes').addEventListener('click', async () => {
+                        try {
+                            showLoading('ai-results-content', 'Applying all changes...');
+
+                            const promises = [];
+
+                            // Apply title if available
+                            if (titleResult?.formattedTitle) {
+                                promises.push(
+                                    fetch(`/api/records/${recordId}/update-title`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                        },
+                                        body: JSON.stringify({ title: titleResult.formattedTitle })
+                                    })
+                                );
+                            }
+
+                            // Apply content if available
+                            if (summaryResult?.summary) {
+                                promises.push(
+                                    fetch(`/api/records/${recordId}/update-content`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                        },
+                                        body: JSON.stringify({ content: summaryResult.summary })
+                                    })
+                                );
+                            }
+
+                            // Wait for all promises to resolve
+                            await Promise.all(promises);
+
+                            // Success message and reload
+                            showResults('Success', `
+                                <div class="alert alert-success">
+                                    <h5><i class="bi bi-check-circle-fill me-2"></i>All Changes Applied</h5>
+                                    <p>The page will now refresh to show the updated record.</p>
+                                </div>
+                            `);
+
+                            // Reload page after a short delay
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+
+                        } catch (error) {
+                            handleApiError(error);
+                        }
+                    });
+
                 } catch (error) {
                     handleApiError(error);
                 }
