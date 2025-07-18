@@ -1,35 +1,33 @@
 // Schémas de validation Zod pour le serveur MCP
 const { z } = require('zod');
 
-// Schéma de validation pour la requête d'enrichissement
-const EnrichRequestSchema = z.object({
+// Schéma pour la requête de formatage de titre
+const FormatTitleSchema = z.object({
+  recordId: z.number().int().positive(),
+  title: z.string(),
+  context: z.object({
+    administrative_action: z.string().optional(),
+    document_type: z.string().optional(),
+    date_start: z.string().optional(),
+    date_end: z.string().optional()
+  }).optional(),
+  modelName: z.string().optional()
+});
+
+// Schéma pour la génération d'un résumé
+const SummarizeRequestSchema = z.object({
   recordId: z.number().int().positive(),
   recordData: z.object({
     id: z.number().int().positive(),
-    code: z.string().optional(),
     name: z.string(),
     content: z.string().optional(),
     biographical_history: z.string().optional(),
     archival_history: z.string().optional(),
     note: z.string().optional(),
-    place: z.string().optional(),
-    source: z.string().optional(),
-    language: z.string().optional(),
-    description: z.string().optional(),
-    extent: z.string().optional(),
-    level: z.string().optional(),
-    parent_id: z.number().int().positive().optional(),
-    parent_name: z.string().optional(),
-    parent_code: z.string().optional(),
-    parent_content: z.string().optional(),
-    parent_note: z.string().optional(),
-    parent_date_start: z.string().optional(),
-    parent_date_end: z.string().optional(),
-    date_start: z.string().optional(),
-    date_end: z.string().optional(),
+    description: z.string().optional()
   }),
-  modelName: z.string().optional(),
-  mode: z.enum(['enrich', 'summarize', 'analyze', 'format_title', 'extract_keywords', 'categorized_keywords']),
+  maxLength: z.number().int().positive().optional(),
+  modelName: z.string().optional()
 });
 
 // Schéma pour la recherche de termes dans le thésaurus
@@ -67,36 +65,20 @@ const AssignTermsSchema = z.object({
   })),
 });
 
-// Schéma pour le formatage de titre
+// Schéma pour le formatage de titre (mis à jour)
 const FormatTitleSchema = z.object({
+  recordId: z.number().int().positive(),
   title: z.string(),
+  context: z.object({
+    administrative_action: z.string().optional(),
+    document_type: z.string().optional(),
+    date_start: z.string().optional(),
+    date_end: z.string().optional()
+  }).optional(),
   modelName: z.string().optional()
 });
 
-// Schéma pour l'enrichissement d'un bordereau de transfert
-const TransferSlipSchema = z.object({
-  slipId: z.number().int().positive(),
-  modelName: z.string().optional()
-});
-
-// Schéma pour la validation des documents d'un bordereau
-const ValidateRecordsSchema = z.object({
-  slipId: z.number().int().positive(),
-  modelName: z.string().optional()
-});
-
-// Schéma pour la suggestion de plan de classement
-const ClassificationSchema = z.object({
-  slipId: z.number().int().positive(),
-  modelName: z.string().optional()
-});
-
-// Schéma pour la génération de rapport de transfert
-const ReportSchema = z.object({
-  slipId: z.number().int().positive(),
-  modelName: z.string().optional(),
-  includeValidation: z.boolean().optional().default(true)
-});
+// Fin des schémas de validation pour le MCP
 
 // Schéma pour la structure d'un bordereau de transfert (slip)
 const SlipSchema = z.object({
@@ -158,15 +140,9 @@ const TransferRecordSchema = z.object({
 });
 
 module.exports = {
-  EnrichRequestSchema,
+  FormatTitleSchema,
+  SummarizeRequestSchema,
   ThesaurusSearchSchema,
   CategorizedKeywordsSchema,
-  AssignTermsSchema,
-  FormatTitleSchema,
-  TransferSlipSchema,
-  ValidateRecordsSchema,
-  ClassificationSchema,
-  ReportSchema,
-  SlipSchema,
-  TransferRecordSchema
+  AssignTermsSchema
 };

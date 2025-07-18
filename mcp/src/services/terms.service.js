@@ -1,8 +1,8 @@
-// Service pour interagir avec l'API Laravel
+// Service pour interagir avec l'API Laravel et gérer les termes du thésaurus
 const axios = require('axios');
 const config = require('../config');
 
-class LaravelApiService {
+class TermsService {
   constructor() {
     this.apiUrl = config.laravel.apiUrl;
     this.apiToken = config.laravel.apiToken;
@@ -194,4 +194,4 @@ class LaravelApiService {
   }
 }
 
-module.exports = new LaravelApiService();
+module.exports = new TermsService();

@@ -1,7 +1,7 @@
 {
   "name": "ollama-record-enricher",
-  "version": "1.0.0",
-  "description": "Model Context Protocol server pour enrichir les descriptions des records via Ollama",
+  "version": "2.0.0",
+  "description": "Model Context Protocol server pour (1) formulation des titres de records, (2) génération de résumés, (3) extraction et association de mots-clés au thésaurus",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

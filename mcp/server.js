@@ -1,4 +1,5 @@
 // Point d'entrée principal pour le serveur MCP
+// Module recentré sur 3 fonctionnalités: formatage des titres, génération de résumés et extraction de mots-clés
 const express = require('express');
 const config = require('./src/config');
 const apiRoutes = require('./src/routes/api.routes');
@@ -8,8 +9,8 @@ const enrichmentController = require('./src/controllers/enrichment.controller');
 // Initialiser l'application Express
 const app = express();
 
-// Middleware pour parser le JSON
-app.use(express.json());
+// Middleware pour parser le JSON avec limite augmentée pour les documents volumineux
+app.use(express.json({ limit: '10mb' }));
 
 // Routes de santé (publiques)
 app.get('/health', enrichmentController.healthCheck);
