@@ -149,7 +149,7 @@
                         <div class="accordion-body">
 
                             <div class="mb-2">
-                                <label class="form-label small">{{ __('thesaurus') }} *</label>
+                                <label class="form-label small">{{ __('thesaurus') }}</label>
                                 <div class="position-relative">
                                     <input type="text" class="form-control form-control-sm" id="thesaurus-search" placeholder="Rechercher dans le thésaurus..." autocomplete="off">
                                     <div id="thesaurus-suggestions" class="position-absolute w-100 bg-white border border-top-0 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
@@ -163,7 +163,7 @@
                                     <!-- Les termes sélectionnés apparaîtront ici -->
                                 </div>
 
-                                <input type="hidden" name="term_ids[]" id="term-ids" required>
+                                <input type="hidden" name="term_ids[]" id="term-ids">
                             </div>
 
                             <div class="mb-2">

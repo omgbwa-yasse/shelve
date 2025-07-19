@@ -90,12 +90,13 @@ class RecordChildController extends Controller
         $record->parent()->attach($parent->id);
 
 
-        // Enregistrement des mots du thésaurus
+        // Enregistrement des concepts du thésaurus
         $term_ids = $request->input('term_ids');
         $term_ids = explode(',', $term_ids[0]);
         $term_ids = array_map('intval', $term_ids);
-        foreach ($term_ids as $term_id) {
-            $record->terms()->attach($term_id);
+
+        foreach ($term_ids as $conceptId) {
+            $record->thesaurusConcepts()->attach($conceptId, ['weight' => 1.0]); // Poids par défaut à 1.0
         }
 
         // Enregistrement des auteurs

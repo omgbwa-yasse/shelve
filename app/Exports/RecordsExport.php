@@ -72,6 +72,12 @@ class RecordsExport implements FromCollection, WithHeadings, WithMapping
         if (!$relation || !$relation->count()) {
             return 'N/A';
         }
+
+        // Si c'est une relation thesaurusConcepts, utiliser preferred_label
+        if ($relation->first() instanceof \App\Models\ThesaurusConcept) {
+            $key = 'preferred_label';
+        }
+
         return $relation->pluck($key)->filter()->join('; ') ?: 'N/A';
     }
     public function map($record): array
@@ -92,7 +98,7 @@ class RecordsExport implements FromCollection, WithHeadings, WithMapping
 
             $this->safeRelationPluck($record->containers),
             $this->safeRelationPluck($record->authors), // Producteurs (auteurs) sécurisé
-            $this->safeRelationPluck($record->terms), // Termes sécurisé
+            $this->safeRelationPluck($record->thesaurusConcepts), // Concepts du thésaurus sécurisé
 
 
             $this->safeRelationPluck($record->keywords),
@@ -123,6 +129,7 @@ class RecordsExport implements FromCollection, WithHeadings, WithMapping
             // $record->parent->name ?? 'N/A', // Non requis
             // $record->organisation->pluck('name')->join('; '), // Non requis
             // $record->user->name ?? 'N/A' // Non requis
-        ];}
+        ];
+    }
 
 }

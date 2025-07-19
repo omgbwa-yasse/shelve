@@ -240,9 +240,10 @@ class SearchRecordController extends Controller
                 break;
 
             case "term":
-                $termId = $request->input('id');
-                $query->whereHas('thesaurusConcepts', function ($q) use ($termId) {
-                    $q->where('thesaurus_concepts.id', $termId);
+            case "concept": // Ajout du cas "concept" pour prendre en charge les deux formats
+                $conceptId = $request->input('id');
+                $query->whereHas('thesaurusConcepts', function ($q) use ($conceptId) {
+                    $q->where('thesaurus_concepts.id', $conceptId);
                 });
                 break;
 

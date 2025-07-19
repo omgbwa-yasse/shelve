@@ -289,6 +289,8 @@ function initThesaurusAjax() {
         return; // Éléments non trouvés, probablement pas sur la page de création
     }
 
+    // Les termes du thésaurus sont facultatifs - pas de vérification requise
+
     // Recherche AJAX avec délai
     thesaurusSearch.addEventListener('input', function() {
         const query = this.value.trim();
@@ -452,15 +454,20 @@ function initThesaurusAjax() {
         // Mettre à jour le champ caché
         updateHiddenInput();
 
-        // Ajouter la classe d'erreur si aucun terme n'est sélectionné
-        if (selectedTerms.size === 0) {
-            thesaurusSearch.classList.add('is-invalid');
-        }
+        // Pas besoin d'ajouter la classe d'erreur car le champ est facultatif
     }
 
     function updateHiddenInput() {
         const ids = Array.from(selectedTerms.keys());
         termIdsInput.value = ids.join(',');
+
+        // Le thésaurus est facultatif - pas besoin de validation
+        // Nettoyer tout message d'erreur existant
+        thesaurusSearch.classList.remove('is-invalid');
+        const errorMsg = document.querySelector('.thesaurus-error-message');
+        if (errorMsg) {
+            errorMsg.remove();
+        }
     }
 
     function showSuggestions() {
@@ -475,16 +482,15 @@ function initThesaurusAjax() {
     const recordForm = document.getElementById('recordForm');
     if (recordForm) {
         recordForm.addEventListener('submit', function(e) {
-            // Vérifier que au moins un terme du thésaurus est sélectionné
-            if (selectedTerms.size === 0) {
-                e.preventDefault();
-                alert('Veuillez sélectionner au moins un terme du thésaurus.');
-                thesaurusSearch.classList.add('is-invalid');
-                thesaurusSearch.focus();
-                return false;
+            // Le thésaurus est désormais facultatif, pas besoin de validation
+
+            // Nettoyer tout message d'erreur existant avant la soumission
+            const errorMsg = document.querySelector('.thesaurus-error-message');
+            if (errorMsg) {
+                errorMsg.remove();
             }
 
-            // Si tout est OK, on peut soumettre
+            // Permettre la soumission du formulaire sans termes sélectionnés
             return true;
         });
     }

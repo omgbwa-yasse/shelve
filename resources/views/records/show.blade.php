@@ -125,9 +125,9 @@
                         <dl class="row mb-0">
                             <dt class="col-sm-2">{{ __('terms') }}</dt>
                             <dd class="col-sm-10">
-                                @foreach($record->terms as $index => $term)
-                                    <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}">
-                                        {{ $term->name ?? 'N/A' }}
+                                @foreach($record->thesaurusConcepts as $index => $concept)
+                                    <a href="{{ route('records.sort')}}?categ=concept&id={{ $concept->id ?? 'N/A' }}">
+                                        {{ $concept->preferred_label ?? 'N/A' }}
                                     </a>
                                     @if(!$loop->last)
                                         {{ " ; " }}

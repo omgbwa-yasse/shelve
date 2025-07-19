@@ -223,16 +223,16 @@
                     <div class="mb-3">
                         <label for="term_id" class="form-label">Thésaurus</label>
                         <select name="term_id[]" id="term_id" class="form-select" multiple required>
-                            @foreach ($terms as $term)
-                                <option value="{{ $term->id }}" {{ $record->terms->contains($term) ? 'selected' : '' }}>{{ $term->name }}</option>
+                            @foreach ($terms as $concept)
+                                <option value="{{ $concept->id }}" {{ $record->thesaurusConcepts->contains($concept) ? 'selected' : '' }}>{{ $concept->preferred_label }}</option>
                             @endforeach
                         </select>
                     </div>
                     <!-- Liste des termes sélectionnés -->
                     <div id="selected-terms" class="mt-3">
-                        @foreach($record->terms as $term)
+                        @foreach($record->thesaurusConcepts as $concept)
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $term->name }}</span>
+                                <span>{{ $concept->preferred_label }}</span>
                                 <button type="button" class="btn btn-sm btn-danger remove-term" data-term-id="{{ $term->id }}">Supprimer</button>
                             </div>
                         @endforeach

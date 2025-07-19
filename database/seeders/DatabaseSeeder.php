@@ -17,6 +17,10 @@ class DatabaseSeeder extends Seeder
             ExternalContactsSeeder::class, // Seeder pour les contacts externes
             MailSystemSeeder::class, // Seeder pour le système de courriers
 
+            // Seeders pour les auteurs et adresses (ISAD(G) et ISAAR(CPF))
+            AuthorTypeSeeder::class, // Seeder pour les types d'auteurs
+            AddressTypeSeeder::class, // Seeder pour les types d'adresses
+
             // Seeders pour les thésaurus
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
             ThesaurusActionsAdministrativesSeeder::class, // Seeder pour le thésaurus des actions administratives

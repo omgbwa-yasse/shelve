@@ -48,14 +48,14 @@ class RecordController extends Controller
         if (Gate::allows('viewAny', Record::class)) {
             // L'utilisateur a la permission de voir tous les records
             $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors'
+                'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
             ])->paginate(10);
         } else {
             // L'utilisateur ne peut voir que les records associés aux activités de son organisation actuelle
             $currentOrganisationId = auth::user()->current_organisation_id;
 
             $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors'
+                'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
             ])
                 ->whereHas('activity', function($query) use ($currentOrganisationId) {
                     $query->whereHas('organisations', function($q) use ($currentOrganisationId) {
@@ -194,7 +194,11 @@ class RecordController extends Controller
         }
 
         foreach ($term_ids as $term_id) {
-            $record->terms()->attach($term_id);
+            $record->thesaurusConcepts()->attach($term_id, [
+                'weight' => 1.0,  // Poids par défaut
+                'context' => 'manuel',  // Contexte de l'ajout (manuel par l'utilisateur)
+                'extraction_note' => null  // Pas de note d'extraction pour un ajout manuel
+            ]);
         }
 
         return redirect()->route('records.index')->with('success', 'Record created successfully.');
@@ -235,11 +239,10 @@ class RecordController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $terms = [];
-
+        $terms = ThesaurusConcept::all(); // Chargement des concepts du thésaurus
 
         $author_ids = $record->authors->pluck('id')->toArray();
-        $term_ids = $record->terms->pluck('id')->toArray();
+        $term_ids = $record->thesaurusConcepts->pluck('id')->toArray();
 
         return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'term_ids'));
     }
@@ -311,10 +314,18 @@ class RecordController extends Controller
         $author_ids = array_map('intval', $author_ids);
 
         // Mettez à jour les relations entre les auteurs et l'enregistrement
-        $record->authors()->sync($term_ids);
+        $record->authors()->sync($author_ids);
 
-        // Mettez à jour les relations entre les termes et l'enregistrement
-        $record->terms()->sync($author_ids);
+        // Mettez à jour les relations entre les concepts du thésaurus et l'enregistrement
+        if (!empty($term_ids)) {
+            $conceptData = [];
+            foreach ($term_ids as $conceptId) {
+                $conceptData[$conceptId] = ['weight' => 1.0]; // Poids par défaut à 1.0
+            }
+            $record->thesaurusConcepts()->sync($conceptData);
+        } else {
+            $record->thesaurusConcepts()->detach();
+        }
 
         return redirect()->route('records.index')->with('success', 'Record updated successfully.');
     }

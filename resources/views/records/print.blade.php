@@ -126,8 +126,8 @@
             <tr>
                 <td>Vedettes</td>
                 <td>
-                    @if($record->terms->isNotEmpty())
-                        {{ $record->terms->pluck('name')->join(', ') }}
+                    @if($record->thesaurusConcepts->isNotEmpty())
+                        {{ $record->thesaurusConcepts->pluck('preferred_label')->join(', ') }}
                     @else
                         N/A
                     @endif

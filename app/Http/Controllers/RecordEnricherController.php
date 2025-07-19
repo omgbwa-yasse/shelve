@@ -272,9 +272,13 @@ class RecordEnricherController extends Controller
                 // Récupérer les IDs des termes correspondants
                 $termIds = array_column($result['matchedTerms'], 'id');
 
-                // Attacher les termes au record
+                // Attacher les concepts du thésaurus au record
                 if (!empty($termIds)) {
-                    $record->terms()->syncWithoutDetaching($termIds);
+                    $conceptData = [];
+                    foreach ($termIds as $conceptId) {
+                        $conceptData[$conceptId] = ['weight' => 0.8]; // Poids par défaut à 0.8 pour les termes automatiques
+                    }
+                    $record->thesaurusConcepts()->syncWithoutDetaching($conceptData);
                 }
 
                 return response()->json([

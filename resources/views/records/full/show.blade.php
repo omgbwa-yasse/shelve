@@ -129,7 +129,7 @@
                                 'Parent Record' => $record->parent->name ?? 'N/A',
                                 'Conservation Box' => $record->container->name ?? 'N/A',
                                 'Created By' => $record->user->name ?? 'N/A',
-                                'Terms' => $record->terms->isEmpty() ? 'N/A' : $record->terms->map(fn($term) => "<span class='badge bg-secondary'>{$term->name}</span>")->implode(' '),
+                                'Terms' => $record->thesaurusConcepts->isEmpty() ? 'N/A' : $record->thesaurusConcepts->map(fn($concept) => "<span class='badge bg-secondary'>{$concept->preferred_label}</span>")->implode(' '),
                             ],
                         ];
                     @endphp

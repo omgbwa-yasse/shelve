@@ -77,8 +77,8 @@
                                 <div class="col-12">
                                     <p class="mb-0">
                                         <strong>{{ __('headings') }} : </strong>
-                                        @foreach($record->terms as $index => $term)
-                                            <a href="{{ route('records.sort')}}?categ=term&id={{ $term->id ?? 'N/A' }}" class="badge bg-info text-decoration-none">{{ $term->name ?? 'N/A' }}</a>
+                                        @foreach($record->thesaurusConcepts as $index => $concept)
+                                            <a href="{{ route('records.sort')}}?categ=concept&id={{ $concept->id ?? 'N/A' }}" class="badge bg-info text-decoration-none">{{ $concept->preferred_label ?? 'N/A' }}</a>
                                             @if(!$loop->last)
                                                 {{ " " }}
                                             @endif

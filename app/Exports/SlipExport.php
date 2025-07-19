@@ -240,7 +240,7 @@ class SlipRecordsSheet implements FromCollection, WithTitle, WithHeadings, WithM
             $record->parent->name ?? '',
             $record->user->name ?? '',
             $record->authors->pluck('name')->join(', '),
-            $record->terms->pluck('name')->join(', '),
+            $record->thesaurusConcepts->pluck('preferred_label')->join(', '),
         ];
     }
 
