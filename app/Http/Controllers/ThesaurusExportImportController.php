@@ -749,6 +749,9 @@ class ThesaurusExportImportController extends Controller
                 // Ajouter les labels
                 $this->processCollectionLabels($collection, $collectionNode);
 
+                // Traiter les collections imbriquées (parent-enfant)
+                $this->processNestedCollections($collection, $collectionNode);
+
                 // Traiter les membres (à stocker pour traitement ultérieur)
                 $memberNodes = $collectionNode->xpath('skos:member');
                 $position = 0;
@@ -1304,6 +1307,49 @@ class ThesaurusExportImportController extends Controller
                 'label_type' => 'hiddenLabel',
                 'label' => (string) $hiddenLabel
             ]);
+        }
+    }
+
+    /**
+     * Traite les relations de collections imbriquées (parent-enfant)
+     * @param ThesaurusCollection $parentCollection La collection parente
+     * @param SimpleXMLElement $collectionNode Le noeud XML de la collection
+     * @return void
+     */
+    private function processNestedCollections(ThesaurusCollection $parentCollection, $collectionNode)
+    {
+        // ID de la collection parente
+        $parentId = $parentCollection->getKey();
+
+        // Supprimer les relations existantes pour éviter les doublons
+        DB::table('thesaurus_nested_collections')
+            ->where('parent_collection_id', $parentId)
+            ->delete();
+
+        // Chercher les sous-collections avec narrower
+        $narrowerNodes = $collectionNode->xpath('skos:narrower');
+        $position = 0;
+
+        foreach ($narrowerNodes as $narrowerNode) {
+            $childUri = (string) $narrowerNode->attributes('rdf', true)->resource;
+
+            if (!empty($childUri)) {
+                // Récupérer la collection enfant par son URI
+                $childCollection = ThesaurusCollection::where('uri', $childUri)->first();
+
+                if ($childCollection) {
+                    $childId = $childCollection->getKey();
+
+                    // Créer la relation parent-enfant
+                    DB::table('thesaurus_nested_collections')->insert([
+                        'parent_collection_id' => $parentId,
+                        'child_collection_id' => $childId,
+                        'position' => $position++,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                }
+            }
         }
     }
 
