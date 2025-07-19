@@ -511,6 +511,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::resource('records', RecordController::class);
+        Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::get('search', [RecordController::class, 'search'])->name('records.search');

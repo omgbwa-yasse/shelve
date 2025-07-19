@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Edit Description</h1>
+        <h1>{{ __('edit_description') }}</h1>
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -18,28 +18,28 @@
             @method('PUT')
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">Identification</a>
+                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">Contexte</a>
+                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">Contenu</a>
+                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">Condition d'accès</a>
+                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_conditions') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">Sources complémentaires</a>
+                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('allied_materials_area') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">Notes</a>
+                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">Contrôle de description</a>
+                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">Indexation</a>
+                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
                 </li>
             </ul>
 
@@ -47,7 +47,7 @@
                 <div class="tab-pane fade show active " id="identification" role="tabpanel" aria-labelledby="identification-tab">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="level_id" class="form-label">Level</label>
+                            <label for="level_id" class="form-label">{{ __('level') }}</label>
                             <select name="level_id" id="level_id" class="form-select" required>
                                 @foreach ($levels as $level)
                                     <option value="{{ $level->id }}" {{ $record->level_id == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
@@ -55,7 +55,7 @@
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="support_id" class="form-label">Support</label>
+                            <label for="support_id" class="form-label">{{ __('support') }}</label>
                             <select name="support_id" id="support_id" class="form-select" required>
                                 @foreach ($supports as $support)
                                     <option value="{{ $support->id }}" {{ $record->support_id == $support->id ? 'selected' : '' }}>{{ $support->name }}</option>

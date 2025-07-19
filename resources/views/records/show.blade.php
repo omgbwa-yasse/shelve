@@ -11,6 +11,9 @@
                 </ol>
             </nav>
             <div class="btn-group">
+                <a href="{{ route('records.showFull', $record) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye-fill"></i> {{ __('detailed_view') ?? 'Detailed View' }}
+                </a>
                 <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-pencil"></i> {{ __('edit_sheet') }}
                 </a>

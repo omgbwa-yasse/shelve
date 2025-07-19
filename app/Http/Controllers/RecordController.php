@@ -227,6 +227,30 @@ class RecordController extends Controller
         return view('records.show', compact('record'));
     }
 
+    public function showFull(Record $record)
+    {
+        $this->authorize('view', $record);
+
+        // Charger toutes les relations pour la vue détaillée
+        $record->load([
+            'children',
+            'parent',
+            'level',
+            'status',
+            'support',
+            'activity',
+            'authors',
+            'containers',
+            'recordContainers.container',
+            'thesaurusConcepts',
+            'attachments',
+            'user',
+            'organisation'
+        ]);
+
+        return view('records.showFull', compact('record'));
+    }
+
     public function edit(Record $record)
     {
         $this->authorize('update', $record);
