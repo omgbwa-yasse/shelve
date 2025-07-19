@@ -652,5 +652,10 @@
     "categories": "Catégories",
     "addToCart": "Ajouter au panier",
     "backToList": "Retour à la liste",
-    "edit_description": "Modifier la description"
+    "edit_description": "Modifier la description",
+    "description_control_area": "Zone du contrôle de la description",
+    "created_at": "Créé le",
+    "updated_at": "Mis à jour le",
+    "organisation": "Organisation",
+    "no_files_found": "Aucun fichier trouvé"
 }

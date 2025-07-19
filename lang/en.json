@@ -526,5 +526,10 @@
     "categories": "Categories",
     "addToCart": "Add to Cart",
     "backToList": "Back to List",
-    "edit_description": "Edit Description"
+    "edit_description": "Edit Description",
+    "description_control_area": "Description Control Area",
+    "created_at": "Created At",
+    "updated_at": "Updated At",
+    "organisation": "Organization",
+    "no_files_found": "No files found"
 }
