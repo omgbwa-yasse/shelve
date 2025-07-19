@@ -160,9 +160,26 @@ class ThesaurusExportImportController extends Controller
                 return redirect()->back()->withErrors($validator)->withInput();
             }
 
+            // Vérifier la connexion à la base de données
+            try {
+                DB::connection()->getPdo();
+                Log::info('Connexion à la base de données établie: ' . DB::connection()->getDatabaseName());
+            } catch (\Exception $e) {
+                Log::error('Erreur de connexion à la base de données: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Erreur de connexion à la base de données. Vérifiez le fichier .env.');
+            }
+
             // Charger le fichier RDF
             $file = $request->file('file');
             $mode = $request->input('mode');
+
+            // Log le début de l'importation
+            Log::info('Début de l\'import RDF', [
+                'file' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'extension' => $file->getClientOriginalExtension(),
+                'mode' => $mode
+            ]);
 
             if (strtolower($file->getClientOriginalExtension()) === 'skos') {
                 $result = $this->processSkosImport($file, $mode);
@@ -171,8 +188,10 @@ class ThesaurusExportImportController extends Controller
             }
 
             if ($result['success']) {
+                Log::info('Import RDF réussi', $result);
                 return redirect()->route('thesaurus.export-import')->with('success', $result['message']);
             } else {
+                Log::warning('Échec de l\'import RDF', $result);
                 return redirect()->back()->with('error', $result['message']);
             }
         } catch (\Exception $e) {

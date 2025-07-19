@@ -19,12 +19,14 @@
 
                         @if (session('error'))
                             <div class="alert alert-danger">
-                                {{ session('error') }}
+                                <strong>Erreur d'importation :</strong> {{ session('error') }}
+                                <p>Pour plus de détails, consultez les logs dans <code>storage/logs/laravel.log</code>.</p>
                             </div>
                         @endif
 
                         @if ($errors->any())
                             <div class="alert alert-danger">
+                                <strong>Erreurs de validation :</strong>
                                 <ul>
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -41,6 +43,17 @@
                             <label for="file">Fichier RDF</label>
                             <input type="file" class="form-control" id="file" name="file" accept=".xml,.rdf,application/xml,application/rdf+xml,text/xml">
                             <small class="form-text text-muted">Choisissez un fichier RDF au format XML (extensions .xml ou .rdf)</small>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="mode">Mode d'importation</label>
+                            <select class="form-control" id="mode" name="mode">
+                                <option value="add">Ajouter uniquement (n'ajouter que les nouveaux concepts)</option>
+                                <option value="update">Mettre à jour uniquement (mettre à jour les concepts existants)</option>
+                                <option value="merge" selected>Fusionner (ajouter les nouveaux et mettre à jour les existants)</option>
+                                <option value="replace">Remplacer complètement (supprimer et recréer)</option>
+                            </select>
+                            <small class="form-text text-muted">Choisissez comment importer les données dans le thésaurus existant</small>
                         </div>
 
                         <div class="alert alert-info">
