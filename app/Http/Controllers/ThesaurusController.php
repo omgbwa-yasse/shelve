@@ -12,11 +12,9 @@ use App\Models\ThesaurusOrganization;
 use App\Models\ThesaurusNamespace;
 use App\Exceptions\ThesaurusImportException;
 use App\Exports\ThesaurusSkosExport;
-use App\Exports\ThesaurusRdfExport;
 use App\Exports\ThesaurusCsvExport;
 use App\Exports\ThesaurusJsonExport;
 use App\Imports\ThesaurusSkosImport;
-use App\Imports\ThesaurusRdfImport;
 use App\Imports\ThesaurusCsvImport;
 use App\Imports\ThesaurusJsonImport;
 use Illuminate\Http\Request;
@@ -110,12 +108,17 @@ class ThesaurusController extends Controller
 
     /**
      * Exporter un schéma en différents formats
+     *
+     * Les formats disponibles sont :
+     * - skos-rdf : SKOS exprimé en RDF/XML (norme W3C pour les systèmes d'organisation des connaissances)
+     * - csv : Format tableur simple pour l'interopérabilité avec des outils bureautiques
+     * - json : Format structuré pour l'interopérabilité avec des applications web
      */
     public function exportScheme(Request $request)
     {
         $request->validate([
             'scheme_id' => 'required|exists:thesaurus_schemes,id',
-            'format' => 'required|in:skos,rdf,csv,json',
+            'format' => 'required|in:skos-rdf,csv,json',
             'include_relations' => 'boolean',
             'language' => 'nullable|string',
         ]);
@@ -131,10 +134,8 @@ class ThesaurusController extends Controller
 
             // Utiliser la méthode d'export appropriée selon le format
             switch ($format) {
-                case 'skos':
+                case 'skos-rdf':
                     return $this->exportToSkos($scheme, $includeRelations, $language);
-                case 'rdf':
-                    return $this->exportToRdf($scheme, $includeRelations, $language);
                 case 'csv':
                     return $this->exportToCsv($scheme, $includeRelations, $language);
                 case 'json':
@@ -150,13 +151,19 @@ class ThesaurusController extends Controller
 
     /**
      * Importer un fichier de thésaurus
+     *
+     * Formats supportés :
+     * - skos-rdf : Modèle SKOS exprimé en RDF/XML selon les normes W3C
+     *              (http://www.w3.org/TR/skos-reference/)
+     * - csv : Format tableur pour imports simples
+     * - json : Format structuré pour l'interopérabilité
      */
     public function importFile(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:xml,rdf,csv,json|max:20720',
             'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
-            'format' => 'required|in:skos,rdf,csv,json',
+            'format' => 'required|in:skos-rdf,csv,json',
             'language' => 'nullable|string',
             'merge_mode' => 'required|in:replace,merge,append',
         ]);
@@ -187,8 +194,7 @@ class ThesaurusController extends Controller
 
             // Importer le fichier selon le format
             $result = match ($format) {
-                'skos' => $this->importFromSkos($path, $schemeId, $language, $mergeMode),
-                'rdf' => $this->importFromRdf($path, $schemeId, $language, $mergeMode),
+                'skos-rdf' => $this->importFromSkos($path, $schemeId, $language, $mergeMode),
                 'csv' => $this->importFromCsv($path, $schemeId, $language, $mergeMode),
                 'json' => $this->importFromJson($path, $schemeId, $language, $mergeMode),
                 default => throw new \Exception('Format d\'import non supporté')
@@ -858,72 +864,123 @@ class ThesaurusController extends Controller
         return 0.5;
     }
 
+    /**
+     * Exporte un schéma de thésaurus au format SKOS-RDF (XML)
+     *
+     * SKOS est un modèle de données W3C pour les systèmes d'organisation des connaissances,
+     * exprimé en RDF. Ce n'est pas un format distinct de RDF, mais un vocabulaire spécifique
+     * défini avec RDF comme "grammaire" sous-jacente.
+     *
+     * @param ThesaurusScheme $scheme Le schéma à exporter
+     * @param bool $includeRelations Inclure les relations entre concepts
+     * @param string $language Langue des labels à inclure prioritairement
+     * @return \Illuminate\Http\Response
+     */
     private function exportToSkos($scheme, $includeRelations, $language)
     {
         $exporter = new ThesaurusSkosExport();
         $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
 
-        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.rdf';
+        $fileName = 'thesaurus_export_skos-rdf_' . $scheme->identifier . '_' . date('YmdHis') . '.rdf';
 
         return response($content)
             ->header('Content-Type', 'application/rdf+xml')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
-    private function exportToRdf($scheme, $includeRelations, $language)
-    {
-        $exporter = new ThesaurusRdfExport();
-        $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
-
-        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.rdf';
-
-        return response($content)
-            ->header('Content-Type', 'application/rdf+xml')
-            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
-    }
-
+    /**
+     * Exporte un schéma de thésaurus au format CSV
+     *
+     * Format simple et tabulaire pour l'interopérabilité avec des tableurs
+     * et des outils bureautiques.
+     *
+     * @param ThesaurusScheme $scheme Le schéma à exporter
+     * @param bool $includeRelations Inclure les relations entre concepts
+     * @param string $language Langue des labels à inclure prioritairement
+     * @return \Illuminate\Http\Response
+     */
     private function exportToCsv($scheme, $includeRelations, $language)
     {
         $exporter = new ThesaurusCsvExport();
         $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
 
-        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.csv';
+        $fileName = 'thesaurus_export_csv_' . $scheme->identifier . '_' . date('YmdHis') . '.csv';
 
         return response($content)
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
+    /**
+     * Exporte un schéma de thésaurus au format JSON
+     *
+     * Format structuré pour l'interopérabilité avec des applications web
+     * et des API.
+     *
+     * @param ThesaurusScheme $scheme Le schéma à exporter
+     * @param bool $includeRelations Inclure les relations entre concepts
+     * @param string $language Langue des labels à inclure prioritairement
+     * @return \Illuminate\Http\Response
+     */
     private function exportToJson($scheme, $includeRelations, $language)
     {
         $exporter = new ThesaurusJsonExport();
         $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
 
-        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.json';
+        $fileName = 'thesaurus_export_json_' . $scheme->identifier . '_' . date('YmdHis') . '.json';
 
         return response($content)
             ->header('Content-Type', 'application/json')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
+    /**
+     * Importe un fichier au format SKOS-RDF
+     *
+     * SKOS (Simple Knowledge Organization System) est un modèle de données W3C
+     * pour représenter des thésaurus, taxonomies et autres systèmes d'organisation
+     * des connaissances. SKOS est exprimé en RDF, ce n'est pas un format distinct.
+     *
+     * @param string $path Chemin du fichier à importer
+     * @param int|null $schemeId ID du schéma existant ou null pour créer un nouveau
+     * @param string $language Langue par défaut des labels
+     * @param string $mergeMode Mode de fusion (replace, merge, append)
+     * @return array Résultats de l'import
+     */
     private function importFromSkos($path, $schemeId, $language, $mergeMode)
     {
         $importer = new ThesaurusSkosImport();
         return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
-    private function importFromRdf($path, $schemeId, $language, $mergeMode)
-    {
-        $importer = new ThesaurusRdfImport();
-        return $importer->import($path, $schemeId, $language, $mergeMode);
-    }
-
+    /**
+     * Importe un fichier au format CSV
+     *
+     * Format simple et tabulaire pour l'import de concepts de thésaurus
+     *
+     * @param string $path Chemin du fichier à importer
+     * @param int|null $schemeId ID du schéma existant ou null pour créer un nouveau
+     * @param string $language Langue par défaut des labels
+     * @param string $mergeMode Mode de fusion (replace, merge, append)
+     * @return array Résultats de l'import
+     */
     private function importFromCsv($path, $schemeId, $language, $mergeMode)
     {
         $importer = new ThesaurusCsvImport();
         return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
+    /**
+     * Importe un fichier au format JSON
+     *
+     * Format structuré pour l'interopérabilité avec d'autres systèmes
+     *
+     * @param string $path Chemin du fichier à importer
+     * @param int|null $schemeId ID du schéma existant ou null pour créer un nouveau
+     * @param string $language Langue par défaut des labels
+     * @param string $mergeMode Mode de fusion (replace, merge, append)
+     * @return array Résultats de l'import
+     */
     private function importFromJson($path, $schemeId, $language, $mergeMode)
     {
         $importer = new ThesaurusJsonImport();

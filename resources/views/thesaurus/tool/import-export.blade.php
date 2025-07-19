@@ -56,8 +56,7 @@
                                             <label for="format">Format du fichier</label>
                                             <select name="format" id="format" class="form-control @error('format') is-invalid @enderror" required>
                                                 <option value="">Sélectionnez un format</option>
-                                                <option value="skos">SKOS RDF/XML</option>
-                                                <option value="rdf">RDF/XML</option>
+                                                <option value="skos-rdf">SKOS/RDF (XML)</option>
                                                 <option value="csv">CSV</option>
                                                 <option value="json">JSON</option>
                                             </select>
@@ -138,8 +137,7 @@
                                         <div class="form-group">
                                             <label for="export_format">Format d'export</label>
                                             <select name="format" id="export_format" class="form-control @error('format') is-invalid @enderror" required>
-                                                <option value="skos">SKOS RDF/XML</option>
-                                                <option value="rdf">RDF/XML</option>
+                                                <option value="skos-rdf">SKOS/RDF (XML)</option>
                                                 <option value="csv">CSV</option>
                                                 <option value="json">JSON</option>
                                             </select>

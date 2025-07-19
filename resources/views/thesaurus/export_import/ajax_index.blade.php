@@ -17,16 +17,12 @@
                             <p>{{ __('Exportez votre thésaurus dans différents formats pour le partager ou l\'archiver.') }}</p>
 
                             <div class="d-grid gap-3">
-                                <button type="button" class="btn btn-primary export-btn" data-format="skos">
-                                    <i class="bi bi-file-earmark-code"></i> {{ __('Exporter au format SKOS (XML)') }}
+                                <button type="button" class="btn btn-primary export-btn" data-format="skos-rdf">
+                                    <i class="bi bi-file-earmark-code"></i> {{ __('Exporter au format SKOS/RDF (XML)') }}
                                     <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
                                 </button>
                                 <button type="button" class="btn btn-primary export-btn" data-format="csv">
                                     <i class="bi bi-file-earmark-spreadsheet"></i> {{ __('Exporter au format CSV') }}
-                                    <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
-                                </button>
-                                <button type="button" class="btn btn-primary export-btn" data-format="rdf">
-                                    <i class="bi bi-file-earmark-code"></i> {{ __('Exporter au format RDF (XML)') }}
                                     <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
                                 </button>
                             </div>
@@ -58,9 +54,8 @@
                                     <label for="import_format" class="form-label">{{ __('Format du fichier') }}</label>
                                     <select class="form-select" id="import_format" name="import_format" required>
                                         <option value="">{{ __('Sélectionner un format') }}</option>
-                                        <option value="skos">SKOS (XML/RDF)</option>
+                                        <option value="skos-rdf">SKOS/RDF (XML)</option>
                                         <option value="csv">CSV</option>
-                                        <option value="rdf">RDF (XML)</option>
                                     </select>
                                 </div>
 
@@ -145,17 +140,13 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-4">
-                                    <h5>{{ __('Format SKOS') }}</h5>
-                                    <p class="small">{{ __('Le format SKOS (Simple Knowledge Organization System) est une norme du W3C pour la représentation de thésaurus, de taxonomies et d\'autres types de vocabulaires contrôlés.') }}</p>
+                                <div class="col-md-6">
+                                    <h5>{{ __('Format SKOS/RDF') }}</h5>
+                                    <p class="small">{{ __('SKOS (Simple Knowledge Organization System) est une norme du W3C pour la représentation de thésaurus et de vocabulaires contrôlés, écrite en RDF (Resource Description Framework). Ce format permet la description sémantique et l\'échange standardisé de données terminologiques.') }}</p>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <h5>{{ __('Format CSV') }}</h5>
                                     <p class="small">{{ __('Le format CSV permet un import/export simple via des tableurs comme Excel ou LibreOffice Calc. Structure: terme, définition, synonymes, relations.') }}</p>
-                                </div>
-                                <div class="col-md-4">
-                                    <h5>{{ __('Format RDF') }}</h5>
-                                    <p class="small">{{ __('Resource Description Framework - format sémantique pour l\'échange de données liées et la représentation de connaissances.') }}</p>
                                 </div>
                             </div>
 
@@ -181,17 +172,13 @@ $(document).ready(function() {
         const helpText = $('#file-format-help');
 
         switch(format) {
-            case 'skos':
-                fileInput.attr('accept', '.xml,.rdf');
-                helpText.text('{{ __("Fichiers XML ou RDF acceptés") }}');
+            case 'skos-rdf':
+                fileInput.attr('accept', '.xml,.rdf,.n3,.ttl');
+                helpText.text('{{ __("Fichiers SKOS/RDF (XML, N3, TTL) acceptés") }}');
                 break;
             case 'csv':
                 fileInput.attr('accept', '.csv');
                 helpText.text('{{ __("Fichiers CSV acceptés") }}');
-                break;
-            case 'rdf':
-                fileInput.attr('accept', '.xml,.rdf,.n3,.ttl');
-                helpText.text('{{ __("Fichiers RDF (XML, N3, TTL) acceptés") }}');
                 break;
             default:
                 fileInput.attr('accept', '');

@@ -37,12 +37,10 @@ class ThesaurusExportImportController extends Controller
             $format = $request->input('format');
 
             switch ($format) {
-                case 'skos':
+                case 'skos-rdf':
                     return $this->exportSkosAjax($request);
                 case 'csv':
                     return $this->exportCsvAjax($request);
-                case 'rdf':
-                    return $this->exportRdfAjax($request);
                 default:
                     return response()->json([
                         'success' => false,
@@ -89,17 +87,20 @@ class ThesaurusExportImportController extends Controller
     }
 
     /**
-     * Export RDF via AJAX
+     * Export RDF via AJAX - cette méthode est maintenue pour compatibilité
+     * mais redirige vers exportSkosAjax car SKOS est écrit en RDF
+     * @deprecated
      */
     private function exportRdfAjax(Request $request)
     {
-        $conceptsQuery = $this->buildSearchQuery($request);
-        $concepts = $conceptsQuery->get();
-
-        $rdf = $this->generateRdfXml($concepts);
-
-        return response($rdf, 200)
-            ->header('Content-Type', 'application/rdf+xml')
+        // Redirection vers la méthode SKOS car SKOS est écrit en RDF
+        return $this->exportSkosAjax($request);
+    }
+    private function exportRdfAjax(Request $request)
+    {
+        // Redirection vers la méthode SKOS car SKOS est écrit en RDF
+        return $this->exportSkosAjax($request);
+    }
             ->header('Content-Disposition', 'attachment; filename="thesaurus-export-' . date('Y-m-d') . '.rdf"');
     }
 
@@ -434,29 +435,14 @@ class ThesaurusExportImportController extends Controller
     }
 
     /**
-     * Génère le contenu RDF XML
+     * Génère le contenu RDF XML - Cette méthode est maintenue pour compatibilité
+     * mais elle redirige vers generateSkosXml car SKOS est écrit en RDF
+     * @deprecated Utilisez plutôt generateSkosXml()
      */
     private function generateRdfXml($concepts)
     {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:dc="http://purl.org/dc/elements/1.1/"></rdf:RDF>');
-
-        foreach ($concepts as $concept) {
-            $prefLabel = $concept->labels()->where('type', 'prefLabel')->first();
-            if (!$prefLabel) continue;
-
-            $description = $xml->addChild('rdf:Description');
-            $description->addAttribute('rdf:about', $concept->uri);
-
-            $label = $description->addChild('rdfs:label', htmlspecialchars($prefLabel->literal_form));
-            $label->addAttribute('xml:lang', $prefLabel->language);
-
-            // Ajouter la note de portée si présente
-            $scopeNote = $concept->notes()->where('type', 'scopeNote')->orWhere('note_type', 'scopeNote')->first();
-            if ($scopeNote) {
-                $noteText = $scopeNote->note ?? $scopeNote->note_text ?? '';
-                $comment = $description->addChild('rdfs:comment', htmlspecialchars($noteText));
-                $comment->addAttribute('xml:lang', $scopeNote->language);
-            }
+        // Redirection vers la méthode SKOS car SKOS est écrit en RDF
+        return $this->generateSkosXml($concepts);
 
             // Ajouter les propriétés
             $properties = $concept->properties;
@@ -1068,15 +1054,15 @@ class ThesaurusExportImportController extends Controller
     /**
      * Traite l'import RDF
      */
+    /**
+     * Process RDF Import - Cette méthode est maintenue pour compatibilité
+     * mais elle redirige vers processSkosImport car SKOS est écrit en RDF
+     * @deprecated Utilisez plutôt processSkosImport()
+     */
     private function processRdfImport($file, $mode)
     {
-        try {
-            $content = file_get_contents($file->getPathname());
-            $xml = simplexml_load_string($content);
-
-            if (!$xml) {
-                return ['success' => false, 'message' => 'Fichier RDF invalide'];
-            }
+        // Redirection vers la méthode SKOS car SKOS est écrit en RDF
+        return $this->processSkosImport($file, $mode);
 
             // Enregistrer les namespaces pour XPath
             $namespaces = $xml->getNamespaces(true);
