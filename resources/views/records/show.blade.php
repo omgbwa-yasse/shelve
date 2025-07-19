@@ -395,7 +395,7 @@
                     <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">
                         {{ __('cancel') }}
                     </button>
-                    <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline">
+                    <form action="{{ route('records.destroy', $record) }}" method="POST" class="d-inline" id="delete-record-form">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-danger">
@@ -416,6 +416,13 @@
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Handle delete form submission
+            document.getElementById('delete-record-form').addEventListener('submit', function(e) {
+                if (!confirm("{{ __('delete_confirmation') }}")) {
+                    e.preventDefault();
+                }
             });
 
             // MCP API Functions
