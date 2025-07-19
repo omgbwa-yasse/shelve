@@ -49,7 +49,7 @@ class ThesaurusSkosImport
 
             // Désactiver les avertissements XML pour capturer les erreurs proprement
             libxml_use_internal_errors(true);
-            
+
             // Charger le fichier XML
             $xml = simplexml_load_file($filePath);
 
@@ -57,22 +57,52 @@ class ThesaurusSkosImport
             if ($xml === false) {
                 $errors = libxml_get_errors();
                 $errorMessages = [];
-                
+
                 foreach ($errors as $error) {
                     $errorMessages[] = "Ligne {$error->line}: {$error->message}";
                 }
-                
+
                 libxml_clear_errors();
                 throw new \Exception("Impossible de charger le fichier SKOS RDF. Erreurs XML: " . implode(", ", $errorMessages));
             }
 
-            // Enregistrer les namespaces
-            $xml->registerXPathNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-            $xml->registerXPathNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
-            $xml->registerXPathNamespace('dc', 'http://purl.org/dc/elements/1.1/');
+            // Récupérer les namespaces existants dans le document
+            $namespaces = $xml->getNamespaces(true);
 
-            // Trouver le ConceptScheme
+            // Enregistrer les namespaces standard et ceux du document
+            $standardNamespaces = [
+                'rdf' => 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                'skos' => 'http://www.w3.org/2004/02/skos/core#',
+                'dc' => 'http://purl.org/dc/elements/1.1/',
+                'dcterms' => 'http://purl.org/dc/terms/',
+                'owl' => 'http://www.w3.org/2002/07/owl#',
+                'rdfs' => 'http://www.w3.org/2000/01/rdf-schema#'
+            ];
+
+            // Enregistrer les namespaces standard
+            foreach ($standardNamespaces as $prefix => $uri) {
+                $xml->registerXPathNamespace($prefix, $uri);
+            }
+
+            // Enregistrer les namespaces du document qui ne sont pas dans les standard
+            foreach ($namespaces as $prefix => $uri) {
+                if (!empty($prefix) && !isset($standardNamespaces[$prefix])) {
+                    $xml->registerXPathNamespace($prefix, $uri);
+                }
+            }
+
+            // Vérifier si c'est un document SKOS valide
             $conceptSchemes = $xml->xpath('//skos:ConceptScheme');
+
+            // Si aucun ConceptScheme n'est trouvé, essayer d'autres schémas possibles
+            if (empty($conceptSchemes)) {
+                $conceptSchemes = $xml->xpath('//rdf:Description[@rdf:type="http://www.w3.org/2004/02/skos/core#ConceptScheme"]');
+
+                // Si toujours pas de schéma, vérifier la présence de Concepts au moins
+                if (empty($conceptSchemes) && empty($xml->xpath('//skos:Concept'))) {
+                    throw new \Exception("Ce fichier ne semble pas contenir de données SKOS valides. Aucun ConceptScheme ou Concept trouvé.");
+                }
+            }
 
             // Gérer le schéma de thésaurus
             $scheme = null;

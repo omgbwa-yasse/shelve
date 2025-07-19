@@ -173,7 +173,7 @@ class ThesaurusController extends Controller
         $schemeId = $request->input('scheme_id');
         $language = $request->input('language', 'fr-fr');
         $mergeMode = $request->input('merge_mode');
-        
+
         // Vérifier la cohérence entre le format sélectionné et l'extension du fichier
         $extension = strtolower($file->getClientOriginalExtension());
         if ($format === 'skos-rdf' && !in_array($extension, ['xml', 'rdf'])) {
@@ -215,14 +215,14 @@ class ThesaurusController extends Controller
             if (!file_exists($directory)) {
                 mkdir($directory, 0755, true);
             }
-            
+
             // Stocker le fichier temporairement avec des droits explicites
             $path = $file->storeAs('imports/thesaurus', $importId . '.' . $file->getClientOriginalExtension(), 'local');
             $fullPath = storage_path('app/' . $path);
-            
+
             // S'assurer que le fichier est accessible en lecture
             chmod($fullPath, 0644);
-            
+
             // Vérification supplémentaire que le fichier a été correctement stocké
             if (!file_exists($fullPath) || !is_readable($fullPath)) {
                 throw new \Exception("Le fichier n'a pas pu être stocké correctement ou n'est pas accessible en lecture.");
