@@ -6,7 +6,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Import/Export de thésaurus</h3>
+                    <h3 class="card-title">Import/Export de thésaurus **</h3>
                     <div class="card-tools">
                         <a href="{{ route('thesaurus.index') }}" class="btn btn-sm btn-secondary">
                             <i class="fas fa-arrow-left"></i> Retour
@@ -44,8 +44,9 @@
                                         @csrf
                                         <div class="form-group">
                                             <label for="file">Fichier à importer</label>
-                                            <input type="file" name="file" id="file" class="form-control-file @error('file') is-invalid @enderror" 
+                                            <input type="file" name="file" id="file" class="form-control-file @error('file') is-invalid @enderror"
                                                    accept=".xml,.rdf,.csv,.json" required>
+                                            <small class="form-text text-muted">Taille maximale autorisée: {{ ini_get('upload_max_filesize') }}</small>
                                             @error('file')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror

@@ -10,12 +10,22 @@ use App\Models\ThesaurusConceptNote;
 use App\Models\ThesaurusConceptRelation;
 use App\Models\ThesaurusOrganization;
 use App\Models\ThesaurusNamespace;
+use App\Exceptions\ThesaurusImportException;
+use App\Exports\ThesaurusSkosExport;
+use App\Exports\ThesaurusRdfExport;
+use App\Exports\ThesaurusCsvExport;
+use App\Exports\ThesaurusJsonExport;
+use App\Imports\ThesaurusSkosImport;
+use App\Imports\ThesaurusRdfImport;
+use App\Imports\ThesaurusCsvImport;
+use App\Imports\ThesaurusJsonImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Models\ThesaurusImport;
 
 class ThesaurusController extends Controller
 {
@@ -99,7 +109,7 @@ class ThesaurusController extends Controller
     }
 
     /**
-     * Exporter un schéma en format SKOS RDF
+     * Exporter un schéma en différents formats
      */
     public function exportScheme(Request $request)
     {
@@ -110,29 +120,31 @@ class ThesaurusController extends Controller
             'language' => 'nullable|string',
         ]);
 
-        $scheme = ThesaurusScheme::with([
-            'concepts.labels',
-            'concepts.notes',
-            'concepts.sourceRelations',
-            'concepts.targetRelations',
-            'organizations'
-        ])->findOrFail($request->scheme_id);
-
-        $format = $request->format;
+        $schemeId = $request->input('scheme_id');
+        $format = $request->input('format');
         $includeRelations = $request->boolean('include_relations', true);
-        $language = $request->language ?: 'fr-fr';
+        $language = $request->input('language', 'fr-fr');
 
-        switch ($format) {
-            case 'skos':
-                return $this->exportToSkos($scheme, $includeRelations, $language);
-            case 'rdf':
-                return $this->exportToRdf($scheme, $includeRelations, $language);
-            case 'csv':
-                return $this->exportToCsv($scheme, $includeRelations, $language);
-            case 'json':
-                return $this->exportToJson($scheme, $includeRelations, $language);
-            default:
-                return redirect()->back()->with('error', 'Format d\'export non supporté.');
+        try {
+            // Charger le schéma pour vérifier qu'il existe
+            $scheme = ThesaurusScheme::findOrFail($schemeId);
+
+            // Utiliser la méthode d'export appropriée selon le format
+            switch ($format) {
+                case 'skos':
+                    return $this->exportToSkos($scheme, $includeRelations, $language);
+                case 'rdf':
+                    return $this->exportToRdf($scheme, $includeRelations, $language);
+                case 'csv':
+                    return $this->exportToCsv($scheme, $includeRelations, $language);
+                case 'json':
+                    return $this->exportToJson($scheme, $includeRelations, $language);
+                default:
+                    return redirect()->back()->with('error', 'Format d\'export non supporté.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'export du thésaurus: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de l\'export: ' . $e->getMessage());
         }
     }
 
@@ -142,7 +154,7 @@ class ThesaurusController extends Controller
     public function importFile(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xml,rdf,csv,json|max:10240',
+            'file' => 'required|file|mimes:xml,rdf,csv,json|max:20720',
             'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
             'format' => 'required|in:skos,rdf,csv,json',
             'language' => 'nullable|string',
@@ -150,16 +162,16 @@ class ThesaurusController extends Controller
         ]);
 
         $file = $request->file('file');
-        $format = $request->format;
-        $schemeId = $request->scheme_id;
-        $language = $request->language ?: 'fr-fr';
-        $mergeMode = $request->merge_mode;
+        $format = $request->input('format');
+        $schemeId = $request->input('scheme_id');
+        $language = $request->input('language', 'fr-fr');
+        $mergeMode = $request->input('merge_mode');
 
         // Générer un ID unique pour cet import
         $importId = Str::uuid();
 
         // Enregistrer l'import
-        DB::table('thesaurus_imports')->insert([
+        $importRecord = \App\Models\ThesaurusImport::create([
             'id' => $importId,
             'type' => $format,
             'filename' => $file->getClientOriginalName(),
@@ -171,8 +183,9 @@ class ThesaurusController extends Controller
 
         try {
             // Stocker le fichier temporairement
-            $path = $file->storeAs('temp', $importId . '.' . $file->getClientOriginalExtension());
+            $path = $file->storeAs('imports/thesaurus', $importId . '.' . $file->getClientOriginalExtension(), 'local');
 
+            // Importer le fichier selon le format
             $result = match ($format) {
                 'skos' => $this->importFromSkos($path, $schemeId, $language, $mergeMode),
                 'rdf' => $this->importFromRdf($path, $schemeId, $language, $mergeMode),
@@ -182,39 +195,60 @@ class ThesaurusController extends Controller
             };
 
             // Mettre à jour le statut de l'import
-            DB::table('thesaurus_imports')
-                ->where('id', $importId)
-                ->update([
-                    'status' => 'completed',
-                    'total_items' => $result['total'],
-                    'processed_items' => $result['processed'],
-                    'created_items' => $result['created'],
-                    'updated_items' => $result['updated'],
-                    'error_items' => $result['errors'],
-                    'relationships_created' => $result['relationships'] ?? 0,
-                    'message' => $result['message'],
-                    'updated_at' => now(),
-                ]);
+            $importRecord->update([
+                'status' => 'completed',
+                'total_items' => $result['total'],
+                'processed_items' => $result['processed'],
+                'created_items' => $result['created'],
+                'updated_items' => $result['updated'],
+                'error_items' => $result['errors'],
+                'relationships_created' => $result['relationships'] ?? 0,
+                'message' => $result['message'],
+                'updated_at' => now(),
+            ]);
 
             // Supprimer le fichier temporaire
             Storage::delete($path);
 
             return redirect()->back()->with('success', $result['message']);
 
-        } catch (\Exception $e) {
-            // Mettre à jour le statut d'erreur
-            DB::table('thesaurus_imports')
-                ->where('id', $importId)
-                ->update([
-                    'status' => 'failed',
-                    'message' => $e->getMessage(),
-                    'updated_at' => now(),
-                ]);
+        } catch (ThesaurusImportException $e) {
+            // Gérer les erreurs spécifiques à l'import
+            Log::error('Erreur d\'import thésaurus: ' . $e->getMessage() . ' (Code: ' . $e->getCode() . ')');
 
-            Log::error('Erreur lors de l\'import du thésaurus: ' . $e->getMessage());
+            // Mettre à jour le statut de l'import
+            $importRecord->update([
+                'status' => 'error',
+                'message' => 'Erreur: ' . $e->getMessage(),
+                'updated_at' => now(),
+            ]);
+
+            // Nettoyer les fichiers temporaires si nécessaire
+            if (isset($path)) {
+                Storage::delete($path);
+            }
 
             return redirect()->back()->with('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+
+        } catch (\Exception $e) {
+            // Gérer les erreurs génériques
+            Log::error('Exception lors de l\'import thésaurus: ' . $e->getMessage());
+
+            // Mettre à jour le statut de l'import
+            $importRecord->update([
+                'status' => 'error',
+                'message' => 'Exception: ' . $e->getMessage(),
+                'updated_at' => now(),
+            ]);
+
+            // Nettoyer les fichiers temporaires si nécessaire
+            if (isset($path)) {
+                Storage::delete($path);
+            }
+
+            return redirect()->back()->with('error', 'Une erreur est survenue: ' . $e->getMessage());
         }
+
     }
 
     /**
@@ -826,70 +860,74 @@ class ThesaurusController extends Controller
 
     private function exportToSkos($scheme, $includeRelations, $language)
     {
-        return response('Export SKOS pas encore implémenté', 501);
+        $exporter = new ThesaurusSkosExport();
+        $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
+
+        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.rdf';
+
+        return response($content)
+            ->header('Content-Type', 'application/rdf+xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
     private function exportToRdf($scheme, $includeRelations, $language)
     {
-        return response('Export RDF pas encore implémenté', 501);
+        $exporter = new ThesaurusRdfExport();
+        $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
+
+        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.rdf';
+
+        return response($content)
+            ->header('Content-Type', 'application/rdf+xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
     private function exportToCsv($scheme, $includeRelations, $language)
     {
-        return response('Export CSV pas encore implémenté', 501);
+        $exporter = new ThesaurusCsvExport();
+        $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
+
+        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.csv';
+
+        return response($content)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
     private function exportToJson($scheme, $includeRelations, $language)
     {
-        return response('Export JSON pas encore implémenté', 501);
+        $exporter = new ThesaurusJsonExport();
+        $content = $exporter->export($scheme->getKey(), $language, $includeRelations);
+
+        $fileName = 'thesaurus_export_' . $scheme->identifier . '_' . date('YmdHis') . '.json';
+
+        return response($content)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
     }
 
     private function importFromSkos($path, $schemeId, $language, $mergeMode)
     {
-        return [
-            'total' => 0,
-            'processed' => 0,
-            'created' => 0,
-            'updated' => 0,
-            'errors' => 0,
-            'message' => 'Import SKOS pas encore implémenté',
-        ];
+        $importer = new ThesaurusSkosImport();
+        return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
     private function importFromRdf($path, $schemeId, $language, $mergeMode)
     {
-        return [
-            'total' => 0,
-            'processed' => 0,
-            'created' => 0,
-            'updated' => 0,
-            'errors' => 0,
-            'message' => 'Import RDF pas encore implémenté',
-        ];
+        $importer = new ThesaurusRdfImport();
+        return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
     private function importFromCsv($path, $schemeId, $language, $mergeMode)
     {
-        return [
-            'total' => 0,
-            'processed' => 0,
-            'created' => 0,
-            'updated' => 0,
-            'errors' => 0,
-            'message' => 'Import CSV pas encore implémenté',
-        ];
+        $importer = new ThesaurusCsvImport();
+        return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
     private function importFromJson($path, $schemeId, $language, $mergeMode)
     {
-        return [
-            'total' => 0,
-            'processed' => 0,
-            'created' => 0,
-            'updated' => 0,
-            'errors' => 0,
-            'message' => 'Import JSON pas encore implémenté',
-        ];
+        $importer = new ThesaurusJsonImport();
+        return $importer->import($path, $schemeId, $language, $mergeMode);
     }
 
     private function buildHierarchyTree($concepts)

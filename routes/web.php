@@ -702,28 +702,6 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('search', [ThesaurusSearchController::class, 'index'])->name('thesaurus.search.index');
             Route::get('search/results', [ThesaurusSearchController::class, 'search'])->name('thesaurus.search.results');
 
-            // Route pour la page d'accueil d'import/export
-            Route::get('export-import', [ThesaurusExportImportController::class, 'index'])->name('thesaurus.export_import.index');
-
-            // Routes pour l'export
-            Route::get('export/skos', [ThesaurusExportImportController::class, 'exportSkos'])->name('thesaurus.export.skos');
-            Route::get('export/csv', [ThesaurusExportImportController::class, 'exportCsv'])->name('thesaurus.export.csv');
-            Route::get('export/rdf', [ThesaurusExportImportController::class, 'exportRdf'])->name('thesaurus.export.rdf');
-
-            // Routes pour l'import/export
-            Route::get('import/skos', [ThesaurusExportImportController::class, 'showImportSkosForm'])->name('thesaurus.import.skos.form');
-            Route::post('import/skos', [ThesaurusExportImportController::class, 'importSkos'])->name('thesaurus.import.skos.process');
-            Route::get('import/csv', [ThesaurusExportImportController::class, 'showImportCsvForm'])->name('thesaurus.import.csv.form');
-            Route::post('import/csv', [ThesaurusExportImportController::class, 'importCsv'])->name('thesaurus.import.csv.process');
-            Route::get('import/rdf', [ThesaurusExportImportController::class, 'showImportRdfForm'])->name('thesaurus.import.rdf.form');
-            Route::post('import/rdf', [ThesaurusExportImportController::class, 'importRdf'])->name('thesaurus.import.rdf.process');
-
-            // Routes AJAX pour l'import/export
-            Route::post('export/ajax', [ThesaurusExportImportController::class, 'exportAjax'])->name('thesaurus.export.ajax');
-            Route::post('import/preview', [ThesaurusExportImportController::class, 'importPreview'])->name('thesaurus.import.preview');
-            Route::post('import/process', [ThesaurusExportImportController::class, 'importProcess'])->name('thesaurus.import.process');
-            Route::get('download/{filename}', [ThesaurusExportImportController::class, 'downloadExport'])->name('thesaurus.download.export');
-
             // Routes pour les fonctionnalités thésaurus (via ThesaurusController)
             Route::get('concepts', [ThesaurusController::class, 'concepts'])->name('thesaurus.concepts');
             Route::get('concepts/{concept}', [ThesaurusController::class, 'showConcept'])->name('thesaurus.concepts.show');
