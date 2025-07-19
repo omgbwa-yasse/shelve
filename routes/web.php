@@ -683,7 +683,6 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
-
             // Page d'accueil du module
             Route::resource('/',ThesaurusController::class)->names('thesaurus');
 
@@ -765,11 +764,6 @@ Route::group(['middleware' => 'auth'], function () {
         // Route resource pour les messages (sans le store pour éviter les conflits)
         Route::resource('chats.messages', AiChatMessageController::class)->except(['store'])->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
-        // Route::resource('actions', AiActionController::class)->names('ai.actions');
-        // Route::resource('action-batches', AiActionBatchController::class)->names('ai.action-batches');
-        // Route::resource('feedback', AiFeedbackController::class)->names('ai.feedback');
-        // Route::resource('jobs', AiJobController::class)->only(['index', 'show', 'destroy', 'create'])->names('ai.jobs');
-        // Route::resource('resources', AiResourceController::class)->names('ai.resources');
 
         // Routes de configuration AI protégées par la permission ai_configure
         Route::middleware(['can:ai_configure'])->group(function () {

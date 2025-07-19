@@ -248,4 +248,33 @@ class ThesaurusConcept extends Model
     {
         return $query->where('status', 1);
     }
+
+    /**
+     * Relations avec les collections (membre de collections)
+     */
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ThesaurusCollection::class,
+            'thesaurus_collection_members',
+            'concept_id',
+            'collection_id'
+        )->withPivot('position');
+    }
+
+    /**
+     * Relations avec les collections ordonnées
+     */
+    public function orderedCollections()
+    {
+        return $this->collections()->where('ordered', true);
+    }
+
+    /**
+     * Relations avec les collections non-ordonnées
+     */
+    public function unorderedCollections()
+    {
+        return $this->collections()->where('ordered', false);
+    }
 }

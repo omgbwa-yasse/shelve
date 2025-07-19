@@ -91,4 +91,28 @@ class ThesaurusScheme extends Model
     {
         return $this->identifier ? "[{$this->identifier}] {$this->title}" : $this->title;
     }
+
+    /**
+     * Relation avec les collections appartenant à ce schéma
+     */
+    public function collections(): HasMany
+    {
+        return $this->hasMany(ThesaurusCollection::class, 'scheme_id');
+    }
+
+    /**
+     * Relation avec les collections ordonnées
+     */
+    public function orderedCollections()
+    {
+        return $this->collections()->where('ordered', true);
+    }
+
+    /**
+     * Relation avec les collections non-ordonnées
+     */
+    public function unorderedCollections()
+    {
+        return $this->collections()->where('ordered', false);
+    }
 }
