@@ -161,7 +161,7 @@ class ThesaurusController extends Controller
     public function importFile(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xml,rdf,csv,json|max:20720',
+            'file' => 'required|file|mimes:xml,rdf,csv,json,ttl,n3|max:20720',
             'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
             'format' => 'required|in:skos-rdf,csv,json',
             'language' => 'nullable|string',
@@ -173,6 +173,27 @@ class ThesaurusController extends Controller
         $schemeId = $request->input('scheme_id');
         $language = $request->input('language', 'fr-fr');
         $mergeMode = $request->input('merge_mode');
+        
+        // Vérifier la cohérence entre le format sélectionné et l'extension du fichier
+        $extension = strtolower($file->getClientOriginalExtension());
+        if ($format === 'skos-rdf' && !in_array($extension, ['xml', 'rdf'])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Le format SKOS-RDF nécessite un fichier avec extension .xml ou .rdf"
+            ], 400);
+        }
+        if ($format === 'csv' && $extension !== 'csv') {
+            return response()->json([
+                'success' => false,
+                'message' => "Le format CSV nécessite un fichier avec extension .csv"
+            ], 400);
+        }
+        if ($format === 'json' && $extension !== 'json') {
+            return response()->json([
+                'success' => false,
+                'message' => "Le format JSON nécessite un fichier avec extension .json"
+            ], 400);
+        }
 
         // Générer un ID unique pour cet import
         $importId = Str::uuid();
@@ -189,8 +210,23 @@ class ThesaurusController extends Controller
         ]);
 
         try {
-            // Stocker le fichier temporairement
+            // Créer le répertoire s'il n'existe pas
+            $directory = storage_path('app/imports/thesaurus');
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            
+            // Stocker le fichier temporairement avec des droits explicites
             $path = $file->storeAs('imports/thesaurus', $importId . '.' . $file->getClientOriginalExtension(), 'local');
+            $fullPath = storage_path('app/' . $path);
+            
+            // S'assurer que le fichier est accessible en lecture
+            chmod($fullPath, 0644);
+            
+            // Vérification supplémentaire que le fichier a été correctement stocké
+            if (!file_exists($fullPath) || !is_readable($fullPath)) {
+                throw new \Exception("Le fichier n'a pas pu être stocké correctement ou n'est pas accessible en lecture.");
+            }
 
             // Importer le fichier selon le format
             $result = match ($format) {

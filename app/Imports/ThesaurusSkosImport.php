@@ -36,12 +36,34 @@ class ThesaurusSkosImport
         ];
 
         try {
-            // Charger le fichier XML
+            // Vérifier si le fichier existe
             $filePath = Storage::path($path);
+            if (!file_exists($filePath)) {
+                throw new \Exception("Le fichier n'existe pas à l'emplacement spécifié: {$filePath}");
+            }
+
+            // Vérifier si le fichier est lisible
+            if (!is_readable($filePath)) {
+                throw new \Exception("Le fichier n'est pas accessible en lecture: {$filePath}");
+            }
+
+            // Désactiver les avertissements XML pour capturer les erreurs proprement
+            libxml_use_internal_errors(true);
+            
+            // Charger le fichier XML
             $xml = simplexml_load_file($filePath);
 
-            if (!$xml) {
-                throw new \Exception("Impossible de charger le fichier SKOS RDF.");
+            // Vérifier si le chargement a réussi
+            if ($xml === false) {
+                $errors = libxml_get_errors();
+                $errorMessages = [];
+                
+                foreach ($errors as $error) {
+                    $errorMessages[] = "Ligne {$error->line}: {$error->message}";
+                }
+                
+                libxml_clear_errors();
+                throw new \Exception("Impossible de charger le fichier SKOS RDF. Erreurs XML: " . implode(", ", $errorMessages));
             }
 
             // Enregistrer les namespaces
