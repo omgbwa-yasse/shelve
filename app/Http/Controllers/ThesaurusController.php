@@ -53,11 +53,65 @@ class ThesaurusController extends Controller
     }
 
     /**
-     * Stocker un nouveau concept
+     * Stocker un nouveau schéma de thésaurus
      */
     public function store(Request $request)
     {
-        // Logic pour créer un nouveau concept
+        try {
+            $validated = $request->validate([
+                'identifier' => 'required|string|max:50|unique:thesaurus_schemes',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'language' => 'required|string|max:10',
+                'namespace_uri' => 'nullable|url|max:255',
+            ]);
+
+            DB::beginTransaction();
+
+            // Générer une URI unique basée sur l'identifiant
+            $baseUri = config('app.url') . '/thesaurus/schemes/';
+            $uri = $baseUri . Str::slug($validated['identifier']);
+
+            // Créer le schéma
+            $scheme = new ThesaurusScheme();
+            $scheme->identifier = $validated['identifier'];
+            $scheme->title = $validated['title'];
+            $scheme->description = $validated['description'] ?? null;
+            $scheme->language = $validated['language'];
+            $scheme->uri = $uri;
+            $scheme->save();
+
+            // Créer un namespace si URI fourni
+            if (!empty($validated['namespace_uri'])) {
+                try {
+                    $namespace = new ThesaurusNamespace();
+                    $namespace->prefix = $validated['identifier'];
+                    $namespace->namespace_uri = $validated['namespace_uri'];
+                    $namespace->description = 'Namespace for ' . $validated['title'];
+                    $namespace->save();
+
+                    // Mise à jour du schéma avec l'ID du namespace
+                    $scheme->namespace_id = $namespace->id;
+                    $scheme->save();
+                } catch (\Exception $e) {
+                    Log::error('Erreur lors de la création du namespace: ' . $e->getMessage());
+                    // On continue sans namespace
+                }
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('thesaurus.index')
+                ->with('success', 'Schéma de thésaurus créé avec succès.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Erreur lors de la création du schéma de thésaurus: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Une erreur est survenue: ' . $e->getMessage());
+        }
     }
 
     /**

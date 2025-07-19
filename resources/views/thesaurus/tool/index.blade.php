@@ -67,6 +67,9 @@
                                 <a href="{{ route('thesaurus.statistics') }}" class="btn btn-info">
                                     <i class="fas fa-chart-bar"></i> Statistiques détaillées
                                 </a>
+                                <a href="{{ route('thesaurus.create') }}" class="btn btn-warning">
+                                    <i class="fas fa-plus-circle"></i> Nouveau thésaurus
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -101,11 +104,11 @@
                                                 <td>{{ Str::limit($scheme->description, 100) }}</td>
                                                 <td>
                                                     <div class="btn-group btn-group-sm" role="group">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                        <button type="button" class="btn btn-outline-primary btn-sm"
                                                                 onclick="exportScheme({{ $scheme->id }})">
                                                             <i class="fas fa-download"></i> Export
                                                         </button>
-                                                        <a href="{{ route('thesaurus.record-concept-relations', ['scheme_id' => $scheme->id]) }}" 
+                                                        <a href="{{ route('thesaurus.record-concept-relations', ['scheme_id' => $scheme->id]) }}"
                                                            class="btn btn-outline-success btn-sm">
                                                             <i class="fas fa-link"></i> Relations
                                                         </a>
@@ -142,7 +145,7 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="scheme_id" id="export_scheme_id">
-                    
+
                     <div class="form-group">
                         <label for="format">Format d'export</label>
                         <select name="format" id="format" class="form-control" required>

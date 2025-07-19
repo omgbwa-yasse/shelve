@@ -203,6 +203,11 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('thesaurus.schemes.index') }}">
+                    <i class="bi bi-card-list"></i> {{ __('Schémas de thésaurus') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('thesaurus.search.index') }}">
                     <i class="bi bi-search"></i> {{ __('search_thesaurus') }}
                 </a>

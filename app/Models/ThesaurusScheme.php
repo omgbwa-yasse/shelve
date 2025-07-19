@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
 
 class ThesaurusScheme extends Model
 {
@@ -17,6 +19,7 @@ class ThesaurusScheme extends Model
         'title',
         'description',
         'language',
+        'namespace_id',
         'dc_relation',
         'dc_source',
         'issued',
@@ -50,6 +53,14 @@ class ThesaurusScheme extends Model
         return $this->belongsToMany(ThesaurusOrganization::class, 'thesaurus_scheme_organizations', 'scheme_id', 'organization_id')
                     ->withPivot('role')
                     ->withTimestamps();
+    }
+
+    /**
+     * Relation avec le namespace principal du schéma
+     */
+    public function namespace(): BelongsTo
+    {
+        return $this->belongsTo(ThesaurusNamespace::class, 'namespace_id');
     }
 
     /**

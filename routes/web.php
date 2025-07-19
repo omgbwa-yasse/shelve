@@ -59,6 +59,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ThesaurusAssociativeRelationController;
 use App\Http\Controllers\ThesaurusTranslationController;
 use App\Http\Controllers\ThesaurusController;
+use App\Http\Controllers\ThesaurusSchemeController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
 use App\Http\Controllers\PublicSearchLogController;
@@ -685,6 +686,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::prefix('thesaurus')->group(function () {
             // Page d'accueil du module
             Route::resource('/',ThesaurusController::class)->names('thesaurus');
+
+            // Routes pour la gestion des schémas de thésaurus
+            Route::resource('schemes', ThesaurusSchemeController::class)->names('thesaurus.schemes');
 
             // Relations associatives - contrôleur existe
             Route::get('associative-relations', [ThesaurusAssociativeRelationController::class, 'index'])->name('thesaurus.associative_relations.index');
