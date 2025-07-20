@@ -53,6 +53,57 @@
             margin-right: 0.5rem;
             font-size: 1rem;
         }
+
+        /* Styles pour les libellés des menus principaux */
+        .header-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 5px;
+            padding-top: 2px; /* Ajout d'un léger padding supérieur */
+        }
+
+        .header-nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 8px 4px 0 4px; /* Augmentation du padding supérieur */
+            text-decoration: none !important; /* Supprimer le soulignement */
+        }
+
+        .header-nav-link:hover {
+            text-decoration: none !important; /* Supprimer le soulignement au survol */
+        }
+
+        .header-nav-link i {
+            margin-bottom: 3px; /* Rapproche l'icône du texte */
+            line-height: 1;
+        }
+
+        .nav-label {
+            font-size: 0.49rem; /* Réduction de 30% par rapport à 0.7rem */
+            margin-top: 0; /* Suppression complète de la marge du dessus */
+            color: inherit;
+            font-weight: 400;
+            line-height: 1; /* Réduction de l'espacement des lignes */
+        }
+
+        /* Empêcher la mise en gras et le soulignement sur les liens du menu */
+        .header-nav-link.active,
+        .header-nav-link:hover,
+        .header-nav-link:active,
+        .header-nav-link:focus {
+            text-decoration: none !important;
+            font-weight: normal !important;
+            color: inherit;
+        }
+
+        .header-nav-link.active .nav-label,
+        .header-nav-link:hover .nav-label {
+            font-weight: 400 !important;
+            text-decoration: none !important;
+        }
     </style>
 </head>
 
@@ -111,11 +162,12 @@
                 @endif
 
                 <!-- Navigation principale -->
-                <nav class="header-nav">
+                <nav class="header-nav" style="padding-top: 3px;">
                     @can('module_bulletin_boards_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
                             <i class="bi bi-card-text" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Bulletin Boards') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -127,6 +179,7 @@
                             <span id="mail-notification-badge" class="position-absolute badge badge-danger" style="top: -5px; right: -10px; font-size: 0.7rem; display: none;">
                                 <span id="notification-count">0</span>
                             </span>
+                            <span class="nav-label">{{ __('Mails') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -134,6 +187,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
                             <i class="bi bi-folder" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Records') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -141,6 +195,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}">
                             <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Communications') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -148,6 +203,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}">
                             <i class="bi bi-arrow-left-right" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Transfers') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -155,6 +211,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}">
                             <i class="bi bi-building" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Deposits') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -162,6 +219,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}">
                             <i class="bi bi-tools" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Tools') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -169,6 +227,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
                             <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Dollies') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -176,6 +235,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.dashboard') }}">
                             <i class="bi bi-diagram-3" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Workflows') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -183,12 +243,14 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}">
                             <i class="bi bi-people" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Contacts') }}</span>
                         </a>
                     </div>
                     @can('module_ai_access')
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
                             <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('AI') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -196,6 +258,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
                             <i class="bi bi-globe" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Public') }}</span>
                         </a>
                     </div>
                     @endcan
@@ -203,6 +266,7 @@
                     <div class="header-nav-item">
                         <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
                             <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
+                            <span class="nav-label">{{ __('Settings') }}</span>
                         </a>
                     </div>
                     @endcan
