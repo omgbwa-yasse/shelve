@@ -35,10 +35,7 @@ class MailWorkflowController extends Controller
 
         // Récupérer les workflows où l'utilisateur a des assignations
         $workflows = WorkflowInstance::whereHas('stepInstances', function ($query) use ($user) {
-            $query->whereHas('assignments', function ($subQuery) use ($user) {
-                $subQuery->where('assignee_type', 'user')
-                        ->where('assignee_id', $user->id);
-            });
+            $query->where('assigned_to_user_id', $user->id);
         })->latest()->get();
 
         return view('mails.workflows.my-workflows', compact('workflows'));
