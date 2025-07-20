@@ -14,18 +14,15 @@ class MailWorkflowController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $organisation = $user->currentOrganisation;
         $workflows = collect();
-        
-        if ($organisation) {
-            // Récupérer les workflows via les templates associés à l'organisation
-            $workflows = WorkflowInstance::whereHas('template', function ($query) use ($organisation) {
-                $query->whereHas('organisations', function ($subQuery) use ($organisation) {
-                    $subQuery->where('organisation_id', $organisation->id);
-                });
-            })->latest()->get();
+
+        if ($user->current_organisation_id) {
+            // Récupérer les workflows assignés à l'organisation
+            $workflows = WorkflowInstance::assignedToOrganisation($user->current_organisation_id)
+                ->latest()
+                ->get();
         }
-        
+
         return view('mails.workflows.index', compact('workflows'));
     }
 
@@ -35,7 +32,7 @@ class MailWorkflowController extends Controller
     public function myWorkflows()
     {
         $user = Auth::user();
-        
+
         // Récupérer les workflows où l'utilisateur a des assignations
         $workflows = WorkflowInstance::whereHas('stepInstances', function ($query) use ($user) {
             $query->whereHas('assignments', function ($subQuery) use ($user) {
@@ -43,7 +40,7 @@ class MailWorkflowController extends Controller
                         ->where('assignee_id', $user->id);
             });
         })->latest()->get();
-        
+
         return view('mails.workflows.my-workflows', compact('workflows'));
     }
 }
