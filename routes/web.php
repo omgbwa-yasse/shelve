@@ -51,11 +51,6 @@ use App\Http\Controllers\OrganisationController;
 use App\Http\Controllers\OrganisationRoomController;
 use App\Http\Controllers\OrganisationActivityController;
 use App\Http\Controllers\LanguageController;
-
-// use App\Http\Controllers\TermController; // Obsolète - contrôleur supprimé
-// use App\Http\Controllers\NonDescriptorController; // Obsolète - contrôleur supprimé
-// use App\Http\Controllers\ExternalAlignmentController; // Obsolète - contrôleur supprimé
-// use App\Http\Controllers\HierarchicalRelationController; // Obsolète - contrôleur supprimé
 use App\Http\Controllers\ThesaurusAssociativeRelationController;
 use App\Http\Controllers\ThesaurusTranslationController;
 use App\Http\Controllers\ThesaurusController;
@@ -149,11 +144,6 @@ use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskAssignmentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SystemNotificationController;
-
-use App\Http\Controllers\PortalEventController;
-use App\Http\Controllers\PortalNewsController;
-use App\Http\Controllers\PortalPageController;
-
 use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\MailTaskController;
 
