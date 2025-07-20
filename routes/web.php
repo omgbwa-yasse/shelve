@@ -155,6 +155,7 @@ use App\Http\Controllers\PortalNewsController;
 use App\Http\Controllers\PortalPageController;
 
 use App\Http\Controllers\OllamaController;
+use App\Http\Controllers\MailTaskController;
 
 
 Auth::routes();
@@ -387,17 +388,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
         Route::get('InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
-
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
         Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
-
         Route::get('chart', [SearchMailController::class, 'chart'])->name('mails.chart');
-
-
         Route::resource('archives', MailArchiveController::class)->names('mail-archive');
-
         Route::post('archives/{containerId}/add-mails', [MailArchiveController::class, 'addMails'])->name('mail-archive.add-mails');
         Route::post('archives/{containerId}/remove-mails', [MailArchiveController::class, 'removeMails'])->name('mail-archive.remove-mails');
+
+        // Routes pour les tâches et workflows
+        Route::get('tasks', [MailTaskController::class, 'index'])->name('mails.tasks.index');
+        Route::get('my-tasks', [MailTaskController::class, 'myTasks'])->name('mails.tasks.my-tasks');
+        Route::get('workflows', [MailWorkflowController::class, 'index'])->name('mails.workflows.index');
+        Route::get('my-workflows', [MailWorkflowController::class, 'myWorkflows'])->name('mails.workflows.my-workflows');
+
     });
 
     // Routes pour les contacts et organisations externes
