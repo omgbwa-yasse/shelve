@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use App\Models\Organisation;
+use App\Models\Notification;
+use App\Enums\NotificationModule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,6 +28,9 @@ class BulletinBoardController extends Controller
         $organisations = Organisation::all();
         return view('bulletin-boards.create', compact('organisations'));
     }
+
+
+
 
     public function store(Request $request)
     {
@@ -58,17 +63,25 @@ class BulletinBoardController extends Controller
             ->with('success', 'Tableau d\'affichage créé avec succès.');
     }
 
+
+
+
     public function show(BulletinBoard $bulletinBoard)
     {
         $bulletinBoard->load(['creator', 'organisations', 'events', 'posts', 'users']);
         return view('bulletin-boards.show', compact('bulletinBoard'));
     }
 
+
+
+
     public function edit(BulletinBoard $bulletinBoard)
     {
         $organisations = Organisation::all();
         return view('bulletin-boards.edit', compact('bulletinBoard', 'organisations'));
     }
+
+
 
     public function update(Request $request, BulletinBoard $bulletinBoard)
     {
@@ -102,6 +115,8 @@ class BulletinBoardController extends Controller
             ->with('success', 'Tableau d\'affichage mis à jour avec succès.');
     }
 
+
+
     public function destroy(BulletinBoard $bulletinBoard)
     {
         $bulletinBoard->load(['posts', 'events', 'organisations']);
@@ -117,6 +132,7 @@ class BulletinBoardController extends Controller
         return redirect()->route('bulletin-boards.index')
                 ->with('success', 'Tableau d\'affichage supprimé avec succès.');
     }
+
 
     public function dashboard()
     {
@@ -140,6 +156,7 @@ class BulletinBoardController extends Controller
         return view('bulletin-boards.my-posts', compact('posts'));
     }
 
+
     public function archives()
     {
         $bulletinBoards = BulletinBoard::onlyTrashed()
@@ -150,6 +167,7 @@ class BulletinBoardController extends Controller
 
         return view('bulletin-boards.archives', compact('bulletinBoards'));
     }
+
 
     public function toggleArchive(BulletinBoard $bulletinBoard)
     {
@@ -182,4 +200,8 @@ class BulletinBoardController extends Controller
         $bulletinBoard->organisations()->detach($organisation->id);
         return back()->with('success', 'Organisation retirée avec succès.');
     }
+
+
+
+
 }

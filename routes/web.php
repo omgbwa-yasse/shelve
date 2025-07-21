@@ -260,6 +260,12 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('bulletin-boards.posts.attachments.ajax.store');
         Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}/ajax', [PostController::class, 'attachmentsAjaxDestroy'])
             ->name('bulletin-boards.posts.attachments.ajax.destroy');
+
+        // Routes pour les notifications des bulletin boards
+        Route::prefix('notifications')->name('bulletin-boards.notifications.')->group(function () {
+            Route::get('/', [NotificationController::class, 'bulletinBoardsUser'])->name('user');
+            Route::get('/organisation', [NotificationController::class, 'bulletinBoardsOrganisation'])->name('organisation');
+        });
     });
 
 
