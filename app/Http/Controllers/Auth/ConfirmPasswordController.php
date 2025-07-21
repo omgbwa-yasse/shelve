@@ -25,7 +25,7 @@ class ConfirmPasswordController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/repositories/records';
+    protected $redirectTo = '/mails/file';
 
     /**
      * Create a new controller instance.
