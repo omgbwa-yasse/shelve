@@ -263,8 +263,8 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Routes pour les notifications des bulletin boards
         Route::prefix('notifications')->name('bulletin-boards.notifications.')->group(function () {
-            Route::get('/', [BulletinBoardController::class, 'userNotifications'])->name('user');
-            Route::get('/organisation', [BulletinBoardController::class, 'organisationNotifications'])->name('organisation');
+            Route::get('/', [NotificationController::class, 'bulletinBoardsUser'])->name('user');
+            Route::get('/organisation', [NotificationController::class, 'bulletinBoardsOrganisation'])->name('organisation');
         });
     });
 

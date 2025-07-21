@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use App\Models\Organisation;
-use App\Models\Notification;
-use App\Enums\NotificationModule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -199,40 +197,5 @@ class BulletinBoardController extends Controller
     {
         $bulletinBoard->organisations()->detach($organisation->id);
         return back()->with('success', 'Organisation retirée avec succès.');
-    }
-
-
-
-    public function userNotifications(Request $request)
-    {
-        $userId = Auth::id();
-
-        $notifications = Notification::forUser($userId)
-            ->forModule(NotificationModule::BULLETIN_BOARDS)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $title = 'Mes notifications - Bulletin Boards';
-        $type = 'user';
-        $id = $userId;
-
-        return view('bulletin-boards.notifications.index', compact('notifications', 'title', 'type', 'id'));
-    }
-
-
-    public function organisationNotifications(Request $request)
-    {
-        $organisationId = Auth::currentOrganisationId();
-
-        $notifications = Notification::forOrganisation($organisationId)
-            ->forModule(NotificationModule::BULLETIN_BOARDS)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $title = 'Notifications de l\'organisation - Bulletin Boards';
-        $type = 'organisation';
-        $id = $organisationId;
-
-        return view('bulletin-boards.notifications.index', compact('notifications', 'title', 'type', 'id'));
     }
 }
