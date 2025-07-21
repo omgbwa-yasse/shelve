@@ -37,10 +37,6 @@ class AppServiceProvider extends ServiceProvider
         // Enregistrer nos Gates personnalisés
         PolicyService::registerGates();
 
-        // Enregistrer les observers
-        \App\Models\TaskAssignment::observe(\App\Observers\TaskAssignmentObserver::class);
-        \App\Models\TaskUser::observe(\App\Observers\TaskUserObserver::class);
-
         $this->handleLocale();
 
         // Add the SetLocale middleware to the web group
