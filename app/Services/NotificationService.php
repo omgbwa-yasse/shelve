@@ -28,7 +28,7 @@ class NotificationService
         ?string $resourceType = null
     ): Notification {
         return Notification::create([
-            'type' => 'App\Notifications\SystemNotification',  // Ajout du type requis
+            'type' => 'App\Notifications\SystemNotification',
             'message' => $message,
             'module' => $module,
             'user_id' => $userId,
