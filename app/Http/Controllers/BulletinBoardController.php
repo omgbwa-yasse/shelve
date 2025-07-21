@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use App\Models\Organisation;
+use App\Models\Notification;
+use App\Enums\NotificationModule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -198,4 +200,8 @@ class BulletinBoardController extends Controller
         $bulletinBoard->organisations()->detach($organisation->id);
         return back()->with('success', 'Organisation retirée avec succès.');
     }
+
+
+
+
 }
