@@ -1,6 +1,25 @@
 <div class="submenu-container py-2">
     <!-- Google Fonts - Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnec    <!-- Notifications Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-bell"></i> {{ __('Notifications') }}
+        </div>
+        <div class="submenu-content" id="notificationsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.user') }}">
+                    <i class="bi bi-person"></i> Mes Notifications
+                </a>
+            </div>
+            @if(auth()->user() && isset(auth()->user()->current_organisation_id))
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.organisation') }}">
+                    <i class="bi bi-building"></i> Notifications Organisation
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>ts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -92,6 +111,27 @@
             transform: rotate(-90deg);
         }
     </style>
+
+    <!-- Notifications Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-bell"></i> {{ __('Notifications') }}
+        </div>
+        <div class="submenu-content" id="notificationsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.user') }}">
+                    <i class="bi bi-person"></i> Mes Notifications
+                </a>
+            </div>
+            @if(auth()->user() && auth()->user()->current_organisation_id)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.organisation') }}">
+                    <i class="bi bi-building"></i> Notifications Organisation
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
 
     <!-- Recherche Section -->
     @can('viewAny', App\Models\BulletinBoard::class)
