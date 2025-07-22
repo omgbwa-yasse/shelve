@@ -151,38 +151,6 @@ use App\Http\Controllers\MailTaskController;
 
 Auth::routes();
 
-// Route de test temporaire pour les notifications
-Route::get('/test-notifications', function () {
-    try {
-        $service = new NotificationService();
-
-        $notification = $service->createForOrganisation(
-            1,
-            NotificationModule::BULLETIN_BOARDS,
-            'Test Notification',
-            NotificationAction::CREATE,
-            'Ceci est un test du nouveau système de notifications'
-        );
-
-        return response()->json([
-            'success' => true,
-            'notification_id' => $notification->id,
-            'module' => $notification->module->value,
-            'action' => $notification->action->value,
-            'message' => $notification->message,
-            'created_at' => $notification->created_at
-        ]);
-
-    } catch (Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ], 500);
-    }
-});
-
-Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 
