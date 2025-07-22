@@ -45,7 +45,7 @@ return new class extends Migration
             $table->index(['action', 'created_at']);
             $table->index(['related_entity_type', 'related_entity_id']);
             $table->index(['user_id', 'organisation_id', 'is_read']);
-            
+
             // Clés étrangères
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');

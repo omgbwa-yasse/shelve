@@ -265,7 +265,7 @@ class NotificationController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             $notification = Notification::with(['user', 'organisation'])
                 ->where('id', $id)
                 ->where(function ($query) use ($user) {
