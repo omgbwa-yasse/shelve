@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\BulletinBoard;
 use App\Models\Organisation;
-use App\Models\Notification;
-use App\Enums\NotificationModule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

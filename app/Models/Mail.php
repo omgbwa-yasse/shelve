@@ -6,7 +6,6 @@ use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\MailStatusEnum;
-use App\Enums\NotificationTypeEnum;
 use Illuminate\Support\Facades\Auth;
 
 class Mail extends Model
@@ -203,11 +202,6 @@ class Mail extends Model
         return $this->hasMany(MailHistory::class)->orderBy('created_at', 'desc');
     }
 
-    public function notifications()
-    {
-        return $this->hasMany(MailNotification::class);
-    }
-
     public function authors()
     {
         return $this->belongsToMany(Author::class, 'mail_author', 'mail_id', 'author_id')
@@ -290,30 +284,21 @@ class Mail extends Model
     public function updateStatus(MailStatusEnum $newStatus, $reason = null)
     {
         $workflow = $this->initializeWorkflow();
-        $oldStatus = $this->status;
 
         $this->update(['status' => $newStatus]);
         $workflow->updateStatus($newStatus, $reason);
-
-        // Créer une notification si nécessaire
-        $this->createStatusChangeNotification($oldStatus, $newStatus);
 
         return $this;
     }
 
     public function assignTo($userId, $reason = null)
     {
-        $oldAssignee = $this->assigned_to;
-
         $this->update([
             'assigned_to' => $userId,
             'assigned_at' => now()
         ]);
 
         $this->initializeWorkflow()->assignTo($userId, $reason);
-
-        // Créer une notification d'assignation
-        $this->createAssignmentNotification($userId);
 
         return $this;
     }
@@ -348,63 +333,6 @@ class Mail extends Model
             return null;
         }
         return now()->diffInDays($this->deadline, false);
-    }
-
-    // === NOTIFICATION METHODS ===
-
-    private function createStatusChangeNotification($oldStatus, $newStatus)
-    {
-        if ($this->assigned_to) {
-            $this->notifications()->create([
-                'user_id' => $this->assigned_to,
-                'type' => NotificationTypeEnum::MAIL_STATUS_CHANGED,
-                'title' => 'Statut modifié',
-                'message' => "Le statut du courrier {$this->code} est passé de {$oldStatus->label()} à {$newStatus->label()}",
-                'priority' => NotificationTypeEnum::MAIL_STATUS_CHANGED->priority(),
-                'data' => [
-                    'old_status' => $oldStatus->value,
-                    'new_status' => $newStatus->value,
-                    'mail_id' => $this->id,
-                    'mail_code' => $this->code,
-                ]
-            ]);
-        }
-    }
-
-    private function createAssignmentNotification($userId)
-    {
-        $this->notifications()->create([
-            'user_id' => $userId,
-            'type' => NotificationTypeEnum::MAIL_ASSIGNED,
-            'title' => 'Nouveau courrier assigné',
-            'message' => "Le courrier {$this->code} vous a été assigné",
-            'priority' => NotificationTypeEnum::MAIL_ASSIGNED->priority(),
-            'data' => [
-                'mail_id' => $this->id,
-                'mail_code' => $this->code,
-                'deadline' => $this->deadline?->format('Y-m-d H:i:s'),
-            ]
-        ]);
-    }
-
-    public function createDeadlineNotification($type = NotificationTypeEnum::MAIL_DEADLINE_APPROACHING)
-    {
-        if ($this->assigned_to) {
-            $this->notifications()->create([
-                'user_id' => $this->assigned_to,
-                'type' => $type,
-                'title' => $type->title(),
-                'message' => $type === NotificationTypeEnum::MAIL_DEADLINE_APPROACHING
-                    ? "Le courrier {$this->code} approche de son échéance"
-                    : "Le courrier {$this->code} est en retard",
-                'priority' => $type->priority(),
-                'data' => [
-                    'mail_id' => $this->id,
-                    'mail_code' => $this->code,
-                    'deadline' => $this->deadline?->format('Y-m-d H:i:s'),
-                ]
-            ]);
-        }
     }
 
     // === AUDIT METHODS ===

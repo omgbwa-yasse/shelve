@@ -51,11 +51,6 @@ class Kernel extends ConsoleKernel
              ->withoutOverlapping()
              ->runInBackground();
 
-    // Nettoyage des anciennes notifications (tous les dimanches)
-    $schedule->call(function () {
-        app(\App\Services\MailNotificationService::class)->cleanupOldNotifications(30);
-    })->weekly()->sundays()->at('02:00');
-
     // === EXISTING OLLAMA TASKS ===
 
     // Auto-sync des modèles Ollama

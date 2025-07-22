@@ -67,7 +67,6 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\WorkflowStepInstance::class => \App\Policies\WorkflowStepInstancePolicy::class,
         \App\Models\TaskComment::class => \App\Policies\TaskCommentPolicy::class,
         \App\Models\TaskAssignment::class => \App\Policies\TaskAssignmentPolicy::class,
-        \App\Models\SystemNotification::class => \App\Policies\SystemNotificationPolicy::class,
     ];
 
     /**
