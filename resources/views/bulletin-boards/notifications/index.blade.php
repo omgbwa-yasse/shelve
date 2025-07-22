@@ -78,12 +78,12 @@
                 <div class="card-body">
                     <h6 class="card-title">Actions</h6>
                     <fieldset class="btn-group">
-                        <a href="{{ route('bulletin-boards.notifications.user') }}"
+                        <a href="{{ route('notifications.current') }}"
                            class="btn btn-outline-primary btn-sm {{ $type === 'user' ? 'active' : '' }}">
                             <i class="bi bi-person"></i> Mes notifications
                         </a>
                         @if(auth()->user() && isset(auth()->user()->current_organisation_id))
-                        <a href="{{ route('bulletin-boards.notifications.organisation') }}"
+                        <a href="{{ route('notifications.organisation') }}"
                            class="btn btn-outline-primary btn-sm {{ $type === 'organisation' ? 'active' : '' }}">
                             <i class="bi bi-building"></i> Notifications organisation
                         </a>

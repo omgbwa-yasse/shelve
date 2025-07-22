@@ -113,13 +113,13 @@
         </div>
         <div class="submenu-section-content" id="notificationsSection">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.user') }}">
+                <a class="submenu-link" href="{{ route('notifications.current') }}">
                     <i class="bi bi-person"></i> Mes Notifications
                 </a>
             </div>
             @if(auth()->user() && auth()->user()->current_organisation_id)
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('bulletin-boards.notifications.organisation') }}">
+                <a class="submenu-link" href="{{ route('notifications.organisation') }}">
                     <i class="bi bi-building"></i> Notifications Organisation
                 </a>
             </div>
