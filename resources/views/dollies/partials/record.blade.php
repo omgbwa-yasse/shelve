@@ -8,6 +8,11 @@
         ['icon' => 'bi-calendar', 'text' => 'Changer de dates', 'action' => 'dates', 'color' => 'secondary'],
         ['icon' => 'bi-file-earmark-arrow-down', 'text' => 'Exporter l\'instrument de recherche', 'action' => 'export', 'color' => 'primary'],
         ['icon' => 'bi-printer', 'text' => 'Imprimer l\'instrument de recherche', 'action' => 'print', 'color' => 'dark'],
+        ['icon' => 'bi-cpu', 'text' => 'Formater les titres avec IA', 'action' => 'ai_format_titles', 'color' => 'info'],
+        ['icon' => 'bi-file-text', 'text' => 'Générer des résumés avec IA', 'action' => 'ai_generate_summaries', 'color' => 'success'],
+        ['icon' => 'bi-tags', 'text' => 'Extraire des mots-clés avec IA', 'action' => 'ai_extract_keywords', 'color' => 'warning'],
+        ['icon' => 'bi-book', 'text' => 'Mettre à jour les index thésaurus', 'action' => 'ai_update_thesaurus', 'color' => 'primary'],
+        ['icon' => 'bi-magic', 'text' => 'Reformuler les intitulés avec IA', 'action' => 'ai_reformulate_titles', 'color' => 'info'],
         ['icon' => 'bi-x-circle', 'text' => 'Supprimer de la base', 'action' => 'delete', 'color' => 'danger'],
     ] as $item)
         <div class="col-md-4 col-sm-6">

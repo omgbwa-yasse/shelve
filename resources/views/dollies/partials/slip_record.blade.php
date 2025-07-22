@@ -6,6 +6,11 @@
         ['icon' => 'bi-textarea-t', 'text' => 'Changer le niveau de description', 'action' => 'level', 'color' => 'warning'],
         ['icon' => 'bi-calendar-event', 'text' => 'Changer les dates', 'action' => 'dates', 'color' => 'secondary'],
         ['icon' => 'bi-calendar-event', 'text' => 'Changer de support', 'action' => 'support', 'color' => 'success'],
+        ['icon' => 'bi-cpu', 'text' => 'Formater les titres avec IA', 'action' => 'ai_format_titles', 'color' => 'info'],
+        ['icon' => 'bi-file-text', 'text' => 'Générer des résumés avec IA', 'action' => 'ai_generate_summaries', 'color' => 'success'],
+        ['icon' => 'bi-tags', 'text' => 'Extraire des mots-clés avec IA', 'action' => 'ai_extract_keywords', 'color' => 'warning'],
+        ['icon' => 'bi-book', 'text' => 'Mettre à jour les index thésaurus', 'action' => 'ai_update_thesaurus', 'color' => 'primary'],
+        ['icon' => 'bi-magic', 'text' => 'Reformuler les intitulés avec IA', 'action' => 'ai_reformulate_titles', 'color' => 'info'],
         ['icon' => 'bi-x-circle', 'text' => 'Supprimer de la base', 'action' => 'delete', 'color' => 'danger'],
     ] as $item)
         <div class="col-md-4 col-sm-6">
