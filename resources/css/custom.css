@@ -25,3 +25,15 @@
     transform: translateY(1px);  /* Effet d'enfoncement */
     box-shadow: 0 2px 4px rgba(255, 105, 180, 0.2);  /* Ombre réduite */
 }
+
+/* Suppression des ombres pour les sous-menus */
+.dropdown-menu {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres pour les sous-menus avec les classes Bootstrap shadow */
+.dropdown-menu.shadow,
+.dropdown-menu.shadow-sm,
+.dropdown-menu.shadow-lg {
+    box-shadow: none !important;
+}
