@@ -405,10 +405,8 @@ class WorkflowInstanceController extends Controller
         ->limit(5)
         ->get();
 
-        // Activités récentes (peuvent être des changements d'état de workflow, des commentaires, etc.)
-        $recentActivities = \App\Models\SystemNotification::orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+        // Activités récentes - temporairement désactivé (SystemNotification non disponible)
+        $recentActivities = collect();
 
         // Workflows par modèle (pour le graphique)
         $workflowsByTemplate = DB::table('workflow_templates')

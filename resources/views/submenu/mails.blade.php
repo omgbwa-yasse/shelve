@@ -216,6 +216,19 @@
             <i class="bi bi-diagram-3"></i> Workflow et Tâches
         </div>
         <div class="submenu-content" id="workflowTasksMenu">
+            <div class="submenu-category-title">Actions rapides</div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('workflows.tasks.create') }}">
+                    <i class="bi bi-plus-circle"></i> Créer une tâche
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('workflows.instances.create') }}">
+                    <i class="bi bi-plus-square"></i> Créer un workflow
+                </a>
+            </div>
+
+            <div class="submenu-divider"></div>
             <div class="submenu-category-title">Organisation</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.tasks.index') }}">

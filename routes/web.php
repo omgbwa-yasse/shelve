@@ -219,13 +219,20 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Routes pour les notifications
         Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/organisation', [NewNotificationController::class, 'getForOrganisation'])->name('organisation');
-            Route::get('/current', [NewNotificationController::class, 'getForCurrentUser'])->name('current');
-            Route::post('/mark-read', [NewNotificationController::class, 'markAsRead'])->name('mark-read');
-            Route::post('/mark-all-read', [NewNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-            Route::get('/unread-count', [NewNotificationController::class, 'getUnreadCount'])->name('unread-count');
-            Route::post('/cleanup', [NewNotificationController::class, 'cleanup'])->name('cleanup');
-            Route::get('/{id}', [NewNotificationController::class, 'show'])->name('show');
+            Route::get('/organisation', [NewNotificationController::class, 'indexOrganisation'])->name('organisation');
+            Route::get('/current', [NewNotificationController::class, 'indexUser'])->name('current');
+            Route::get('/{id}', [NewNotificationController::class, 'showView'])->name('show');
+
+            // Routes API pour AJAX
+            Route::prefix('api')->name('api.')->group(function () {
+                Route::get('/organisation', [NewNotificationController::class, 'getForOrganisation'])->name('organisation');
+                Route::get('/current', [NewNotificationController::class, 'getForCurrentUser'])->name('current');
+                Route::post('/mark-read', [NewNotificationController::class, 'markAsRead'])->name('mark-read');
+                Route::post('/mark-all-read', [NewNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+                Route::get('/unread-count', [NewNotificationController::class, 'getUnreadCount'])->name('unread-count');
+                Route::post('/cleanup', [NewNotificationController::class, 'cleanup'])->name('cleanup');
+                Route::get('/{id}', [NewNotificationController::class, 'show'])->name('show');
+            });
         });
 
         // Routes principales pour les publications (existantes)
@@ -275,7 +282,7 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('bulletin-boards.posts.attachments.ajax.destroy');
     });
 
-    
+
 
 
 

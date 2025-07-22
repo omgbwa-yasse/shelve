@@ -178,30 +178,4 @@
         </div>
     </div>
 
-    <!-- Section Notifications -->
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-bell"></i>
-            {{ __('Notifications') }}
-        </div>
-        <div class="submenu-content">
-            @can('notification_viewAny')
-            <div class="submenu-item">
-                <a href="{{ route('workflows.notifications.index') }}" class="submenu-link {{ request()->routeIs('workflows.notifications.index') ? 'active' : '' }}">
-                    <i class="bi bi-envelope"></i>
-                    {{ __('Mes notifications') }}
-                </a>
-            </div>
-            @endcan
-
-            @can('systemNotification_viewAny')
-            <div class="submenu-item">
-                <a href="{{ route('workflows.notifications.system.index') }}" class="submenu-link {{ request()->routeIs('workflows.notifications.system.*') ? 'active' : '' }}">
-                    <i class="bi bi-bell-fill"></i>
-                    {{ __('Notifications système') }}
-                </a>
-            </div>
-            @endcan
-        </div>
-    </div>
 </div>

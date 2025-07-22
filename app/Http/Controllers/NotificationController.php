@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
@@ -298,5 +299,81 @@ class NotificationController extends Controller
                 'message' => 'Erreur lors de la récupération de la notification'
             ], 500);
         }
+    }
+
+    /**
+     * Afficher les notifications de l'organisation (vue HTML)
+     */
+    public function indexOrganisation(Request $request): View
+    {
+        $user = Auth::user();
+        $organisationId = $user->current_organisation_id;
+
+        if (!$organisationId) {
+            abort(403, 'Aucune organisation associée');
+        }
+
+        $notifications = Notification::forOrganisation($organisationId)
+            ->with(['user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $unreadCount = Notification::forOrganisation($organisationId)->unread()->count();
+
+        return view('bulletin-boards.notifications.index', [
+            'notifications' => $notifications,
+            'title' => 'Notifications de l\'Organisation',
+            'type' => 'organisation',
+            'id' => $organisationId,
+            'unreadCount' => $unreadCount
+        ]);
+    }
+
+    /**
+     * Afficher les notifications de l'utilisateur courant (vue HTML)
+     */
+    public function indexUser(Request $request): View
+    {
+        $user = Auth::user();
+
+        $notifications = Notification::forUser($user->id)
+            ->with(['organisation'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        $unreadCount = Notification::forUser($user->id)->unread()->count();
+
+        return view('bulletin-boards.notifications.index', [
+            'notifications' => $notifications,
+            'title' => 'Mes Notifications',
+            'type' => 'user',
+            'id' => $user->id,
+            'unreadCount' => $unreadCount
+        ]);
+    }
+
+    /**
+     * Afficher le détail d'une notification (vue HTML)
+     */
+    public function showView(int $id): View
+    {
+        $user = Auth::user();
+
+        $notification = Notification::with(['user', 'organisation'])
+            ->where('id', $id)
+            ->where(function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->orWhere('organisation_id', $user->current_organisation_id);
+            })
+            ->firstOrFail();
+
+        // Marquer comme lue si elle ne l'est pas
+        if (!$notification->is_read) {
+            $notification->update(['is_read' => true]);
+        }
+
+        return view('bulletin-boards.notifications.show', [
+            'notification' => $notification
+        ]);
     }
 }
