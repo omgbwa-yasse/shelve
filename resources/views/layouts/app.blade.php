@@ -295,7 +295,7 @@
                     <!-- Notifications -->
                     @can('module_mails_access')
                     <div class="header-action-item">
-                        <a href="{{ route('mail-notifications.show') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
+                        <a href="{{ route('notifications.organisation') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
                             <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
                             <span id="header-notification-badge" class="position-absolute badge badge-danger" style="top: -8px; right: -8px; font-size: 0.6rem; display: none;">
                                 <span id="header-notification-count">0</span>

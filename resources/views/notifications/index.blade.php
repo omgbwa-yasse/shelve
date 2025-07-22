@@ -19,7 +19,7 @@
     <!-- Compteur de notifications -->
     <div class="mb-4">
         <span class="inline-block bg-red-100 text-red-800 text-sm px-3 py-1 rounded-full">
-            <span id="unreadCount">{{ $notifications->where('read_at', null)->count() }}</span>
+            <span id="unreadCount">{{ $notifications->where('is_read', false)->count() }}</span>
             notification(s) non lue(s)
         </span>
     </div>
@@ -27,7 +27,7 @@
     <!-- Liste des notifications -->
     <div id="notificationsList" class="space-y-3">
         @forelse($notifications as $notification)
-            <div class="notification-item bg-white border rounded-lg shadow-sm p-4 {{ $notification->read_at ? 'opacity-75' : 'border-l-4 border-l-blue-500' }}"
+            <div class="notification-item bg-white border rounded-lg shadow-sm p-4 {{ $notification->is_read ? 'opacity-75' : 'border-l-4 border-l-blue-500' }}"
                  data-id="{{ $notification->id }}">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
@@ -82,7 +82,7 @@
                     </div>
 
                     <div class="flex items-center space-x-2 ml-4">
-                        @if(!$notification->read_at)
+                        @if(!$notification->is_read)
                             <button class="mark-read-btn text-blue-600 hover:text-blue-800 text-sm"
                                     data-id="{{ $notification->id }}">
                                 Marquer comme lu

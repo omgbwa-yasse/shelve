@@ -275,6 +275,7 @@ Route::group(['middleware' => 'auth'], function () {
             ->name('bulletin-boards.posts.attachments.ajax.destroy');
     });
 
+    
 
 
 

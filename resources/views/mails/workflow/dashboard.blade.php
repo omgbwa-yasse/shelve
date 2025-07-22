@@ -9,7 +9,7 @@
             <i class="bi bi-diagram-3 mr-2"></i>Dashboard Workflow
         </h1>
         <div class="d-flex">
-            <a href="{{ route('mail-notifications.show') }}" class="btn btn-outline-primary btn-sm mr-2">
+            <a href="{{ route('notifications.organisation') }}" class="btn btn-outline-primary btn-sm mr-2">
                 <i class="bi bi-bell"></i> Notifications
             </a>
             <button class="btn btn-primary btn-sm" onclick="location.reload()">
@@ -160,7 +160,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                     <h6 class="m-0 font-weight-bold text-primary">Notifications récentes</h6>
-                    <a href="{{ route('mail-notifications.show') }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('notifications.organisation') }}" class="btn btn-sm btn-primary">
                         Voir tout
                     </a>
                 </div>
