@@ -1,8 +1,9 @@
-// Routes API pour la gestion des records
+// Routes API pour la gestion des records et des attachments
 const express = require('express');
 const router = express.Router();
 const { z } = require('zod');
 const recordsController = require('../controllers/records.controller');
+const attachmentsRoutes = require('./attachments.routes');
 const { validateRequest } = require('../middleware/validation.middleware');
 const authMiddleware = require('../middleware/auth.middleware');
 const schemas = require('../schemas/validation');
@@ -44,5 +45,8 @@ router.post(
 
 // Route pour vérifier la disponibilité d'Ollama
 router.get('/check-ollama', recordsController.checkOllama);
+
+// Routes pour l'analyse des attachments
+router.use('/attachments', attachmentsRoutes);
 
 module.exports = router;

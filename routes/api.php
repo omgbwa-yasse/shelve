@@ -47,6 +47,16 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
 });
 
+// Routes API pour l'analyse des documents numériques (attachments)
+Route::prefix('attachments')->name('api.attachments.')->middleware('auth:sanctum')->group(function () {
+    Route::post('metadata', [App\Http\Controllers\Api\AttachmentApiController::class, 'metadata'])->name('metadata');
+    Route::get('{id}/metadata', [App\Http\Controllers\Api\AttachmentApiController::class, 'singleMetadata'])->name('single-metadata');
+    Route::post('extract-content', [App\Http\Controllers\Api\AttachmentApiController::class, 'extractContent'])->name('extract-content');
+    Route::post('upload', [App\Http\Controllers\Api\AttachmentApiController::class, 'upload'])->name('upload');
+    Route::get('/', [App\Http\Controllers\Api\AttachmentApiController::class, 'index'])->name('index');
+    Route::get('health', [App\Http\Controllers\Api\AttachmentApiController::class, 'health'])->name('health');
+});
+
 // Routes API pour le thésaurus
 Route::prefix('thesaurus')->name('api.thesaurus.')->middleware('auth:sanctum')->group(function () {
     Route::get('schemes', [ThesaurusController::class, 'apiSchemes'])->name('schemes');

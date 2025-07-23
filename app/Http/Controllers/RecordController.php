@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 use ZipArchive;
 
@@ -757,5 +758,218 @@ class RecordController extends Controller
         });
 
         return response()->json($results);
+    }
+
+    /**
+     * Analyser plusieurs documents numériques et proposer une description et indexation
+     */
+    public function analyzeAttachments(Request $request)
+    {
+        $this->authorize('create', Record::class);
+
+        $request->validate([
+            'attachment_ids' => 'required|array|min:1|max:20',
+            'attachment_ids.*' => 'integer|exists:attachments,id',
+            'analysis_options' => 'nullable|array',
+            'record_options' => 'nullable|array',
+            'indexing_options' => 'nullable|array',
+            'model_name' => 'nullable|string'
+        ]);
+
+        try {
+            $attachmentIds = $request->input('attachment_ids');
+            $analysisOptions = $request->input('analysis_options', []);
+            $recordOptions = $request->input('record_options', []);
+            $indexingOptions = $request->input('indexing_options', []);
+            $modelName = $request->input('model_name', config('ollama.default_model', 'llama3'));
+
+            // URL de base du serveur MCP
+            $mcpBaseUrl = config('mcp.base_url', 'http://localhost:3000');
+
+            // Appeler l'API MCP pour l'analyse complète
+            $response = Http::timeout(120)->post($mcpBaseUrl . '/api/attachments/generate-complete', [
+                'attachmentIds' => $attachmentIds,
+                'recordOptions' => array_merge([
+                    'template' => 'detailed',
+                    'includeArrangement' => true,
+                    'includeAccessConditions' => true,
+                    'contextualInfo' => [
+                        'organisation' => Auth::user()->organisation->name ?? '',
+                        'user' => Auth::user()->name
+                    ]
+                ], $recordOptions),
+                'indexingOptions' => array_merge([
+                    'maxTerms' => 15,
+                    'weightingMethod' => 'combined',
+                    'autoAssign' => false
+                ], $indexingOptions),
+                'modelName' => $modelName
+            ]);
+
+            if ($response->successful()) {
+                $analysis = $response->json();
+
+                // Récupérer les informations des attachments pour l'affichage
+                $attachments = Attachment::whereIn('id', $attachmentIds)->get();
+
+                return view('records.ai-analysis', compact('analysis', 'attachments'));
+            } else {
+                Log::error('Erreur API MCP:', $response->json());
+                return back()->with('error', 'Erreur lors de l\'analyse des documents: ' . $response->body());
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'analyse des attachments:', [
+                'error' => $e->getMessage(),
+                'attachment_ids' => $request->input('attachment_ids')
+            ]);
+
+            return back()->with('error', 'Erreur lors de l\'analyse des documents: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Créer un record basé sur l'analyse IA des attachments
+     */
+    public function createFromAiAnalysis(Request $request)
+    {
+        $this->authorize('create', Record::class);
+
+        $request->validate([
+            'suggested_record' => 'required|array',
+            'suggested_indexing' => 'required|array',
+            'attachment_ids' => 'required|array'
+        ]);
+
+        try {
+            $suggestedRecord = $request->input('suggested_record');
+            $suggestedIndexing = $request->input('suggested_indexing');
+            $attachmentIds = $request->input('attachment_ids');
+
+            // Mapper les données suggérées vers les champs du record
+            $recordData = [
+                'code' => $this->generateRecordCode(),
+                'name' => $suggestedRecord['title'] ?? 'Titre généré automatiquement',
+                'date_format' => 'Y',
+                'date_start' => $suggestedRecord['dateStart'] ?? null,
+                'date_end' => $suggestedRecord['dateEnd'] ?? null,
+                'content' => $suggestedRecord['description'] ?? '',
+                'scope' => $suggestedRecord['scope'] ?? '',
+                'arrangement' => $suggestedRecord['arrangement'] ?? '',
+                'access_conditions' => $suggestedRecord['accessConditions'] ?? '',
+                'reproduction_conditions' => $suggestedRecord['reproductionConditions'] ?? '',
+                'language_material' => $suggestedRecord['language'] ?? 'français',
+                'note' => $suggestedRecord['notes'] ?? '',
+                'user_id' => Auth::id(),
+                'organisation_id' => Auth::user()->current_organisation_id ?? 1,
+                'status_id' => 1, // À définir selon votre logique
+                'support_id' => $this->getSupportIdFromSuggestion($suggestedRecord['suggestedSupport'] ?? 'numérique'),
+                'level_id' => $this->getLevelIdFromSuggestion($suggestedRecord['suggestedLevel'] ?? 'file'),
+                'activity_id' => 1, // À définir selon votre logique
+            ];
+
+            // Créer le record
+            $record = Record::create($recordData);
+
+            // Associer les termes du thésaurus si suggérés
+            if (isset($suggestedIndexing['weightedTerms']) && is_array($suggestedIndexing['weightedTerms'])) {
+                foreach ($suggestedIndexing['weightedTerms'] as $weightedTerm) {
+                    $record->thesaurusConcepts()->attach($weightedTerm['termId'], [
+                        'weight' => $weightedTerm['weight'] ?? 1.0,
+                        'context' => $weightedTerm['context'] ?? 'IA',
+                        'extraction_note' => 'Généré automatiquement par IA - ' . ($weightedTerm['justification'] ?? '')
+                    ]);
+                }
+            }
+
+            // Associer les attachments au record
+            foreach ($attachmentIds as $attachmentId) {
+                RecordAttachment::create([
+                    'record_id' => $record->id,
+                    'attachment_id' => $attachmentId,
+                    'creator_id' => Auth::id()
+                ]);
+            }
+
+            return redirect()->route('records.show', $record->id)
+                ->with('success', 'Record créé avec succès à partir de l\'analyse IA.');
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la création du record IA:', [
+                'error' => $e->getMessage(),
+                'suggested_record' => $request->input('suggested_record')
+            ]);
+
+            return back()->with('error', 'Erreur lors de la création du record: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Afficher le formulaire de sélection d'attachments pour l'analyse IA
+     */
+    public function selectAttachmentsForAnalysis(Request $request, $record_id = null)
+    {
+        $this->authorize('create', Record::class);
+
+        // Si un record_id est fourni, récupérer ce record spécifique
+        $record = null;
+        if ($record_id) {
+            $record = Record::findOrFail($record_id);
+            $this->authorize('update', $record);
+
+            // Récupérer les attachments de ce record spécifique
+            $attachments = $record->attachments()
+                ->with('creator:id,name')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        } else {
+            // Récupérer tous les attachments disponibles
+            $attachments = Attachment::with('creator:id,name')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        }
+
+        return view('records.select-attachments', compact('attachments', 'record'));
+    }
+
+    /**
+     * Générer un code unique pour le record
+     */
+    private function generateRecordCode()
+    {
+        $prefix = 'AI_';
+        $date = date('Ymd');
+        $counter = Record::where('code', 'like', $prefix . $date . '%')->count() + 1;
+
+        return $prefix . $date . '_' . str_pad($counter, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Obtenir l'ID du support basé sur la suggestion
+     */
+    private function getSupportIdFromSuggestion($suggestion)
+    {
+        $mappings = [
+            'numérique' => 1,
+            'papier' => 2,
+            'mixte' => 3
+        ];
+
+        return $mappings[$suggestion] ?? 1;
+    }
+
+    /**
+     * Obtenir l'ID du niveau basé sur la suggestion
+     */
+    private function getLevelIdFromSuggestion($suggestion)
+    {
+        $mappings = [
+            'fonds' => 1,
+            'series' => 2,
+            'file' => 3,
+            'item' => 4
+        ];
+
+        return $mappings[$suggestion] ?? 3;
     }
 }

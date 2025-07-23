@@ -203,6 +203,13 @@
                 </a>
             </div>
             @endcan
+            @can('create', App\Models\Record::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.select-attachments') }}" title="{{ __('Analyser des documents avec IA') }}">
+                    <i class="bi bi-robot"></i> {{ __('Analyse IA') }}
+                </a>
+            </div>
+            @endcan
         </div>
     </div>
     @endif

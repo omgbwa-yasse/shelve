@@ -25,6 +25,8 @@
                     <i class="bi bi-envelope me-1"></i>
                     {{ __('communicate') }}
                 </a>
+                @can('create', App\Models\Record::class)
+                @endcan
                 <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
                     <i class="bi bi-check-square me-1"></i>
                     {{ __('checkAll') }}

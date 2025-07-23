@@ -513,6 +513,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
+
+        // Routes pour l'analyse IA des documents
+        Route::get('records/ai/select-attachments/{record_id?}', [RecordController::class, 'selectAttachmentsForAnalysis'])->name('records.select-attachments');
+        Route::post('records/ai/analyze', [RecordController::class, 'analyzeAttachments'])->name('records.analyze-attachments');
+        Route::post('records/ai/create', [RecordController::class, 'createFromAiAnalysis'])->name('records.create-from-ai');
+
         Route::resource('records', RecordController::class);
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
