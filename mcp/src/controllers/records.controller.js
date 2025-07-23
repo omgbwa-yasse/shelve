@@ -1,6 +1,7 @@
 // Contrôleur pour les fonctionnalités de gestion des records
 const recordsService = require('../services/records.service');
 const aiService = require('../services/ai.service');
+const multiProviderAiService = require('../services/multi-provider-ai.service');
 const { RecordsControllerInterface } = require('../schemas/interfaces');
 
 /**
