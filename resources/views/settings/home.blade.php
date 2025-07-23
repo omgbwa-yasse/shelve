@@ -13,7 +13,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="d-grid">
                                 <a href="{{ route('settings.categories.index') }}" class="btn btn-outline-primary rounded-3 h-100">
                                     <div class="text-center py-2">
@@ -24,24 +24,13 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="d-grid">
                                 <a href="{{ route('settings.definitions.index') }}" class="btn btn-outline-primary rounded-3 h-100">
                                     <div class="text-center py-2">
                                         <i class="bi bi-gear-wide-connected fs-2 d-block mb-2"></i>
                                         <strong>{{ __('Paramètres') }}</strong>
-                                        <div class="small text-muted">{{ __('Définir les paramètres système') }}</div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-grid">
-                                <a href="{{ route('settings.values.index') }}" class="btn btn-outline-primary rounded-3 h-100">
-                                    <div class="text-center py-2">
-                                        <i class="bi bi-sliders fs-2 d-block mb-2"></i>
-                                        <strong>{{ __('Valeurs') }}</strong>
-                                        <div class="small text-muted">{{ __('Personnaliser les valeurs') }}</div>
+                                        <div class="small text-muted">{{ __('Gérer les paramètres et leurs valeurs') }}</div>
                                     </div>
                                 </a>
                             </div>

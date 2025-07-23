@@ -26,12 +26,8 @@
                                     <td>{{ $setting->category->name ?? 'Sans catégorie' }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Clé :</th>
-                                    <td><code>{{ $setting->key }}</code></td>
-                                </tr>
-                                <tr>
-                                    <th>Libellé :</th>
-                                    <td><strong>{{ $setting->label }}</strong></td>
+                                    <th>Nom :</th>
+                                    <td><code>{{ $setting->name }}</code></td>
                                 </tr>
                                 <tr>
                                     <th>Type :</th>
@@ -42,31 +38,53 @@
                                 <tr>
                                     <th>Statut :</th>
                                     <td>
-                                        @if($setting->is_active)
-                                            <span class="badge bg-success">Actif</span>
+                                        @if($setting->is_system)
+                                            <span class="badge bg-warning">Système</span>
                                         @else
-                                            <span class="badge bg-secondary">Inactif</span>
-                                        @endif
-
-                                        @if($setting->is_required)
-                                            <span class="badge bg-warning">Obligatoire</span>
-                                        @endif
-                                    </td>
+                                            <span class="badge bg-success">Utilisateur</span>
                                 </tr>
-                            </table>
-                        </div>
-
-                        <div class="col-md-6">
-                            <h6 class="text-muted">Horodatage</h6>
-                            <table class="table table-sm">
                                 <tr>
-                                    <th style="width: 30%">Créé le :</th>
+                                    <th>Créé le :</th>
                                     <td>{{ $setting->created_at->format('d/m/Y H:i') }}</td>
                                 </tr>
                                 <tr>
                                     <th>Modifié le :</th>
                                     <td>{{ $setting->updated_at->format('d/m/Y H:i') }}</td>
                                 </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Valeurs</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th style="width: 30%">Valeur par défaut :</th>
+                                    <td><code>{{ json_encode($setting->default_value) }}</code></td>
+                                </tr>
+                                <tr>
+                                    <th>Valeur actuelle :</th>
+                                    <td>
+                                        @if($setting->hasCustomValue())
+                                            <code class="text-success">{{ json_encode($setting->value) }}</code>
+                                            <small class="text-muted d-block">Valeur personnalisée</small>
+                                        @else
+                                            <code class="text-muted">{{ json_encode($setting->default_value) }}</code>
+                                            <small class="text-muted d-block">Valeur par défaut</small>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @if($setting->user_id)
+                                <tr>
+                                    <th>Utilisateur :</th>
+                                    <td>{{ $setting->user->name ?? 'N/A' }}</td>
+                                </tr>
+                                @endif
+                                @if($setting->organisation_id)
+                                <tr>
+                                    <th>Organisation :</th>
+                                    <td>{{ $setting->organisation->name ?? 'N/A' }}</td>
+                                </tr>
+                                @endif
                             </table>
                         </div>
                     </div>
@@ -82,24 +100,16 @@
                     </div>
                     @endif
 
-                    @if($setting->default_value)
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h6 class="text-muted">Valeur par défaut</h6>
-                            <div class="bg-secondary bg-opacity-10 p-3 rounded">
-                                <pre class="mb-0">{{ $setting->default_value }}</pre>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
                     @if($setting->constraints)
                     <div class="row mt-4">
                         <div class="col-12">
                             <h6 class="text-muted">Contraintes</h6>
                             <div class="bg-warning bg-opacity-10 p-3 rounded">
-                                <pre class="mb-0">{{ $setting->constraints }}</pre>
+                                <pre class="mb-0">{{ json_encode($setting->constraints, JSON_PRETTY_PRINT) }}</pre>
                             </div>
+                        </div>
+                    </div>
+                    @endif
                         </div>
                     </div>
                     @endif

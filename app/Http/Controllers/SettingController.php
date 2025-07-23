@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Setting;
 use App\Models\SettingCategory;
-use App\Models\SettingValue;
+use App\Models\User;
+use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class SettingController extends Controller
 {
@@ -16,7 +18,7 @@ class SettingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Setting::with(['category']);
+        $query = Setting::with(['category', 'user', 'organisation']);
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->get('category_id'));
@@ -24,6 +26,14 @@ class SettingController extends Controller
 
         if ($request->has('is_system')) {
             $query->where('is_system', $request->boolean('is_system'));
+        }
+
+        // Filtre pour afficher les paramètres de l'utilisateur actuel
+        if (Auth::check()) {
+            $userId = Auth::id();
+            $organisationId = Auth::user()->organisation_active_id ?? null;
+
+            $query->forUserAndOrganisation($userId, $organisationId);
         }
 
         $settings = $query->get();
@@ -45,12 +55,7 @@ class SettingController extends Controller
      */
     public function show($id)
     {
-        $setting = Setting::with(['category', 'values' => function($q) {
-            if (auth()->check()) {
-                $q->where('user_id', auth()->id())
-                  ->orWhere('organisation_id', auth()->user()->organisation_id ?? null);
-            }
-        }])->findOrFail($id);
+        $setting = Setting::with(['category', 'user', 'organisation'])->findOrFail($id);
 
         return view('settings.definitions.show', compact('setting'));
     }
@@ -142,7 +147,7 @@ class SettingController extends Controller
         $setting = Setting::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'value' => 'required|json',
+            'value' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -150,22 +155,26 @@ class SettingController extends Controller
         }
 
         // Validation du type de données selon le paramètre
-        $value = json_decode($request->value, true);
+        $value = $request->input('value');
         if (!$this->validateValueType($value, $setting->type, $setting->constraints)) {
             return response()->json(['errors' => ['value' => 'La valeur ne correspond pas au type de paramètre ou aux contraintes']], 422);
         }
 
-        // Création ou mise à jour de la valeur
-        $settingValue = SettingValue::updateOrCreate(
-            [
-                'setting_id' => $id,
-                'user_id' => auth()->id(),
-                'organisation_id' => auth()->user()->organisation_id
-            ],
-            ['value' => $request->value]
-        );
+        // Crée une nouvelle instance du paramètre avec une valeur personnalisée
+        $personalizedSetting = Setting::create([
+            'category_id' => $setting->category_id,
+            'name' => $setting->name,
+            'type' => $setting->type,
+            'default_value' => $setting->default_value,
+            'description' => $setting->description,
+            'is_system' => $setting->is_system,
+            'constraints' => $setting->constraints,
+            'user_id' => Auth::id(),
+            'organisation_id' => Auth::user()->organisation_active_id ?? null,
+            'value' => $value
+        ]);
 
-        return response()->json($settingValue);
+        return response()->json($personalizedSetting);
     }
 
     /**
@@ -175,8 +184,10 @@ class SettingController extends Controller
     {
         $setting = Setting::findOrFail($id);
 
-        SettingValue::where('setting_id', $id)
-            ->where('user_id', auth()->id())
+        // Supprime les paramètres personnalisés de l'utilisateur
+        Setting::where('name', $setting->name)
+            ->where('user_id', Auth::id())
+            ->where('organisation_id', Auth::user()->organisation_active_id ?? null)
             ->delete();
 
         return response()->json(['message' => 'Paramètre réinitialisé avec succès']);

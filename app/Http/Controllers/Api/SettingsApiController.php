@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
-use App\Models\SettingValue;
+use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Auth;
  */
 class SettingsApiController extends Controller
 {
+    protected $settingService;
+
+    public function __construct(SettingService $settingService)
+    {
+        $this->settingService = $settingService;
+    }
+
     /**
      * Récupère un paramètre spécifique
      * @param string $name Nom du paramètre
@@ -22,7 +29,10 @@ class SettingsApiController extends Controller
     public function getSetting($name)
     {
         try {
-            $setting = Setting::where('name', $name)->first();
+            $setting = Setting::where('name', $name)
+                ->whereNull('user_id')
+                ->whereNull('organisation_id')
+                ->first();
 
             if (!$setting) {
                 return response()->json([
@@ -31,7 +41,7 @@ class SettingsApiController extends Controller
                 ], 404);
             }
 
-            $value = $this->getSettingValue($setting);
+            $value = $this->settingService->get($name, $setting->default_value);
 
             return response()->json([
                 'name' => $setting->name,
@@ -60,20 +70,10 @@ class SettingsApiController extends Controller
                 'settings.*' => 'required|string'
             ]);
 
-            $settingNames = $request->input('settings');
-            $settings = Setting::whereIn('name', $settingNames)->get();
-
             $result = [];
-            foreach ($settings as $setting) {
-                $value = $this->getSettingValue($setting);
-                $result[$setting->name] = $value;
-            }
-
-            // Ajouter les paramètres manquants avec leurs valeurs par défaut
-            foreach ($settingNames as $name) {
-                if (!isset($result[$name])) {
-                    $result[$name] = null;
-                }
+            foreach ($request->input('settings') as $settingName) {
+                $value = $this->settingService->get($settingName);
+                $result[$settingName] = $value;
             }
 
             return response()->json([
@@ -94,28 +94,26 @@ class SettingsApiController extends Controller
     public function getAiSettings()
     {
         try {
-            $settings = Setting::whereHas('category', function ($query) {
+            $aiSettings = Setting::whereHas('category', function ($query) {
                 $query->where('name', 'Intelligence Artificielle')
                       ->orWhere('parent_id', function ($subQuery) {
                           $subQuery->select('id')
-                                   ->from('setting_categories')
-                                   ->where('name', 'Intelligence Artificielle');
+                              ->from('setting_categories')
+                              ->where('name', 'Intelligence Artificielle');
                       });
-            })->get();
+            })
+            ->whereNull('user_id')
+            ->whereNull('organisation_id')
+            ->get();
 
             $result = [];
-            foreach ($settings as $setting) {
-                $value = $this->getSettingValue($setting);
-                $result[$setting->name] = [
-                    'value' => $value,
-                    'type' => $setting->type,
-                    'description' => $setting->description,
-                    'category' => $setting->category->name
-                ];
+            foreach ($aiSettings as $setting) {
+                $value = $this->settingService->get($setting->name, $setting->default_value);
+                $result[$setting->name] = $value;
             }
 
             return response()->json([
-                'settings' => $result
+                'ai_settings' => $result
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -126,7 +124,7 @@ class SettingsApiController extends Controller
     }
 
     /**
-     * Met à jour un paramètre (pour les paramètres non système uniquement)
+     * Met à jour un paramètre
      * @param Request $request
      * @param string $name
      * @return \Illuminate\Http\JsonResponse
@@ -134,40 +132,27 @@ class SettingsApiController extends Controller
     public function updateSetting(Request $request, $name)
     {
         try {
-            $setting = Setting::where('name', $name)->first();
-
-            if (!$setting) {
-                return response()->json([
-                    'error' => 'Paramètre non trouvé'
-                ], 404);
-            }
-
-            if ($setting->is_system) {
-                return response()->json([
-                    'error' => 'Les paramètres système ne peuvent pas être modifiés via l\'API'
-                ], 403);
-            }
-
             $request->validate([
                 'value' => 'required'
             ]);
 
-            $user = Auth::user();
-            $organisation = $user->organisation;
+            if (!Auth::check()) {
+                return response()->json([
+                    'error' => 'Authentification requise'
+                ], 401);
+            }
 
-            // Chercher ou créer la valeur personnalisée
-            $settingValue = SettingValue::firstOrCreate([
-                'setting_id' => $setting->id,
-                'user_id' => $user->id,
-                'organisation_id' => $organisation->id ?? null
-            ]);
+            $success = $this->settingService->set($name, $request->input('value'));
 
-            $settingValue->value = json_encode($request->input('value'));
-            $settingValue->save();
+            if (!$success) {
+                return response()->json([
+                    'error' => 'Paramètre non trouvé ou mise à jour impossible'
+                ], 404);
+            }
 
             return response()->json([
                 'message' => 'Paramètre mis à jour avec succès',
-                'name' => $setting->name,
+                'name' => $name,
                 'value' => $request->input('value')
             ]);
         } catch (\Exception $e) {
@@ -179,67 +164,36 @@ class SettingsApiController extends Controller
     }
 
     /**
-     * Récupère la valeur effective d'un paramètre
-     * (valeur personnalisée utilisateur/organisation ou valeur par défaut)
-     * @param Setting $setting
-     * @return mixed
-     */
-    private function getSettingValue(Setting $setting)
-    {
-        $user = Auth::user();
-
-        if ($user) {
-            // Chercher une valeur personnalisée pour l'utilisateur/organisation
-            $customValue = SettingValue::where('setting_id', $setting->id)
-                ->where(function ($query) use ($user) {
-                    $query->where('user_id', $user->id)
-                          ->orWhere('organisation_id', $user->organisation_id ?? null);
-                })
-                ->orderBy('user_id', 'desc') // Priorité à la valeur utilisateur
-                ->first();
-
-            if ($customValue) {
-                return json_decode($customValue->value, true);
-            }
-        }
-
-        // Utiliser la valeur par défaut
-        return json_decode($setting->default_value, true);
-    }
-
-    /**
-     * Teste la connectivité avec les providers d'IA configurés
+     * Teste la connectivité des providers IA
      * @return \Illuminate\Http\JsonResponse
      */
     public function testAiProviders()
     {
         try {
-            $aiSettings = $this->getAiSettingsArray();
-            $results = [];
+            $providers = [
+                'ollama' => [
+                    'name' => 'Ollama',
+                    'url' => $this->settingService->get('ollama_base_url', 'http://localhost:11434'),
+                    'status' => 'unknown'
+                ],
+                'lmstudio' => [
+                    'name' => 'LM Studio',
+                    'url' => $this->settingService->get('lmstudio_base_url', 'http://localhost:1234'),
+                    'status' => 'unknown'
+                ],
+                'anythingllm' => [
+                    'name' => 'AnythingLLM',
+                    'url' => $this->settingService->get('anythingllm_base_url', 'http://localhost:3001'),
+                    'status' => 'unknown'
+                ]
+            ];
 
-            // Test Ollama
-            if ($aiSettings['ollama_enabled'] ?? false) {
-                $results['ollama'] = $this->testProvider('ollama', $aiSettings['ollama_base_url'] ?? 'http://localhost:11434');
-            }
-
-            // Test LM Studio
-            if ($aiSettings['lmstudio_enabled'] ?? false) {
-                $results['lmstudio'] = $this->testProvider('lmstudio', $aiSettings['lmstudio_base_url'] ?? 'http://localhost:1234');
-            }
-
-            // Test AnythingLLM
-            if ($aiSettings['anythingllm_enabled'] ?? false) {
-                $results['anythingllm'] = $this->testProvider('anythingllm', $aiSettings['anythingllm_base_url'] ?? 'http://localhost:3001');
-            }
-
-            // Test OpenAI
-            if ($aiSettings['openai_enabled'] ?? false) {
-                $results['openai'] = $this->testProvider('openai', 'https://api.openai.com/v1', $aiSettings['openai_api_key'] ?? '');
+            foreach ($providers as &$provider) {
+                $provider['status'] = $this->testProvider($provider['url']);
             }
 
             return response()->json([
-                'providers' => $results,
-                'default_provider' => $aiSettings['ai_default_provider'] ?? 'ollama'
+                'providers' => $providers
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -250,65 +204,26 @@ class SettingsApiController extends Controller
     }
 
     /**
-     * Récupère tous les paramètres IA sous forme de tableau
-     * @return array
+     * Teste la connectivité d'un provider
+     * @param string $url
+     * @return string
      */
-    private function getAiSettingsArray()
-    {
-        $settings = Setting::whereHas('category', function ($query) {
-            $query->where('name', 'Intelligence Artificielle')
-                  ->orWhere('parent_id', function ($subQuery) {
-                      $subQuery->select('id')
-                               ->from('setting_categories')
-                               ->where('name', 'Intelligence Artificielle');
-                  });
-        })->get();
-
-        $result = [];
-        foreach ($settings as $setting) {
-            $value = $this->getSettingValue($setting);
-            $result[$setting->name] = $value;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Teste la connectivité avec un provider spécifique
-     * @param string $name
-     * @param string $baseUrl
-     * @param string $apiKey
-     * @return array
-     */
-    private function testProvider($name, $baseUrl, $apiKey = '')
+    private function testProvider($url)
     {
         try {
-            $client = new \GuzzleHttp\Client(['timeout' => 5]);
-            $headers = ['Accept' => 'application/json'];
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url . '/api/tags');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
-            if ($apiKey) {
-                $headers['Authorization'] = "Bearer {$apiKey}";
-            }
+            curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-            if ($name === 'ollama') {
-                $url = $baseUrl . '/api/tags';
-            } else {
-                $url = $baseUrl . '/v1/models';
-            }
-
-            $response = $client->get($url, ['headers' => $headers]);
-
-            return [
-                'status' => 'connected',
-                'response_code' => $response->getStatusCode(),
-                'url' => $url
-            ];
+            return ($httpCode >= 200 && $httpCode < 300) ? 'online' : 'offline';
         } catch (\Exception $e) {
-            return [
-                'status' => 'error',
-                'error' => $e->getMessage(),
-                'url' => $url ?? $baseUrl
-            ];
+            return 'offline';
         }
     }
 }

@@ -27,18 +27,18 @@ return new class extends Migration
             $table->text('description');
             $table->boolean('is_system')->default(false)->index();
             $table->json('constraints')->nullable()->comment('JSON containing min, max, options, etc.');
-            $table->timestamps();
-        });
 
-        Schema::create('setting_values', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('setting_id')->constrained('settings')->onDelete('cascade');
+            // Champs fusionnés de setting_values
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->foreignId('organisation_id')->nullable()->constrained('organisations')->onDelete('cascade');
-            $table->json('value');
+            $table->json('value')->nullable()->comment('Current value (null = use default_value)');
+
             $table->timestamps();
+
+            // Index pour les recherches courantes
             $table->index(['user_id', 'organisation_id']);
-            $table->index('setting_id');
+            $table->index(['name', 'user_id']);
+            $table->index(['name', 'organisation_id']);
         });
     }
 
@@ -47,7 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('setting_values');
         Schema::dropIfExists('settings');
         Schema::dropIfExists('setting_categories');
     }

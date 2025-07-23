@@ -32,6 +32,7 @@
                                 <th>{{ __('Type') }}</th>
                                 <th>{{ __('Description') }}</th>
                                 <th>{{ __('Valeur par défaut') }}</th>
+                                <th>{{ __('Valeur actuelle') }}</th>
                                 <th>{{ __('Système') }}</th>
                                 <th>{{ __('Créé le') }}</th>
                                 <th class="text-end">{{ __('Actions') }}</th>
@@ -54,6 +55,15 @@
                                     <td>{{ Str::limit($setting->description, 50) }}</td>
                                     <td>
                                         <code class="small">{{ json_encode($setting->default_value) }}</code>
+                                    </td>
+                                    <td>
+                                        @if($setting->hasCustomValue())
+                                            <code class="small text-success">{{ json_encode($setting->value) }}</code>
+                                            <small class="text-muted d-block">{{ __('Personnalisée') }}</small>
+                                        @else
+                                            <code class="small text-muted">{{ json_encode($setting->default_value) }}</code>
+                                            <small class="text-muted d-block">{{ __('Par défaut') }}</small>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($setting->is_system)

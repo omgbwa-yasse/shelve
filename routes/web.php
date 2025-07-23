@@ -108,7 +108,6 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupFileController;
 use App\Http\Controllers\BackupPlanningController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SettingValueController;
 use App\Http\Controllers\SettingCategoryController;
 
 use App\Http\Controllers\PublicUserController;
@@ -605,7 +604,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('', [SettingController::class, 'home'])->name('settings.home');
 
         Route::resource('definitions', SettingController::class)->names('settings.definitions');
-        Route::resource('values', SettingValueController::class)->names('settings.values');
         Route::resource('categories', SettingCategoryController::class)->names('settings.categories');
 
         // Routes supplémentaires pour les catégories
