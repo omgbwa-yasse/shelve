@@ -123,11 +123,6 @@
                     <i class="bi bi-gear-wide-connected"></i> {{ __('Parameters') }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('settings.values.index') }}">
-                    <i class="bi bi-list-ul"></i> {{ __('Values') }}
-                </a>
-            </div>
         </div>
     </div>
 
