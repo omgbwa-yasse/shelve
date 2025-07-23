@@ -16,12 +16,7 @@ class SettingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Setting::with(['category', 'values' => function($q) {
-            if (auth()->check()) {
-                $q->where('user_id', auth()->id())
-                  ->orWhere('organisation_id', auth()->user()->organisation_id ?? null);
-            }
-        }]);
+        $query = Setting::with(['category']);
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->get('category_id'));
