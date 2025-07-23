@@ -24,7 +24,7 @@ class ConfigService {
       // Vérifier le cache
       const cacheKey = `setting_${settingName}`;
       const cached = this.cache.get(cacheKey);
-      
+
       if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
         return cached.value;
       }

@@ -38,18 +38,18 @@ class MultiProviderAiService {
    */
   async getProvider(providerName = null) {
     const config = await this.getProvidersConfig();
-    
+
     const targetProvider = providerName || config.defaultProvider;
     const provider = config.providers[targetProvider];
-    
+
     if (!provider) {
       throw new Error(`Provider ${targetProvider} non trouvé`);
     }
-    
+
     if (!provider.enabled) {
       throw new Error(`Provider ${targetProvider} est désactivé`);
     }
-    
+
     return {
       name: targetProvider,
       ...provider,
@@ -180,7 +180,7 @@ class MultiProviderAiService {
     try {
       const provider = await this.getProvider(providerName);
       const config = await this.getProvidersConfig();
-      
+
       const model = modelName || config.defaultModel;
       const headers = this.prepareHeaders(provider);
       const payload = this.preparePayload(provider, prompt, model, options);

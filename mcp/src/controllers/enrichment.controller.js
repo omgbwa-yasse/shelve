@@ -16,7 +16,7 @@ class EnrichmentController {
     try {
       const { id } = req.params;
       const { provider } = req.query;
-      
+
       // Récupérer le record
       const record = await recordsService.getRecord(id);
       if (!record.success) {
@@ -28,7 +28,7 @@ class EnrichmentController {
 
       const recordData = record.data;
       const currentTitle = recordData.name || recordData.code || '';
-      
+
       if (!currentTitle) {
         return res.status(400).json({
           success: false,
@@ -86,7 +86,7 @@ Titre reformulé:`;
     try {
       const { id } = req.params;
       const { provider } = req.query;
-      
+
       // Récupérer le record
       const record = await recordsService.getRecord(id);
       if (!record.success) {
@@ -98,7 +98,7 @@ Titre reformulé:`;
 
       const recordData = record.data;
       const content = recordData.content || recordData.description || '';
-      
+
       if (!content || content.length < 50) {
         return res.status(400).json({
           success: false,
@@ -147,7 +147,7 @@ Titre reformulé:`;
     try {
       const { id } = req.params;
       const { provider, max_keywords = 10 } = req.query;
-      
+
       // Récupérer le record
       const record = await recordsService.getRecord(id);
       if (!record.success) {
@@ -163,7 +163,7 @@ Titre reformulé:`;
         recordData.content || '',
         recordData.description || ''
       ].filter(text => text.length > 0).join(' ');
-      
+
       if (!content || content.length < 20) {
         return res.status(400).json({
           success: false,
@@ -222,7 +222,7 @@ Titre reformulé:`;
     try {
       const { id } = req.params;
       const { provider } = req.query;
-      
+
       // Récupérer le record
       const record = await recordsService.getRecord(id);
       if (!record.success) {
@@ -238,7 +238,7 @@ Titre reformulé:`;
         recordData.content || '',
         recordData.description || ''
       ].filter(text => text.length > 0).join(' ');
-      
+
       if (!content || content.length < 20) {
         return res.status(400).json({
           success: false,
@@ -315,7 +315,7 @@ Réponse JSON:`;
     try {
       const { id } = req.params;
       const { provider, operations = ['summary', 'keywords', 'title'] } = req.query;
-      
+
       // Récupérer le record
       const record = await recordsService.getRecord(id);
       if (!record.success) {
@@ -383,7 +383,7 @@ Réponse JSON:`;
   async checkStatus(req, res) {
     try {
       const status = await multiProviderAiService.checkProvidersStatus();
-      
+
       res.json({
         success: true,
         data: status
@@ -405,7 +405,7 @@ Réponse JSON:`;
   async clearCache(req, res) {
     try {
       multiProviderAiService.clearConfigCache();
-      
+
       res.json({
         success: true,
         message: 'Cache vidé avec succès'

@@ -23,7 +23,7 @@ class SettingsApiController extends Controller
     {
         try {
             $setting = Setting::where('name', $name)->first();
-            
+
             if (!$setting) {
                 return response()->json([
                     'error' => 'Paramètre non trouvé',
@@ -135,7 +135,7 @@ class SettingsApiController extends Controller
     {
         try {
             $setting = Setting::where('name', $name)->first();
-            
+
             if (!$setting) {
                 return response()->json([
                     'error' => 'Paramètre non trouvé'
@@ -187,7 +187,7 @@ class SettingsApiController extends Controller
     private function getSettingValue(Setting $setting)
     {
         $user = Auth::user();
-        
+
         if ($user) {
             // Chercher une valeur personnalisée pour l'utilisateur/organisation
             $customValue = SettingValue::where('setting_id', $setting->id)
@@ -297,7 +297,7 @@ class SettingsApiController extends Controller
             }
 
             $response = $client->get($url, ['headers' => $headers]);
-            
+
             return [
                 'status' => 'connected',
                 'response_code' => $response->getStatusCode(),

@@ -16,7 +16,7 @@ router.post(
 );
 
 router.post(
-  '/enrich/:id/summary', 
+  '/enrich/:id/summary',
   enrichmentController.generateSummary
 );
 
