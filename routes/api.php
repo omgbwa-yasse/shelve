@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
 use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
+use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
@@ -45,6 +46,15 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
     Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
     Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
+});
+
+// Routes API pour la gestion des paramètres système (utilisé par MCP)
+Route::prefix('settings')->name('api.settings.')->middleware('auth:sanctum')->group(function () {
+    Route::get('{name}', [SettingsApiController::class, 'getSetting'])->name('get');
+    Route::post('batch', [SettingsApiController::class, 'getSettings'])->name('batch');
+    Route::get('categories/ai', [SettingsApiController::class, 'getAiSettings'])->name('ai');
+    Route::put('{name}', [SettingsApiController::class, 'updateSetting'])->name('update');
+    Route::get('test/providers', [SettingsApiController::class, 'testAiProviders'])->name('test-providers');
 });
 
 // Routes API pour l'analyse des documents numériques (attachments)

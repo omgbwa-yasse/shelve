@@ -3,26 +3,61 @@ const express = require('express');
 const router = express.Router();
 const { z } = require('zod');
 const recordsController = require('../controllers/records.controller');
+const enrichmentController = require('../controllers/enrichment.controller');
 const attachmentsRoutes = require('./attachments.routes');
 const { validateRequest } = require('../middleware/validation.middleware');
 const authMiddleware = require('../middleware/auth.middleware');
 const schemas = require('../schemas/validation');
 
-// Route pour formater le titre d'un record
+// Routes pour l'enrichissement multi-provider
+router.post(
+  '/enrich/:id/title',
+  enrichmentController.formatTitle
+);
+
+router.post(
+  '/enrich/:id/summary', 
+  enrichmentController.generateSummary
+);
+
+router.post(
+  '/enrich/:id/keywords',
+  enrichmentController.extractKeywords
+);
+
+router.post(
+  '/enrich/:id/categorized-keywords',
+  enrichmentController.extractCategorizedKeywords
+);
+
+router.post(
+  '/enrich/:id/complete',
+  enrichmentController.enrichRecord
+);
+
+router.get(
+  '/providers/status',
+  enrichmentController.checkStatus
+);
+
+router.post(
+  '/providers/clear-cache',
+  enrichmentController.clearCache
+);
+
+// Routes legacy (pour compatibilité)
 router.post(
   '/format-title',
   validateRequest(schemas.FormatTitleSchema),
   recordsController.formatRecordTitle
 );
 
-// Route pour générer un résumé d'un record
 router.post(
   '/summarize',
   validateRequest(schemas.SummarizeRequestSchema),
   recordsController.generateSummary
 );
 
-// Route pour extraire des mots-clés catégorisés
 router.post(
   '/categorized-keywords',
   validateRequest(schemas.CategorizedKeywordsSchema),
