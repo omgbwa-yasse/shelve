@@ -17,7 +17,7 @@ class SettingCategory extends Model
     protected $fillable = [
         'name',
         'description',
-        'is_system'
+        'parent_id'
     ];
 
     /**
@@ -26,8 +26,28 @@ class SettingCategory extends Model
      * @var array
      */
     protected $casts = [
-        'is_system' => 'boolean',
+        //
     ];
+
+    /**
+     * Relation avec la catégorie parent (structure hiérarchique)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function parent()
+    {
+        return $this->belongsTo(SettingCategory::class, 'parent_id');
+    }
+
+    /**
+     * Relation avec les catégories enfants
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children()
+    {
+        return $this->hasMany(SettingCategory::class, 'parent_id');
+    }
 
     /**
      * Relation avec les paramètres de cette catégorie

@@ -107,6 +107,30 @@
         </div>
     </div>
 
+    <!-- Paramètres Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-sliders"></i> {{ __('settings') }}
+        </div>
+        <div class="submenu-content" id="settingsMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.categories.index') }}">
+                    <i class="bi bi-folder"></i> {{ __('Categories') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.definitions.index') }}">
+                    <i class="bi bi-gear-wide-connected"></i> {{ __('Parameters') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.values.index') }}">
+                    <i class="bi bi-list-ul"></i> {{ __('Values') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Autorisations et postes Section -->
     <div class="submenu-section">
         <div class="submenu-heading" >

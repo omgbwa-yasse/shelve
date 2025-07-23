@@ -12,36 +12,33 @@ return new class extends Migration
     {
         Schema::create('setting_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100)->unique();
-            $table->text('description')->nullable();
-            $table->boolean('is_system')->default(false)->index();
+            $table->string('name', 100);
+            $table->text('description')->nullable(true);
+            $table->foreignId('parent_id')->nullable()->constrained('setting_categories')->onDelete('cascade');
             $table->timestamps();
         });
 
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('setting_categories')->onDelete('cascade');
-            $table->string('name', 100);
+            $table->foreignId('category_id')->nullable(false)->constrained('setting_categories')->onDelete('set null');
+            $table->string('name', 100)->unique(true)->index();
             $table->enum('type', ['integer', 'string', 'boolean', 'json', 'float', 'array']);
             $table->json('default_value');
             $table->text('description');
             $table->boolean('is_system')->default(false)->index();
             $table->json('constraints')->nullable()->comment('JSON containing min, max, options, etc.');
             $table->timestamps();
-
-            $table->unique(['name', 'category_id']);
         });
 
         Schema::create('setting_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('setting_id')->constrained('settings')->onDelete('cascade');
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->unsignedBigInteger('organisation_id')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('organisation_id')->nullable()->constrained('organisations')->onDelete('cascade');
             $table->json('value');
             $table->timestamps();
-
             $table->index(['user_id', 'organisation_id']);
-            $table->unique(['setting_id', 'user_id', 'organisation_id'], 'setting_value_unique');
+            $table->index('setting_id');
         });
     }
 

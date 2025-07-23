@@ -602,7 +602,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('values', SettingValueController::class)->names('settings.values');
         Route::resource('categories', SettingCategoryController::class)->names('settings.categories');
 
+        // Routes supplémentaires pour les catégories
+        Route::get('categories/tree', [SettingCategoryController::class, 'tree'])->name('settings.categories.tree');
         Route::get('categories/{id}/settings', [SettingCategoryController::class, 'getSettings'])->name('settings.categories.settings');
+
+        // Routes supplémentaires pour les paramètres
+        Route::post('definitions/{id}/set-value', [SettingController::class, 'setValue'])->name('settings.definitions.set-value');
+        Route::delete('definitions/{id}/reset-value', [SettingController::class, 'resetValue'])->name('settings.definitions.reset-value');
 
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');

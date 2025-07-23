@@ -5,6 +5,52 @@
     <h1 class="mb-4">{{ __('settings') }}</h1>
 
     <div class="row g-4">
+        <!-- Gestion des Paramètres -->
+        <div class="col-12">
+            <div class="card rounded-4 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white rounded-top-4">
+                    <h5 class="mb-0"><i class="bi bi-gear-wide me-2"></i>{{ __('Gestion des Paramètres') }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('settings.categories.index') }}" class="btn btn-outline-primary rounded-3 h-100">
+                                    <div class="text-center py-2">
+                                        <i class="bi bi-folder-plus fs-2 d-block mb-2"></i>
+                                        <strong>{{ __('Catégories') }}</strong>
+                                        <div class="small text-muted">{{ __('Gérer les catégories de paramètres') }}</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('settings.definitions.index') }}" class="btn btn-outline-primary rounded-3 h-100">
+                                    <div class="text-center py-2">
+                                        <i class="bi bi-gear-wide-connected fs-2 d-block mb-2"></i>
+                                        <strong>{{ __('Paramètres') }}</strong>
+                                        <div class="small text-muted">{{ __('Définir les paramètres système') }}</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('settings.values.index') }}" class="btn btn-outline-primary rounded-3 h-100">
+                                    <div class="text-center py-2">
+                                        <i class="bi bi-sliders fs-2 d-block mb-2"></i>
+                                        <strong>{{ __('Valeurs') }}</strong>
+                                        <div class="small text-muted">{{ __('Personnaliser les valeurs') }}</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Mon Compte -->
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card h-100 rounded-4 shadow-sm">

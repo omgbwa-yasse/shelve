@@ -17,17 +17,32 @@ class SettingController extends Controller
     public function index(Request $request)
     {
         $query = Setting::with(['category', 'values' => function($q) {
-            $q->where('user_id', auth()->id())
-              ->orWhere('organisation_id', auth()->user()->organisation_id);
+            if (auth()->check()) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('organisation_id', auth()->user()->organisation_id ?? null);
+            }
         }]);
 
         if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
+            $query->where('category_id', $request->get('category_id'));
+        }
+
+        if ($request->has('is_system')) {
+            $query->where('is_system', $request->boolean('is_system'));
         }
 
         $settings = $query->get();
 
-        return response()->json($settings);
+        return view('settings.definitions.index', compact('settings'));
+    }
+
+    /**
+     * Affiche le formulaire de création d'un paramètre
+     */
+    public function create()
+    {
+        $categories = SettingCategory::all();
+        return view('settings.definitions.create', compact('categories'));
     }
 
     /**
@@ -36,11 +51,23 @@ class SettingController extends Controller
     public function show($id)
     {
         $setting = Setting::with(['category', 'values' => function($q) {
-            $q->where('user_id', auth()->id())
-              ->orWhere('organisation_id', auth()->user()->organisation_id);
+            if (auth()->check()) {
+                $q->where('user_id', auth()->id())
+                  ->orWhere('organisation_id', auth()->user()->organisation_id ?? null);
+            }
         }])->findOrFail($id);
 
-        return response()->json($setting);
+        return view('settings.definitions.show', compact('setting'));
+    }
+
+    /**
+     * Affiche le formulaire d'édition d'un paramètre
+     */
+    public function edit($id)
+    {
+        $setting = Setting::findOrFail($id);
+        $categories = SettingCategory::all();
+        return view('settings.definitions.edit', compact('setting', 'categories'));
     }
 
     /**
@@ -51,7 +78,7 @@ class SettingController extends Controller
         $this->authorize('create', Setting::class);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100',
+            'name' => 'required|string|max:100|unique:settings,name',
             'category_id' => 'required|exists:setting_categories,id',
             'type' => 'required|in:integer,string,boolean,json,float,array',
             'default_value' => 'required|json',
@@ -61,12 +88,13 @@ class SettingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $setting = Setting::create($request->all());
 
-        return response()->json($setting, 201);
+        return redirect()->route('settings.definitions.index')
+            ->with('success', 'Paramètre créé avec succès.');
     }
 
     /**
@@ -78,7 +106,7 @@ class SettingController extends Controller
         $this->authorize('update', $setting);
 
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:100',
+            'name' => 'string|max:100|unique:settings,name,' . $id,
             'category_id' => 'exists:setting_categories,id',
             'type' => 'in:integer,string,boolean,json,float,array',
             'default_value' => 'json',
@@ -88,12 +116,13 @@ class SettingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $setting->update($request->all());
 
-        return response()->json($setting);
+        return redirect()->route('settings.definitions.index')
+            ->with('success', 'Paramètre mis à jour avec succès.');
     }
 
     /**
@@ -106,7 +135,8 @@ class SettingController extends Controller
 
         $setting->delete();
 
-        return response()->json(null, 204);
+        return redirect()->route('settings.definitions.index')
+            ->with('success', 'Paramètre supprimé avec succès.');
     }
 
     /**
