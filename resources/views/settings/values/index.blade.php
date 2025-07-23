@@ -63,19 +63,19 @@
                                     <td>{{ $value->created_at->format('d/m/Y H:i') }}</td>
                                     <td class="text-end">
                                         <div class="btn-group">
-                                            <a href="{{ route('settings.values.show', $value) }}" 
+                                            <a href="{{ route('settings.values.show', $value) }}"
                                                class="btn btn-sm btn-outline-info" title="{{ __('Voir') }}">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('settings.values.edit', $value) }}" 
+                                            <a href="{{ route('settings.values.edit', $value) }}"
                                                class="btn btn-sm btn-outline-warning" title="{{ __('Modifier') }}">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('settings.values.destroy', $value) }}" 
+                                            <form action="{{ route('settings.values.destroy', $value) }}"
                                                   method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
                                                         title="{{ __('Supprimer') }}"
                                                         onclick="return confirm('{{ __('Êtes-vous sûr de vouloir supprimer cette valeur ?') }}')">
                                                     <i class="bi bi-trash"></i>

@@ -42,19 +42,14 @@ class SettingCategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create', SettingCategory::class);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100|unique:setting_categories,name',
+        $request->validate([
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:setting_categories,id',
+            'is_system' => 'boolean'
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $category = SettingCategory::create($request->all());
+        SettingCategory::create($request->all());
 
         return redirect()->route('settings.categories.index')
             ->with('success', 'Catégorie créée avec succès.');
@@ -98,10 +93,9 @@ class SettingCategoryController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        if ($request->has('parent_id') && $request->parent_id) {
-            if ($this->wouldCreateCircularReference($id, $request->parent_id)) {
-                return redirect()->back()->withErrors(['parent_id' => 'Cette modification créerait une référence circulaire'])->withInput();
-            }
+        if ($request->has('parent_id') && $request->input('parent_id') &&
+            $this->wouldCreateCircularReference($id, $request->input('parent_id'))) {
+            return redirect()->back()->withErrors(['parent_id' => 'Cette modification créerait une référence circulaire'])->withInput();
         }
 
         $category->update($request->all());
@@ -155,38 +149,5 @@ class SettingCategoryController extends Controller
         }
 
         return false;
-    }
-}
-        $orgId = auth()->user()->organisation_id ?? null;
-
-        $settings = $category->getSettingsWithValues($userId, $orgId);
-
-        $formattedSettings = $settings->map(function($setting) {
-            $value = $setting->values->first();
-            $actualValue = $value ? json_decode($value->value, true) : json_decode($setting->default_value, true);
-
-            return [
-                'id' => $setting->id,
-                'name' => $setting->name,
-                'type' => $setting->type,
-                'value' => $actualValue,
-                'description' => $setting->description,
-                'is_system' => $setting->is_system,
-                'is_default' => $value ? false : true,
-                'constraints' => json_decode($setting->constraints, true),
-                'setting_value_id' => $value ? $value->id : null
-            ];
-        });
-
-        return response()->json([
-            'success' => true,
-            'category' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'description' => $category->description
-            ],
-            'settings' => $formattedSettings,
-            'count' => $formattedSettings->count()
-        ]);
     }
 }
