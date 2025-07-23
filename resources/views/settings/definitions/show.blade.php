@@ -114,60 +114,36 @@
                     </div>
                     @endif
 
-                    <!-- Valeurs associées -->
+                    <!-- Actions pour personnaliser le paramètre -->
+                    @if(!$setting->hasCustomValue())
                     <div class="row mt-4">
                         <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="text-muted mb-3">Valeurs définies ({{ $setting->values->count() }})</h6>
-                                <a href="{{ route('settings.values.create', ['setting_id' => $setting->id]) }}" class="btn btn-success btn-sm">
-                                    <i class="fas fa-plus"></i> Ajouter une valeur
-                                </a>
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Personnaliser ce paramètre</h6>
+                                    <p class="card-text text-muted">Ce paramètre utilise actuellement sa valeur par défaut. Vous pouvez le personnaliser pour votre compte.</p>
+                                    <button type="button" class="btn btn-primary" onclick="showCustomizeModal()">
+                                        <i class="fas fa-cog"></i> Personnaliser
+                                    </button>
+                                </div>
                             </div>
-
-                            @if($setting->values->count() > 0)
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-hover">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Utilisateur</th>
-                                                <th>Organisation</th>
-                                                <th>Valeur</th>
-                                                <th>Créée le</th>
-                                                <th width="100">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($setting->values as $value)
-                                            <tr>
-                                                <td>{{ $value->user->name ?? 'Non spécifié' }}</td>
-                                                <td>{{ $value->organisation->name ?? 'Non spécifiée' }}</td>
-                                                <td>
-                                                    <code class="text-truncate d-block" style="max-width: 200px;">
-                                                        {{ Str::limit(is_string($value->value) ? $value->value : json_encode($value->value), 50) }}
-                                                    </code>
-                                                </td>
-                                                <td>{{ $value->created_at->format('d/m/Y') }}</td>
-                                                <td>
-                                                    <div class="btn-group btn-group-sm">
-                                                        <a href="{{ route('settings.values.show', $value) }}" class="btn btn-outline-primary btn-sm" title="Voir">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
-                                                        <a href="{{ route('settings.values.edit', $value) }}" class="btn btn-outline-warning btn-sm" title="Modifier">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                        </div>
+                    </div>
+                    @else
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-success bg-opacity-10">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-success">Paramètre personnalisé</h6>
+                                    <p class="card-text">Ce paramètre a été personnalisé pour votre compte.</p>
+                                    <button type="button" class="btn btn-warning" onclick="resetSetting()">
+                                        <i class="fas fa-undo"></i> Réinitialiser
+                                    </button>
                                 </div>
-                            @else
-                                <div class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3"></i>
-                                    <p>Aucune valeur définie pour ce paramètre</p>
-                                </div>
-                            @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                         </div>
                     </div>
 
@@ -189,4 +165,88 @@
         </div>
     </div>
 </div>
+
+<!-- Modal pour personnaliser un paramètre -->
+<div class="modal fade" id="customizeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Personnaliser le paramètre</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customizeForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="customValue" class="form-label">Nouvelle valeur</label>
+                        <input type="text" class="form-control" id="customValue" name="value" required>
+                        <div class="form-text">Type: {{ $setting->type }}</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveCustomValue()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showCustomizeModal() {
+    document.getElementById('customValue').value = '';
+    new bootstrap.Modal(document.getElementById('customizeModal')).show();
+}
+
+function saveCustomValue() {
+    const value = document.getElementById('customValue').value;
+    const settingId = {{ $setting->id }};
+
+    fetch(`/settings/definitions/${settingId}/set-value`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ value: value })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Erreur: ' + (data.errors?.value?.[0] || data.error));
+        } else {
+            location.reload();
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la sauvegarde');
+        console.error(error);
+    });
+}
+
+function resetSetting() {
+    if (confirm('Êtes-vous sûr de vouloir réinitialiser ce paramètre à sa valeur par défaut ?')) {
+        const settingId = {{ $setting->id }};
+
+        fetch(`/settings/definitions/${settingId}/reset-value`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la réinitialisation');
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de la réinitialisation');
+            console.error(error);
+        });
+    }
+}
+</script>
 @endsection
