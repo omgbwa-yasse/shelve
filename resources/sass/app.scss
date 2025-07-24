@@ -122,143 +122,171 @@ h2 {
 
 }
 /* HEADER COMPACT */
-.single-line-header {
+/* Header Two-Band Design */
+.two-band-header {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    padding: 0;
-    box-shadow: none !important;
     position: sticky;
     top: 0;
     z-index: 1030;
+    box-shadow: none !important;
 }
 
-.header-container {
+/* Top Band - Logo, SAI, Organisation, Search, Actions */
+.top-band {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-band-container {
     display: flex;
     align-items: center;
-    height: 56px;
+    height: 50px;
     width: 100%;
+    padding: 0 15px;
+    gap: 20px;
 }
 
-/* Logo */
-.header-logo {
-    padding: 0 0.5rem;
+.left-section {
     display: flex;
     align-items: center;
-    height: 100%;
-}
-
-.header-logo img {
-    height: 34px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-}
-
-/* Organisation */
-.header-org {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    color: white;
-    padding: 0 0.75rem;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.85rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-}
-
-.header-org:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    text-decoration: none;
-    color: white;
-}
-
-.header-org i {
-    margin-right: 0.5rem;
-}
-
-/* Navigation */
-.header-nav {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    overflow-x: auto;
-    flex-grow: 1;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-}
-
-.header-nav::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-}
-
-.header-nav-item {
-    height: 100%;
+    gap: 15px;
     flex-shrink: 0;
 }
 
-.header-nav-link {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 0.85rem;
-    color: rgba(255, 255, 255, 0.8);
-    transition: background-color 0.2s;
-    font-size: 0.85rem;
-    white-space: nowrap;
+.center-section {
+    flex-shrink: 0;
 }
 
-.header-nav-link:hover {
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Bottom Band - Navigation */
+.bottom-band {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.bottom-band-container {
+    padding: 0 15px;
+}
+
+.main-navigation {
+    display: flex;
+    align-items: center;
+    height: 45px;
+    overflow-x: auto;
+    gap: 5px;
+}
+
+.main-navigation::-webkit-scrollbar {
+    display: none;
+}
+
+.main-navigation .nav-item {
+    flex-shrink: 0;
+}
+
+.main-navigation .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    gap: 6px;
+}
+
+.main-navigation .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
     text-decoration: none;
 }
 
-.header-nav-link.active {
+.main-navigation .nav-link.active {
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
     font-weight: 500;
 }
 
-.header-nav-link i {
-    font-size: 1rem;
-    margin-right: 0.4rem;
+.main-navigation .nav-link i {
+    font-size: 1.1rem;
 }
 
-.header-nav-link .badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 0.6rem;
-    padding: 0.15rem 0.35rem;
-    border-radius: 50%;
-    background-color: var(--danger);
-    color: var(--white);
+/* Logo styles */
+.header-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
 }
 
-/* Barre de recherche */
+.header-logo img {
+    height: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* SAI styles */
+.header-sai {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Organisation styles */
+.header-org {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    color: white;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.header-org:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+}
+
+/* Barre de recherche adaptée au two-band design */
 .header-search {
     display: flex;
     align-items: center;
-    height: 100%;
-    padding: 0 0.5rem;
     flex-shrink: 0;
 }
 
 .header-search-form {
     display: flex;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: white;
     border-radius: 4px;
     height: 36px;
+    min-width: 600px; /* Doublé de 300px à 600px */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.header-search-form:focus-within {
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-color: #007bff;
 }
 
 .header-search-input {
     height: 100%;
     border: none;
     background: transparent;
-    color: white;
-    padding: 0 0.5rem;
-    width: 140px;
+    color: #333;
+    padding: 0 12px;
+    flex: 1;
     font-size: 0.85rem;
 }
 
@@ -267,17 +295,17 @@ h2 {
 }
 
 .header-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: #666;
 }
 
 .header-search-select {
     height: 100%;
     border: none;
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
     font-size: 0.8rem;
-    padding: 0 0.5rem;
-    width: 85px;
+    padding: 0 12px;
+    width: 90px;
 }
 
 .header-search-select:focus {
@@ -285,8 +313,8 @@ h2 {
 }
 
 .header-search-select option {
-    background-color: var(--primary);
-    color: white;
+    background-color: white;
+    color: #333;
 }
 
 .header-search-button {
@@ -294,57 +322,51 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
+    width: 40px;
     border: none;
     background: transparent;
-    color: white;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
-/* Boutons d'actions */
+.header-search-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Actions utilisateur adaptées au two-band design */
 .header-actions {
     display: flex;
     align-items: center;
-    height: 100%;
-    margin-left: auto;
+    gap: 5px;
+    flex-shrink: 0;
 }
 
 .header-action-item {
-    height: 100%;
     position: relative;
 }
 
 .header-action-btn {
-    height: 100%;
     display: flex;
     align-items: center;
-    padding: 0 0.75rem;
+    height: 36px;
+    padding: 0 10px;
     color: rgba(255, 255, 255, 0.9);
     border: none;
     background: transparent;
+    border-radius: 4px;
     transition: background-color 0.2s;
     white-space: nowrap;
+    text-decoration: none;
+    font-size: 0.85rem;
 }
 
-.header-action-btn:hover, .header-action-btn:focus {
+.header-action-btn:hover,
+.header-action-btn:focus {
     background-color: rgba(255, 255, 255, 0.1);
     color: white;
     outline: none;
     text-decoration: none;
-}
-
-.header-action-btn i {
-    font-size: 1.1rem;
-}
-
-.header-action-btn .badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 0.6rem;
-    padding: 0.15rem 0.35rem;
-    border-radius: 50%;
-    background-color: var(--danger);
-    color: var(--white);
 }
 
 /* Adaptations responsives */

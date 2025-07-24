@@ -194,214 +194,229 @@
         </div>
     </div>
 
-    <div id="app">
-        <!-- Header Single-Line -->
-        <header class="single-line-header">
-            <div class="header-container">
-                <!-- Logo -->
-                <a href="{{ url('/') }}" class="header-logo">
-                    <img src="{{ asset('linear.svg') }}" alt="Shelve Logo" class="bg-light p-1 rounded">
-                </a>
-
-                <!-- Organisation (cliquable pour modal) -->
-                @if(Auth::user()->currentOrganisation)
-                <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
-                    <span><strong>{{ Auth::user()->currentOrganisation->code }}</strong></span>
-                </a>
-                @else
-                <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
-                    <span><strong>{{ __('No Organisation') }}</strong></span>
-                </a>
-                @endif
-
-                <!-- Navigation principale -->
-                <nav class="header-nav" style="padding-top: 3px;">
-                    @can('module_bulletin_boards_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
-                            <i class="bi bi-card-text" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Bulletin Boards') }}</span>
+        <div id="app">
+        <!-- Header Two-Band -->
+        <header class="two-band-header">
+            <!-- Top Band - Logo, SAI, Organisation, Actions -->
+            <div class="top-band">
+                <div class="top-band-container">
+                    <!-- Logo et SAI -->
+                    <div class="left-section">
+                        <a href="{{ url('/') }}" class="header-logo">
+                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo" class="bg-light p-1 rounded">
                         </a>
-                    </div>
-                    @endcan
-                    @can('module_mails_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
-                            <i class="bi bi-envelope" style="font-size: 1.5rem;"></i>
-                            <!-- Badge de notifications -->
-                            <span id="mail-notification-badge" class="position-absolute badge badge-danger" style="top: -5px; right: -10px; font-size: 0.7rem; display: none;">
-                                <span id="notification-count">0</span>
-                            </span>
-                            <span class="nav-label">{{ __('Mails') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_repositories_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
-                            <i class="bi bi-folder" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Records') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_communications_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}">
-                            <i class="bi bi-chat-dots" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Communications') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_transferrings_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}">
-                            <i class="bi bi-arrow-left-right" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Transfers') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_deposits_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}">
-                            <i class="bi bi-building" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Deposits') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_tools_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}">
-                            <i class="bi bi-tools" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Tools') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_dollies_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
-                            <i class="bi bi-cart3" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Dollies') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_workflow_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.dashboard') }}">
-                            <i class="bi bi-diagram-3" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Workflows') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    <!-- External contacts/organizations module -->
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}">
-                            <i class="bi bi-people" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Contacts') }}</span>
-                        </a>
-                    </div>
-                    @can('module_ai_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
-                            <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('AI') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_public_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
-                            <i class="bi bi-globe" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Public') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                    @can('module_settings_access')
-                    <div class="header-nav-item">
-                        <a class="header-nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
-                            <i class="bi bi-gear" style="font-size: 1.5rem;"></i>
-                            <span class="nav-label">{{ __('Settings') }}</span>
-                        </a>
-                    </div>
-                    @endcan
-                </nav>
-
-                <!-- Barre de recherche compacte avec sélecteur fixe -->
-                <div class="header-search">
-                    <form class="header-search-form" action="{{ route('records.search') }}">
-                        <input type="hidden" name="advanced" value="false">
-                        <input class="header-search-input"  name="query" type="search" placeholder="{{ __('Search...') }}"
-                               value="@if (isset($_GET['query'])) {{ preg_replace('/\s+/', ' ', trim($_GET['query'])) }} @endif">
-                        <select class="header-search-select" name="search_type">
-                            <option value="">{{ __('All') }}</option>
-                            <option value="mail" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'mail') selected @endif>{{ __('Mail') }}</option>
-                            <option value="record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'record') selected @endif>{{ __('Records') }}</option>
-                            <option value="transferring_record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring_record') selected @endif>{{ __('Transfer') }}</option>
-                        </select>
-                        <button class="header-search-button" type="submit">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Actions utilisateur -->
-                <div class="header-actions">
-                    <!-- Indicateur de statut MCP -->
-                    <div class="header-action-item">
-                        <div class="mcp-status-indicator" id="mcpStatusIndicator" title="Statut MCP" onclick="showMcpDetails()">
-                            <div class="status-dot" id="mcpStatusDot"></div>
-                            <span class="status-text" id="mcpStatusText">MCP</span>
+                        <div class="header-sai">
+                            <span>SAI</span>
                         </div>
                     </div>
 
-                    <!-- Notifications -->
-                    @can('module_mails_access')
-                    <div class="header-action-item">
-                        <a href="{{ route('notifications.organisation') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
-                            <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
-                            <span id="header-notification-badge" class="position-absolute badge badge-danger" style="top: -8px; right: -8px; font-size: 0.6rem; display: none;">
-                                <span id="header-notification-count">0</span>
-                            </span>
+                    <!-- Organisation -->
+                    <div class="center-section">
+                        @if(Auth::user()->currentOrganisation)
+                        <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
+                            <span><strong>{{ Auth::user()->currentOrganisation->code }}</strong></span>
                         </a>
-                    </div>
-                    @endcan
-
-                    <!-- Sélecteur de langue -->
-                    <div class="header-action-item">
-                        <a href="#" class="header-action-btn" id="langBtn" role="button" data-toggle="dropdown" aria-expanded="false">
-                            <span>{{ strtoupper(App::getLocale()) }}</span>
-                            <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
+                        @else
+                        <a href="javascript:void(0)" class="header-org" onclick="openOrgModal()">
+                            <span><strong>{{ __('No Organisation') }}</strong></span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="langBtn">
-                            <a class="dropdown-item" href="{{ route('language.switch', 'fr') }}">FR</a>
-                            <a class="dropdown-item" href="{{ route('language.switch', 'en') }}">EN</a>
-                        </div>
+                        @endif
                     </div>
 
-
-
-                    <!-- Utilisateur -->
-                    <div class="header-action-item">
-                        <a href="#" class="header-action-btn" id="userBtn" role="button" data-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle">  </i>
-                            <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userBtn">
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-person mr-2"></i>{{ Str::limit(Auth::user()->name, 12, '...') }}
-                            </a>
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-gear mr-2"></i> {{ __('Account Settings') }}
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{{ route('logout') }}"
-                               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                <i class="bi bi-box-arrow-right mr-2"></i> {{ __('Logout') }}
-                            </a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                @csrf
+                    <!-- Barre de recherche et Actions utilisateur -->
+                    <div class="right-section">
+                        <!-- Barre de recherche -->
+                        <div class="header-search">
+                            <form class="header-search-form" action="{{ route('records.search') }}">
+                                <input type="hidden" name="advanced" value="false">
+                                <input class="header-search-input" name="query" type="search" placeholder="{{ __('Search...') }}"
+                                       value="@if (isset($_GET['query'])) {{ preg_replace('/\s+/', ' ', trim($_GET['query'])) }} @endif">
+                                <select class="header-search-select" name="search_type">
+                                    <option value="">{{ __('All') }}</option>
+                                    <option value="mail" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'mail') selected @endif>{{ __('Mail') }}</option>
+                                    <option value="record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'record') selected @endif>{{ __('Records') }}</option>
+                                    <option value="transferring_record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring_record') selected @endif>{{ __('Transfer') }}</option>
+                                </select>
+                                <button class="header-search-button" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
                             </form>
                         </div>
+
+                        <!-- Actions utilisateur -->
+                        <div class="header-actions">
+                            <!-- Indicateur de statut MCP -->
+                            <div class="header-action-item">
+                                <div class="mcp-status-indicator" id="mcpStatusIndicator" title="Statut MCP" onclick="showMcpDetails()">
+                                    <div class="status-dot" id="mcpStatusDot"></div>
+                                    <span class="status-text" id="mcpStatusText">MCP</span>
+                                </div>
+                            </div>
+
+                            <!-- Notifications -->
+                            @can('module_mails_access')
+                            <div class="header-action-item">
+                                <a href="{{ route('notifications.organisation') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
+                                    <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
+                                    <span id="header-notification-badge" class="position-absolute badge badge-danger" style="top: -8px; right: -8px; font-size: 0.6rem; display: none;">
+                                        <span id="header-notification-count">0</span>
+                                    </span>
+                                </a>
+                            </div>
+                            @endcan
+
+                            <!-- Sélecteur de langue -->
+                            <div class="header-action-item">
+                                <a href="#" class="header-action-btn" id="langBtn" role="button" data-toggle="dropdown" aria-expanded="false">
+                                    <span>{{ strtoupper(App::getLocale()) }}</span>
+                                    <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="langBtn">
+                                    <a class="dropdown-item" href="{{ route('language.switch', 'fr') }}">FR</a>
+                                    <a class="dropdown-item" href="{{ route('language.switch', 'en') }}">EN</a>
+                                </div>
+                            </div>
+
+                            <!-- Utilisateur -->
+                            <div class="header-action-item">
+                                <a href="#" class="header-action-btn" id="userBtn" role="button" data-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i>
+                                    <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userBtn">
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-person mr-2"></i>{{ Str::limit(Auth::user()->name, 12, '...') }}
+                                    </a>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-gear mr-2"></i> {{ __('Account Settings') }}
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="bi bi-box-arrow-right mr-2"></i> {{ __('Logout') }}
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                        @csrf
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Bottom Band - Navigation principale -->
+            <div class="bottom-band">
+                <div class="bottom-band-container">
+                    <nav class="main-navigation">
+                        @can('module_bulletin_boards_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
+                                <i class="bi bi-card-text"></i>
+                                <span>{{ __('Bulletin Boards') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_mails_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
+                                <i class="bi bi-envelope"></i>
+                                <!-- Badge de notifications -->
+                                <span id="mail-notification-badge" class="position-absolute badge badge-danger" style="top: -5px; right: -10px; font-size: 0.7rem; display: none;">
+                                    <span id="notification-count">0</span>
+                                </span>
+                                <span>{{ __('Mails') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_repositories_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
+                                <i class="bi bi-folder"></i>
+                                <span>{{ __('Records') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_communications_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'communications') active @endif" href="{{ route('communications.transactions.index') }}">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>{{ __('Communications') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_transferrings_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'transferrings') active @endif" href="{{ route('slips.index') }}">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span>{{ __('Transfers') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_deposits_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'deposits') active @endif" href="{{ route('buildings.index') }}">
+                                <i class="bi bi-building"></i>
+                                <span>{{ __('Deposits') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_tools_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'tools') active @endif" href="{{ route('activities.index') }}">
+                                <i class="bi bi-tools"></i>
+                                <span>{{ __('Tools') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_dollies_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'dollies') active @endif" href="{{ route('dolly.index') }}">
+                                <i class="bi bi-cart3"></i>
+                                <span>{{ __('Dollies') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_workflow_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.dashboard') }}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>{{ __('Workflows') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        <!-- External contacts/organizations module -->
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}">
+                                <i class="bi bi-people"></i>
+                                <span>{{ __('Contacts') }}</span>
+                            </a>
+                        </div>
+                        @can('module_ai_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
+                                <i class="bi bi-robot"></i>
+                                <span>{{ __('AI') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_public_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
+                                <i class="bi bi-globe"></i>
+                                <span>{{ __('Public') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                        @can('module_settings_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
+                                <i class="bi bi-gear"></i>
+                                <span>{{ __('Settings') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+                    </nav>
                 </div>
             </div>
         </header>
@@ -477,6 +492,11 @@
             </div>
         </main>
     </div>
+
+
+
+
+
 @endauth
 
 @guest
@@ -518,11 +538,11 @@
                 $('#orgModal').modal('hide');
             });
 
-            // Focus sur le champ de recherche
+            // Focus sur le champ de recherche - maintenir le fond blanc
             $('.header-search-input').focus(function() {
-                $(this).closest('.header-search-form').css('background-color', 'rgba(255, 255, 255, 0.2)');
+                $(this).closest('.header-search-form').css('background-color', 'white');
             }).blur(function() {
-                $(this).closest('.header-search-form').css('background-color', 'rgba(255, 255, 255, 0.15)');
+                $(this).closest('.header-search-form').css('background-color', 'white');
             });
 
             // Mise à jour automatique des badges de notifications
