@@ -937,9 +937,6 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 
-// Route resource obsolète à supprimer (conflit avec le nouveau groupe de routes)
-// Route::resource('thesaurus', ContainerStatusController::class);
-
 // API routes pour le thésaurus
 Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->group(function () {
     Route::post('import/skos/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processSkosImport'])->name('import.skos.process');
@@ -947,6 +944,9 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::post('import/rdf/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processRdfImport'])->name('import.rdf.process');
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
+
+// Route pour vérifier le statut MCP
+Route::middleware(['auth'])->get('api/mcp/status', [App\Http\Controllers\RecordEnricherController::class, 'status'])->name('api.mcp.status');
 
 
 

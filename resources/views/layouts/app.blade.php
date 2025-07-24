@@ -20,6 +20,9 @@
     <!-- CSS Dependencies (locaux) -->
     <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap.min.css') }}">
 
+    <!-- Suppression globale des ombres -->
+    <link rel="stylesheet" href="{{ asset('css/no-shadows.css') }}">
+
     <!-- Scripts (locaux) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
@@ -29,7 +32,7 @@
         .submenu-card {
             background-color: #f8f9fa;
             border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: none !important;
         }
 
         .submenu-card .nav-link {
@@ -103,6 +106,56 @@
         .header-nav-link:hover .nav-label {
             font-weight: 400 !important;
             text-decoration: none !important;
+        }
+
+        /* Styles pour l'indicateur de statut MCP */
+        .mcp-status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin-right: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .mcp-status-indicator:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-dot.red {
+            background-color: #dc3545; /* Rouge - Non fonctionnel */
+        }
+
+        .status-dot.yellow {
+            background-color: #ffc107; /* Jaune - En cours */
+        }
+
+        .status-dot.orange {
+            background-color: #fd7e14; /* Orange - Autres problèmes */
+        }
+
+        .status-dot.green {
+            background-color: #28a745; /* Vert - Fonctionne */
+        }
+
+        .status-dot.grey {
+            background-color: #6c757d; /* Gris - Statut inconnu */
+        }
+
+        .status-text {
+            font-size: 0.75rem;
+            color: white;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -292,6 +345,14 @@
 
                 <!-- Actions utilisateur -->
                 <div class="header-actions">
+                    <!-- Indicateur de statut MCP -->
+                    <div class="header-action-item">
+                        <div class="mcp-status-indicator" id="mcpStatusIndicator" title="Statut MCP" onclick="showMcpDetails()">
+                            <div class="status-dot" id="mcpStatusDot"></div>
+                            <span class="status-text" id="mcpStatusText">MCP</span>
+                        </div>
+                    </div>
+
                     <!-- Notifications -->
                     @can('module_mails_access')
                     <div class="header-action-item">
@@ -440,6 +501,9 @@
     <!-- Scripts locaux -->
     <script src="{{ asset('js/vendor/jquery-3.5.1.min.js') }}"></script>
     <script src="{{ asset('js/vendor/popper.min.js') }}"></script>
+
+    <!-- Script de suppression des ombres -->
+    <script src="{{ asset('js/remove-shadows.js') }}"></script>
     <script src="{{ asset('js/vendor/bootstrap.min.js') }}"></script>
     <script src="{{ asset('js/vendor/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('js/vendor/chart.min.js') }}"></script>
@@ -466,6 +530,10 @@
             updateNotificationBadges();
             setInterval(updateNotificationBadges, 30000); // Toutes les 30 secondes
             @endcan
+
+            // Vérification périodique du statut MCP
+            updateMcpStatus();
+            setInterval(updateMcpStatus, 60000); // Toutes les 60 secondes
         });
 
         @can('module_mails_access')
@@ -500,6 +568,93 @@
                 .catch(error => console.log('Erreur lors de la récupération des notifications:', error));
         }
         @endcan
+
+        // Variable globale pour stocker les dernières données de statut MCP
+        let lastMcpStatusData = null;
+
+        // Fonction pour afficher les détails du statut MCP
+        function showMcpDetails() {
+            if (lastMcpStatusData) {
+                let message = 'Statut MCP:\n\n';
+
+                if (lastMcpStatusData.mcp) {
+                    message += `MCP Server: ${lastMcpStatusData.mcp.success ? 'Connecté' : 'Déconnecté'}\n`;
+                    if (lastMcpStatusData.mcp.error) {
+                        message += `Erreur MCP: ${lastMcpStatusData.mcp.error}\n`;
+                    }
+                }
+
+                if (lastMcpStatusData.ollama) {
+                    message += `Ollama: ${lastMcpStatusData.ollama.success ? 'Connecté' : 'Déconnecté'}\n`;
+                    if (lastMcpStatusData.ollama.success && lastMcpStatusData.ollama.models) {
+                        message += `Modèles disponibles: ${lastMcpStatusData.ollama.models.length}\n`;
+                    }
+                    if (lastMcpStatusData.ollama.error) {
+                        message += `Erreur Ollama: ${lastMcpStatusData.ollama.error}\n`;
+                    }
+                }
+
+                alert(message);
+            } else {
+                alert('Statut MCP: Vérification en cours...');
+            }
+        }
+
+        // Fonction pour mettre à jour le statut MCP
+        function updateMcpStatus() {
+            fetch('/api/mcp/status')
+                .then(response => response.json())
+                .then(data => {
+                    lastMcpStatusData = data; // Stocker les données pour les détails
+
+                    const statusDot = document.getElementById('mcpStatusDot');
+                    const statusIndicator = document.getElementById('mcpStatusIndicator');
+
+                    if (!statusDot || !statusIndicator) return;
+
+                    // Reset classes
+                    statusDot.className = 'status-dot';
+
+                    // Déterminer le statut global basé sur MCP et Ollama
+                    let status = 'grey';
+                    let title = 'Statut MCP: Inconnu';
+
+                    if (data.mcp && data.ollama) {
+                        if (data.mcp.success && data.ollama.success) {
+                            status = 'green';
+                            title = 'MCP: Opérationnel - Ollama: Connecté';
+                        } else if (data.mcp.success && !data.ollama.success) {
+                            status = 'orange';
+                            title = 'MCP: Opérationnel - Ollama: Déconnecté';
+                        } else if (!data.mcp.success && data.ollama.success) {
+                            status = 'yellow';
+                            title = 'MCP: Déconnecté - Ollama: Connecté';
+                        } else {
+                            status = 'red';
+                            title = 'MCP: Déconnecté - Ollama: Déconnecté';
+                        }
+                    } else {
+                        status = 'red';
+                        title = 'MCP: Service indisponible';
+                    }
+
+                    // Appliquer le statut
+                    statusDot.classList.add(status);
+                    statusIndicator.title = title;
+                })
+                .catch(error => {
+                    console.log('Erreur lors de la vérification du statut MCP:', error);
+                    lastMcpStatusData = null;
+
+                    const statusDot = document.getElementById('mcpStatusDot');
+                    const statusIndicator = document.getElementById('mcpStatusIndicator');
+
+                    if (statusDot && statusIndicator) {
+                        statusDot.className = 'status-dot red';
+                        statusIndicator.title = 'MCP: Erreur de communication';
+                    }
+                });
+        }
     </script>
 </body>
 </html>

@@ -26,6 +26,10 @@
     box-shadow: 0 2px 4px rgba(255, 105, 180, 0.2);  /* Ombre réduite */
 }
 
+/* ========================================
+   SUPPRESSION COMPLÈTE DE TOUTES LES OMBRES
+   ======================================== */
+
 /* Suppression des ombres pour les sous-menus */
 .dropdown-menu {
     box-shadow: none !important;
@@ -35,5 +39,95 @@
 .dropdown-menu.shadow,
 .dropdown-menu.shadow-sm,
 .dropdown-menu.shadow-lg {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres pour les cartes et contenus principaux */
+.card {
+    box-shadow: none !important;
+}
+
+.card.shadow,
+.card.shadow-sm,
+.card.shadow-lg {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres pour les cartes de sous-menu */
+.submenu-card {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres Bootstrap par défaut */
+.shadow {
+    box-shadow: none !important;
+}
+
+.shadow-sm {
+    box-shadow: none !important;
+}
+
+.shadow-lg {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres pour tous les éléments génériques */
+* {
+    box-shadow: none !important;
+}
+
+/* Réécriture des variables CSS Bootstrap pour les ombres */
+:root {
+    --bs-box-shadow: none !important;
+    --bs-box-shadow-sm: none !important;
+    --bs-box-shadow-lg: none !important;
+    --bs-box-shadow-inset: none !important;
+}
+
+/* Suppression des ombres sur le header */
+.single-line-header {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres sur les boutons */
+.btn {
+    box-shadow: none !important;
+}
+
+.btn:focus,
+.btn:active,
+.btn.active {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres sur les formulaires */
+.form-control:focus {
+    box-shadow: none !important;
+}
+
+.form-select:focus {
+    box-shadow: none !important;
+}
+
+.form-check-input:focus {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres sur les éléments interactifs */
+.nav-pills .nav-link.active {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres sur les modales */
+.modal-content {
+    box-shadow: none !important;
+}
+
+/* Suppression des ombres sur les tooltips et popovers */
+.tooltip {
+    box-shadow: none !important;
+}
+
+.popover {
     box-shadow: none !important;
 }

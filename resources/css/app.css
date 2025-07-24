@@ -5,12 +5,12 @@
     border-radius: 8px;
     padding: 1rem 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    transition: box-shadow 0.2s ease;
+    box-shadow: none !important;
+    transition: none;
 }
 
 .mail-actions-bar:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: none !important;
 }
 
 .mail-actions-bar .btn-sm {
@@ -23,7 +23,7 @@
 
 .mail-actions-bar .btn-sm:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: none !important;
 }
 
 .mail-actions-bar .badge {
