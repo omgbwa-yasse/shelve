@@ -202,6 +202,10 @@ return [
 
 'tntsearch' => [
     'storage'  => storage_path('tntsearch'), // Absolute path to the index files directory
+    'host'     => env('DB_HOST', '127.0.0.1'),
+    'database' => env('DB_DATABASE', 'shelve_db'),
+    'username' => env('DB_USERNAME', 'root'),
+    'password' => env('DB_PASSWORD', ''),
     'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
     'fuzzy' => [
         'prefix_length' => 2,

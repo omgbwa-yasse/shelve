@@ -128,7 +128,7 @@ class SettingSeeder extends Seeder
             'category_id' => $aiCategory->id,
             'name' => 'ai_default_model',
             'type' => 'string',
-            'default_value' => json_encode('llama3'),
+            'default_value' => json_encode('gemma3:4b'),
             'description' => 'Modèle d\'IA par défaut',
             'is_system' => true,
         ]);
@@ -251,7 +251,7 @@ class SettingSeeder extends Seeder
             'category_id' => $aiModelsCategory->id,
             'name' => 'model_summary',
             'type' => 'string',
-            'default_value' => json_encode('llama3'),
+            'default_value' => json_encode('gemma3:4b'),
             'description' => 'Modèle pour la génération de résumés',
             'is_system' => true,
         ]);
@@ -260,7 +260,7 @@ class SettingSeeder extends Seeder
             'category_id' => $aiModelsCategory->id,
             'name' => 'model_keywords',
             'type' => 'string',
-            'default_value' => json_encode('llama3'),
+            'default_value' => json_encode('gemma3:4b'),
             'description' => 'Modèle pour l\'extraction de mots-clés',
             'is_system' => true,
         ]);
@@ -269,7 +269,7 @@ class SettingSeeder extends Seeder
             'category_id' => $aiModelsCategory->id,
             'name' => 'model_analysis',
             'type' => 'string',
-            'default_value' => json_encode('llama3'),
+            'default_value' => json_encode('gemma3:4b'),
             'description' => 'Modèle pour l\'analyse de texte',
             'is_system' => true,
         ]);

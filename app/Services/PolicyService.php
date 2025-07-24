@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class PolicyService
 {
@@ -107,16 +109,27 @@ class PolicyService
      */
     private static function registerDynamicPermissionGates()
     {
-        // Récupérer toutes les permissions du système natif
-        $permissions = Permission::all();
+        try {
+            // Vérifier si la base de données est disponible et la table permissions existe
+            if (!Schema::hasTable('permissions')) {
+                return;
+            }
 
-        foreach ($permissions as $permission) {
-            Gate::define($permission->name, function (User $user) use ($permission) {
-                if ($user->hasRole('superadmin')) {
-                    return true;
-                }
-                return $user->hasPermissionTo($permission->name);
-            });
+            // Récupérer toutes les permissions du système natif
+            $permissions = Permission::all();
+
+            foreach ($permissions as $permission) {
+                Gate::define($permission->name, function (User $user) use ($permission) {
+                    if ($user->hasRole('superadmin')) {
+                        return true;
+                    }
+                    return $user->hasPermissionTo($permission->name);
+                });
+            }
+        } catch (\Exception $e) {
+            // En cas d'erreur (migration, seeding, etc.), on ignore silencieusement
+            // Pour éviter de casser l'application pendant les opérations de base de données
+            Log::debug('PolicyService: Unable to register dynamic permission gates: ' . $e->getMessage());
         }
     }
 
