@@ -494,9 +494,6 @@
     </div>
 
 
-
-
-
 @endauth
 
 @guest
