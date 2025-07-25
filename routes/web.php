@@ -909,12 +909,12 @@ Route::prefix('public')->name('public.')->group(function () {
 
     // Gestion des discussions et messages
     Route::resource('chats', PublicChatController::class)->names('chats');
+    Route::resource('chat-participants', PublicChatParticipantController::class)->names('chat-participants');
     Route::resource('chats.messages', PublicChatMessageController::class)->names('chats.messages');
-    Route::resource('chats.participants', PublicChatParticipantController::class)->names('chat-participants');
 
     // Gestion des événements publics
     Route::resource('events', PublicEventController::class)->names('events');
-    Route::resource('events/registrations', PublicEventRegistrationController::class)->names('events.registrations');
+    Route::resource('event-registrations', PublicEventRegistrationController::class)->names('event-registrations');
 
     // Gestion du contenu public
     Route::resource('news', PublicNewsController::class)->names('news');

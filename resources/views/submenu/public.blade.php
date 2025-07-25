@@ -130,8 +130,29 @@
         }
     </style>
 
+    <!-- Dashboard et statistiques Section -->
+
+    <div class="submenu-section public-dashboard-section">
+        <div class="submenu-heading">
+            <i class="bi bi-graph-up"></i> {{ __('dashboard_statistics') }}
+        </div>
+        <div class="submenu-content" id="publicDashboardMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('public.dashboard') }}">
+                    <i class="bi bi-grid-1x2-fill"></i> {{ __('dashboard') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('public.statistics') }}">
+                    <i class="bi bi-bar-chart-line-fill"></i> {{ __('statistics') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Gestion des Utilisateurs Publics Section -->
-    @can('manage', App\Models\User::class)
+
     <div class="submenu-section public-section">
         <div class="submenu-heading">
             <i class="bi bi-people"></i> {{ __('public_users') }}
@@ -149,10 +170,10 @@
             </div>
         </div>
     </div>
-    @endcan
+
 
     <!-- Contenu Public Section -->
-    @can('manage', App\Models\User::class)
+
     <div class="submenu-section public-content-section">
         <div class="submenu-heading">
             <i class="bi bi-newspaper"></i> {{ __('public_content') }}
@@ -180,10 +201,10 @@
             </div>
         </div>
     </div>
-    @endcan
+
 
     <!-- Documents et Archives Section -->
-    @can('viewAny', App\Models\Record::class)
+
     <div class="submenu-section public-management-section">
         <div class="submenu-heading">
             <i class="bi bi-archive"></i> {{ __('documents_archives') }}
@@ -211,10 +232,9 @@
             </div>
         </div>
     </div>
-    @endcan
 
     <!-- Interaction et Communication Section -->
-    @can('manage', App\Models\User::class)
+
     <div class="submenu-section public-interaction-section">
         <div class="submenu-heading">
             <i class="bi bi-chat-square-dots"></i> {{ __('interaction_communication') }}
@@ -247,7 +267,7 @@
             </div>
         </div>
     </div>
-    @endcan
+
 
 </div>
 
