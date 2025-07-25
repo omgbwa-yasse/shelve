@@ -79,9 +79,6 @@ Route::prefix('records')->name('api.records.')->middleware('auth:sanctum')->grou
 
 
 
-
-
-
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
 
