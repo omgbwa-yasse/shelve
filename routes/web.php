@@ -780,46 +780,7 @@ Route::group(['middleware' => 'auth'], function () {
         });
     });
 
-
-
-    Route::prefix('public')->group(function () {
-        // User related routes
-        Route::resource('users', PublicUserController::class)->names('public.users');
-        Route::patch('users/{user}/activate', [PublicUserController::class, 'activate'])->name('public.users.activate');
-        Route::patch('users/{user}/deactivate', [PublicUserController::class, 'deactivate'])->name('public.users.deactivate');
-
-        // Chat related routes
-        Route::resource('chats', PublicChatController::class)->names('public.chats');
-        Route::resource('chat-messages', PublicChatMessageController::class)->names('public.chat-messages');
-        Route::resource('chat-participants', PublicChatParticipantController::class)->names('public.chat-participants');
-
-        // Events related routes
-        Route::resource('events', PublicEventController::class)->names('public.events');
-        Route::resource('event-registrations', PublicEventRegistrationController::class)->names('public.event-registrations');
-
-        // Content related routes
-        Route::resource('news', PublicNewsController::class)->names('public.news');
-        Route::resource('pages', PublicPageController::class)->names('public.pages');
-        Route::resource('templates', PublicTemplateController::class)->names('public.templates');
-
-        // Document related routes
-        Route::resource('document-requests', PublicDocumentRequestController::class)->names('public.document-requests');
-        Route::get('records/autocomplete', [PublicRecordController::class, 'autocomplete'])->name('public.records.autocomplete');
-        Route::resource('records', PublicRecordController::class)->names('public.records');
-        Route::resource('responses', PublicResponseController::class)->names('public.responses');
-        Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('public.response-attachments');
-
-        // Feedback and search
-        Route::resource('feedback', PublicFeedbackController::class)->names('public.feedback');
-        Route::put('feedback/{feedback}/status', [PublicFeedbackController::class, 'updateStatus'])->name('public.feedback.update-status');
-        Route::post('feedback/{feedback}/comments', [PublicFeedbackController::class, 'addComment'])->name('public.feedback.add-comment');
-        Route::delete('feedback/{feedback}/comments/{comment}', [PublicFeedbackController::class, 'deleteComment'])->name('public.feedback.delete-comment');
-        Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('public.search-logs');
-    });
-
-
-
-
+    // Routes pour les rapports
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
         Route::get('mails', [ReportController::class, 'statisticsMails'])->name('report.statistics.mails');
@@ -851,15 +812,6 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
-    // Route de test temporaire
-    Route::get('/test', function() {
-        return view('workflow.test');
-    })->name('test');
-
-    // Route de test pour le logo
-    Route::get('/logo-test', function() {
-        return view('workflow.logo-test');
-    })->name('logo-test');
 
 
 
@@ -899,6 +851,18 @@ Route::group(['middleware' => 'auth'], function () {
         });
         Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
 
+
+
+
+
+
+
+
+
+
+
+
+
         // Routes pour les tâches liées au workflow
         Route::prefix('tasks')->name('tasks.')->group(function () {
             Route::get('/', [TaskController::class, 'index'])->name('index');
@@ -927,11 +891,55 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('{task}/attachment/{attachmentId}/remove', [TaskController::class, 'removeAttachment'])->name('removeAttachment');
             Route::get('{task}/attachment/{attachmentId}/download', [TaskController::class, 'downloadAttachment'])->name('download');
 
-            // Supervision
-            Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
-        });
-
+        Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
     });
+
+    // Dashboard du module workflow
+    Route::get('/', function () {
+        return redirect()->route('workflows.dashboard');
+    });
+    Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
+});
+
+// Routes publics de administration du module public
+Route::prefix('public')->name('public.')->group(function () {
+    Route::resource('users', PublicUserController::class)->names('users');
+    Route::patch('users/{user}/activate', [PublicUserController::class, 'activate'])->name('users.activate');
+    Route::patch('users/{user}/deactivate', [PublicUserController::class, 'deactivate'])->name('users.deactivate');
+
+    // Gestion des discussions et messages
+    Route::resource('chats', PublicChatController::class)->names('chats');
+    Route::resource('chats.messages', PublicChatMessageController::class)->names('chats.messages');
+    Route::resource('chats.participants', PublicChatParticipantController::class)->names('chat-participants');
+
+    // Gestion des événements publics
+    Route::resource('events', PublicEventController::class)->names('events');
+    Route::resource('events/registrations', PublicEventRegistrationController::class)->names('events.registrations');
+
+    // Gestion du contenu public
+    Route::resource('news', PublicNewsController::class)->names('news');
+    Route::resource('pages', PublicPageController::class)->names('pages');
+    Route::resource('templates', PublicTemplateController::class)->names('templates');
+
+    // Gestion des demandes de documents
+    Route::resource('document-requests', PublicDocumentRequestController::class)->names('document-requests');
+    Route::get('records/autocomplete', [PublicRecordController::class, 'autocomplete'])->name('records.autocomplete');
+    Route::resource('records', PublicRecordController::class)->names('records');
+    Route::resource('responses', PublicResponseController::class)->names('responses');
+    Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('response-attachments');
+
+    // Gestion des retours et recherches
+    Route::resource('feedback', PublicFeedbackController::class)->names('feedback');
+    Route::put('feedback/{feedback}/status', [PublicFeedbackController::class, 'updateStatus'])->name('feedback.update-status');
+    Route::post('feedback/{feedback}/comments', [PublicFeedbackController::class, 'addComment'])->name('feedback.add-comment');
+    Route::delete('feedback/{feedback}/comments/{comment}', [PublicFeedbackController::class, 'deleteComment'])->name('feedback.delete-comment');
+    Route::resource('search-logs', PublicSearchLogController::class)->only(['index', 'show'])->names('search-logs');
+
+    // Dashboard et statistiques du module public
+    Route::get('dashboard', [PublicUserController::class, 'dashboard'])->name('dashboard');
+    Route::get('statistics', [PublicUserController::class, 'statistics'])->name('statistics');
+});
+
 });
 
 

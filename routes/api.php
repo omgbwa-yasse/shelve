@@ -29,6 +29,23 @@ use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
 
+// Imports des contrôleurs publics web (non-API)
+use App\Http\Controllers\PublicEventController;
+use App\Http\Controllers\PublicNewsController;
+use App\Http\Controllers\PublicPageController;
+use App\Http\Controllers\PublicUserController;
+use App\Http\Controllers\PublicChatController;
+use App\Http\Controllers\PublicChatMessageController;
+use App\Http\Controllers\PublicChatParticipantController;
+use App\Http\Controllers\PublicEventRegistrationController;
+use App\Http\Controllers\PublicDocumentRequestController;
+use App\Http\Controllers\PublicRecordController;
+use App\Http\Controllers\PublicResponseController;
+use App\Http\Controllers\PublicResponseAttachmentController;
+use App\Http\Controllers\PublicFeedbackController;
+use App\Http\Controllers\PublicSearchLogController;
+use App\Http\Controllers\PublicTemplateController;
+
 // Routes API pour l'enrichissement des records via Ollama MCP
 Route::prefix('records/enrich')->name('api.records.enrich.')->middleware('auth:sanctum')->group(function () {
     Route::get('status', [RecordEnricherController::class, 'status'])->name('status');
@@ -79,130 +96,162 @@ Route::prefix('records')->name('api.records.')->middleware('auth:sanctum')->grou
 
 
 
-// Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
+    // Records - Services ouverts
+    Route::get('records', [PublicRecordApiController::class, 'index'])->name('records.index');
+    Route::get('records/{record}', [PublicRecordApiController::class, 'show'])->name('records.show');
+    Route::get('records/{record}/attachments', [PublicRecordApiController::class, 'attachments'])->name('records.attachments');
 
-    // Records
-    Route::apiResource('records', PublicRecordApiController::class)->only(['index', 'show']);
-    Route::post('records/search', [PublicRecordApiController::class, 'search'])->name('records.search');
-    Route::get('records/autocomplete', [PublicRecordApiController::class, 'autocomplete'])->name('records.autocomplete');
-    Route::get('records/export', [PublicRecordApiController::class, 'export'])->name('records.export');
-    Route::get('records/statistics', [PublicRecordApiController::class, 'statistics'])->name('records.statistics');
-    Route::get('records/filters', [PublicRecordApiController::class, 'filters'])->name('records.filters');
-    Route::post('records/export/search', [PublicRecordApiController::class, 'exportSearch'])->name('records.export.search');
 
-    // Events
-    Route::apiResource('events', PublicEventApiController::class)->only(['index', 'show']);
+    // Records - Services ouverts
+    Route::get('events', [PublicEventApiController::class, 'index'])->name('events.index');
+    Route::get('events/{event}', [PublicEventApiController::class, 'show'])->name('events.show');
 
-    // News
-    Route::apiResource('news', PublicNewsApiController::class)->only(['index', 'show']);
-    Route::get('news/latest', [PublicNewsApiController::class, 'latest'])->name('news.latest');
+    // Routes pour les actualités publiques
+    Route::get('news', [PublicNewsApiController::class, 'index'])->name('news.index');
+    Route::get('news/{news}', [PublicNewsApiController::class, 'show'])->name('news.show');
 
-    // Search
+    // Routes pour les pages publiques
+    Route::get('pages', [PublicPageApiController::class, 'index'])->name('pages.index');
+    Route::get('pages/{page}', [PublicPageApiController::class, 'show'])->name('pages.show');
+    Route::get('pages/published', [PublicPageApiController::class, 'published'])->name('pages.published');
+    Route::get('pages/slug/{slug}', [PublicPageApiController::class, 'slug'])->name('pages.slug');
+
+    // Routes pour la recherche
     Route::get('search/suggestions', [PublicRecordApiController::class, 'suggestions'])->name('search.suggestions');
     Route::get('search/popular', [PublicRecordApiController::class, 'popularSearches'])->name('search.popular');
 
     // Users (Authentication)
     Route::post('users/login', [PublicUserApiController::class, 'login'])->name('users.login');
     Route::post('users/register', [PublicUserApiController::class, 'register'])->name('users.register');
-    Route::post('users/logout', [PublicUserApiController::class, 'logout'])->name('users.logout')->middleware('auth:sanctum');
     Route::post('users/verify-token', [PublicUserApiController::class, 'verifyToken'])->name('users.verify-token');
     Route::post('users/forgot-password', [PublicUserApiController::class, 'forgotPassword'])->name('users.forgot-password');
     Route::post('users/reset-password', [PublicUserApiController::class, 'resetPassword'])->name('users.reset-password');
 
-
     // Feedback
-    Route::apiResource('feedback', PublicFeedbackApiController::class)->only(['index', 'store']);
-    Route::get('feedback', [PublicFeedbackApiController::class, 'index'])->name('feedback.index')->middleware('auth:sanctum');
-
-    // Chat
-    Route::apiResource('chat/conversations', PublicChatApiController::class)->only(['index', 'store'])->middleware('auth:sanctum');
-    Route::get('chat/conversations/{conversation}/messages', [PublicChatApiController::class, 'messages'])->name('chat.messages')->middleware('auth:sanctum');
-    Route::post('chat/conversations/{conversation}/messages', [PublicChatApiController::class, 'sendMessage'])->name('chat.messages.send')->middleware('auth:sanctum');
-
-    // Pages
-    Route::apiResource('pages', PublicPageApiController::class)->except(['create', 'edit']);
-    Route::get('pages/published', [PublicPageApiController::class, 'published'])->name('pages.published');
-    Route::get('pages/slug/{slug}', [PublicPageApiController::class, 'showBySlug'])->name('pages.show-by-slug');
+    Route::post('feedback', [PublicFeedbackApiController::class, 'store'])->name('feedback.store');
+    Route::post('search-logs', [PublicSearchLogApiController::class, 'store'])->name('search-logs.store');
+});
 
 
 
-    // Search Logs
-    Route::apiResource('search-logs', PublicSearchLogApiController::class)->only(['index', 'store']);
-    Route::get('search-logs/statistics', [PublicSearchLogApiController::class, 'statistics'])->name('search-logs.statistics')->middleware('auth:sanctum');
-    Route::get('search-logs/user-history', [PublicSearchLogApiController::class, 'userHistory'])->name('search-logs.user-history')->middleware('auth:sanctum');
+Route::prefix('public')->name('api.secure.public.')->middleware('auth:sanctum')->group(function () {
+    Route::get('users/{user}', [PublicUserApiController::class, 'show'])->name('users.show');
 
+    // Gestion des discussions et messages
+    Route::resource('chats', PublicChatApiController::class)->names([
+        'index' => 'chats.index',
+        'store' => 'chats.store',
+        'show' => 'chats.show',
+        'update' => 'chats.update',
+        'destroy' => 'chats.destroy',
+    ]);
+    Route::resource('chats.messages', PublicChatMessageController::class)->names([
+        'index' => 'chats.messages.index',
+        'store' => 'chats.messages.store',
+        'show' => 'chats.messages.show',
+        'update' => 'chats.messages.update',
+        'destroy' => 'chats.messages.destroy',
+    ]);
+    Route::resource('chats.participants', PublicChatParticipantController::class)->names([
+        'index' => 'chats.participants.index',
+        'store' => 'chats.participants.store',
+        'show' => 'chats.participants.show',
+        'update' => 'chats.participants.update',
+        'destroy' => 'chats.participants.destroy',
+    ]);
+
+    // Gestion des événements publics
+    Route::resource('events', PublicEventApiController::class)->names([
+        'index' => 'events.index',
+        'store' => 'events.store',
+        'show' => 'events.show',
+        'update' => 'events.update',
+        'destroy' => 'events.destroy',
+    ]);
+    Route::resource('events.registrations', PublicEventRegistrationController::class)->names([
+        'index' => 'events.registrations.index',
+        'store' => 'events.registrations.store',
+        'show' => 'events.registrations.show',
+        'update' => 'events.registrations.update',
+        'destroy' => 'events.registrations.destroy',
+    ]);
+
+    // Gestion du contenu public
+    Route::resource('news', PublicNewsApiController::class)->names([
+        'index' => 'news.index',
+        'store' => 'news.store',
+        'show' => 'news.show',
+        'update' => 'news.update',
+        'destroy' => 'news.destroy',
+    ]);
+    Route::resource('pages', PublicPageApiController::class)->names([
+        'index' => 'pages.index',
+        'store' => 'pages.store',
+        'show' => 'pages.show',
+        'update' => 'pages.update',
+        'destroy' => 'pages.destroy',
+    ]);
+    Route::resource('templates', PublicTemplateApiController::class)->names([
+        'index' => 'templates.index',
+        'store' => 'templates.store',
+        'show' => 'templates.show',
+        'update' => 'templates.update',
+        'destroy' => 'templates.destroy',
+    ]);
+
+    // Gestion des demandes de documents
+    Route::resource('document-requests', PublicDocumentRequestApiController::class)->names([
+        'index' => 'document-requests.index',
+        'store' => 'document-requests.store',
+        'show' => 'document-requests.show',
+        'update' => 'document-requests.update',
+        'destroy' => 'document-requests.destroy',
+    ]);
+    Route::get('records/autocomplete', [PublicRecordApiController::class, 'autocomplete'])->name('records.autocomplete');
+    Route::resource('records', PublicRecordApiController::class)->names([
+        'index' => 'records.index',
+        'store' => 'records.store',
+        'show' => 'records.show',
+        'update' => 'records.update',
+        'destroy' => 'records.destroy',
+    ]);
+    Route::resource('responses', PublicResponseApiController::class)->names([
+        'index' => 'responses.index',
+        'store' => 'responses.store',
+        'show' => 'responses.show',
+        'update' => 'responses.update',
+        'destroy' => 'responses.destroy',
+    ]);
+    Route::resource('response-attachments', PublicResponseAttachmentApiController::class)->names([
+        'index' => 'response-attachments.index',
+        'store' => 'response-attachments.store',
+        'show' => 'response-attachments.show',
+        'update' => 'response-attachments.update',
+        'destroy' => 'response-attachments.destroy',
+    ]);
+
+    // Gestion des retours et recherches
+    Route::resource('feedback', PublicFeedbackApiController::class)->names([
+        'index' => 'feedback.index',
+        'store' => 'feedback.store',
+        'show' => 'feedback.show',
+        'update' => 'feedback.update',
+        'destroy' => 'feedback.destroy',
+    ]);
+    Route::put('feedback/{feedback}/status', [PublicFeedbackApiController::class, 'updateStatus'])->name('feedback.update-status');
+    Route::post('feedback/{feedback}/comments', [PublicFeedbackApiController::class, 'addComment'])->name('feedback.add-comment');
+    Route::delete('feedback/{feedback}/comments/{comment}', [PublicFeedbackApiController::class, 'deleteComment'])->name('feedback.delete-comment');
+    Route::resource('search-logs', PublicSearchLogApiController::class)->only(['index', 'show'])->names([
+        'index' => 'search-logs.index',
+        'show' => 'search-logs.show',
+    ]);
 
 });
 
 
 
 
-
-
-
-// Routes API pour l'interface administrative
-Route::middleware('auth:sanctum')->group(function () {
-
-
-    // User
-    Route::patch('users/profile', [PublicUserApiController::class, 'updateProfile'])->name('users.update-profile')->middleware('auth:sanctum');
-
-     // Templates
-    Route::apiResource('templates', PublicTemplateApiController::class)->except('templates');
-    Route::get('templates/type/{type}', [PublicTemplateApiController::class, 'byType'])->name('templates.by-type');
-
-
-    // Events
-    Route::apiResource('events', PublicEventApiController::class)->names('events');
-    Route::post('events/{event}/register', [PublicEventApiController::class, 'register'])->name('events.register');
-    Route::delete('events/{event}/register', [PublicEventApiController::class, 'cancelRegistration'])->name('events.cancel-registration');
-    Route::get('events/{event}/registrations', [PublicEventApiController::class, 'registrations'])->name('events.registrations');
-
-
-    // Document Requests
-    Route::post('documents/request', [PublicDocumentRequestApiController::class, 'store'])->name('documents.request');
-    Route::apiResource('documents/requests', PublicDocumentRequestApiController::class)->only(['index', 'show'])->middleware('auth:sanctum');
-
-
-     // Responses
-    Route::apiResource('responses', PublicResponseApiController::class)->middleware('auth:sanctum');
-    Route::patch('responses/{response}/mark-as-sent', [PublicResponseApiController::class, 'markAsSent'])->name('responses.mark-as-sent')->middleware('auth:sanctum');
-    Route::get('responses/document-request/{documentRequest}', [PublicResponseApiController::class, 'byDocumentRequest'])->name('responses.by-document-request')->middleware('auth:sanctum');
-
-    // Response Attachments
-    Route::apiResource('response-attachments', PublicResponseAttachmentApiController::class)->middleware('auth:sanctum');
-    Route::get('response-attachments/{attachment}/download', [PublicResponseAttachmentApiController::class, 'download'])->name('response-attachments.download')->middleware('auth:sanctum');
-
-    // Record Attachments
-    Route::apiResource('record-attachments', PublicRecordAttachmentApiController::class)->except(['update']);
-    Route::get('record-attachments/{attachment}/download', [PublicRecordAttachmentApiController::class, 'download'])->name('record-attachments.download');
-    Route::get('record-attachments/public-record/{publicRecord}', [PublicRecordAttachmentApiController::class, 'byPublicRecord'])->name('record-attachments.by-public-record');
-
-    // Chat Participants
-    Route::apiResource('chat-participants', PublicChatParticipantApiController::class)->middleware('auth:sanctum');
-    Route::get('chat-participants/chat/{chat}', [PublicChatParticipantApiController::class, 'byChat'])->name('chat-participants.by-chat')->middleware('auth:sanctum');
-    Route::get('chat-participants/user/{user}', [PublicChatParticipantApiController::class, 'byUser'])->name('chat-participants.by-user')->middleware('auth:sanctum');
-    Route::patch('chat-participants/{participant}/mark-as-read', [PublicChatParticipantApiController::class, 'markAsRead'])->name('chat-participants.mark-as-read')->middleware('auth:sanctum');
-    Route::patch('chat-participants/{participant}/toggle-admin', [PublicChatParticipantApiController::class, 'toggleAdmin'])->name('chat-participants.toggle-admin')->middleware('auth:sanctum');
-
-    // Chat Messages
-    Route::apiResource('chat-messages', PublicChatMessageApiController::class)->middleware('auth:sanctum');
-    Route::get('chat-messages/chat/{chat}', [PublicChatMessageApiController::class, 'byChat'])->name('chat-messages.by-chat')->middleware('auth:sanctum');
-    Route::get('chat-messages/user/{user}', [PublicChatMessageApiController::class, 'byUser'])->name('chat-messages.by-user')->middleware('auth:sanctum');
-    Route::patch('chat-messages/{message}/mark-as-read', [PublicChatMessageApiController::class, 'markAsRead'])->name('chat-messages.mark-as-read')->middleware('auth:sanctum');
-    Route::patch('chat-messages/mark-multiple-as-read', [PublicChatMessageApiController::class, 'markMultipleAsRead'])->name('chat-messages.mark-multiple-as-read')->middleware('auth:sanctum');
-    Route::get('chat-messages/chat/{chat}/unread-count', [PublicChatMessageApiController::class, 'unreadCount'])->name('chat-messages.unread-count')->middleware('auth:sanctum');
-    Route::post('chat-messages/search', [PublicChatMessageApiController::class, 'search'])->name('chat-messages.search')->middleware('auth:sanctum');
-
-    // Event Registrations
-    Route::apiResource('event-registrations', PublicEventRegistrationApiController::class)->middleware('auth:sanctum');
-    Route::get('event-registrations/event/{event}', [PublicEventRegistrationApiController::class, 'byEvent'])->name('event-registrations.by-event')->middleware('auth:sanctum');
-    Route::get('event-registrations/user/{user}', [PublicEventRegistrationApiController::class, 'byUser'])->name('event-registrations.by-user')->middleware('auth:sanctum');
-    Route::patch('event-registrations/{registration}/confirm', [PublicEventRegistrationApiController::class, 'confirm'])->name('event-registrations.confirm')->middleware('auth:sanctum');
-    Route::patch('event-registrations/{registration}/cancel', [PublicEventRegistrationApiController::class, 'cancel'])->name('event-registrations.cancel')->middleware('auth:sanctum');
-    Route::get('event-registrations/statistics', [PublicEventRegistrationApiController::class, 'statistics'])->name('event-registrations.statistics')->middleware('auth:sanctum');
-});
 
 
 
