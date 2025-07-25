@@ -82,11 +82,6 @@ Route::prefix('records')->name('api.records.')->middleware('auth:sanctum')->grou
 // Routes API publiques pour l'interface frontend React
 Route::prefix('public')->name('api.public.')->group(function () {
 
-    // Handle CORS preflight requests
-    Route::options('{any}', function () {
-        return response('', 200);
-    })->where('any', '.*');
-
     // Records
     Route::apiResource('records', PublicRecordApiController::class)->only(['index', 'show']);
     Route::post('records/search', [PublicRecordApiController::class, 'search'])->name('records.search');
@@ -98,9 +93,6 @@ Route::prefix('public')->name('api.public.')->group(function () {
 
     // Events
     Route::apiResource('events', PublicEventApiController::class)->only(['index', 'show']);
-    Route::post('events/{event}/register', [PublicEventApiController::class, 'register'])->name('events.register');
-    Route::delete('events/{event}/register', [PublicEventApiController::class, 'cancelRegistration'])->name('events.cancel-registration');
-    Route::get('events/{event}/registrations', [PublicEventApiController::class, 'registrations'])->name('events.registrations');
 
     // News
     Route::apiResource('news', PublicNewsApiController::class)->only(['index', 'show']);
@@ -117,11 +109,7 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::post('users/verify-token', [PublicUserApiController::class, 'verifyToken'])->name('users.verify-token');
     Route::post('users/forgot-password', [PublicUserApiController::class, 'forgotPassword'])->name('users.forgot-password');
     Route::post('users/reset-password', [PublicUserApiController::class, 'resetPassword'])->name('users.reset-password');
-    Route::patch('users/profile', [PublicUserApiController::class, 'updateProfile'])->name('users.update-profile')->middleware('auth:sanctum');
 
-    // Document Requests
-    Route::post('documents/request', [PublicDocumentRequestApiController::class, 'store'])->name('documents.request');
-    Route::apiResource('documents/requests', PublicDocumentRequestApiController::class)->only(['index', 'show'])->middleware('auth:sanctum');
 
     // Feedback
     Route::apiResource('feedback', PublicFeedbackApiController::class)->only(['index', 'store']);
@@ -137,16 +125,47 @@ Route::prefix('public')->name('api.public.')->group(function () {
     Route::get('pages/published', [PublicPageApiController::class, 'published'])->name('pages.published');
     Route::get('pages/slug/{slug}', [PublicPageApiController::class, 'showBySlug'])->name('pages.show-by-slug');
 
-    // Templates
-    Route::apiResource('templates', PublicTemplateApiController::class)->except(['create', 'edit']);
-    Route::get('templates/type/{type}', [PublicTemplateApiController::class, 'byType'])->name('templates.by-type');
+
 
     // Search Logs
     Route::apiResource('search-logs', PublicSearchLogApiController::class)->only(['index', 'store']);
     Route::get('search-logs/statistics', [PublicSearchLogApiController::class, 'statistics'])->name('search-logs.statistics')->middleware('auth:sanctum');
     Route::get('search-logs/user-history', [PublicSearchLogApiController::class, 'userHistory'])->name('search-logs.user-history')->middleware('auth:sanctum');
 
-    // Responses
+
+});
+
+
+
+
+
+
+
+// Routes API pour l'interface administrative
+Route::middleware('auth:sanctum')->group(function () {
+
+
+    // User
+    Route::patch('users/profile', [PublicUserApiController::class, 'updateProfile'])->name('users.update-profile')->middleware('auth:sanctum');
+
+     // Templates
+    Route::apiResource('templates', PublicTemplateApiController::class)->except('templates');
+    Route::get('templates/type/{type}', [PublicTemplateApiController::class, 'byType'])->name('templates.by-type');
+
+
+    // Events
+    Route::apiResource('events', PublicEventApiController::class)->names('events');
+    Route::post('events/{event}/register', [PublicEventApiController::class, 'register'])->name('events.register');
+    Route::delete('events/{event}/register', [PublicEventApiController::class, 'cancelRegistration'])->name('events.cancel-registration');
+    Route::get('events/{event}/registrations', [PublicEventApiController::class, 'registrations'])->name('events.registrations');
+
+
+    // Document Requests
+    Route::post('documents/request', [PublicDocumentRequestApiController::class, 'store'])->name('documents.request');
+    Route::apiResource('documents/requests', PublicDocumentRequestApiController::class)->only(['index', 'show'])->middleware('auth:sanctum');
+
+
+     // Responses
     Route::apiResource('responses', PublicResponseApiController::class)->middleware('auth:sanctum');
     Route::patch('responses/{response}/mark-as-sent', [PublicResponseApiController::class, 'markAsSent'])->name('responses.mark-as-sent')->middleware('auth:sanctum');
     Route::get('responses/document-request/{documentRequest}', [PublicResponseApiController::class, 'byDocumentRequest'])->name('responses.by-document-request')->middleware('auth:sanctum');
@@ -187,181 +206,3 @@ Route::prefix('public')->name('api.public.')->group(function () {
 
 
 
-
-// Routes API pour l'interface administrative
-Route::middleware('auth:sanctum')->group(function () {
-    // Placeholder pour futures routes protégées
-});
-
-// Routes API pour le proxy MCP
-Route::prefix('mcp-proxy')->name('api.mcp-proxy.')->middleware('auth:sanctum')->group(function () {
-    Route::post('ask', [McpProxyController::class, 'ask'])->name('ask');
-    Route::post('chat', [McpProxyController::class, 'chat'])->name('chat');
-    Route::post('document', [McpProxyController::class, 'document'])->name('document');
-    Route::post('image', [McpProxyController::class, 'image'])->name('image');
-    Route::post('audio', [McpProxyController::class, 'audio'])->name('audio');
-    Route::post('video', [McpProxyController::class, 'video'])->name('video');
-    Route::post('file', [McpProxyController::class, 'file'])->name('file');
-    Route::post('url', [McpProxyController::class, 'url'])->name('url');
-    Route::post('status', [McpProxyController::class, 'status'])->name('status');
-    Route::post('restart', [McpProxyController::class, 'restart'])->name('restart');
-    Route::post('stop', [McpProxyController::class, 'stop'])->name('stop');
-    Route::post('start', [McpProxyController::class, 'start'])->name('start');
-    Route::post('update', [McpProxyController::class, 'update'])->name('update');
-    Route::post('delete', [McpProxyController::class, 'delete'])->name('delete');
-    Route::post('create', [McpProxyController::class, 'create'])->name('create');
-    Route::post('import', [McpProxyController::class, 'import'])->name('import');
-    Route::post('export', [McpProxyController::class, 'export'])->name('export');
-    Route::post('enrich', [McpProxyController::class, 'enrich'])->name('enrich');
-    Route::post('synthesize', [McpProxyController::class, 'synthesize'])->name('synthesize');
-    Route::post('transcribe', [McpProxyController::class, 'transcribe'])->name('transcribe');
-    Route::post('translate', [McpProxyController::class, 'translate'])->name('translate');
-    Route::post('summarize', [McpProxyController::class, 'summarize'])->name('summarize');
-    Route::post('paraphrase', [McpProxyController::class, 'paraphrase'])->name('paraphrase');
-    Route::post('sentiment', [McpProxyController::class, 'sentiment'])->name('sentiment');
-    Route::post('keywords', [McpProxyController::class, 'keywords'])->name('keywords');
-    Route::post('topics', [McpProxyController::class, 'topics'])->name('topics');
-    Route::post('entities', [McpProxyController::class, 'entities'])->name('entities');
-    Route::post('relations', [McpProxyController::class, 'relations'])->name('relations');
-    Route::post('events', [McpProxyController::class, 'events'])->name('events');
-    Route::post('trends', [McpProxyController::class, 'trends'])->name('trends');
-    Route::post('patterns', [McpProxyController::class, 'patterns'])->name('patterns');
-    Route::post('anomalies', [McpProxyController::class, 'anomalies'])->name('anomalies');
-    Route::post('metrics', [McpProxyController::class, 'metrics'])->name('metrics');
-    Route::post('logs', [McpProxyController::class, 'logs'])->name('logs');
-    Route::post('notifications', [McpProxyController::class, 'notifications'])->name('notifications');
-    Route::post('webhooks', [McpProxyController::class, 'webhooks'])->name('webhooks');
-    Route::post('tasks', [McpProxyController::class, 'tasks'])->name('tasks');
-    Route::post('jobs', [McpProxyController::class, 'jobs'])->name('jobs');
-    Route::post('models', [McpProxyController::class, 'models'])->name('models');
-    Route::post('agents', [McpProxyController::class, 'agents'])->name('agents');
-    Route::post('roles', [McpProxyController::class, 'roles'])->name('roles');
-    Route::post('permissions', [McpProxyController::class, 'permissions'])->name('permissions');
-    Route::post('settings', [McpProxyController::class, 'settings'])->name('settings');
-    Route::post('profile', [McpProxyController::class, 'profile'])->name('profile');
-    Route::post('account', [McpProxyController::class, 'account'])->name('account');
-    Route::post('subscription', [McpProxyController::class, 'subscription'])->name('subscription');
-    Route::post('billing', [McpProxyController::class, 'billing'])->name('billing');
-    Route::post('invoices', [McpProxyController::class, 'invoices'])->name('invoices');
-    Route::post('payments', [McpProxyController::class, 'payments'])->name('payments');
-    Route::post('refunds', [McpProxyController::class, 'refunds'])->name('refunds');
-    Route::post('coupons', [McpProxyController::class, 'coupons'])->name('coupons');
-    Route::post('promotions', [McpProxyController::class, 'promotions'])->name('promotions');
-    Route::post('affiliates', [McpProxyController::class, 'affiliates'])->name('affiliates');
-    Route::post('referrals', [McpProxyController::class, 'referrals'])->name('referrals');
-    Route::post('testimonials', [McpProxyController::class, 'testimonials'])->name('testimonials');
-    Route::post('reviews', [McpProxyController::class, 'reviews'])->name('reviews');
-    Route::post('ratings', [McpProxyController::class, 'ratings'])->name('ratings');
-    Route::post('bookmarks', [McpProxyController::class, 'bookmarks'])->name('bookmarks');
-    Route::post('favorites', [McpProxyController::class, 'favorites'])->name('favorites');
-    Route::post('watchlists', [McpProxyController::class, 'watchlists'])->name('watchlists');
-    Route::post('playlists', [McpProxyController::class, 'playlists'])->name('playlists');
-    Route::post('collections', [McpProxyController::class, 'collections'])->name('collections');
-    Route::post('libraries', [McpProxyController::class, 'libraries'])->name('libraries');
-    Route::post('archives', [McpProxyController::class, 'archives'])->name('archives');
-    Route::post('repositories', [McpProxyController::class, 'repositories'])->name('repositories');
-    Route::post('storages', [McpProxyController::class, 'storages'])->name('storages');
-    Route::post('uploads', [McpProxyController::class, 'uploads'])->name('uploads');
-    Route::post('downloads', [McpProxyController::class, 'downloads'])->name('downloads');
-    Route::post('exports', [McpProxyController::class, 'exports'])->name('exports');
-    Route::post('imports', [McpProxyController::class, 'imports'])->name('imports');
-    Route::post('saves', [McpProxyController::class, 'saves'])->name('saves');
-    Route::post('loads', [McpProxyController::class, 'loads'])->name('loads');
-    Route::post('backs', [McpProxyController::class, 'backs'])->name('backs');
-    Route::post('forwards', [McpProxyController::class, 'forwards'])->name('forwards');
-    Route::post('ups', [McpProxyController::class, 'ups'])->name('ups');
-    Route::post('downs', [McpProxyController::class, 'downs'])->name('downs');
-    Route::post('lefts', [McpProxyController::class, 'lefts'])->name('lefts');
-    Route::post('rights', [McpProxyController::class, 'rights'])->name('rights');
-    Route::post('zooms', [McpProxyController::class, 'zooms'])->name('zooms');
-    Route::post('rotates', [McpProxyController::class, 'rotates'])->name('rotates');
-    Route::post('flips', [McpProxyController::class, 'flips'])->name('flips');
-    Route::post('crops', [McpProxyController::class, 'crops'])->name('crops');
-    Route::post('pauses', [McpProxyController::class, 'pauses'])->name('pauses');
-    Route::post('resumes', [McpProxyController::class, 'resumes'])->name('resumes');
-    Route::post('stops', [McpProxyController::class, 'stops'])->name('stops');
-    Route::post('starts', [McpProxyController::class, 'starts'])->name('starts');
-    Route::post('restarts', [McpProxyController::class, 'restarts'])->name('restarts');
-    Route::post('deletes', [McpProxyController::class, 'deletes'])->name('deletes');
-    Route::post('creates', [McpProxyController::class, 'creates'])->name('creates');
-    Route::post('imports-exports', [McpProxyController::class, 'importsExports'])->name('imports-exports');
-    Route::post('exports-imports', [McpProxyController::class, 'exportsImports'])->name('exports-imports');
-    Route::post('saves-loads', [McpProxyController::class, 'savesLoads'])->name('saves-loads');
-    Route::post('backs-forwards', [McpProxyController::class, 'backsForwards'])->name('backs-forwards');
-    Route::post('ups-downs', [McpProxyController::class, 'upsDowns'])->name('ups-downs');
-    Route::post('lefts-rights', [McpProxyController::class, 'leftsRights'])->name('lefts-rights');
-    Route::post('zooms-rotates', [McpProxyController::class, 'zoomsRotates'])->name('zooms-rotates');
-    Route::post('flips-crops', [McpProxyController::class, 'flipsCrops'])->name('flips-crops');
-    Route::post('pauses-resumes', [McpProxyController::class, 'pausesResumes'])->name('pauses-resumes');
-    Route::post('stops-starts', [McpProxyController::class, 'stopsStarts'])->name('stops-starts');
-    Route::post('restarts-deletes', [McpProxyController::class, 'restartsDeletes'])->name('restarts-deletes');
-    Route::post('creates-imports', [McpProxyController::class, 'createsImports'])->name('creates-imports');
-    Route::post('exports-deletes', [McpProxyController::class, 'exportsDeletes'])->name('exports-deletes');
-    Route::post('imports-deletes', [McpProxyController::class, 'importsDeletes'])->name('imports-deletes');
-    Route::post('saves-deletes', [McpProxyController::class, 'savesDeletes'])->name('saves-deletes');
-    Route::post('backs-deletes', [McpProxyController::class, 'backsDeletes'])->name('backs-deletes');
-    Route::post('forwards-deletes', [McpProxyController::class, 'forwardsDeletes'])->name('forwards-deletes');
-    Route::post('ups-deletes', [McpProxyController::class, 'upsDeletes'])->name('ups-deletes');
-    Route::post('downs-deletes', [McpProxyController::class, 'downsDeletes'])->name('downs-deletes');
-    Route::post('lefts-deletes', [McpProxyController::class, 'leftsDeletes'])->name('lefts-deletes');
-    Route::post('rights-deletes', [McpProxyController::class, 'rightsDeletes'])->name('rights-deletes');
-    Route::post('zooms-deletes', [McpProxyController::class, 'zoomsDeletes'])->name('zooms-deletes');
-    Route::post('rotates-deletes', [McpProxyController::class, 'rotatesDeletes'])->name('rotates-deletes');
-    Route::post('flips-deletes', [McpProxyController::class, 'flipsDeletes'])->name('flips-deletes');
-    Route::post('crops-deletes', [McpProxyController::class, 'cropsDeletes'])->name('crops-deletes');
-    Route::post('pauses-deletes', [McpProxyController::class, 'pausesDeletes'])->name('pauses-deletes');
-    Route::post('resumes-deletes', [McpProxyController::class, 'resumesDeletes'])->name('resumes-deletes');
-    Route::post('stops-deletes', [McpProxyController::class, 'stopsDeletes'])->name('stops-deletes');
-    Route::post('starts-deletes', [McpProxyController::class, 'startsDeletes'])->name('starts-deletes');
-    Route::post('restarts-deletes', [McpProxyController::class, 'restartsDeletes'])->name('restarts-deletes');
-    Route::post('deletes-deletes', [McpProxyController::class, 'deletesDeletes'])->name('deletes-deletes');
-    Route::post('creates-creates', [McpProxyController::class, 'createsCreates'])->name('creates-creates');
-    Route::post('imports-imports', [McpProxyController::class, 'importsImports'])->name('imports-imports');
-    Route::post('exports-exports', [McpProxyController::class, 'exportsExports'])->name('exports-exports');
-    Route::post('saves-saves', [McpProxyController::class, 'savesSaves'])->name('saves-saves');
-    Route::post('backs-backs', [McpProxyController::class, 'backsBacks'])->name('backs-backs');
-    Route::post('forwards-forwards', [McpProxyController::class, 'forwardsForwards'])->name('forwards-forwards');
-    Route::post('ups-ups', [McpProxyController::class, 'upsUps'])->name('ups-ups');
-    Route::post('downs-downs', [McpProxyController::class, 'downsDowns'])->name('downs-downs');
-    Route::post('lefts-lefts', [McpProxyController::class, 'leftsLefts'])->name('lefts-lefts');
-    Route::post('rights-rights', [McpProxyController::class, 'rightsRights'])->name('rights-rights');
-    Route::post('zooms-zooms', [McpProxyController::class, 'zoomsZooms'])->name('zooms-zooms');
-    Route::post('rotates-rotates', [McpProxyController::class, 'rotatesRotates'])->name('rotates-rotates');
-    Route::post('flips-flips', [McpProxyController::class, 'flipsFlips'])->name('flips-flips');
-    Route::post('crops-crops', [McpProxyController::class, 'cropsCrops'])->name('crops-crops');
-    Route::post('pauses-pauses', [McpProxyController::class, 'pausesPauses'])->name('pauses-pauses');
-    Route::post('resumes-resumes', [McpProxyController::class, 'resumesResumes'])->name('resumes-resumes');
-    Route::post('stops-stops', [McpProxyController::class, 'stopsStops'])->name('stops-stops');
-    Route::post('starts-starts', [McpProxyController::class, 'startsStarts'])->name('starts-starts');
-    Route::post('restarts-restarts', [McpProxyController::class, 'restartsRestarts'])->name('restarts-restarts');
-});
-
-// Routes API pour les contacts externes
-Route::prefix('external-contacts')->name('api.external-contacts.')->middleware('auth:sanctum')->group(function () {
-    Route::get('/', [ExternalContactController::class, 'apiIndex'])->name('index');
-    Route::get('/search', [ExternalContactController::class, 'apiSearch'])->name('search');
-    Route::get('/{id}', [ExternalContactController::class, 'apiShow'])->name('show');
-});
-
-// Routes API pour les organisations externes
-Route::prefix('external-organizations')->name('api.external-organizations.')->middleware('auth:sanctum')->group(function () {
-    Route::get('/', [ExternalOrganizationController::class, 'apiIndex'])->name('index');
-    Route::get('/search', [ExternalOrganizationController::class, 'apiSearch'])->name('search');
-    Route::get('/{id}', [ExternalOrganizationController::class, 'apiShow'])->name('show');
-});
-
-// Routes API pour la gestion de la configuration JSON des templates de workflow
-Route::prefix('workflows/templates')->name('api.workflows.templates.')->middleware('auth:sanctum')->group(function () {
-    // Configuration complète
-    Route::get('{template}/configuration', [App\Http\Controllers\WorkflowTemplateController::class, 'getConfiguration'])->name('configuration.show');
-    Route::put('{template}/configuration', [App\Http\Controllers\WorkflowTemplateController::class, 'updateConfiguration'])->name('configuration.update');
-    Route::post('{template}/configuration/validate', [App\Http\Controllers\WorkflowTemplateController::class, 'validateConfiguration'])->name('configuration.validate');
-
-    // Gestion des étapes individuelles
-    Route::post('{template}/configuration/steps', [App\Http\Controllers\WorkflowTemplateController::class, 'addConfigurationStep'])->name('configuration.steps.store');
-    Route::put('{template}/configuration/steps/{stepId}', [App\Http\Controllers\WorkflowTemplateController::class, 'updateConfigurationStep'])->name('configuration.steps.update');
-    Route::delete('{template}/configuration/steps/{stepId}', [App\Http\Controllers\WorkflowTemplateController::class, 'deleteConfigurationStep'])->name('configuration.steps.destroy');
-
-    // Réorganisation des étapes
-    Route::put('{template}/configuration/reorder', [App\Http\Controllers\WorkflowTemplateController::class, 'reorderConfigurationSteps'])->name('configuration.reorder');
-});
