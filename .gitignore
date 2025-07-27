@@ -17,5 +17,5 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-shelve-public/node_modules
 opac/node_modules
+mcp/node_modules
