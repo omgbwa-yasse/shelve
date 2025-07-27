@@ -1,21 +1,53 @@
+# Laravel
 /.phpunit.cache
 /node_modules
 /public/build
 /public/hot
 /public/storage
+/public/mix-manifest.json
 /storage/*.key
+/storage/oauth-*.key
+/storage/logs/*.log
 /vendor
+/bootstrap/cache/*.php
+
+# Environment files
 .env
 .env.backup
 .env.production
+.env.local
+.env.testing
+
+# Testing
 .phpunit.result.cache
+/tests/coverage
+
+# Development tools
 Homestead.json
 Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
+package-lock.json
+yarn.lock
+
+# IDEs
 /.fleet
 /.idea
 /.vscode
-opac/node_modules
-mcp/node_modules
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sub-projects
+/opac/node_modules
+/mcp/node_modules
