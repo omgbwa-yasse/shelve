@@ -148,6 +148,11 @@ use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\MailTaskController;
 
 
+// MCP
+use App\Http\Controllers\McpProxyController;
+use App\Http\Controllers\RecordEnricherController;
+
+
 Auth::routes();
 
 
@@ -678,7 +683,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('activities.communicabilities', activityCommunicabilityController::class);
         // Route::resource('thesaurus', ContainerStatusController::class); // SUPPRIMÉ - Conflit avec les routes du thésaurus
-        Route::resource('organisations', OrganisationController::class);
+        // Route::resource('organisations', OrganisationController::class); // SUPPRIMÉ - Déclaration en doublon (déjà définie ligne 626)
         Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('organisations.activities', OrganisationActivityController::class);
         Route::resource('access', ContainerStatusController::class);
@@ -688,10 +693,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
 
 
-        // Routes pour les codes-barres
-        Route::get('barcode', [BarcodeController::class, 'index'])->name('barcode.index');
-        Route::get('barcode/create', [BarcodeController::class, 'create'])->name('barcode.create');
-        Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
+        // Routes pour les codes-barres - SUPPRIMÉ car duplication
+        // Route::get('barcode', [BarcodeController::class, 'index'])->name('barcode.index'); // CONFLIT avec ligne 692
+        // Route::get('barcode/create', [BarcodeController::class, 'create'])->name('barcode.create'); // CONFLIT avec ligne 690
+        // Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate'); // CONFLIT avec ligne 693
 
 
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
@@ -945,6 +950,24 @@ Route::prefix('public')->name('public.')->group(function () {
 
 
 
+// Routes API pour le proxy MCP
+Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(function () {
+    Route::post('enrich/{id}', [McpProxyController::class, 'enrich'])->name('enrich');
+    Route::post('extract-keywords/{id}', [McpProxyController::class, 'extractKeywords'])->name('proxy.extract-keywords');
+    Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
+    Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
+    Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
+
+    Route::get('status', [RecordEnricherController::class, 'status'])->name('status');
+    Route::post('{id}', [RecordEnricherController::class, 'enrich'])->name('process');
+    Route::post('{id}/preview', [RecordEnricherController::class, 'preview'])->name('preview');
+    Route::post('{id}/format-title', [RecordEnricherController::class, 'formatTitle'])->name('format-title');
+    Route::post('{id}/extract-keywords', [RecordEnricherController::class, 'extractKeywords'])->name('extract-keywords');
+    Route::post('{id}/categorized-keywords', [RecordEnricherController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
+
+});
+
+
 // API routes pour le thésaurus
 Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->group(function () {
     Route::post('import/skos/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processSkosImport'])->name('import.skos.process');
@@ -953,8 +976,8 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
 
-// Route pour vérifier le statut MCP
-Route::middleware(['auth'])->get('api/mcp/status', [App\Http\Controllers\RecordEnricherController::class, 'status'])->name('api.mcp.status');
+// Route pour vérifier le statut MCP - SUPPRIMÉ car déjà définie dans le groupe api.mcp ci-dessus
+// Route::middleware(['auth'])->get('api/mcp/status', [App\Http\Controllers\RecordEnricherController::class, 'status'])->name('api.mcp.status');
 
 
 
