@@ -522,11 +522,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('records/ai/select-attachments/{record_id?}', [RecordController::class, 'selectAttachmentsForAnalysis'])->name('records.select-attachments');
         Route::post('records/ai/analyze', [RecordController::class, 'analyzeAttachments'])->name('records.analyze-attachments');
         Route::post('records/ai/create', [RecordController::class, 'createFromAiAnalysis'])->name('records.create-from-ai');
+        Route::post('records/mcp/create', [RecordController::class, 'createFromMcp'])->name('records.create-from-mcp');
 
         Route::resource('records', RecordController::class);
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
+        Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
 
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
@@ -952,6 +954,9 @@ Route::prefix('public')->name('public.')->group(function () {
 
 // Routes API pour le proxy MCP
 Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(function () {
+    // Endpoint pour récupérer les modèles par défaut configurés
+    Route::get('models/defaults', [McpProxyController::class, 'getDefaultModels'])->name('models.defaults');
+
     Route::post('enrich/{id}', [McpProxyController::class, 'enrich'])->name('enrich');
     Route::post('extract-keywords/{id}', [McpProxyController::class, 'extractKeywords'])->name('proxy.extract-keywords');
     Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
@@ -966,6 +971,11 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
     Route::post('{id}/categorized-keywords', [RecordEnricherController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
 
 });
+
+// Route de test pour la configuration MCP (à supprimer en production)
+Route::get('/test/mcp-model-config', function () {
+    return view('test.mcp-model-config');
+})->middleware('auth')->name('test.mcp-model-config');
 
 
 // API routes pour le thésaurus

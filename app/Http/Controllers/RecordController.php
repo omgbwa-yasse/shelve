@@ -224,7 +224,18 @@ class RecordController extends Controller
     {
         $this->authorize('view', $record);
 
-        $record->load('children');
+        $record->load([
+            'children',
+            'parent',
+            'level',
+            'status',
+            'support',
+            'activity',
+            'containers',
+            'recordContainers.container',
+            'user'
+        ]);
+
         return view('records.show', compact('record'));
     }
 
@@ -971,5 +982,147 @@ class RecordController extends Controller
         ];
 
         return $mappings[$suggestion] ?? 3;
+    }
+
+    /**
+     * Créer un record automatiquement via MCP
+     */
+    public function createFromMcp(Request $request)
+    {
+        $this->authorize('create', Record::class);
+
+        $request->validate([
+            'attachment_ids' => 'required|array|min:1',
+            'attachment_ids.*' => 'exists:attachments,id'
+        ]);
+
+        try {
+            $attachmentIds = $request->input('attachment_ids');
+
+            // Récupérer les attachments
+            $attachments = Attachment::whereIn('id', $attachmentIds)->get();
+
+            if ($attachments->isEmpty()) {
+                return back()->with('error', 'Aucun document valide sélectionné.');
+            }
+
+            // Préparer les données pour le MCP
+            $mcpData = [
+                'action' => 'create_record',
+                'attachments' => $attachments->map(function ($attachment) {
+                    return [
+                        'id' => $attachment->id,
+                        'name' => $attachment->name,
+                        'path' => $attachment->path,
+                        'size' => $attachment->size
+                    ];
+                })->toArray(),
+                'user_id' => Auth::id(),
+                'organisation_id' => Auth::user()->current_organisation_id ?? 1
+            ];
+
+            // Envoyer la demande au MCP via le proxy
+            $mcpProxy = app(McpProxyController::class);
+            $response = $mcpProxy->createRecord(new \Illuminate\Http\Request($mcpData));
+
+            $responseData = $response->getData(true);
+
+            if (isset($responseData['success']) && $responseData['success']) {
+                $recordId = $responseData['record_id'];
+
+                // Vérifier si c'est une requête AJAX
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Record créé automatiquement avec succès par le système MCP.',
+                        'record_id' => $recordId
+                    ]);
+                }
+
+                return redirect()->route('records.show', $recordId)
+                    ->with('success', 'Record créé automatiquement avec succès par le système MCP.');
+            } else {
+                throw new \Exception($responseData['message'] ?? 'Erreur lors de la création automatique du record');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la création automatique du record via MCP:', [
+                'error' => $e->getMessage(),
+                'attachment_ids' => $request->input('attachment_ids')
+            ]);
+
+            // Vérifier si c'est une requête AJAX
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Erreur lors de la création automatique: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'Erreur lors de la création automatique: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * API pour créer un record via MCP
+     */
+    public function createViaMcp(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'content' => 'required|string',
+            'user_id' => 'required|exists:users,id',
+            'organisation_id' => 'required|exists:organisations,id',
+            'attachment_ids' => 'required|array'
+        ]);
+
+        try {
+            // Générer un code unique pour le record
+            $recordCode = $this->generateRecordCode();
+
+            // Créer le record
+            $record = Record::create([
+                'code' => $recordCode,
+                'name' => $request->input('name'),
+                'content' => $request->input('content'),
+                'scope' => $request->input('scope'),
+                'date_start' => $request->input('date_start'),
+                'date_end' => $request->input('date_end'),
+                'language_material' => $request->input('language_material', 'français'),
+                'note' => $request->input('note'),
+                'user_id' => $request->input('user_id'),
+                'organisation_id' => $request->input('organisation_id'),
+                'status_id' => 1, // Statut par défaut
+                'support_id' => 1, // Support numérique par défaut
+                'level_id' => 3, // Niveau "file" par défaut
+                'activity_id' => 1, // Activité par défaut
+            ]);
+
+            // Associer les attachments au record
+            foreach ($request->input('attachment_ids') as $attachmentId) {
+                RecordAttachment::create([
+                    'record_id' => $record->id,
+                    'attachment_id' => $attachmentId,
+                    'creator_id' => $request->input('user_id')
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'record_id' => $record->id,
+                'message' => 'Record créé avec succès via MCP'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la création du record via MCP API:', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la création du record: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

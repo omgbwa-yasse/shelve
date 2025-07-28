@@ -71,7 +71,14 @@
                                     <i class="bi bi-hdd-fill me-2 text-primary"></i><strong>{{ __('support') }} :</strong> <a href="{{ route('records.sort')}}?categ=support&id={{ $record->support->id ?? 'N/A' }}">{{ $record->support->name ?? 'N/A' }}</a>
                                     <i class="bi bi-activity me-2 text-primary"></i><strong>{{ __('activity') }} :</strong> <a href="{{ route('records.sort')}}?categ=activity&id={{ $record->activity->id ?? 'N/A' }}">{{ $record->activity->name ?? 'N/A' }}</a>
                                     <i class="bi bi-calendar-event me-2 text-primary"></i><strong>{{ __('dates') }} :</strong> <a href="{{ route('records.sort')}}?categ=dates&id=">{{ $record->date_start ?? 'N/A' }} - {{ $record->date_end ?? 'N/A' }}</a>
-                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i><strong>{{ __('container') }} :</strong> <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">{{ $record->container->name ?? __('notConditioned') }}</a>
+                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i><strong>{{ __('container') }} :</strong>
+                                    @if($record->containers->isNotEmpty())
+                                        @foreach($record->containers as $container)
+                                            <a href="{{ route('records.sort')}}?categ=container&id={{ $container->id }}">{{ $container->name }}</a>@if(!$loop->last), @endif
+                                        @endforeach
+                                    @else
+                                        {{ __('notConditioned') }}
+                                    @endif
                                         <br>  <i class="bi bi-people-fill me-2 text-primary"></i><strong>{{ __('producer') }} :</strong> <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">{{ $record->authors->pluck('name')->join(', ') ?? 'N/A' }}</a>
                                 </div>
                             </div>

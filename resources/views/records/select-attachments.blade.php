@@ -23,11 +23,11 @@
                 <div class="card-body">
                     <div class="alert alert-info">
                         <h5><i class="icon fas fa-info-circle"></i> {{ __('Comment ça marche ?') }}</h5>
-                        <p>{{ __('Téléchargez ou sélectionnez plusieurs documents numériques ci-dessous. L\'IA analysera leur contenu et proposera automatiquement :') }}</p>
+                        <p>{{ __('Sélectionnez ou téléchargez vos documents numériques ci-dessous. Le système MCP analysera automatiquement leur contenu et créera directement un record archivistique avec :') }}</p>
                         <ul>
-                            <li>{{ __('Une description structurée de record archivistique') }}</li>
-                            <li>{{ __('Une indexation thésaurus appropriée') }}</li>
-                            <li>{{ __('Des métadonnées archivistiques suggérées') }}</li>
+                            <li>{{ __('Une description archivistique générée automatiquement') }}</li>
+                            <li>{{ __('Une indexation thésaurus intelligente') }}</li>
+                            <li>{{ __('Tous les fichiers attachés au record créé') }}</li>
                         </ul>
                         <p><strong>{{ __('Formats supportés :') }}</strong> PDF, TXT, DOCX, RTF, ODT</p>
                     </div>
@@ -185,42 +185,99 @@
                         </div>
                     </div>
 
-                    <form id="analyze-form" action="{{ route('records.analyze-attachments') }}" method="POST">
+                    <form id="analyze-form" action="{{ route('records.create-from-mcp') }}" method="POST">
                         @csrf
-
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="model_name" class="form-label">{{ __('Modèle IA') }}</label>
-                                <select name="model_name" id="model_name" class="form-control">
-                                    <option value="llama3">Llama 3 (Recommandé)</option>
-                                    <option value="mistral">Mistral (Français)</option>
-                                    <option value="phi3">Phi 3 (Rapide)</option>
-                                    <option value="codellama">Code Llama (Technique)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="template" class="form-label">{{ __('Niveau de détail') }}</label>
-                                <select name="record_options[template]" id="template" class="form-control">
-                                    <option value="basic">{{ __('Basique') }}</option>
-                                    <option value="detailed" selected>{{ __('Détaillé') }}</option>
-                                    <option value="full">{{ __('Complet') }}</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <!-- Champs cachés pour les nouveaux attachments -->
                         <div id="new-attachments-inputs"></div>
+
+                        <!-- Indicateur de progression des étapes MCP -->
+                        <div id="mcp-progress" class="card mt-4" style="display: none;">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cogs"></i>
+                                    {{ __('Traitement automatique en cours...') }}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress-steps">
+                                    <div class="step" id="step-1">
+                                        <div class="step-number">1</div>
+                                        <div class="step-content">
+                                            <div class="step-title">{{ __('Réception des documents') }}</div>
+                                            <div class="step-description">{{ __('Envoi des fichiers au serveur MCP') }}</div>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-clock text-muted"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="step" id="step-2">
+                                        <div class="step-number">2</div>
+                                        <div class="step-content">
+                                            <div class="step-title">{{ __('Analyse des documents') }}</div>
+                                            <div class="step-description">{{ __('Extraction et analyse du contenu') }}</div>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-clock text-muted"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="step" id="step-3">
+                                        <div class="step-number">3</div>
+                                        <div class="step-content">
+                                            <div class="step-title">{{ __('Création du record') }}</div>
+                                            <div class="step-description">{{ __('Génération des métadonnées archivistiques') }}</div>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-clock text-muted"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="step" id="step-4">
+                                        <div class="step-number">4</div>
+                                        <div class="step-content">
+                                            <div class="step-title">{{ __('Finalisation') }}</div>
+                                            <div class="step-description">{{ __('Association des attachments et indexation') }}</div>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-clock text-muted"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="step" id="step-5">
+                                        <div class="step-number">5</div>
+                                        <div class="step-content">
+                                            <div class="step-title">{{ __('Redirection') }}</div>
+                                            <div class="step-description">{{ __('Vers la page de visualisation du record') }}</div>
+                                        </div>
+                                        <div class="step-status">
+                                            <i class="fas fa-clock text-muted"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <div class="progress">
+                                        <div id="overall-progress" class="progress-bar bg-success" role="progressbar" style="width: 0%">0%</div>
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <small id="current-step-text" class="text-muted">{{ __('Préparation...') }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="mt-4">
                             <button type="submit"
                                     class="btn btn-success btn-lg"
                                     id="analyze-btn"
                                     disabled>
-                                <i class="fas fa-robot"></i>
-                                {{ __('Analyser les documents sélectionnés') }}
+                                <i class="fas fa-magic"></i>
+                                {{ __('Créer un record automatiquement') }}
                             </button>
                             <div id="selection-info" class="mt-2">
-                                <small class="text-muted">{{ __('Sélectionnez ou téléchargez au moins un document pour commencer l\'analyse') }}</small>
+                                <small class="text-muted">{{ __('Sélectionnez ou téléchargez au moins un document pour créer automatiquement un record') }}</small>
                             </div>
                         </div>
                     </form>
@@ -305,6 +362,124 @@
 
 .progress-bar {
     transition: width 0.3s ease;
+}
+
+/* Styles pour les étapes MCP */
+.progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.step.active {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+    transform: scale(1.02);
+}
+
+.step.completed {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+.step.error {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.step-number {
+    min-width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+    background-color: #007bff;
+    animation: pulse 1.5s infinite;
+}
+
+.step.completed .step-number {
+    background-color: #28a745;
+}
+
+.step.error .step-number {
+    background-color: #dc3545;
+}
+
+.step-content {
+    flex-grow: 1;
+}
+
+.step-title {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 5px;
+}
+
+.step-description {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.step.active .step-description {
+    color: #495057;
+}
+
+.step-status {
+    margin-left: 15px;
+}
+
+.step.active .step-status i {
+    color: #007bff !important;
+    animation: spin 1s linear infinite;
+}
+
+.step.completed .step-status i {
+    color: #28a745 !important;
+}
+
+.step.error .step-status i {
+    color: #dc3545 !important;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#mcp-progress {
+    border: 2px solid #007bff;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.1);
 }
 </style>
 
@@ -467,15 +642,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const formData = new FormData();
                 formData.append('file', file);
-                @if($record)
+                formData.append('name', file.name);
+                @if($record ?? false)
                 formData.append('record_id', '{{ $record->id }}');
                 @endif
                 formData.append('_token', '{{ csrf_token() }}');
 
-                @if($record)
-                const response = await fetch('{{ route("records.attachments.store", ["record" => $record->id]) }}', {
+                @if($record ?? false)
+                const response = await fetch('{{ route("records.attachments.store", ["record" => $record->id ?? 0]) }}', {
                 @else
-                const response = await fetch('/api/attachments/upload', {
+                const response = await fetch('{{ route("attachments.upload-temp") }}', {
                 @endif
                     method: 'POST',
                     body: formData
@@ -483,19 +659,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (response.ok) {
                     const result = await response.json();
-                    uploadedAttachments.push(result.attachment);
 
-                    // Ajouter un input caché pour l'attachment téléchargé
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'attachment_ids[]';
-                    hiddenInput.value = result.attachment.id;
-                    hiddenInput.className = 'new-attachment-input';
-                    newAttachmentsInputs.appendChild(hiddenInput);
+                    if (result.success || result.attachment) {
+                        const attachment = result.attachment || result;
+                        uploadedAttachments.push(attachment);
 
-                    uploadedCount++;
+                        // Ajouter un input caché pour l'attachment téléchargé
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'attachment_ids[]';
+                        hiddenInput.value = attachment.id;
+                        hiddenInput.className = 'new-attachment-input';
+                        newAttachmentsInputs.appendChild(hiddenInput);
+
+                        uploadedCount++;
+                        console.log('Fichier téléchargé avec succès:', attachment);
+                    } else {
+                        throw new Error(result.error || `Erreur lors du téléchargement de ${file.name}`);
+                    }
                 } else {
-                    throw new Error(`Erreur lors du téléchargement de ${file.name}`);
+                    const errorData = await response.json().catch(() => ({ error: 'Erreur de serveur' }));
+                    throw new Error(errorData.error || `Erreur HTTP ${response.status} lors du téléchargement de ${file.name}`);
                 }
             } catch (error) {
                 console.error('Erreur de téléchargement:', error);
@@ -532,7 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (totalSelected === 0 && pendingFiles === 0) {
             analyzeBtn.disabled = true;
-            selectionInfo.innerHTML = '<small class="text-muted">Sélectionnez ou téléchargez au moins un document pour commencer l\'analyse</small>';
+            selectionInfo.innerHTML = '<small class="text-muted">Sélectionnez ou téléchargez au moins un document pour créer automatiquement un record</small>';
         } else if (pendingFiles > 0) {
             analyzeBtn.disabled = true;
             selectionInfo.innerHTML = `<small class="text-warning">${pendingFiles} fichier(s) en attente de téléchargement</small>`;
@@ -541,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
             selectionInfo.innerHTML = `<small class="text-danger">Maximum 20 documents autorisés (${totalSelected} sélectionnés)</small>`;
         } else {
             analyzeBtn.disabled = false;
-            selectionInfo.innerHTML = `<small class="text-success">${totalSelected} document(s) sélectionné(s)</small>`;
+            selectionInfo.innerHTML = `<small class="text-success">${totalSelected} document(s) sélectionné(s) - Le MCP créera automatiquement le record</small>`;
         }
 
         // Mettre à jour le checkbox "Sélectionner tout"
@@ -574,11 +758,150 @@ document.addEventListener('DOMContentLoaded', function() {
     // Rendre les fonctions globales pour les onclick
     window.removeFile = removeFile;
 
-    // Soumission du formulaire avec indicateur de chargement
-    document.getElementById('analyze-form').addEventListener('submit', function() {
-        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse en cours...';
-        analyzeBtn.disabled = true;
+    // Soumission du formulaire avec indicateur de chargement et suivi des étapes
+    document.getElementById('analyze-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Empêcher la soumission normale
+
+        // Afficher le suivi des étapes
+        document.getElementById('mcp-progress').style.display = 'block';
+        analyzeBtn.style.display = 'none';
+
+        // Simuler le processus étape par étape
+        simulateMcpProcess();
     });
+
+    // Fonction pour simuler le processus MCP avec les étapes
+    async function simulateMcpProcess() {
+        const steps = [
+            { id: 'step-1', title: 'Réception des documents', duration: 2000 },
+            { id: 'step-2', title: 'Analyse des documents', duration: 4000 },
+            { id: 'step-3', title: 'Création du record', duration: 3000 },
+            { id: 'step-4', title: 'Finalisation', duration: 2000 },
+            { id: 'step-5', title: 'Redirection', duration: 1000 }
+        ];
+
+        let currentStepIndex = 0;
+
+        for (let i = 0; i < steps.length; i++) {
+            const step = steps[i];
+
+            // Activer l'étape courante
+            activateStep(step.id, step.title);
+
+            // Mettre à jour la barre de progression globale
+            const progressPercent = ((i + 1) / steps.length) * 100;
+            updateOverallProgress(progressPercent, step.title);
+
+            // Attendre la durée de l'étape
+            await new Promise(resolve => setTimeout(resolve, step.duration));
+
+            // Marquer l'étape comme terminée
+            completeStep(step.id);
+        }
+
+        // Toutes les étapes terminées, soumettre le formulaire
+        submitFormToMcp();
+    }
+
+    function activateStep(stepId, title) {
+        // Désactiver toutes les étapes
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.remove('active');
+        });
+
+        // Activer l'étape courante
+        const currentStep = document.getElementById(stepId);
+        currentStep.classList.add('active');
+        currentStep.querySelector('.step-status i').className = 'fas fa-spinner text-primary';
+
+        // Mettre à jour le texte de l'étape courante
+        document.getElementById('current-step-text').textContent = `En cours: ${title}...`;
+    }
+
+    function completeStep(stepId) {
+        const step = document.getElementById(stepId);
+        step.classList.remove('active');
+        step.classList.add('completed');
+        step.querySelector('.step-status i').className = 'fas fa-check text-success';
+    }
+
+    function updateOverallProgress(percent, currentTitle) {
+        const progressBar = document.getElementById('overall-progress');
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = Math.round(percent) + '%';
+
+        if (percent === 100) {
+            document.getElementById('current-step-text').textContent = 'Processus terminé avec succès !';
+        }
+    }
+
+    async function submitFormToMcp() {
+        try {
+            // Préparer les données du formulaire
+            const formData = new FormData(document.getElementById('analyze-form'));
+
+            // Envoyer la requête au serveur en AJAX
+            const response = await fetch(document.getElementById('analyze-form').action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+
+                if (result.success && result.record_id) {
+                    // Redirection vers la page de visualisation du record
+                    setTimeout(() => {
+                        window.location.href = `{{ route('records.show', '') }}/${result.record_id}`;
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'Erreur lors de la création du record');
+                }
+            } else {
+                const errorData = await response.json().catch(() => ({ error: 'Erreur de serveur' }));
+                throw new Error(errorData.error || `Erreur HTTP ${response.status}`);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la soumission:', error);
+
+            // Marquer la dernière étape en erreur
+            const lastActiveStep = document.querySelector('.step.active');
+            if (lastActiveStep) {
+                lastActiveStep.classList.remove('active');
+                lastActiveStep.classList.add('error');
+                lastActiveStep.querySelector('.step-status i').className = 'fas fa-times text-danger';
+            }
+
+            document.getElementById('current-step-text').textContent = 'Erreur: ' + error.message;
+            document.getElementById('overall-progress').className = 'progress-bar bg-danger';
+
+            // Réafficher le bouton pour permettre une nouvelle tentative
+            setTimeout(() => {
+                analyzeBtn.style.display = 'block';
+                analyzeBtn.innerHTML = '<i class="fas fa-magic"></i> {{ __("Créer un record automatiquement") }}';
+                analyzeBtn.disabled = false;
+                document.getElementById('mcp-progress').style.display = 'none';
+                // Réinitialiser les étapes
+                resetSteps();
+            }, 3000);
+        }
+    }
+
+    function resetSteps() {
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.remove('active', 'completed', 'error');
+            step.querySelector('.step-status i').className = 'fas fa-clock text-muted';
+        });
+
+        document.getElementById('overall-progress').style.width = '0%';
+        document.getElementById('overall-progress').textContent = '0%';
+        document.getElementById('overall-progress').className = 'progress-bar bg-success';
+        document.getElementById('current-step-text').textContent = 'Préparation...';
+    }
 
     // Initialiser l'état du bouton
     updateAnalyzeButton();

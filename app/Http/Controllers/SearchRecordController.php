@@ -100,7 +100,7 @@ class SearchRecordController extends Controller
             'containers',
             'user',
             'authors',
-            'terms'
+            'thesaurusConcepts'
         ])->paginate(20);
 
         // Données additionnelles pour la vue
@@ -208,7 +208,7 @@ class SearchRecordController extends Controller
     {
         $relationMap = [
             'activity' => 'activity',
-            'term' => 'terms',
+            'term' => 'thesaurusConcepts',
             'author' => 'authors',
             'creator' => 'user',
             'status' => 'status'
@@ -267,15 +267,15 @@ class SearchRecordController extends Controller
                 break;
         }
 
-        $query->with([
+                $query->with([
+            'level',
             'status',
             'support',
-            'level',
             'activity',
             'containers',
             'user',
             'authors',
-            'terms'
+            'thesaurusConcepts'
         ]);
 
         $records = $query->paginate(10);
@@ -307,7 +307,7 @@ class SearchRecordController extends Controller
             'containers',
             'user',
             'authors',
-            'terms'
+            'thesaurusConcepts'
         ])
         ->whereHas('activity.organisations', function($query) {
             $query->where('organisations.id', Auth::user()->current_organisation_id);

@@ -117,7 +117,13 @@
             </tr>
             <tr>
                 <td>Contenant</td>
-                <td>{{ $record->container->name ?? 'Non conditionné' }}</td>
+                <td>
+                    @if($record->containers->isNotEmpty())
+                        {{ $record->containers->pluck('name')->join(', ') }}
+                    @else
+                        Non conditionné
+                    @endif
+                </td>
             </tr>
             <tr>
                 <td>Producteur</td>

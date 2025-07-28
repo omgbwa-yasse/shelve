@@ -133,9 +133,16 @@
 
                             <dt class="col-sm-4">{{ __('container') }}</dt>
                             <dd class="col-sm-8">
-                                <a href="{{ route('records.sort')}}?categ=container&id={{ $record->container->id ?? 'none' }}">
-                                    {{ $record->container->name ?? __('not_containerized') }}
-                                </a>
+                                @if($record->containers->isNotEmpty())
+                                    @foreach($record->containers as $container)
+                                        <a href="{{ route('records.sort')}}?categ=container&id={{ $container->id }}">
+                                            {{ $container->code }} - {{ $container->name }}
+                                        </a>
+                                        @if(!$loop->last), @endif
+                                    @endforeach
+                                @else
+                                    {{ __('not_containerized') }}
+                                @endif
                             </dd>
 
                             <dt class="col-sm-4">{{ __('created_by') }}</dt>

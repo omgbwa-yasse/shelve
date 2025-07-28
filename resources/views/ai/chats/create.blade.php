@@ -23,20 +23,10 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="ai_model_id" class="form-label">Modèle AI</label>
-                            <select class="form-select @error('ai_model_id') is-invalid @enderror"
-                                    id="ai_model_id" name="ai_model_id" required>
-                                <option value="">Sélectionnez un modèle</option>
-                                @foreach($aiModels as $model)
-                                    <option value="{{ $model->id }}"
-                                        {{ old('ai_model_id') == $model->id ? 'selected' : '' }}>
-                                        {{ $model->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('ai_model_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <p class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Le modèle AI sera automatiquement sélectionné en fonction de la configuration par défaut.
+                            </p>
                         </div>
 
                         <div class="mb-3">

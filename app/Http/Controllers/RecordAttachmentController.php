@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class RecordAttachmentController extends Controller
 {
@@ -54,7 +55,7 @@ class RecordAttachmentController extends Controller
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
                 'type' => 'record',
-                'mime_type' => $mimeType,
+                'thumbnail_path' => '', // Valeur par défaut vide
             ]);
 
             if ($request->filled('thumbnail')) {
@@ -76,6 +77,21 @@ class RecordAttachmentController extends Controller
             }
 
             $record->attachments()->attach($attachment->id);
+
+            // Vérifier si c'est une requête AJAX
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Attachment créé avec succès',
+                    'attachment' => [
+                        'id' => $attachment->id,
+                        'name' => $attachment->name,
+                        'size' => $attachment->size,
+                        'path' => $attachment->path
+                    ]
+                ]);
+            }
+
             return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
 
         } catch (\Exception $e) {
@@ -161,6 +177,53 @@ class RecordAttachmentController extends Controller
         return abort(404);
     }
 
+    /**
+     * Télécharger un attachment temporaire (sans l'associer à un record)
+     */
+    public function uploadTemp(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:pdf,txt,docx,doc,rtf,odt,jpg,jpeg,png,gif|max:10240', // 10MB max
+            ]);
+
+            $file = $request->file('file');
+            $path = $file->store('attachments/temp');
+
+            $attachment = Attachment::create([
+                'path' => $path,
+                'name' => $request->input('name', $file->getClientOriginalName()),
+                'crypt' => md5_file($file->getRealPath()),
+                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                'size' => $file->getSize(),
+                'creator_id' => Auth::id(),
+                'type' => 'record',
+                'thumbnail_path' => '', // Valeur par défaut vide
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Fichier téléchargé avec succès',
+                'attachment' => [
+                    'id' => $attachment->id,
+                    'name' => $attachment->name,
+                    'size' => $attachment->size,
+                    'path' => $attachment->path
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du téléchargement temporaire:', [
+                'error' => $e->getMessage(),
+                'file' => $request->file('file')?->getClientOriginalName()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors du téléchargement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
 

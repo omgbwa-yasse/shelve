@@ -12,18 +12,10 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label for="ai_model_id" class="form-label">{{ __('AI Model') }}</label>
-                            <select class="form-select @error('ai_model_id') is-invalid @enderror" id="ai_model_id" name="ai_model_id" required>
-                                <option value="">{{ __('Select an AI Model') }}</option>
-                                @foreach(\App\Models\AiModel::where('is_active', true)->get() as $model)
-                                    <option value="{{ $model->id }}">{{ $model->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('ai_model_id')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <p class="text-muted">
+                                <i class="bi bi-info-circle"></i>
+                                Le modèle AI sera automatiquement sélectionné en fonction de la configuration par défaut.
+                            </p>
                         </div>
 
                         <div class="mb-3">

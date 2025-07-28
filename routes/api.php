@@ -85,9 +85,7 @@ Route::prefix('public')->name('api.secure.public.')->middleware('auth:sanctum')-
 
 });
 
-
-
-
-
-
-
+// Routes pour MCP (Model Context Protocol)
+Route::middleware('auth:sanctum')->prefix('records')->group(function () {
+    Route::post('create-via-mcp', [\App\Http\Controllers\RecordController::class, 'createViaMcp'])->name('api.records.create-via-mcp');
+});

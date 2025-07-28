@@ -273,7 +273,7 @@ class ReportController extends Controller
 
         // Nouveaux statistiques basés sur le modèle Record
         $recordsWithAuthors = Record::has('authors')->count();
-        $recordsWithTerms = Record::has('terms')->count();
+        $recordsWithTerms = Record::has('thesaurusConcepts')->count();
         $recordsWithAttachments = Record::has('attachments')->count();
 
 //        $topOrganisations = Record::select('organisation_id', DB::raw('count(*) as count'))

@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
 use App\Services\OllamaService;
+use App\Services\SettingService;
 
 class AiInteractionController extends Controller
 {
@@ -43,7 +44,7 @@ class AiInteractionController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'ai_model_id' => 'required|exists:ai_models,id',
+            'ai_model_id' => 'nullable|exists:ai_models,id', // Maintenant optionnel
             'input' => 'required|string',
             'output' => 'nullable|string',
             'parameters' => 'nullable|json',
@@ -53,6 +54,16 @@ class AiInteractionController extends Controller
             'status' => 'required|string',
             'session_id' => 'nullable|string',
         ]);
+
+        // Si aucun modèle AI n'est spécifié, utiliser le modèle par défaut
+        if (empty($validated['ai_model_id'])) {
+            $defaultModelId = $this->getDefaultAiModelId('analysis');
+            if ($defaultModelId) {
+                $validated['ai_model_id'] = $defaultModelId;
+            } else {
+                return redirect()->back()->withErrors(['ai_model_id' => 'Aucun modèle AI par défaut configuré.']);
+            }
+        }
 
         AiInteraction::create($validated);
 
@@ -124,10 +135,32 @@ class AiInteractionController extends Controller
 
 
     protected OllamaService $ollamaService;
+    protected SettingService $settingService;
 
-    public function __construct(OllamaService $ollamaService)
+    public function __construct(OllamaService $ollamaService, SettingService $settingService)
     {
         $this->ollamaService = $ollamaService;
+        $this->settingService = $settingService;
+    }
+
+    /**
+     * Récupère le modèle AI par défaut basé sur le type d'action
+     */
+    private function getDefaultAiModelId(string $actionType = 'analysis'): ?int
+    {
+        $modelName = $this->settingService->get("model_{$actionType}", 'gemma3:4b');
+
+        // Si la valeur est JSON encodée, la décoder
+        if (is_string($modelName) && json_decode($modelName)) {
+            $modelName = json_decode($modelName, true);
+        }
+
+        // Chercher le modèle AI correspondant par nom
+        $aiModel = \App\Models\AiModel::where('name', $modelName)
+            ->where('is_active', true)
+            ->first();
+
+        return $aiModel ? $aiModel->id : null;
     }
 
     /**

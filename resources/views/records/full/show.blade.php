@@ -127,7 +127,7 @@
                             ],
                             'Indexing' => [
                                 'Parent Record' => $record->parent->name ?? 'N/A',
-                                'Conservation Box' => $record->container->name ?? 'N/A',
+                                'Conservation Box' => $record->containers->isNotEmpty() ? $record->containers->pluck('name')->join(', ') : 'N/A',
                                 'Created By' => $record->user->name ?? 'N/A',
                                 'Terms' => $record->thesaurusConcepts->isEmpty() ? 'N/A' : $record->thesaurusConcepts->map(fn($concept) => "<span class='badge bg-secondary'>{$concept->preferred_label}</span>")->implode(' '),
                             ],
