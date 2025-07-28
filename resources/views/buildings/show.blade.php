@@ -7,6 +7,24 @@
             <div class="card-body">
                 <h5 class="card-title">{{ $building->name }}</h5>
                 <p class="card-text">{{ $building->description }}</p>
+                <p class="card-text">
+                    <strong>Visibilité:</strong>
+                    <span class="badge bg-{{ $building->visibility == 'public' ? 'success' : ($building->visibility == 'private' ? 'danger' : 'warning') }}">
+                        @switch($building->visibility)
+                            @case('public')
+                                Public
+                                @break
+                            @case('private')
+                                Privé
+                                @break
+                            @case('inherit')
+                                Hériter
+                                @break
+                            @default
+                                N/A
+                        @endswitch
+                    </span>
+                </p>
                 <a href="{{ route('buildings.index') }}" class="btn btn-secondary btn-sm">Back</a>
                 <a href="{{ route('buildings.edit', $building->id) }}" class="btn btn-warning btn-sm">Edit</a>
                 <form action="{{ route('buildings.destroy', $building->id) }}" method="POST" class="d-inline">

@@ -15,7 +15,12 @@ class BuildingController extends Controller
 
     public function create()
     {
-        return view('buildings.create');
+        $visibilityOptions = [
+            'public' => 'Public',
+            'private' => 'Privé',
+            'inherit' => 'Hériter'
+        ];
+        return view('buildings.create', compact('visibilityOptions'));
     }
 
     public function store(Request $request)
@@ -23,12 +28,14 @@ class BuildingController extends Controller
         $request->validate([
             'name' => 'required|max:100',
             'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
         ]);
 
         Building::create([
             'name' => $request->name,
             'description' => $request->description,
-            'creator_id' => auth()->id(),
+            'visibility' => $request->visibility,
+            'creator_id' => 1, // TODO: Utiliser l'ID de l'utilisateur authentifié
         ]);
 
         return redirect()->route('buildings.index')->with('success', 'Building created successfully.');
@@ -42,7 +49,12 @@ class BuildingController extends Controller
 
     public function edit(Building $building)
     {
-        return view('buildings.edit', compact('building'));
+        $visibilityOptions = [
+            'public' => 'Public',
+            'private' => 'Privé',
+            'inherit' => 'Hériter'
+        ];
+        return view('buildings.edit', compact('building', 'visibilityOptions'));
     }
 
     public function update(Request $request, Building $building)
@@ -50,11 +62,13 @@ class BuildingController extends Controller
         $request->validate([
             'name' => 'required|max:100',
             'description' => 'nullable',
+            'visibility' => 'required|in:public,private,inherit',
         ]);
 
         $building->update([
             'name' => $request->name,
             'description' => $request->description,
+            'visibility' => $request->visibility,
         ]);
 
         return redirect()->route('buildings.index')->with('success', 'Building updated successfully.');
@@ -65,6 +79,4 @@ class BuildingController extends Controller
         $building->delete();
         return redirect()->route('buildings.index')->with('success', 'Building deleted successfully.');
     }
-
-
 }

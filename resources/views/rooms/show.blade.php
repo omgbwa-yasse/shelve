@@ -9,12 +9,38 @@
                 <p class="card-text"><strong>Code:</strong> {{ $room->code }}</p>
                 <p class="card-text"><strong>Description:</strong> {{ $room->description }}</p>
                 <p class="card-text"><strong>Niveau/bâtiment :</strong>  {{ $room->floor->name }} ({{ $room->floor->building->name }})</p>
-                <p class="card-text"><strong>Type de local :</strong>
-                    @if( $room->type->name == "archives")
-                        Salle d'archives
-                    @elseif($room->type->name == "producer")
-                        Local tampon (service producteur)
-                     @endif
+                <p class="card-text">
+                    <strong>Visibilité:</strong>
+                    <span class="badge bg-{{ $room->visibility == 'public' ? 'success' : ($room->visibility == 'private' ? 'danger' : 'warning') }}">
+                        @switch($room->visibility)
+                            @case('public')
+                                Public
+                                @break
+                            @case('private')
+                                Privé
+                                @break
+                            @case('inherit')
+                                Hériter (Effective: {{ $room->getEffectiveVisibility() }})
+                                @break
+                            @default
+                                N/A
+                        @endswitch
+                    </span>
+                </p>
+                <p class="card-text">
+                    <strong>Type de salle :</strong>
+                    <span class="badge bg-{{ $room->type == 'archives' ? 'primary' : 'info' }}">
+                        @switch($room->type)
+                            @case('archives')
+                                Salle d'archives
+                                @break
+                            @case('producer')
+                                Local tampon (service producteur)
+                                @break
+                            @default
+                                N/A
+                        @endswitch
+                    </span>
                 </p>
                 <a href="{{ route('rooms.index') }}" class="btn btn-secondary btn-sm">Back</a>
                 <a href="{{ route('rooms.edit', $room->id) }}" class="btn btn-warning btn-sm">Edit</a>

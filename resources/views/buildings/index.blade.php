@@ -15,9 +15,26 @@
                             <div class="col-md-9">
                                 <h5 class="card-title mb-2">
                                     <b>{{ $building->name ?? 'N/A' }}</b> (ID: {{ $building->id ?? 'N/A' }})
+                                    <span class="badge bg-{{ $building->visibility == 'public' ? 'success' : ($building->visibility == 'private' ? 'danger' : 'warning') }}">
+                                        {{ ucfirst($building->visibility ?? 'N/A') }}
+                                    </span>
                                 </h5>
                                 <p class="card-text mb-1">
                                     <i class="bi bi-file-earmark-text"></i> <strong>Description:</strong> {{ $building->description ?? 'N/A' }}<br>
+                                    <i class="bi bi-eye"></i> <strong>Visibilité:</strong>
+                                    @switch($building->visibility)
+                                        @case('public')
+                                            <span class="text-success">Public</span>
+                                            @break
+                                        @case('private')
+                                            <span class="text-danger">Privé</span>
+                                            @break
+                                        @case('inherit')
+                                            <span class="text-warning">Hériter</span>
+                                            @break
+                                        @default
+                                            <span class="text-muted">N/A</span>
+                                    @endswitch<br>
                                     @if($building->floors->count() > 1)
                                         <i class="bi bi-building"></i> <strong>Building with {{ $building->floors->count() }} levels</strong>
                                     @endif

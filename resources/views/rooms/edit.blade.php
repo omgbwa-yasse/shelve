@@ -19,26 +19,27 @@
                 <textarea class="form-control" id="description" name="description">{{ $room->description }}</textarea>
             </div>
             <div class="mb-3">
+                <label for="visibility" class="form-label">Visibilité</label>
+                <select class="form-select" id="visibility" name="visibility" required>
+                    @foreach($visibilityOptions as $value => $label)
+                        <option value="{{ $value }}" {{ $room->visibility == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="type" class="form-label">Type de salle</label>
+                <select class="form-select" id="type" name="type" required>
+                    @foreach($typeOptions as $value => $label)
+                        <option value="{{ $value }}" {{ $room->type == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="floor_id" class="form-label">Floor</label>
                 <select class="form-select" id="floor_id" name="floor_id" required>
                     @foreach ($floors as $floor)
                         <option value="{{ $floor->id }}" {{ $floor->id == $room->floor_id ? 'selected' : '' }}>
                             {{ $floor->building->name }} - {{ $floor->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="type_id" class="form-label">type</label>
-                <select class="form-select" id="type_id" name="type_id" required>
-                    @foreach ($types as $type)
-                        <option value="{{ $type->id }}" {{ $type->id == $room->type_id ? 'selected' : '' }}>
-                            @if( $type->name == "archives")
-                                Salle d'archives
-                            @elseif($type->name == "producer")
-                                Local tampon (service producteur)
-                            @endif
                         </option>
                     @endforeach
                 </select>

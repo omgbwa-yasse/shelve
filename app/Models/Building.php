@@ -9,7 +9,11 @@ use App\Models\Floor;
 class Building extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'creator_id'];
+    protected $fillable = ['name', 'description', 'visibility', 'creator_id'];
+
+    protected $casts = [
+        'visibility' => 'string',
+    ];
 
     public function floors()
     {
@@ -19,5 +23,21 @@ class Building extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    // Méthodes pour la visibilité
+    public function isPublic()
+    {
+        return $this->visibility === 'public';
+    }
+
+    public function isPrivate()
+    {
+        return $this->visibility === 'private';
+    }
+
+    public function inheritsVisibility()
+    {
+        return $this->visibility === 'inherit';
     }
 }
