@@ -11,7 +11,7 @@ return [
     |
     */
 
-    'base_url' => env('MCP_BASE_URL', 'http://localhost:3000'),
+    'base_url' => env('MCP_BASE_URL', 'http://localhost:3001'),
 
     'default_model' => env('MCP_DEFAULT_MODEL', 'llama3'),
 

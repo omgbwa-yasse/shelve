@@ -16,7 +16,7 @@ class RecordEnricherService
 
     public function __construct(OllamaService $ollamaService)
     {
-        $this->mcpBaseUrl = env('MCP_BASE_URL', 'http://localhost:3000');
+        $this->mcpBaseUrl = config('mcp.base_url', 'http://localhost:3001');
         $this->timeout = config('ollama.timeout', 120);
         $this->ollamaService = $ollamaService;
     }
