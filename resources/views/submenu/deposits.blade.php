@@ -94,103 +94,53 @@
     </style>
 
     <!-- Search Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('deposits', 'search'))
     <div class="submenu-section">
         <div class="submenu-heading" >
             <i class="bi bi-search"></i> {{ __('search') }}
         </div>
         <div class="submenu-content" id="searchMenu">
-            @can('viewAny', App\Models\Building::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('buildings.index') }}">
                     <i class="bi bi-building"></i> {{ __('building') }}
                 </a>
             </div>
-            @endcan
-            @can('viewAny', App\Models\Room::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('rooms.index') }}">
                     <i class="bi bi-house"></i> {{ __('room') }}
                 </a>
             </div>
-            @endcan
-            @can('viewAny', App\Models\Shelf::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('shelves.index') }}">
-                    <i class="bi bi-bookshelf"></i> {{ __('shelves') }}
+                    <i class="bi bi-bookshelf"></i> {{ __('shelve') }}
                 </a>
             </div>
-            @endcan
-            @can('viewAny', App\Models\Container::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('containers.index') }}">
                     <i class="bi bi-box"></i> {{ __('archive_container') }}
                 </a>
             </div>
-            @endcan
         </div>
     </div>
-    @endif
 
     <!-- Create Section -->
-    @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('deposits', 'add'))
     <div class="submenu-section add-section">
         <div class="submenu-heading" >
             <i class="bi bi-plus-circle"></i> {{ __('create') }}
         </div>
         <div class="submenu-content" id="createMenu">
-            @can('create', App\Models\Building::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('buildings.create') }}">
                     <i class="bi bi-building"></i> {{ __('building') }}
                 </a>
             </div>
-            @endcan
-            @can('create', App\Models\Room::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('rooms.create') }}">
                     <i class="bi bi-house"></i> {{ __('room') }}
                 </a>
             </div>
-            @endcan
-            @can('create', App\Models\Shelf::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('shelves.create') }}">
-                    <i class="bi bi-bookshelf"></i> {{ __('shelves') }}
-                </a>
-            </div>
-            @endcan
-            @can('create', App\Models\Container::class)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('containers.create') }}">
-                    <i class="bi bi-archive"></i> {{ __('archive_container') }}
-                </a>
-            </div>
-            @endcan
-        </div>
-    </div>
-    @endif
-
-    <!-- My Carts Section -->
-    @can('viewAny', App\Models\Building::class)
-    <div class="submenu-section">
-        <div class="submenu-heading" >
-            <i class="bi bi-cart"></i> {{ __('my_carts') }}
-        </div>
-        <div class="submenu-content" id="cartsMenu">
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('buildings.create') }}">
-                    <i class="bi bi-building"></i> {{ __('buildings') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('rooms.create') }}">
-                    <i class="bi bi-house"></i> {{ __('rooms') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('shelves.create') }}">
-                    <i class="bi bi-bookshelf"></i> {{ __('shelves') }}
+                    <i class="bi bi-bookshelf"></i> {{ __('shelve') }}
                 </a>
             </div>
             <div class="submenu-item">
@@ -200,7 +150,6 @@
             </div>
         </div>
     </div>
-    @endcan
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

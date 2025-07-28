@@ -48,4 +48,10 @@ class Container extends Model
     {
         return $this->belongsTo(SlipRecord::class,);
     }
+
+    // Relation via shelf->room->organisations pour filtrer par organisation
+    public function getOrganisationsAttribute()
+    {
+        return $this->shelf && $this->shelf->room ? $this->shelf->room->organisations : collect();
+    }
 }

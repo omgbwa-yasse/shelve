@@ -5,12 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Floor;
 use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
 {
+    private const ACCESS_DENIED_MESSAGE = 'Access denied to this room.';
+
     public function index()
     {
-        $rooms = Room::with('floor')->get();
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        $rooms = Room::with('floor')
+            ->whereHas('organisations', function($query) use ($currentOrganisationId) {
+                $query->where('organisation_id', $currentOrganisationId);
+            })
+            ->get();
+
         return view('rooms.index', compact('rooms'));
     }
 
@@ -40,27 +50,44 @@ class RoomController extends Controller
             'floor_id' => 'required|exists:floors,id',
         ]);
 
-        Room::create([
+        $room = Room::create([
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
             'visibility' => $request->visibility,
             'type' => $request->type,
             'floor_id' => $request->floor_id,
-            'creator_id' => 1, // TODO: Utiliser l'ID de l'utilisateur authentifié
+            'creator_id' => Auth::id(),
         ]);
+
+        // Attacher la room à l'organisation courante de l'utilisateur
+        $room->organisations()->attach(Auth::user()->current_organisation_id);
 
         return redirect()->route('rooms.index')->with('success', 'Room created successfully.');
     }
 
     public function show(Room $room)
     {
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Vérifier que la room appartient à l'organisation courante
+        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+            abort(403, self::ACCESS_DENIED_MESSAGE);
+        }
+
         $room->load('floor');
         return view('rooms.show', compact('room'));
     }
 
     public function edit(Room $room)
     {
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Vérifier que la room appartient à l'organisation courante
+        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+            abort(403, self::ACCESS_DENIED_MESSAGE);
+        }
+
         $floors = Floor::all();
         $visibilityOptions = [
             'public' => 'Public',
@@ -76,6 +103,13 @@ class RoomController extends Controller
 
     public function update(Request $request, Room $room)
     {
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Vérifier que la room appartient à l'organisation courante
+        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+            abort(403, self::ACCESS_DENIED_MESSAGE);
+        }
+
         $request->validate([
             'code' => 'required|max:10',
             'name' => 'required|max:100',
@@ -92,7 +126,7 @@ class RoomController extends Controller
             'visibility' => $request->visibility,
             'type' => $request->type,
             'floor_id' => $request->floor_id,
-            'creator_id' => 1, // TODO: Utiliser l'ID de l'utilisateur authentifié
+            'creator_id' => Auth::id(),
         ]);
 
         return redirect()->route('rooms.index')->with('success', 'Room updated successfully.');
@@ -100,6 +134,13 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
+        $currentOrganisationId = Auth::user()->current_organisation_id;
+
+        // Vérifier que la room appartient à l'organisation courante
+        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
+            abort(403, self::ACCESS_DENIED_MESSAGE);
+        }
+
         $room->delete();
         return redirect()->route('rooms.index')->with('success', 'Room deleted successfully.');
     }

@@ -25,4 +25,10 @@ class Shelf extends Model
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
+
+    // Relation via room->organisations pour filtrer par organisation
+    public function getOrganisationsAttribute()
+    {
+        return $this->room ? $this->room->organisations : collect();
+    }
 }
