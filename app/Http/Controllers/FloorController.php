@@ -11,8 +11,7 @@ class FloorController extends Controller
 {
     public function index()
     {
-        $floors = Floor::with('building')->get();
-        return view('buildings.floors.index', compact('floors'));
+        return redirect()->route('buildings.index');
     }
 
     public function create(Building $building)
@@ -63,12 +62,12 @@ class FloorController extends Controller
             'building_id' => $request->building_id,
         ]);
 
-        return redirect()->route('floors.index')->with('success', 'Floor updated successfully.');
+        return redirect()->route('buildings.index')->with('success', 'Floor updated successfully.');
     }
 
     public function destroy(Floor $floor)
     {
         $floor->delete();
-        return redirect()->route('floors.index')->with('success', 'Floor deleted successfully.');
+        return redirect()->route('buildings.index')->with('success', 'Floor deleted successfully.');
     }
 }

@@ -75,6 +75,14 @@ class PublicRecordApiController extends Controller
             ], 404);
         }
 
+        // Vérifier que le record est dans une room publique ou héritant d'un building public
+        if (!$this->isRecordInPublicRoom($record->record)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Record not available in public areas'
+            ], 404);
+        }
+
         $transformedRecord = $this->transformRecordForApi($record, true);
 
         return response()->json([
@@ -195,6 +203,9 @@ class PublicRecordApiController extends Controller
         $query = PublicRecord::with(['record', 'publisher'])
             ->available();
 
+        // Filtrer par la visibilité des rooms
+        $query = $this->applyRoomVisibilityFilter($query);
+
         // Exclude specific record
         if ($exclude) {
             $query->where('id', '!=', $exclude);
@@ -246,6 +257,9 @@ class PublicRecordApiController extends Controller
             ->available()
             ->searchContent($searchTerm);
 
+        // Filtrer par la visibilité des rooms
+        $query = $this->applyRoomVisibilityFilter($query);
+
         // Apply additional filters
         foreach ($filters as $key => $value) {
             if (empty($value)) {
@@ -286,9 +300,13 @@ class PublicRecordApiController extends Controller
             return [];
         }
 
-        return PublicRecord::with('record')
-            ->available()
-            ->searchContent($query)
+        $queryBuilder = PublicRecord::with('record')
+            ->available();
+
+        // Filtrer par la visibilité des rooms
+        $queryBuilder = $this->applyRoomVisibilityFilter($queryBuilder);
+
+        return $queryBuilder->searchContent($query)
             ->limit($limit)
             ->get()
             ->map(function ($publicRecord) {
@@ -366,10 +384,10 @@ class PublicRecordApiController extends Controller
      */
     private function getStatistics(): array
     {
-        $total = PublicRecord::count();
-        $available = PublicRecord::available()->count();
-        $expired = PublicRecord::where('expires_at', '<=', now())->count();
-        $publishedThisMonth = PublicRecord::where('published_at', '>=', now()->startOfMonth())->count();
+        $total = $this->applyRoomVisibilityFilter(PublicRecord::query())->count();
+        $available = $this->applyRoomVisibilityFilter(PublicRecord::available())->count();
+        $expired = $this->applyRoomVisibilityFilter(PublicRecord::where('expires_at', '<=', now()))->count();
+        $publishedThisMonth = $this->applyRoomVisibilityFilter(PublicRecord::where('published_at', '>=', now()->startOfMonth()))->count();
 
         return [
             'total_records' => $total,
@@ -449,5 +467,47 @@ class PublicRecordApiController extends Controller
         }
 
         return $validFilters;
+    }
+
+    /**
+     * Vérifier si un record est dans une room publique
+     */
+    private function isRecordInPublicRoom(Record $record): bool
+    {
+        return $record->containers()
+            ->whereHas('shelf.room', function ($roomQuery) {
+                $roomQuery->where(function ($q) {
+                    // Room est publique
+                    $q->where('visibility', 'public')
+                      // OU Room hérite et le building est public
+                      ->orWhere(function ($inheritQuery) {
+                          $inheritQuery->where('visibility', 'inherit')
+                                       ->whereHas('floor.building', function ($buildingQuery) {
+                                           $buildingQuery->where('visibility', 'public');
+                                       });
+                      });
+                });
+            })
+            ->exists();
+    }
+
+    /**
+     * Appliquer le filtre de visibilité des rooms sur une query PublicRecord
+     */
+    private function applyRoomVisibilityFilter($query)
+    {
+        return $query->whereHas('record.containers.shelf.room', function ($roomQuery) {
+            $roomQuery->where(function ($q) {
+                // Room est publique
+                $q->where('visibility', 'public')
+                  // OU Room hérite et le building est public
+                  ->orWhere(function ($inheritQuery) {
+                      $inheritQuery->where('visibility', 'inherit')
+                                   ->whereHas('floor.building', function ($buildingQuery) {
+                                       $buildingQuery->where('visibility', 'public');
+                                   });
+                  });
+            });
+        });
     }
 }
