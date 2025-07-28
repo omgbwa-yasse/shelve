@@ -53,6 +53,11 @@ use App\Http\Controllers\PublicTemplateController;
 
 
 Route::prefix('public')->name('api.public.')->group(function () {
+    // records filtres get data - DOIT ÊTRE AVANT apiResource
+    Route::get('records/thesaurus', [PublicRecordApiController::class, 'getThesaurusLabels'])->name('records.thesaurus.labels');
+    Route::get('records/activities', [PublicRecordApiController::class, 'getActivities'])->name('records.activities');
+    Route::get('records/funds', [PublicRecordApiController::class, 'getRecordsFunds'])->name('records.funds');
+
     // Records - Services ouverts
     Route::apiResource('records', PublicRecordApiController::class)->names('records')->except(['create', 'edit']);
     Route::apiResource('records.attachments', PublicRecordApiController::class)->names('records.attachments')->except(['create', 'edit']);

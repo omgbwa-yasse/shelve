@@ -208,6 +208,224 @@ class PublicRecordApiController extends Controller
         ], 501);
     }
 
+    /**
+     * Get thesaurus labels for public records
+     */
+    public function getThesaurusLabels(): JsonResponse
+    {
+        $labels = ThesaurusConcept::whereHas('records.containers.shelf.room', function ($roomQuery) {
+            $roomQuery->where(function ($q) {
+                // Room est publique
+                $q->where('visibility', 'public')
+                  // OU Room hérite et le building est public
+                  ->orWhere(function ($inheritQuery) {
+                      $inheritQuery->where('visibility', 'inherit')
+                                   ->whereHas('floor.building', function ($buildingQuery) {
+                                       $buildingQuery->where('visibility', 'public');
+                                   });
+                  });
+            });
+        })
+        ->with(['labels' => function($query) {
+            $query->where('type', 'prefLabel')->where('language', 'fr-fr');
+        }])
+        ->get()
+        ->map(function($concept) {
+            return [
+                'id' => $concept->id,
+                'uri' => $concept->uri,
+                'notation' => $concept->notation,
+                'label' => $concept->getPreferredLabel() ? $concept->getPreferredLabel()->literal_form : $concept->uri,
+                'scheme_id' => $concept->scheme_id
+            ];
+        })
+        ->unique('id')
+        ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => $labels
+        ]);
+    }
+
+    /**
+     * Get activities for public records
+     */
+    public function getActivities(): JsonResponse
+    {
+        $activities = Activity::whereHas('records', function ($recordQuery) {
+            $recordQuery->whereHas('containers.shelf.room', function ($roomQuery) {
+                $roomQuery->where(function ($q) {
+                    // Room est publique
+                    $q->where('visibility', 'public')
+                      // OU Room hérite et le building est public
+                      ->orWhere(function ($inheritQuery) {
+                          $inheritQuery->where('visibility', 'inherit')
+                                       ->whereHas('floor.building', function ($buildingQuery) {
+                                           $buildingQuery->where('visibility', 'public');
+                                       });
+                      });
+                });
+            });
+        })
+        ->select('id', 'name', 'code', 'observation as description')
+        ->orderBy('name')
+        ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $activities
+        ]);
+    }
+
+    /**
+     * Get funds for public records
+     */
+    public function getRecordsFunds(): JsonResponse
+    {
+        // Récupérer tous les records avec level_id = 1 (fonds) dans des rooms publiques
+        $fondsRecords = Record::where('level_id', 1)
+            ->whereHas('containers.shelf.room', function ($roomQuery) {
+                $roomQuery->where(function ($q) {
+                    // Room est publique
+                    $q->where('visibility', 'public')
+                      // OU Room hérite et le building est public
+                      ->orWhere(function ($inheritQuery) {
+                          $inheritQuery->where('visibility', 'inherit')
+                                       ->whereHas('floor.building', function ($buildingQuery) {
+                                           $buildingQuery->where('visibility', 'public');
+                                       });
+                      });
+                });
+            })
+            ->with(['level'])
+            ->get();
+
+        $funds = [];
+
+        foreach ($fondsRecords as $fonds) {
+            // Créer l'objet fonds avec ses enfants directs
+            $fondsData = [
+                'id' => $fonds->id,
+                'name' => $fonds->name,
+                'code' => $fonds->code,
+                'level' => $fonds->level->name ?? 'Fonds',
+                'description' => $fonds->content,
+                'value' => $fonds->code . ' - ' . $fonds->name,
+                'type' => 'fonds',
+                'parent_id' => $fonds->parent_id,
+                'children' => $this->buildChildrenTree($fonds)
+            ];
+
+            $funds[] = $fondsData;
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $funds
+        ]);
+    }
+
+    /**
+     * Construire l'arbre hiérarchique des enfants pour un record donné
+     */
+    private function buildChildrenTree(Record $record): array
+    {
+        $children = $record->children()->with(['level'])->get();
+        $childrenTree = [];
+
+        foreach ($children as $child) {
+            // Vérifier si l'enfant est dans une room publique
+            if ($this->isRecordInPublicRoom($child)) {
+                $childData = [
+                    'id' => $child->id,
+                    'name' => $child->name,
+                    'code' => $child->code,
+                    'level' => $child->level->name ?? 'N/A',
+                    'description' => $child->content,
+                    'value' => $child->code . ' - ' . $child->name,
+                    'type' => $this->getRecordTypeByLevel($child->level_id),
+                    'parent_id' => $child->parent_id,
+                    'children' => $this->buildChildrenTree($child) // Récursion pour les enfants
+                ];
+
+                $childrenTree[] = $childData;
+            }
+        }
+
+        return $childrenTree;
+    }
+
+    /**
+     * Déterminer le type de record basé sur le niveau
+     */
+    private function getRecordTypeByLevel(int $levelId): string
+    {
+        return match ($levelId) {
+            1 => 'fonds',
+            2 => 'sous-fonds',
+            3 => 'série',
+            4 => 'sous-série',
+            5 => 'dossier',
+            6 => 'pièce',
+            default => 'autre'
+        };
+    }
+
+    /**
+     * Collecter récursivement tous les enfants d'un record
+     */
+    private function collectChildrenRecursively(Record $record, &$funds): void
+    {
+        $children = $record->children()->with(['level'])->get();
+
+        foreach ($children as $child) {
+            // Vérifier si l'enfant est dans une room publique
+            if ($this->isRecordInPublicRoom($child)) {
+                $funds->push([
+                    'id' => $child->id,
+                    'name' => $child->name,
+                    'code' => $child->code,
+                    'level' => $child->level->name ?? 'N/A',
+                    'description' => $child->content,
+                    'value' => $child->code . ' - ' . $child->name,
+                    'type' => 'child',
+                    'parent_id' => $child->parent_id
+                ]);
+
+                // Appel récursif pour les enfants de cet enfant
+                $this->collectChildrenRecursively($child, $funds);
+            }
+        }
+    }
+
+    /**
+     * Collecter récursivement tous les parents d'un record
+     */
+    private function collectParentsRecursively(Record $record, &$funds): void
+    {
+        $parent = $record->parent()->with(['level'])->first();
+
+        if ($parent) {
+            // Vérifier si le parent est dans une room publique
+            if ($this->isRecordInPublicRoom($parent)) {
+                $funds->push([
+                    'id' => $parent->id,
+                    'name' => $parent->name,
+                    'code' => $parent->code,
+                    'level' => $parent->level->name ?? 'N/A',
+                    'description' => $parent->content,
+                    'value' => $parent->code . ' - ' . $parent->name,
+                    'type' => 'parent',
+                    'parent_id' => $parent->parent_id
+                ]);
+
+                // Appel récursif pour les parents de ce parent
+                $this->collectParentsRecursively($parent, $funds);
+            }
+        }
+    }
+
     // ==========================================
     // PRIVATE METHODS (previously in service)
     // ==========================================

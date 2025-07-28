@@ -46,4 +46,9 @@ class Activity extends Model
     {
         return $this->hasMany(MailTypology::class, 'activity_id');
     }
+
+    public function records()
+    {
+        return $this->hasMany(Record::class, 'activity_id');
+    }
 }
