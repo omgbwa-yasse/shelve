@@ -6,8 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\PublicRecord;
 use App\Models\Record;
 use App\Models\User;
+use App\Models\ThesaurusConcept;
+use App\Models\RecordLevel;
+use App\Models\RecordStatus;
+use App\Models\RecordSupport;
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rule;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class PublicRecordApiController extends Controller
@@ -26,10 +32,21 @@ class PublicRecordApiController extends Controller
             'per_page' => 'nullable|integer|min:1|max:50',
             'type' => 'nullable|string|max:100',
             'limit' => 'nullable|integer|min:1|max:50',
-            'exclude' => 'nullable|integer'
+            'exclude' => 'nullable|integer',
+            'level_id' => 'nullable|integer|exists:record_levels,id',
+            'status_id' => 'nullable|integer|exists:record_statuses,id',
+            'support_id' => 'nullable|integer|exists:record_supports,id',
+            'activity_id' => 'nullable|integer|exists:activities,id',
+            'thesaurus_concept_id' => 'nullable|integer|exists:thesaurus_concepts,id',
+            'date_format' => 'nullable|string|in:exact,approximate,range',
+            'has_digital_copy' => 'nullable|boolean'
         ]);
 
-        $filters = $this->validateSearchFilters($request->only(['search', 'date_from', 'date_to', 'language', 'publisher_id', 'type']));
+        $filters = $this->validateSearchFilters($request->only([
+            'search', 'date_from', 'date_to', 'language', 'publisher_id', 'type',
+            'level_id', 'status_id', 'support_id', 'activity_id', 'thesaurus_concept_id',
+            'date_format', 'has_digital_copy'
+        ]));
         $perPage = min($request->get('per_page', $request->get('limit', 10)), 50);
         $exclude = $request->get('exclude');
 
@@ -244,6 +261,43 @@ class PublicRecordApiController extends Controller
             $query->where('published_by', $filters['publisher_id']);
         }
 
+        // Apply ISAD(G) filters
+        if (!empty($filters['level_id'])) {
+            $query->whereHas('record', function ($q) use ($filters) {
+                $q->where('level_id', $filters['level_id']);
+            });
+        }
+
+        if (!empty($filters['status_id'])) {
+            $query->whereHas('record', function ($q) use ($filters) {
+                $q->where('status_id', $filters['status_id']);
+            });
+        }
+
+        if (!empty($filters['support_id'])) {
+            $query->whereHas('record', function ($q) use ($filters) {
+                $q->where('support_id', $filters['support_id']);
+            });
+        }
+
+        if (!empty($filters['activity_id'])) {
+            $query->whereHas('record', function ($q) use ($filters) {
+                $q->where('activity_id', $filters['activity_id']);
+            });
+        }
+
+        if (!empty($filters['thesaurus_concept_id'])) {
+            $query->whereHas('record.thesaurusConcepts', function ($q) use ($filters) {
+                $q->where('thesaurus_concepts.id', $filters['thesaurus_concept_id']);
+            });
+        }
+
+        if (!empty($filters['date_format'])) {
+            $query->whereHas('record', function ($q) use ($filters) {
+                $q->where('date_format', $filters['date_format']);
+            });
+        }
+
         return $query->orderBy('published_at', 'desc')
             ->paginate($perPage);
     }
@@ -354,6 +408,34 @@ class PublicRecordApiController extends Controller
                 'id' => $record->publisher->id,
                 'name' => $record->publisher->name,
             ] : null,
+
+            // 7 champs ISAD(G) essentiels
+            'isad_fields' => [
+                'reference_code' => $record->code,                           // 3.1.1 Reference code(s)
+                'title' => $record->title,                                   // 3.1.2 Title
+                'dates' => [                                                 // 3.1.3 Date(s)
+                    'start' => $record->record->date_start ?? null,
+                    'end' => $record->record->date_end ?? null,
+                    'exact' => $record->record->date_exact ?? null,
+                    'format' => $record->record->date_format ?? null
+                ],
+                'level_of_description' => $record->record->level->name ?? null,  // 3.1.4 Level of description
+                'extent' => $record->record->width_description ?? null,      // 3.1.5 Extent and medium
+                'creator' => $record->record->activity->name ?? null,       // 3.2.1 Name of creator(s)
+                'scope_content' => $record->content                         // 3.3.1 Scope and content
+            ],
+
+            // Classifications et thésaurus
+            'classifications' => [],
+            'thesaurus_concepts' => $record->record && $record->record->thesaurusConcepts ?
+                $record->record->thesaurusConcepts->map(function($concept) {
+                    return [
+                        'id' => $concept->id,
+                        'term' => $concept->term,
+                        'weight' => $concept->pivot->weight ?? null,
+                        'context' => $concept->pivot->context ?? null
+                    ];
+                })->toArray() : []
         ];
 
         if ($includeDetails && $record->record) {
@@ -417,12 +499,45 @@ class PublicRecordApiController extends Controller
         $dateRange = PublicRecord::selectRaw('MIN(published_at) as min_date, MAX(published_at) as max_date')
             ->first();
 
+        // Filtres ISAD(G) additionnels
+        $levels = RecordLevel::select('id', 'name')->orderBy('name')->get();
+        $statuses = RecordStatus::select('id', 'name')->orderBy('name')->get();
+        $supports = RecordSupport::select('id', 'name')->orderBy('name')->get();
+        $activities = Activity::select('id', 'name')->orderBy('name')->get();
+
+        // Concepts thésaurus les plus utilisés
+        $topThesaurusConcepts = ThesaurusConcept::whereHas('records')
+            ->withCount('records')
+            ->with(['labels' => function($query) {
+                $query->where('type', 'prefLabel')->where('language', 'fr-fr');
+            }])
+            ->orderBy('records_count', 'desc')
+            ->limit(50)
+            ->get()
+            ->map(function($concept) {
+                return [
+                    'id' => $concept->id,
+                    'term' => $concept->getPreferredLabel() ? $concept->getPreferredLabel()->literal_form : $concept->uri
+                ];
+            });
+
         return [
             'languages' => $languages,
             'publishers' => $publishers,
             'date_range' => [
                 'min' => $dateRange->min_date,
                 'max' => $dateRange->max_date,
+            ],
+            // Nouveaux filtres ISAD(G)
+            'levels' => $levels,
+            'statuses' => $statuses,
+            'supports' => $supports,
+            'activities' => $activities,
+            'thesaurus_concepts' => $topThesaurusConcepts,
+            'date_formats' => [
+                ['value' => 'exact', 'label' => 'Date exacte'],
+                ['value' => 'approximate', 'label' => 'Date approximative'],
+                ['value' => 'range', 'label' => 'Période']
             ]
         ];
     }
