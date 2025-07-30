@@ -16,7 +16,10 @@
             <tbody>
                 @foreach ($sorts as $sort)
                     <tr>
-                        <td>{{ $sort->code }}</td>
+                        <td>
+                            <span class="badge badge-primary">{{ $sort->code }}</span>
+                            <small class="text-muted ml-1">{{ $sort->code_description }}</small>
+                        </td>
                         <td>{{ $sort->name }}</td>
                         <td>{{ $sort->description }}</td>
                         <td>

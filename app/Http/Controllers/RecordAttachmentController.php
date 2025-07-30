@@ -54,8 +54,8 @@ class RecordAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
+                'mime_type' => $mimeType,
                 'type' => 'record',
-                'thumbnail_path' => '', // Valeur par défaut vide
             ]);
 
             if ($request->filled('thumbnail')) {
@@ -197,8 +197,8 @@ class RecordAttachmentController extends Controller
                 'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                 'size' => $file->getSize(),
                 'creator_id' => Auth::id(),
+                'mime_type' => $file->getMimeType(),
                 'type' => 'record',
-                'thumbnail_path' => '', // Valeur par défaut vide
             ]);
 
             return response()->json([

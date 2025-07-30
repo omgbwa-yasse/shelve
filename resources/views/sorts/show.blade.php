@@ -10,7 +10,10 @@
             </tr>
             <tr>
                 <th>Code</th>
-                <td>{{ $sort->code }}</td>
+                <td>
+                    <span class="badge badge-primary">{{ $sort->code }}</span>
+                    <small class="text-muted ml-2">{{ $sort->code_description }}</small>
+                </td>
             </tr>
             <tr>
                 <th>Name</th>

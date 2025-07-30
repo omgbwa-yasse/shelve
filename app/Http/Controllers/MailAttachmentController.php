@@ -54,6 +54,7 @@ public function store(Request $request, $id)
             'size' => $file->getSize(),
             'creator_id' => auth()->id(),
             'mime_type' => $mimeType,
+            'type' => 'mail',
         ]);
 
         if ($request->filled('thumbnail')) {

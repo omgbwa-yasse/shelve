@@ -22,6 +22,7 @@ class Attachment extends Model
         'creator_id',
         'type',
         'thumbnail_path',
+        'mime_type',
     ];
 
 

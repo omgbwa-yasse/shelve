@@ -13,6 +13,10 @@
                 <td>{{ $retention->code }}</td>
             </tr>
             <tr>
+                <th>Nom</th>
+                <td>{{ $retention->name }}</td>
+            </tr>
+            <tr>
                 <th>Duration</th>
                 <td>{{ $retention->duration }}</td>
             </tr>

@@ -8,6 +8,7 @@
             <thead>
                 <tr>
                     <th>Code</th>
+                    <th>Nom</th>
                     <th>Duration</th>
                     <th>Sort</th>
                     <th>Actions</th>
@@ -17,6 +18,7 @@
                 @foreach ($retentions as $retention)
                     <tr>
                         <td>{{ $retention->code }}</td>
+                        <td>{{ $retention->name }}</td>
                         <td>{{ $retention->duration }} ans</td>
                         <td>{{ $retention->sort->name }} ({{ $retention->sort->code }})</td>
                         <td>

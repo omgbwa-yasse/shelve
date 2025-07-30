@@ -198,11 +198,12 @@ class AttachmentApiController extends Controller
             $attachment = Attachment::create([
                 'name' => $originalName,
                 'path' => $path,
-                'type' => $mimeType,
+                'type' => 'mail', // Type générique pour API
+                'mime_type' => $mimeType,
                 'size' => $size,
                 'creator_id' => auth()->id(),
-                'attachable_type' => null, // Temporaire, sera assigné plus tard
-                'attachable_id' => null,
+                'crypt' => md5_file($file->getRealPath()),
+                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
             ]);
 
             return response()->json([

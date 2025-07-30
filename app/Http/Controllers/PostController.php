@@ -263,6 +263,13 @@ class PostController extends Controller
             $mimeType = $file->getMimeType();
             $fileType = explode('/', $mimeType)[0];
 
+            Log::info('Tentative de création d\'attachment pour post', [
+                'post_id' => $post->id,
+                'file_name' => $request->input('name'),
+                'mime_type' => $mimeType,
+                'size' => $file->getSize(),
+            ]);
+
             $attachment = Attachment::create([
                 'path' => $path,
                 'name' => $request->input('name'),
@@ -273,6 +280,8 @@ class PostController extends Controller
                 'mime_type' => $mimeType,
                 'type' => 'bulletinboardpost',
             ]);
+
+            Log::info('Attachment créé avec succès', ['attachment_id' => $attachment->id]);
 
             if ($request->filled('thumbnail')) {
                 $thumbnailData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->thumbnail));
@@ -294,14 +303,29 @@ class PostController extends Controller
                 }
             }
 
+            Log::info('Tentative d\'attachement à la publication', [
+                'post_id' => $post->id,
+                'attachment_id' => $attachment->id
+            ]);
+
             $post->attachments()->attach($attachment->id, ['created_by' => Auth::id()]);
+
+            Log::info('Attachment attaché avec succès à la publication');
 
             return redirect()->route('bulletin-boards.posts.show', [$bulletinBoard, $post])
                 ->with('success', 'Pièce jointe ajoutée avec succès.');
         } catch (Exception $e) {
-            Log::error('Erreur lors de l\'ajout de pièce jointe: ' . $e->getMessage());
+            Log::error('Erreur lors de l\'ajout de pièce jointe: ' . $e->getMessage(), [
+                'post_id' => $post->id,
+                'file_info' => $request->hasFile('file') ? [
+                    'original_name' => $request->file('file')->getClientOriginalName(),
+                    'size' => $request->file('file')->getSize(),
+                    'mime_type' => $request->file('file')->getMimeType(),
+                ] : null,
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->route('bulletin-boards.posts.show', [$bulletinBoard, $post])
-                ->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe.');
+                ->with('error', 'Une erreur est survenue lors de l\'ajout de la pièce jointe: ' . $e->getMessage());
         }
     }
 
@@ -464,7 +488,7 @@ class PostController extends Controller
                     'size' => $file->getSize(),
                     'creator_id' => Auth::id(),
                     'mime_type' => $mimeType,
-                    'type' => 'post',
+                    'type' => 'bulletinboardpost',
                 ]);
 
                 // Génération de vignette si nécessaire

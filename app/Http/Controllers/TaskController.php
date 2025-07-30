@@ -126,8 +126,11 @@ class TaskController extends Controller
                         'path' => $path,
                         'name' => $file->getClientOriginalName(),
                         'crypt' => $file->hashName(),
+                        'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                         'size' => $file->getSize(),
                         'creator_id' => auth()->id(),
+                        'mime_type' => $file->getMimeType(),
+                        'type' => 'task',
                     ]);
                     $task->attachments()->attach($attachment->id);
                 }
@@ -234,8 +237,11 @@ class TaskController extends Controller
                         'path' => $path,
                         'name' => $file->getClientOriginalName(),
                         'crypt' => $file->hashName(),
+                        'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
                         'size' => $file->getSize(),
                         'creator_id' => auth()->id(),
+                        'mime_type' => $file->getMimeType(),
+                        'type' => 'task',
                     ]);
                     $task->attachments()->attach($attachment->id);
                 }

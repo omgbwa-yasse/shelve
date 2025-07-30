@@ -64,7 +64,7 @@ use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
 use App\Http\Controllers\PublicSearchLogController;
 use App\Http\Controllers\RecordController;
-use App\Http\Controllers\lifeCycleController;
+use App\Http\Controllers\LifeCycleController;
 use App\Http\Controllers\RecordChildController;
 use App\Http\Controllers\RecordSupportController;
 use App\Http\Controllers\CommunicationController;
@@ -534,12 +534,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('authors/{author}/contacts/create', [AuthorContactController::class, 'create'])->name('author-contact.create.for-author');
 
         Route::resource('records.child', RecordChildController::class)->names('record-child');
-        Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
-        Route::get('recordtosort', [lifeCycleController::class, 'recordToSort'])->name('records.tosort');
-        Route::get('recordtoeliminate', [lifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
-        Route::get('recordtokeep', [lifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
-        Route::get('recordtoretain', [lifeCycleController::class, 'recordToRetain'])->name('records.toretain');
-        Route::get('recordtostore', [lifeCycleController::class, 'recordToStore'])->name('records.tostore');
+
+        // Gestion du cycle de vie des documents
+
+        Route::get('recordtotransfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
+        Route::get('recordtosort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
+        Route::get('recordtoeliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
+        Route::get('recordtokeep', [LifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
+        Route::get('recordtoretain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
+        Route::get('recordtostore', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
+
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
         Route::get('advanced/form', [SearchRecordController::class, 'form'])->name('records.advanced.form');
         Route::get('sort', [SearchRecordController::class, 'sort'])->name('records.sort');

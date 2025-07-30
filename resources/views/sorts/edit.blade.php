@@ -8,7 +8,15 @@
             @method('PUT')
             <div class="form-group">
                 <label for="code">Code</label>
-                <input type="text" name="code" id="code" class="form-control" value="{{ $sort->code }}" required>
+                <select name="code" id="code" class="form-control" required>
+                    <option value="">Sélectionner un code</option>
+                    <option value="E" {{ $sort->code == 'E' ? 'selected' : '' }}>E - Élimination</option>
+                    <option value="T" {{ $sort->code == 'T' ? 'selected' : '' }}>T - Tri/Transfert</option>
+                    <option value="C" {{ $sort->code == 'C' ? 'selected' : '' }}>C - Conservation</option>
+                </select>
+                <small class="form-text text-muted">
+                    E = Élimination, T = Tri/Transfert, C = Conservation définitive
+                </small>
             </div>
             <div class="form-group">
                 <label for="name">Name</label>

@@ -24,7 +24,8 @@ class RetentionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required',
+            'code' => 'required|string|max:10',
+            'name' => 'required|string|max:200',
             'duration' => 'required|integer',
             'sort_id' => 'required|exists:sorts,id',
         ]);
@@ -49,7 +50,8 @@ class RetentionController extends Controller
     public function update(Request $request, Retention $retention)
     {
         $request->validate([
-            'code' => 'required',
+            'code' => 'required|string|max:10',
+            'name' => 'required|string|max:200',
             'duration' => 'required|integer',
             'sort_id' => 'required|exists:sorts,id',
         ]);

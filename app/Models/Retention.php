@@ -11,6 +11,7 @@ class Retention extends Model
     use HasFactory;
     protected $fillable = [
         'code',
+        'name',
         'duration',
         'sort_id',
     ];

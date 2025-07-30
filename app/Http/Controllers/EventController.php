@@ -469,7 +469,7 @@ class EventController extends Controller
                     'size' => $file->getSize(),
                     'creator_id' => Auth::id(),
                     'mime_type' => $mimeType,
-                    'type' => 'event',
+                    'type' => 'bulletinboardevent',
                 ]);
 
                 // Génération de vignette si nécessaire

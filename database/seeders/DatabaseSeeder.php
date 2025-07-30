@@ -29,6 +29,9 @@ class DatabaseSeeder extends Seeder
             RecordStatusSeeder::class, // Seeder pour les statuts des dossiers
             RecordLevelSeeder::class,  // Seeder pour les niveaux hiérarchiques
             RecordSupportSeeder::class, // Seeder pour les supports physiques
+
+            // Seeders pour les outils de gestion
+            SortSeeder::class, // Seeder pour les sorts finaux (E, T, C)
         ]);
     }
 }

@@ -22,7 +22,7 @@ class SortController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|unique:sorts|max:10',
+            'code' => 'required|unique:sorts|in:E,T,C',
             'name' => 'required|max:45',
             'description' => 'nullable|max:100',
         ]);
@@ -46,7 +46,7 @@ class SortController extends Controller
     public function update(Request $request, Sort $sort)
     {
         $request->validate([
-            'code' => 'required|unique:sorts,code,' . $sort->id . '|max:10',
+            'code' => 'required|unique:sorts,code,' . $sort->id . '|in:E,T,C',
             'name' => 'required|max:45',
             'description' => 'nullable|max:100',
         ]);

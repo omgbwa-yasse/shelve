@@ -11,6 +11,10 @@
                 <input type="text" name="code" id="code" class="form-control" required>
             </div>
             <div class="form-group">
+                <label for="name">Nom</label>
+                <input type="text" name="name" id="name" class="form-control" required maxlength="200">
+            </div>
+            <div class="form-group">
                 <label for="duration">Duration en année</label>
                 <input type="number" name="duration" id="duration" class="form-control" required>
             </div>

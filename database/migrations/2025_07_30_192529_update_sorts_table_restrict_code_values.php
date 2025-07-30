@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('records', function (Blueprint $table) {
-            $table->boolean('is_temporary')->default(false)->after('organisation_id');
+        Schema::table('sorts', function (Blueprint $table) {
+            // Modifier la colonne code pour accepter uniquement E, T, C
+            $table->enum('code', ['E', 'T', 'C'])->change();
         });
     }
 
@@ -21,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('records', function (Blueprint $table) {
-            $table->dropColumn('is_temporary');
+        Schema::table('sorts', function (Blueprint $table) {
+            // Revenir à une colonne string normale
+            $table->string('code', 10)->change();
         });
     }
 };
