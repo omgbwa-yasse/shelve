@@ -135,7 +135,7 @@ class RecordService {
       };
 
       // Construire le prompt pour l'extraction de mots-clés
-      const prompt = buildPrompt('recordKeywords', templateData, 'prompts');
+      const prompt = buildPrompt('recordKeywords', templateData);
 
       // Envoyer la requête à Ollama
       const keywordsText = await ollamaService.generateCompletion(prompt, this.modelKeywords);
@@ -176,7 +176,7 @@ class RecordService {
       };
 
       // Construire le prompt pour l'analyse
-      const prompt = buildPrompt('recordAnalysis', templateData, 'prompts');
+      const prompt = buildPrompt('recordAnalysis', templateData);
 
       // Envoyer la requête à Ollama
       const analysis = await ollamaService.generateCompletion(prompt, this.modelAnalysis);

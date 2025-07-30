@@ -44,7 +44,7 @@ module.exports.summarize = async (req, res) => {
     }
 
     // Utiliser le template général pour le contenu brut
-    const prompt = buildPrompt('summarize', { content }, 'prompts');
+    const prompt = buildPrompt('summarize', { content });
     const summary = await ollamaService.generateCompletion(prompt);
 
     return res.json({
@@ -84,7 +84,7 @@ module.exports.reformatTitle = async (req, res) => {
     }
 
     // Utiliser le template général pour le titre brut
-    const prompt = buildPrompt('title', { title }, 'prompts');
+    const prompt = buildPrompt('title', { title });
     const formattedTitle = await ollamaService.generateCompletion(prompt);
 
     return res.json({
@@ -124,7 +124,7 @@ module.exports.extractKeywords = async (req, res) => {
     }
 
     // Utiliser le template général pour le contenu brut
-    const prompt = buildPrompt('keywords', { content }, 'prompts');
+    const prompt = buildPrompt('keywords', { content });
     const keywordsText = await ollamaService.generateCompletion(prompt);
 
     // Transformer la chaîne de mots-clés en tableau
@@ -170,7 +170,7 @@ module.exports.analyzeContent = async (req, res) => {
     }
 
     // Utiliser le template général pour le contenu brut
-    const prompt = buildPrompt('analyze', { content }, 'prompts');
+    const prompt = buildPrompt('analyze', { content });
     const analysis = await ollamaService.generateCompletion(prompt);
 
     return res.json({

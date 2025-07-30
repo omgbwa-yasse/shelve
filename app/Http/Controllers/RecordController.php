@@ -774,14 +774,28 @@ class RecordController extends Controller
     /**
      * Add a thesaurus term to a record
      */
-    public function addTerm(Request $request, Record $record, $termId)
+    public function addTerm(Request $request, Record $record, $term)
     {
         try {
             $this->authorize('update', $record);
 
+            // Check if we have a numeric ID or a string term
+            if (is_numeric($term)) {
+                $termId = $term;
+            } else {
+                // Search for the term in the thesaurus by its label
+                $thesaurusTerm = \App\Models\ThesaurusLabel::where('label', $term)->first();
+
+                if (!$thesaurusTerm) {
+                    return response()->json(['error' => 'Term not found in thesaurus'], 404);
+                }
+
+                $termId = $thesaurusTerm->concept_id;
+            }
+
             // Check if the term is already associated with the record
             if ($record->thesaurusConcepts()->where('thesaurus_concept_id', $termId)->exists()) {
-                return response()->json(['message' => 'Term already associated with this record'], 200);
+                return response()->json(['success' => true, 'message' => 'Term already associated with this record'], 200);
             }
 
             // Associate the term with the record
@@ -791,16 +805,16 @@ class RecordController extends Controller
                 'extraction_note' => 'Added via AI suggestion'
             ]);
 
-            return response()->json(['message' => 'Term successfully added to record'], 200);
+            return response()->json(['success' => true, 'message' => 'Term successfully added to record'], 200);
 
         } catch (\Exception $e) {
             Log::error('Error adding term to record:', [
                 'error' => $e->getMessage(),
                 'record_id' => $record->id,
-                'term_id' => $termId
+                'term' => $term
             ]);
 
-            return response()->json(['error' => 'Failed to add term to record'], 500);
+            return response()->json(['success' => false, 'error' => 'Failed to add term to record'], 500);
         }
     }
 

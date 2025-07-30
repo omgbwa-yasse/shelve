@@ -8,6 +8,7 @@ use App\Http\Controllers\AiJobController;
 use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\RecordEnricherController;
 use App\Http\Controllers\McpProxyController;
+use App\Http\Controllers\RecordController;
 use App\Http\Controllers\Api\PublicRecordApiController;
 use App\Http\Controllers\Api\PublicEventApiController;
 use App\Http\Controllers\Api\PublicNewsApiController;
@@ -81,14 +82,23 @@ Route::prefix('public')->name('api.secure.public.')->middleware('auth:sanctum')-
     Route::apiResource('document-requests', PublicDocumentRequestApiController::class)->names("document-requests");
     Route::apiResource('responses', PublicResponseApiController::class)->names("responses");
     Route::apiResource('responses.attachments', PublicResponseAttachmentApiController::class)->names("responses.attachments");
-
-
-}); // Routes pour MCP (Model Context Protocol)
-
-
-Route::middleware('auth')->prefix('records')->group(function () {
-    Route::post('create-via-mcp', [\App\Http\Controllers\RecordController::class, 'createViaMcp'])->name('api.records.create-via-mcp');
-    Route::post('{record}/add-term/{term}', [\App\Http\Controllers\RecordController::class, 'addTerm'])->name('api.records.add-term');
-    Route::post('{record}/update-title', [\App\Http\Controllers\RecordController::class, 'updateTitle'])->name('api.records.update-title');
-    Route::post('{record}/update-content', [\App\Http\Controllers\RecordController::class, 'updateContent'])->name('api.records.update-content');
 });
+
+// Routes for Records API operations
+Route::middleware('auth')->prefix('records')->name('api.records.')->group(function () {
+    Route::post('{record}/update-title', [RecordController::class, 'updateTitle'])->name('update-title');
+    Route::post('{record}/update-content', [RecordController::class, 'updateContent'])->name('update-content');
+    Route::post('{record}/add-term/{term}', [RecordController::class, 'addTerm'])->name('add-term');
+});
+
+// Routes pour MCP (Model Context Protocol)
+Route::middleware('auth')->prefix('mcp')->name('api.mcp.')->group(function () {
+    Route::prefix('records')->group(function () {
+        Route::post('{record}/summarize', [McpProxyController::class, 'summarizeRecord'])->name('records.summarize');
+        Route::post('{record}/reformat-title', [McpProxyController::class, 'reformatTitle'])->name('records.reformat-title');
+        Route::post('{record}/extract-keywords', [McpProxyController::class, 'extractKeywords'])->name('records.extract-keywords');
+        Route::post('{record}/analyze', [McpProxyController::class, 'analyzeContent'])->name('records.analyze');
+    });
+});
+
+
