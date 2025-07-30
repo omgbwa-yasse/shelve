@@ -1,6 +1,6 @@
 // Service de configuration qui récupère les paramètres depuis la base de données Laravel
 const axios = require('axios');
-const config = require('../config');
+const { config } = require('../config');
 
 /**
  * Service de gestion de la configuration dynamique

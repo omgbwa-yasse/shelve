@@ -2,7 +2,7 @@
 const dotenv = require('dotenv');
 
 // Charger les variables d'environnement
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: '../../.env' });
 
 const config = {
   // Configuration serveur

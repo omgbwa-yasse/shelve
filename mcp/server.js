@@ -1,7 +1,7 @@
 // Point d'entrée principal pour le serveur MCP
 // Module recentré sur 3 fonctionnalités: formatage des titres, génération de résumés et extraction de mots-clés
 const express = require('express');
-const config = require('./src/config');
+const { config } = require('./src/config');
 const apiRoutes = require('./src/routes/api.routes');
 const authMiddleware = require('./src/middleware/auth.middleware');
 const recordsController = require('./src/controllers/records.controller');
@@ -40,13 +40,13 @@ app.use((err, req, res, next) => {
 });
 
 // Démarrer le serveur
-const PORT = config.server.port;
+const PORT = config.port;
 
 app.listen(PORT, () => {
   console.log(`Serveur MCP en cours d'exécution sur le port ${PORT}`);
   console.log(`URL Ollama configurée: ${config.ollama.baseUrl}`);
   console.log(`URL API Laravel configurée: ${config.laravel.apiUrl}`);
-  console.log(`Environnement: ${config.server.env}`);
+  console.log(`Environnement: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app; // Pour les tests

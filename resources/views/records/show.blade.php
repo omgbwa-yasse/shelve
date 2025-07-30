@@ -488,19 +488,33 @@
                         <div class="alert alert-success">
                             <strong>Record successfully enriched!</strong>
                         </div>
-                        <h6>Extracted Keywords:</h6>
-                        <div class="mb-3">
-                            ${data.keywords.map(keyword =>
-                                `<span class="badge bg-info text-dark me-1 mb-1">${keyword}</span>`
-                            ).join('')}
-                        </div>
-                        <h6>Suggested Terms:</h6>
-                        <div>
-                            ${data.terms.map(term =>
-                                `<span class="badge bg-primary me-1 mb-1">${term}</span>`
-                            ).join('')}
-                        </div>
                     `;
+
+                    if (data.keywords && data.keywords.length > 0) {
+                        resultsHTML += `
+                            <h6>Extracted Keywords:</h6>
+                            <div class="mb-3">
+                                ${data.keywords.map(keyword =>
+                                    `<span class="badge bg-info text-dark me-1 mb-1">${keyword}</span>`
+                                ).join('')}
+                            </div>
+                        `;
+                    }
+
+                    if (data.terms && data.terms.length > 0) {
+                        resultsHTML += `
+                            <h6>Suggested Terms:</h6>
+                            <div>
+                                ${data.terms.map(term =>
+                                    `<span class="badge bg-primary me-1 mb-1">${term}</span>`
+                                ).join('')}
+                            </div>
+                        `;
+                    }
+
+                    if (data.message) {
+                        resultsHTML += `<div class="mt-3 text-muted">${data.message}</div>`;
+                    }
 
                     showResults('Record Enrichment Results', resultsHTML);
                 } catch (error) {
@@ -526,27 +540,37 @@
 
                     const data = await response.json();
 
-                    let resultsHTML = `
-                        <h6>Extracted Keywords by Category:</h6>
-                        <div class="row g-3">
-                    `;
+                    let resultsHTML = `<h6>Extracted Keywords:</h6>`;
 
-                    for (const [category, keywords] of Object.entries(data.categorizedKeywords)) {
-                        resultsHTML += `
-                            <div class="col-md-4">
-                                <div class="card h-100 border-info">
-                                    <div class="card-header bg-info bg-opacity-10 small fw-bold">${category}</div>
-                                    <div class="card-body p-2">
-                                        ${keywords.map(keyword =>
-                                            `<span class="badge bg-light text-dark border me-1 mb-1">${keyword}</span>`
-                                        ).join('')}
+                    if (data.categorizedKeywords) {
+                        resultsHTML += `<div class="row g-3">`;
+                        for (const [category, keywords] of Object.entries(data.categorizedKeywords)) {
+                            resultsHTML += `
+                                <div class="col-md-4">
+                                    <div class="card h-100 border-info">
+                                        <div class="card-header bg-info bg-opacity-10 small fw-bold">${category}</div>
+                                        <div class="card-body p-2">
+                                            ${keywords.map(keyword =>
+                                                `<span class="badge bg-light text-dark border me-1 mb-1">${keyword}</span>`
+                                            ).join('')}
+                                        </div>
                                     </div>
                                 </div>
+                            `;
+                        }
+                        resultsHTML += `</div>`;
+                    } else if (data.keywords) {
+                        resultsHTML += `
+                            <div class="mb-3">
+                                ${data.keywords.map(keyword =>
+                                    `<span class="badge bg-info text-dark me-1 mb-1">${keyword}</span>`
+                                ).join('')}
                             </div>
                         `;
+                    } else {
+                        resultsHTML += `<div class="alert alert-warning">No keywords extracted</div>`;
                     }
 
-                    resultsHTML += `</div>`;
                     showResults('Keyword Extraction Results', resultsHTML);
                 } catch (error) {
                     handleApiError(error);
@@ -1613,6 +1637,248 @@
                         this.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }, 350);
                 });
+            });
+
+            // Format Title Button
+            document.getElementById('formatTitleBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('formatTitleBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Formatting...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch(`/api/mcp/format-title/${recordId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    if (data.success && data.title) {
+                        showAlert('success', 'Title formatted successfully!');
+                        showResults('Formatted Title', `
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between">
+                                    <h6 class="mb-0">Formatted Title</h6>
+                                    <button class="btn btn-sm btn-outline-success btn-apply-title" data-title="${data.title}">
+                                        <i class="bi bi-check"></i> Apply Title
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="p-3 border rounded bg-light">
+                                        ${data.title}
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                        // Add apply button listener
+                        document.querySelector('.btn-apply-title').addEventListener('click', async (e) => {
+                            const newTitle = e.target.getAttribute('data-title');
+                            try {
+                                const updateResponse = await fetch(`/api/records/${recordId}/update-title`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    },
+                                    body: JSON.stringify({ title: newTitle })
+                                });
+
+                                if (updateResponse.ok) {
+                                    showAlert('success', 'Title updated successfully!');
+                                    setTimeout(() => window.location.reload(), 1500);
+                                }
+                            } catch (error) {
+                                handleApiError(error);
+                            }
+                        });
+                    } else {
+                        showAlert('warning', 'No title formatting was performed.');
+                    }
+                } catch (error) {
+                    handleApiError(error);
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+
+            // Generate Summary Button
+            document.getElementById('generateSummaryBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('generateSummaryBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch(`/api/mcp/generate-summary/${recordId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    if (data.success && data.summary) {
+                        showAlert('success', 'Summary generated successfully!');
+                        showResults('Generated Summary', `
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between">
+                                    <h6 class="mb-0">AI Generated Summary</h6>
+                                    <button class="btn btn-sm btn-outline-success btn-apply-summary" data-summary="${data.summary}">
+                                        <i class="bi bi-check"></i> Apply as Content
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="p-3 border rounded bg-light">
+                                        ${data.summary}
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+
+                        // Add apply button listener
+                        document.querySelector('.btn-apply-summary').addEventListener('click', async (e) => {
+                            const newContent = e.target.getAttribute('data-summary');
+                            try {
+                                const updateResponse = await fetch(`/api/records/${recordId}/update-content`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                    },
+                                    body: JSON.stringify({ content: newContent })
+                                });
+
+                                if (updateResponse.ok) {
+                                    showAlert('success', 'Content updated successfully!');
+                                    setTimeout(() => window.location.reload(), 1500);
+                                }
+                            } catch (error) {
+                                handleApiError(error);
+                            }
+                        });
+                    } else {
+                        showAlert('warning', 'No summary could be generated.');
+                    }
+                } catch (error) {
+                    handleApiError(error);
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            });
+
+            // Run All Processes Button
+            document.getElementById('runAllBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('runAllBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                btn.disabled = true;
+
+                try {
+                    const response = await fetch(`/api/mcp/run-all/${recordId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showAlert('success', 'All AI processes completed successfully!');
+
+                        let resultsHTML = '<div class="row">';
+
+                        // Show enrichment results
+                        if (data.enrichment && data.enrichment.content) {
+                            resultsHTML += `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">Content Enrichment</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="p-3 border rounded bg-light">
+                                                ${data.enrichment.content}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // Show keywords
+                        if (data.keywords && data.keywords.length > 0) {
+                            resultsHTML += `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">Extracted Keywords</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            ${data.keywords.map(keyword => `<span class="badge bg-primary me-1 mb-1">${keyword}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // Show suggested terms
+                        if (data.terms && data.terms.length > 0) {
+                            resultsHTML += `
+                                <div class="col-md-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-header bg-warning text-dark">
+                                            <h6 class="mb-0">Suggested Terms</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            ${data.terms.map(term => `
+                                                <button class="btn btn-outline-success btn-sm me-1 mb-1 btn-add-term" data-term-id="${term.id}">
+                                                    <i class="bi bi-plus"></i> ${term.term_en || term.term_fr}
+                                                </button>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        resultsHTML += '</div>';
+
+                        showResults('All AI Processes Results', resultsHTML);
+
+                        // Add term addition listeners
+                        document.querySelectorAll('.btn-add-term').forEach(btn => {
+                            btn.addEventListener('click', async (e) => {
+                                const termId = e.target.getAttribute('data-term-id');
+                                await addTermToRecord(termId, e.target);
+                            });
+                        });
+
+                    } else {
+                        showAlert('warning', 'Some processes may not have completed successfully.');
+                    }
+                } catch (error) {
+                    handleApiError(error);
+                } finally {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             });
 
             // Gestion des alertes auto-disparition

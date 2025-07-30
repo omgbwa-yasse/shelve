@@ -1,5 +1,5 @@
 // Middleware d'authentification pour l'API
-const config = require('../config');
+const { config } = require('../config');
 
 /**
  * Middleware pour vérifier le token API

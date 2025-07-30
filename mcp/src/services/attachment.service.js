@@ -2,7 +2,7 @@
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
-const config = require('../config');
+const { config } = require('../config');
 const aiService = require('./ai.service');
 const recordsService = require('./records.service');
 

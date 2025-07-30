@@ -772,357 +772,93 @@ class RecordController extends Controller
     }
 
     /**
-     * Analyser plusieurs documents numériques et proposer une description et indexation
+     * Add a thesaurus term to a record
      */
-    public function analyzeAttachments(Request $request)
+    public function addTerm(Request $request, Record $record, $termId)
     {
-        $this->authorize('create', Record::class);
-
-        $request->validate([
-            'attachment_ids' => 'required|array|min:1|max:20',
-            'attachment_ids.*' => 'integer|exists:attachments,id',
-            'analysis_options' => 'nullable|array',
-            'record_options' => 'nullable|array',
-            'indexing_options' => 'nullable|array',
-            'model_name' => 'nullable|string'
-        ]);
-
         try {
-            $attachmentIds = $request->input('attachment_ids');
-            $analysisOptions = $request->input('analysis_options', []);
-            $recordOptions = $request->input('record_options', []);
-            $indexingOptions = $request->input('indexing_options', []);
-            $modelName = $request->input('model_name', config('ollama.default_model', 'llama3'));
-
-            // URL de base du serveur MCP
-            $mcpBaseUrl = config('mcp.base_url', 'http://localhost:3000');
-
-            // Appeler l'API MCP pour l'analyse complète
-            $response = Http::timeout(120)->post($mcpBaseUrl . '/api/attachments/generate-complete', [
-                'attachmentIds' => $attachmentIds,
-                'recordOptions' => array_merge([
-                    'template' => 'detailed',
-                    'includeArrangement' => true,
-                    'includeAccessConditions' => true,
-                    'contextualInfo' => [
-                        'organisation' => Auth::user()->organisation->name ?? '',
-                        'user' => Auth::user()->name
-                    ]
-                ], $recordOptions),
-                'indexingOptions' => array_merge([
-                    'maxTerms' => 15,
-                    'weightingMethod' => 'combined',
-                    'autoAssign' => false
-                ], $indexingOptions),
-                'modelName' => $modelName
-            ]);
-
-            if ($response->successful()) {
-                $analysis = $response->json();
-
-                // Récupérer les informations des attachments pour l'affichage
-                $attachments = Attachment::whereIn('id', $attachmentIds)->get();
-
-                return view('records.ai-analysis', compact('analysis', 'attachments'));
-            } else {
-                Log::error('Erreur API MCP:', $response->json());
-                return back()->with('error', 'Erreur lors de l\'analyse des documents: ' . $response->body());
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de l\'analyse des attachments:', [
-                'error' => $e->getMessage(),
-                'attachment_ids' => $request->input('attachment_ids')
-            ]);
-
-            return back()->with('error', 'Erreur lors de l\'analyse des documents: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Créer un record basé sur l'analyse IA des attachments
-     */
-    public function createFromAiAnalysis(Request $request)
-    {
-        $this->authorize('create', Record::class);
-
-        $request->validate([
-            'suggested_record' => 'required|array',
-            'suggested_indexing' => 'required|array',
-            'attachment_ids' => 'required|array'
-        ]);
-
-        try {
-            $suggestedRecord = $request->input('suggested_record');
-            $suggestedIndexing = $request->input('suggested_indexing');
-            $attachmentIds = $request->input('attachment_ids');
-
-            // Mapper les données suggérées vers les champs du record
-            $recordData = [
-                'code' => $this->generateRecordCode(),
-                'name' => $suggestedRecord['title'] ?? 'Titre généré automatiquement',
-                'date_format' => 'Y',
-                'date_start' => $suggestedRecord['dateStart'] ?? null,
-                'date_end' => $suggestedRecord['dateEnd'] ?? null,
-                'content' => $suggestedRecord['description'] ?? '',
-                'scope' => $suggestedRecord['scope'] ?? '',
-                'arrangement' => $suggestedRecord['arrangement'] ?? '',
-                'access_conditions' => $suggestedRecord['accessConditions'] ?? '',
-                'reproduction_conditions' => $suggestedRecord['reproductionConditions'] ?? '',
-                'language_material' => $suggestedRecord['language'] ?? 'français',
-                'note' => $suggestedRecord['notes'] ?? '',
-                'user_id' => Auth::id(),
-                'organisation_id' => Auth::user()->current_organisation_id ?? 1,
-                'status_id' => 1, // À définir selon votre logique
-                'support_id' => $this->getSupportIdFromSuggestion($suggestedRecord['suggestedSupport'] ?? 'numérique'),
-                'level_id' => $this->getLevelIdFromSuggestion($suggestedRecord['suggestedLevel'] ?? 'file'),
-                'activity_id' => 1, // À définir selon votre logique
-            ];
-
-            // Créer le record
-            $record = Record::create($recordData);
-
-            // Associer les termes du thésaurus si suggérés
-            if (isset($suggestedIndexing['weightedTerms']) && is_array($suggestedIndexing['weightedTerms'])) {
-                foreach ($suggestedIndexing['weightedTerms'] as $weightedTerm) {
-                    $record->thesaurusConcepts()->attach($weightedTerm['termId'], [
-                        'weight' => $weightedTerm['weight'] ?? 1.0,
-                        'context' => $weightedTerm['context'] ?? 'IA',
-                        'extraction_note' => 'Généré automatiquement par IA - ' . ($weightedTerm['justification'] ?? '')
-                    ]);
-                }
-            }
-
-            // Associer les attachments au record
-            foreach ($attachmentIds as $attachmentId) {
-                RecordAttachment::create([
-                    'record_id' => $record->id,
-                    'attachment_id' => $attachmentId,
-                    'creator_id' => Auth::id()
-                ]);
-            }
-
-            return redirect()->route('records.show', $record->id)
-                ->with('success', 'Record créé avec succès à partir de l\'analyse IA.');
-
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de la création du record IA:', [
-                'error' => $e->getMessage(),
-                'suggested_record' => $request->input('suggested_record')
-            ]);
-
-            return back()->with('error', 'Erreur lors de la création du record: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Afficher le formulaire de sélection d'attachments pour l'analyse IA
-     */
-    public function selectAttachmentsForAnalysis(Request $request, $record_id = null)
-    {
-        $this->authorize('create', Record::class);
-
-        // Si un record_id est fourni, récupérer ce record spécifique
-        $record = null;
-        if ($record_id) {
-            $record = Record::findOrFail($record_id);
             $this->authorize('update', $record);
 
-            // Récupérer les attachments de ce record spécifique
-            $attachments = $record->attachments()
-                ->with('creator:id,name')
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-        } else {
-            // Récupérer tous les attachments disponibles
-            $attachments = Attachment::with('creator:id,name')
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-        }
-
-        return view('records.select-attachments', compact('attachments', 'record'));
-    }
-
-    /**
-     * Générer un code unique pour le record
-     */
-    private function generateRecordCode()
-    {
-        $prefix = 'AI_';
-        $date = date('Ymd');
-        $counter = Record::where('code', 'like', $prefix . $date . '%')->count() + 1;
-
-        return $prefix . $date . '_' . str_pad($counter, 3, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Obtenir l'ID du support basé sur la suggestion
-     */
-    private function getSupportIdFromSuggestion($suggestion)
-    {
-        $mappings = [
-            'numérique' => 1,
-            'papier' => 2,
-            'mixte' => 3
-        ];
-
-        return $mappings[$suggestion] ?? 1;
-    }
-
-    /**
-     * Obtenir l'ID du niveau basé sur la suggestion
-     */
-    private function getLevelIdFromSuggestion($suggestion)
-    {
-        $mappings = [
-            'fonds' => 1,
-            'series' => 2,
-            'file' => 3,
-            'item' => 4
-        ];
-
-        return $mappings[$suggestion] ?? 3;
-    }
-
-    /**
-     * Créer un record automatiquement via MCP
-     */
-    public function createFromMcp(Request $request)
-    {
-        $this->authorize('create', Record::class);
-
-        $request->validate([
-            'attachment_ids' => 'required|array|min:1',
-            'attachment_ids.*' => 'exists:attachments,id'
-        ]);
-
-        try {
-            $attachmentIds = $request->input('attachment_ids');
-
-            // Récupérer les attachments
-            $attachments = Attachment::whereIn('id', $attachmentIds)->get();
-
-            if ($attachments->isEmpty()) {
-                return back()->with('error', 'Aucun document valide sélectionné.');
+            // Check if the term is already associated with the record
+            if ($record->thesaurusConcepts()->where('thesaurus_concept_id', $termId)->exists()) {
+                return response()->json(['message' => 'Term already associated with this record'], 200);
             }
 
-            // Préparer les données pour le MCP
-            $mcpData = [
-                'action' => 'create_record',
-                'attachments' => $attachments->map(function ($attachment) {
-                    return [
-                        'id' => $attachment->id,
-                        'name' => $attachment->name,
-                        'path' => $attachment->path,
-                        'size' => $attachment->size
-                    ];
-                })->toArray(),
-                'user_id' => Auth::id(),
-                'organisation_id' => Auth::user()->current_organisation_id ?? 1
-            ];
+            // Associate the term with the record
+            $record->thesaurusConcepts()->attach($termId, [
+                'weight' => 1.0,
+                'context' => 'AI-suggested',
+                'extraction_note' => 'Added via AI suggestion'
+            ]);
 
-            // Envoyer la demande au MCP via le proxy
-            $mcpProxy = app(McpProxyController::class);
-            $response = $mcpProxy->createRecord(new \Illuminate\Http\Request($mcpData));
-
-            $responseData = $response->getData(true);
-
-            if (isset($responseData['success']) && $responseData['success']) {
-                $recordId = $responseData['record_id'];
-
-                // Vérifier si c'est une requête AJAX
-                if ($request->ajax()) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Record créé automatiquement avec succès par le système MCP.',
-                        'record_id' => $recordId
-                    ]);
-                }
-
-                return redirect()->route('records.show', $recordId)
-                    ->with('success', 'Record créé automatiquement avec succès par le système MCP.');
-            } else {
-                throw new \Exception($responseData['message'] ?? 'Erreur lors de la création automatique du record');
-            }
+            return response()->json(['message' => 'Term successfully added to record'], 200);
 
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la création automatique du record via MCP:', [
+            Log::error('Error adding term to record:', [
                 'error' => $e->getMessage(),
-                'attachment_ids' => $request->input('attachment_ids')
+                'record_id' => $record->id,
+                'term_id' => $termId
             ]);
 
-            // Vérifier si c'est une requête AJAX
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'Erreur lors de la création automatique: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return back()->with('error', 'Erreur lors de la création automatique: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to add term to record'], 500);
         }
     }
 
-    /**
-     * API pour créer un record via MCP
-     */
-    public function createViaMcp(Request $request)
+    public function updateTitle(Request $request, Record $record)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'content' => 'required|string',
-            'user_id' => 'required|exists:users,id',
-            'organisation_id' => 'required|exists:organisations,id',
-            'attachment_ids' => 'required|array'
-        ]);
-
         try {
-            // Générer un code unique pour le record
-            $recordCode = $this->generateRecordCode();
+            $this->authorize('update', $record);
 
-            // Créer le record
-            $record = Record::create([
-                'code' => $recordCode,
-                'name' => $request->input('name'),
-                'content' => $request->input('content'),
-                'scope' => $request->input('scope'),
-                'date_start' => $request->input('date_start'),
-                'date_end' => $request->input('date_end'),
-                'language_material' => $request->input('language_material', 'français'),
-                'note' => $request->input('note'),
-                'user_id' => $request->input('user_id'),
-                'organisation_id' => $request->input('organisation_id'),
-                'status_id' => 1, // Statut par défaut
-                'support_id' => 1, // Support numérique par défaut
-                'level_id' => 3, // Niveau "file" par défaut
-                'activity_id' => 1, // Activité par défaut
+            $request->validate([
+                'title' => 'required|string|max:500'
             ]);
 
-            // Associer les attachments au record
-            foreach ($request->input('attachment_ids') as $attachmentId) {
-                RecordAttachment::create([
-                    'record_id' => $record->id,
-                    'attachment_id' => $attachmentId,
-                    'creator_id' => $request->input('user_id')
-                ]);
-            }
+            $record->update([
+                'title' => $request->title
+            ]);
 
             return response()->json([
                 'success' => true,
-                'record_id' => $record->id,
-                'message' => 'Record créé avec succès via MCP'
+                'message' => 'Title updated successfully',
+                'title' => $record->title
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la création du record via MCP API:', [
+            Log::error('Error updating record title:', [
                 'error' => $e->getMessage(),
-                'request_data' => $request->all()
+                'record_id' => $record->id
+            ]);
+
+            return response()->json(['error' => 'Failed to update title'], 500);
+        }
+    }
+
+    public function updateContent(Request $request, Record $record)
+    {
+        try {
+            $this->authorize('update', $record);
+
+            $request->validate([
+                'content' => 'required|string'
+            ]);
+
+            $record->update([
+                'content' => $request->content
             ]);
 
             return response()->json([
-                'success' => false,
-                'error' => 'Erreur lors de la création du record: ' . $e->getMessage()
-            ], 500);
+                'success' => true,
+                'message' => 'Content updated successfully',
+                'content' => $record->content
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating record content:', [
+                'error' => $e->getMessage(),
+                'record_id' => $record->id
+            ]);
+
+            return response()->json(['error' => 'Failed to update content'], 500);
         }
     }
 }

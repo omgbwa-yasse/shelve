@@ -1,6 +1,6 @@
 // Service d'interaction avec les modèles d'IA
 const axios = require('axios');
-const config = require('../config');
+const { config } = require('../config');
 const { AiServiceInterface } = require('../schemas/validation');
 
 /**

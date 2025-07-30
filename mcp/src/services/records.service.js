@@ -1,7 +1,7 @@
 // Service de traitement des records (formatage de titres, résumés, mots-clés)
 const aiService = require('./ai.service');
 const termsService = require('./terms.service');
-const config = require('../config');
+const { config } = require('../config');
 const { RecordsServiceInterface } = require('../schemas/validation');
 
 /**

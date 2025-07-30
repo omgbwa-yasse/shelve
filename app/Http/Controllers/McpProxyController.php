@@ -285,4 +285,125 @@ class McpProxyController extends Controller
             return response()->json(['error' => self::MCP_CONNECTION_ERROR], 500);
         }
     }
+
+    /**
+     * Enrich a record using MCP
+     */
+    public function enrichRecord(Request $request, $id)
+    {
+        return $this->enrich($request, $id);
+    }
+
+    /**
+     * Classify a record using MCP
+     */
+    public function classifyRecord(Request $request, $id)
+    {
+        return $this->classify($request, $id);
+    }
+
+    /**
+     * Generate a report for a record using MCP
+     */
+    public function generateReport(Request $request, $id)
+    {
+        return $this->report($request, $id);
+    }
+
+    /**
+     * Format title using MCP
+     */
+    public function formatTitle(Request $request, $id)
+    {
+        try {
+            $defaultModel = $this->getDefaultModel('analysis');
+
+            $data = [
+                'model' => $defaultModel,
+                'action' => 'format_title',
+                'record_id' => $id
+            ];
+
+            $response = Http::post("{$this->mcpBaseUrl}/api/format-title", $data);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), $response->status());
+            } else {
+                return response()->json(['error' => 'Failed to format title'], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('MCP Format Title Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => self::MCP_CONNECTION_ERROR], 500);
+        }
+    }
+
+    /**
+     * Generate summary using MCP
+     */
+    public function generateSummary(Request $request, $id)
+    {
+        try {
+            $defaultModel = $this->getDefaultModel('summary');
+
+            $data = [
+                'model' => $defaultModel,
+                'action' => 'generate_summary',
+                'record_id' => $id
+            ];
+
+            $response = Http::post("{$this->mcpBaseUrl}/api/generate-summary", $data);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), $response->status());
+            } else {
+                return response()->json(['error' => 'Failed to generate summary'], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('MCP Generate Summary Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => self::MCP_CONNECTION_ERROR], 500);
+        }
+    }
+
+    /**
+     * Extract keywords using MCP (alternative method)
+     */
+    public function extractKeywordsMcp(Request $request, $id)
+    {
+        return $this->extractKeywords($request, $id);
+    }
+
+    /**
+     * Assign thesaurus terms using MCP
+     */
+    public function assignThesaurus(Request $request, $id)
+    {
+        return $this->assignTerms($request, $id);
+    }
+
+    /**
+     * Run all AI processes on a record
+     */
+    public function runAllProcesses(Request $request, $id)
+    {
+        try {
+            $defaultModel = $this->getDefaultModel('analysis');
+
+            $data = [
+                'model' => $defaultModel,
+                'action' => 'run_all_processes',
+                'record_id' => $id
+            ];
+
+            $response = Http::timeout(120)->post("{$this->mcpBaseUrl}/api/run-all-processes", $data);
+
+            if ($response->successful()) {
+                return response()->json($response->json(), $response->status());
+            } else {
+                return response()->json(['error' => 'Failed to run all processes'], $response->status());
+            }
+        } catch (\Exception $e) {
+            Log::error('MCP Run All Processes Error', ['error' => $e->getMessage()]);
+            return response()->json(['error' => self::MCP_CONNECTION_ERROR], 500);
+        }
+    }
 }
