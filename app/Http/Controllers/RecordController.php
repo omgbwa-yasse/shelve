@@ -392,29 +392,42 @@ class RecordController extends Controller
             'container_id' => 'nullable|integer|exists:containers,id',
             'accession_id' => 'nullable|integer|exists:accessions,id',
             'user_id' => 'required|integer|exists:users,id',
-            'author_ids' => 'required|array',
-            'term_ids' => 'required|array',
         ]);
+
+        // Supprimer author_ids et term_ids des données validées car ils ne sont pas des champs de la table
+        unset($validatedData['author_ids'], $validatedData['term_ids']);
 
         // Mettez à jour l'enregistrement
         $record->update($validatedData);
-        // Supprimez les clés author_ids et term_ids du tableau $validatedData
-        $term_ids = $request->input('term_ids');
-        $author_ids = $request->input('author_ids');
-        $term_ids = explode(',', $term_ids[0]);
 
-        $author_ids = explode(',', $author_ids[0]);
-        // Supprimez les valeurs vides du tableau
-        //        $term_ids = array_filter($term_ids);
-        //        $author_ids = array_filter($author_ids);
+        // Traitement des auteurs
+        $author_ids = $request->input('author_ids', []);
+        if (is_string($author_ids)) {
+            $author_ids = explode(',', $author_ids);
+        }
+        if (isset($author_ids[0]) && is_string($author_ids[0])) {
+            $author_ids = explode(',', $author_ids[0]);
+        }
 
-        // Convertissez les valeurs en entiers
+        $author_ids = array_filter(array_map('intval', $author_ids));
 
-        $term_ids = array_map('intval', $term_ids);
-        $author_ids = array_map('intval', $author_ids);
+        if (empty($author_ids)) {
+            return back()->withErrors(['author_ids' => 'Au moins un auteur doit être sélectionné.'])->withInput();
+        }
 
         // Mettez à jour les relations entre les auteurs et l'enregistrement
         $record->authors()->sync($author_ids);
+
+        // Traitement des termes du thésaurus
+        $term_ids = $request->input('term_ids', []);
+        if (is_string($term_ids)) {
+            $term_ids = explode(',', $term_ids);
+        }
+        if (isset($term_ids[0]) && is_string($term_ids[0])) {
+            $term_ids = explode(',', $term_ids[0]);
+        }
+
+        $term_ids = array_filter(array_map('intval', $term_ids));
 
         // Mettez à jour les relations entre les concepts du thésaurus et l'enregistrement
         if (!empty($term_ids)) {
@@ -427,7 +440,7 @@ class RecordController extends Controller
             $record->thesaurusConcepts()->detach();
         }
 
-        return redirect()->route('records.index')->with('success', 'Record updated successfully.');
+        return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');
     }
 
     public function destroy(Record $record)
