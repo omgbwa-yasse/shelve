@@ -509,22 +509,28 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/', [RecordController::class, 'index']);
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
+        // Routes spécifiques AVANT la route resource (pour éviter les conflits)
         Route::get('records/exportButton', [RecordController::class, 'exportButton'])->name('records.exportButton');
         Route::post('records/print', [RecordController::class, 'printRecords'])->name('records.print');
         Route::post('records/export', [RecordController::class, 'export'])->name('records.export');
         Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
-        Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
-        Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
-
-        Route::resource('records', RecordController::class);
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
+        Route::get('search', [RecordController::class, 'search'])->name('records.search');
+
+        // Routes containers AVANT la route resource
+        Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
+        Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
+
+        // Route resource principale (génère automatiquement show, create, store, edit, update, destroy)
+        Route::resource('records', RecordController::class);
+
+        // Routes imbriquées
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
-        Route::get('search', [RecordController::class, 'search'])->name('records.search');
 
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::get('authors/list', [RecordAuthorController::class, 'list'])->name('record-author.list');
