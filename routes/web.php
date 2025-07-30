@@ -941,7 +941,6 @@ Route::prefix('public')->name('public.')->group(function () {
 
 // Routes API pour les records et thésaurus
 Route::middleware('auth:sanctum')->prefix('api')->group(function () {
-    Route::post('records/{id}/thesaurus-concepts', [RecordEnricherController::class, 'assignThesaurusConcepts'])->name('api.records.assign-thesaurus-concepts');
     Route::post('thesaurus/search', [ThesaurusController::class, 'searchApi'])->name('api.thesaurus.search');
 });
 
