@@ -684,8 +684,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('communicabilities', CommunicabilityController::class);
 
         Route::resource('activities.communicabilities', activityCommunicabilityController::class);
-        // Route::resource('thesaurus', ContainerStatusController::class); // SUPPRIMÉ - Conflit avec les routes du thésaurus
-        // Route::resource('organisations', OrganisationController::class); // SUPPRIMÉ - Déclaration en doublon (déjà définie ligne 626)
         Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('organisations.activities', OrganisationActivityController::class);
         Route::resource('access', ContainerStatusController::class);
@@ -693,13 +691,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');
         Route::get('/barcodes', [BarcodeController::class, 'index'])->name('barcode.index');
         Route::post('/barcodes/generate', [BarcodeController::class, 'generate'])->name('barcode.generate');
-
-
-        // Routes pour les codes-barres - SUPPRIMÉ car duplication
-        // Route::get('barcode', [BarcodeController::class, 'index'])->name('barcode.index'); // CONFLIT avec ligne 692
-        // Route::get('barcode/create', [BarcodeController::class, 'create'])->name('barcode.create'); // CONFLIT avec ligne 690
-        // Route::post('barcode/generate', [BarcodeController::class, 'generate'])->name('barcode.generate'); // CONFLIT avec ligne 693
-
 
         // Groupe de routes pour la gestion du thésaurus (intégré dans tools)
         Route::prefix('thesaurus')->group(function () {
@@ -762,7 +753,7 @@ Route::group(['middleware' => 'auth'], function () {
         // Route personnalisée pour storeForChat (doit être avant la route resource)
         Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
 
-        // Route resource pour les messages (sans le store pour éviter les conflits)
+        // Route resource pour les messages
         Route::resource('chats.messages', AiChatMessageController::class)->except(['store'])->shallow()->names('ai.chats.messages');
         Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
 
@@ -780,7 +771,6 @@ Route::group(['middleware' => 'auth'], function () {
             Route::resource('models', AiModelController::class)->names('ai.models');
             Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
             Route::get('models/name/{name}', [AiModelController::class, 'showByName'])->name('ai.models.show.by.name');
-            // Route::resource('action-types', AiActionTypeController::class)->names('ai.action-types');
             Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
             Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
             Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
@@ -954,15 +944,11 @@ Route::prefix('public')->name('public.')->group(function () {
 
 // Routes API pour le proxy MCP
 Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(function () {
-    // Endpoint pour récupérer les modèles par défaut configurés
     Route::get('models/defaults', [McpProxyController::class, 'getDefaultModels'])->name('models.defaults');
-
     Route::post('enrich/{id}', [McpProxyController::class, 'enrich'])->name('enrich');
-    Route::post('extract-keywords/{id}', [McpProxyController::class, 'extractKeywords'])->name('proxy.extract-keywords');
     Route::post('validate/{id}', [McpProxyController::class, 'validateRecord'])->name('validate');
     Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
-
     Route::get('status', [McpProxyController::class, 'status'])->name('status');
     Route::post('{id}/preview', [McpProxyController::class, 'preview'])->name('preview');
     Route::post('{id}/format-title', [McpProxyController::class, 'formatTitle'])->name('format-title');
@@ -976,12 +962,6 @@ Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::post('thesaurus/search', [ThesaurusController::class, 'searchApi'])->name('api.thesaurus.search');
 });
 
-// Route de test pour la configuration MCP (à supprimer en production)
-Route::get('/test/mcp-model-config', function () {
-    return view('test.mcp-model-config');
-})->middleware('auth')->name('test.mcp-model-config');
-
-
 // API routes pour le thésaurus
 Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->group(function () {
     Route::post('import/skos/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processSkosImport'])->name('import.skos.process');
@@ -989,9 +969,6 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::post('import/rdf/process', [App\Http\Controllers\Api\ThesaurusImportController::class, 'processRdfImport'])->name('import.rdf.process');
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
-
-// Route pour vérifier le statut MCP - SUPPRIMÉ car déjà définie dans le groupe api.mcp ci-dessus
-// Route::middleware(['auth'])->get('api/mcp/status', [App\Http\Controllers\RecordEnricherController::class, 'status'])->name('api.mcp.status');
 
 
 
