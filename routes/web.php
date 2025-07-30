@@ -963,13 +963,17 @@ Route::prefix('mcp')->name('api.mcp.')->middleware('auth:sanctum')->group(functi
     Route::post('classify/{id}', [McpProxyController::class, 'classify'])->name('classify');
     Route::post('report/{id}', [McpProxyController::class, 'report'])->name('report');
 
-    Route::get('status', [RecordEnricherController::class, 'status'])->name('status');
-    Route::post('{id}', [RecordEnricherController::class, 'enrich'])->name('process');
-    Route::post('{id}/preview', [RecordEnricherController::class, 'preview'])->name('preview');
-    Route::post('{id}/format-title', [RecordEnricherController::class, 'formatTitle'])->name('format-title');
-    Route::post('{id}/extract-keywords', [RecordEnricherController::class, 'extractKeywords'])->name('extract-keywords');
-    Route::post('{id}/categorized-keywords', [RecordEnricherController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
+    Route::get('status', [McpProxyController::class, 'status'])->name('status');
+    Route::post('{id}/preview', [McpProxyController::class, 'preview'])->name('preview');
+    Route::post('{id}/format-title', [McpProxyController::class, 'formatTitle'])->name('format-title');
+    Route::post('{id}/extract-keywords', [McpProxyController::class, 'extractKeywords'])->name('extract-keywords');
+    Route::post('{id}/categorized-keywords', [McpProxyController::class, 'extractCategorizedKeywords'])->name('categorized-keywords');
+});
 
+// Routes API pour les records et thésaurus
+Route::middleware('auth:sanctum')->prefix('api')->group(function () {
+    Route::post('records/{id}/thesaurus-concepts', [RecordEnricherController::class, 'assignThesaurusConcepts'])->name('api.records.assign-thesaurus-concepts');
+    Route::post('thesaurus/search', [ThesaurusController::class, 'searchApi'])->name('api.thesaurus.search');
 });
 
 // Route de test pour la configuration MCP (à supprimer en production)

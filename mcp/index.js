@@ -3,12 +3,37 @@ const express = require('express');
 const axios = require('axios');
 const { z } = require('zod');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
+const cors = require('cors');
 
 // Charger les variables d'environnement
 dotenv.config({ path: '../.env' });
 
 const app = express();
-app.use(express.json());
+
+// Middleware de sécurité
+app.use(helmet());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost', 'http://localhost:8000'],
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+
+// Middleware de logging simple
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
+// Middleware de gestion d'erreurs globale
+app.use((err, req, res, next) => {
+  console.error('Erreur non gérée:', err);
+  res.status(500).json({
+    success: false,
+    error: 'Erreur serveur interne',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Configuration
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
@@ -16,6 +41,16 @@ const PORT = process.env.MCP_PORT || 3000;
 const DEFAULT_MODEL = process.env.OLLAMA_DEFAULT_MODEL || 'gemma3:4b';
 const LARAVEL_API_URL = process.env.LARAVEL_API_URL || 'http://localhost/shelves/api';
 const LARAVEL_API_TOKEN = process.env.LARAVEL_API_TOKEN;
+
+// Constantes
+const SPECIAL_MODES = ['format_title', 'extract_keywords', 'categorized_keywords'];
+const STANDARD_MODES = ['enrich', 'summarize', 'analyze'];
+const ALL_MODES = [...SPECIAL_MODES, ...STANDARD_MODES];
+
+// Validation de la configuration au démarrage
+if (!LARAVEL_API_TOKEN) {
+  console.warn('⚠️  LARAVEL_API_TOKEN non configuré - certaines fonctionnalités seront limitées');
+}
 
 // Cache pour les modèles par défaut
 let defaultModels = {
@@ -39,7 +74,7 @@ async function fetchDefaultModels() {
       }
     });
 
-    if (response.data && response.data.success && response.data.models) {
+    if (response.data?.success && response.data?.models) {
       defaultModels = {
         summary: response.data.models.summary || 'gemma3:4b',
         keywords: response.data.models.keywords || 'gemma3:4b',
@@ -82,17 +117,16 @@ const EnrichRequestSchema = z.object({
   recordData: z.object({
     id: z.number().int().positive(),
     code: z.string().optional(),
-    name: z.string(),
+    name: z.string().min(1, 'Le nom est requis'),
     content: z.string().optional(),
     biographical_history: z.string().optional(),
     archival_history: z.string().optional(),
     note: z.string().optional(),
-    // Autres champs optionnels
     date_start: z.string().optional(),
     date_end: z.string().optional(),
   }),
   modelName: z.string().optional(),
-  mode: z.enum(['enrich', 'summarize', 'analyze', 'format_title', 'extract_keywords', 'categorized_keywords']).default('enrich'),
+  mode: z.enum(ALL_MODES).default('enrich'),
 });
 
 // Schéma pour la recherche de termes dans le thésaurus
@@ -120,13 +154,14 @@ const CategorizedKeywordsSchema = z.object({
   autoAssign: z.boolean().optional().default(false),
 });
 
-// Schéma pour l'assignation de termes à un record
+// Schéma pour l'assignation de concepts du thésaurus à un record
 const AssignTermsSchema = z.object({
   recordId: z.number().int().positive(),
-  terms: z.array(z.object({
+  concepts: z.array(z.object({
     id: z.number().int().positive(),
-    name: z.string(),
-    type: z.string()
+    preferred_label: z.string(),
+    uri: z.string().optional(),
+    scheme_id: z.number().int().positive().optional()
   })),
 });
 
@@ -134,7 +169,7 @@ const AssignTermsSchema = z.object({
 app.use('/api', (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token API manquant ou invalide' });
   }
 
@@ -190,7 +225,7 @@ Texte à analyser : "${content}"
       }
     });
 
-    if (!ollamaResponse.data || !ollamaResponse.data.response) {
+    if (!ollamaResponse.data?.response) {
       throw new Error('Réponse invalide d\'Ollama');
     }
 
@@ -209,9 +244,9 @@ Texte à analyser : "${content}"
       for (const line of lines) {
         // Chercher les lignes qui commencent par un tiret ou une étoile
         const match = line.match(/^[-*]\s+(.+)$/);
-        if (match && match[1]) {
+        if (match?.[1]) {
           // Nettoyer le terme
-          const term = match[1].trim().replace(/[\[\]]/g, '');
+          const term = match[1].trim().replace(/[[\]]/g, '');
           if (term) terms.push(term);
         }
       }
@@ -239,7 +274,7 @@ Texte à analyser : "${content}"
     if (LARAVEL_API_TOKEN && allTerms.length > 0) {
       try {
         const termsResponse = await axios.post(
-          `${LARAVEL_API_URL}/terms/search`,
+          `${LARAVEL_API_URL}/thesaurus/search`,
           { keywords: allTerms },
           {
             headers: {
@@ -250,25 +285,25 @@ Texte à analyser : "${content}"
           }
         );
 
-        if (termsResponse.data && termsResponse.data.terms) {
-          const matchedTerms = termsResponse.data.terms;
+        if (termsResponse.data?.concepts) {
+          const matchedTerms = termsResponse.data.concepts;
 
           // Catégoriser les termes trouvés selon nos catégories initiales
-          matchedTermsMap.geographic = matchedTerms.filter(term =>
+          matchedTermsMap.geographic = matchedTerms.filter(concept =>
             geoTerms.some(geoTerm =>
-              term.name.toLowerCase().includes(geoTerm.toLowerCase())
+              (concept.preferred_label || concept.uri).toLowerCase().includes(geoTerm.toLowerCase())
             )
           );
 
-          matchedTermsMap.thematic = matchedTerms.filter(term =>
+          matchedTermsMap.thematic = matchedTerms.filter(concept =>
             themeTerms.some(themeTerm =>
-              term.name.toLowerCase().includes(themeTerm.toLowerCase())
+              (concept.preferred_label || concept.uri).toLowerCase().includes(themeTerm.toLowerCase())
             )
           );
 
-          matchedTermsMap.typologic = matchedTerms.filter(term =>
+          matchedTermsMap.typologic = matchedTerms.filter(concept =>
             typeTerms.some(typeTerm =>
-              term.name.toLowerCase().includes(typeTerm.toLowerCase())
+              (concept.preferred_label || concept.uri).toLowerCase().includes(typeTerm.toLowerCase())
             )
           );
         }
@@ -308,19 +343,32 @@ Texte à analyser : "${content}"
   }
 }
 
-// Associer des termes à un record via l'API Laravel
-async function assignTermsToRecord(recordId, termIds) {
-  if (!LARAVEL_API_TOKEN || !termIds || termIds.length === 0) {
+// Associer des concepts du thésaurus à un record via l'API Laravel
+async function assignTermsToRecord(recordId, concepts) {
+  if (!LARAVEL_API_TOKEN || !concepts || (Array.isArray(concepts) ? concepts.length === 0 : Object.keys(concepts).length === 0)) {
     return {
       success: false,
-      error: 'Pas de termes à assigner ou token API manquant'
+      error: 'Pas de concepts à assigner ou token API manquant'
     };
   }
 
   try {
+    // Préparer les concepts selon le format attendu par l'API
+    let conceptIds;
+    if (Array.isArray(concepts)) {
+      conceptIds = concepts.map(concept => concept.id || concept).filter(Boolean);
+    } else {
+      // Si c'est un objet avec des catégories
+      conceptIds = [
+        ...(concepts.geographic || []),
+        ...(concepts.thematic || []),
+        ...(concepts.typologic || [])
+      ].map(concept => concept.id || concept).filter(Boolean);
+    }
+
     const response = await axios.post(
-      `${LARAVEL_API_URL}/records/${recordId}/terms`,
-      { termIds },
+      `${LARAVEL_API_URL}/records/${recordId}/thesaurus-concepts`,
+      { conceptIds: termIds },
       {
         headers: {
           'Authorization': `Bearer ${LARAVEL_API_TOKEN}`,
@@ -333,17 +381,17 @@ async function assignTermsToRecord(recordId, termIds) {
     if (response.status === 200 || response.status === 201) {
       return {
         success: true,
-        assignedTerms: response.data.assignedTerms || termIds.length,
-        message: response.data.message || 'Termes associés avec succès'
+        assignedConcepts: response.data.assignedConcepts || conceptIds.length,
+        message: response.data.message || 'Concepts associés avec succès'
       };
     }
 
     return {
       success: false,
-      error: response.data.error || 'Erreur lors de l\'association des termes'
+      error: response.data.error || 'Erreur lors de l\'association des concepts'
     };
   } catch (error) {
-    console.error('Erreur lors de l\'association des termes au record:', error.message);
+    console.error('Erreur lors de l\'association des concepts au record:', error.message);
     return {
       success: false,
       error: error.message
@@ -351,7 +399,7 @@ async function assignTermsToRecord(recordId, termIds) {
   }
 }
 
-// Recherche de termes dans le thésaurus
+// Recherche de concepts dans le thésaurus
 async function searchThesaurusTerms(content, modelName, maxTerms = 5) {
   try {
     // Générer des mots-clés à partir du contenu
@@ -374,7 +422,7 @@ Texte: "${content}"
       }
     });
 
-    if (!ollamaResponse.data || !ollamaResponse.data.response) {
+    if (!ollamaResponse.data?.response) {
       throw new Error('Réponse invalide d\'Ollama');
     }
 
@@ -390,7 +438,7 @@ Texte: "${content}"
     if (LARAVEL_API_TOKEN) {
       try {
         const termsResponse = await axios.post(
-          `${LARAVEL_API_URL}/terms/search`,
+          `${LARAVEL_API_URL}/thesaurus/search`,
           { keywords },
           {
             headers: {
@@ -401,10 +449,10 @@ Texte: "${content}"
           }
         );
 
-        if (termsResponse.data && termsResponse.data.terms) {
+        if (termsResponse.data?.concepts) {
           return {
             extractedKeywords: keywords,
-            matchedTerms: termsResponse.data.terms,
+            matchedTerms: termsResponse.data.concepts,
             success: true
           };
         }
@@ -460,7 +508,7 @@ Retournez uniquement le titre reformaté, sans explications ni commentaires.
       }
     });
 
-    if (!ollamaResponse.data || !ollamaResponse.data.response) {
+    if (!ollamaResponse.data?.response) {
       throw new Error('Réponse invalide d\'Ollama');
     }
 
@@ -601,7 +649,7 @@ async function searchAndAssignTerms(recordId, keywords) {
           }
         );
 
-        if (response.data && response.data.data && response.data.data.length > 0) {
+        if (response.data?.data && response.data.data.length > 0) {
           // Ajouter uniquement le premier résultat qui correspond le mieux
           searchResults.push({
             ...response.data.data[0],
@@ -631,7 +679,7 @@ async function assignCategorizedTermsToRecord(recordId, terms) {
     ...terms.geographic,
     ...terms.thematic,
     ...terms.typology
-  ].filter(term => term && term.id);
+  ].filter(term => term?.id);
 
   if (flatTerms.length === 0) {
     return {
@@ -643,8 +691,8 @@ async function assignCategorizedTermsToRecord(recordId, terms) {
   try {
     // Appeler l'API Laravel pour assigner les termes
     const response = await axios.post(
-      `${LARAVEL_API_URL}/records/${recordId}/assign-terms`,
-      { terms: flatTerms },
+      `${LARAVEL_API_URL}/records/${recordId}/thesaurus-concepts`,
+      { conceptIds: flatTerms.map(term => term.id) },
       {
         headers: {
           'Authorization': `Bearer ${LARAVEL_API_TOKEN}`,
@@ -667,6 +715,132 @@ async function assignCategorizedTermsToRecord(recordId, terms) {
   }
 }
 
+// Fonctions utilitaires pour construire les prompts
+function buildEnrichPrompt(recordData) {
+  const codeSection = recordData.code ? `Code: ${recordData.code}\n` : '';
+  const dateStartSection = recordData.date_start ? `Date de début: ${recordData.date_start}\n` : '';
+  const dateEndSection = recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : '';
+  const contentSection = recordData.content ? `Description actuelle: ${recordData.content}\n` : '';
+  const biographicalSection = recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : '';
+  const archivalSection = recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : '';
+  const noteSection = recordData.note ? `Notes: ${recordData.note}\n` : '';
+
+  return `Enrichissez la description suivante d'un document d'archives.
+Améliorez la clarté et l'exhaustivité tout en conservant les informations factuelles.
+Ajoutez des éléments de contexte historique pertinents si nécessaire.
+
+Titre: ${recordData.name}
+${codeSection}${dateStartSection}${dateEndSection}${contentSection}${biographicalSection}${archivalSection}${noteSection}
+Veuillez produire une description enrichie qui peut remplacer la description actuelle.`;
+}
+
+function buildSummarizePrompt(recordData) {
+  const codeSection = recordData.code ? `Code: ${recordData.code}\n` : '';
+  const dateStartSection = recordData.date_start ? `Date de début: ${recordData.date_start}\n` : '';
+  const dateEndSection = recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : '';
+  const contentSection = recordData.content ? `Description actuelle: ${recordData.content}\n` : '';
+  const biographicalSection = recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : '';
+  const archivalSection = recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : '';
+
+  return `Résumez la description suivante d'un document d'archives en un paragraphe concis.
+Conservez les informations les plus importantes et pertinentes.
+
+Titre: ${recordData.name}
+${codeSection}${dateStartSection}${dateEndSection}${contentSection}${biographicalSection}${archivalSection}`;
+}
+
+function buildAnalyzePrompt(recordData) {
+  const codeSection = recordData.code ? `Code: ${recordData.code}\n` : '';
+  const dateStartSection = recordData.date_start ? `Date de début: ${recordData.date_start}\n` : '';
+  const dateEndSection = recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : '';
+  const contentSection = recordData.content ? `Description actuelle: ${recordData.content}\n` : '';
+  const biographicalSection = recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : '';
+  const archivalSection = recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : '';
+
+  return `Analysez ce document d'archives et fournissez:
+1. Un résumé en une phrase
+2. Les thèmes principaux
+3. La pertinence historique
+4. Des suggestions pour d'autres documents potentiellement liés
+
+Titre: ${recordData.name}
+${codeSection}${dateStartSection}${dateEndSection}${contentSection}${biographicalSection}${archivalSection}`;
+}
+
+async function processEnrichRequest(recordData, modelName, mode) {
+  let prompt = '';
+
+  switch (mode) {
+    case 'enrich':
+      prompt = buildEnrichPrompt(recordData);
+      break;
+    case 'summarize':
+      prompt = buildSummarizePrompt(recordData);
+      break;
+    case 'analyze':
+      prompt = buildAnalyzePrompt(recordData);
+      break;
+    default:
+      throw new Error(`Mode non supporté: ${mode}`);
+  }
+
+  // Appeler l'API Ollama
+  const ollamaResponse = await axios.post(`${OLLAMA_BASE_URL}/api/generate`, {
+    model: modelName,
+    prompt: prompt,
+    stream: false,
+    options: {
+      temperature: 0.7,
+      top_p: 0.9,
+      top_k: 40,
+    }
+  });
+
+  // Vérifier la réponse
+  if (!ollamaResponse.data?.response) {
+    throw new Error('Réponse invalide d\'Ollama');
+  }
+
+  return {
+    enrichedContent: ollamaResponse.data.response,
+    stats: {
+      totalDuration: ollamaResponse.data.total_duration,
+      evalCount: ollamaResponse.data.eval_count,
+    }
+  };
+}
+
+async function processSpecialModes(recordData, modelName, mode) {
+  if (mode === 'format_title') {
+    return await formatRecordTitle(recordData.name, modelName);
+  }
+
+  if (mode === 'extract_keywords') {
+    const contentToAnalyze = [
+      recordData.name,
+      recordData.content,
+      recordData.biographical_history,
+      recordData.archival_history,
+      recordData.note
+    ].filter(Boolean).join("\n\n");
+
+    return await searchThesaurusTerms(contentToAnalyze, modelName);
+  }
+
+  if (mode === 'categorized_keywords') {
+    const contentToAnalyze = [
+      recordData.name,
+      recordData.content,
+      recordData.biographical_history,
+      recordData.archival_history,
+      recordData.note
+    ].filter(Boolean).join("\n\n");
+
+    return await extractCategorizedKeywords(contentToAnalyze, modelName);
+  }
+
+  throw new Error(`Mode spécial non supporté: ${mode}`);
+}
 // Route pour enrichir une description
 app.post('/api/enrich', async (req, res) => {
   try {
@@ -682,137 +856,56 @@ app.post('/api/enrich', async (req, res) => {
 
     console.log(`Traitement demandé pour l'enregistrement #${recordId} avec le modèle ${modelName} en mode ${mode}`);
 
-    // Traitement spécifique pour le formatage du titre
-    if (mode === 'format_title') {
-      const result = await formatRecordTitle(recordData.name, modelName);
-      return res.json({
-        success: result.success,
-        recordId,
-        originalTitle: result.originalTitle,
-        formattedTitle: result.formattedTitle,
-        mode,
-        model: modelName
-      });
-    }
+    // Traitement des modes spéciaux
+    if (['format_title', 'extract_keywords', 'categorized_keywords'].includes(mode)) {
+      const result = await processSpecialModes(recordData, modelName, mode);
 
-    // Traitement spécifique pour l'extraction de mots-clés et recherche thésaurus
-    if (mode === 'extract_keywords') {
-      // Concaténer toutes les informations disponibles pour une meilleure extraction
-      const contentToAnalyze = [
-        recordData.name,
-        recordData.content,
-        recordData.biographical_history,
-        recordData.archival_history,
-        recordData.note
-      ].filter(Boolean).join("\n\n");
-
-      const result = await searchThesaurusTerms(contentToAnalyze, modelName);
-      return res.json({
-        success: result.success,
-        recordId,
-        extractedKeywords: result.extractedKeywords,
-        matchedTerms: result.matchedTerms,
-        mode,
-        model: modelName
-      });
-    }
-
-    // Traitement spécifique pour l'extraction de mots-clés catégorisés
-    if (mode === 'categorized_keywords') {
-      // Concaténer toutes les informations disponibles pour une meilleure extraction
-      const contentToAnalyze = [
-        recordData.name,
-        recordData.content,
-        recordData.biographical_history,
-        recordData.archival_history,
-        recordData.note
-      ].filter(Boolean).join("\n\n");
-
-      const result = await extractCategorizedKeywords(contentToAnalyze, modelName);
-      return res.json({
-        success: result.success,
-        recordId,
-        extractedKeywords: result.extractedKeywords,
-        matchedTerms: result.matchedTerms,
-        allExtractedKeywords: result.allExtractedKeywords,
-        mode,
-        model: modelName
-      });
-    }
-
-    // Construire le prompt en fonction du mode choisi
-    let prompt = '';
-
-    if (mode === 'enrich') {
-      prompt = `Enrichissez la description suivante d'un document d'archives.
-Améliorez la clarté et l'exhaustivité tout en conservant les informations factuelles.
-Ajoutez des éléments de contexte historique pertinents si nécessaire.
-
-Titre: ${recordData.name}
-${recordData.code ? `Code: ${recordData.code}\n` : ''}
-${recordData.date_start ? `Date de début: ${recordData.date_start}\n` : ''}
-${recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : ''}
-${recordData.content ? `Description actuelle: ${recordData.content}\n` : ''}
-${recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : ''}
-${recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : ''}
-${recordData.note ? `Notes: ${recordData.note}\n` : ''}
-
-Veuillez produire une description enrichie qui peut remplacer la description actuelle.`;
-    } else if (mode === 'summarize') {
-      prompt = `Résumez la description suivante d'un document d'archives en un paragraphe concis.
-Conservez les informations les plus importantes et pertinentes.
-
-Titre: ${recordData.name}
-${recordData.code ? `Code: ${recordData.code}\n` : ''}
-${recordData.date_start ? `Date de début: ${recordData.date_start}\n` : ''}
-${recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : ''}
-${recordData.content ? `Description actuelle: ${recordData.content}\n` : ''}
-${recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : ''}
-${recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : ''}`;
-    } else if (mode === 'analyze') {
-      prompt = `Analysez ce document d'archives et fournissez:
-1. Un résumé en une phrase
-2. Les thèmes principaux
-3. La pertinence historique
-4. Des suggestions pour d'autres documents potentiellement liés
-
-Titre: ${recordData.name}
-${recordData.code ? `Code: ${recordData.code}\n` : ''}
-${recordData.date_start ? `Date de début: ${recordData.date_start}\n` : ''}
-${recordData.date_end ? `Date de fin: ${recordData.date_end}\n` : ''}
-${recordData.content ? `Description actuelle: ${recordData.content}\n` : ''}
-${recordData.biographical_history ? `Contexte biographique: ${recordData.biographical_history}\n` : ''}
-${recordData.archival_history ? `Historique archivistique: ${recordData.archival_history}\n` : ''}`;
-    }
-
-    // Appeler l'API Ollama
-    const ollamaResponse = await axios.post(`${OLLAMA_BASE_URL}/api/generate`, {
-      model: modelName,
-      prompt: prompt,
-      stream: false,
-      options: {
-        temperature: 0.7,
-        top_p: 0.9,
-        top_k: 40,
+      if (mode === 'format_title') {
+        return res.json({
+          success: result.success,
+          recordId,
+          originalTitle: result.originalTitle,
+          formattedTitle: result.formattedTitle,
+          mode,
+          model: modelName
+        });
       }
-    });
 
-    // Vérifier la réponse
-    if (ollamaResponse.data && ollamaResponse.data.response) {
-      return res.json({
-        success: true,
-        recordId,
-        enrichedContent: ollamaResponse.data.response,
-        mode,
-        model: modelName,
-        stats: {
-          totalDuration: ollamaResponse.data.total_duration,
-          evalCount: ollamaResponse.data.eval_count,
-        }
-      });
-    } else {
-      throw new Error('Réponse invalide d\'Ollama');
+      if (mode === 'extract_keywords') {
+        return res.json({
+          success: result.success,
+          recordId,
+          extractedKeywords: result.extractedKeywords,
+          matchedTerms: result.matchedTerms,
+          mode,
+          model: modelName
+        });
+      }
+
+      if (mode === 'categorized_keywords') {
+        return res.json({
+          success: result.success,
+          recordId,
+          extractedKeywords: result.extractedKeywords,
+          matchedTerms: result.matchedTerms,
+          allExtractedKeywords: result.allExtractedKeywords,
+          mode,
+          model: modelName
+        });
+      }
     }
+
+    // Traitement des modes standard (enrich, summarize, analyze)
+    const result = await processEnrichRequest(recordData, modelName, mode);
+
+    return res.json({
+      success: true,
+      recordId,
+      enrichedContent: result.enrichedContent,
+      mode,
+      model: modelName,
+      stats: result.stats
+    });
 
   } catch (error) {
     console.error('Erreur lors du traitement:', error);
@@ -920,17 +1013,17 @@ app.post('/api/assign-terms', async (req, res) => {
       });
     }
 
-    const { recordId, terms } = validation.data;
+    const { recordId, concepts } = validation.data;
 
-    // Organiser les termes par catégorie
-    const categorizedTerms = {
-      geographic: terms.filter(t => t.type === 'geographic'),
-      thematic: terms.filter(t => t.type === 'thematic'),
-      typology: terms.filter(t => t.type === 'typology')
+    // Organiser les concepts par catégorie (si applicable)
+    const categorizedConcepts = {
+      geographic: concepts.filter(c => c.type === 'geographic'),
+      thematic: concepts.filter(c => c.type === 'thematic'),
+      typology: concepts.filter(c => c.type === 'typology')
     };
 
-    // Assigner les termes au record
-    const assignmentResult = await assignTermsToRecord(recordId, categorizedTerms);
+    // Assigner les concepts au record
+    const assignmentResult = await assignTermsToRecord(recordId, categorizedConcepts);
 
     return res.json({
       record_id: recordId,
@@ -942,33 +1035,43 @@ app.post('/api/assign-terms', async (req, res) => {
   }
 });
 
-// Nouvelles routes simplifiées qui utilisent automatiquement les modèles par défaut depuis Laravel
+// Routes simplifiées qui utilisent automatiquement les modèles par défaut depuis Laravel
 
 // Route pour enrichir un record avec le modèle par défaut d'analyse
 app.post('/api/enrich/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { model, recordData } = req.body;
+
+    if (!recordData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données du record manquantes'
+      });
+    }
 
     // Utiliser le modèle spécifié ou celui par défaut pour l'analyse
     const modelToUse = model || getModelForAction('enrich');
 
     console.log(`Enrichissement du record #${recordId} avec le modèle ${modelToUse}`);
 
-    // Simuler un enrichissement (à adapter selon votre logique)
-    const result = {
+    const result = await processEnrichRequest(recordData, modelToUse, 'enrich');
+
+    res.json({
       success: true,
       recordId: recordId,
       model: modelToUse,
       action: 'enrich',
-      message: `Record #${recordId} enrichi avec succès en utilisant ${modelToUse}`,
+      enrichedContent: result.enrichedContent,
+      stats: result.stats,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de l\'enrichissement:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -976,27 +1079,37 @@ app.post('/api/enrich/:id', async (req, res) => {
 app.post('/api/extract-keywords/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { model, content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        error: 'Contenu à analyser manquant'
+      });
+    }
 
     // Utiliser le modèle spécifié ou celui par défaut pour les mots-clés
     const modelToUse = model || getModelForAction('extract_keywords');
 
     console.log(`Extraction de mots-clés du record #${recordId} avec le modèle ${modelToUse}`);
 
-    const result = {
-      success: true,
+    const result = await searchThesaurusTerms(content, modelToUse);
+
+    res.json({
+      success: result.success,
       recordId: recordId,
       model: modelToUse,
       action: 'extract-keywords',
-      keywords: ['exemple', 'mots-clés', 'extraits'],
-      message: `Mots-clés extraits du record #${recordId} avec succès en utilisant ${modelToUse}`,
+      extractedKeywords: result.extractedKeywords,
+      matchedTerms: result.matchedTerms,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de l\'extraction de mots-clés:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -1004,28 +1117,37 @@ app.post('/api/extract-keywords/:id', async (req, res) => {
 app.post('/api/classify/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { model, recordData } = req.body;
+
+    if (!recordData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données du record manquantes'
+      });
+    }
 
     // Utiliser le modèle spécifié ou celui par défaut pour l'analyse
     const modelToUse = model || getModelForAction('classify');
 
     console.log(`Classification du record #${recordId} avec le modèle ${modelToUse}`);
 
-    const result = {
+    const result = await processEnrichRequest(recordData, modelToUse, 'analyze');
+
+    res.json({
       success: true,
       recordId: recordId,
       model: modelToUse,
       action: 'classify',
-      classification: 'Document administratif',
-      confidence: 0.85,
-      message: `Record #${recordId} classifié avec succès en utilisant ${modelToUse}`,
+      analysis: result.enrichedContent,
+      stats: result.stats,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de la classification:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -1033,28 +1155,37 @@ app.post('/api/classify/:id', async (req, res) => {
 app.post('/api/validate/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { model, recordData } = req.body;
+
+    if (!recordData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données du record manquantes'
+      });
+    }
 
     // Utiliser le modèle spécifié ou celui par défaut pour l'analyse
     const modelToUse = model || getModelForAction('validate');
 
     console.log(`Validation du record #${recordId} avec le modèle ${modelToUse}`);
 
-    const result = {
+    const result = await processEnrichRequest(recordData, modelToUse, 'analyze');
+
+    res.json({
       success: true,
       recordId: recordId,
       model: modelToUse,
       action: 'validate',
-      isValid: true,
-      issues: [],
-      message: `Record #${recordId} validé avec succès en utilisant ${modelToUse}`,
+      validation: result.enrichedContent,
+      stats: result.stats,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de la validation:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -1062,27 +1193,37 @@ app.post('/api/validate/:id', async (req, res) => {
 app.post('/api/report/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { model, recordData } = req.body;
+
+    if (!recordData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Données du record manquantes'
+      });
+    }
 
     // Utiliser le modèle spécifié ou celui par défaut pour les résumés
     const modelToUse = model || getModelForAction('report');
 
     console.log(`Génération de rapport du record #${recordId} avec le modèle ${modelToUse}`);
 
-    const result = {
+    const result = await processEnrichRequest(recordData, modelToUse, 'summarize');
+
+    res.json({
       success: true,
       recordId: recordId,
       model: modelToUse,
       action: 'report',
-      report: `Rapport généré pour le record #${recordId}`,
-      message: `Rapport du record #${recordId} généré avec succès en utilisant ${modelToUse}`,
+      report: result.enrichedContent,
+      stats: result.stats,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de la génération du rapport:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -1090,27 +1231,33 @@ app.post('/api/report/:id', async (req, res) => {
 app.post('/api/assign-terms/:id', async (req, res) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { model } = req.body;
+    const { terms } = req.body;
 
-    // Utiliser le modèle spécifié ou celui par défaut pour l'analyse
-    const modelToUse = model || getModelForAction('assign_terms');
+    if (!terms || !Array.isArray(terms) || terms.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Liste de termes manquante ou invalide'
+      });
+    }
 
-    console.log(`Assignation de termes au record #${recordId} avec le modèle ${modelToUse}`);
+    console.log(`Assignation de ${terms.length} termes au record #${recordId}`);
 
-    const result = {
-      success: true,
+    const assignmentResult = await assignTermsToRecord(recordId, terms);
+
+    res.json({
+      success: assignmentResult.success,
       recordId: recordId,
-      model: modelToUse,
       action: 'assign-terms',
-      assignedTerms: [],
-      message: `Termes assignés au record #${recordId} avec succès en utilisant ${modelToUse}`,
+      assignedTerms: assignmentResult.assignedTerms,
+      message: assignmentResult.message || assignmentResult.error,
       timestamp: new Date().toISOString()
-    };
-
-    res.json(result);
+    });
   } catch (error) {
     console.error('Erreur lors de l\'assignation de termes:', error);
-    res.status(500).json({ error: `Erreur serveur: ${error.message}` });
+    res.status(500).json({
+      success: false,
+      error: `Erreur serveur: ${error.message}`
+    });
   }
 });
 
@@ -1270,8 +1417,47 @@ Répondez uniquement avec du JSON valide, sans texte supplémentaire.`;
 });
 
 // Route pour vérifier la santé du serveur
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    // Vérifier la connexion à Ollama
+    const ollamaStatus = await axios.get(`${OLLAMA_BASE_URL}/api/tags`, { timeout: 5000 })
+      .then(() => ({ status: 'ok', models: 'available' }))
+      .catch(() => ({ status: 'error', models: 'unavailable' }));
+
+    // Vérifier la connexion à Laravel (si le token est configuré)
+    let laravelStatus = { status: 'not-configured' };
+    if (LARAVEL_API_TOKEN) {
+      laravelStatus = await axios.get(`${LARAVEL_API_URL.replace('/api', '')}/mcp/models/defaults`, {
+        headers: { 'Authorization': `Bearer ${LARAVEL_API_TOKEN}` },
+        timeout: 5000
+      })
+        .then(() => ({ status: 'ok' }))
+        .catch(() => ({ status: 'error' }));
+    }
+
+    const overallStatus = ollamaStatus.status === 'ok' &&
+                         (laravelStatus.status === 'ok' || laravelStatus.status === 'not-configured')
+                         ? 'healthy' : 'degraded';
+
+    res.json({
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      services: {
+        ollama: ollamaStatus,
+        laravel: laravelStatus
+      },
+      config: {
+        models: defaultModels,
+        port: PORT
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Route pour vérifier la disponibilité d'Ollama

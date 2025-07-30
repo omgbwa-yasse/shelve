@@ -1111,4 +1111,71 @@ class ThesaurusController extends Controller
 
         return $node;
     }
+
+    /**
+     * API: Recherche de concepts pour le module MCP
+     */
+    public function searchApi(Request $request)
+    {
+        try {
+            $request->validate([
+                'keywords' => 'required|array',
+                'keywords.*' => 'string|min:2',
+                'limit' => 'nullable|integer|min:1|max:50'
+            ]);
+
+            $keywords = $request->keywords;
+            $limit = $request->get('limit', 10);
+
+            $allConcepts = collect();
+
+            foreach ($keywords as $keyword) {
+                $query = ThesaurusConcept::with(['scheme:id,title', 'labels']);
+
+                // Recherche textuelle dans les labels
+                $query->where(function($q) use ($keyword) {
+                    $q->whereHas('labels', function($labelQuery) use ($keyword) {
+                        $labelQuery->where('literal_form', 'like', "%{$keyword}%");
+                    });
+                });
+
+                $concepts = $query->limit($limit)->get();
+
+                foreach ($concepts as $concept) {
+                    $prefLabel = $concept->getPreferredLabel();
+
+                    $allConcepts->push([
+                        'id' => $concept->id,
+                        'uri' => $concept->uri,
+                        'notation' => $concept->notation,
+                        'preferred_label' => $prefLabel ? $prefLabel->literal_form : $concept->uri,
+                        'scheme_id' => $concept->scheme_id,
+                        'scheme_title' => $concept->scheme ? $concept->scheme->title : null,
+                        'matched_keyword' => $keyword
+                    ]);
+                }
+            }
+
+            // Supprimer les doublons basés sur l'ID
+            $uniqueConcepts = $allConcepts->unique('id')->values();
+
+            return response()->json([
+                'success' => true,
+                'concepts' => $uniqueConcepts,
+                'total' => $uniqueConcepts->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la recherche de concepts:', [
+                'error' => $e->getMessage(),
+                'keywords' => $request->keywords ?? []
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la recherche',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -358,14 +358,14 @@ class RecordEnricherController extends Controller
     }
 
     /**
-     * Assigner des termes à un record
+     * Assigner des concepts du thésaurus à un record
      */
-    public function assignTerms(Request $request, $id)
+    public function assignThesaurusConcepts(Request $request, $id)
     {
         // Valider la requête
         $validator = Validator::make($request->all(), [
-            'termIds' => 'required|array',
-            'termIds.*' => 'required|integer|exists:terms,id',
+            'conceptIds' => 'required|array',
+            'conceptIds.*' => 'required|integer|exists:thesaurus_concepts,id',
         ]);
 
         if ($validator->fails()) {
@@ -384,25 +384,34 @@ class RecordEnricherController extends Controller
             ], 404);
         }
 
-        // Associer les termes
-        $result = $this->enricherService->assignTermsToRecord(
-            $record->id,
-            $request->input('termIds'),
-            Auth::id()
-        );
+        try {
+            $conceptIds = $request->input('conceptIds');
 
-        if ($result['success']) {
+            // Préparer les données pour la table pivot avec poids par défaut
+            $conceptData = [];
+            foreach ($conceptIds as $conceptId) {
+                $conceptData[$conceptId] = [
+                    'weight' => 0.8, // Poids par défaut pour les termes automatiques
+                    'context' => 'automatic',
+                    'extraction_note' => 'Assigné automatiquement via MCP'
+                ];
+            }
+
+            // Associer les concepts sans supprimer les existants
+            $record->thesaurusConcepts()->syncWithoutDetaching($conceptData);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Termes associés avec succès',
-                'assignedTerms' => $result['assignedTerms'] ?? count($request->input('termIds')),
+                'message' => 'Concepts du thésaurus associés avec succès',
+                'assignedConcepts' => count($conceptIds),
                 'recordId' => $record->id
             ]);
-        }
 
-        return response()->json([
-            'success' => false,
-            'error' => $result['error'] ?? "Erreur lors de l'association des termes"
-        ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => "Erreur lors de l'association des concepts: " . $e->getMessage()
+            ], 500);
+        }
     }
 }
