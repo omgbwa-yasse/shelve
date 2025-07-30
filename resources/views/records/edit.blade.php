@@ -226,25 +226,32 @@
                 <!-- Onglet "indexation" -->
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
                     <div class="mb-3">
-                        <label for="term_id" class="form-label">Thésaurus</label>
-                        <select name="term_id[]" id="term_id" class="form-select" multiple required>
-                            @foreach ($terms as $concept)
-                                <option value="{{ $concept->id }}" {{ $record->thesaurusConcepts->contains($concept) ? 'selected' : '' }}>{{ $concept->preferred_label }}</option>
-                            @endforeach
-                        </select>
+                        <label for="thesaurus-search" class="form-label">Thésaurus</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" id="thesaurus-search" placeholder="Rechercher dans le thésaurus..." autocomplete="off">
+                            <div id="thesaurus-suggestions" class="position-absolute w-100 bg-white border border-top-0 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
+                                <!-- Les suggestions apparaîtront ici -->
+                            </div>
+                        </div>
+                        <small class="text-muted">Tapez au moins 3 caractères pour rechercher. Cliquez sur un terme pour l'ajouter.</small>
                     </div>
-                    <!-- Liste des termes sélectionnés -->
-                    <div id="selected-terms" class="mt-3">
+
+                    <!-- Zone d'affichage des termes sélectionnés -->
+                    <div id="selected-terms-container" class="mt-3">
                         @foreach($record->thesaurusConcepts as $concept)
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="selected-term badge bg-primary me-2 mb-2 p-2" data-id="{{ $concept->id }}">
                                 <span>{{ $concept->preferred_label }}</span>
-                                <button type="button" class="btn btn-sm btn-danger remove-term" data-term-id="{{ $term->id }}">Supprimer</button>
+                                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
                             </div>
                         @endforeach
                     </div>
 
-                    <!-- Champ caché pour stocker les ID des termes sélectionnés -->
-                    <input type="hidden" name="term_ids[]" id="term-ids">
+                    <!-- Champs cachés pour stocker les ID des termes sélectionnés -->
+                    <div id="term-ids-container">
+                        @foreach($record->thesaurusConcepts as $concept)
+                            <input type="hidden" name="term_ids[]" value="{{ $concept->id }}">
+                        @endforeach
+                    </div>
 
 
                     <div class="mb-3">
@@ -321,48 +328,132 @@
             });
         });
 
-        const terms = @json($terms);
+        // === AJAX Thesaurus Search Implementation ===
+        let thesaurusTimeout;
+        const thesaurusSearchInput = document.getElementById('thesaurus-search');
+        const thesaurusSuggestions = document.getElementById('thesaurus-suggestions');
 
-        document.getElementById('term_id').addEventListener('change', function () {
-            let selectedOptions = Array.from(this.selectedOptions);
-            selectedOptions.forEach(option => {
-                addTerm(option.text, option.value);
+        if (thesaurusSearchInput) {
+            thesaurusSearchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                clearTimeout(thesaurusTimeout);
+
+                if (query.length < 3) {
+                    thesaurusSuggestions.style.display = 'none';
+                    return;
+                }
+
+                thesaurusTimeout = setTimeout(() => {
+                    searchThesaurus(query);
+                }, 300);
             });
-            this.selectedOptions = [];
-        });
 
-        function addTerm(termName, termId) {
-            let selectedTerms = document.getElementById('selected-terms');
-            let termItem = document.createElement('div');
-            termItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
-
-            let termNameSpan = document.createElement('span');
-            termNameSpan.textContent = termName;
-
-            let removeButton = document.createElement('button');
-            removeButton.classList.add('btn', 'btn-sm', 'btn-danger');
-            removeButton.textContent = 'Supprimer';
-            removeButton.onclick = function () {
-                termItem.remove();
-            };
-
-            termItem.appendChild(termNameSpan);
-            termItem.appendChild(removeButton);
-            selectedTerms.appendChild(termItem);
-
-            let termIdsInput = document.getElementById('term-ids');
-            termIdsInput.value += termId + ',';
+            // Masquer les suggestions quand on clique ailleurs
+            document.addEventListener('click', function(e) {
+                if (!thesaurusSearchInput.contains(e.target) && !thesaurusSuggestions.contains(e.target)) {
+                    thesaurusSuggestions.style.display = 'none';
+                }
+            });
         }
 
-        // Supprimer un terme existant
-        document.querySelectorAll('.remove-term').forEach(function(button) {
-            button.addEventListener('click', function() {
-                let termId = this.dataset.termId;
-                let termIdsInput = document.getElementById('term-ids');
-                termIdsInput.value = termIdsInput.value.replace(termId + ',', '');
-                this.parentElement.remove();
+        function searchThesaurus(query) {
+            fetch(`{{ route('records.terms.autocomplete') }}?q=${encodeURIComponent(query)}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    displayThesaurusSuggestions(data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la recherche dans le thésaurus:', error);
+                    thesaurusSuggestions.style.display = 'none';
+                });
+        }
+
+        function displayThesaurusSuggestions(suggestions) {
+            thesaurusSuggestions.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                thesaurusSuggestions.innerHTML = '<div class="p-2 text-muted">Aucun résultat trouvé</div>';
+                thesaurusSuggestions.style.display = 'block';
+                return;
+            }
+
+            suggestions.forEach(suggestion => {
+                const div = document.createElement('div');
+                div.className = 'p-2 cursor-pointer border-bottom';
+                div.style.cursor = 'pointer';
+                div.innerHTML = `
+                    <div class="fw-bold">${suggestion.text}</div>
+                    <small class="text-muted">${suggestion.scheme || 'Thésaurus'}</small>
+                `;
+
+                div.addEventListener('click', () => {
+                    addTermToSelection(suggestion);
+                    thesaurusSearchInput.value = '';
+                    thesaurusSuggestions.style.display = 'none';
+                });
+
+                div.addEventListener('mouseover', () => {
+                    div.style.backgroundColor = '#f8f9fa';
+                });
+
+                div.addEventListener('mouseout', () => {
+                    div.style.backgroundColor = '';
+                });
+
+                thesaurusSuggestions.appendChild(div);
             });
-        });
+
+            thesaurusSuggestions.style.display = 'block';
+        }
+
+        function addTermToSelection(term) {
+            const container = document.getElementById('selected-terms-container');
+            const termIdsInput = document.getElementById('term-ids');
+
+            // Vérifier si le terme n'est pas déjà sélectionné
+            const existingTerms = container.querySelectorAll('.selected-term');
+            for (let existingTerm of existingTerms) {
+                if (existingTerm.dataset.id === term.id.toString()) {
+                    return; // Terme déjà sélectionné
+                }
+            }
+
+            // Créer l'élément du terme
+            const termElement = document.createElement('div');
+            termElement.className = 'selected-term badge bg-primary me-2 mb-2 p-2';
+            termElement.dataset.id = term.id;
+            termElement.innerHTML = `
+                <span>${term.text}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
+            `;
+
+            container.appendChild(termElement);
+            updateTermIds();
+        }
+
+        function removeTerm(button) {
+            button.closest('.selected-term').remove();
+            updateTermIds();
+        }
+
+        function updateTermIds() {
+            const container = document.getElementById('selected-terms-container');
+            const terms = container.querySelectorAll('.selected-term');
+            const termIdsContainer = document.getElementById('term-ids-container');
+
+            // Vider les champs cachés existants
+            termIdsContainer.innerHTML = '';
+
+            // Créer un champ caché pour chaque terme sélectionné
+            terms.forEach(term => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'term_ids[]';
+                hiddenInput.value = term.dataset.id;
+                termIdsContainer.appendChild(hiddenInput);
+            });
+        }
     </script>
 
 @endsection

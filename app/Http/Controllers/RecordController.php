@@ -120,11 +120,11 @@ class RecordController extends Controller
         $users = User::all();
         $levels = RecordLevel::all();
         $records = Record::all();
-        $authors = Author::with('type')->get();
-        $terms = [];
+        $authors = Author::with('authorType')->get();
+        $terms = []; // Removed ThesaurusConcept::all() since we use AJAX
         $authorTypes = AuthorType::all();
         $parents = Author::all();
-        return view('records.create', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        return view('records.create', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'terms'));
     }
 
     public function createFull()
@@ -139,11 +139,11 @@ class RecordController extends Controller
         $users = User::all();
         $levels = RecordLevel::all();
         $records = Record::all();
-        $authors = Author::with('type')->get();
-        $terms = [];
+        $authors = Author::with('authorType')->get();
+        $terms = []; // Removed ThesaurusConcept::all() since we use AJAX
         $authorTypes = AuthorType::all();
         $parents = Author::all();
-        return view('records.createFull', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
+        return view('records.createFull', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'terms'));
     }
 
     public function store(Request $request)
@@ -335,7 +335,7 @@ class RecordController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $terms = ThesaurusConcept::all(); // Chargement des concepts du thésaurus
+        // Removed $terms = ThesaurusConcept::all(); since we use AJAX
 
         $author_ids = $record->authors->pluck('id')->toArray();
         $term_ids = $record->thesaurusConcepts->pluck('id')->toArray();

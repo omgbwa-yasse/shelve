@@ -234,7 +234,10 @@
                             <!-- Les termes sélectionnés apparaîtront ici -->
                         </div>
 
-                        <input type="hidden" name="term_ids" id="term-ids">
+                        <!-- Champs cachés pour stocker les ID des termes sélectionnés -->
+                        <div id="term-ids-container">
+                            <!-- Les champs cachés pour les termes sélectionnés apparaîtront ici -->
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -387,33 +390,156 @@
 
             // Pré-remplir les termes du thésaurus sélectionnés
             const oldTermIds = @json(old('term_ids'));
-            if (oldTermIds) {
-                const termIdsArray = typeof oldTermIds === 'string' ? oldTermIds.split(',') : oldTermIds;
-                if (termIdsArray.length > 0) {
-                    document.getElementById('term-ids').value = termIdsArray.join(',');
-                    // Afficher les termes sélectionnés (nécessiterait un appel AJAX pour récupérer les noms)
-                    const container = document.getElementById('selected-terms-container');
-                    if (container) {
-                        termIdsArray.forEach(termId => {
-                            const termElement = document.createElement('span');
-                            termElement.className = 'selected-term';
-                            termElement.dataset.id = termId;
-                            termElement.innerHTML = `
-                                <span>Terme sélectionné (ID: ${termId})</span>
-                                <button type="button" class="remove-term" onclick="this.parentElement.remove(); updateTermIds();">×</button>
-                            `;
-                            container.appendChild(termElement);
-                        });
-                    }
+            if (oldTermIds && oldTermIds.length > 0) {
+                // Afficher les termes sélectionnés (nécessiterait un appel AJAX pour récupérer les noms)
+                const container = document.getElementById('selected-terms-container');
+                if (container) {
+                    oldTermIds.forEach(termId => {
+                        const termElement = document.createElement('div');
+                        termElement.className = 'selected-term badge bg-primary me-2 mb-2 p-2';
+                        termElement.dataset.id = termId;
+                        termElement.innerHTML = `
+                            <span>Terme sélectionné (ID: ${termId})</span>
+                            <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
+                        `;
+                        container.appendChild(termElement);
+                    });
+                    updateTermIds(); // Mettre à jour les champs cachés
                 }
             }
+
+            // Initialiser la recherche AJAX du thésaurus
+            initThesaurusSearch();
+        }
+
+        // === AJAX Thesaurus Search Implementation ===
+        function initThesaurusSearch() {
+            let thesaurusTimeout;
+            const thesaurusSearchInput = document.getElementById('thesaurus-search');
+            const thesaurusSuggestions = document.getElementById('thesaurus-suggestions');
+
+            if (thesaurusSearchInput) {
+                thesaurusSearchInput.addEventListener('input', function() {
+                    const query = this.value.trim();
+
+                    clearTimeout(thesaurusTimeout);
+
+                    if (query.length < 3) {
+                        thesaurusSuggestions.style.display = 'none';
+                        return;
+                    }
+
+                    thesaurusTimeout = setTimeout(() => {
+                        searchThesaurus(query);
+                    }, 300);
+                });
+
+                // Masquer les suggestions quand on clique ailleurs
+                document.addEventListener('click', function(e) {
+                    if (!thesaurusSearchInput.contains(e.target) && !thesaurusSuggestions.contains(e.target)) {
+                        thesaurusSuggestions.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        function searchThesaurus(query) {
+            fetch(`{{ route('records.terms.autocomplete') }}?q=${encodeURIComponent(query)}&limit=10`)
+                .then(response => response.json())
+                .then(data => {
+                    displayThesaurusSuggestions(data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la recherche dans le thésaurus:', error);
+                    document.getElementById('thesaurus-suggestions').style.display = 'none';
+                });
+        }
+
+        function displayThesaurusSuggestions(suggestions) {
+            const thesaurusSuggestions = document.getElementById('thesaurus-suggestions');
+            thesaurusSuggestions.innerHTML = '';
+
+            if (suggestions.length === 0) {
+                thesaurusSuggestions.innerHTML = '<div class="p-2 text-muted">Aucun résultat trouvé</div>';
+                thesaurusSuggestions.style.display = 'block';
+                return;
+            }
+
+            suggestions.forEach(suggestion => {
+                const div = document.createElement('div');
+                div.className = 'p-2 cursor-pointer border-bottom';
+                div.style.cursor = 'pointer';
+                div.innerHTML = `
+                    <div class="fw-bold">${suggestion.text}</div>
+                    <small class="text-muted">${suggestion.scheme || 'Thésaurus'}</small>
+                `;
+
+                div.addEventListener('click', () => {
+                    addTermToSelection(suggestion);
+                    document.getElementById('thesaurus-search').value = '';
+                    thesaurusSuggestions.style.display = 'none';
+                });
+
+                div.addEventListener('mouseover', () => {
+                    div.style.backgroundColor = '#f8f9fa';
+                });
+
+                div.addEventListener('mouseout', () => {
+                    div.style.backgroundColor = '';
+                });
+
+                thesaurusSuggestions.appendChild(div);
+            });
+
+            thesaurusSuggestions.style.display = 'block';
+        }
+
+        function addTermToSelection(term) {
+            const container = document.getElementById('selected-terms-container');
+
+            // Vérifier si le terme n'est pas déjà sélectionné
+            const existingTerms = container.querySelectorAll('.selected-term');
+            for (let existingTerm of existingTerms) {
+                if (existingTerm.dataset.id === term.id.toString()) {
+                    return; // Terme déjà sélectionné
+                }
+            }
+
+            // Créer l'élément du terme
+            const termElement = document.createElement('div');
+            termElement.className = 'selected-term badge bg-primary me-2 mb-2 p-2';
+            termElement.dataset.id = term.id;
+            termElement.innerHTML = `
+                <span>${term.text}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
+            `;
+
+            container.appendChild(termElement);
+            updateTermIds();
+        }
+
+        function removeTerm(button) {
+            button.closest('.selected-term').remove();
+            updateTermIds();
+        }
         }
 
         function updateTermIds() {
             const container = document.getElementById('selected-terms-container');
             const terms = container.querySelectorAll('.selected-term');
-            const ids = Array.from(terms).map(term => term.dataset.id);
-            document.getElementById('term-ids').value = ids.join(',');
+            const termIdsContainer = document.getElementById('term-ids-container');
+
+            // Vider les champs cachés existants
+            termIdsContainer.innerHTML = '';
+
+            // Créer un champ caché pour chaque terme sélectionné
+            terms.forEach(term => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'term_ids[]';
+                hiddenInput.value = term.dataset.id;
+                termIdsContainer.appendChild(hiddenInput);
+            });
         }
     </script>
 @endsection

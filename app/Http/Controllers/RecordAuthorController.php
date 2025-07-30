@@ -26,7 +26,7 @@ class RecordAuthorController extends Controller
 
     public function list(Request $request)
     {
-        $query = Author::with('type');
+        $query = Author::with('authorType');
 
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -49,8 +49,8 @@ class RecordAuthorController extends Controller
         $authors = $query->orderBy('name')->paginate($perPage);
 
         $authors->getCollection()->transform(function ($author) {
-            if (!$author->type) {
-                $author->type = (object)['name' => ''];
+            if (!$author->authorType) {
+                $author->authorType = (object)['name' => ''];
             }
             return $author;
         });
