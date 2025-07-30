@@ -46,7 +46,7 @@
                                     <label class="form-label small">{{ __('level') }} *</label>
                                     <select name="level_id" class="form-select form-select-sm" required>
                                         @foreach ($levels as $level)
-                                            <option value="{{ $level->id }}">{{ $level->name }}</option>
+                                            <option value="{{ $level->id }}" {{ old('level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -54,19 +54,19 @@
                                     <label class="form-label small">{{ __('support') }} *</label>
                                     <select name="support_id" class="form-select form-select-sm" required>
                                         @foreach ($supports as $support)
-                                            <option value="{{ $support->id }}">{{ $support->name }}</option>
+                                            <option value="{{ $support->id }}" {{ old('support_id') == $support->id ? 'selected' : '' }}>{{ $support->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small">{{ __('code') }} *</label>
-                                    <input type="text" name="code" class="form-control form-control-sm" required maxlength="10">
+                                    <input type="text" name="code" class="form-control form-control-sm" required maxlength="10" value="{{ old('code') }}">
                                 </div>
                                 <div class="col-md-5">
                                     <label class="form-label small">{{ __('status') }} *</label>
                                     <select name="status_id" class="form-select form-select-sm" required>
                                         @foreach ($statuses as $status)
-                                            <option value="{{ $status->id }}">{{ $status->name }}</option>
+                                            <option value="{{ $status->id }}" {{ old('status_id') == $status->id ? 'selected' : '' }}>{{ $status->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -75,33 +75,33 @@
                             <div class="row mt-2">
                                 <div class="col-12">
                                     <label class="form-label small">{{ __('name') }} *</label>
-                                    <textarea name="name" class="form-control form-control-sm" rows="2" required></textarea>
+                                    <textarea name="name" class="form-control form-control-sm" rows="2" required>{{ old('name') }}</textarea>
                                 </div>
                             </div>
 
                             <div class="row mt-2 g-2">
                                 <div class="col-md-4">
                                     <label class="form-label small">{{ __('date_start') }}</label>
-                                    <input type="text" name="date_start" class="form-control form-control-sm" maxlength="10">
+                                    <input type="text" name="date_start" class="form-control form-control-sm" maxlength="10" value="{{ old('date_start') }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small">{{ __('date_end') }}</label>
-                                    <input type="text" name="date_end" class="form-control form-control-sm" maxlength="10">
+                                    <input type="text" name="date_end" class="form-control form-control-sm" maxlength="10" value="{{ old('date_end') }}">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small">{{ __('date_exact') }}</label>
-                                    <input type="date" name="date_exact" class="form-control form-control-sm">
+                                    <input type="date" name="date_exact" class="form-control form-control-sm" value="{{ old('date_exact') }}">
                                 </div>
                             </div>
 
                             <div class="row mt-2 g-2">
                                 <div class="col-md-3">
                                     <label class="form-label small">{{ __('width') }}</label>
-                                    <input type="number" name="width" class="form-control form-control-sm" step="0.01">
+                                    <input type="number" name="width" class="form-control form-control-sm" step="0.01" value="{{ old('width') }}">
                                 </div>
                                 <div class="col-md-9">
                                     <label class="form-label small">{{ __('width_description') }}</label>
-                                    <input type="text" name="width_description" class="form-control form-control-sm">
+                                    <input type="text" name="width_description" class="form-control form-control-sm" value="{{ old('width_description') }}">
                                 </div>
                             </div>
                         </div>
@@ -132,7 +132,7 @@
 
                             <div class="mt-2">
                                 <label class="form-label small">{{ __('biographical_history') }}</label>
-                                <textarea name="biographical_history" class="form-control form-control-sm" rows="2"></textarea>
+                                <textarea name="biographical_history" class="form-control form-control-sm" rows="2">{{ old('biographical_history') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -189,7 +189,7 @@
                     </h2>
                     <div id="notesCollapse" class="accordion-collapse collapse show" aria-labelledby="notesHeader" data-bs-parent="">
                         <div class="accordion-body">
-                            <textarea name="note" class="form-control form-control-sm" rows="3"></textarea>
+                            <textarea name="note" class="form-control form-control-sm" rows="3">{{ old('note') }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -339,7 +339,80 @@
 
             // Configuration spécifique pour les accordéons sur cette page
             initAccordionBehavior();
+
+            // Pré-remplir les champs avec les anciennes valeurs en cas d'erreur
+            preloadOldValues();
         });
+
+        function preloadOldValues() {
+            // Ajouter des classes d'erreur aux champs qui ont des erreurs
+            @if($errors->any())
+                @foreach($errors->keys() as $field)
+                    const field_{{ $field }} = document.querySelector('[name="{{ $field }}"]');
+                    if (field_{{ $field }}) {
+                        field_{{ $field }}.classList.add('is-invalid');
+
+                        // Créer un message d'erreur si il n'existe pas déjà
+                        if (!field_{{ $field }}.nextElementSibling || !field_{{ $field }}.nextElementSibling.classList.contains('invalid-feedback')) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = @json($errors->first($field));
+                            field_{{ $field }}.parentNode.appendChild(errorDiv);
+                        }
+                    }
+                @endforeach
+            @endif
+
+            // Pré-remplir les auteurs sélectionnés
+            const oldAuthorIds = @json(old('author_ids'));
+            if (oldAuthorIds) {
+                const authorIdsArray = typeof oldAuthorIds === 'string' ? oldAuthorIds.split(',') : oldAuthorIds;
+                if (authorIdsArray.length > 0) {
+                    document.getElementById('author-ids').value = authorIdsArray.join(',');
+                    // Afficher les noms des auteurs (nécessiterait un appel AJAX ou passer les noms depuis le contrôleur)
+                    // Pour l'instant, afficher juste les IDs
+                    document.getElementById('selected-authors-display').value = 'Auteurs sélectionnés (IDs: ' + authorIdsArray.join(', ') + ')';
+                }
+            }
+
+            // Pré-remplir l'activité sélectionnée
+            const oldActivityId = @json(old('activity_id'));
+            if (oldActivityId) {
+                document.getElementById('activity-id').value = oldActivityId;
+                // Afficher le nom de l'activité (nécessiterait un appel AJAX ou passer le nom depuis le contrôleur)
+                document.getElementById('selected-activity-display').value = 'Activité sélectionnée (ID: ' + oldActivityId + ')';
+            }
+
+            // Pré-remplir les termes du thésaurus sélectionnés
+            const oldTermIds = @json(old('term_ids'));
+            if (oldTermIds) {
+                const termIdsArray = typeof oldTermIds === 'string' ? oldTermIds.split(',') : oldTermIds;
+                if (termIdsArray.length > 0) {
+                    document.getElementById('term-ids').value = termIdsArray.join(',');
+                    // Afficher les termes sélectionnés (nécessiterait un appel AJAX pour récupérer les noms)
+                    const container = document.getElementById('selected-terms-container');
+                    if (container) {
+                        termIdsArray.forEach(termId => {
+                            const termElement = document.createElement('span');
+                            termElement.className = 'selected-term';
+                            termElement.dataset.id = termId;
+                            termElement.innerHTML = `
+                                <span>Terme sélectionné (ID: ${termId})</span>
+                                <button type="button" class="remove-term" onclick="this.parentElement.remove(); updateTermIds();">×</button>
+                            `;
+                            container.appendChild(termElement);
+                        });
+                    }
+                }
+            }
+        }
+
+        function updateTermIds() {
+            const container = document.getElementById('selected-terms-container');
+            const terms = container.querySelectorAll('.selected-term');
+            const ids = Array.from(terms).map(term => term.dataset.id);
+            document.getElementById('term-ids').value = ids.join(',');
+        }
 
         function initAccordionBehavior() {
             // Configurer l'accordéon pour permettre plusieurs panneaux ouverts et tous les ouvrir par défaut

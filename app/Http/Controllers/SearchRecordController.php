@@ -299,7 +299,7 @@ class SearchRecordController extends Controller
 
     public function selectLast()
     {
-        $records = Record::with([
+        $query = Record::with([
             'status',
             'support',
             'level',
@@ -308,12 +308,20 @@ class SearchRecordController extends Controller
             'user',
             'authors',
             'thesaurusConcepts'
-        ])
-        ->whereHas('activity.organisations', function($query) {
-            $query->where('organisations.id', Auth::user()->current_organisation_id);
-        })
-        ->latest()
-        ->paginate(10);
+        ]);
+
+        // Filtrer par organisation seulement si l'utilisateur a une organisation courante
+        // et que l'activité est associée à des organisations
+        if (Auth::user()->current_organisation_id) {
+            $query->where(function($q) {
+                $q->whereHas('activity.organisations', function($subQuery) {
+                    $subQuery->where('organisations.id', Auth::user()->current_organisation_id);
+                })
+                ->orWhereDoesntHave('activity.organisations'); // Inclure les activités sans organisation
+            });
+        }
+
+        $records = $query->latest()->paginate(10);
 
         $viewData = [
             'records' => $records,

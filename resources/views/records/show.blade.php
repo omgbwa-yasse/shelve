@@ -168,22 +168,7 @@
             </div>
         </div>
 
-        {{-- Intelligence Section --}}
-        <div class="card mb-3">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-lightbulb me-2"></i>{{ __('intelligence') }}</h5>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-primary" id="btn-reformulate">
-                        <i class="bi bi-arrow-repeat me-1"></i>{{ __('reformulate_title') ?? 'Reformuler le titre' }}
-                    </button>
-                </div>
-            </div>
 
-            <div class="card-body" id="intelligence-result">
-
-            </div>
-
-        </div>
         <div class="card mb-3">
             <div class="card-header bg-light">
                 <h5 class="mb-0">

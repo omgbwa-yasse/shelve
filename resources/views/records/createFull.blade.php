@@ -60,7 +60,7 @@
                             <label for="level_id" class="form-label">{{ __('level') }}</label>
                             <select name="level_id" id="level_id" class="form-select" required>
                                 @foreach ($levels as $level)
-                                    <option value="{{ $level->id }}">{{ $level->name }}</option>
+                                    <option value="{{ $level->id }}" {{ old('level_id') == $level->id ? 'selected' : '' }}>{{ $level->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -68,41 +68,41 @@
                             <label for="support_id" class="form-label">{{ __('support') }}</label>
                             <select name="support_id" id="support_id" class="form-select" required>
                                 @foreach ($supports as $support)
-                                    <option value="{{ $support->id }}">{{ $support->name }}</option>
+                                    <option value="{{ $support->id }}" {{ old('support_id') == $support->id ? 'selected' : '' }}>{{ $support->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="code" class="form-label">{{ __('code') }}</label>
-                            <input type="text" name="code" id="code" class="form-control" required maxlength="10">
+                            <input type="text" name="code" id="code" class="form-control" required maxlength="10" value="{{ old('code') }}">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="name" class="form-label">{{ __('name') }}</label>
-                        <textarea name="name" id="name" class="form-control" required></textarea>
+                        <textarea name="name" id="name" class="form-control" required>{{ old('name') }}</textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="date_start" class="form-label">{{ __('date_start') }}</label>
-                            <input type="text" name="date_start" id="date_start" class="form-control" maxlength="10">
+                            <input type="text" name="date_start" id="date_start" class="form-control" maxlength="10" value="{{ old('date_start') }}">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="date_end" class="form-label">{{ __('date_end') }}</label>
-                            <input type="text" name="date_end" id="date_end" class="form-control" maxlength="10">
+                            <input type="text" name="date_end" id="date_end" class="form-control" maxlength="10" value="{{ old('date_end') }}">
                         </div>
                         <div class="col-md-4 mb-3">
                             <label for="date_exact" class="form-label">{{ __('date_exact') }}</label>
-                            <input type="date" name="date_exact" id="date_exact" class="form-control">
+                            <input type="date" name="date_exact" id="date_exact" class="form-control" value="{{ old('date_exact') }}">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2 mb-3">
                             <label for="width" class="form-label">{{ __('width') }}</label>
-                            <input type="number" name="width" id="width" class="form-control" step="0.01" min="0" max="9999999999.99">
+                            <input type="number" name="width" id="width" class="form-control" step="0.01" min="0" max="9999999999.99" value="{{ old('width') }}">
                         </div>
                         <div class="col-md-10 mb-3">
                             <label for="width_description" class="form-label">{{ __('width_description') }}</label>
-                            <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100">
+                            <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100" value="{{ old('width_description') }}">
                         </div>
                     </div>
                 </div>
@@ -121,98 +121,98 @@
                     </div>
                     <div class="mb-3">
                         <label for="biographical_history" class="form-label">{{ __('biographical_history') }}</label>
-                        <textarea name="biographical_history" id="biographical_history" class="form-control"></textarea>
+                        <textarea name="biographical_history" id="biographical_history" class="form-control">{{ old('biographical_history') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="archival_history" class="form-label">{{ __('archival_history') }}</label>
-                        <textarea name="archival_history" id="archival_history" class="form-control"></textarea>
+                        <textarea name="archival_history" id="archival_history" class="form-control">{{ old('archival_history') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="acquisition_source" class="form-label">{{ __('acquisition_source') }}</label>
-                        <textarea name="acquisition_source" id="acquisition_source" class="form-control"></textarea>
+                        <textarea name="acquisition_source" id="acquisition_source" class="form-control">{{ old('acquisition_source') }}</textarea>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="contenu" role="tabpanel" aria-labelledby="contenu-tab">
                     <div class="mb-3">
                         <label for="content" class="form-label">{{ __('content') }}</label>
-                        <textarea name="content" id="content" class="form-control"></textarea>
+                        <textarea name="content" id="content" class="form-control">{{ old('content') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="appraisal" class="form-label">{{ __('appraisal') }}</label>
-                        <textarea name="appraisal" id="appraisal" class="form-control"></textarea>
+                        <textarea name="appraisal" id="appraisal" class="form-control">{{ old('appraisal') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="accrual" class="form-label">{{ __('accrual') }}</label>
-                        <textarea name="accrual" id="accrual" class="form-control"></textarea>
+                        <textarea name="accrual" id="accrual" class="form-control">{{ old('accrual') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="arrangement" class="form-label">{{ __('arrangement') }}</label>
-                        <textarea name="arrangement" id="arrangement" class="form-control"></textarea>
+                        <textarea name="arrangement" id="arrangement" class="form-control">{{ old('arrangement') }}</textarea>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="condition" role="tabpanel" aria-labelledby="condition-tab">
                     <div class="mb-3">
                         <label for="access_conditions" class="form-label">{{ __('access_conditions') }}</label>
-                        <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50">
+                        <input type="text" name="access_conditions" id="access_conditions" class="form-control" maxlength="50" value="{{ old('access_conditions') }}">
                     </div>
                     <div class="mb-3">
                         <label for="reproduction_conditions" class="form-label">{{ __('reproduction_conditions') }}</label>
-                        <input type="text" name="reproduction_conditions" id="reproduction_conditions" class="form-control" maxlength="50">
+                        <input type="text" name="reproduction_conditions" id="reproduction_conditions" class="form-control" maxlength="50" value="{{ old('reproduction_conditions') }}">
                     </div>
                     <div class="mb-3">
                         <label for="language_material" class="form-label">{{ __('language_material') }}</label>
-                        <input type="text" name="language_material" id="language_material" class="form-control" maxlength="50">
+                        <input type="text" name="language_material" id="language_material" class="form-control" maxlength="50" value="{{ old('language_material') }}">
                     </div>
                     <div class="mb-3">
                         <label for="characteristic" class="form-label">{{ __('characteristic') }}</label>
-                        <input type="text" name="characteristic" id="characteristic" class="form-control" maxlength="100">
+                        <input type="text" name="characteristic" id="characteristic" class="form-control" maxlength="100" value="{{ old('characteristic') }}">
                     </div>
                     <div class="mb-3">
                         <label for="finding_aids" class="form-label">{{ __('finding_aids') }}</label>
-                        <input type="text" name="finding_aids" id="finding_aids" class="form-control" maxlength="100">
+                        <input type="text" name="finding_aids" id="finding_aids" class="form-control" maxlength="100" value="{{ old('finding_aids') }}">
                     </div>
                 </div>
 
                 <div class="tab-pane fade" id="sources" role="tabpanel" aria-labelledby="sources-tab">
                     <div class="mb-3">
                         <label for="location_original" class="form-label">{{ __('location_original') }}</label>
-                        <input type="text" name="location_original" id="location_original" class="form-control" maxlength="100">
+                        <input type="text" name="location_original" id="location_original" class="form-control" maxlength="100" value="{{ old('location_original') }}">
                     </div>
                     <div class="mb-3">
                         <label for="location_copy" class="form-label">{{ __('location_copy') }}</label>
-                        <input type="text" name="location_copy" id="location_copy" class="form-control" maxlength="100">
+                        <input type="text" name="location_copy" id="location_copy" class="form-control" maxlength="100" value="{{ old('location_copy') }}">
                     </div>
                     <div class="mb-3">
                         <label for="related_unit" class="form-label">{{ __('related_unit') }}</label>
-                        <input type="text" name="related_unit" id="related_unit" class="form-control" maxlength="100">
+                        <input type="text" name="related_unit" id="related_unit" class="form-control" maxlength="100" value="{{ old('related_unit') }}">
                     </div>
                     <div class="mb-3">
                         <label for="publication_note" class="form-label">{{ __('publication_note') }}</label>
-                        <textarea name="publication_note" id="publication_note" class="form-control"></textarea>
+                        <textarea name="publication_note" id="publication_note" class="form-control">{{ old('publication_note') }}</textarea>
                     </div>
                 </div>
 
                 <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                     <div class="mb-3">
                         <label for="note" class="form-label">{{ __('note') }}</label>
-                        <textarea name="note" id="note" class="form-control"></textarea>
+                        <textarea name="note" id="note" class="form-control">{{ old('note') }}</textarea>
                     </div>
                 </div>
 
                 <div class="tab-pane fade" id="controle" role="tabpanel" aria-labelledby="controle-tab">
                     <div class="mb-3">
                         <label for="archivist_note" class="form-label">{{ __('archivist_note') }}</label>
-                        <textarea name="archivist_note" id="archivist_note" class="form-control"></textarea>
+                        <textarea name="archivist_note" id="archivist_note" class="form-control">{{ old('archivist_note') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label for="rule_convention" class="form-label">{{ __('rule_convention') }}</label>
-                        <input type="text" name="rule_convention" id="rule_convention" class="form-control" maxlength="100">
+                        <input type="text" name="rule_convention" id="rule_convention" class="form-control" maxlength="100" value="{{ old('rule_convention') }}">
                     </div>
                     <div class="mb-3">
                         <label for="status_id" class="form-label">{{ __('status') }}</label>
                         <select name="status_id" id="status_id" class="form-select" required>
                             @foreach ($statuses as $status)
-                                <option value="{{ $status->id }}">{{ $status->name }}</option>
+                                <option value="{{ $status->id }}" {{ old('status_id') == $status->id ? 'selected' : '' }}>{{ $status->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -341,6 +341,79 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialiser le gestionnaire de records avec le thésaurus AJAX et les modals
             initRecordsManager();
+
+            // Pré-remplir les champs avec les anciennes valeurs en cas d'erreur
+            preloadOldValues();
         });
+
+        function preloadOldValues() {
+            // Ajouter des classes d'erreur aux champs qui ont des erreurs
+            @if($errors->any())
+                @foreach($errors->keys() as $field)
+                    const field_{{ $field }} = document.querySelector('[name="{{ $field }}"]');
+                    if (field_{{ $field }}) {
+                        field_{{ $field }}.classList.add('is-invalid');
+
+                        // Créer un message d'erreur si il n'existe pas déjà
+                        if (!field_{{ $field }}.nextElementSibling || !field_{{ $field }}.nextElementSibling.classList.contains('invalid-feedback')) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = @json($errors->first($field));
+                            field_{{ $field }}.parentNode.appendChild(errorDiv);
+                        }
+                    }
+                @endforeach
+            @endif
+
+            // Pré-remplir les auteurs sélectionnés
+            const oldAuthorIds = @json(old('author_ids'));
+            if (oldAuthorIds) {
+                const authorIdsArray = typeof oldAuthorIds === 'string' ? oldAuthorIds.split(',') : oldAuthorIds;
+                if (authorIdsArray.length > 0) {
+                    document.getElementById('author-ids').value = authorIdsArray.join(',');
+                    // Afficher les noms des auteurs (nécessiterait un appel AJAX ou passer les noms depuis le contrôleur)
+                    // Pour l'instant, afficher juste les IDs
+                    document.getElementById('selected-authors-display').value = 'Auteurs sélectionnés (IDs: ' + authorIdsArray.join(', ') + ')';
+                }
+            }
+
+            // Pré-remplir l'activité sélectionnée
+            const oldActivityId = @json(old('activity_id'));
+            if (oldActivityId) {
+                document.getElementById('activity-id').value = oldActivityId;
+                // Afficher le nom de l'activité (nécessiterait un appel AJAX ou passer le nom depuis le contrôleur)
+                document.getElementById('selected-activity-display').value = 'Activité sélectionnée (ID: ' + oldActivityId + ')';
+            }
+
+            // Pré-remplir les termes du thésaurus sélectionnés
+            const oldTermIds = @json(old('term_ids'));
+            if (oldTermIds) {
+                const termIdsArray = typeof oldTermIds === 'string' ? oldTermIds.split(',') : oldTermIds;
+                if (termIdsArray.length > 0) {
+                    document.getElementById('term-ids').value = termIdsArray.join(',');
+                    // Afficher les termes sélectionnés (nécessiterait un appel AJAX pour récupérer les noms)
+                    const container = document.getElementById('selected-terms-container');
+                    if (container) {
+                        termIdsArray.forEach(termId => {
+                            const termElement = document.createElement('span');
+                            termElement.className = 'selected-term';
+                            termElement.dataset.id = termId;
+                            termElement.innerHTML = `
+                                <span>Terme sélectionné (ID: ${termId})</span>
+                                <button type="button" class="remove-term" onclick="this.parentElement.remove(); updateTermIds();">×</button>
+                            `;
+                            container.appendChild(termElement);
+                        });
+                    }
+                }
+            }
+        }
+
+        function updateTermIds() {
+            const container = document.getElementById('selected-terms-container');
+            const terms = container.querySelectorAll('.selected-term');
+            const ids = Array.from(terms).map(term => term.dataset.id);
+            document.getElementById('term-ids').value = ids.join(',');
+        }
     </script>
 @endsection
