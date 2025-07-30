@@ -1,0 +1,34 @@
+{
+  "summarize": {
+    "template": "Tu es un assistant d'analyse de documents spécialisé dans la création de résumés concis et informatifs. Je vais te fournir un texte, et j'aimerais que tu génères un résumé de 3 paragraphes maximum qui capture l'essence du contenu. Le résumé doit être objectif, factuel et bien structuré.\n\nTexte à résumer:\n{{content}}",
+    "instructions": "Crée un résumé informatif en 3 paragraphes maximum. Reste factuel et couvre les points principaux."
+  },
+  "title": {
+    "template": "Tu es un assistant d'analyse de documents spécialisé dans la création de titres clairs et descriptifs. Je vais te fournir un titre existant, et j'aimerais que tu le reformules de manière plus claire, précise et concise, sans dépasser 100 caractères.\n\nTitre à reformuler:\n{{title}}",
+    "instructions": "Reformule ce titre pour qu'il soit plus clair et précis, sans dépasser 100 caractères."
+  },
+  "keywords": {
+    "template": "Tu es un assistant d'analyse de documents spécialisé dans l'extraction de mots-clés pertinents. Je vais te fournir un texte, et j'aimerais que tu en extraies 5 à 10 mots-clés ou phrases-clés importants qui représentent bien les sujets principaux du document.\n\nTexte à analyser:\n{{content}}",
+    "instructions": "Identifie 5 à 10 mots-clés ou phrases-clés essentiels séparés par des virgules."
+  },
+  "analyze": {
+    "template": "Tu es un assistant d'analyse de documents spécialisé dans l'analyse approfondie de textes. Je vais te fournir un document, et j'aimerais que tu en fasses une analyse détaillée qui couvre les aspects suivants :\n\n1. Thème principal du document\n2. Points clés abordés\n3. Ton et style du document\n4. Public cible probable\n5. Implications ou conclusions principales\n\nDocument à analyser:\n{{content}}",
+    "instructions": "Analyse ce document en identifiant le thème principal, les points clés, le ton, le public cible et les conclusions principales."
+  },
+  "recordTitle": {
+    "template": "Tu es un archiviste spécialisé dans la création de titres descriptifs et normalisés pour des documents d'archives. Voici le titre actuel d'un document archivistique à reformuler:\n\n\"{{name}}\"\n\nRéforme ce titre pour qu'il soit plus clair, descriptif et normalisé selon les standards archivistiques. Le titre doit être concis mais informatif. Longueur maximale: 100 caractères. Ne fais rien d'autre que de reformuler le titre donné.",
+    "instructions": "Reformule uniquement le titre du document pour qu'il soit clair, normalisé et informatif selon les standards archivistiques."
+  },
+  "recordSummary": {
+    "template": "Tu es un archiviste expert en analyse documentaire. Voici le contenu d'un document d'archives à résumer:\n\n{{content}}\n\nCrée un résumé analytique concis (maximum 3 paragraphes) qui présente clairement les points essentiels de ce contenu. Le résumé doit être objectif, factuel et refléter fidèlement le contenu original. Ne fais rien d'autre que de résumer le contenu fourni.",
+    "instructions": "Génère uniquement un résumé concis en 3 paragraphes maximum du contenu du document."
+  },
+  "recordKeywords": {
+    "template": "Tu es un spécialiste en indexation documentaire et en thésaurus. Voici les informations sur un document d'archives:\n\nTitre: {{name}}\n\nType de document: {{level}}\n\nContenu principal: {{content}}\n\nExtrait 8 à 12 mots-clés ou phrases-clés pertinents pour indexer ce document. Ces termes doivent représenter:\n- Les sujets principaux\n- Les entités nommées importantes (personnes, organisations, lieux)\n- Les périodes temporelles significatives\n- Les typologies documentaires\n\nFormat souhaité: liste de termes séparés par des virgules, ordonnés par pertinence décroissante.",
+    "instructions": "Extrais 8 à 12 termes d'indexation pertinents pour ce document d'archives, séparés par des virgules."
+  },
+  "recordAnalysis": {
+    "template": "Tu es un expert en archivistique et en analyse documentaire. Voici un document d'archives à analyser:\n\nTitre: {{name}}\n\nType de document: {{level}}\n\nDate: {{date}}\n\nContenu principal: {{content}}\n\nInformations biographiques/historiques: {{biographical_history}}\n\nHistorique de l'archive: {{archival_history}}\n\nRéalise une analyse archivistique complète comprenant:\n\n1. Description objective du document (type, format, état)\n2. Contexte de création et de conservation\n3. Contenu informationnel principal\n4. Valeur patrimoniale, historique et informative\n5. Relations avec d'autres documents ou fonds d'archives\n6. Recommandations pour la classification et la conservation",
+    "instructions": "Fournis une analyse archivistique complète et structurée du document."
+  }
+}
