@@ -1,0 +1,32 @@
+2025-07-30 09:00:44 [ERROR]: Erreur lors de la récupération des paramètres: La connexion à la base de données n'a pas été initialisée
+2025-07-30 09:00:45 [INFO]: Serveur MCP démarré sur le port 3001
+2025-07-30 09:00:45 [ERROR]: Erreur lors de l'initialisation d'OllamaService: La connexion à la base de données n'a pas été initialisée
+2025-07-30 09:00:45 [INFO]: Base de données connectée avec succès
+2025-07-30 09:00:45 [ERROR]: Erreur lors de la récupération des paramètres: select `settings`.*, `setting_categories`.`name` as `category_name` from `settings` left join `setting_categories` on `settings`.`category_id` = `setting_categories`.`id` where `settings`.`name` = 'ollama_base_url' limit 1 - La table 'shelve.settings' n'existe pas
+2025-07-30 09:00:45 [ERROR]: Erreur lors de l'initialisation d'OllamaService: select `settings`.*, `setting_categories`.`name` as `category_name` from `settings` left join `setting_categories` on `settings`.`category_id` = `setting_categories`.`id` where `settings`.`name` = 'ollama_base_url' limit 1 - La table 'shelve.settings' n'existe pas
+2025-07-30 09:00:45 [INFO]: RecordService initialisé avec les modèles par défaut
+2025-07-30 09:00:45 [INFO]: RecordHandler initialisé avec succès
+2025-07-30 09:05:03 [ERROR]: Erreur lors de la récupération des paramètres: La connexion à la base de données n'a pas été initialisée
+2025-07-30 09:05:03 [INFO]: Serveur MCP démarré sur le port 3001
+2025-07-30 09:05:03 [INFO]: Utilisation des paramètres par défaut depuis les variables d'environnement
+2025-07-30 09:05:03 [INFO]: OllamaService initialisé avec le modèle par défaut: gemma3:4b
+2025-07-30 09:05:03 [INFO]: URL de base Ollama: http://localhost:11434
+2025-07-30 09:05:03 [INFO]: Base de données connectée avec succès
+2025-07-30 09:05:03 [ERROR]: Erreur lors de la récupération des paramètres: select `settings`.*, `setting_categories`.`name` as `category_name` from `settings` left join `setting_categories` on `settings`.`category_id` = `setting_categories`.`id` where `settings`.`name` = 'ollama_base_url' limit 1 - La table 'shelve.settings' n'existe pas
+2025-07-30 09:05:03 [INFO]: Utilisation des paramètres par défaut depuis les variables d'environnement
+2025-07-30 09:05:03 [INFO]: OllamaService initialisé avec le modèle par défaut: gemma3:4b
+2025-07-30 09:05:03 [INFO]: URL de base Ollama: http://localhost:11434
+2025-07-30 09:05:03 [INFO]: RecordService initialisé avec les modèles par défaut
+2025-07-30 09:05:03 [INFO]: RecordHandler initialisé avec succès
+2025-07-30 09:08:39 [ERROR]: Erreur lors de la récupération des paramètres: La connexion à la base de données n'a pas été initialisée
+2025-07-30 09:08:40 [INFO]: Serveur MCP démarré sur le port 3001
+2025-07-30 09:08:40 [INFO]: Utilisation des paramètres par défaut depuis les variables d'environnement
+2025-07-30 09:08:40 [INFO]: OllamaService initialisé avec le modèle par défaut: gemma3:4b
+2025-07-30 09:08:40 [INFO]: URL de base Ollama: http://localhost:11434
+2025-07-30 09:08:40 [INFO]: Base de données connectée avec succès
+2025-07-30 09:08:40 [ERROR]: Erreur lors de la récupération des paramètres: select `settings`.*, `setting_categories`.`name` as `category_name` from `settings` left join `setting_categories` on `settings`.`category_id` = `setting_categories`.`id` where `settings`.`name` = 'ollama_base_url' limit 1 - La table 'shelve.settings' n'existe pas
+2025-07-30 09:08:40 [INFO]: Utilisation des paramètres par défaut depuis les variables d'environnement
+2025-07-30 09:08:40 [INFO]: OllamaService initialisé avec le modèle par défaut: gemma3:4b
+2025-07-30 09:08:40 [INFO]: URL de base Ollama: http://localhost:11434
+2025-07-30 09:08:40 [INFO]: RecordService initialisé avec les modèles par défaut
+2025-07-30 09:08:40 [INFO]: RecordHandler initialisé avec succès

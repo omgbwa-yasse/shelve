@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\Api\SettingsApiController;
+use App\Http\Controllers\Api\AISettingsController;
 use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
@@ -84,21 +85,20 @@ Route::prefix('public')->name('api.secure.public.')->middleware('auth:sanctum')-
     Route::apiResource('responses.attachments', PublicResponseAttachmentApiController::class)->names("responses.attachments");
 });
 
-// Routes for Records API operations
-Route::middleware('auth')->prefix('records')->name('api.records.')->group(function () {
-    Route::post('{record}/update-title', [RecordController::class, 'updateTitle'])->name('update-title');
-    Route::post('{record}/update-content', [RecordController::class, 'updateContent'])->name('update-content');
-    Route::post('{record}/add-term/{term}', [RecordController::class, 'addTerm'])->name('add-term');
-});
+
 
 // Routes pour MCP (Model Context Protocol)
 Route::middleware('auth')->prefix('mcp')->name('api.mcp.')->group(function () {
-    Route::prefix('records')->group(function () {
-        Route::post('{record}/summarize', [McpProxyController::class, 'summarizeRecord'])->name('records.summarize');
-        Route::post('{record}/reformat-title', [McpProxyController::class, 'reformatTitle'])->name('records.reformat-title');
-        Route::post('{record}/extract-keywords', [McpProxyController::class, 'extractKeywords'])->name('records.extract-keywords');
-        Route::post('{record}/analyze', [McpProxyController::class, 'analyzeContent'])->name('records.analyze');
-    });
+
+
+
+
+});
+
+// Routes pour les paramètres d'IA
+Route::prefix('ai')->name('api.ai.')->group(function () {
+    Route::get('settings/default-model', [AISettingsController::class, 'getDefaultModel'])->name('settings.default-model');
+    Route::get('settings', [AISettingsController::class, 'getAllAISettings'])->name('settings.all');
 });
 
 
