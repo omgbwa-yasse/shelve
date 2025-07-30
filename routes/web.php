@@ -531,7 +531,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Author contacts routes
         Route::resource('author-contact', AuthorContactController::class);
-        Route::get('authors/{author}/contacts/create', [AuthorContactController::class, 'create'])->name('author-contact.create');
+        Route::get('authors/{author}/contacts/create', [AuthorContactController::class, 'create'])->name('author-contact.create.for-author');
 
         Route::resource('records.child', RecordChildController::class)->names('record-child');
         Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
@@ -622,9 +622,6 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
-        Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
-        Route::get('organisations/export/pdf', [OrganisationController::class, 'exportPdf'])->name('organisations.export.pdf');
-        Route::resource('organisations', OrganisationController::class);
         Route::get('users', [UserController::class, 'index'] );
         Route::resource('user-organisation-role', UserOrganisationRoleController::class);
         Route::resource('user-roles', UserRoleController::class);
@@ -685,6 +682,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('activities.communicabilities', activityCommunicabilityController::class);
         Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('organisations.activities', OrganisationActivityController::class);
+
+        // Routes pour la gestion des organisations dans tools
+        Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
+        Route::get('organisations/export/pdf', [OrganisationController::class, 'exportPdf'])->name('organisations.export.pdf');
+        Route::resource('organisations', OrganisationController::class);
+
         Route::resource('access', ContainerStatusController::class);
         Route::get('barcode', [BarcodeController::class,'create'])->name('barcode.create');
         Route::post('/barcodes/preview', [BarcodeController::class, 'preview'])->name('barcode.preview');

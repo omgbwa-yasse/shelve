@@ -56,6 +56,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        // Charger les organisations auxquelles l'utilisateur est affilié
+        $user->load('organisations');
         return view('users.show', compact('user'));
     }
 
