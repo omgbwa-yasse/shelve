@@ -227,15 +227,13 @@
                     <div class="right-section">
                         <!-- Barre de recherche -->
                         <div class="header-search">
-                            <form class="header-search-form" action="{{ route('records.search') }}">
+                            <form class="header-search-form" action="#" id="searchForm">
                                 <input type="hidden" name="advanced" value="false">
                                 <input class="header-search-input" name="query" type="search" placeholder="{{ __('Search...') }}"
                                        value="@if (isset($_GET['query'])) {{ preg_replace('/\s+/', ' ', trim($_GET['query'])) }} @endif">
-                                <select class="header-search-select" name="search_type">
-                                    <option value="">{{ __('All') }}</option>
-                                    <option value="mail" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'mail') selected @endif>{{ __('Mail') }}</option>
+                                <select class="header-search-select" name="search_type" id="searchType">
                                     <option value="record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'record') selected @endif>{{ __('Records') }}</option>
-                                    <option value="transferring_record" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'transferring_record') selected @endif>{{ __('Transfer') }}</option>
+                                    <option value="mail" @if(isset($_GET['search_type']) && $_GET['search_type'] == 'mail') selected @endif>{{ __('Mail') }}</option>
                                 </select>
                                 <button class="header-search-button" type="submit">
                                     <i class="bi bi-search"></i>
@@ -514,6 +512,33 @@
         $(document).ready(function() {
             $('.close').on('click', function() {
                 $('#orgModal').modal('hide');
+            });
+
+            // Gestion de la soumission du formulaire de recherche
+            $('#searchForm').on('submit', function(e) {
+                e.preventDefault();
+
+                var searchType = $('#searchType').val();
+                var query = $('input[name="query"]').val();
+                var advanced = $('input[name="advanced"]').val();
+
+                // Construction de l'URL selon le type de recherche
+                var actionUrl = '';
+                var params = new URLSearchParams();
+                params.append('query', query);
+                params.append('advanced', advanced);
+                params.append('search_type', searchType);
+
+                if (searchType === 'mail') {
+                    actionUrl = '{{ route("mails.search") }}';
+                } else if (searchType === 'record') {
+                    actionUrl = '{{ route("records.search") }}';
+                }
+
+                // Redirection avec les paramètres
+                if (actionUrl) {
+                    window.location.href = actionUrl + '?' + params.toString();
+                }
             });
 
             // Focus sur le champ de recherche - maintenir le fond blanc

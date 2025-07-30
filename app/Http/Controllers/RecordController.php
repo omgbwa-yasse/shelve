@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Models\RecordAttachment;
@@ -28,18 +29,43 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-
 use ZipArchive;
-
 
 class RecordController extends Controller
 {
     public function search(Request $request)
     {
-
         $query = $request->input('query');
-        $results = Record::search($query)->paginate(10);
-        return view('records.search', compact('results', 'query'));
+
+        if (!empty($query)) {
+            // Recherche dans l'intitulé (name) et le code
+            $records = Record::where(function($q) use ($query) {
+                $q->where('name', 'LIKE', '%' . $query . '%')
+                  ->orWhere('code', 'LIKE', '%' . $query . '%');
+            })
+            ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'])
+            ->paginate(10);
+        } else {
+            // Si pas de query, retourner une collection vide paginée
+            $records = Record::where('id', 0)->paginate(10);
+        }
+
+        // Charger les données nécessaires pour la vue index
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = [];
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
+
+        return view('records.index', compact(
+            'records',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations',
+            'query'
+        ));
     }
 
     public function index()
@@ -100,7 +126,6 @@ class RecordController extends Controller
         $parents = Author::all();
         return view('records.create', compact('authorTypes', 'parents','records','authors','levels','statuses', 'supports', 'activities', 'parents', 'containers', 'users'));
     }
-
 
     public function createFull()
     {
@@ -323,7 +348,6 @@ class RecordController extends Controller
                                             'term_ids', 'suggestedTitle'));
     }
 
-
     public function update(Request $request, Record $record)
     {
         $this->authorize('update', $record);
@@ -406,7 +430,6 @@ class RecordController extends Controller
         return redirect()->route('records.index')->with('success', 'Record updated successfully.');
     }
 
-
     public function destroy(Record $record)
     {
         $this->authorize('delete', $record);
@@ -415,7 +438,6 @@ class RecordController extends Controller
 
         return redirect()->route('records.index')->with('success', 'Record deleted successfully.');
     }
-
 
     // ici c\'est pour l'import export
     public function exportButton(Request $request)
@@ -448,7 +470,6 @@ class RecordController extends Controller
         }
     }
 
-
     public function export(Request $request)
     {
         $this->authorize('export', Record::class);
@@ -480,14 +501,12 @@ class RecordController extends Controller
         }
     }
 
-
     public function importForm()
     {
         $this->authorize('import', Record::class);
 
         return view('records.import');
     }
-
 
     public function exportForm()
     {
@@ -795,12 +814,4 @@ class RecordController extends Controller
             return response()->json([]);
         }
     }
-
-
-
-
-
-
-
-
 }

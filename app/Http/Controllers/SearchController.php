@@ -9,7 +9,6 @@ use App\Models\Mail;
 use App\Models\Record;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
-use App\Models\MailType;
 use App\Models\Author;
 use App\Models\CommunicationRecord;
 use App\Models\RecordStatus;
@@ -176,11 +175,10 @@ class SearchController extends Controller
         $mails = $mails->paginate(10);
 
         $priorities = MailPriority::all();
-        $types = MailType::all();
         $typologies = MailTypology::all();
         $authors = Author::all();
 
-        return view('mails.index', compact('mails', 'priorities', 'types', 'typologies', 'authors'));
+        return view('mails.index', compact('mails', 'priorities', 'typologies', 'authors'));
     }
 
 
