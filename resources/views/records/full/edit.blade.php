@@ -69,7 +69,12 @@
                     </div>
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
-                        <textarea name="name" id="name" class="form-control" required>{{ $record->name }}</textarea>
+                        <textarea name="name" id="name" class="form-control" required>{{ isset($suggestedTitle) ? $suggestedTitle : $record->name }}</textarea>
+                        @if(isset($suggestedTitle))
+                            <div class="alert alert-info mt-2">
+                                <i class="bi bi-info-circle me-2"></i>{{ __('suggested_title_applied') ?? 'Un titre reformulé a été appliqué. Vous pouvez le modifier si nécessaire.' }}
+                            </div>
+                        @endif
                     </div>
                     <div class="row">
                         <div class="col-md-4 mb-3">

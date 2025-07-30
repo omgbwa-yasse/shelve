@@ -355,12 +355,31 @@
                 }, 5000);
             });
 
+            // Gestion du bouton de reformulation de titre
+            const btnReformulate = document.getElementById('btn-reformulate');
+            const intelligenceResult = document.getElementById('intelligence-result');
 
+            btnReformulate.addEventListener('click', async function() {
+                const recordTitle = "{{ $record->name }}";
+                const recordId = {{ $record->id }};
 
-
-
-
-
+                // Fonction de reformulation désactivée
+                intelligenceResult.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>{{ __('feature_unavailable') ?? 'Cette fonctionnalité n\'est pas disponible actuellement' }}
+                    </div>
+                `;
+                // No try-catch block needed anymore
+                // Function body ends here
+                console.log('Reformulation feature disabled');
+                // The following is left for compatibility
+                intelligenceResult.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Une erreur est survenue lors de la reformulation du titre
+                        </div>
+                    `;
+                }
+            });
 
 
 

@@ -263,7 +263,7 @@ class RecordController extends Controller
         return view('records.showFull', compact('record'));
     }
 
-    public function edit(Record $record)
+    public function edit(Record $record, Request $request)
     {
         $this->authorize('update', $record);
 
@@ -280,7 +280,12 @@ class RecordController extends Controller
         $author_ids = $record->authors->pluck('id')->toArray();
         $term_ids = $record->thesaurusConcepts->pluck('id')->toArray();
 
-        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities', 'parents', 'containers', 'users', 'authors', 'author_ids', 'term_ids'));
+        // Vérifier si un titre suggéré est fourni via l'URL
+        $suggestedTitle = $request->query('suggested_title');
+
+        return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities',
+                                            'parents', 'containers', 'users', 'authors', 'author_ids',
+                                            'term_ids', 'suggestedTitle'));
     }
 
 

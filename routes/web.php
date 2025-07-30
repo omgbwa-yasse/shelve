@@ -38,6 +38,7 @@ use App\Http\Controllers\floorController;
 use App\Http\Controllers\ExternalContactController;
 use App\Http\Controllers\ExternalOrganizationController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\AuthorContactController;
 use App\Http\Controllers\ShelfController;
 use App\Http\Controllers\ContainerController;
 use App\Http\Controllers\MailTypologyController;
@@ -517,16 +518,20 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
-
+        Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
+        
         Route::resource('records', RecordController::class);
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
-        Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
 
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::get('authors/list', [RecordAuthorController::class, 'list'])->name('record-author.list');
+
+        // Author contacts routes
+        Route::resource('author-contact', AuthorContactController::class);
+        Route::get('authors/{author}/contacts/create', [AuthorContactController::class, 'create'])->name('author-contact.create');
 
         Route::resource('records.child', RecordChildController::class)->names('record-child');
         Route::get('recordtotransfer', [lifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');

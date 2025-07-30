@@ -291,63 +291,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- MCP AI Features Card --}}
-        <div class="card mb-3">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-stars me-2"></i>{{ __('ai_features') ?? 'AI Features' }}
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="card h-100 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ __('record_enrichment') ?? 'Record Enrichment' }}</h5>
-                                <p class="card-text small">{{ __('ai_enrichment_desc') ?? 'Extract keywords and suggest terms from record content.' }}</p>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-extract-keywords">
-                                        <i class="bi bi-key"></i> {{ __('extract_keywords') ?? 'Extract Keywords' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-suggest-terms">
-                                        <i class="bi bi-tags"></i> {{ __('suggest_terms') ?? 'Suggest Terms' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card h-100 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ __('transfer_features') ?? 'Transfer Features' }}</h5>
-                                <p class="card-text small">{{ __('ai_transfer_desc') ?? 'Validate, classify, and generate reports for archive transfers.' }}</p>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-validate-records">
-                                        <i class="bi bi-check-circle"></i> {{ __('validate') ?? 'Validate' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-suggest-classification">
-                                        <i class="bi bi-diagram-3"></i> {{ __('classify') ?? 'Classify' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-generate-report">
-                                        <i class="bi bi-file-earmark-text"></i> {{ __('report') ?? 'Report' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div id="ai-results-container" class="border rounded p-3" style="display: none;">
-                            <h6 class="border-bottom pb-2 mb-3">
-                                <i class="bi bi-stars me-1"></i><span id="ai-results-title">{{ __('ai_results') ?? 'AI Results' }}</span>
-                            </h6>
-                            <div id="ai-results-content" class="small">
-                                <!-- Results will be displayed here -->
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -514,81 +457,9 @@
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
 
-            // MCP API Functions
-            const recordId = {{ $record->id }};
-            const apiBaseUrl = '/api/mcp'; // Adjust this based on your API configuration
 
-            const showLoading = (containerId, message) => {
-                const container = document.getElementById(containerId);
-                container.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>${message || 'Loading...'}</span>
-                    </div>
-                `;
-            };
 
-            const showResults = (title, content) => {
-                const resultsContainer = document.getElementById('ai-results-container');
-                const resultsTitle = document.getElementById('ai-results-title');
-                const resultsContent = document.getElementById('ai-results-content');
-
-                resultsTitle.textContent = title;
-                resultsContent.innerHTML = content;
-                resultsContainer.style.display = 'block';
-
-                // Scroll to results
-                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            };
-
-            const handleApiError = (error) => {
-                console.error('API Error:', error);
-                showResults('Error', `<div class="alert alert-danger">An error occurred: ${error.message || 'Unknown error'}</div>`);
-            };
-
-            // Enrich Record
-            document.getElementById('btn-ai-enrich').addEventListener('click', async () => {
-                try {
-                    showResults('Record Enrichment', '<div class="text-center">Processing record content...</div>');
-                    showLoading('ai-results-content', 'Analyzing record content...');
-
-                    const response = await fetch(`${apiBaseUrl}/enrich/${recordId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    });
-
-                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
-
-                    const data = await response.json();
-
-                    let resultsHTML = `
-                        <div class="alert alert-success">
-                            <strong>Record successfully enriched!</strong>
-                        </div>
-                        <h6>Extracted Keywords:</h6>
-                        <div class="mb-3">
-                            ${data.keywords.map(keyword =>
-                                `<span class="badge bg-info text-dark me-1 mb-1">${keyword}</span>`
-                            ).join('')}
-                        </div>
-                        <h6>Suggested Terms:</h6>
-                        <div>
-                            ${data.terms.map(term =>
-                                `<span class="badge bg-primary me-1 mb-1">${term}</span>`
-                            ).join('')}
-                        </div>
-                    `;
-
-                    showResults('Record Enrichment Results', resultsHTML);
-                } catch (error) {
-                    handleApiError(error);
-                }
-            });
+                        // AI features removed
 
             // Extract Keywords
             document.getElementById('btn-extract-keywords').addEventListener('click', async () => {

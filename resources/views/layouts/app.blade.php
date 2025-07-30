@@ -245,25 +245,6 @@
 
                         <!-- Actions utilisateur -->
                         <div class="header-actions">
-                            <!-- Indicateur de statut MCP -->
-                            <div class="header-action-item">
-                                <div class="mcp-status-indicator" id="mcpStatusIndicator" title="Statut MCP" onclick="showMcpDetails()">
-                                    <div class="status-dot" id="mcpStatusDot"></div>
-                                    <span class="status-text" id="mcpStatusText">MCP</span>
-                                </div>
-                            </div>
-
-                            <!-- Notifications -->
-                            @can('module_mails_access')
-                            <div class="header-action-item">
-                                <a href="{{ route('notifications.organisation') }}" class="header-action-btn position-relative" id="notificationBtn" title="Notifications">
-                                    <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
-                                    <span id="header-notification-badge" class="position-absolute badge badge-danger" style="top: -8px; right: -8px; font-size: 0.6rem; display: none;">
-                                        <span id="header-notification-count">0</span>
-                                    </span>
-                                </a>
-                            </div>
-                            @endcan
 
                             <!-- Sélecteur de langue -->
                             <div class="header-action-item">
@@ -553,125 +534,8 @@
             setInterval(updateMcpStatus, 60000); // Toutes les 60 secondes
         });
 
-        @can('module_mails_access')
-        function updateNotificationBadges() {
-            fetch('/mails/notifications/unread-count')
-                .then(response => response.json())
-                .then(data => {
-                    const count = data.count;
 
-                    // Badge dans la navigation principale
-                    const mainBadge = document.getElementById('mail-notification-badge');
-                    const mainCount = document.getElementById('notification-count');
 
-                    // Badge dans le header
-                    const headerBadge = document.getElementById('header-notification-badge');
-                    const headerCount = document.getElementById('header-notification-count');
-
-                    if (count > 0) {
-                        if (mainBadge && mainCount) {
-                            mainBadge.style.display = 'inline-block';
-                            mainCount.textContent = count > 99 ? '99+' : count;
-                        }
-                        if (headerBadge && headerCount) {
-                            headerBadge.style.display = 'inline-block';
-                            headerCount.textContent = count > 99 ? '99+' : count;
-                        }
-                    } else {
-                        if (mainBadge) mainBadge.style.display = 'none';
-                        if (headerBadge) headerBadge.style.display = 'none';
-                    }
-                })
-                .catch(error => console.log('Erreur lors de la récupération des notifications:', error));
-        }
-        @endcan
-
-        // Variable globale pour stocker les dernières données de statut MCP
-        let lastMcpStatusData = null;
-
-        // Fonction pour afficher les détails du statut MCP
-        function showMcpDetails() {
-            if (lastMcpStatusData) {
-                let message = 'Statut MCP:\n\n';
-
-                if (lastMcpStatusData.mcp) {
-                    message += `MCP Server: ${lastMcpStatusData.mcp.success ? 'Connecté' : 'Déconnecté'}\n`;
-                    if (lastMcpStatusData.mcp.error) {
-                        message += `Erreur MCP: ${lastMcpStatusData.mcp.error}\n`;
-                    }
-                }
-
-                if (lastMcpStatusData.ollama) {
-                    message += `Ollama: ${lastMcpStatusData.ollama.success ? 'Connecté' : 'Déconnecté'}\n`;
-                    if (lastMcpStatusData.ollama.success && lastMcpStatusData.ollama.models) {
-                        message += `Modèles disponibles: ${lastMcpStatusData.ollama.models.length}\n`;
-                    }
-                    if (lastMcpStatusData.ollama.error) {
-                        message += `Erreur Ollama: ${lastMcpStatusData.ollama.error}\n`;
-                    }
-                }
-
-                alert(message);
-            } else {
-                alert('Statut MCP: Vérification en cours...');
-            }
-        }
-
-        // Fonction pour mettre à jour le statut MCP
-        function updateMcpStatus() {
-            fetch('/api/mcp/status')
-                .then(response => response.json())
-                .then(data => {
-                    lastMcpStatusData = data; // Stocker les données pour les détails
-
-                    const statusDot = document.getElementById('mcpStatusDot');
-                    const statusIndicator = document.getElementById('mcpStatusIndicator');
-
-                    if (!statusDot || !statusIndicator) return;
-
-                    // Reset classes
-                    statusDot.className = 'status-dot';
-
-                    // Déterminer le statut global basé sur MCP et Ollama
-                    let status = 'grey';
-                    let title = 'Statut MCP: Inconnu';
-
-                    if (data.mcp && data.ollama) {
-                        if (data.mcp.success && data.ollama.success) {
-                            status = 'green';
-                            title = 'MCP: Opérationnel - Ollama: Connecté';
-                        } else if (data.mcp.success && !data.ollama.success) {
-                            status = 'orange';
-                            title = 'MCP: Opérationnel - Ollama: Déconnecté';
-                        } else if (!data.mcp.success && data.ollama.success) {
-                            status = 'yellow';
-                            title = 'MCP: Déconnecté - Ollama: Connecté';
-                        } else {
-                            status = 'red';
-                            title = 'MCP: Déconnecté - Ollama: Déconnecté';
-                        }
-                    } else {
-                        status = 'red';
-                        title = 'MCP: Service indisponible';
-                    }
-
-                    // Appliquer le statut
-                    statusDot.classList.add(status);
-                    statusIndicator.title = title;
-                })
-                .catch(error => {
-                    console.log('Erreur lors de la vérification du statut MCP:', error);
-                    lastMcpStatusData = null;
-
-                    const statusDot = document.getElementById('mcpStatusDot');
-                    const statusIndicator = document.getElementById('mcpStatusIndicator');
-
-                    if (statusDot && statusIndicator) {
-                        statusDot.className = 'status-dot red';
-                        statusIndicator.title = 'MCP: Erreur de communication';
-                    }
-                });
-        }
     </script>
 </body>
 </html>

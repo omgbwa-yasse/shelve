@@ -33,7 +33,7 @@
                     <div class="card-header bg-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">{{ $author->name }}</h5>
-                            <span class="badge bg-secondary">{{ $author->authorType->name }}</span>
+                            <span class="badge bg-secondary">{{ $author->authorType ? $author->authorType->name : 'N/A' }}</span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -83,10 +83,10 @@
                     <div class="card-header bg-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">{{ __('contact_information') }}</h5>
-                            <a href="{{ route('author-contact.create', $author) }}" class="btn btn-sm btn-primary">
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
                                 <i class="bi bi-plus-lg me-1"></i>
                                 {{ __('add_contact') }}
-                            </a>
+                            </button>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -175,6 +175,64 @@
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for adding a contact -->
+    <div class="modal fade" id="addContactModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ __('add_contact') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('record-author.update', $author) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="phone1" class="form-label">{{ __('phone') }} 1</label>
+                            <input type="text" class="form-control" id="phone1" name="contact[phone1]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone2" class="form-label">{{ __('phone') }} 2</label>
+                            <input type="text" class="form-control" id="phone2" name="contact[phone2]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">{{ __('email') }}</label>
+                            <input type="email" class="form-control" id="email" name="contact[email]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">{{ __('address') }}</label>
+                            <input type="text" class="form-control" id="address" name="contact[address]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="po_box" class="form-label">{{ __('po_box') }}</label>
+                            <input type="text" class="form-control" id="po_box" name="contact[po_box]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="website" class="form-label">{{ __('website') }}</label>
+                            <input type="text" class="form-control" id="website" name="contact[website]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fax" class="form-label">{{ __('fax') }}</label>
+                            <input type="text" class="form-control" id="fax" name="contact[fax]">
+                        </div>
+                        <div class="mb-3">
+                            <label for="other" class="form-label">{{ __('other') }}</label>
+                            <textarea class="form-control" id="other" name="contact[other]" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            {{ __('cancel') }}
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            {{ __('save') }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -683,5 +683,11 @@
     "entrez_le_nom": "Entrez le nom",
     "dcrivez_le_contenu": "Décrivez le contenu",
     "dcrivez_le_transfert": "Décrivez le transfert",
-    "rechercher_dans_le_thsaurus": "Rechercher dans le thésaurus..."
+    "rechercher_dans_le_thsaurus": "Rechercher dans le thésaurus...",
+    "reformulate_title": "Reformuler le titre",
+    "title_reformulation": "Reformulation du titre",
+    "original": "Original",
+    "reformulated": "Reformulé",
+    "apply_reformulation": "Appliquer cette reformulation",
+    "suggested_title_applied": "Un titre reformulé a été appliqué. Vous pouvez le modifier si nécessaire."
 }
