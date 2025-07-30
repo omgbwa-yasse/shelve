@@ -83,24 +83,10 @@ Route::prefix('public')->name('api.secure.public.')->middleware('auth:sanctum')-
     Route::apiResource('responses.attachments', PublicResponseAttachmentApiController::class)->names("responses.attachments");
 
 
-});
+}); // Routes pour MCP (Model Context Protocol)
 
-// Routes pour MCP (Model Context Protocol)
-Route::middleware('auth:sanctum')->prefix('mcp')->group(function () {
-    Route::post('enrich/{record}', [\App\Http\Controllers\McpProxyController::class, 'enrichRecord'])->name('api.mcp.enrich');
-    Route::post('extract-keywords/{record}', [\App\Http\Controllers\McpProxyController::class, 'extractKeywords'])->name('api.mcp.extract-keywords');
-    Route::post('assign-terms/{record}', [\App\Http\Controllers\McpProxyController::class, 'assignTerms'])->name('api.mcp.assign-terms');
-    Route::post('validate/{record}', [\App\Http\Controllers\McpProxyController::class, 'validateRecord'])->name('api.mcp.validate');
-    Route::post('classify/{record}', [\App\Http\Controllers\McpProxyController::class, 'classifyRecord'])->name('api.mcp.classify');
-    Route::post('generate-report/{record}', [\App\Http\Controllers\McpProxyController::class, 'generateReport'])->name('api.mcp.generate-report');
-    Route::post('format-title/{record}', [\App\Http\Controllers\McpProxyController::class, 'formatTitle'])->name('api.mcp.format-title');
-    Route::post('generate-summary/{record}', [\App\Http\Controllers\McpProxyController::class, 'generateSummary'])->name('api.mcp.generate-summary');
-    Route::post('extract-keywords-mcp/{record}', [\App\Http\Controllers\McpProxyController::class, 'extractKeywordsMcp'])->name('api.mcp.extract-keywords-mcp');
-    Route::post('assign-thesaurus/{record}', [\App\Http\Controllers\McpProxyController::class, 'assignThesaurus'])->name('api.mcp.assign-thesaurus');
-    Route::post('run-all/{record}', [\App\Http\Controllers\McpProxyController::class, 'runAllProcesses'])->name('api.mcp.run-all');
-});
 
-Route::middleware('auth:sanctum')->prefix('records')->group(function () {
+Route::middleware('auth')->prefix('records')->group(function () {
     Route::post('create-via-mcp', [\App\Http\Controllers\RecordController::class, 'createViaMcp'])->name('api.records.create-via-mcp');
     Route::post('{record}/add-term/{term}', [\App\Http\Controllers\RecordController::class, 'addTerm'])->name('api.records.add-term');
     Route::post('{record}/update-title', [\App\Http\Controllers\RecordController::class, 'updateTitle'])->name('api.records.update-title');

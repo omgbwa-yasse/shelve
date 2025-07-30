@@ -20,9 +20,6 @@
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                     <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
                 </button>
-                <button type="button" id="btn-ai-enrich" class="btn btn-sm btn-outline-info">
-                    <i class="bi bi-stars"></i> {{ __('ai_enrich') ?? 'AI Enrich' }}
-                </button>
             </div>
         </div>
 
@@ -166,104 +163,6 @@
                             <dt class="col-sm-2">{{ __('archivist_note') }}</dt>
                             <dd class="col-sm-10">{{ $record->archivist_note ?? 'N/A' }}</dd>
                         </dl>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- MCP AI Features Card --}}
-        <div class="card mb-3">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-stars me-2"></i>{{ __('ai_features') ?? 'AI Features' }}
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="card h-100 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ __('record_enrichment') ?? 'Record Enrichment' }}</h5>
-                                <p class="card-text small">{{ __('ai_enrichment_desc') ?? 'Extract keywords and suggest terms from record content.' }}</p>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-extract-keywords">
-                                        <i class="bi bi-key"></i> {{ __('extract_keywords') ?? 'Extract Keywords' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-suggest-terms">
-                                        <i class="bi bi-tags"></i> {{ __('suggest_terms') ?? 'Suggest Terms' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card h-100 bg-light">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ __('transfer_features') ?? 'Transfer Features' }}</h5>
-                                <p class="card-text small">{{ __('ai_transfer_desc') ?? 'Validate, classify, and generate reports for archive transfers.' }}</p>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-validate-records">
-                                        <i class="bi bi-check-circle"></i> {{ __('validate') ?? 'Validate' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-suggest-classification">
-                                        <i class="bi bi-diagram-3"></i> {{ __('classify') ?? 'Classify' }}
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" id="btn-generate-report">
-                                        <i class="bi bi-file-earmark-text"></i> {{ __('report') ?? 'Report' }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div class="card bg-primary bg-opacity-10 border-primary">
-                            <div class="card-header bg-primary bg-opacity-25 d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0 text-primary">
-                                    <i class="bi bi-robot me-2"></i>{{ __('intelligence') ?? 'Intelligence' }}
-                                </h5>
-                                <button id="btn-run-all-ai" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-lightning-charge me-1"></i>{{ __('run_all_processes') ?? 'Run All Processes' }}
-                                </button>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text small">{{ __('ai_intelligence_desc') ?? 'Use MCP AI to enhance record quality with one click - summarize content, reformat titles, extract keywords, and associate with thesaurus terms.' }}</p>
-                                <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-format-title">
-                                            <i class="bi bi-type"></i> {{ __('format_title') ?? 'Format Title' }}
-                                        </button>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-generate-summary">
-                                            <i class="bi bi-card-text"></i> {{ __('generate_summary') ?? 'Generate Summary' }}
-                                        </button>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-extract-keywords-mcp">
-                                            <i class="bi bi-hash"></i> {{ __('extract_keywords_mcp') ?? 'Extract Keywords' }}
-                                        </button>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <button class="btn btn-sm btn-outline-primary w-100" id="btn-assign-thesaurus">
-                                            <i class="bi bi-link-45deg"></i> {{ __('assign_thesaurus') ?? 'Assign Thesaurus' }}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-12">
-                        <div id="ai-results-container" class="border rounded p-3" style="display: none;">
-                            <h6 class="border-bottom pb-2 mb-3">
-                                <i class="bi bi-stars me-1"></i><span id="ai-results-title">{{ __('ai_results') ?? 'AI Results' }}</span>
-                            </h6>
-                            <div id="ai-results-content" class="small">
-                                <!-- Results will be displayed here -->
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -432,55 +331,46 @@
                 }
             });
 
-            // MCP API Functions
-            const recordId = {{ $record->id }};
-            const apiBaseUrl = '/api/mcp'; // Adjust this based on your API configuration
+            // Gestion des alertes auto-disparition
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }, 5000);
+            });
+        });
+    </script>
+@endpush
 
-            const showLoading = (containerId, message) => {
-                const container = document.getElementById(containerId);
-                container.innerHTML = `
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <span>${message || 'Loading...'}</span>
-                    </div>
-                `;
-            };
-
-            const showResults = (title, content) => {
-                const resultsContainer = document.getElementById('ai-results-container');
-                const resultsTitle = document.getElementById('ai-results-title');
-                const resultsContent = document.getElementById('ai-results-content');
-
-                resultsTitle.textContent = title;
-                resultsContent.innerHTML = content;
-                resultsContainer.style.display = 'block';
-
-                // Scroll to results
-                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            };
-
-            const handleApiError = (error) => {
-                console.error('API Error:', error);
-                showResults('Error', `<div class="alert alert-danger">An error occurred: ${error.message || 'Unknown error'}</div>`);
-            };
-
-            // Enrich Record
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Records show page loaded');            // Enrich Record
             document.getElementById('btn-ai-enrich').addEventListener('click', async () => {
                 try {
                     showResults('Record Enrichment', '<div class="text-center">Processing record content...</div>');
                     showLoading('ai-results-content', 'Analyzing record content...');
 
+                    console.log('Making request to:', `${apiBaseUrl}/enrich/${recordId}`);
+
                     const response = await fetch(`${apiBaseUrl}/enrich/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
+                        },
+                        credentials: 'same-origin'
                     });
 
-                    if (!response.ok) throw new Error(`API returned status: ${response.status}`);
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+
+                    if (!response.ok) {
+                        await handleApiError(new Error(`API returned status: ${response.status}`), response);
+                        return;
+                    }
 
                     const data = await response.json();
 
@@ -518,7 +408,7 @@
 
                     showResults('Record Enrichment Results', resultsHTML);
                 } catch (error) {
-                    handleApiError(error);
+                    await handleApiError(error);
                 }
             });
 
@@ -769,7 +659,7 @@
                     showResults('Report Generation', '<div class="text-center">Generating archive report...</div>');
                     showLoading('ai-results-content', 'Creating comprehensive report...');
 
-                    const response = await fetch(`${apiBaseUrl}/report/${recordId}`, {
+                    const response = await fetch(`${apiBaseUrl}/generate-report/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -822,7 +712,7 @@
                     showResults('Title Formatting', '<div class="text-center">Formatting record title...</div>');
                     showLoading('ai-results-content', 'Analyzing and reformatting title...');
 
-                    const response = await fetch(`${apiBaseUrl}/format-title`, {
+                    const response = await fetch(`${apiBaseUrl}/format-title/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -921,7 +811,7 @@
                     showResults('Summary Generation', '<div class="text-center">Generating record summary...</div>');
                     showLoading('ai-results-content', 'Analyzing record content...');
 
-                    const response = await fetch(`${apiBaseUrl}/summarize`, {
+                    const response = await fetch(`${apiBaseUrl}/generate-summary/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1021,7 +911,7 @@
                     showResults('Keyword Extraction (MCP)', '<div class="text-center">Extracting categorized keywords...</div>');
                     showLoading('ai-results-content', 'Analyzing record content for keywords...');
 
-                    const response = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                    const response = await fetch(`${apiBaseUrl}/extract-keywords-mcp/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1185,7 +1075,7 @@
                     showResults('Thesaurus Term Assignment', '<div class="text-center">Finding and assigning thesaurus terms...</div>');
                     showLoading('ai-results-content', 'Analyzing content and searching thesaurus...');
 
-                    const response = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                    const response = await fetch(`${apiBaseUrl}/assign-thesaurus/${recordId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1282,7 +1172,7 @@
                     // Step 1: Format title
                     let titleResult = null;
                     try {
-                        const titleResponse = await fetch(`${apiBaseUrl}/format-title`, {
+                        const titleResponse = await fetch(`${apiBaseUrl}/format-title/${recordId}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1308,7 +1198,7 @@
                     // Step 2: Generate summary
                     let summaryResult = null;
                     try {
-                        const summaryResponse = await fetch(`${apiBaseUrl}/summarize`, {
+                        const summaryResponse = await fetch(`${apiBaseUrl}/generate-summary/${recordId}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1338,7 +1228,7 @@
                     // Step 3: Extract and assign thesaurus terms
                     let termsResult = null;
                     try {
-                        const termsResponse = await fetch(`${apiBaseUrl}/categorized-keywords`, {
+                        const termsResponse = await fetch(`${apiBaseUrl}/assign-thesaurus/${recordId}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
