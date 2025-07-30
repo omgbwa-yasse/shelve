@@ -126,7 +126,7 @@
                                             {{ __('select') }}
                                         </button>
                                     </div>
-                                    <input type="hidden" name="author_ids[]" id="author-ids">
+                                    <input type="hidden" name="author_ids" id="author-ids">
                                 </div>
                             </div>
 
@@ -163,7 +163,7 @@
                                     <!-- Les termes sélectionnés apparaîtront ici -->
                                 </div>
 
-                                <input type="hidden" name="term_ids[]" id="term-ids">
+                                <input type="hidden" name="term_ids" id="term-ids">
                             </div>
 
                             <div class="mb-2">

@@ -276,6 +276,8 @@ function initContentToggleButtons() {
  * Initialise le système de thésaurus AJAX
  */
 function initThesaurusAjax() {
+    console.log('🚀 Initialisation du thésaurus AJAX...');
+
     // Gestion du thésaurus AJAX
     let selectedTerms = new Map(); // Map pour stocker les termes sélectionnés (id -> {name, thesaurus})
     let searchTimeout;
@@ -285,26 +287,40 @@ function initThesaurusAjax() {
     const selectedTermsContainer = document.getElementById('selected-terms-container');
     const termIdsInput = document.getElementById('term-ids');
 
+    console.log('🔍 Éléments trouvés:', {
+        thesaurusSearch: !!thesaurusSearch,
+        thesaurusSuggestions: !!thesaurusSuggestions,
+        selectedTermsContainer: !!selectedTermsContainer,
+        termIdsInput: !!termIdsInput
+    });
+
     if (!thesaurusSearch || !thesaurusSuggestions || !selectedTermsContainer || !termIdsInput) {
+        console.log('❌ Éléments manquants, thésaurus non initialisé');
         return; // Éléments non trouvés, probablement pas sur la page de création
     }
+
+    console.log('✅ Tous les éléments trouvés, initialisation complète...');
 
     // Les termes du thésaurus sont facultatifs - pas de vérification requise
 
     // Recherche AJAX avec délai
     thesaurusSearch.addEventListener('input', function() {
         const query = this.value.trim();
+        console.log('⌨️ Saisie détectée:', query);
 
         // Effacer le timeout précédent
         clearTimeout(searchTimeout);
 
         if (query.length < 3) {
+            console.log('⏸️ Requête trop courte, masquage des suggestions');
             hideSuggestions();
             return;
         }
 
+        console.log('⏱️ Démarrage du timer de recherche...');
         // Attendre 300ms avant de faire la recherche
         searchTimeout = setTimeout(() => {
+            console.log('🔍 Lancement de la recherche pour:', query);
             searchThesaurus(query);
         }, 300);
     });
@@ -324,6 +340,8 @@ function initThesaurusAjax() {
     });
 
     function searchThesaurus(query) {
+        console.log('🔍 Recherche thésaurus débutée pour:', query);
+
         fetch(`/repositories/records/terms/autocomplete?q=${encodeURIComponent(query)}&limit=5`, {
             method: 'GET',
             headers: {
@@ -332,34 +350,45 @@ function initThesaurusAjax() {
             }
         })
         .then(response => {
+            console.log('📡 Réponse reçue:', response.status, response.statusText);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const contentType = response.headers.get('content-type');
+            console.log('📄 Type de contenu:', contentType);
             if (!contentType || !contentType.includes('application/json')) {
                 throw new Error('La réponse n\'est pas au format JSON');
             }
             return response.json();
         })
         .then(data => {
+            console.log('📦 Données reçues:', data);
+            console.log('📊 Nombre de résultats:', data.length);
             displaySuggestions(data);
         })
         .catch(error => {
-            console.error('Erreur lors de la recherche dans le thésaurus:', error);
+            console.error('❌ Erreur lors de la recherche dans le thésaurus:', error);
+            console.error('🔍 Query était:', query);
+            console.error('🌐 URL utilisée:', `/records/terms/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
             hideSuggestions();
         });
     }
 
     function displaySuggestions(terms) {
+        console.log('📋 Affichage des suggestions:', terms);
         thesaurusSuggestions.innerHTML = '';
 
         if (terms.length === 0) {
+            console.log('❌ Aucun résultat à afficher');
             const noResult = document.createElement('div');
             noResult.className = 'thesaurus-suggestion text-muted';
             noResult.textContent = 'Aucun résultat trouvé';
             thesaurusSuggestions.appendChild(noResult);
         } else {
-            terms.forEach(term => {
+            console.log(`✅ Affichage de ${terms.length} résultats`);
+            terms.forEach((term, index) => {
+                console.log(`   Terme ${index + 1}:`, term);
+
                 const suggestion = document.createElement('div');
                 suggestion.className = 'thesaurus-suggestion';
                 suggestion.dataset.id = term.id;
@@ -383,8 +412,10 @@ function initThesaurusAjax() {
                 displayText += ` - ${schemeTitle}`;
 
                 suggestion.textContent = displayText;
+                console.log(`   Texte affiché: "${displayText}"`);
 
                 suggestion.addEventListener('click', function() {
+                    console.log(`👆 Clic sur le terme:`, term.id, termLabel);
                     selectTerm(
                         term.id,
                         termLabel,
@@ -397,6 +428,7 @@ function initThesaurusAjax() {
         }
 
         showSuggestions();
+        console.log('👁️ Suggestions affichées');
     }
 
     function selectTerm(id, name, thesaurus) {
@@ -471,10 +503,12 @@ function initThesaurusAjax() {
     }
 
     function showSuggestions() {
+        console.log('👁️ Affichage des suggestions');
         thesaurusSuggestions.style.display = 'block';
     }
 
     function hideSuggestions() {
+        console.log('🙈 Masquage des suggestions');
         thesaurusSuggestions.style.display = 'none';
     }
 

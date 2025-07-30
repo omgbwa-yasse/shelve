@@ -125,9 +125,10 @@ class RecordController extends Controller
     {
         $this->authorize('create', Record::class);
 
-        $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
-        if (strlen($dateFormat) > 1) {
-            return back()->withErrors(['date_format' => 'The date format must not be greater than 1 character.'])->withInput();
+        // Gestion des dates
+        $dateFormat = 'Y'; // Format par défaut
+        if ($request->filled('date_start') || $request->filled('date_end')) {
+            $dateFormat = $this->getDateFormat($request->date_start, $request->date_end);
         }
 
         $request->merge([
@@ -136,6 +137,7 @@ class RecordController extends Controller
             'organisation_id' => Auth::user()->current_organisation_id,
         ]);
 
+        // Validation avec author_ids et term_ids optionnels
         $validatedData = $request->validate([
             'code' => 'required|string|max:10',
             'name' => 'required|string',
@@ -174,50 +176,83 @@ class RecordController extends Controller
             'container_id' => 'nullable|integer|exists:containers,id',
             'accession_id' => 'nullable|integer|exists:accessions,id',
             'user_id' => 'required|integer|exists:users,id',
-            'author_ids' => 'required|array',
-            'term_ids' => 'required|array',
         ]);
 
-        $record = Record::create($validatedData);
+        // Supprimer author_ids et term_ids des données validées car ils ne sont pas des champs de la table
+        $recordData = $validatedData;
 
-        $term_ids = $request->input('term_ids');
-        $author_ids = $request->input('author_ids');
-        $term_ids = explode(',', $term_ids[0]);
+        $record = Record::create($recordData);
 
-        $author_ids = explode(',', $author_ids[0]);
+        // Traitement des auteurs (obligatoire)
+        $author_ids = $request->input('author_ids', []);
+        if (is_string($author_ids)) {
+            $author_ids = explode(',', $author_ids);
+        }
+        if (isset($author_ids[0]) && is_string($author_ids[0])) {
+            $author_ids = explode(',', $author_ids[0]);
+        }
 
-        $term_ids = array_map('intval', $term_ids);
-        $author_ids = array_map('intval', $author_ids);
+        $author_ids = array_filter(array_map('intval', $author_ids));
 
+        if (empty($author_ids)) {
+            $record->delete();
+            return back()->withErrors(['author_ids' => 'Au moins un auteur doit être sélectionné.'])->withInput();
+        }
 
         foreach ($author_ids as $author_id) {
-            $record->authors()->attach($author_id);
+            if ($author_id > 0) {
+                $record->authors()->attach($author_id);
+            }
         }
+
+        // Traitement des termes du thésaurus (optionnel)
+        $term_ids = $request->input('term_ids', []);
+        if (is_string($term_ids)) {
+            $term_ids = explode(',', $term_ids);
+        }
+        if (isset($term_ids[0]) && is_string($term_ids[0])) {
+            $term_ids = explode(',', $term_ids[0]);
+        }
+
+        $term_ids = array_filter(array_map('intval', $term_ids));
 
         foreach ($term_ids as $term_id) {
-            $record->thesaurusConcepts()->attach($term_id, [
-                'weight' => 1.0,  // Poids par défaut
-                'context' => 'manuel',  // Contexte de l'ajout (manuel par l'utilisateur)
-                'extraction_note' => null  // Pas de note d'extraction pour un ajout manuel
-            ]);
+            if ($term_id > 0) {
+                $record->thesaurusConcepts()->attach($term_id, [
+                    'weight' => 1.0,
+                    'context' => 'manuel',
+                    'extraction_note' => null
+                ]);
+            }
         }
 
-        return redirect()->route('records.index')->with('success', 'Record created successfully.');
+        return redirect()->route('records.show', $record->id)->with('success', 'Record created successfully.');
     }
 
     private function getDateFormat($dateStart, $dateEnd)
     {
-        $start = new \DateTime($dateStart);
-        $end = new \DateTime($dateEnd);
-
-        if ($start->format('Y') !== $end->format('Y')) {
+        if (empty($dateStart) && empty($dateEnd)) {
             return 'Y';
-        } elseif ($start->format('m') !== $end->format('m')) {
-            return 'M';
-        } elseif ($start->format('d') !== $end->format('d')) {
-            return 'D';
         }
-        return 'D';
+
+        if (empty($dateStart) || empty($dateEnd)) {
+            return 'Y';
+        }
+
+        try {
+            $start = new \DateTime($dateStart);
+            $end = new \DateTime($dateEnd);
+
+            if ($start->format('Y') !== $end->format('Y')) {
+                return 'Y';
+            } elseif ($start->format('m') !== $end->format('m')) {
+                return 'M';
+            } else {
+                return 'D';
+            }
+        } catch (\Exception $e) {
+            return 'Y'; // Format par défaut en cas d'erreur
+        }
     }
 
     public function show(Record $record)
@@ -704,6 +739,61 @@ class RecordController extends Controller
 
         $pdf = PDF::loadView('records.print', compact('records'));
         return $pdf->download('records_print.pdf');
+    }
+
+    /**
+     * Autocomplete pour les termes du thésaurus
+     */
+    public function autocompleteTerms(Request $request)
+    {
+        $query = $request->get('q', '');
+        $limit = $request->get('limit', 10);
+
+        if (strlen($query) < 3) {
+            return response()->json([]);
+        }
+
+        try {
+            // Recherche dans les labels (literal_form) des concepts du thésaurus
+            $terms = ThesaurusConcept::with(['labels', 'scheme'])
+                ->whereHas('labels', function($labelQuery) use ($query) {
+                    $labelQuery->where('literal_form', 'LIKE', '%' . $query . '%')
+                             ->whereIn('type', ['prefLabel', 'altLabel']);
+                })
+                ->where('status', 1)
+                ->limit($limit)
+                ->get()
+                ->map(function ($concept) {
+                    // Récupérer le label préféré
+                    $prefLabel = $concept->labels()
+                        ->where('type', 'prefLabel')
+                        ->where('language', 'fr-fr')
+                        ->first();
+
+                    // Si pas de label préféré en français, prendre le premier disponible
+                    if (!$prefLabel) {
+                        $prefLabel = $concept->labels()
+                            ->where('type', 'prefLabel')
+                            ->first();
+                    }
+
+                    $labelText = $prefLabel ? $prefLabel->literal_form : $concept->uri;
+
+                    return [
+                        'id' => $concept->id,
+                        'text' => $labelText,
+                        'pref_label' => $labelText,
+                        'scheme' => $concept->scheme ? $concept->scheme->title : 'Thésaurus',
+                        'uri' => $concept->uri,
+                        'language' => $prefLabel ? $prefLabel->language : 'fr-fr'
+                    ];
+                });
+
+            return response()->json($terms);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la recherche de termes du thésaurus: ' . $e->getMessage());
+            return response()->json([]);
+        }
     }
 
 
