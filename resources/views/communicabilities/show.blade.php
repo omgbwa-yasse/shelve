@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ $communicability->name }}</h1>
+        <h1>{{ $communicability->name??'' }}</h1>
         <p><strong>Code:</strong> {{ $communicability->code }}</p>
         <p><strong>Duration (année) :</strong> {{ $communicability->duration }}</p>
         <p><strong>Description:</strong> {{ $communicability->decription }}</p>

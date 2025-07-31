@@ -17,6 +17,7 @@ class communicationRecord extends Model
         'record_id',
         'content',
         'is_original',
+        'operator_id',
         'return_date',
         'return_effective',
     ];

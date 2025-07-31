@@ -461,15 +461,25 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('/{communication}/preview', [PhantomController::class, 'previewPhantom'])->name('preview');
         });
 
-        Route::prefix('records')->name('communications.records.')->group(function () {
-            Route::resource('/', CommunicationRecordController::class);
-            Route::get('search', [CommunicationRecordController::class, 'searchRecords'])->name('search');
-            Route::prefix('actions')->name('actions.')->group(function () {
-                Route::get('return-effective', [CommunicationRecordController::class, 'returnEffective'])->name('return-effective');
-                Route::get('return-cancel', [CommunicationRecordController::class, 'returnCancel'])->name('return-cancel');
-            });
+        // =================== ROUTES RECORDS CORRIGÉES ===================
+        // Routes pour les records de communication avec communication_id dans l'URL
+        Route::prefix('{communication}/records')->name('communications.records.')->group(function () {
+            Route::get('/', [CommunicationRecordController::class, 'index'])->name('index');
+            Route::get('/create', [CommunicationRecordController::class, 'create'])->name('create');
+            Route::post('/', [CommunicationRecordController::class, 'store'])->name('store');
+            Route::get('/{record}', [CommunicationRecordController::class, 'show'])->name('show');
+            Route::get('/{record}/edit', [CommunicationRecordController::class, 'edit'])->name('edit');
+            Route::put('/{record}', [CommunicationRecordController::class, 'update'])->name('update');
+            Route::delete('/{record}', [CommunicationRecordController::class, 'destroy'])->name('destroy');
         });
 
+        // Routes pour les actions des records (sans communication_id dans l'URL)
+        Route::prefix('records')->name('communications.records.')->group(function () {
+            Route::get('search', [CommunicationRecordController::class, 'searchRecords'])->name('search');
+            Route::post('return-effective', [CommunicationRecordController::class, 'returnEffective'])->name('return-effective');
+            Route::post('return-cancel', [CommunicationRecordController::class, 'returnCancel'])->name('return-cancel');
+        });
+        // =================== FIN ROUTES RECORDS ===================
 
         Route::prefix('reservations')->name('communications.reservations.')->group(function () {
             Route::get('/', [ReservationController::class, 'index'])->name('index');
@@ -495,9 +505,7 @@ Route::group(['middleware' => 'auth'], function () {
             });
 
             Route::resource('records', ReservationRecordController::class)->names('records');
-
         });
-
     });
 
 

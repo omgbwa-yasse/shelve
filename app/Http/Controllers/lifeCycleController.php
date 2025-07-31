@@ -77,20 +77,20 @@ class LifeCycleController extends Controller
 
         // Étape 2: Si ça marche, décommenter progressivement les lignes ci-dessous
 
-//        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-//            ->select('records.*')
-//            ->with(['activity', 'status', 'level', 'user'])
-//            ->paginate(15);
-//
-
-        // Étape 3: Ajouter les autres joins
         $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
-            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
-            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
             ->select('records.*')
             ->with(['activity', 'status', 'level', 'user'])
             ->paginate(15);
+//
+
+        // Étape 3: Ajouter les autres joins
+//        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
+//            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
+//            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
+//            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
+//            ->select('records.*')
+//            ->with(['activity', 'status', 'level', 'user'])
+//            ->paginate(15);
 
 
         // Étape 4: Ajouter les conditions
@@ -108,7 +108,7 @@ class LifeCycleController extends Controller
         */
 
         // Debug: afficher le nombre de résultats
-         dd($records->total()); // Décommenter pour voir le nombre de résultats
+//         dd($records->total()); // Décommenter pour voir le nombre de résultats
 
         return view('records.index', array_merge(
             compact('records', 'title'),

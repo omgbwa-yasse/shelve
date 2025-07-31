@@ -24,17 +24,17 @@
             <a href="{{ route('communications.transactions.index') }}" class="btn btn-secondary me-2">
                 <i class="bi bi-arrow-left"></i> Retour
             </a>
-            <a href="{{ route('communications.records.edit', [$communication->id, $communicationRecord->id]) }}" class="btn btn-warning me-2">
-                <i class="bi bi-pencil"></i> Modifier
-            </a>
-            <form action="{{ route('communications.records.destroy', [$communication->id, $communicationRecord->id]) }}" method="POST" class="d-inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger"
-                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enregistrement ?')">
-                    <i class="bi bi-trash"></i> Supprimer
-                </button>
-            </form>
+{{--            <a href="{{ route('communications.records.edit', [$communication->id, $communicationRecord->id]) }}" class="btn btn-warning me-2">--}}
+{{--                <i class="bi bi-pencil"></i> Modifier--}}
+{{--            </a>--}}
+{{--            <form action="{{ route('communications.records.destroy', [$communication->id, $communicationRecord->id]) }}" method="POST" class="d-inline">--}}
+{{--                @csrf--}}
+{{--                @method('DELETE')--}}
+{{--                <button type="submit" class="btn btn-danger"--}}
+{{--                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet enregistrement ?')">--}}
+{{--                    <i class="bi bi-trash"></i> Supprimer--}}
+{{--                </button>--}}
+{{--            </form>--}}
         </div>
     </div>
 
@@ -54,7 +54,7 @@
                         <th>Communication</th>
                         <td>
                             {{ $communicationRecord->communication->code ?? 'Non spécifié' }}
-                            @if($communicationRecord->communication->name)
+                            @if($communicationRecord->communication->name??'')
                                 <br><small class="text-muted">{{ $communicationRecord->communication->name }}</small>
                             @endif
                         </td>
@@ -63,7 +63,7 @@
                         <th>Enregistrement</th>
                         <td>
                             {{ $communicationRecord->record->name ?? 'Non spécifié' }}
-                            @if($communicationRecord->record->code)
+                            @if($communicationRecord->record->code??'')
                                 <br><small class="text-muted">Code: {{ $communicationRecord->record->code }}</small>
                             @endif
                         </td>

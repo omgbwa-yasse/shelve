@@ -115,7 +115,7 @@
                     <li class="list-group-item">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1">{{ $record->record->name }}</h6>
+                                <h6 class="mb-1">{{ $record->record->name??'' }}</h6>
                                 <p class="mb-1"><small>{{ $record->is_original ? __('Original') : __('Copy') }} | {{ __('Return Date') }}: {{ $record->return_date }}</small></p>
                                 <p class="mb-1"><small>{{ __('Effective Return Date') }}: {{ $record->return_effective ?? __('Not returned') }}</small></p>
                                 <p class="mb-0"><strong>{{ __('Content') }}:</strong> {{ $record->content ?? 'N/A' }}</p>
@@ -124,7 +124,7 @@
                                 <a href="{{ route('communications.records.show', [$communication, $record]) }}" class="btn btn-outline-secondary btn-sm">{{ __('View') }}</a>
                                 @if($communication->canBeEdited())
                                     @if($record->return_effective == NULL && !$record->is_original)
-                                        <a href="{{ route('communications.records.actions.return-effective') }}?id={{ $record->id }}" class="btn btn-success btn-sm">{{ __('Return') }}</a>
+{{--                                        <a href="{{ route('communications.records.actions.return-effective') }}?id={{ $record->id }}" class="btn btn-success btn-sm">{{ __('Return') }}</a>--}}
                                     @elseif($record->return_effective != NULL && $record->is_original)
                                         <a href="{{ route('communications.records.actions.return-cancel') }}?id={{ $record->id }}" class="btn btn-danger btn-sm">{{ __('Cancel Return') }}</a>
                                     @endif
