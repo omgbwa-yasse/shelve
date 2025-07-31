@@ -20,8 +20,8 @@
                 <input type="number" name="duration" id="duration" class="form-control" value="{{ $communicability->duration }}" required>
             </div>
             <div class="form-group">
-                <label for="decription">Description</label>
-                <textarea name="decription" id="decription" class="form-control">{{ $communicability->decription }}</textarea>
+                <label for="description">Description</label>
+                <textarea name="description" id="description" class="form-control">{{ $communicability->description }}</textarea>
             </div>
             <button type="submit" class="btn btn-primary">Update</button>
         </form>

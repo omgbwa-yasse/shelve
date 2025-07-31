@@ -29,7 +29,7 @@ class CommunicabilityController extends Controller
             'code' => 'required|unique:communicabilities|max:10',
             'name' => 'required|max:100',
             'duration' => 'required|integer',
-            'decription' => 'nullable',
+            'description' => 'nullable',
         ]);
 
         Communicability::create($request->all());

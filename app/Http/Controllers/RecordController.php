@@ -33,6 +33,41 @@ use ZipArchive;
 
 class RecordController extends Controller
 {
+    /**
+     * Traite et nettoie les IDs reçus du formulaire
+     *
+     * @param mixed $ids
+     * @return array
+     */
+    private function processIds($ids)
+    {
+        // Assurer que nous avons un tableau
+        if (!is_array($ids)) {
+            if (is_null($ids)) {
+                return [];
+            }
+            $ids = [$ids];
+        }
+
+        // Si c'est une chaîne, la diviser par les virgules
+        if (is_string($ids)) {
+            $ids = explode(',', $ids);
+        }
+
+        // Gérer le cas où les données sont dans le premier élément
+        if (isset($ids[0]) && is_string($ids[0])) {
+            $ids = explode(',', $ids[0]);
+        }
+
+        // Vérifier une dernière fois que c'est un tableau
+        if (!is_array($ids)) {
+            return [];
+        }
+
+        // Nettoyer et convertir en entiers
+        return array_filter(array_map('intval', $ids));
+    }
+
     public function search(Request $request)
     {
         $query = $request->input('query');
@@ -41,10 +76,10 @@ class RecordController extends Controller
             // Recherche dans l'intitulé (name) et le code
             $records = Record::where(function($q) use ($query) {
                 $q->where('name', 'LIKE', '%' . $query . '%')
-                  ->orWhere('code', 'LIKE', '%' . $query . '%');
+                    ->orWhere('code', 'LIKE', '%' . $query . '%');
             })
-            ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'])
-            ->paginate(10);
+                ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'])
+                ->paginate(10);
         } else {
             // Si pas de query, retourner une collection vide paginée
             $records = Record::where('id', 0)->paginate(10);
@@ -209,15 +244,7 @@ class RecordController extends Controller
         $record = Record::create($recordData);
 
         // Traitement des auteurs (obligatoire)
-        $author_ids = $request->input('author_ids', []);
-        if (is_string($author_ids)) {
-            $author_ids = explode(',', $author_ids);
-        }
-        if (isset($author_ids[0]) && is_string($author_ids[0])) {
-            $author_ids = explode(',', $author_ids[0]);
-        }
-
-        $author_ids = array_filter(array_map('intval', $author_ids));
+        $author_ids = $this->processIds($request->input('author_ids', []));
 
         if (empty($author_ids)) {
             $record->delete();
@@ -231,15 +258,7 @@ class RecordController extends Controller
         }
 
         // Traitement des termes du thésaurus (optionnel)
-        $term_ids = $request->input('term_ids', []);
-        if (is_string($term_ids)) {
-            $term_ids = explode(',', $term_ids);
-        }
-        if (isset($term_ids[0]) && is_string($term_ids[0])) {
-            $term_ids = explode(',', $term_ids[0]);
-        }
-
-        $term_ids = array_filter(array_map('intval', $term_ids));
+        $term_ids = $this->processIds($request->input('term_ids', []));
 
         foreach ($term_ids as $term_id) {
             if ($term_id > 0) {
@@ -344,8 +363,8 @@ class RecordController extends Controller
         $suggestedTitle = $request->query('suggested_title');
 
         return view('records.edit', compact('levels', 'record', 'statuses', 'supports', 'activities',
-                                            'parents', 'containers', 'users', 'authors', 'author_ids',
-                                            'term_ids', 'suggestedTitle'));
+            'parents', 'containers', 'users', 'authors', 'author_ids',
+            'term_ids', 'suggestedTitle'));
     }
 
     public function update(Request $request, Record $record)
@@ -401,15 +420,7 @@ class RecordController extends Controller
         $record->update($validatedData);
 
         // Traitement des auteurs
-        $author_ids = $request->input('author_ids', []);
-        if (is_string($author_ids)) {
-            $author_ids = explode(',', $author_ids);
-        }
-        if (isset($author_ids[0]) && is_string($author_ids[0])) {
-            $author_ids = explode(',', $author_ids[0]);
-        }
-
-        $author_ids = array_filter(array_map('intval', $author_ids));
+        $author_ids = $this->processIds($request->input('author_ids', []));
 
         if (empty($author_ids)) {
             return back()->withErrors(['author_ids' => 'Au moins un auteur doit être sélectionné.'])->withInput();
@@ -419,15 +430,7 @@ class RecordController extends Controller
         $record->authors()->sync($author_ids);
 
         // Traitement des termes du thésaurus
-        $term_ids = $request->input('term_ids', []);
-        if (is_string($term_ids)) {
-            $term_ids = explode(',', $term_ids);
-        }
-        if (isset($term_ids[0]) && is_string($term_ids[0])) {
-            $term_ids = explode(',', $term_ids[0]);
-        }
-
-        $term_ids = array_filter(array_map('intval', $term_ids));
+        $term_ids = $this->processIds($request->input('term_ids', []));
 
         // Mettez à jour les relations entre les concepts du thésaurus et l'enregistrement
         if (!empty($term_ids)) {
@@ -790,7 +793,7 @@ class RecordController extends Controller
             $terms = ThesaurusConcept::with(['labels', 'scheme'])
                 ->whereHas('labels', function($labelQuery) use ($query) {
                     $labelQuery->where('literal_form', 'LIKE', '%' . $query . '%')
-                             ->whereIn('type', ['prefLabel', 'altLabel']);
+                        ->whereIn('type', ['prefLabel', 'altLabel']);
                 })
                 ->where('status', 1)
                 ->limit($limit)

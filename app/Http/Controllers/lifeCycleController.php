@@ -62,17 +62,53 @@ class LifeCycleController extends Controller
      * Documents à conserver définitivement - période de rétention non écoulée
      * Sort = C et (date_end + durée rétention) > aujourd'hui
      */
+    /**
+     * Documents à conserver définitivement - période de rétention non écoulée
+     * Sort = C et (date_end + durée rétention) > aujourd'hui
+     */
     public function recordToRetain()
     {
         $title = "à conserver - période de rétention active";
 
-        $records = $this->addDateOrderBy(
-            $this->getRetentionBaseQuery()
-                ->where('sorts.code', 'C')
-                ->whereRaw(self::RETENTION_DURATION_ACTIVE)
-                ->select(self::RECORDS_SELECT)
-                ->with(['activity', 'status', 'level', 'user'])
-        )->paginate(15);
+        // Debug étape par étape
+        // Étape 1: Tester avec tous les records
+//        $records = Record::with(['activity', 'status', 'level', 'user'])
+//            ->paginate(15);
+
+        // Étape 2: Si ça marche, décommenter progressivement les lignes ci-dessous
+
+//        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
+//            ->select('records.*')
+//            ->with(['activity', 'status', 'level', 'user'])
+//            ->paginate(15);
+//
+
+        // Étape 3: Ajouter les autres joins
+        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
+            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
+            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
+            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
+            ->select('records.*')
+            ->with(['activity', 'status', 'level', 'user'])
+            ->paginate(15);
+
+
+        // Étape 4: Ajouter les conditions
+        /*
+        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
+            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
+            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
+            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
+            ->where('sorts.code', 'C')
+            ->whereRaw('DATEDIFF(NOW(), COALESCE(records.date_end, records.date_exact)) <= retentions.duration * 365')
+            ->select('records.*')
+            ->with(['activity', 'status', 'level', 'user'])
+            ->orderByRaw('COALESCE(records.date_end, records.date_exact) DESC')
+            ->paginate(15);
+        */
+
+        // Debug: afficher le nombre de résultats
+         dd($records->total()); // Décommenter pour voir le nombre de résultats
 
         return view('records.index', array_merge(
             compact('records', 'title'),

@@ -13,7 +13,7 @@ class Communicability extends Model
         'code',
         'name',
         'duration',
-        'decription',
+        'description',
     ];
 
 
