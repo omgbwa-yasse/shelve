@@ -2,6 +2,13 @@
 
 @section('content')
     <div class="container-fluid">
+        {{-- Back Button --}}
+        <div class="mb-3">
+            <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>{{ __('back_to_home') }}
+            </a>
+        </div>
+
         {{-- Breadcrumb + Messages --}}
         <div class="d-flex justify-content-between align-items-center mb-3">
             <nav aria-label="breadcrumb">
@@ -291,7 +298,222 @@
                 </div>
             </div>
         </div>
+
+        {{-- Lifecycle Section --}}
+        <div class="card mb-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>{{ __('lifecycle') ?? 'Cycle de vie' }}
+                </h5>
+            </div>
+            <div class="card-body">
+                @php
+                    // Calcul de la date de référence (date_exact en priorité, sinon date_end)
+                    $referenceDate = $record->date_exact ?? $record->date_end;
+
+                    // Conversion de la date selon le format si nécessaire
+                    if ($referenceDate && !$record->date_exact) {
+                        try {
+                            switch ($record->date_format) {
+                                case 'Y':
+                                    $referenceDate = $referenceDate . '-12-31';
+                                    break;
+                                case 'M':
+                                    $referenceDate = str_replace('/', '-', $referenceDate) . '-01';
+                                    break;
+                                case 'D':
+                                    $referenceDate = str_replace('/', '-', $referenceDate);
+                                    break;
+                            }
+                            $referenceDateObj = new DateTime($referenceDate);
+                        } catch (Exception $e) {
+                            $referenceDateObj = null;
+                        }
+                    } elseif ($referenceDate) {
+                        try {
+                            $referenceDateObj = new DateTime($referenceDate);
+                        } catch (Exception $e) {
+                            $referenceDateObj = null;
+                        }
+                    } else {
+                        $referenceDateObj = null;
+                    }
+
+                    // Calcul des délais pour le bureau (communicabilité)
+                    $communicabilityData = null;
+                    $bureauExpired = false;
+                    if ($record->activity && $record->activity->communicability && $referenceDateObj) {
+                        $communicability = $record->activity->communicability;
+                        $bureauEndDate = clone $referenceDateObj;
+                        $bureauEndDate->add(new DateInterval('P' . $communicability->duration . 'Y'));
+                        $bureauExpired = new DateTime() > $bureauEndDate;
+                        $communicabilityData = [
+                            'duration' => $communicability->duration,
+                            'end_date' => $bureauEndDate,
+                            'expired' => $bureauExpired
+                        ];
+                    }
+
+                    // Calcul des délais pour la salle d'archives (rétention la plus longue)
+                    $retentionData = null;
+                    $archiveExpired = false;
+                    if ($record->activity && $record->activity->retentions->isNotEmpty() && $referenceDateObj) {
+                        $longestRetention = $record->activity->retentions->sortByDesc('duration')->first();
+                        $archiveEndDate = clone $referenceDateObj;
+                        $archiveEndDate->add(new DateInterval('P' . $longestRetention->duration . 'Y'));
+                        $archiveExpired = new DateTime() > $archiveEndDate;
+                        $retentionData = [
+                            'duration' => $longestRetention->duration,
+                            'end_date' => $archiveEndDate,
+                            'expired' => $archiveExpired,
+                            'sort' => $longestRetention->sort
+                        ];
+                    }
+                @endphp
+
+                <div class="row g-3">
+                    {{-- Bureau Section --}}
+                    <div class="col-md-6">
+                        <div class="card h-100 {{ $bureauExpired ? 'border-warning' : 'border-success' }}">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-building me-2"></i>{{ __('office_period') ?? 'Délai dans le bureau' }}
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                @if($communicabilityData)
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5">{{ __('reference_date') ?? 'Date de référence' }}</dt>
+                                        <dd class="col-sm-7">
+                                            {{ $referenceDateObj ? $referenceDateObj->format('d/m/Y') : 'N/A' }}
+                                            @if($record->date_exact)
+                                                <small class="text-muted">(date exacte)</small>
+                                            @else
+                                                <small class="text-muted">(date fin)</small>
+                                            @endif
+                                        </dd>
+
+                                        <dt class="col-sm-5">{{ __('lifecycle_communicability') ?? 'Communicabilité' }}</dt>
+                                        <dd class="col-sm-7">{{ $communicabilityData['duration'] }} {{ __('years') ?? 'ans' }}</dd>
+
+                                        <dt class="col-sm-5">{{ __('lifecycle_end_date') ?? 'Date de fin' }}</dt>
+                                        <dd class="col-sm-7">{{ $communicabilityData['end_date']->format('d/m/Y') }}</dd>
+
+                                        <dt class="col-sm-5">{{ __('lifecycle_status') ?? 'Statut' }}</dt>
+                                        <dd class="col-sm-7">
+                                            @if($communicabilityData['expired'])
+                                                <span class="badge bg-warning">{{ __('expired') ?? 'Expiré' }}</span>
+                                            @else
+                                                <span class="badge bg-success">{{ __('active') ?? 'Actif' }}</span>
+                                            @endif
+                                        </dd>
+                                    </dl>
+                                @else
+                                    <div class="text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        {{ __('no_communicability_data') ?? 'Aucune donnée de communicabilité disponible' }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Archive Section --}}
+                    <div class="col-md-6">
+                        <div class="card h-100 {{ $archiveExpired ? 'border-danger' : 'border-info' }}">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-archive me-2"></i>{{ __('archive_period') ?? 'Salle d\'archives' }}
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                @if($retentionData)
+                                    <dl class="row mb-0">
+                                        <dt class="col-sm-5">{{ __('reference_date') ?? 'Date de référence' }}</dt>
+                                        <dd class="col-sm-7">
+                                            {{ $referenceDateObj ? $referenceDateObj->format('d/m/Y') : 'N/A' }}
+                                            @if($record->date_exact)
+                                                <small class="text-muted">(date exacte)</small>
+                                            @else
+                                                <small class="text-muted">(date fin)</small>
+                                            @endif
+                                        </dd>
+
+                                        <dt class="col-sm-5">{{ __('retention_duration') ?? 'Durée légale' }}</dt>
+                                        <dd class="col-sm-7">{{ $retentionData['duration'] }} {{ __('years') ?? 'ans' }}</dd>
+
+                                        <dt class="col-sm-5">{{ __('lifecycle_end_date') ?? 'Date de fin' }}</dt>
+                                        <dd class="col-sm-7">{{ $retentionData['end_date']->format('d/m/Y') }}</dd>
+
+                                        <dt class="col-sm-5">{{ __('final_sort') ?? 'Sort final' }}</dt>
+                                        <dd class="col-sm-7">
+                                            @switch($retentionData['sort']->code)
+                                                @case('C')
+                                                    <span class="badge bg-primary">
+                                                        {{ __('conservation') ?? 'Conservation' }}
+                                                    </span>
+                                                    @break
+                                                @case('T')
+                                                    <span class="badge bg-warning">
+                                                        {{ __('sorting') ?? 'Tri' }}
+                                                    </span>
+                                                    @break
+                                                @case('E')
+                                                    <span class="badge bg-danger">
+                                                        {{ __('elimination') ?? 'Élimination' }}
+                                                    </span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-secondary">{{ $retentionData['sort']->name }}</span>
+                                            @endswitch
+                                        </dd>
+
+                                        <dt class="col-sm-5">{{ __('lifecycle_status') ?? 'Statut' }}</dt>
+                                        <dd class="col-sm-7">
+                                            @if($retentionData['expired'])
+                                                <span class="badge bg-danger">{{ __('expired') ?? 'Expiré' }}</span>
+                                            @else
+                                                <span class="badge bg-info">{{ __('active') ?? 'Actif' }}</span>
+                                            @endif
+                                        </dd>
+                                    </dl>
+                                @else
+                                    <div class="text-muted">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        {{ __('no_retention_data') ?? 'Aucune donnée de rétention disponible' }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                {{-- Summary Section --}}
+                @if($communicabilityData || $retentionData)
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-info-circle me-2"></i>{{ __('lifecycle_summary') ?? 'Résumé du cycle de vie' }}
+                                </h6>
+                                <p class="mb-0">
+                                    @if($communicabilityData && $retentionData)
+                                        @if($bureauExpired && $archiveExpired)
+                                            {{ __('document_ready_for_final_action') ?? 'Ce document a dépassé tous les délais et est prêt pour le sort final' }}
+                                            ({{ $retentionData['sort']->name }}).
+                                        @elseif($bureauExpired && !$archiveExpired)
+                                            {{ __('document_ready_for_archive') ?? 'Ce document peut être transféré en salle d\'archives' }}.
+                                        @else
+                                            {{ __('document_in_office_period') ?? 'Ce document est encore dans sa période de bureau' }}.
+                                        @endif
+                                    @else
+                                        {{ __('incomplete_lifecycle_data') ?? 'Données de cycle de vie incomplètes' }}.
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -380,7 +602,7 @@
                                 <div class="card-img-top bg-light" style="height: 140px;">
                                     @if($attachment->thumbnail_path)
                                         <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}"
-                                             class="img-fluid h-100 w-100" style="object-fit: cover;">
+                                             class="img-fluid h-100 w-100" style="object-fit: cover;" alt="{{ $attachment->name }}">
                                     @else
                                         <div class="d-flex align-items-center justify-content-center h-100">
                                             <i class="bi bi-file-earmark-pdf fs-1 text-secondary"></i>
@@ -405,17 +627,6 @@
                     @endforelse
                 </div>
             </div>
-        </div>
-
-        <div class="d-flex gap-2 mb-4">
-            {{-- Back Button --}}
-            <a href="{{ route('records.index') }}" class="btn btn-outline-secondary flex-grow-1">
-                <i class="bi bi-arrow-left me-2"></i>{{ __('back_to_home') }}
-            </a>
-            {{-- Switch to Standard View Button --}}
-            <a href="{{ route('records.show', $record) }}" class="btn btn-outline-primary">
-                <i class="bi bi-eye me-2"></i>{{ __('standard_view') }}
-            </a>
         </div>
     </div>
 

@@ -21,16 +21,82 @@ class LifeCycleController extends Controller
 {
     // Constantes pour éviter la duplication avec logique date_end/date_exact
     const RECORDS_SELECT = 'records.*';
-    const RETENTION_DURATION_EXPIRED = 'DATEDIFF(NOW(), COALESCE(records.date_end, records.date_exact)) > retentions.duration * 365';
-    const RETENTION_DURATION_ACTIVE = 'DATEDIFF(NOW(), COALESCE(records.date_end, records.date_exact)) <= retentions.duration * 365';
-    const COMMUNICABILITY_EXPIRED = 'DATEDIFF(NOW(), COALESCE(records.date_end, records.date_exact)) > communicabilities.duration * 365';
 
     /**
-     * Retourne la date de référence pour le tri (date_end en priorité, sinon date_exact)
+     * Convertit une date selon son format en date MySQL
+     * @param string $dateField Le champ de date (date_start, date_end, etc.)
+     * @param string $formatField Le champ de format de date
+     * @return string Expression SQL pour la conversion
+     */
+    private function convertDateToMysqlDate($dateField, $formatField = 'records.date_format')
+    {
+        return "CASE
+            WHEN {$formatField} = 'Y' AND {$dateField} REGEXP '^[0-9]{4}$' THEN
+                MAKEDATE({$dateField}, 365)
+            WHEN {$formatField} = 'M' AND {$dateField} REGEXP '^[0-9]{4}/[0-9]{1,2}$' THEN
+                STR_TO_DATE(CONCAT(REPLACE({$dateField}, '/', '-'), '-01'), '%Y-%m-%d')
+            WHEN {$formatField} = 'D' AND {$dateField} REGEXP '^[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}$' THEN
+                STR_TO_DATE(REPLACE({$dateField}, '/', '-'), '%Y-%m-%d')
+            WHEN {$dateField} IS NOT NULL AND {$dateField} != '' THEN
+                CASE
+                    WHEN {$dateField} REGEXP '^[0-9]{4}$' THEN MAKEDATE({$dateField}, 365)
+                    WHEN {$dateField} REGEXP '^[0-9]{4}/[0-9]{1,2}$' THEN
+                        STR_TO_DATE(CONCAT(REPLACE({$dateField}, '/', '-'), '-01'), '%Y-%m-%d')
+                    WHEN {$dateField} REGEXP '^[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}$' THEN
+                        STR_TO_DATE(REPLACE({$dateField}, '/', '-'), '%Y-%m-%d')
+                    WHEN {$dateField} REGEXP '^[0-9]{4}-[0-9]{1,2}$' THEN
+                        STR_TO_DATE(CONCAT({$dateField}, '-01'), '%Y-%m-%d')
+                    WHEN {$dateField} REGEXP '^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$' THEN
+                        STR_TO_DATE({$dateField}, '%Y-%m-%d')
+                    ELSE MAKEDATE({$dateField}, 365)
+                END
+            ELSE NULL
+        END";
+    }
+
+    /**
+     * Retourne l'expression SQL pour la date de référence (date_end convertie en priorité, sinon date_exact)
+     */
+    private function getReferenceDateExpression()
+    {
+        $convertedDateEnd = $this->convertDateToMysqlDate('records.date_end');
+        return "COALESCE({$convertedDateEnd}, records.date_exact)";
+    }
+
+    /**
+     * Génère la condition SQL pour vérifier si la durée de rétention est expirée
+     */
+    private function getRetentionExpiredCondition()
+    {
+        $referenceDate = $this->getReferenceDateExpression();
+        return "DATEDIFF(NOW(), {$referenceDate}) > retentions.duration * 365";
+    }
+
+    /**
+     * Génère la condition SQL pour vérifier si la durée de rétention est encore active
+     */
+    private function getRetentionActiveCondition()
+    {
+        $referenceDate = $this->getReferenceDateExpression();
+        return "DATEDIFF(NOW(), {$referenceDate}) <= retentions.duration * 365";
+    }
+
+    /**
+     * Génère la condition SQL pour vérifier si la communicabilité est expirée
+     */
+    private function getCommunicabilityExpiredCondition()
+    {
+        $referenceDate = $this->getReferenceDateExpression();
+        return "DATEDIFF(NOW(), {$referenceDate}) > communicabilities.duration * 365";
+    }
+
+    /**
+     * Retourne la date de référence pour le tri (date_end convertie en priorité, sinon date_exact)
      */
     private function addDateOrderBy($query)
     {
-        return $query->orderByRaw('COALESCE(records.date_end, records.date_exact) DESC');
+        $referenceDate = $this->getReferenceDateExpression();
+        return $query->orderByRaw("{$referenceDate} DESC");
     }
 
     /**
@@ -62,53 +128,17 @@ class LifeCycleController extends Controller
      * Documents à conserver définitivement - période de rétention non écoulée
      * Sort = C et (date_end + durée rétention) > aujourd'hui
      */
-    /**
-     * Documents à conserver définitivement - période de rétention non écoulée
-     * Sort = C et (date_end + durée rétention) > aujourd'hui
-     */
     public function recordToRetain()
     {
         $title = "à conserver - période de rétention active";
 
-        // Debug étape par étape
-        // Étape 1: Tester avec tous les records
-//        $records = Record::with(['activity', 'status', 'level', 'user'])
-//            ->paginate(15);
-
-        // Étape 2: Si ça marche, décommenter progressivement les lignes ci-dessous
-
-        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-            ->select('records.*')
-            ->with(['activity', 'status', 'level', 'user'])
-            ->paginate(15);
-//
-
-        // Étape 3: Ajouter les autres joins
-//        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-//            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
-//            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
-//            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
-//            ->select('records.*')
-//            ->with(['activity', 'status', 'level', 'user'])
-//            ->paginate(15);
-
-
-        // Étape 4: Ajouter les conditions
-        /*
-        $records = Record::join('activities', 'records.activity_id', '=', 'activities.id')
-            ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
-            ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
-            ->join('sorts', 'retentions.sort_id', '=', 'sorts.id')
-            ->where('sorts.code', 'C')
-            ->whereRaw('DATEDIFF(NOW(), COALESCE(records.date_end, records.date_exact)) <= retentions.duration * 365')
-            ->select('records.*')
-            ->with(['activity', 'status', 'level', 'user'])
-            ->orderByRaw('COALESCE(records.date_end, records.date_exact) DESC')
-            ->paginate(15);
-        */
-
-        // Debug: afficher le nombre de résultats
-//         dd($records->total()); // Décommenter pour voir le nombre de résultats
+        $records = $this->addDateOrderBy(
+            $this->getRetentionBaseQuery()
+                ->where('sorts.code', 'C')
+                ->whereRaw($this->getRetentionActiveCondition())
+                ->select(self::RECORDS_SELECT)
+                ->with(['activity', 'status', 'level', 'user'])
+        )->paginate(15);
 
         return view('records.index', array_merge(
             compact('records', 'title'),
@@ -127,7 +157,7 @@ class LifeCycleController extends Controller
         $records = $this->addDateOrderBy(
             Record::join('activities', 'records.activity_id', '=', 'activities.id')
                 ->join('communicabilities', 'activities.communicability_id', '=', 'communicabilities.id')
-                ->whereRaw(self::COMMUNICABILITY_EXPIRED)
+                ->whereRaw($this->getCommunicabilityExpiredCondition())
                 ->select(self::RECORDS_SELECT)
                 ->with(['activity', 'status', 'level', 'user'])
         )->paginate(15);
@@ -149,7 +179,7 @@ class LifeCycleController extends Controller
         $records = $this->addDateOrderBy(
             $this->getRetentionBaseQuery()
                 ->where('sorts.code', 'T')
-                ->whereRaw(self::RETENTION_DURATION_EXPIRED)
+                ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
                 ->with(['activity', 'status', 'level', 'user'])
         )->paginate(15);
@@ -171,7 +201,7 @@ class LifeCycleController extends Controller
         $records = $this->addDateOrderBy(
             $this->getRetentionBaseQuery()
                 ->where('sorts.code', 'C')
-                ->whereRaw(self::RETENTION_DURATION_EXPIRED)
+                ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
                 ->with(['activity', 'status', 'level', 'user'])
         )->paginate(15);
@@ -194,7 +224,7 @@ class LifeCycleController extends Controller
         $records = $this->addDateOrderBy(
             $this->getRetentionBaseQuery()
                 ->where('sorts.code', 'C')
-                ->whereRaw(self::RETENTION_DURATION_ACTIVE)
+                ->whereRaw($this->getRetentionActiveCondition())
                 ->select(self::RECORDS_SELECT)
                 ->with(['activity', 'status', 'level', 'user'])
         )->paginate(15);
@@ -216,7 +246,7 @@ class LifeCycleController extends Controller
         $records = $this->addDateOrderBy(
             $this->getRetentionBaseQuery()
                 ->where('sorts.code', 'E')
-                ->whereRaw(self::RETENTION_DURATION_EXPIRED)
+                ->whereRaw($this->getRetentionExpiredCondition())
                 ->select(self::RECORDS_SELECT)
                 ->with(['activity', 'status', 'level', 'user'])
         )->paginate(15);
@@ -225,5 +255,116 @@ class LifeCycleController extends Controller
             compact('records', 'title'),
             $this->getCommonViewData()
         ));
+    }
+
+    /**
+     * Calcule les données du cycle de vie pour un enregistrement donné
+     * @param Record $record
+     * @return array
+     */
+    public function getLifecycleData($record)
+    {
+        // Calcul de la date de référence (date_exact en priorité, sinon date_end)
+        $referenceDate = $record->date_exact ?? $record->date_end;
+
+        // Conversion de la date selon le format si nécessaire
+        if ($referenceDate && !$record->date_exact) {
+            try {
+                switch ($record->date_format) {
+                    case 'Y':
+                        $referenceDate = $referenceDate . '-12-31';
+                        break;
+                    case 'M':
+                        $referenceDate = str_replace('/', '-', $referenceDate) . '-01';
+                        break;
+                    case 'D':
+                        $referenceDate = str_replace('/', '-', $referenceDate);
+                        break;
+                }
+                $referenceDateObj = new \DateTime($referenceDate);
+            } catch (\Exception $e) {
+                $referenceDateObj = null;
+            }
+        } elseif ($referenceDate) {
+            try {
+                $referenceDateObj = new \DateTime($referenceDate);
+            } catch (\Exception $e) {
+                $referenceDateObj = null;
+            }
+        } else {
+            $referenceDateObj = null;
+        }
+
+        // Calcul des délais pour le bureau (communicabilité)
+        $communicabilityData = null;
+        $bureauExpired = false;
+        if ($record->activity && $record->activity->communicability && $referenceDateObj) {
+            $communicability = $record->activity->communicability;
+            $bureauEndDate = clone $referenceDateObj;
+            $bureauEndDate->add(new \DateInterval('P' . $communicability->duration . 'Y'));
+            $bureauExpired = new \DateTime() > $bureauEndDate;
+            $communicabilityData = [
+                'duration' => $communicability->duration,
+                'end_date' => $bureauEndDate,
+                'expired' => $bureauExpired,
+                'name' => $communicability->name ?? 'Communicabilité'
+            ];
+        }
+
+        // Calcul des délais pour la salle d'archives (rétention la plus longue)
+        $retentionData = null;
+        $archiveExpired = false;
+        if ($record->activity && $record->activity->retentions->isNotEmpty() && $referenceDateObj) {
+            $longestRetention = $record->activity->retentions->sortByDesc('duration')->first();
+            $archiveEndDate = clone $referenceDateObj;
+            $archiveEndDate->add(new \DateInterval('P' . $longestRetention->duration . 'Y'));
+            $archiveExpired = new \DateTime() > $archiveEndDate;
+            $retentionData = [
+                'duration' => $longestRetention->duration,
+                'end_date' => $archiveEndDate,
+                'expired' => $archiveExpired,
+                'sort' => $longestRetention->sort,
+                'name' => $longestRetention->name ?? 'Rétention'
+            ];
+        }
+
+        return [
+            'reference_date' => $referenceDateObj,
+            'bureau' => $communicabilityData,
+            'archive' => $retentionData,
+            'summary' => [
+                'bureau_expired' => $bureauExpired,
+                'archive_expired' => $archiveExpired,
+                'current_phase' => $this->getCurrentLifecyclePhase($bureauExpired, $archiveExpired, $retentionData)
+            ]
+        ];
+    }
+
+    /**
+     * Détermine la phase actuelle du cycle de vie
+     * @param bool $bureauExpired
+     * @param bool $archiveExpired
+     * @param array|null $retentionData
+     * @return string
+     */
+    private function getCurrentLifecyclePhase($bureauExpired, $archiveExpired, $retentionData)
+    {
+        if (!$bureauExpired) {
+            return 'bureau';
+        } elseif ($bureauExpired && !$archiveExpired) {
+            return 'archive';
+        } elseif ($archiveExpired && $retentionData) {
+            switch ($retentionData['sort']->code) {
+                case 'C':
+                    return 'conservation_definitive';
+                case 'T':
+                    return 'tri_requis';
+                case 'E':
+                    return 'elimination_requise';
+                default:
+                    return 'action_requise';
+            }
+        }
+        return 'indetermine';
     }
 }
