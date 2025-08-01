@@ -19,6 +19,7 @@
         "milon/barcode": "^11.0",
         "php-ffmpeg/php-ffmpeg": "^1.2",
         "phpoffice/phpword": "^1.2",
+        "predis/predis": "^2.4",
         "smalot/pdfparser": "^2.7",
         "teamtnt/laravel-scout-tntsearch-driver": "^14.0",
         "teamtnt/tntsearch": "^4.3"
