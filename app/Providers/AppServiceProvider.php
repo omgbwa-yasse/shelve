@@ -21,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SettingService::class, function () {
             return new SettingService();
         });
+
+        // Désactiver certains services en production pour améliorer les performances
+        if ($this->app->environment('production')) {
+            $this->app['config']['app.debug'] = false;
+            $this->app['config']['logging.default'] = 'daily';
+        }
     }
 
 
