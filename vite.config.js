@@ -13,6 +13,28 @@ export default defineConfig({
         }),
         react()
     ],
+    build: {
+        // Optimisation de la construction
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    bootstrap: ['bootstrap'],
+                    axios: ['axios']
+                }
+            }
+        },
+        // Compression et minification
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true
+            }
+        },
+        // Améliore les performances de build
+        chunkSizeWarningLimit: 1000
+    },
     server: {
         host: 'localhost',
         port: 5175,

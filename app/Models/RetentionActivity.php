@@ -20,8 +20,8 @@ class RetentionActivity extends Model
         return $this->belongsTo(Retention::class, 'retention_id' );
     }
 
-    public function classification()
+    public function activity()
     {
-        return $this->belongsTo(activity::class, 'activity_id');
+        return $this->belongsTo(Activity::class, 'activity_id');
     }
 }

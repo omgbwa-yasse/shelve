@@ -1,39 +1,46 @@
 /* Styles pour la barre d'actions rapides des courriers */
 .mail-actions-bar {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    background: #f8f9fa; /* Un fond simple est souvent plus moderne qu'un gradient */
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 0.5rem; /* 8px */
     padding: 1rem 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: none !important;
-    transition: none;
+    transition: background-color 0.3s ease, border-color 0.3s ease; /* Transition douce */
 }
 
+/* Un léger changement de couleur au survol peut être plus subtil */
 .mail-actions-bar:hover {
-    box-shadow: none !important;
+    background-color: #ffffff;
+    border-color: #ced4da;
 }
 
 .mail-actions-bar .btn-sm {
     font-size: 0.875rem;
     padding: 0.375rem 0.75rem;
-    border-radius: 6px;
+    border-radius: 0.375rem; /* 6px */
     font-weight: 500;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Ajout d'une ombre subtile */
 }
 
 .mail-actions-bar .btn-sm:hover {
-    transform: translateY(-1px);
-    box-shadow: none !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Ombre plus prononcée au survol */
+}
+
+/* Ajout pour gérer l'espacement entre les boutons */
+.mail-actions-bar .d-flex > .btn-sm:not(:last-child) {
+    margin-right: 0.5rem;
 }
 
 .mail-actions-bar .badge {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 0.25rem; /* 4px */
 }
 
 .mail-actions-label {
-    color: #6c757d;
+    color: #495057; /* Couleur de texte légèrement plus foncée pour un meilleur contraste */
     font-weight: 600;
     font-size: 0.9rem;
     margin-right: 0.75rem;
@@ -48,11 +55,16 @@
 
     .mail-actions-bar .d-flex {
         flex-direction: column;
-        gap: 0.75rem !important;
+        gap: 0.5rem; /* Réduction de l'espacement vertical */
+    }
+
+    /* Annuler la marge droite en mode colonne */
+    .mail-actions-bar .d-flex > .btn-sm:not(:last-child) {
+        margin-right: 0;
     }
 
     .mail-actions-bar .ms-auto {
-        margin-left: 0 !important;
+        margin-left: 0;
         align-self: stretch;
     }
 

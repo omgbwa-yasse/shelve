@@ -23,6 +23,6 @@ class Retention extends Model
 
     public function activities()
     {
-        return $this->belongsToMany(activity::class, 'retention_activity', 'activity_id', 'retention_id');
+        return $this->belongsToMany(Activity::class, 'retention_activity', 'retention_id', 'activity_id');
     }
 }
