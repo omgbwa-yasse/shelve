@@ -24,7 +24,7 @@ class ToolActivitySeeder extends Seeder
             'name' => 'POLITIQUES ET DIRECTIVES',
             'children' => [
                 [
-                    'code' => '01000',
+                    'code' => '01001',
                     'name' => 'ORGANISATION ADMINISTRATIVE',
                     'children' => [],
                 ],
