@@ -173,7 +173,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
-    Route::get('/', [mailReceivedController::class, 'index']);
+    Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
     // Routes avec authentification pour les bulletin boards
     Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
