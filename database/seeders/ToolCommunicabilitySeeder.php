@@ -60,7 +60,7 @@ class ToolCommunicabilitySeeder extends Seeder
                 'activity_id' => $activity->id,
                 'name' => 'Règle de communicabilité pour ' . $activity->name,
                 'description' => $randomRule['description'],
-                'communicability_period_years' => $randomRule['years'],
+                'duration' => $randomRule['years'],
             ]);
         }
 

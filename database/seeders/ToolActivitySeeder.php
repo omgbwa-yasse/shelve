@@ -284,7 +284,7 @@ class ToolActivitySeeder extends Seeder
             ],
         ],
         [
-            'code' => '05000',
+            'code' => '05001',
             'name' => 'MÉMOIRES ET DÉCRETS',
             'children' => [
                 [

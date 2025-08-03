@@ -42,6 +42,10 @@ class DatabaseSeeder extends Seeder
             // Seeders pour les tâches
             TaskCategorySeeder::class, // Seeder pour les catégories de tâches
             TaskSeeder::class, // Seeder pour les exemples de tâches
+
+            ToolActivitySeeder::class, // Seeder pour les activités
+            ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
+            ToolOrganisationSeeder::class, // Seeder pour les organisations et services
         ]);
     }
 }

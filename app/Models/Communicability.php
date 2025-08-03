@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Communicability extends Model
 {
     use HasFactory;
-
+    protected $table = 'communicabilities';
     protected $fillable = [
         'activity_id',
         'name',
         'description',
-        'communicability_period_years',
+        'duration', // Duration in years
+        // 'communicability_period_years', // This field is deprecated, use 'duration'
     ];
 
     public function activity()
