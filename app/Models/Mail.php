@@ -157,6 +157,8 @@ class Mail extends Model
     }
 
     // Méthodes polymorphiques pour obtenir l'expéditeur et le destinataire réels basés sur le type
+    // TEMPORAIREMENT COMMENTÉES POUR ÉVITER LES CONFLITS
+    /*
     public function getSenderAttribute()
     {
         if (!$this->sender_type) {
@@ -186,6 +188,7 @@ class Mail extends Model
             default => null
         };
     }
+    */
 
     public function assignedOrganisation()
     {
@@ -380,7 +383,8 @@ class Mail extends Model
     {
         parent::boot();
 
-        // Événements du modèle pour le tracking automatique
+        // Événements du modèle temporairement désactivés pour debug
+        /*
         static::created(function ($mail) {
             $mail->logAction('created', null, null, null, 'Courrier créé');
             $mail->initializeWorkflow();
@@ -399,5 +403,6 @@ class Mail extends Model
         static::deleted(function ($mail) {
             $mail->logAction('deleted', null, null, null, 'Courrier supprimé');
         });
+        */
     }
 }

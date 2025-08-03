@@ -29,8 +29,6 @@ class MailHistory extends Model
     ];
 
     protected $casts = [
-        'old_value' => 'json',
-        'new_value' => 'json',
         'location_data' => 'json',
         'metadata' => 'json',
         'processing_time' => 'integer', // en secondes
