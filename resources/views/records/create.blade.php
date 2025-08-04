@@ -74,7 +74,7 @@
 
                             <div class="row mt-2">
                                 <div class="col-12">
-                                    <label class="form-label small">{{ __('name') }} *</label>
+                                    <label class="form-label small">{{ __('name') }} * <b class="btn-danger">[ Objet . action : Typologie]</b></label>
                                     <textarea name="name" class="form-control form-control-sm" rows="2" required>{{ old('name') }}</textarea>
                                 </div>
                             </div>

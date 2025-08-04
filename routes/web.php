@@ -584,6 +584,11 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('select-modal', [RecordAuthorController::class, 'selectModal'])->name('author-handler.select-modal');
         });
 
+    Route::prefix('activity-handler')->group(function () {
+            Route::get('list', [ActivityController::class, 'list'])->name('activity-handler.list');
+            Route::get('hierarchy/{id?}', [ActivityController::class, 'hierarchy'])->name('activity-handler.hierarchy');
+        });
+
 
 
     Route::prefix('transferrings')->group(function () {
