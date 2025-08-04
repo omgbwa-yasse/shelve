@@ -346,6 +346,12 @@ class RecordController extends Controller
     {
         $this->authorize('update', $record);
 
+        // Charger le record avec ses relations, y compris authorType pour les auteurs
+        $record->load([
+            'authors.authorType',
+            'thesaurusConcepts'
+        ]);
+
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();

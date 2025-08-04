@@ -28,6 +28,24 @@ class RecordAuthorController extends Controller
     {
         $query = Author::with('authorType');
 
+        // Apply ids filter (for loading specific authors by their IDs)
+        if ($request->has('ids') && !empty($request->ids)) {
+            $ids = is_array($request->ids) ? $request->ids : explode(',', $request->ids);
+            $authors = $query->whereIn('id', $ids)->get();
+
+            $authors->transform(function ($author) {
+                if (!$author->authorType) {
+                    $author->authorType = (object)['name' => ''];
+                }
+                return $author;
+            });
+
+            return response()->json([
+                'data' => $authors,
+                'message' => $authors->isEmpty() ? 'No authors found' : null
+            ]);
+        }
+
         // Apply search filter
         if ($request->has('search') && !empty($request->search)) {
             $query->where('name', 'like', '%' . $request->search . '%');

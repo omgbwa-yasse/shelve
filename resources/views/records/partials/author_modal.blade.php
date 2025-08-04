@@ -132,8 +132,30 @@
         if (authorModal) {
             authorModal.addEventListener('show.bs.modal', function() {
                 loadAuthorTypes();
+                initializeSelectedAuthorsFromForm();
                 loadAuthors();
                 initializeAlphabetFilter();
+            });
+        }
+
+        // Initialize selected authors from form
+        function initializeSelectedAuthorsFromForm() {
+            selectedAuthors = [];
+            const formAuthors = document.querySelectorAll('#selected-authors-container .selected-author');
+
+            formAuthors.forEach(authorElement => {
+                const authorId = parseInt(authorElement.dataset.id);
+                const authorName = authorElement.querySelector('span').textContent.split(' (')[0]; // Extract name without type
+                const authorTypeText = authorElement.querySelector('span').textContent.includes('(') ?
+                    authorElement.querySelector('span').textContent.split(' (')[1].replace(')', '') : '';
+
+                const author = {
+                    id: authorId,
+                    name: authorName,
+                    authorType: authorTypeText ? { name: authorTypeText } : null
+                };
+
+                selectedAuthors.push(author);
             });
         }
 
@@ -216,7 +238,7 @@
                 const authorInfo = document.createElement('div');
                 authorInfo.innerHTML = `
                     <strong>${author.name}</strong>
-                    ${author.type ? `<span class="badge bg-secondary ms-2">${author.type.name}</span>` : ''}
+                    ${author.authorType ? `<span class="badge bg-secondary ms-2">${author.authorType.name}</span>` : ''}
                     ${author.lifespan ? `<small class="text-muted d-block">${author.lifespan}</small>` : ''}
                 `;
 
@@ -309,18 +331,24 @@
 
         // Toggle author selection
         function toggleAuthorSelection(author, element) {
+            console.log('Toggle sélection pour auteur:', author);
             const index = selectedAuthors.findIndex(a => a.id === author.id);
             if (index === -1) {
+                // Ajouter l'auteur
                 selectedAuthors.push(author);
                 element.classList.add('active');
                 element.querySelector('button').className = 'btn btn-sm btn-danger';
                 element.querySelector('button').textContent = 'Remove';
+                console.log('Auteur ajouté à la sélection:', author.name);
             } else {
+                // Retirer l'auteur
                 selectedAuthors.splice(index, 1);
                 element.classList.remove('active');
                 element.querySelector('button').className = 'btn btn-sm btn-primary';
                 element.querySelector('button').textContent = 'Select';
+                console.log('Auteur retiré de la sélection:', author.name);
             }
+            console.log('Auteurs actuellement sélectionnés:', selectedAuthors);
         }
 
         // Load author types
@@ -345,14 +373,15 @@
         // Save selected authors
         if (saveAuthorsBtn) {
             saveAuthorsBtn.addEventListener('click', function() {
+                console.log('Bouton Save cliqué, auteurs sélectionnés:', selectedAuthors);
                 const modal = bootstrap.Modal.getInstance(authorModal);
 
-                // This is where you would typically save the selectedAuthors to your form
-                // For example, you might update hidden inputs or trigger a callback
+                // Déclencher l'événement avec les auteurs sélectionnés
                 const event = new CustomEvent('authorsSelected', {
                     detail: { authors: selectedAuthors }
                 });
                 document.dispatchEvent(event);
+                console.log('Événement authorsSelected déclenché');
 
                 modal.hide();
             });
@@ -372,19 +401,19 @@
         if (addAuthorForm) {
                 // Utiliser un drapeau pour empêcher les soumissions en double
                 let estEnSoumission = false;
-                
+
                 addAuthorForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
+
                     // Si déjà en soumission, ne pas traiter à nouveau
                     if (estEnSoumission) return;
                     estEnSoumission = true;
-                    
+
                     // Désactiver le bouton de soumission
                     const submitButton = addAuthorForm.querySelector('button[type="submit"]');
                     submitButton.disabled = true;
                     submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Ajout en cours...';
-                    
+
                     const formData = new FormData(addAuthorForm);
 
                     fetch(`{{ route('author-handler.store') }}`, {
@@ -402,12 +431,12 @@
                         return response.json();
                     })
                     .then(data => {
-              
+
                         // Réinitialiser le statut de soumission
                         estEnSoumission = false;
                         submitButton.disabled = false;
                         submitButton.innerHTML = '{{ __("add") }}';
-                        
+
                         if (data.success) {
                             // Ajouter l'auteur nouvellement créé aux auteurs sélectionnés
                             selectedAuthors.push(data.author);
@@ -448,9 +477,9 @@
                         estEnSoumission = false;
                         submitButton.disabled = false;
                         submitButton.innerHTML = '{{ __("add") }}';
-                        
+
                         console.error('Erreur lors de l\'ajout de l\'auteur:', error);
-                        
+
                         // Afficher un message d'erreur
                         const errorAlert = document.createElement('div');
                         errorAlert.className = 'alert alert-danger alert-dismissible fade show';
@@ -479,10 +508,10 @@
                 timeout = setTimeout(() => func.apply(context, args), wait);
             };
         }
-    
-    
-    
-     
+
+
+
+
 
         // Parent author selection functionality
         if (parentSearchBtn && clearParentBtn) {
@@ -494,21 +523,21 @@
             resultsContainer.style.zIndex = '1000';
             document.getElementById('parent_name').parentNode.style.position = 'relative';
             document.getElementById('parent_name').parentNode.appendChild(resultsContainer);
-            
+
             // Search input event
             document.getElementById('parent_name').addEventListener('input', debounce(function() {
                 const searchTerm = this.value.trim();
-                
+
                 if (searchTerm.length < 2) {
                     resultsContainer.style.display = 'none';
                     return;
                 }
-                
+
                 fetch(`{{ route('author-handler.list') }}?search=${searchTerm}`)
                     .then(response => response.json())
                     .then(data => {
                         resultsContainer.innerHTML = '';
-                        
+
                         // Limit results to between 3 and 7 authors
                         const authors = data.data.slice(0, 7);
                         if (authors.length < 3) {
@@ -523,15 +552,15 @@
                                 return;
                             }
                         }
-                        
+
                         displayAuthorResults(authors);
                     });
             }, 300));
-            
+
             // Display author results
             function displayAuthorResults(authors) {
                 resultsContainer.innerHTML = '';
-                
+
                 if (authors.length > 0) {
                     authors.forEach(author => {
                         const item = document.createElement('a');
@@ -551,7 +580,7 @@
                     resultsContainer.style.display = 'none';
                 }
             }
-            
+
             // Search button click
             parentSearchBtn.addEventListener('click', function() {
                 const searchTerm = document.getElementById('parent_name').value.trim();
@@ -570,30 +599,30 @@
                         });
                 }
             });
-            
+
             // Clear button click
             clearParentBtn.addEventListener('click', function() {
                 document.getElementById('parent_id').value = '';
                 document.getElementById('parent_name').value = '';
                 resultsContainer.style.display = 'none';
             });
-            
+
             // Hide results when clicking outside
             document.addEventListener('click', function(event) {
                 const parentInput = document.getElementById('parent_name');
-                if (!parentInput.contains(event.target) && 
+                if (!parentInput.contains(event.target) &&
                     !resultsContainer.contains(event.target) &&
                     !parentSearchBtn.contains(event.target)) {
                     resultsContainer.style.display = 'none';
                 }
             });
-        
+
         }
-    
-  
+
+
     });
 
 
-    
+
     </script>
 @endpush
