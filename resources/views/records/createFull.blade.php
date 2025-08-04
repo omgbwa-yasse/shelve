@@ -121,13 +121,7 @@
                                 <!-- Les auteurs sélectionnés apparaîtront ici -->
                             </div>
 
-                            <!-- Bouton de test pour déboguer -->
-                            <button type="button" class="btn btn-warning btn-sm mt-2" onclick="testAddAuthor()">
-                                Test: Ajouter un auteur
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm mt-2 ms-2" onclick="debugInterface()">
-                                Debug Interface
-                            </button>
+
 
                             <!-- Champs cachés pour stocker les ID des auteurs sélectionnés -->
                             <div id="author-ids-container">
@@ -467,29 +461,6 @@
             });
         };
 
-        // Fonction de test pour déboguer
-        window.testAddAuthor = function() {
-            console.log('=== TEST: Ajout d\'un auteur ===');
-            const testAuthor = {
-                id: 999,
-                name: 'Auteur Test',
-                authorType: { name: 'Type Test' }
-            };
-            console.log('Tentative d\'ajout de l\'auteur test:', testAuthor);
-            addAuthorToSelection(testAuthor);
-        };
-
-        // Fonction de débogage pour vérifier l'état de l'interface
-        window.debugInterface = function() {
-            console.log('=== DÉBOGAGE INTERFACE ===');
-            console.log('Modal backdrops:', document.querySelectorAll('.modal-backdrop').length);
-            console.log('Body classes:', document.body.className);
-            console.log('Body style overflow:', document.body.style.overflow);
-            console.log('Active element:', document.activeElement);
-            console.log('Onglets actifs:', document.querySelectorAll('.nav-link.active').length);
-            console.log('Conteneur auteurs visible:', document.getElementById('selected-authors-container').offsetParent !== null);
-        };
-
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContentLoaded - Initialisation de la page createFull');
 
@@ -523,6 +494,47 @@
 
             // Pré-remplir les champs avec les anciennes valeurs en cas d'erreur
             preloadOldValues();
+
+            // Ajouter un gestionnaire de soumission pour déboguer les données
+            const form = document.querySelector('form[action*="records.store"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('=== DÉBOGAGE SOUMISSION FORMULAIRE ===');
+
+                    // Mettre à jour les IDs auteurs avant soumission
+                    updateAuthorIds();
+
+                    // Vérifier les champs cachés d'auteurs
+                    const authorInputs = form.querySelectorAll('input[name="author_ids[]"]');
+                    console.log('Nombre de champs author_ids[]:', authorInputs.length);
+
+                    const authorValues = [];
+                    authorInputs.forEach((input, index) => {
+                        console.log(`author_ids[${index}]:`, input.value);
+                        authorValues.push(input.value);
+                    });
+
+                    console.log('Valeurs des auteurs à envoyer:', authorValues);
+
+                    // Vérifier le conteneur des auteurs sélectionnés
+                    const selectedAuthors = document.querySelectorAll('#selected-authors-container .selected-author');
+                    console.log('Auteurs sélectionnés dans l\'interface:', selectedAuthors.length);
+                    selectedAuthors.forEach((author, index) => {
+                        console.log(`Auteur ${index}:`, {
+                            id: author.dataset.id,
+                            name: author.textContent.trim()
+                        });
+                    });
+
+                    // Si pas d'auteurs, empêcher la soumission pour déboguer
+                    if (authorInputs.length === 0) {
+                        console.error('ERREUR: Aucun champ author_ids[] trouvé avant soumission !');
+                        console.log('Conteneur author-ids:', document.getElementById('author-ids-container')?.innerHTML);
+                    }
+
+                    console.log('=== FIN DÉBOGAGE ===');
+                });
+            }
 
             // Ajouter une vérification périodique de l'état de l'interface
             setInterval(function() {
@@ -755,15 +767,15 @@
 
             // Utiliser setTimeout pour éviter les conflits avec la fermeture du modal
             setTimeout(() => {
-                // Vider le conteneur avant d'ajouter les nouveaux auteurs
                 const container = document.getElementById('selected-authors-container');
                 if (!container) {
                     console.error('Conteneur selected-authors-container introuvable');
                     return;
                 }
 
-                container.innerHTML = '';
-                console.log('Conteneur vidé');
+                // NE PAS vider le conteneur - juste ajouter les nouveaux auteurs
+                // container.innerHTML = ''; // ← LIGNE SUPPRIMÉE !
+                console.log('Ajout des nouveaux auteurs sans vider le conteneur');
 
                 selectedAuthorsFromModal.forEach((author, index) => {
                     console.log(`Traitement auteur ${index + 1}:`, author);

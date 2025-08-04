@@ -66,9 +66,7 @@ class RecordController extends Controller
 
         // Nettoyer et convertir en entiers
         return array_filter(array_map('intval', $ids));
-    }
-
-    public function search(Request $request)
+    }    public function search(Request $request)
     {
         $query = $request->input('query');
 

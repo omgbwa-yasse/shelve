@@ -82,9 +82,17 @@
 
                             <dt class="col-sm-3">{{ __('producers') }}</dt>
                             <dd class="col-sm-9">
-                                <a href="{{ route('records.sort')}}?categ=authors&id={{ $record->authors->pluck('id')->join('') }}">
-                                    {{ $record->authors->isEmpty() ? 'N/A' : $record->authors->map(fn($author) => "{$author->name}")->implode(' ') }}
-                                </a>
+                                @foreach($record->authors as $author)
+                                    <a href="{{ route('records.sort')}}?categ=authors&id={{ $author->id }}">
+                                        {{ $author->name }}
+                                    </a>
+                                    @if(!$loop->last)
+                                        ;
+                                    @endif
+                                @endforeach
+                                @if($record->authors->isEmpty())
+                                    N/A
+                                @endif
                             </dd>
                         </dl>
                     </div>
