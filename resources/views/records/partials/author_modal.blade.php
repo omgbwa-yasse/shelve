@@ -374,16 +374,48 @@
         if (saveAuthorsBtn) {
             saveAuthorsBtn.addEventListener('click', function() {
                 console.log('Bouton Save cliqué, auteurs sélectionnés:', selectedAuthors);
-                const modal = bootstrap.Modal.getInstance(authorModal);
 
-                // Déclencher l'événement avec les auteurs sélectionnés
+                // Déclencher l'événement avec les auteurs sélectionnés AVANT de fermer le modal
                 const event = new CustomEvent('authorsSelected', {
                     detail: { authors: selectedAuthors }
                 });
                 document.dispatchEvent(event);
                 console.log('Événement authorsSelected déclenché');
 
-                modal.hide();
+                // Fermer le modal proprement
+                setTimeout(() => {
+                    try {
+                        const modal = bootstrap.Modal.getInstance(authorModal);
+                        if (modal) {
+                            modal.hide();
+                        } else {
+                            // Fallback : fermer manuellement
+                            authorModal.classList.remove('show');
+                            authorModal.style.display = 'none';
+                            authorModal.setAttribute('aria-hidden', 'true');
+                            document.body.classList.remove('modal-open');
+
+                            // Supprimer tous les backdrops
+                            const backdrops = document.querySelectorAll('.modal-backdrop');
+                            backdrops.forEach(backdrop => backdrop.remove());
+
+                            // Rétablir le style du body
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }
+                    } catch (error) {
+                        console.error('Erreur lors de la fermeture du modal:', error);
+                        // Fallback d'urgence
+                        authorModal.classList.remove('show');
+                        authorModal.style.display = 'none';
+                        authorModal.setAttribute('aria-hidden', 'true');
+                        document.body.classList.remove('modal-open');
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(backdrop => backdrop.remove());
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }
+                }, 100);
             });
         }
 
