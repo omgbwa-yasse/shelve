@@ -4,6 +4,13 @@
     <div class="container-fluid ">
         <h1>{{ __('Fill a form') }}</h1>
 
+        <!-- Informations sur les limites de taux -->
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Information :</strong> Pour éviter les abus, vous pouvez créer maximum <strong>10 communications par heure</strong>.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">

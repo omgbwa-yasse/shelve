@@ -270,6 +270,18 @@ class RecordController extends Controller
             }
         }
 
+        $record = Record::findOrFail($record->id)->load([
+            'children',
+            'parent',
+            'level',
+            'status',
+            'support',
+            'activity',
+            'containers',
+            'recordContainers.container',
+            'user'
+        ]);
+
         return redirect()->route('records.show', $record->id)->with('success', 'Record created successfully.');
     }
 

@@ -12,10 +12,12 @@ use App\Models\DollyCommunication;
 use App\Models\Organisation;
 use App\Models\User;
 use App\Services\CodeGeneratorService;
+use App\Services\RateLimitService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CommunicationController extends Controller
@@ -67,8 +69,16 @@ class CommunicationController extends Controller
 
 
 
-    public function store(Request $request)
+    public function store(Request $request, RateLimitService $rateLimitService)
     {
+        // Vérifier le rate limiting
+        if ($rateLimitService->tooManyAttempts('communication_create')) {
+            return redirect()->back()
+                ->withErrors(['rate_limit' => $rateLimitService->getErrorMessage('communication_create')])
+                ->withInput();
+        }
+
+        // Validation des données
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'content' => 'nullable|string',
@@ -78,29 +88,42 @@ class CommunicationController extends Controller
             'status' => 'required|in:' . implode(',', $this->getStatusValues()),
         ]);
 
+        // Vérifier l'organisation courante
         if (!Auth::user()->current_organisation_id) {
-            return redirect()->back()->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])->withInput();
+            return redirect()->back()
+                ->withErrors(['error' => 'Vous devez avoir une organisation courante pour créer une communication.'])
+                ->withInput();
         }
 
-        // Générer un code automatique uniquement au moment de l'enregistrement
-        $codeGenerator = new CodeGeneratorService();
-        $generatedCode = $codeGenerator->generateCommunicationCode();
+        // Créer la communication avec rate limiting
+        $communication = $rateLimitService->attempt(
+            'communication_create',
+            function() use ($validated) {
+                $codeGenerator = new CodeGeneratorService();
+                $generatedCode = $codeGenerator->generateCommunicationCode();
 
-        $communication = Communication::create([
-            'code' => $generatedCode,
-            'name' => $validated['name'],
-            'content' => $validated['content'] ?? null,
-            'operator_id' => Auth::user()->id,
-            'user_id' => $validated['user_id'],
-            'user_organisation_id' => $validated['user_organisation_id'],
-            'operator_organisation_id' => Auth::user()->current_organisation_id,
-            'return_date' => $validated['return_date'],
-            'status' => $validated['status'],
-        ]);
+                return Communication::create([
+                    'code' => $generatedCode,
+                    'name' => $validated['name'],
+                    'content' => $validated['content'] ?? null,
+                    'operator_id' => Auth::user()->id,
+                    'user_id' => $validated['user_id'],
+                    'user_organisation_id' => $validated['user_organisation_id'],
+                    'operator_organisation_id' => Auth::user()->current_organisation_id,
+                    'return_date' => $validated['return_date'],
+                    'status' => $validated['status'],
+                ]);
+            }
+        );
+
+        if (!$communication) {
+            return redirect()->back()
+                ->withErrors(['rate_limit' => $rateLimitService->getErrorMessage('communication_create')])
+                ->withInput();
+        }
 
         return redirect()->route('communications.transactions.show', $communication)
             ->with('success', 'Communication créée avec succès');
-
     }
 
 
