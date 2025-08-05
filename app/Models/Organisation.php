@@ -9,7 +9,7 @@ class Organisation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'parent_id'];
+    protected $fillable = ['code', 'name', 'parent_id'];
 
     public function parent()
     {

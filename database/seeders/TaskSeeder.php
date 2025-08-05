@@ -245,7 +245,7 @@ class TaskSeeder extends Seeder
 
         // Insérer les tâches une par une pour éviter les problèmes de colonnes
         foreach ($tasks as $task) {
-            DB::table('tasks')->insert($task);
+            DB::table('tasks')->insertOrIgnore($task);
         }
     }
 }

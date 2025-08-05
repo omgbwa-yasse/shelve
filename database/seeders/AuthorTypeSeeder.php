@@ -96,6 +96,6 @@ class AuthorTypeSeeder extends Seeder
             ],
         ];
 
-        DB::table('author_types')->insert($authorTypes);
+        DB::table('author_types')->insertOrIgnore($authorTypes);
     }
 }

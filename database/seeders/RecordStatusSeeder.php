@@ -50,6 +50,6 @@ class RecordStatusSeeder extends Seeder
             ],
         ];
 
-        DB::table('record_statuses')->insert($statuses);
+        DB::table('record_statuses')->insertOrIgnore($statuses);
     }
 }

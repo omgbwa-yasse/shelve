@@ -89,6 +89,6 @@ class TaskCategorySeeder extends Seeder
             ],
         ];
 
-        DB::table('task_categories')->insert($categories);
+        DB::table('task_categories')->insertOrIgnore($categories);
     }
 }

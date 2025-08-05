@@ -38,7 +38,7 @@ return new class extends Migration
 
         Schema::create('sorts', function (Blueprint $table) {
             $table->id();
-            $table->enum('code', ['E', 'T', 'C'])->change();
+            $table->enum('code', ['E', 'T', 'C']);
             $table->string('name', 45)->nullable(false);
             $table->string('description', 100)->nullable();
             $table->timestamps();

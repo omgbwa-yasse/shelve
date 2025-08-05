@@ -544,7 +544,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             ]);
 
             // Ajouter le label préféré
-            DB::table('thesaurus_labels')->insert([
+            DB::table('thesaurus_labels')->insertOrIgnore([
                 'concept_id' => $conceptIds[$key],
                 'type' => 'prefLabel',
                 'literal_form' => $concept['prefLabel'],
@@ -555,7 +555,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
             // Ajouter la définition
             if (isset($concept['definition'])) {
-                DB::table('thesaurus_concept_notes')->insert([
+                DB::table('thesaurus_concept_notes')->insertOrIgnore([
                     'concept_id' => $conceptIds[$key],
                     'type' => 'definition',
                     'note' => $concept['definition'],
@@ -568,7 +568,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
             // Ajouter les labels alternatifs (EP - Employé pour)
             if (isset($concept['altLabels'])) {
                 foreach ($concept['altLabels'] as $altLabel) {
-                    DB::table('thesaurus_labels')->insert([
+                    DB::table('thesaurus_labels')->insertOrIgnore([
                         'concept_id' => $conceptIds[$key],
                         'type' => 'altLabel',
                         'literal_form' => $altLabel,
@@ -688,7 +688,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ->first();
 
             if (!$existingLabel) {
-                DB::table('thesaurus_labels')->insert([
+                DB::table('thesaurus_labels')->insertOrIgnore([
                     'concept_id' => $subConceptId,
                     'type' => 'prefLabel',
                     'literal_form' => $subConcept['prefLabel'],
@@ -706,7 +706,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 ->first();
 
             if (!$existingNote) {
-                DB::table('thesaurus_concept_notes')->insert([
+                DB::table('thesaurus_concept_notes')->insertOrIgnore([
                     'concept_id' => $subConceptId,
                     'type' => 'definition',
                     'note' => $subConcept['definition'],
@@ -732,7 +732,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
             if (!$existingBroader) {
                 // Relation broader (le sous-concept a un terme plus large)
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $subConceptId,
                     'related_concept_id' => $parentId,
                     'relation_type' => 'broader',
@@ -750,7 +750,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
             if (!$existingNarrower) {
                 // Relation narrower (le concept parent a un terme plus spécifique)
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $parentId,
                     'related_concept_id' => $subConceptId,
                     'relation_type' => 'narrower',
@@ -788,7 +788,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
                 if (!$existingRelation1) {
                     // Relation bidirectionnelle - sens 1
-                    DB::table('thesaurus_concept_relations')->insert([
+                    DB::table('thesaurus_concept_relations')->insertOrIgnore([
                         'concept_id' => $conceptIds[$relation[0]],
                         'related_concept_id' => $conceptIds[$relation[1]],
                         'relation_type' => 'related',
@@ -806,7 +806,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
                 if (!$existingRelation2) {
                     // Relation bidirectionnelle - sens 2
-                    DB::table('thesaurus_concept_relations')->insert([
+                    DB::table('thesaurus_concept_relations')->insertOrIgnore([
                         'concept_id' => $conceptIds[$relation[1]],
                         'related_concept_id' => $conceptIds[$relation[0]],
                         'relation_type' => 'related',
@@ -871,7 +871,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
         // Insérer les namespaces manquants s'il y en a
         if (!empty($namespacesToInsert)) {
-            DB::table('thesaurus_namespaces')->insert($namespacesToInsert);
+            DB::table('thesaurus_namespaces')->insertOrIgnore($namespacesToInsert);
         }
     }
 
@@ -910,7 +910,7 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                     ->first();
 
                 if (!$existingScopeNote) {
-                    DB::table('thesaurus_concept_notes')->insert([
+                    DB::table('thesaurus_concept_notes')->insertOrIgnore([
                         'concept_id' => $conceptIds[$conceptKey],
                         'type' => 'scopeNote',
                         'note' => $note,

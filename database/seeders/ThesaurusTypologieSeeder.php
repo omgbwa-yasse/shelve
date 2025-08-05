@@ -293,7 +293,7 @@ class ThesaurusTypologieSeeder extends Seeder
                 ]);
 
                 // Ajouter le label préféré
-                DB::table('thesaurus_labels')->insert([
+                DB::table('thesaurus_labels')->insertOrIgnore([
                     'concept_id' => $conceptId,
                     'type' => 'prefLabel',
                     'literal_form' => $conceptData['label'],
@@ -304,7 +304,7 @@ class ThesaurusTypologieSeeder extends Seeder
 
                 // Ajouter le label alternatif si présent
                 if (isset($conceptData['alt_label'])) {
-                    DB::table('thesaurus_labels')->insert([
+                    DB::table('thesaurus_labels')->insertOrIgnore([
                         'concept_id' => $conceptId,
                         'type' => 'altLabel',
                         'literal_form' => $conceptData['alt_label'],

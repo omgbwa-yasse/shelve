@@ -80,6 +80,6 @@ class RecordSupportSeeder extends Seeder
             ],
         ];
 
-        DB::table('record_supports')->insert($supports);
+        DB::table('record_supports')->insertOrIgnore($supports);
     }
 }
