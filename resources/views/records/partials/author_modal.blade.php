@@ -458,7 +458,9 @@
                     })
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error(`Le serveur a répondu avec ${response.status}`);
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || `Le serveur a répondu avec ${response.status}`);
+                            });
                         }
                         return response.json();
                     })

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Author;
 use App\Models\AuthorType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RecordAuthorController extends Controller
 {
@@ -102,15 +103,26 @@ class RecordAuthorController extends Controller
 
             $author = Author::create($validated);
 
-            // Load the type relationship for display
-            $author->load('type');
+            // Load the authorType relationship for display
+            $author->load('authorType');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Author created successfully',
                 'author' => $author
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
+            Log::error('Error creating author: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating author: ' . $e->getMessage()
