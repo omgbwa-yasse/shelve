@@ -7,6 +7,56 @@
             <i class="bi bi-plus-circle"></i> {{ __('Fill a form') }}
         </a>
 
+        <!-- Filtres intégrés -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-funnel"></i> {{ __('Filters') }}
+                </h5>
+
+                <!-- Filtres rapides par statut -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <fieldset class="btn-group flex-wrap gap-1" aria-label="Status filters">
+                            <legend class="visually-hidden">{{ __('Filter by status') }}</legend>
+                            <a href="{{ route('communications.index') }}" class="btn btn-outline-primary {{ !request('categ') ? 'active' : '' }}">
+                                <i class="bi bi-inbox"></i> {{ __('All') }}
+                            </a>
+                            <a href="{{ route('communications.index') }}?categ=InProgress" class="btn btn-outline-warning {{ request('categ') == 'InProgress' ? 'active' : '' }}">
+                                <i class="bi bi-clock"></i> {{ __('In Progress') }}
+                            </a>
+                            <a href="{{ route('communications.index') }}?categ=return-effective" class="btn btn-outline-success {{ request('categ') == 'return-effective' ? 'active' : '' }}">
+                                <i class="bi bi-check-circle"></i> {{ __('Returned') }}
+                            </a>
+                            <a href="{{ route('communications.index') }}?categ=unreturn" class="btn btn-outline-secondary {{ request('categ') == 'unreturn' ? 'active' : '' }}">
+                                <i class="bi bi-dash-circle"></i> {{ __('Without Return') }}
+                            </a>
+                            <a href="{{ route('communications.index') }}?categ=not-return" class="btn btn-outline-danger {{ request('categ') == 'not-return' ? 'active' : '' }}">
+                                <i class="bi bi-x-circle"></i> {{ __('Not Returned') }}
+                            </a>
+                            <a href="{{ route('communications.index') }}?categ=return-available" class="btn btn-outline-info {{ request('categ') == 'return-available' ? 'active' : '' }}">
+                                <i class="bi bi-calendar-check"></i> {{ __('Return Available') }}
+                            </a>
+                        </fieldset>
+                    </div>
+                </div>
+
+                <!-- Recherche avancée et par date -->
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <a href="{{ route('communications.search.form') }}" class="btn btn-outline-dark">
+                            <i class="bi bi-search"></i> {{ __('Advanced Search') }}
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <a href="{{ route('communications.search.date-selection') }}" class="btn btn-outline-dark">
+                            <i class="bi bi-calendar-range"></i> {{ __('Date Search') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center bg-light p-3 mb-3">
             <div class="d-flex align-items-center">
                 <a href="#" id="cartBtn" class="btn btn-light btn-sm me-2" data-bs-toggle="modal" data-bs-target="#dolliesModal">
