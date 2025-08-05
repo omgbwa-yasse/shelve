@@ -506,10 +506,7 @@
             </div>
         </div>
 
-        {{-- Back Button --}}
-        <a href="{{ route('records.index') }}" class="btn btn-outline-secondary w-100">
-            <i class="bi bi-arrow-left me-2"></i>{{ __('back_to_home') }}
-        </a>
+
     </div>
 
     {{-- Delete Modal --}}
