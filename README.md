@@ -1,66 +1,315 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 Shelve - Système de Gestion d'Archives Intelligentes
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://img.shields.io/badge/Laravel-12.21.0-red?style=for-the-badge&logo=laravel" alt="Laravel 12">
+  <img src="https://img.shields.io/badge/PHP-8.2+-blue?style=for-the-badge&logo=php" alt="PHP 8.2+">
+  <img src="https://img.shields.io/badge/MySQL-8.0+-orange?style=for-the-badge&logo=mysql" alt="MySQL 8.0+">
+  <img src="https://img.shields.io/badge/Vue.js-3.0-green?style=for-the-badge&logo=vue.js" alt="Vue.js 3">
+  <img src="https://img.shields.io/badge/AI-Powered-purple?style=for-the-badge&logo=openai" alt="AI Powered">
 </p>
 
-## About Laravel
+**Shelve** est une plateforme complète de gestion d'archives modernes développée avec Laravel 12, intégrant l'intelligence artificielle pour automatiser et optimiser la gestion documentaire. Ce système offre une solution robuste pour l'archivage, la recherche intelligente, la gestion des workflows et la publication publique de documents.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Fonctionnalités Principales
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 📁 **Gestion d'Archives Avancée**
+- **Gestion de documents** : Upload, organisation et archivage automatisé
+- **Support multi-formats** : PDF, images, vidéos, documents Office
+- **Générations de codes-barres** : Traçabilité physique des documents
+- **Conteneurs intelligents** : Organisation hiérarchique des archives
+- **Versioning automatique** : Historique complet des modifications
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 🔍 **Recherche Intelligente Intégrée**
+- **Recherche textuelle avancée** avec TNTSearch
+- **Recherche sémantique** basée sur l'IA
+- **Filtres multicritères** : dates, auteurs, types, contenus
+- **Thésaurus intégré** : Recherche par concepts et relations
+- **Indexation automatique** des contenus
 
-## Learning Laravel
+### 📧 **Système de Courrier Électronique**
+- **Gestion complète des emails** entrants et sortants
+- **Workflows automatisés** de traitement du courrier
+- **Assignation et délégation** de tâches
+- **Suivi des deadlines** et alertes automatiques
+- **Archivage intelligent** des correspondances
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🤖 **Intelligence Artificielle Intégrée**
+- **Extraction automatique** de mots-clés et métadonnées
+- **Analyse de contenu** et classification automatique
+- **Résumés automatiques** de documents longs
+- **Chat IA** pour assistance utilisateur
+- **Support multi-providers** : Ollama, OpenAI, LM Studio, AnythingLLM
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 🌐 **Portail Public**
+- **Publication sélective** de documents publics
+- **Interface de recherche** pour le grand public
+- **Système de demandes** de documents
+- **Gestion des feedbacks** et commentaires
+- **Chat public** avec support IA
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🔄 **Workflows et Automatisation**
+- **Workflows configurables** pour tous les processus
+- **Assignation automatique** de tâches
+- **Escalade conditionnelle** en cas de retard
+- **Templates d'emails** personnalisables
+- **Notifications multi-canaux**
 
-## Laravel Sponsors
+### 📊 **Thésaurus et Classification**
+- **Thésaurus normé SKOS** intégré
+- **Relations hiérarchiques** et associatives
+- **Import/Export** au format SKOS, CSV, JSON
+- **Gestion multilingue** des concepts
+- **API RESTful** pour intégrations externes
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠️ Technologies et Architecture
 
-### Premium Partners
+### **Framework Principal**
+- **Laravel 12.21.0** - Framework PHP moderne
+- **PHP 8.2+** - Langage backend performant
+- **MySQL 8.0+** - Base de données relationnelle
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### **Frontend et Interface**
+- **Vue.js 3** - Interface utilisateur réactive
+- **TailwindCSS** - Framework CSS moderne
+- **Intervention Image** - Traitement d'images
+- **PDF.js** - Visualisation PDF intégrée
 
-## Contributing
+### **Intelligence Artificielle**
+- **Ollama** - Modèles IA locaux
+- **OpenAI API** - GPT et modèles cloud
+- **LM Studio** - Modèles locaux personnalisés
+- **AnythingLLM** - Plateforme IA unifiée
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### **Recherche et Indexation**
+- **TNTSearch** - Moteur de recherche Laravel
+- **Scout** - Interface de recherche élégante
+- **Elasticsearch** (optionnel) - Recherche enterprise
 
-## Code of Conduct
+### **Génération de Documents**
+- **DomPDF** - Génération PDF
+- **PHPWord** - Documents Word
+- **Maatwebsite Excel** - Tableurs Excel
+- **Codes-barres** - Génération automatique
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### **Intégrations et API**
+- **MCP (Model Context Protocol)** - Serveur d'intégration IA
+- **RESTful API** complète
+- **WebSockets** - Notifications temps réel
+- **Queue système** - Traitement asynchrone
 
-## Security Vulnerabilities
+## 📋 Prérequis Système
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+- PHP >= 8.2
+- MySQL >= 8.0 ou MariaDB >= 10.6
+- Composer >= 2.0
+- Node.js >= 18.0 et npm
+- Extensions PHP : pdo, mbstring, openssl, tokenizer, xml, ctype, json, bcmath, fileinfo, gd
+- Redis (optionnel, recommandé pour les performances)
+- FFmpeg (pour le traitement vidéo)
+```
 
-## License
+## 🚀 Installation Rapide
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 1. **Cloner le Repository**
+```bash
+git clone https://github.com/yourusername/shelve.git
+cd shelve
+```
+
+### 2. **Installation des Dépendances**
+```bash
+# Dépendances PHP
+composer install
+
+# Dépendances JavaScript
+npm install && npm run build
+```
+
+### 3. **Configuration de l'Environnement**
+```bash
+# Copier le fichier d'environnement
+cp .env.example .env
+
+# Générer la clé d'application
+php artisan key:generate
+```
+
+### 4. **Configuration Base de Données**
+```env
+# Éditer .env avec vos paramètres
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=shelve_db
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+### 5. **Migration et Initialisation**
+```bash
+# Créer la base de données
+php artisan migrate
+
+# Installer les données de base
+php artisan db:seed
+
+# Optimiser l'application
+php artisan optimize
+```
+
+### 6. **Démarrage du Serveur**
+```bash
+# Serveur de développement
+php artisan serve
+
+# Queue worker (terminal séparé)
+php artisan queue:work
+```
+
+## 👤 Comptes par Défaut
+
+Après l'installation, vous pouvez vous connecter avec :
+
+```
+🔐 Superadministrateur
+Email: superadmin@example.com
+Mot de passe: superadmin
+Permissions: Accès complet au système (125 permissions)
+```
+
+## 🔧 Configuration Avancée
+
+### **Configuration IA (Optionnel)**
+```env
+# Ollama (recommandé pour usage local)
+OLLAMA_BASE_URL=http://localhost:11434
+
+# OpenAI (pour usage cloud)
+OPENAI_API_KEY=your_openai_key
+
+# LM Studio (modèles locaux personnalisés)
+LMSTUDIO_BASE_URL=http://localhost:1234
+```
+
+### **Configuration Redis (Recommandé)**
+```env
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+CACHE_DRIVER=redis
+SESSION_DRIVER=redis
+QUEUE_CONNECTION=redis
+```
+
+### **Configuration Email**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-email
+MAIL_PASSWORD=your-password
+MAIL_ENCRYPTION=tls
+```
+
+## 📖 Documentation Complète
+
+### **Modules Principaux**
+- 📁 [Gestion d'Archives](docs/archives.md) - Documents, conteneurs, codes-barres
+- 📧 [Système de Courrier](docs/mail.md) - Workflows, assignation, archivage
+- 🔍 [Recherche Avancée](docs/search.md) - TNTSearch, filtres, thésaurus
+- 🤖 [Intelligence Artificielle](docs/ai.md) - Configuration, modèles, intégrations
+- 🌐 [Portail Public](docs/public.md) - Publication, demandes, chat
+- 📊 [Thésaurus](docs/thesaurus.md) - SKOS, import/export, API
+
+### **Administration**
+- ⚙️ [Configuration Système](docs/admin/settings.md)
+- 👥 [Gestion Utilisateurs](docs/admin/users.md)
+- 🔐 [Permissions et Rôles](docs/admin/permissions.md)
+- 📈 [Rapports et Analytics](docs/admin/reports.md)
+
+### **Développement**
+- 🔧 [API Documentation](docs/api/README.md)
+- 🧪 [Tests](docs/development/testing.md)
+- 🚀 [Déploiement](docs/deployment/README.md)
+- 🔌 [Extensions](docs/development/extensions.md)
+
+## 🛠️ Scripts d'Optimisation
+
+Le projet inclut des scripts d'optimisation prêts à l'emploi :
+
+```bash
+# Optimisation pour production
+./optimize-production.sh     # Linux/Mac
+optimize-production.bat      # Windows
+
+# Basculement vers Redis
+./switch-to-redis.bat        # Configuration Redis automatique
+```
+
+## 🧪 Tests et Qualité
+
+```bash
+# Tests unitaires et fonctionnels
+php artisan test
+
+# Analyse de code statique
+./vendor/bin/phpstan analyse
+
+# Formatage du code
+./vendor/bin/php-cs-fixer fix
+```
+
+## 🔐 Sécurité
+
+- **Authentification multi-niveaux** avec Laravel Sanctum
+- **Permissions granulaires** par module et action
+- **Chiffrement** des données sensibles
+- **Logs d'audit** complets
+- **Validation** stricte des entrées utilisateur
+- **Protection CSRF** et XSS
+
+## 📊 Performances
+
+- **Cache intelligent** avec Redis
+- **Optimisation base de données** avec indexation
+- **Compression d'images** automatique
+- **Lazy loading** des relations Eloquent
+- **Queue système** pour tâches lourdes
+- **CDN ready** pour assets statiques
+
+## 🌍 Support Multilingue
+
+- **Interface** en français et anglais
+- **Thésaurus multilingue** avec traductions
+- **Dates et formats** localisés
+- **Extensible** pour autres langues
+
+## 🤝 Contribution
+
+Ce projet est développé par **Omgbwa Yasse Emmanuel Fabrice** et **Njandjeu Lahakio David Andreas**.
+
+Pour contribuer :
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
+3. Commit vos changements (`git commit -am 'Ajout nouvelle fonctionnalité'`)
+4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
+5. Ouvrir une Pull Request
+
+## 📝 Licence
+
+Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+## 🆘 Support et Contact
+
+- **Documentation** : [docs/](docs/)
+- **Issues** : [GitHub Issues](https://github.com/yourusername/shelve/issues)
+- **Discussions** : [GitHub Discussions](https://github.com/yourusername/shelve/discussions)
+
+---
+
+<p align="center">
+  <strong>Shelve - Révolutionnez votre gestion d'archives avec l'IA</strong><br>
+  Développé avec ❤️ en Laravel 12
+</p>
