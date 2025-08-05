@@ -41,12 +41,8 @@ class RecordController extends Controller
      */
     private function processIds($ids)
     {
-        // Assurer que nous avons un tableau
-        if (!is_array($ids)) {
-            if (is_null($ids)) {
-                return [];
-            }
-            $ids = [$ids];
+        if (is_null($ids)) {
+            return [];
         }
 
         // Si c'est une chaîne, la diviser par les virgules
@@ -54,19 +50,23 @@ class RecordController extends Controller
             $ids = explode(',', $ids);
         }
 
-        // Gérer le cas où les données sont dans le premier élément
-        if (isset($ids[0]) && is_string($ids[0])) {
+        // Si c'est un tableau avec une chaîne en premier élément, la diviser
+        if (is_array($ids) && isset($ids[0]) && is_string($ids[0]) && strpos($ids[0], ',') !== false) {
             $ids = explode(',', $ids[0]);
         }
 
-        // Vérifier une dernière fois que c'est un tableau
-        if (!is_array($ids)) {
-            return [];
+        // Si c'est déjà un tableau d'entiers ou de chaînes, on le traite directement
+        if (is_array($ids)) {
+            return array_filter(array_map('intval', $ids));
         }
 
-        // Nettoyer et convertir en entiers
-        return array_filter(array_map('intval', $ids));
-    }    public function search(Request $request)
+        // Si ce n'est pas un tableau, retourner vide
+        return [];
+    }
+
+
+
+    public function search(Request $request)
     {
         $query = $request->input('query');
 
@@ -243,6 +243,8 @@ class RecordController extends Controller
 
         // Traitement des auteurs (obligatoire)
         $author_ids = $this->processIds($request->input('author_ids', []));
+
+
 
         if (empty($author_ids)) {
             $record->delete();
