@@ -64,8 +64,8 @@
                                     </a>
                                     <span class="mx-2">|</span>
                                     <i class="bi bi-building text-muted"></i>
-                                    <a href="{{ route('slips-sort')}}?categ=user-organisation&id={{ $slip->userOrganisation->id }}" class="text-decoration-none">
-                                        {{ $slip->userOrganisation->name }}
+                                    <a href="{{ route('slips-sort')}}?categ=user-organisation&id={{ $slip->userOrganisation->id??''}}" class="text-decoration-none">
+                                        {{ $slip->userOrganisation->name??'' }}
                                     </a>
                                 </p>
                             </div>
