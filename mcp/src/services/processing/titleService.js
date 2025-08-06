@@ -95,7 +95,7 @@ class TitleService {
         if (type === 'archival' || type === 'generation') {
             // Préserver la ponctuation archivistique
             cleaned = this.normalizeArchivalPunctuation(cleaned);
-            
+
             // Vérifier la structure archivistique
             cleaned = this.validateArchivalStructure(cleaned);
         }
@@ -106,7 +106,7 @@ class TitleService {
         // Tronquer si nécessaire
         if (cleaned.length > maxLength) {
             cleaned = cleaned.substring(0, maxLength);
-            
+
             // Pour les titres archivistiques, essayer de préserver la structure
             if (type === 'archival' || type === 'generation') {
                 cleaned = this.truncateArchivalTitle(cleaned, maxLength);
@@ -117,7 +117,7 @@ class TitleService {
                     cleaned = cleaned.substring(0, lastSpace);
                 }
             }
-            
+
             // Supprimer la ponctuation finale si incomplète
             cleaned = cleaned.replace(/[,;:\-\.]+$/, '');
         }
@@ -133,15 +133,15 @@ class TitleService {
     normalizeArchivalPunctuation(title) {
         // Normaliser les point-tirets
         title = title.replace(/\s*[-–—]\s*/g, '. — ');
-        
+
         // Normaliser les espaces autour de la ponctuation
         title = title.replace(/\s*:\s*/g, ' : ');
         title = title.replace(/\s*;\s*/g, ' ; ');
         title = title.replace(/\s*,\s*/g, ', ');
-        
+
         // Corriger les doubles espaces
         title = title.replace(/\s+/g, ' ');
-        
+
         return title;
     }
 
@@ -154,13 +154,13 @@ class TitleService {
                 return `${parts[0].trim()}. — ${parts.slice(1).join(' : ').trim()}`;
             }
         }
-        
+
         return title;
     }
 
     truncateArchivalTitle(title, maxLength) {
         // Essayer de préserver la structure : Objet. — Action : typologie. Dates
-        
+
         // Trouver les parties principales
         const mainSeparator = title.indexOf('. — ');
         if (mainSeparator === -1) {
@@ -171,13 +171,13 @@ class TitleService {
 
         const objectPart = title.substring(0, mainSeparator + 4); // Include ". — "
         const remainingPart = title.substring(mainSeparator + 4);
-        
+
         const availableLength = maxLength - objectPart.length;
-        
+
         if (availableLength > 20) { // Assez de place pour le reste
             const truncatedRemaining = remainingPart.substring(0, availableLength);
             const lastSpace = truncatedRemaining.lastIndexOf(' ');
-            
+
             if (lastSpace > availableLength * 0.7) {
                 return objectPart + truncatedRemaining.substring(0, lastSpace);
             }

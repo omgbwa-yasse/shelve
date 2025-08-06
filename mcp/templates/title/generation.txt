@@ -10,7 +10,7 @@ STRUCTURE OBLIGATOIRE :
 
 MODÈLES DE STRUCTURE :
 • Simple : Objet. — Action : typologie. Dates
-• Double : Objet. — Action 1 (dates) ; action 2 (dates). Dates extrêmes  
+• Double : Objet. — Action 1 (dates) ; action 2 (dates). Dates extrêmes
 • Multiple : Objet principal. — Sous-objet : typologie (dates). Autre sous-objet : typologie (dates). Dates extrêmes
 
 TYPOLOGIES DOCUMENTAIRES COURANTES :
@@ -26,7 +26,7 @@ EXEMPLES DE RÉFÉRENCE :
 
 MOTS DE LIAISON ARCHIVISTIQUES :
 • "avec" : documents annexes importants
-• "dont" : précisions sur le contenu  
+• "dont" : précisions sur le contenu
 • "contient" : éléments remarquables
 • "concerne" : limitation du champ
 • "en particulier" : focus spécifique

@@ -1,43 +1,75 @@
-# Shelve MCP Server
+# MCP Shelve - Serveur de Traitement de Documents d'Archives
 
-Serveur MCP (Model Context Protocol) pour le système d'archivage Shelve avec intégration IA Ollama.
+## Description
 
-## 🚀 Fonctionnalités
+Serveur MCP (Model Context Protocol) spécialisé dans le traitement intelligent de documents d'archives avec intégration Ollama pour l'IA générative. Conçu spécifiquement pour respecter les normes françaises de description archivistique.
 
-- **Résumé automatique** : Génération de résumés de documents avec différents niveaux de détail
-- **Extraction de mots-clés** : Identification automatique des termes clés avec scores de pertinence
-- **Reformulation de titres** : Amélioration et optimisation des titres de documents
-- **Analyse de contenu** : Analyse structurelle, sentimentale et technique des documents
-- **Traitement complet** : Combinaison de tous les traitements en une seule requête
-- **API REST** : Interface HTTP simple et documentée
-- **Gestion d'erreurs** : Système robuste de gestion et logging des erreurs
-- **Health checks** : Surveillance de l'état du système et des services
+## 🚀 Démarrage rapide
 
-## 📁 Structure du projet
+1. **Installation des dépendances**
+   ```bash
+   cd mcp
+   npm install
+   ```
 
-```
-mcp/
-├── src/
-│   ├── config/           # Configuration centralisée
-│   ├── controllers/      # Contrôleurs REST
-│   ├── services/         # Logique métier
-│   │   ├── ai/          # Services IA (Ollama)
-│   │   ├── database/    # Services base de données
-│   │   └── processing/  # Services de traitement
-│   ├── middleware/       # Middlewares Express
-│   ├── routes/          # Définition des routes
-│   ├── utils/           # Utilitaires
-│   └── models/          # Modèles de données
-├── templates/           # Templates de prompts
-├── tests/              # Tests unitaires et d'intégration
-├── docs/               # Documentation
-├── scripts/            # Scripts utilitaires
-└── logs/               # Fichiers de logs
-```
+2. **Configuration**
+   ```bash
+   cp .env.example .env
+   # Éditer .env avec vos paramètres
+   ```
 
-## ⚙️ Installation
+3. **Démarrage d'Ollama**
+   ```bash
+   ollama serve
+   ollama pull llama3.2
+   ```
 
-### Prérequis
+4. **Lancement du serveur**
+   ```bash
+   npm run dev
+   ```
+
+5. **Test**
+   ```bash
+   curl http://localhost:3001/api/health
+   ```
+
+## 🎯 Fonctionnalités principales
+
+### Reformulation de titres archivistiques
+- **Standard** : Amélioration générale de titres
+- **Archivistique** : Respect des normes françaises (point-tiret, structure hiérarchique)
+- **Génération** : Création de titres complets à partir du contenu
+
+### Traitement intelligent
+- Extraction de mots-clés thématiques
+- Génération de résumés structurés  
+- Analyse sémantique approfondie
+- Validation selon normes archivistiques
+
+### API REST complète
+- Endpoints spécialisés par type de traitement
+- Validation robuste avec Joi
+- Gestion d'erreurs centralisée
+- Monitoring et logging
+
+## 📚 Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [🚀 Démarrage rapide](docs/QUICK_START.md) | Installation et premiers tests |
+| [📖 Reformulation de titres](docs/TITLE_REFORMULATION.md) | Exemples et normes archivistiques |
+| [🔌 API Reference](docs/API.md) | Documentation complète des endpoints |
+| [🏗️ Architecture](docs/ARCHITECTURE.md) | Structure technique détaillée |
+
+## 🔧 Technologies
+
+- **Backend :** Node.js 16+, Express.js
+- **IA :** Ollama (llama3.2) avec gestion des erreurs
+- **Base de données :** MySQL/MariaDB avec Knex.js ORM
+- **Logging :** Winston (app.log, error.log)
+- **Validation :** Joi avec schémas stricts
+- **Tests :** Jest avec couverture complète
 
 - Node.js >= 16.0.0
 - npm >= 8.0.0

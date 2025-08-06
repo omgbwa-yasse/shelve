@@ -21,16 +21,16 @@ class PromptService {
         try {
             const fullPath = path.join(this.templatesDir, templatePath);
             const template = await fs.readFile(fullPath, 'utf8');
-            
+
             // Ajouter au cache
             if (this.templateCache.size >= this.maxCacheSize) {
                 // Supprimer le plus ancien
                 const firstKey = this.templateCache.keys().next().value;
                 this.templateCache.delete(firstKey);
             }
-            
+
             this.templateCache.set(templatePath, template);
-            
+
             logger.debug(`Template chargé: ${templatePath}`);
             return template;
 
@@ -64,7 +64,7 @@ class PromptService {
     processConditionals(template, variables) {
         // Pattern pour {{#if condition}}...{{/if}}
         const ifPattern = /{{#if\s+(.+?)}}([\s\S]*?){{\/if}}/g;
-        
+
         return template.replace(ifPattern, (match, condition, content) => {
             try {
                 // Évaluer la condition de manière sécurisée
@@ -241,7 +241,7 @@ class PromptService {
             for (const category of categories) {
                 const categoryPath = path.join(this.templatesDir, category);
                 const stat = await fs.stat(categoryPath);
-                
+
                 if (stat.isDirectory()) {
                     const files = await fs.readdir(categoryPath);
                     templates[category] = files.filter(file => file.endsWith('.txt'));
