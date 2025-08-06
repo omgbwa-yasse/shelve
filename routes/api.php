@@ -59,7 +59,7 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
 });
 
 // MCP Proxy routes - Communication avec le serveur MCP
-Route::prefix('mcp')->name('mcp.')->middleware(['auth:sanctum,web', 'rate.limit:api_general,100,60'])->group(function () {
+Route::prefix('mcp')->name('mcp.')->middleware(['auth:web', 'rate.limit:api_general,100,60'])->group(function () {
     // Reformulation d'enregistrements d'archives
     Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
         ->name('reformulate-record')

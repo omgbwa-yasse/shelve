@@ -15,7 +15,7 @@ class McpProxyController extends Controller
 
     public function __construct()
     {
-        $this->mcpUrl = Config::get('mcp.base_url', 'http://localhost:3001');
+        $this->mcpUrl = Config::get('mcp.server_url', 'http://localhost:3001');
         $this->timeout = Config::get('mcp.timeout', 120);
     }
 
@@ -27,7 +27,7 @@ class McpProxyController extends Controller
         try {
             // Récupérer l'ID depuis 'record_id' ou 'id'
             $recordId = $request->input('record_id') ?? $request->input('id');
-            
+
             Log::info('Début de la reformulation d\'enregistrement', [
                 'record_id' => $recordId,
                 'request_data' => $request->all(),

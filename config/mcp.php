@@ -13,7 +13,7 @@ return [
 
     'base_url' => env('MCP_BASE_URL', 'http://localhost:3001'),
 
-    'default_model' => env('MCP_DEFAULT_MODEL', 'llama3'),
+    'default_model' => env('MCP_DEFAULT_MODEL', 'gemma3:4b'),
 
     'timeout' => env('MCP_TIMEOUT', 120),
 

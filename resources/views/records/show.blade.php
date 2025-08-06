@@ -604,7 +604,7 @@
                     btnReformulate.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Reformulation...';
 
                     try {
-                        const response = await fetch('/api/mcp/reformulate-record', {
+                        const response = await fetch('/web/mcp/reformulate-record', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -613,7 +613,7 @@
                             },
                             credentials: 'same-origin', // Utiliser les cookies de session Laravel
                             body: JSON.stringify({
-                                id: recordId,
+                                record_id: recordId,
                                 name: recordTitle,
                                 date: recordDate,
                                 content: "{{ addslashes($record->content ?? '') }}",

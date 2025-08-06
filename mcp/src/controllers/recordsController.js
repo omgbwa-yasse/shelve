@@ -9,9 +9,12 @@ class RecordsController {
      */
     async reformulateRecord(req, res, next) {
         try {
-            const { id, name, date, content, author, children } = req.body;
+            const { id, record_id, name, date, content, author, children } = req.body;
             
-            if (!id || !name) {
+            // Accepter soit 'id' soit 'record_id'
+            const recordId = id || record_id;
+            
+            if (!recordId || !name) {
                 throw new ValidationError('L\'ID et le nom sont requis');
             }
 
@@ -57,8 +60,10 @@ class RecordsController {
 
             // Réponse simplifiée comme demandé
             res.json({ 
-                id: id,
-                new_name: newName
+                id: recordId,
+                original_name: name,
+                new_name: newName,
+                success: true
             });
             
         } catch (error) {

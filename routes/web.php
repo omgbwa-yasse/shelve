@@ -986,7 +986,17 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
 
+// Routes MCP Web - Communication avec le serveur MCP depuis l'interface web
+Route::middleware(['auth'])->prefix('web/mcp')->name('web.mcp.')->group(function () {
+    Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
+        ->name('reformulate-record');
 
+    Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])
+        ->name('status');
+
+    Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])
+        ->name('info');
+});
 
 
 
