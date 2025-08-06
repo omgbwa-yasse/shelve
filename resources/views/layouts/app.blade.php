@@ -371,14 +371,6 @@
                                 <span>{{ __('Contacts') }}</span>
                             </a>
                         </div>
-                        @can('module_ai_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'ai') active @endif" href="{{ route('ai.chats.index' ) }}">
-                                <i class="bi bi-robot"></i>
-                                <span>{{ __('AI') }}</span>
-                            </a>
-                        </div>
-                        @endcan
                         @can('module_public_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'public') active @endif" href="{{ route('public.users.index') }}">
@@ -408,9 +400,6 @@
                             <div class="card-body p-3">
                                 <div class="nav flex-column nav-pills">
                                     @switch(Request::segment(1))
-                                        @case('ai')
-                                            @include('submenu.ai')
-                                            @break
                                         @case('public')
                                             @include('submenu.public')
                                             @break
