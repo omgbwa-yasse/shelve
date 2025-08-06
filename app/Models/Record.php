@@ -54,6 +54,7 @@ class Record extends Model
         'activity_id',
         'parent_id',
         'container_id',
+        'accession_id',
         'user_id',
         'organisation_id'
     ];
