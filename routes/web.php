@@ -126,17 +126,6 @@ use App\Http\Controllers\PublicRecordController;
 use App\Http\Controllers\PublicResponseController;
 use App\Http\Controllers\PublicResponseAttachmentController;
 use App\Http\Controllers\PublicFeedbackController;
-use App\Http\Controllers\AiChatController;
-use App\Http\Controllers\AiChatMessageController;
-use App\Http\Controllers\AiConfigurationController;
-use App\Http\Controllers\AiFeedbackController;
-use App\Http\Controllers\AiIntegrationController;
-use App\Http\Controllers\AiInteractionController;
-use App\Http\Controllers\AiJobController;
-use App\Http\Controllers\AiModelController;
-use App\Http\Controllers\AiPromptTemplateController;
-use App\Http\Controllers\AiResourceController;
-use App\Http\Controllers\AiTrainingDataController;
 
 // Workflow related controllers
 use App\Http\Controllers\WorkflowTemplateController;
@@ -768,41 +757,6 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
-
-    // User accessible routes
-    Route::prefix('ai')->middleware(['auth'])->group(function () {
-        // Routes générales AI accessibles à tous les utilisateurs avec module_ai_access
-        Route::resource('chats', AiChatController::class)->names('ai.chats');
-        Route::get('chats/{id}/start', [AiChatController::class, 'startChat'])->name('ai.chats.start')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
-        Route::get('chats/check-ollama-status', [AiChatController::class, 'checkOllamaStatus'])->name('ai.chats.check-ollama-status');
-
-        // Route personnalisée pour storeForChat (doit être avant la route resource)
-        Route::post('chats/{chat}/messages', [AiChatMessageController::class, 'storeForChat'])->name('ai.chats.messages.storeForChat')->middleware('App\Http\Middleware\EnsureOllamaIsAvailable');
-
-        // Route resource pour les messages
-        Route::resource('chats.messages', AiChatMessageController::class)->except(['store'])->shallow()->names('ai.chats.messages');
-        Route::resource('interactions', AiInteractionController::class)->names('ai.interactions');
-
-        // Routes de configuration AI protégées par la permission ai_configure
-        Route::middleware(['can:ai_configure'])->group(function () {
-            // Configuration AI
-            Route::get('configuration', [AiConfigurationController::class, 'index'])->name('ai.configuration.index');
-            Route::post('configuration/settings', [AiConfigurationController::class, 'updateSettings'])->name('ai.configuration.settings');
-            Route::post('configuration/api-model', [AiConfigurationController::class, 'storeApiModel'])->name('ai.configuration.api-model');
-            Route::post('configuration/sync-ollama', [AiConfigurationController::class, 'syncOllamaModels'])->name('ai.configuration.sync-ollama');
-            Route::post('configuration/api-models/{model}/test', [AiConfigurationController::class, 'testApiModel'])->name('ai.configuration.test-api-model');
-            Route::delete('configuration/api-models/{model}', [AiConfigurationController::class, 'destroyApiModel'])->name('ai.configuration.destroy-api-model');
-
-            // Autres routes de configuration
-            Route::resource('models', AiModelController::class)->names('ai.models');
-            Route::post('models/{model}/train', [AiModelController::class, 'trainModel'])->name('ai.models.train');
-            Route::get('models/name/{name}', [AiModelController::class, 'showByName'])->name('ai.models.show.by.name');
-            Route::resource('prompt-templates', AiPromptTemplateController::class)->names('ai.prompt-templates');
-            Route::resource('integrations', AiIntegrationController::class)->names('ai.integrations');
-            Route::resource('training-data', AiTrainingDataController::class)->names('ai.training-data');
-        });
-    });
-
     // Routes pour les rapports
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [ReportController::class, 'dashboard'])->name('report.dashboard');
@@ -816,25 +770,6 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');    // routes/web.php - Routes Ollama
-    Route::prefix('ai/ollama')->name('ai.ollama.')->middleware(['auth'])->group(function () {
-        Route::get('chat', [OllamaController::class, 'chat'])->name('chat'); // Chat accessible à tous
-
-        // Fonctionnalités de configuration nécessitant la permission ai_configure
-        Route::middleware(['can:ai_configure'])->group(function () {
-            Route::get('/', [OllamaController::class, 'index'])->name('index');
-            Route::get('models/sync', [AiModelController::class, 'syncModelsForm'])->name('models.sync.form');
-            Route::post('models/sync', [AiModelController::class, 'syncOllamaModels'])->name('models.sync');
-        });
-    });
-
-    // API routes pour Ollama
-    Route::prefix('api/ai/ollama')->middleware(['auth', 'can:ai_configure'])->group(function () {
-        Route::post('models/sync', [AiModelController::class, 'syncOllamaModels']);
-        Route::get('models', [AiModelController::class, 'getOllamaModels']);
-        Route::get('health', [AiModelController::class, 'healthCheck']);
-    });
-
-
 
 
 
@@ -987,6 +922,9 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
 });
 
 // Routes MCP Web - Communication avec le serveur MCP depuis l'interface web
+// MCP Proxy routes moved to api.php to avoid conflicts
+// Uncomment if you need web-specific MCP routes
+/*
 Route::middleware(['auth'])->prefix('web/mcp')->name('web.mcp.')->group(function () {
     Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
         ->name('reformulate-record');
@@ -997,6 +935,7 @@ Route::middleware(['auth'])->prefix('web/mcp')->name('web.mcp.')->group(function
     Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])
         ->name('info');
 });
+*/
 
 
 

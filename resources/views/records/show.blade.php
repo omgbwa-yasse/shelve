@@ -590,36 +590,70 @@
                 }, 5000);
             });
 
+
+            // fonction de recuperation des status du MCP
+            const btnMcp = document.getElementById('reformulateBtn');
+            btnMcp.hidden = true; // Masquer le bouton par défaut
+
+            fetch('/api/mcp/status')
+                .then(response => {
+                    console.log('Réponse MCP Status:', response.status, response.statusText);
+
+                    // Debug: afficher les headers de réponse
+                    console.log('Content-Type:', response.headers.get('Content-Type'));
+                    console.log('Headers complets:', [...response.headers.entries()]);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    // Vérifier le type de contenu
+                    const contentType = response.headers.get('Content-Type');
+                    console.log('Content-Type détecté:', contentType);
+
+                    if (!contentType || !contentType.includes('application/json')) {
+                        // Debug: afficher le contenu de la réponse en cas d'erreur
+                        return response.text().then(text => {
+                            console.error('Réponse non-JSON reçue:', text.substring(0, 500) + '...');
+                            throw new Error(`La réponse n'est pas au format JSON. Content-Type: ${contentType}`);
+                        });
+                    }
+
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Statuts MCP:', data);
+                    if (data && data.success && data.status === 'connected') {
+                        btnMcp.hidden = false; // Afficher le bouton si le MCP est disponible
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des statuts MCP:', error);
+                    // Le bouton reste masqué en cas d'erreur
+                });
+
+
+
             // Gestion du bouton de reformulation de titre
             const btnReformulate = document.getElementById('reformulateBtn');
 
             if (btnReformulate) {
                 btnReformulate.addEventListener('click', async function() {
                     const recordId = this.getAttribute('data-record-id');
-                    const recordTitle = "{{ $record->name }}";
-                    const recordDate = "{{ $record->date_start ?? $record->date_exact ?? '' }}";
-
-                    // Afficher le loading
                     btnReformulate.disabled = true;
                     btnReformulate.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Reformulation...';
 
                     try {
-                        const response = await fetch('/web/mcp/reformulate-record', {
+                        const response = await fetch('/api/mcp/reformulate-record', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
-                            credentials: 'same-origin', // Utiliser les cookies de session Laravel
+                            credentials: 'same-origin',
                             body: JSON.stringify({
-                                record_id: recordId,
-                                name: recordTitle,
-                                date: recordDate,
-                                content: "{{ addslashes($record->content ?? '') }}",
-                                author: {
-                                    name: "{{ $record->authors->first()->name ?? '' }}"
-                                }
+                                record_id: recordId
                             })
                         });
 
@@ -648,13 +682,13 @@
                             modal.show();
                         }
                     } catch (error) {
-                        console.error('Erreur:', error);
-                        // Afficher l'erreur dans le modal
+                        // Gestion des erreurs de réseau ou autres
+                        console.error('Erreur lors de la reformulation:', error);
                         const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
                         document.getElementById('reformulationResult').innerHTML = `
                             <div class="alert alert-danger">
-                                <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de connexion</h6>
-                                <p>Impossible de contacter le serveur MCP. Vérifiez que le serveur est démarré.</p>
+                                <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de reformulation</h6>
+                                <p>Une erreur s'est produite lors de la communication avec le serveur.</p>
                             </div>
                         `;
                         modal.show();
@@ -666,12 +700,11 @@
                 });
             }
 
-
-
-
-
         });
+
     </script>
 @endpush
+
+
 
 

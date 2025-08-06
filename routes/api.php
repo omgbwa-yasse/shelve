@@ -49,6 +49,8 @@ Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general
         ->middleware('rate.limit:auth,3,60'); // 3 resets par heure
 });
 
+
+
 // Secure public API routes with rate limiting
 Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
     Route::apiResource('users', PublicUserApiController::class)->names('users');
@@ -58,17 +60,20 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
     Route::apiResource('responses', PublicResponseApiController::class)->names("responses");
 });
 
+
+
 // MCP Proxy routes - Communication avec le serveur MCP
-Route::prefix('mcp')->name('mcp.')->middleware(['auth:web', 'rate.limit:api_general,100,60'])->group(function () {
-    // Reformulation d'enregistrements d'archives
-    Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
-        ->name('reformulate-record')
-        ->middleware('rate.limit:mcp_reformulate,30,60'); // 30 reformulations par heure
+Route::prefix('mcp')->name('mcp.')->group(function () {
+    // Routes nécessitant une authentification (utiliser 'web' pour les sessions Laravel)
+    Route::middleware(['web', 'auth'])->group(function () {
+        Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
+            ->name('reformulate-record');
+    });
 
-    // Statut et information du serveur MCP
-    Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])
-        ->name('status');
-
-    Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])
-        ->name('info');
+    // Routes publiques (pour le diagnostic et le statut)
+    Route::middleware(['web'])->group(function () {
+        Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])->name('status');
+        Route::get('tags', [App\Http\Controllers\McpProxyController::class, 'getMcpTags'])->name('tags');
+        Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])->name('info');
+    });
 });
