@@ -279,6 +279,7 @@ class MailSendController extends Controller
                 }
             }
 
+            \Log::info('Redirection vers mail-send.index');
             return redirect()->route('mail-send.index')
                 ->with('success', 'Mail créé avec succès avec les pièces jointes.');
 

@@ -69,7 +69,7 @@ class AddressTypeSeeder extends Seeder
                 ],
             ];
 
-            DB::table('address_types')->insert($addressTypes);
+            DB::table('address_types')->insertOrIgnore($addressTypes);
         }
     }
 }

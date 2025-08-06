@@ -7,6 +7,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\NotificationController as NewNotificationController;
+use App\Http\Controllers\RateLimitController;
 use App\Services\NotificationService;
 use App\Enums\NotificationModule;
 use App\Enums\NotificationAction;
@@ -173,7 +174,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
-    Route::get('/', [mailReceivedController::class, 'index']);
+    Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
     // Routes avec authentification pour les bulletin boards
     Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
@@ -584,6 +585,11 @@ Route::group(['middleware' => 'auth'], function () {
             Route::get('select-modal', [RecordAuthorController::class, 'selectModal'])->name('author-handler.select-modal');
         });
 
+    Route::prefix('activity-handler')->group(function () {
+            Route::get('list', [ActivityController::class, 'list'])->name('activity-handler.list');
+            Route::get('hierarchy/{id?}', [ActivityController::class, 'hierarchy'])->name('activity-handler.hierarchy');
+        });
+
 
 
     Route::prefix('transferrings')->group(function () {
@@ -916,6 +922,13 @@ Route::group(['middleware' => 'auth'], function () {
         return redirect()->route('workflows.dashboard');
     });
     Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
+});
+
+// Routes d'administration du Rate Limiting
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('rate-limit/dashboard', [RateLimitController::class, 'dashboard'])->name('rate-limit.dashboard');
+    Route::get('rate-limit/user-stats', [RateLimitController::class, 'userStats'])->name('rate-limit.user-stats');
+    Route::post('rate-limit/clear', [RateLimitController::class, 'clearLimits'])->name('rate-limit.clear');
 });
 
 // Routes publics de administration du module public

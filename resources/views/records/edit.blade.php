@@ -104,19 +104,30 @@
                 <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
                     <div class="mb-3">
                         <div class="mb-3">
-                            <label for="author" class="form-label">Producteur</label>
-                            <input type="text" class="form-control" id="author" autocomplete="off" value="{{ old('author') }}">
-                            <div id="suggestions" class="list-group mt-2"></div>
+                            <label for="author" class="form-label">{{ __('producers') }} *</label>
+                            <div class="input-group">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authorModal">
+                                    <i class="bi bi-plus-circle me-1"></i>{{ __('select') }}
+                                </button>
+                            </div>
+
+                            <!-- Zone d'affichage des auteurs sélectionnés -->
+                            <div id="selected-authors-container" class="mt-2">
+                                @foreach($record->authors as $author)
+                                    <div class="selected-author badge bg-primary me-2 mb-2 p-2" data-id="{{ $author->id }}">
+                                        <span>{{ $author->name }}{{ $author->authorType ? ' (' . $author->authorType->name . ')' : '' }}</span>
+                                        <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeAuthor(this)"></button>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Champs cachés pour stocker les ID des auteurs sélectionnés -->
+                            <div id="author-ids-container">
+                                @foreach($record->authors as $author)
+                                    <input type="hidden" name="author_ids[]" value="{{ $author->id }}">
+                                @endforeach
+                            </div>
                         </div>
-                        <div id="selected-authors" class="mt-3">
-                            @foreach($record->authors as $author)
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>{{ $author->name }}</span>
-                                    <button type="button" class="btn btn-sm btn-danger remove-author" data-author-id="{{ $author->id }}">Supprimer</button>
-                                </div>
-                            @endforeach
-                        </div>
-                        <input type="hidden" name="author_ids[]" id="author-ids" >
                     </div>
                     <div class="mb-3">
                         <label for="biographical_history" class="form-label">Biographical History</label>
@@ -454,6 +465,100 @@
                 termIdsContainer.appendChild(hiddenInput);
             });
         }
+
+        // === Gestion des auteurs ===
+
+        // Fonction pour ajouter un auteur à la sélection
+        function addAuthorToSelection(author) {
+            const container = document.getElementById('selected-authors-container');
+
+            // Vérifier si l'auteur n'est pas déjà sélectionné
+            const existingAuthors = container.querySelectorAll('.selected-author');
+            for (let existingAuthor of existingAuthors) {
+                if (existingAuthor.dataset.id === author.id.toString()) {
+                    return; // Auteur déjà sélectionné
+                }
+            }
+
+            // Créer l'élément de l'auteur
+            const authorElement = document.createElement('div');
+            authorElement.className = 'selected-author badge bg-primary me-2 mb-2 p-2';
+            authorElement.dataset.id = author.id;
+            authorElement.innerHTML = `
+                <span>${author.name}${author.authorType ? ' (' + author.authorType.name + ')' : ''}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeAuthor(this)"></button>
+            `;
+
+            container.appendChild(authorElement);
+            updateAuthorIds();
+        }
+
+        // Fonction pour supprimer un auteur
+        function removeAuthor(button) {
+            button.closest('.selected-author').remove();
+            updateAuthorIds();
+        }
+
+        // Fonction pour mettre à jour les champs cachés des auteurs
+        function updateAuthorIds() {
+            const container = document.getElementById('selected-authors-container');
+            const authors = container.querySelectorAll('.selected-author');
+            const authorIdsContainer = document.getElementById('author-ids-container');
+
+            // Vider les champs cachés existants
+            authorIdsContainer.innerHTML = '';
+
+            // Créer un champ caché pour chaque auteur sélectionné
+            authors.forEach(author => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'author_ids[]';
+                hiddenInput.value = author.dataset.id;
+                authorIdsContainer.appendChild(hiddenInput);
+            });
+        }
+
+        // Écouter l'événement authorsSelected du modal
+        document.addEventListener('authorsSelected', function(e) {
+            const selectedAuthors = e.detail.authors;
+            selectedAuthors.forEach(author => {
+                addAuthorToSelection(author);
+            });
+        });
     </script>
+
+    <!-- Modals - inclus pour la gestion des auteurs et activités -->
+    @include('records.partials.author_modal')
+    @include('records.partials.activity_modal')
+
+    <style>
+        /* Style pour les auteurs sélectionnés */
+        .selected-author {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+        }
+
+        .selected-author .remove-author {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-author .remove-author:hover {
+            color: #dc3545;
+        }
+    </style>
 
 @endsection

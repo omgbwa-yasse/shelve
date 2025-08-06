@@ -2239,7 +2239,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
             ]);
 
             // Ajouter le label préféré
-            DB::table('thesaurus_labels')->insert([
+            DB::table('thesaurus_labels')->insertOrIgnore([
                 'concept_id' => $conceptIds[$key],
                 'type' => 'prefLabel',
                 'literal_form' => $concept['prefLabel'],
@@ -2250,7 +2250,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
 
             // Ajouter la définition
             if (isset($concept['definition'])) {
-                DB::table('thesaurus_concept_notes')->insert([
+                DB::table('thesaurus_concept_notes')->insertOrIgnore([
                     'concept_id' => $conceptIds[$key],
                     'type' => 'definition',
                     'note' => $concept['definition'],
@@ -2263,7 +2263,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
             // Ajouter les labels alternatifs
             if (isset($concept['altLabels'])) {
                 foreach ($concept['altLabels'] as $altLabel) {
-                    DB::table('thesaurus_labels')->insert([
+                    DB::table('thesaurus_labels')->insertOrIgnore([
                         'concept_id' => $conceptIds[$key],
                         'type' => 'altLabel',
                         'literal_form' => $altLabel,
@@ -2277,7 +2277,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
             // Ajouter les propriétés spécifiques
             if (isset($concept['properties'])) {
                 foreach ($concept['properties'] as $propName => $propValue) {
-                    DB::table('thesaurus_concept_properties')->insert([
+                    DB::table('thesaurus_concept_properties')->insertOrIgnore([
                         'concept_id' => $conceptIds[$key],
                         'property_name' => $propName,
                         'property_value' => $propValue,
@@ -2293,7 +2293,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
         foreach ($allConcepts as $key => $concept) {
             if (isset($concept['parent']) && isset($conceptIds[$concept['parent']])) {
                 // Relation broader (le concept a un terme plus large)
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $conceptIds[$key],
                     'related_concept_id' => $conceptIds[$concept['parent']],
                     'relation_type' => 'broader',
@@ -2302,7 +2302,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
                 ]);
 
                 // Relation narrower (le concept parent a un terme plus spécifique)
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $conceptIds[$concept['parent']],
                     'related_concept_id' => $conceptIds[$key],
                     'relation_type' => 'narrower',
@@ -2323,7 +2323,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
         foreach ($relatedConcepts as $relation) {
             if (isset($conceptIds[$relation[0]]) && isset($conceptIds[$relation[1]])) {
                 // Relations bidirectionnelles
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $conceptIds[$relation[0]],
                     'related_concept_id' => $conceptIds[$relation[1]],
                     'relation_type' => 'related',
@@ -2331,7 +2331,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
                     'updated_at' => now(),
                 ]);
 
-                DB::table('thesaurus_concept_relations')->insert([
+                DB::table('thesaurus_concept_relations')->insertOrIgnore([
                     'concept_id' => $conceptIds[$relation[1]],
                     'related_concept_id' => $conceptIds[$relation[0]],
                     'relation_type' => 'related',
@@ -2356,7 +2356,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
 
         foreach ($scopeNotes as $conceptKey => $note) {
             if (isset($conceptIds[$conceptKey])) {
-                DB::table('thesaurus_concept_notes')->insert([
+                DB::table('thesaurus_concept_notes')->insertOrIgnore([
                     'concept_id' => $conceptIds[$conceptKey],
                     'type' => 'scopeNote',
                     'note' => $note,
@@ -2377,7 +2377,7 @@ class ThesaurusGeographiqueSeeder extends Seeder
         ]);
 
         // Ajouter les namespaces
-        DB::table('thesaurus_namespaces')->insert([
+        DB::table('thesaurus_namespaces')->insertOrIgnore([
             [
                 'prefix' => 'geo',
                 'namespace_uri' => 'https://geo.cameroun.cm/thesaurus/',

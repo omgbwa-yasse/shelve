@@ -296,7 +296,7 @@ class MailController extends Controller
                 $query->with(['action', 'recipient', 'recipientOrganisation', 'attachments', 'containers'])
                       ->where('sender_organisation_id', $organisationId)
                       ->where('status', '!=', 'draft')
-                      ->OrWhereHas('containers', function($q) use ($organisationId) {
+                      ->orWhereHas('containers', function($q) use ($organisationId) {
                           $q->where('creator_organisation_id', $organisationId);
                       });
                 break;

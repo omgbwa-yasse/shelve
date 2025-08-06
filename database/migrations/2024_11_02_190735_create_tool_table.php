@@ -27,7 +27,7 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->nullable(false)->unique();
-            $table->string('name', 100)->nullable(false);
+            $table->string('name', 255)->nullable(false);
             $table->text('observation')->nullable();
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->unsignedBigInteger('communicability_id')->nullable();
@@ -38,7 +38,7 @@ return new class extends Migration
 
         Schema::create('sorts', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10)->nullable(false);
+            $table->enum('code', ['E', 'T', 'C']);
             $table->string('name', 45)->nullable(false);
             $table->string('description', 100)->nullable();
             $table->timestamps();

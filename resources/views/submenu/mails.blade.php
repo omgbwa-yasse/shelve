@@ -138,13 +138,13 @@
     </style>
 
     <!-- Recherche Section - Consultations -->
-    @if(SubmenuPermissions::canAccessSubmenuSection('mails', 'search'))
+
     <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-search"></i> Consultations
         </div>
         <div class="submenu-content" id="consultationMenu">
-            @can('mail_view')
+
             <div class="submenu-category-title">Courrier interne</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">
@@ -205,10 +205,45 @@
                     <i class="bi bi-search"></i> Recherche avancée
                 </a>
             </div>
-            @endcan
+
         </div>
     </div>
-    @endif
+
+
+    <!-- Création Section -->
+    <div class="submenu-section add-section">
+        <div class="submenu-heading">
+            <i class="bi bi-plus-circle"></i> Création
+        </div>
+        <div class="submenu-content" id="creationMenu">
+            <div class="submenu-category-title">Courrier interne</div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.create') }}">
+                    <i class="bi bi-plus-square"></i> Reçu
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-send.create') }}">
+                    <i class="bi bi-plus-square"></i> Envoyé
+                </a>
+            </div>
+
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">Courrier externe</div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.send.external.create') }}">
+                    <i class="bi bi-plus-square"></i> Sortant
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mails.received.external.create') }}">
+                    <i class="bi bi-plus-square"></i> Entrant
+                </a>
+            </div>
+
+        </div>
+    </div>
+
 
     <!-- Workflow et Tâches Section -->
     <div class="submenu-section">
@@ -256,20 +291,18 @@
         </div>
     </div>
 
-    <!-- Administration Section -->
-    <div class="submenu-section add-section">
+
+
+    <div class="submenu-section">
         <div class="submenu-heading">
             <i class="bi bi-gear"></i> Administration
         </div>
         <div class="submenu-content" id="adminMenu">
+
+            <div class="submenu-category-title">Parapheurs</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch.create') }}">
                     <i class="bi bi-bookmark-check"></i> {{ __('parapher') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('mail-container.create') }}">
-                    <i class="bi bi-archive"></i> {{ __('box_chrono') }}
                 </a>
             </div>
             <div class="submenu-item">
@@ -282,8 +315,18 @@
                     <i class="bi bi-arrow-left-square"></i> {{ __('receive') }} parapheur
                 </a>
             </div>
+
+            <div class="submenu-divider"></div>
+            <div class="submenu-category-title">Contenants</div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-container.create') }}">
+                    <i class="bi bi-archive"></i> {{ __('box_chrono') }}
+                </a>
+            </div>
+
         </div>
     </div>
+
 </div>
 
 <script>

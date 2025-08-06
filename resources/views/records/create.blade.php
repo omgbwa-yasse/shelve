@@ -74,7 +74,7 @@
 
                             <div class="row mt-2">
                                 <div class="col-12">
-                                    <label class="form-label small">{{ __('name') }} *</label>
+                                    <label class="form-label small">{{ __('name') }} * <b class="btn-danger">[ Objet . action : Typologie]</b></label>
                                     <textarea name="name" class="form-control form-control-sm" rows="2" required>{{ old('name') }}</textarea>
                                 </div>
                             </div>
@@ -119,14 +119,22 @@
                         <div class="accordion-body">
                             <div class="row g-2">
                                 <div class="col-12">
-                                    <label class="form-label small">{{ __('producers') }}</label>
+                                    <label class="form-label small">{{ __('producers') }} *</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" id="selected-authors-display" readonly>
                                         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#authorModal">
-                                            {{ __('select') }}
+                                            <i class="bi bi-plus-circle me-1"></i>{{ __('select') }}
                                         </button>
                                     </div>
-                                    <input type="hidden" name="author_ids" id="author-ids">
+
+                                    <!-- Zone d'affichage des auteurs sélectionnés -->
+                                    <div id="selected-authors-container" class="mt-2">
+                                        <!-- Les auteurs sélectionnés apparaîtront ici -->
+                                    </div>
+
+                                    <!-- Champs cachés pour stocker les ID des auteurs sélectionnés -->
+                                    <div id="author-ids-container">
+                                        <!-- Les champs cachés pour les auteurs sélectionnés apparaîtront ici -->
+                                    </div>
                                 </div>
                             </div>
 
@@ -275,6 +283,34 @@
             opacity: 0.95 !important;
         }
 
+        /* Style pour les auteurs sélectionnés */
+        .selected-author {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+        }
+
+        .selected-author .remove-author {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-author .remove-author:hover {
+            color: #dc3545;
+        }
+
         /* Styles pour le thésaurus AJAX */
         .thesaurus-suggestion {
             padding: 8px 12px;
@@ -372,12 +408,12 @@
             // Pré-remplir les auteurs sélectionnés
             const oldAuthorIds = @json(old('author_ids'));
             if (oldAuthorIds) {
-                const authorIdsArray = typeof oldAuthorIds === 'string' ? oldAuthorIds.split(',') : oldAuthorIds;
+                const authorIdsArray = Array.isArray(oldAuthorIds) ? oldAuthorIds :
+                    (typeof oldAuthorIds === 'string' ? oldAuthorIds.split(',') : [oldAuthorIds]);
+
                 if (authorIdsArray.length > 0) {
-                    document.getElementById('author-ids').value = authorIdsArray.join(',');
-                    // Afficher les noms des auteurs (nécessiterait un appel AJAX ou passer les noms depuis le contrôleur)
-                    // Pour l'instant, afficher juste les IDs
-                    document.getElementById('selected-authors-display').value = 'Auteurs sélectionnés (IDs: ' + authorIdsArray.join(', ') + ')';
+                    // Charger les informations des auteurs via AJAX pour afficher leurs noms
+                    loadAuthorsByIds(authorIdsArray);
                 }
             }
 
@@ -538,6 +574,84 @@
                 termIdsContainer.appendChild(hiddenInput);
             });
         }
+
+        // Fonction pour charger les auteurs par leurs IDs
+        function loadAuthorsByIds(authorIds) {
+            if (!authorIds || authorIds.length === 0) return;
+
+            fetch(`{{ route('author-handler.list') }}?ids=${authorIds.join(',')}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data && data.data.length > 0) {
+                        data.data.forEach(author => {
+                            addAuthorToSelection(author);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des auteurs:', error);
+                });
+        }
+
+        // Fonction pour ajouter un auteur à la sélection
+        function addAuthorToSelection(author) {
+            console.log('Ajout de l\'auteur:', author);
+            const container = document.getElementById('selected-authors-container');
+
+            // Vérifier si l'auteur n'est pas déjà sélectionné
+            const existingAuthors = container.querySelectorAll('.selected-author');
+            for (let existingAuthor of existingAuthors) {
+                if (existingAuthor.dataset.id === author.id.toString()) {
+                    return; // Auteur déjà sélectionné
+                }
+            }
+
+            // Créer l'élément de l'auteur
+            const authorElement = document.createElement('div');
+            authorElement.className = 'selected-author badge bg-primary me-2 mb-2 p-2';
+            authorElement.dataset.id = author.id;
+            authorElement.innerHTML = `
+                <span>${author.name}${author.authorType ? ' (' + author.authorType.name + ')' : ''}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeAuthor(this)"></button>
+            `;
+
+            container.appendChild(authorElement);
+            updateAuthorIds();
+        }
+
+        // Fonction pour supprimer un auteur
+        function removeAuthor(button) {
+            button.closest('.selected-author').remove();
+            updateAuthorIds();
+        }
+
+        // Fonction pour mettre à jour les champs cachés des auteurs
+        function updateAuthorIds() {
+            const container = document.getElementById('selected-authors-container');
+            const authors = container.querySelectorAll('.selected-author');
+            const authorIdsContainer = document.getElementById('author-ids-container');
+
+            // Vider les champs cachés existants
+            authorIdsContainer.innerHTML = '';
+
+            // Créer un champ caché pour chaque auteur sélectionné
+            authors.forEach(author => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'author_ids[]';
+                hiddenInput.value = author.dataset.id;
+                authorIdsContainer.appendChild(hiddenInput);
+            });
+        }
+
+        // Écouter l'événement authorsSelected du modal
+        document.addEventListener('authorsSelected', function(e) {
+            console.log('Événement authorsSelected reçu:', e.detail.authors);
+            const selectedAuthors = e.detail.authors;
+            selectedAuthors.forEach(author => {
+                addAuthorToSelection(author);
+            });
+        });
 
         function initAccordionBehavior() {
             // Configurer l'accordéon pour permettre plusieurs panneaux ouverts et tous les ouvrir par défaut

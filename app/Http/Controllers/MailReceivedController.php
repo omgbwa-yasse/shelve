@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail;
-use App\Models\user;
+use App\Models\User;
 use App\Models\MailAction;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Dolly;
 use App\Models\DollyType;
 use App\Models\Organisation;
+use App\Models\ExternalContact;
+use App\Models\ExternalOrganization;
+use App\Enums\MailStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,15 +23,12 @@ class MailReceivedController extends Controller
         return app(MailController::class)->index('received');
     }
 
-
-
-
     public function inprogress()
     {
         $userId = Auth::id();
         $mails = Mail::with(['action', 'sender', 'senderOrganisation'])
                      ->where('recipient_user_id', $userId)
-                     ->where('status', 'in_progress')
+                     ->where('status', MailStatusEnum::IN_PROGRESS)
                      ->get();
         $dollies = Dolly::all();
         $categories = Dolly::categories();
@@ -36,21 +36,16 @@ class MailReceivedController extends Controller
         return view('mails.received.index', compact('mails','dollies', 'categories','users'));
     }
 
-
-
-
     public function approve(Mail $mail)
     {
-
         $mail->update([
             'recipient_user_id' => Auth::id(),
-            'status' => 'transmitted',
+            'status' => MailStatusEnum::TRANSMITTED,
         ]);
 
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail approved successfully.');
     }
-
 
     public function reject(Request $request)
     {
@@ -61,16 +56,13 @@ class MailReceivedController extends Controller
         $mail = Mail::findOrFail($validatedData['id']);
 
         $mail->update([
-            'recipient_user_id' => auth::user()->id,
-            'status' => 'reject',
-
+            'recipient_user_id' => Auth::id(),
+            'status' => MailStatusEnum::REJECTED,
         ]);
 
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail updated successfully');
     }
-
-
 
     public function create()
     {
@@ -82,8 +74,8 @@ class MailReceivedController extends Controller
         $typologies = MailTypology::all();
 
         // Récupérer les contacts et organisations externes
-        $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
-        $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
+        $externalContacts = ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
+        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
         return view('mails.received.create', compact(
             'mailActions',
@@ -96,12 +88,11 @@ class MailReceivedController extends Controller
         ));
     }
 
-
-
     public function store(Request $request)
     {
         // Validation de base
         $baseValidation = [
+            'code' => 'nullable|string|max:50',
             'name' => 'required|max:150',
             'date' => 'required|date',
             'description' => 'nullable',
@@ -132,13 +123,15 @@ class MailReceivedController extends Controller
 
         $validatedData = $request->validate(array_merge($baseValidation, $senderValidation));
 
-        // Génération du code de courrier
+        // Génération ou validation du code de courrier
         if (!isset($validatedData['code']) || empty($validatedData['code'])) {
+            // Pas de code fourni : générer automatiquement
             $validatedData['code'] = $this->generateMailCode($validatedData['typology_id']);
         } else {
+            // Code fourni : vérifier qu'il n'existe pas déjà
             $existingMail = Mail::where('code', $validatedData['code'])->first();
-            if (!$existingMail) {
-                return back()->withErrors(['code' => 'Aucun mail trouvé avec ce code.'])->withInput();
+            if ($existingMail) {
+                return back()->withErrors(['code' => 'Un mail avec ce code existe déjà.'])->withInput();
             }
         }
 
@@ -152,9 +145,9 @@ class MailReceivedController extends Controller
             'action_id' => $validatedData['action_id'],
             'priority_id' => $validatedData['priority_id'],
             'typology_id' => $validatedData['typology_id'],
-            'recipient_organisation_id' => auth()->user()->current_organisation_id,
-            'recipient_user_id' => auth()->id(),
-            'status' => 'in_progress',
+            'recipient_organisation_id' => Auth::user()->current_organisation_id,
+            'recipient_user_id' => Auth::id(),
+            'status' => MailStatusEnum::IN_PROGRESS,
             'mail_type' => 'incoming', // Courrier entrant
             'recipient_type' => 'user', // Le destinataire est toujours un utilisateur interne
         ];
@@ -169,7 +162,7 @@ class MailReceivedController extends Controller
             $mailData['sender_type'] = 'external_contact';
 
             // Vérifier si le contact externe appartient à une organisation et l'ajouter si c'est le cas
-            $externalContact = \App\Models\ExternalContact::find($validatedData['external_sender_id']);
+            $externalContact = ExternalContact::find($validatedData['external_sender_id']);
             if ($externalContact && $externalContact->external_organization_id) {
                 $mailData['external_sender_organization_id'] = $externalContact->external_organization_id;
             }
@@ -183,7 +176,6 @@ class MailReceivedController extends Controller
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail créé avec succès.');
     }
-
 
     public function incoming(Request $request)
     {
@@ -234,9 +226,9 @@ class MailReceivedController extends Controller
             'action_id' => $validatedData['action_id'],
             'priority_id' => $validatedData['priority_id'],
             'typology_id' => $validatedData['typology_id'],
-            'recipient_organisation_id' => auth()->user()->current_organisation_id,
-            'recipient_user_id' => auth()->id(),
-            'status' => 'in_progress',
+            'recipient_organisation_id' => Auth::user()->current_organisation_id,
+            'recipient_user_id' => Auth::id(),
+            'status' => MailStatusEnum::IN_PROGRESS,
             'mail_type' => 'incoming', // Courrier entrant
             'recipient_type' => 'user', // Le destinataire est toujours un utilisateur interne
         ];
@@ -247,7 +239,7 @@ class MailReceivedController extends Controller
             $mailData['sender_type'] = 'external_contact';
 
             // Vérifier si le contact externe appartient à une organisation et l'ajouter si c'est le cas
-            $externalContact = \App\Models\ExternalContact::find($validatedData['external_sender_id']);
+            $externalContact = ExternalContact::find($validatedData['external_sender_id']);
             if ($externalContact && $externalContact->external_organization_id) {
                 $mailData['external_sender_organization_id'] = $externalContact->external_organization_id;
             }
@@ -262,7 +254,6 @@ class MailReceivedController extends Controller
                          ->with('success', 'Courrier entrant créé avec succès.');
     }
 
-
     public function createIncoming()
     {
         $typologies = MailTypology::all();
@@ -270,8 +261,8 @@ class MailReceivedController extends Controller
         $mailActions = MailAction::orderBy('name')->get();
 
         // Récupérer les contacts et organisations externes
-        $externalContacts = \App\Models\ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
-        $externalOrganizations = \App\Models\ExternalOrganization::orderBy('name')->get();
+        $externalContacts = ExternalContact::orderBy('last_name')->orderBy('first_name')->get();
+        $externalOrganizations = ExternalOrganization::orderBy('name')->get();
 
         return view('mails.received.createIncoming', compact(
             'typologies',
@@ -281,7 +272,6 @@ class MailReceivedController extends Controller
             'externalOrganizations'
         ));
     }
-
 
     public function generateMailCode(int $typologie_id)
     {
@@ -307,14 +297,10 @@ class MailReceivedController extends Controller
         return $candidateCode;
     }
 
-
-
     public function show(INT $mail_id)
     {
         return app(MailController::class)->show('received', $mail_id);
     }
-
-
 
     public function edit(Mail $received)
     {
@@ -328,12 +314,10 @@ class MailReceivedController extends Controller
         ]);
 
         $mailActions = MailAction::all();
-        $senderOrganisations = Organisation::whereNot('id', auth()->user()->current_organisation_id)->get();
+        $senderOrganisations = Organisation::whereNot('id', Auth::user()->current_organisation_id)->get();
 
         return view('mails.received.edit', compact('received', 'mailActions', 'senderOrganisations'));
     }
-
-
 
     public function update(Request $request, int $id)
     {
@@ -356,8 +340,6 @@ class MailReceivedController extends Controller
         return redirect()->route('mail-received.index')
                          ->with('success', 'Mail updated successfully');
     }
-
-
 
     public function destroy($id)
     {

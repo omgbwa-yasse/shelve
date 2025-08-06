@@ -41,12 +41,8 @@ class RecordController extends Controller
      */
     private function processIds($ids)
     {
-        // Assurer que nous avons un tableau
-        if (!is_array($ids)) {
-            if (is_null($ids)) {
-                return [];
-            }
-            $ids = [$ids];
+        if (is_null($ids)) {
+            return [];
         }
 
         // Si c'est une chaîne, la diviser par les virgules
@@ -54,19 +50,21 @@ class RecordController extends Controller
             $ids = explode(',', $ids);
         }
 
-        // Gérer le cas où les données sont dans le premier élément
-        if (isset($ids[0]) && is_string($ids[0])) {
+        // Si c'est un tableau avec une chaîne en premier élément, la diviser
+        if (is_array($ids) && isset($ids[0]) && is_string($ids[0]) && strpos($ids[0], ',') !== false) {
             $ids = explode(',', $ids[0]);
         }
 
-        // Vérifier une dernière fois que c'est un tableau
-        if (!is_array($ids)) {
-            return [];
+        // Si c'est déjà un tableau d'entiers ou de chaînes, on le traite directement
+        if (is_array($ids)) {
+            return array_filter(array_map('intval', $ids));
         }
 
-        // Nettoyer et convertir en entiers
-        return array_filter(array_map('intval', $ids));
+        // Si ce n'est pas un tableau, retourner vide
+        return [];
     }
+
+
 
     public function search(Request $request)
     {
@@ -105,27 +103,13 @@ class RecordController extends Controller
 
     public function index()
     {
-        $this->authorize('viewAny', Record::class);
+        Gate::authorize('records_view');
 
-        if (Gate::allows('viewAny', Record::class)) {
-            // L'utilisateur a la permission de voir tous les records
-            $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
-            ])->paginate(10);
-        } else {
-            // L'utilisateur ne peut voir que les records associés aux activités de son organisation actuelle
-            $currentOrganisationId = auth::user()->current_organisation_id;
-
-            $records = Record::with([
-                'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
-            ])
-                ->whereHas('activity', function($query) use ($currentOrganisationId) {
-                    $query->whereHas('organisations', function($q) use ($currentOrganisationId) {
-                        $q->where('organisations.id', $currentOrganisationId);
-                    });
-                })
-                ->paginate(10);
-        }
+        // Pour l'instant, tous les utilisateurs ayant la permission records_view peuvent voir tous les records
+        // Cette logique peut être ajustée plus tard si nécessaire
+        $records = Record::with([
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
+        ])->paginate(10);
 
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
@@ -145,7 +129,7 @@ class RecordController extends Controller
 
     public function create()
     {
-        $this->authorize('create', Record::class);
+        Gate::authorize('records_create');
 
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -164,7 +148,7 @@ class RecordController extends Controller
 
     public function createFull()
     {
-        $this->authorize('create', Record::class);
+        Gate::authorize('records_create');
 
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
@@ -183,7 +167,16 @@ class RecordController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('create', Record::class);
+        Gate::authorize('records_create');
+
+        // Debug : log des données reçues
+        Log::info('Store method called', [
+            'request_all' => $request->all(),
+            'code_value' => $request->input('code'),
+            'name_value' => $request->input('name'),
+            'user_id' => Auth::id(),
+            'organisation_id' => Auth::user()->current_organisation_id
+        ]);
 
         // Gestion des dates
         $dateFormat = 'Y'; // Format par défaut
@@ -241,10 +234,22 @@ class RecordController extends Controller
         // Supprimer author_ids et term_ids des données validées car ils ne sont pas des champs de la table
         $recordData = $validatedData;
 
-        $record = Record::create($recordData);
+        try {
+            $record = Record::create($recordData);
+        } catch (\Exception $e) {
+            Log::error('Error creating record: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'validated_data' => $validatedData,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->withErrors(['error' => 'Erreur lors de la création du record: ' . $e->getMessage()])->withInput();
+        }
 
         // Traitement des auteurs (obligatoire)
         $author_ids = $this->processIds($request->input('author_ids', []));
+
+
 
         if (empty($author_ids)) {
             $record->delete();
@@ -270,7 +275,20 @@ class RecordController extends Controller
             }
         }
 
-        return redirect()->route('records.show', $record->id)->with('success', 'Record created successfully.');
+        $record = Record::findOrFail($record->id)->load([
+            'children',
+            'parent',
+            'level',
+            'status',
+            'support',
+            'activity',
+            'containers',
+            'recordContainers.container',
+            'user'
+        ]);
+
+
+        return redirect()->route('records.show', $record)->with('success', 'Record created successfully.');
     }
 
     private function getDateFormat($dateStart, $dateEnd)
@@ -301,7 +319,8 @@ class RecordController extends Controller
 
     public function show(Record $record)
     {
-        $this->authorize('view', $record);
+
+        Gate::authorize('records_view');
 
         $record->load([
             'children',
@@ -320,7 +339,7 @@ class RecordController extends Controller
 
     public function showFull(Record $record)
     {
-        $this->authorize('view', $record);
+        Gate::authorize('records_view');
 
         // Charger toutes les relations pour la vue détaillée
         $record->load([
@@ -344,7 +363,13 @@ class RecordController extends Controller
 
     public function edit(Record $record, Request $request)
     {
-        $this->authorize('update', $record);
+        Gate::authorize('records_update');
+
+        // Charger le record avec ses relations, y compris authorType pour les auteurs
+        $record->load([
+            'authors.authorType',
+            'thesaurusConcepts'
+        ]);
 
         $authors = Author::with('authorType')->get();
         $statuses = RecordStatus::all();
@@ -369,7 +394,7 @@ class RecordController extends Controller
 
     public function update(Request $request, Record $record)
     {
-        $this->authorize('update', $record);
+        Gate::authorize('records_update');
 
         $request->merge(['date_format' => $request->input('date_format', 'Y')]);
         $request->merge(['user_id' => Auth::id()]);
@@ -443,12 +468,12 @@ class RecordController extends Controller
             $record->thesaurusConcepts()->detach();
         }
 
-        return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');
+        return redirect()->route('records.show', $record)->with('success', 'Record updated successfully.');
     }
 
     public function destroy(Record $record)
     {
-        $this->authorize('delete', $record);
+        Gate::authorize('records_delete');
 
         $record->delete();
 
@@ -459,7 +484,7 @@ class RecordController extends Controller
     public function exportButton(Request $request)
     {
         // Vérifier les permissions d'export pour les records
-        $this->authorize('export', Record::class);
+        Gate::authorize('records_export');
 
         $recordIds = explode(',', $request->query('records'));
         $format = $request->query('format', 'excel');
@@ -488,7 +513,7 @@ class RecordController extends Controller
 
     public function export(Request $request)
     {
-        $this->authorize('export', Record::class);
+        Gate::authorize('records_export');
 
         $dollyId = $request->input('dolly_id');
         $format = $request->input('format');
@@ -519,14 +544,14 @@ class RecordController extends Controller
 
     public function importForm()
     {
-        $this->authorize('import', Record::class);
+        Gate::authorize('records_import');
 
         return view('records.import');
     }
 
     public function exportForm()
     {
-        $this->authorize('export', Record::class);
+        Gate::authorize('records_export');
 
         $dollies = Dolly::all();
         return view('records.export', compact('dollies'));
@@ -534,7 +559,7 @@ class RecordController extends Controller
 
     public function import(Request $request)
     {
-        $this->authorize('import', Record::class);
+        Gate::authorize('records_import');
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xml',
             'format' => 'required|in:excel,ead,seda',

@@ -122,42 +122,7 @@
             @can('communications_view')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.index')}}">
-                    <i class="bi bi-inbox"></i> {{ __('view_all') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.form')}}">
-                    <i class="bi bi-search"></i> {{ __('advanced_search') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.date-selection')}}">
-                    <i class="bi bi-calendar-range"></i> {{ __('date_search') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=InProgress">
-                    <i class="bi bi-clock"></i> {{ __('in_progress') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=return-effective">
-                    <i class="bi bi-check-circle"></i> {{ __('returned') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=unreturn">
-                    <i class="bi bi-dash-circle"></i> {{ __('without_return') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=not-return">
-                    <i class="bi bi-x-circle"></i> {{ __('not_returned') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.search.index')}}?categ=return-available">
-                    <i class="bi bi-calendar-check"></i> {{ __('return_available') }}
+                    <i class="bi bi-inbox"></i> {{ __('view_all_communications') }}
                 </a>
             </div>
             @endcan
@@ -175,34 +140,7 @@
             @can('reservations_view')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.index')}}">
-                    <i class="bi bi-list-ul"></i> {{ __('view_all') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.search.date-selection')}}">
-                    <i class="bi bi-calendar-range"></i> {{ __('date_selection') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.pending')}}">
-                    <i class="bi bi-clock-history"></i> {{ __('pending_reservations') }}
-                </a>
-            </div>
-            @endcan
-            @can('reservations_manage')
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.approved.reservations')}}">
-                    <i class="bi bi-check-circle-fill"></i> {{ __('approved_reservations') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.approved.list')}}">
-                    <i class="bi bi-arrow-right-circle"></i> {{ __('approved_with_communications') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('communications.reservations.return.available')}}">
-                    <i class="bi bi-calendar-event"></i> {{ __('return_available') }}
+                    <i class="bi bi-list-ul"></i> {{ __('view_all_reservations') }}
                 </a>
             </div>
             @endcan
@@ -214,20 +152,20 @@
     @if(Gate::allows('communications_create') || Gate::allows('reservations_create'))
     <div class="submenu-section add-section">
         <div class="submenu-heading">
-            <i class="bi bi-plus-circle"></i> {{ __('add') }}
+            <i class="bi bi-plus-circle"></i> {{ __('create') }}
         </div>
         <div class="submenu-section-content" id="addSection">
             @can('communications_create')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.transactions.create')}}">
-                    <i class="bi bi-chat-plus"></i> {{ __('add_communication') }}
+                    <i class="bi bi-plus-circle"></i> {{ __('new_communication') }}
                 </a>
             </div>
             @endcan
             @can('reservations_create')
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('communications.reservations.create')}}">
-                    <i class="bi bi-calendar-plus"></i> {{ __('add_reservation') }}
+                    <i class="bi bi-calendar-plus"></i> {{ __('new_reservation') }}
                 </a>
             </div>
             @endcan

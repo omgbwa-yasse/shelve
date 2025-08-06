@@ -45,7 +45,7 @@ class SortSeeder extends Seeder
 
         // Vérifier si des sorts existent déjà pour éviter les doublons
         if (DB::table('sorts')->count() === 0) {
-            DB::table('sorts')->insert($sorts);
+            DB::table('sorts')->insertOrIgnore($sorts);
             $this->command->info('Sorts finaux créés avec succès: E (Élimination), T (Tri), C (Conservation)');
         } else {
             $this->command->info('Des sorts existent déjà dans la base de données. Insertion ignorée.');

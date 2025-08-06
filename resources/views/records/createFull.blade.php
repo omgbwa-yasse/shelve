@@ -28,28 +28,28 @@
             @endif
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
+                    <a class="nav-link active" id="identification-tab" data-bs-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
+                    <a class="nav-link" id="contexte-tab" data-bs-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
+                    <a class="nav-link" id="contenu-tab" data-bs-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_condition') }}</a>
+                    <a class="nav-link" id="condition-tab" data-bs-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_condition') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('complementary_sources') }}</a>
+                    <a class="nav-link" id="sources-tab" data-bs-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('complementary_sources') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
+                    <a class="nav-link" id="notes-tab" data-bs-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
+                    <a class="nav-link" id="controle-tab" data-bs-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
+                    <a class="nav-link" id="indexation-tab" data-bs-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
                 </li>
             </ul>
 
@@ -109,14 +109,24 @@
                 <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
                     <div class="mb-3">
                         <div class="mb-3">
-                            <label for="author" class="form-label">{{ __('producers') }}</label>
+                            <label for="author" class="form-label">{{ __('producers') }} *</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="selected-authors-display" readonly>
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authorModal">
-                                    {{ __('select') }}
+                                    <i class="bi bi-plus-circle me-1"></i>{{ __('select') }}
                                 </button>
                             </div>
-                            <input type="hidden" name="author_ids" id="author-ids">
+
+                            <!-- Zone d'affichage des auteurs sélectionnés -->
+                            <div id="selected-authors-container" class="mt-2">
+                                <!-- Les auteurs sélectionnés apparaîtront ici -->
+                            </div>
+
+
+
+                            <!-- Champs cachés pour stocker les ID des auteurs sélectionnés -->
+                            <div id="author-ids-container">
+                                <!-- Les champs cachés pour les auteurs sélectionnés apparaîtront ici -->
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -337,16 +347,215 @@
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
+
+        /* S'assurer qu'aucun élément ne bloque l'interaction */
+        .modal-backdrop.show {
+            z-index: 1040;
+        }
+
+        .modal {
+            z-index: 1050;
+        }
+
+        /* S'assurer que les éléments sélectionnés n'interfèrent pas avec les onglets */
+        .selected-author, .selected-term {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Force les onglets à être interactifs */
+        .nav-tabs .nav-link {
+            z-index: 2;
+            position: relative;
+        }
+
+        /* S'assurer que le contenu des onglets est accessible */
+        .tab-content {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 
     <script src="{{ asset('js/records.js') }}"></script>
     <script>
+        // Variables globales
+        let selectedAuthors = [];
+
+        // Fonctions globales pour les auteurs
+        window.addAuthorToSelection = function(author) {
+            console.log('=== Début addAuthorToSelection (globale) ===');
+            console.log('Données auteur reçues:', author);
+
+            const container = document.getElementById('selected-authors-container');
+            if (!container) {
+                console.error('ERREUR: Conteneur selected-authors-container introuvable');
+                return;
+            }
+            console.log('Conteneur trouvé:', container);
+
+            // Vérifier si l'auteur n'est pas déjà sélectionné
+            const existingAuthors = container.querySelectorAll('.selected-author');
+            console.log('Auteurs existants:', existingAuthors.length);
+
+            for (let existingAuthor of existingAuthors) {
+                if (existingAuthor.dataset.id === author.id.toString()) {
+                    console.log('Auteur déjà sélectionné, abandon:', author.id);
+                    return;
+                }
+            }
+
+            // Créer l'élément de l'auteur
+            const authorElement = document.createElement('div');
+            authorElement.className = 'selected-author d-inline-flex align-items-center bg-primary text-white rounded me-2 mb-2 p-2';
+            authorElement.dataset.id = author.id;
+            authorElement.style.position = 'relative';
+            authorElement.style.zIndex = '1';
+
+            const authorName = author.name || 'Nom inconnu';
+            const authorType = (author.authorType && author.authorType.name) ? ` (${author.authorType.name})` : '';
+
+            authorElement.innerHTML = `
+                <span>${authorName}${authorType}</span>
+                <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em; position: relative; z-index: 2;" onclick="removeAuthor(this)"></button>
+            `;
+
+            console.log('Élément auteur créé:', authorElement);
+            container.appendChild(authorElement);
+            console.log('Auteur ajouté au DOM. Contenu du conteneur:', container.innerHTML);
+
+            updateAuthorIds();
+            console.log('=== Fin addAuthorToSelection (globale) ===');
+        };
+
+        window.removeAuthor = function(button) {
+            console.log('=== Suppression d\'un auteur ===');
+            const authorElement = button.closest('.selected-author');
+            if (authorElement) {
+                console.log('Élément auteur trouvé, suppression...');
+                authorElement.remove();
+                updateAuthorIds();
+                console.log('Auteur supprimé et IDs mis à jour');
+            } else {
+                console.error('Élément auteur non trouvé pour la suppression');
+            }
+        };
+
+        window.updateAuthorIds = function() {
+            const container = document.getElementById('selected-authors-container');
+            const authors = container.querySelectorAll('.selected-author');
+            const authorIdsContainer = document.getElementById('author-ids-container');
+
+            console.log('Mise à jour des IDs auteurs, nombre d\'auteurs:', authors.length);
+
+            // Vider les champs cachés existants
+            authorIdsContainer.innerHTML = '';
+
+            // Créer un champ caché pour chaque auteur sélectionné
+            authors.forEach(author => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'author_ids[]';
+                hiddenInput.value = author.dataset.id;
+                authorIdsContainer.appendChild(hiddenInput);
+                console.log('Champ caché créé pour auteur ID:', author.dataset.id);
+            });
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded - Initialisation de la page createFull');
+
+            // Vérifier que Bootstrap est disponible
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap n\'est pas disponible !');
+            } else {
+                console.log('Bootstrap détecté, version:', bootstrap);
+            }
+
+            // Vérifier que les éléments nécessaires existent
+            const authorsContainer = document.getElementById('selected-authors-container');
+            const authorIdsContainer = document.getElementById('author-ids-container');
+
+            console.log('Conteneurs trouvés:', {
+                authorsContainer: !!authorsContainer,
+                authorIdsContainer: !!authorIdsContainer
+            });
+
+            if (authorsContainer) {
+                console.log('Conteneur auteurs HTML:', authorsContainer.outerHTML);
+            }
+
             // Initialiser le gestionnaire de records avec le thésaurus AJAX et les modals
-            initRecordsManager();
+            if (typeof initRecordsManager === 'function') {
+                initRecordsManager();
+                console.log('initRecordsManager appelé');
+            } else {
+                console.error('initRecordsManager non disponible');
+            }
 
             // Pré-remplir les champs avec les anciennes valeurs en cas d'erreur
             preloadOldValues();
+
+            // Ajouter un gestionnaire de soumission pour déboguer les données
+            const form = document.querySelector('form[action*="records.store"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('=== DÉBOGAGE SOUMISSION FORMULAIRE ===');
+
+                    // Mettre à jour les IDs auteurs avant soumission
+                    updateAuthorIds();
+
+                    // Vérifier les champs cachés d'auteurs
+                    const authorInputs = form.querySelectorAll('input[name="author_ids[]"]');
+                    console.log('Nombre de champs author_ids[]:', authorInputs.length);
+
+                    const authorValues = [];
+                    authorInputs.forEach((input, index) => {
+                        console.log(`author_ids[${index}]:`, input.value);
+                        authorValues.push(input.value);
+                    });
+
+                    console.log('Valeurs des auteurs à envoyer:', authorValues);
+
+                    // Vérifier le conteneur des auteurs sélectionnés
+                    const selectedAuthors = document.querySelectorAll('#selected-authors-container .selected-author');
+                    console.log('Auteurs sélectionnés dans l\'interface:', selectedAuthors.length);
+                    selectedAuthors.forEach((author, index) => {
+                        console.log(`Auteur ${index}:`, {
+                            id: author.dataset.id,
+                            name: author.textContent.trim()
+                        });
+                    });
+
+                    // Si pas d'auteurs, empêcher la soumission pour déboguer
+                    if (authorInputs.length === 0) {
+                        console.error('ERREUR: Aucun champ author_ids[] trouvé avant soumission !');
+                        console.log('Conteneur author-ids:', document.getElementById('author-ids-container')?.innerHTML);
+                    }
+
+                    console.log('=== FIN DÉBOGAGE ===');
+                });
+            }
+
+            // Ajouter une vérification périodique de l'état de l'interface
+            setInterval(function() {
+                // Vérifier s'il y a des backdrops modaux qui traînent
+                const strayBackdrops = document.querySelectorAll('.modal-backdrop');
+                if (strayBackdrops.length > 0 && !document.querySelector('.modal.show')) {
+                    console.warn('Nettoyage des backdrops modaux orphelins');
+                    strayBackdrops.forEach(backdrop => backdrop.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                }
+
+                // S'assurer que les onglets restent interactifs
+                const tabs = document.querySelectorAll('.nav-link[data-bs-toggle="tab"]');
+                tabs.forEach(tab => {
+                    if (tab.style.pointerEvents === 'none') {
+                        tab.style.pointerEvents = 'auto';
+                    }
+                });
+            }, 2000); // Vérification toutes les 2 secondes
         });
 
         function preloadOldValues() {
@@ -522,7 +731,6 @@
             button.closest('.selected-term').remove();
             updateTermIds();
         }
-        }
 
         function updateTermIds() {
             const container = document.getElementById('selected-terms-container');
@@ -541,5 +749,130 @@
                 termIdsContainer.appendChild(hiddenInput);
             });
         }
+
+        // === Gestion des auteurs ===
+        // Les fonctions sont maintenant globales (voir au-dessus)
+
+        // Écouter l'événement authorsSelected du modal
+        document.addEventListener('authorsSelected', function(e) {
+            console.log('Événement authorsSelected reçu:', e.detail.authors);
+
+            if (!e.detail || !e.detail.authors) {
+                console.error('Données d\'auteurs manquantes dans l\'événement');
+                return;
+            }
+
+            const selectedAuthorsFromModal = e.detail.authors;
+            console.log('Nombre d\'auteurs à ajouter:', selectedAuthorsFromModal.length);
+
+            // Utiliser setTimeout pour éviter les conflits avec la fermeture du modal
+            setTimeout(() => {
+                const container = document.getElementById('selected-authors-container');
+                if (!container) {
+                    console.error('Conteneur selected-authors-container introuvable');
+                    return;
+                }
+
+                // NE PAS vider le conteneur - juste ajouter les nouveaux auteurs
+                // container.innerHTML = ''; // ← LIGNE SUPPRIMÉE !
+                console.log('Ajout des nouveaux auteurs sans vider le conteneur');
+
+                selectedAuthorsFromModal.forEach((author, index) => {
+                    console.log(`Traitement auteur ${index + 1}:`, author);
+                    addAuthorToSelection(author);
+                });
+
+                console.log('Tous les auteurs ont été traités');
+
+                // S'assurer que le focus est libéré
+                document.activeElement.blur();
+
+                // Forcer le retour du focus sur le formulaire principal
+                const mainForm = document.querySelector('form');
+                if (mainForm) {
+                    mainForm.focus();
+                }
+
+                // Réinitialiser les onglets Bootstrap si nécessaire
+                try {
+                    const tabElements = document.querySelectorAll('[data-bs-toggle="tab"]');
+                    tabElements.forEach(tabElement => {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+                            const tab = new bootstrap.Tab(tabElement);
+                            // S'assurer que l'onglet est interactif
+                            tabElement.style.pointerEvents = 'auto';
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la réinitialisation des onglets:', error);
+                }
+
+                // S'assurer qu'aucun backdrop modal ne reste
+                const remainingBackdrops = document.querySelectorAll('.modal-backdrop');
+                if (remainingBackdrops.length > 0) {
+                    console.warn('Backdrops modaux détectés, suppression...');
+                    remainingBackdrops.forEach(backdrop => backdrop.remove());
+                }
+            }, 150);
+        });
+
+        // Fonction pour charger les auteurs par leurs IDs (pour les anciennes valeurs)
+        function loadAuthorsByIds(authorIds) {
+            if (!authorIds || authorIds.length === 0) return;
+
+            fetch(`{{ route('author-handler.list') }}?ids=${authorIds.join(',')}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data && data.data.length > 0) {
+                        data.data.forEach(author => {
+                            addAuthorToSelection(author);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des auteurs:', error);
+                });
+        }
+
+        // Pré-remplir les auteurs si on a des anciennes valeurs
+        const oldAuthorIds = @json(old('author_ids'));
+        if (oldAuthorIds) {
+            const authorIdsArray = Array.isArray(oldAuthorIds) ? oldAuthorIds :
+                (typeof oldAuthorIds === 'string' ? oldAuthorIds.split(',') : [oldAuthorIds]);
+
+            if (authorIdsArray.length > 0) {
+                loadAuthorsByIds(authorIdsArray);
+            }
+        }
     </script>
+
+    <style>
+        /* Style pour les auteurs sélectionnés */
+        .selected-author {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            margin: 0.125rem;
+            font-size: 0.875rem;
+        }
+
+        .selected-author .remove-author {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-weight: bold;
+            margin-left: 0.5rem;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-author .remove-author:hover {
+            color: #dc3545;
+        }
+    </style>
 @endsection

@@ -76,7 +76,7 @@ class RecordLevelSeeder extends Seeder
             ],
         ];
 
-        DB::table('record_levels')->insert($levels);
+        DB::table('record_levels')->insertOrIgnore($levels);
 
         // Mise à jour des relations hiérarchiques entre les niveaux
         DB::table('record_levels')->where('id', 1)->update(['child_id' => 2]); // Fonds -> Sous-fonds

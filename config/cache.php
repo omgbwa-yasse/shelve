@@ -15,7 +15,21 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'redis'),
+    'default' => env('CACHE_STORE', 'file'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rate Limiter Cache Store
+    |--------------------------------------------------------------------------
+    |
+    | While the default cache store is used for most caching needs, you may
+    | specify a different cache store for rate limiting. This allows you to
+    | use a faster driver like Redis for rate limiting while keeping your
+    | main cache on a different driver.
+    |
+    */
+
+    'limiter' => env('CACHE_LIMITER_STORE', 'redis'),
 
     /*
     |--------------------------------------------------------------------------

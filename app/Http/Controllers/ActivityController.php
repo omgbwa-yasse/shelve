@@ -190,6 +190,97 @@ class ActivityController extends Controller
         return redirect()->route('activities.index')
             ->with('success', 'Activity deleted successfully.');
     }
+
+    /**
+     * Récupère la liste des activités en format JSON avec pagination et filtrage
+     */
+    public function list(Request $request)
+    {
+        $query = Activity::query();
+        $search = $request->input('search');
+        $filter = $request->input('filter', 'all');
+        $parentId = $request->input('parent_id', null);
+
+        // Filtrage par recherche
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%");
+            });
+        }
+
+        // Filtrage par lettre ou chiffre
+        if ($filter !== 'all') {
+            if ($filter === '#') {
+                // Filtrer les activités qui ne commencent pas par une lettre (A-Z) ou un chiffre (0-9)
+                $query->where(function($q) {
+                    $q->whereRaw("name NOT REGEXP '^[A-Za-z0-9]'")
+                      ->orWhereRaw("code NOT REGEXP '^[A-Za-z0-9]'");
+                });
+            } elseif (strlen($filter) === 1) {
+                // Filtrage par lettre ou chiffre
+                $query->where(function($q) use ($filter) {
+                    $q->where('name', 'like', "{$filter}%")
+                      ->orWhere('code', 'like', "{$filter}%");
+                });
+            }
+        }
+
+        // Filtrage par parent (pour la hiérarchie)
+        if ($parentId !== null) {
+            $query->where('parent_id', $parentId);
+        } elseif (!$search && $filter === 'all') {
+            // Si aucun filtre, montrer seulement les activités de premier niveau (racines)
+            $query->whereNull('parent_id');
+        }
+
+        // Trier par code
+        $query->orderBy('code', 'asc');
+
+        // Pagination
+        $perPage = 15;
+        $page = $request->input('page', 1);
+        $activities = $query->paginate($perPage, ['*'], 'page', $page);
+
+        // Pour chaque activité, vérifier si elle a des enfants
+        $activities->getCollection()->transform(function ($activity) {
+            $activity->has_children = $activity->children()->exists();
+            return $activity;
+        });
+
+        return response()->json([
+            'data' => $activities->items(),
+            'pagination' => [
+                'current_page' => $activities->currentPage(),
+                'total_pages' => $activities->lastPage(),
+                'total_items' => $activities->total(),
+                'per_page' => $activities->perPage()
+            ],
+            'message' => $activities->isEmpty() ? 'Aucune activité trouvée' : null
+        ]);
+    }
+
+    /**
+     * Retourne la hiérarchie complète pour une activité spécifique
+     */
+    public function hierarchy($id = null)
+    {
+        if ($id) {
+            // Récupérer l'activité et ses enfants
+            $activity = Activity::with('children')->findOrFail($id);
+            return response()->json([
+                'activity' => $activity,
+                'children' => $activity->children
+            ]);
+        } else {
+            // Récupérer toutes les activités racines (sans parent)
+            $rootActivities = Activity::whereNull('parent_id')
+                ->orderBy('code', 'asc')
+                ->get();
+
+            return response()->json([
+                'root_activities' => $rootActivities
+            ]);
+        }
+    }
 }
-
-
