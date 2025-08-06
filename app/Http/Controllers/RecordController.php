@@ -275,7 +275,7 @@ class RecordController extends Controller
             }
         }
 
-        $record = Record::findOrFail($record->id)->load([
+        $record->load([
             'children',
             'parent',
             'level',
@@ -287,8 +287,14 @@ class RecordController extends Controller
             'user'
         ]);
 
+        // Log pour debug de la redirection
+        Log::info('About to redirect after record creation', [
+            'record_id' => $record->id,
+            'route_url' => route('records.show', $record->id),
+            'record_exists' => Record::where('id', $record->id)->exists()
+        ]);
 
-        return redirect()->route('records.show', $record)->with('success', 'Record created successfully.');
+        return redirect()->route('records.show', $record->id)->with('success', 'Record created successfully.');
     }
 
     private function getDateFormat($dateStart, $dateEnd)
@@ -468,7 +474,7 @@ class RecordController extends Controller
             $record->thesaurusConcepts()->detach();
         }
 
-        return redirect()->route('records.show', $record)->with('success', 'Record updated successfully.');
+        return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');
     }
 
     public function destroy(Record $record)
