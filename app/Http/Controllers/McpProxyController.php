@@ -27,7 +27,7 @@ class McpProxyController extends Controller
         try {
             // Récupérer l'ID depuis 'record_id' ou 'id'
             $recordId = $request->input('record_id') ?? $request->input('id');
-            
+
             Log::info('Début de la reformulation d\'enregistrement', [
                 'record_id' => $recordId,
                 'request_data' => $request->all(),
