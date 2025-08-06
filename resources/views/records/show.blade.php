@@ -17,6 +17,9 @@
                 <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-pencil"></i> {{ __('edit_sheet') }}
                 </a>
+                <button type="button" class="btn btn-sm btn-outline-info" id="reformulateBtn" data-record-id="{{ $record->id }}">
+                    <i class="bi bi-magic"></i> {{ __('reformulate_title') ?? 'Reformuler le titre' }}
+                </button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
                     <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
                 </button>
@@ -536,6 +539,30 @@
         </div>
     </div>
 
+    {{-- Reformulation Modal --}}
+    <div class="modal fade" id="reformulationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-magic me-2"></i>{{ __('title_reformulation') ?? 'Reformulation du titre' }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="reformulationResult">
+                        <!-- Le résultat de la reformulation sera affiché ici -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {{ __('close') ?? 'Fermer' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -564,30 +591,80 @@
             });
 
             // Gestion du bouton de reformulation de titre
-            const btnReformulate = document.getElementById('btn-reformulate');
-            const intelligenceResult = document.getElementById('intelligence-result');
+            const btnReformulate = document.getElementById('reformulateBtn');
 
-            btnReformulate.addEventListener('click', async function() {
-                const recordTitle = "{{ $record->name }}";
-                const recordId = {{ $record->id }};
+            if (btnReformulate) {
+                btnReformulate.addEventListener('click', async function() {
+                    const recordId = this.getAttribute('data-record-id');
+                    const recordTitle = "{{ $record->name }}";
+                    const recordDate = "{{ $record->date_start ?? $record->date_exact ?? '' }}";
 
-                // Fonction de reformulation désactivée
-                intelligenceResult.innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>{{ __('feature_unavailable') ?? 'Cette fonctionnalité n\'est pas disponible actuellement' }}
-                    </div>
-                `;
-                // No try-catch block needed anymore
-                // Function body ends here
-                console.log('Reformulation feature disabled');
-                // The following is left for compatibility
-                intelligenceResult.innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="bi bi-exclamation-triangle me-2"></i>Une erreur est survenue lors de la reformulation du titre
-                        </div>
-                    `;
-                }
-            });
+                    // Afficher le loading
+                    btnReformulate.disabled = true;
+                    btnReformulate.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Reformulation...';
+
+                    try {
+                        const response = await fetch('/api/mcp/reformulate-record', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            credentials: 'same-origin', // Utiliser les cookies de session Laravel
+                            body: JSON.stringify({
+                                id: recordId,
+                                name: recordTitle,
+                                date: recordDate,
+                                content: "{{ addslashes($record->content ?? '') }}",
+                                author: {
+                                    name: "{{ $record->authors->first()->name ?? '' }}"
+                                }
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Afficher le résultat dans un modal
+                            const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
+                            document.getElementById('reformulationResult').innerHTML = `
+                                <div class="alert alert-success">
+                                    <h6><i class="bi bi-check-circle me-2"></i>Reformulation réussie</h6>
+                                    <p><strong>Titre original :</strong> ${result.data.original_name}</p>
+                                    <p><strong>Nouveau titre :</strong> ${result.data.new_name}</p>
+                                </div>
+                            `;
+                            modal.show();
+                        } else {
+                            // Afficher l'erreur dans le modal
+                            const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
+                            document.getElementById('reformulationResult').innerHTML = `
+                                <div class="alert alert-danger">
+                                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de reformulation</h6>
+                                    <p>${result.message || 'Erreur inconnue'}</p>
+                                </div>
+                            `;
+                            modal.show();
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        // Afficher l'erreur dans le modal
+                        const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
+                        document.getElementById('reformulationResult').innerHTML = `
+                            <div class="alert alert-danger">
+                                <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de connexion</h6>
+                                <p>Impossible de contacter le serveur MCP. Vérifiez que le serveur est démarré.</p>
+                            </div>
+                        `;
+                        modal.show();
+                    } finally {
+                        // Restaurer le bouton
+                        btnReformulate.disabled = false;
+                        btnReformulate.innerHTML = '<i class="bi bi-magic"></i> {{ __("reformulate_title") ?? "Reformuler le titre" }}';
+                    }
+                });
+            }
 
 
 

@@ -58,4 +58,17 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
     Route::apiResource('responses', PublicResponseApiController::class)->names("responses");
 });
 
+// MCP Proxy routes - Communication avec le serveur MCP
+Route::prefix('mcp')->name('mcp.')->middleware(['auth:sanctum,web', 'rate.limit:api_general,100,60'])->group(function () {
+    // Reformulation d'enregistrements d'archives
+    Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
+        ->name('reformulate-record')
+        ->middleware('rate.limit:mcp_reformulate,30,60'); // 30 reformulations par heure
 
+    // Statut et information du serveur MCP
+    Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])
+        ->name('status');
+
+    Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])
+        ->name('info');
+});
