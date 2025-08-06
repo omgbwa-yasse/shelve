@@ -1,31 +1,63 @@
 {
-  "name": "shelve-mcp",
+  "name": "shelve-mcp-server",
   "version": "1.0.0",
-  "description": "Model Context Protocol server for Shelves application",
+  "description": "Serveur MCP pour le système d'archivage Shelve avec intégration IA Ollama",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "setup": "node scripts/setup.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "docs": "jsdoc src/ -d docs/generated"
   },
   "keywords": [
     "mcp",
+    "archivage",
     "ollama",
-    "ai",
-    "nlp"
+    "ia",
+    "node.js",
+    "express",
+    "document-processing"
   ],
-  "author": "",
+  "author": "Shelve Team",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "knex": "^2.5.1",
-    "mysql2": "^3.6.1",
-    "winston": "^3.10.0"
+    "knex": "^3.0.1",
+    "mysql2": "^3.6.3",
+    "winston": "^3.11.0",
+    "joi": "^17.11.0",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
+    "nodemon": "^3.0.1",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.52.0",
+    "eslint-config-node": "^4.1.0",
+    "jsdoc": "^4.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/omgbwa-yasse/shelve.git"
+  },
+  "bugs": {
+    "url": "https://github.com/omgbwa-yasse/shelve/issues"
+  },
+  "homepage": "https://github.com/omgbwa-yasse/shelve#readme"
 }

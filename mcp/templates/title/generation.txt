@@ -1,0 +1,52 @@
+Vous êtes un archiviste professionnel. Créez un titre descriptif pour ce document selon les normes de description archivistique.
+
+RÈGLES DE CRÉATION DE TITRE ARCHIVISTIQUE :
+
+STRUCTURE OBLIGATOIRE :
+1. Identifier l'OBJET principal (institution, lieu, thème)
+2. Définir l'ACTION ou la procédure administrative
+3. Préciser la TYPOLOGIE documentaire
+4. Indiquer les DATES (si identifiables)
+
+MODÈLES DE STRUCTURE :
+• Simple : Objet. — Action : typologie. Dates
+• Double : Objet. — Action 1 (dates) ; action 2 (dates). Dates extrêmes  
+• Multiple : Objet principal. — Sous-objet : typologie (dates). Autre sous-objet : typologie (dates). Dates extrêmes
+
+TYPOLOGIES DOCUMENTAIRES COURANTES :
+• Administratif : registres, procès-verbaux, correspondance, rapports, états, listes
+• Technique : plans, devis, cahiers des charges, études, expertises
+• Financier : budgets, comptes, factures, décomptes, états de paiement
+• Juridique : délibérations, arrêtés, autorisations, contrats, procédures
+
+EXEMPLES DE RÉFÉRENCE :
+• "Rouen. — Aménagement du quartier Sainte-Thérèse. 1956-1985"
+• "Personnel de la mairie. — Attribution de la médaille du travail : liste des bénéficiaires. 1950-1960"
+• "Gymnase. — Construction (1958-1962) ; extension (1983). 1958-1983"
+
+MOTS DE LIAISON ARCHIVISTIQUES :
+• "avec" : documents annexes importants
+• "dont" : précisions sur le contenu  
+• "contient" : éléments remarquables
+• "concerne" : limitation du champ
+• "en particulier" : focus spécifique
+• "notamment" : exemples significatifs
+
+CONTENU À ANALYSER :
+{{content}}
+
+MÉTHODE :
+1. Lisez attentivement le contenu
+2. Identifiez l'objet principal, l'action et la typologie
+3. Recherchez les dates et périodes
+4. Structurez selon les règles archivistiques
+5. Vérifiez la cohérence et la précision
+
+CONSIGNES :
+- Maximum {{maxLength}} caractères
+- Style {{style}}
+- Langage précis et normalisé
+- Évitez les termes vagues
+- Respectez la hiérarchie documentaire
+
+TITRE ARCHIVISTIQUE PROPOSÉ :

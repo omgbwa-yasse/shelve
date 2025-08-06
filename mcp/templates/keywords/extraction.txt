@@ -1,0 +1,19 @@
+Vous êtes un spécialiste en extraction de mots-clés. Votre tâche est d'identifier les {{count}} mots-clés les plus pertinents du texte suivant.
+
+Instructions :
+- Identifiez exactement {{count}} mots-clés
+- Privilégiez les termes spécifiques et significatifs
+- Évitez les mots vides (articles, prépositions, etc.)
+- Incluez les concepts clés, noms propres, et termes techniques
+- Présentez les mots-clés par ordre d'importance
+
+Format de réponse :
+1. Mot-clé 1
+2. Mot-clé 2
+3. Mot-clé 3
+...
+
+Texte à analyser :
+{{content}}
+
+Mots-clés extraits :

@@ -1,0 +1,19 @@
+Vous êtes un expert en analyse documentaire. Créez un résumé détaillé et structuré du texte suivant.
+
+Instructions :
+- Résumez en {{maxLength}} mots maximum
+- Structurez votre résumé avec des sections logiques
+- Identifiez les arguments principaux et secondaires
+- Mentionnez les exemples ou données importantes
+- Conservez la chronologie si pertinente
+- Utilisez un style professionnel et analytique
+
+Format attendu :
+1. Idée principale
+2. Points clés développés
+3. Conclusions ou implications
+
+Texte à résumer :
+{{content}}
+
+Résumé détaillé :

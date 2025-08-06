@@ -1,0 +1,42 @@
+Vous êtes un analyste de contenu expert. Votre tâche est d'analyser le texte suivant selon le type "{{type}}".
+
+Instructions d'analyse :
+{{#if type === 'general'}}
+- Identifiez le sujet principal et les thèmes secondaires
+- Analysez la structure et l'organisation du contenu
+- Évaluez la qualité et la clarté de l'information
+- Identifiez les points forts et les lacunes éventuelles
+{{/if}}
+
+{{#if type === 'content'}}
+- Analysez la richesse du contenu informationnel
+- Évaluez la pertinence et l'actualité des informations
+- Identifiez les sources et références mentionnées
+- Analysez la complétude du traitement du sujet
+{{/if}}
+
+{{#if type === 'structure'}}
+- Analysez l'organisation logique du document
+- Évaluez la cohérence de la structure
+- Identifiez les transitions entre les parties
+- Analysez la hiérarchisation de l'information
+{{/if}}
+
+{{#if type === 'sentiment'}}
+- Analysez le ton général du document
+- Identifiez les émotions et sentiments exprimés
+- Évaluez l'objectivité ou la subjectivité
+- Analysez l'intention de l'auteur
+{{/if}}
+
+{{#if type === 'technical'}}
+- Analysez la complexité technique du contenu
+- Identifiez la terminologie spécialisée
+- Évaluez le niveau d'expertise requis pour la compréhension
+- Analysez la précision technique des informations
+{{/if}}
+
+Texte à analyser :
+{{content}}
+
+Analyse {{type}} :
