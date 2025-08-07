@@ -583,21 +583,31 @@
 
 @endsection
 
-@push('scripts')
+{{-- Scripts JavaScript pour les fonctionnalités MCP/Mistral --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+    // S'assurer que jQuery est disponible pour les scripts legacy
+    if (typeof $ === 'undefined' && typeof window.jQuery !== 'undefined') {
+        window.$ = window.jQuery;
+    }
+
             // Initialize tooltips
+    if (typeof bootstrap !== 'undefined') {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             });
+    }
 
             // Handle delete form submission
-            document.getElementById('delete-record-form').addEventListener('submit', function(e) {
+    const deleteForm = document.getElementById('delete-record-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
                 if (!confirm("{{ __('delete_confirmation') }}")) {
                     e.preventDefault();
                 }
             });
+    }
 
             // Gestion des alertes auto-disparition
             const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
@@ -608,120 +618,681 @@
                 }, 5000);
             });
 
-
-            // fonction de recuperation des status du MCP
-            const btnMcp = document.getElementById('reformulateBtn');
-            btnMcp.hidden = true; // Masquer le bouton par défaut
-
-            fetch('/api/mcp/status')
-                .then(response => {
-                    console.log('Réponse MCP Status:', response.status, response.statusText);
-
-                    // Debug: afficher les headers de réponse
-                    console.log('Content-Type:', response.headers.get('Content-Type'));
-                    console.log('Headers complets:', [...response.headers.entries()]);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-
-                    // Vérifier le type de contenu
-                    const contentType = response.headers.get('Content-Type');
-                    console.log('Content-Type détecté:', contentType);
-
-                    if (!contentType || !contentType.includes('application/json')) {
-                        // Debug: afficher le contenu de la réponse en cas d'erreur
-                        return response.text().then(text => {
-                            console.error('Réponse non-JSON reçue:', text.substring(0, 500) + '...');
-                            throw new Error(`La réponse n'est pas au format JSON. Content-Type: ${contentType}`);
-                        });
-                    }
-
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Statuts MCP:', data);
-                    if (data && data.success && data.status === 'connected') {
-                        btnMcp.hidden = false; // Afficher le bouton si le MCP est disponible
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des statuts MCP:', error);
-                    // Le bouton reste masqué en cas d'erreur
-                });
-
-
-
-            // Gestion du bouton de reformulation de titre
-            const btnReformulate = document.getElementById('reformulateBtn');
-
-            if (btnReformulate) {
-                btnReformulate.addEventListener('click', async function() {
-                    const recordId = this.getAttribute('data-record-id');
-                    btnReformulate.disabled = true;
-                    btnReformulate.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Reformulation...';
-
+    // Initialiser les boutons MCP
+    function initializeMcpButtons() {
+        // Initialiser les tooltips seulement si Bootstrap est disponible
+        if (typeof bootstrap !== 'undefined') {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            if (tooltipTriggerList.length > 0) {
+                tooltipTriggerList.forEach(function (tooltipTriggerEl) {
                     try {
-                        const response = await fetch('/api/mcp/reformulate-record', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                            },
-                            credentials: 'same-origin',
-                            body: JSON.stringify({
-                                record_id: recordId
-                            })
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            // Afficher le résultat dans un modal
-                            const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
-                            document.getElementById('reformulationResult').innerHTML = `
-                                <div class="alert alert-success">
-                                    <h6><i class="bi bi-check-circle me-2"></i>Reformulation réussie</h6>
-                                    <p><strong>Titre original :</strong> ${result.data.original_name}</p>
-                                    <p><strong>Nouveau titre :</strong> ${result.data.new_name}</p>
-                                </div>
-                            `;
-                            modal.show();
-                        } else {
-                            // Afficher l'erreur dans le modal
-                            const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
-                            document.getElementById('reformulationResult').innerHTML = `
-                                <div class="alert alert-danger">
-                                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de reformulation</h6>
-                                    <p>${result.message || 'Erreur inconnue'}</p>
-                                </div>
-                            `;
-                            modal.show();
-                        }
-                    } catch (error) {
-                        // Gestion des erreurs de réseau ou autres
-                        console.error('Erreur lors de la reformulation:', error);
-                        const modal = new bootstrap.Modal(document.getElementById('reformulationModal'));
-                        document.getElementById('reformulationResult').innerHTML = `
-                            <div class="alert alert-danger">
-                                <h6><i class="bi bi-exclamation-triangle me-2"></i>Erreur de reformulation</h6>
-                                <p>Une erreur s'est produite lors de la communication avec le serveur.</p>
-                            </div>
-                        `;
-                        modal.show();
-                    } finally {
-                        // Restaurer le bouton
-                        btnReformulate.disabled = false;
-                        btnReformulate.innerHTML = '<i class="bi bi-magic"></i> {{ __("reformulate_title") ?? "Reformuler le titre" }}';
+                        new bootstrap.Tooltip(tooltipTriggerEl);
+                    } catch (e) {
+                        console.warn('Erreur initialisation tooltip:', e);
                     }
                 });
             }
+        }
 
+        // Gestionnaire pour les boutons d'action MCP (seulement s'ils existent)
+        const mcpActionBtns = document.querySelectorAll('.mcp-action-btn');
+        if (mcpActionBtns.length > 0) {
+            mcpActionBtns.forEach(button => {
+                button.addEventListener('click', handleMcpActionWithMode);
+            });
+        }
+
+        // Gestionnaire pour le changement de mode global (seulement s'ils existent)
+        const modeRadios = document.querySelectorAll('input[name="ia-mode"]');
+        if (modeRadios.length > 0) {
+            modeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        switchMode(this.value);
+                    }
+                });
+            });
+        }
+    }
+
+    // Démarrer l'initialisation MCP après un délai pour s'assurer que tout est chargé
+    setTimeout(initializeMcpButtons, 100);
+});
+
+// Fonction pour changer de mode global
+function switchMode(mode) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('mode', mode);
+    window.location.href = url.toString();
+}
+
+// Gestionnaire principal pour les actions MCP
+function handleMcpActionWithMode(event) {
+    event.preventDefault();
+    
+    const button = event.currentTarget;
+    const action = button.dataset.action;
+    const recordId = button.dataset.recordId;
+    const apiPrefix = button.dataset.apiPrefix || '/api/mcp';
+    
+    if (!recordId) {
+        showMcpNotification('Erreur: ID du record manquant', 'error');
+        return;
+    }
+    
+    // Désactiver le bouton pendant le traitement
+    setButtonState(button, 'processing');
+    
+    // Déterminer l'endpoint selon l'action et le mode
+    let endpoint, method = 'POST', isPreview = action.includes('preview');
+    
+    switch(action) {
+        case 'title':
+        case 'title-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/title/preview`;
+            break;
+        case 'thesaurus':
+        case 'thesaurus-suggest':
+            endpoint = `${apiPrefix}/records/${recordId}/thesaurus/index`;
+            break;
+        case 'summary':
+        case 'summary-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/summary/preview`;
+            break;
+        case 'all-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/preview`;
+            break;
+        case 'all-apply':
+            endpoint = `${apiPrefix}/records/${recordId}/process`;
+            break;
+        default:
+            setButtonState(button, 'error');
+            showMcpNotification('Action inconnue: ' + action, 'error');
+            return;
+    }
+    
+    // Effectuer la requête
+    fetch(endpoint, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            features: action.startsWith('all') ? ['title', 'thesaurus', 'summary'] : [action.split('-')[0]]
+        })
+    })
+    .then(response => response.json())
+                .then(data => {
+        if (data.error) {
+            throw new Error(data.message || 'Erreur inconnue');
+        }
+        
+        setButtonState(button, 'success');
+        
+        // Message de succès personnalisé selon le mode
+        const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
+        showMcpNotification(`${mode}: ${data.message || 'Traitement réussi'}`, 'success');
+        
+        // Afficher les tokens utilisés si disponible (Mistral)
+        if (data.tokens_used) {
+            console.log(`Tokens utilisés (${mode}):`, data.tokens_used);
+        }
+        
+        // TOUJOURS afficher l'aperçu pour validation
+        showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix);
+                })
+                .catch(error => {
+        setButtonState(button, 'error');
+        const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
+        showMcpNotification(`Erreur ${mode}: ${error.message}`, 'error');
+        console.error(`Erreur ${mode}:`, error);
+    });
+}
+
+// Gestion des états des boutons
+function setButtonState(button, state) {
+    button.classList.remove('mcp-processing', 'mcp-success', 'mcp-error');
+    
+    const existingSpinner = button.querySelector('.spinner-border');
+    if (existingSpinner) {
+        existingSpinner.remove();
+    }
+    
+    switch(state) {
+        case 'processing':
+            button.classList.add('mcp-processing');
+            button.disabled = true;
+            button.insertAdjacentHTML('afterbegin', '<span class="spinner-border spinner-border-sm me-1" role="status"></span>');
+            break;
+        case 'success':
+            button.classList.add('mcp-success');
+            button.disabled = false;
+            setTimeout(() => {
+                button.classList.remove('mcp-success');
+            }, 3000);
+            break;
+        case 'error':
+            button.classList.add('mcp-error');
+            button.disabled = false;
+            setTimeout(() => {
+                button.classList.remove('mcp-error');
+            }, 5000);
+            break;
+        default:
+            button.disabled = false;
+    }
+}
+
+// Afficher les notifications
+function showMcpNotification(message, type = 'info') {
+    if (typeof bootstrap === 'undefined') {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        return;
+    }
+    
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toastId = 'toast-' + Date.now();
+    const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header ${bgClass} text-white border-0">
+                <i class="bi bi-robot me-2"></i>
+                <strong class="me-auto">IA Processing</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    try {
+        const toast = new bootstrap.Toast(document.getElementById(toastId));
+        toast.show();
+        
+        document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+            this.remove();
         });
+    } catch (e) {
+        console.warn('Erreur création toast:', e);
+        console.log(`${type.toUpperCase()}: ${message}`);
+    }
+}
 
+// Créer le conteneur de toast
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1055';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Afficher l'aperçu avec validation obligatoire AVANT application
+function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
+    if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap non disponible, affichage en console:', data);
+        return;
+    }
+    
+    let modal = document.getElementById('mcpPreviewModal');
+    if (!modal) {
+        modal = createPreviewModalWithValidation();
+    }
+    
+    const modalTitle = modal.querySelector('.modal-title');
+    modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle text-warning me-2"></i>Validation requise - ${mode}`;
+    
+    const modalBody = modal.querySelector('.modal-body');
+    let content = `
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Validation requise :</strong> Vérifiez les modifications avant de les appliquer
+        </div>
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Deux options disponibles :</strong> Vous pouvez appliquer directement les modifications ou aller à la page d'édition pour plus de contrôle.
+        </div>
+    `;
+    
+    // Formater l'aperçu selon le type d'action
+    if (action.includes('title')) {
+        content += formatTitlePreviewShow(data);
+    } else if (action.includes('thesaurus')) {
+        content += formatThesaurusPreviewShow(data);
+    } else if (action.includes('summary')) {
+        content += formatSummaryPreviewShow(data);
+    } else if (data.previews) {
+        Object.entries(data.previews).forEach(([feature, preview]) => {
+            content += formatPreviewContent(feature, preview);
+        });
+    }
+    
+    if (data.tokens_used) {
+        content += `<div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Tokens utilisés :</strong> ${data.tokens_used}
+        </div>`;
+    }
+    
+    modalBody.innerHTML = content;
+    
+    // Stocker les données pour l'application
+    modal.dataset.previewData = JSON.stringify(data);
+    modal.dataset.mode = mode;
+    modal.dataset.action = action;
+    modal.dataset.recordId = recordId;
+    modal.dataset.apiPrefix = apiPrefix;
+    
+    try {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    } catch (e) {
+        console.warn('Erreur création modal:', e);
+        console.log('Aperçu des données:', data);
+    }
+}
+
+// Formater l'aperçu spécifique pour le titre (vue Show)
+function formatTitlePreviewShow(data) {
+    if (data.preview && data.preview.suggested_title) {
+        const currentTitle = document.querySelector('h4')?.textContent?.split(' [')[0] || 'Non défini';
+        return `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-magic me-2"></i>Reformulation du titre</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Titre actuel :</strong><br>
+                        <span class="text-muted">${currentTitle}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Titre suggéré :</strong><br>
+                        <span class="text-success fw-bold">${data.preview.suggested_title}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    return '<div class="alert alert-warning">Aucune suggestion de titre reçue</div>';
+}
+
+// Formater l'aperçu spécifique pour le résumé (vue Show)
+function formatSummaryPreviewShow(data) {
+    if (data.preview && data.preview.suggested_summary) {
+        return `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-file-text me-2"></i>Résumé ISAD(G) - Portée et contenu (3.3.1)</h6>
+                                <div class="alert alert-success">
+                    <strong>Résumé suggéré :</strong><br>
+                    <div class="bg-white p-2 border rounded mt-2" style="max-height: 200px; overflow-y: auto;">
+                        <span class="fw-bold">${data.preview.suggested_summary}</span>
+                    </div>
+                </div>
+                                </div>
+                            `;
+    }
+    return '<div class="alert alert-warning">Aucun résumé généré</div>';
+}
+
+// Formater l'aperçu spécifique pour l'indexation thésaurus (vue Show)
+function formatThesaurusPreviewShow(data) {
+    if (data.preview && data.preview.concepts && data.preview.concepts.length > 0) {
+        let content = `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-tags me-2"></i>Indexation automatique</h6>
+                <p><strong>Concepts trouvés :</strong> ${data.preview.concepts.length}</p>
+                <div class="mb-3">
+                    <strong>Mots-clés suggérés :</strong>
+                    <div class="mt-2">
+        `;
+        
+        data.preview.concepts.forEach(concept => {
+            const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
+            content += `
+                <span class="badge bg-success me-2 mb-2 p-2">
+                    ${concept.preferred_label} 
+                    <small>(${weight}%)</small>
+                </span>
+            `;
+        });
+        
+        content += `
+                    </div>
+                </div>
+                                </div>
+                            `;
+        return content;
+    }
+    return '<div class="alert alert-warning">Aucun concept trouvé dans le thésaurus</div>';
+}
+
+// Afficher l'aperçu des modifications avec fonctionnalité "Appliquer"
+function showMcpPreview(data, mode = 'MCP') {
+    if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap non disponible, affichage en console:', data);
+        return;
+    }
+    
+    let modal = document.getElementById('mcpPreviewModal');
+    if (!modal) {
+        modal = createPreviewModal();
+    }
+    
+    const modalTitle = modal.querySelector('.modal-title');
+    modalTitle.innerHTML = `<i class="bi bi-robot me-2"></i>Aperçu ${mode}`;
+    
+    const modalBody = modal.querySelector('.modal-body');
+    let content = `<h6>Aperçu des modifications (${mode}) :</h6>`;
+    
+    if (data.previews) {
+        Object.entries(data.previews).forEach(([feature, preview]) => {
+            content += formatPreviewContent(feature, preview);
+        });
+    } else if (data.preview) {
+        content += formatPreviewContent('single', data.preview);
+    }
+    
+    if (data.tokens_used) {
+        content += `<div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Tokens utilisés :</strong> ${data.tokens_used}
+        </div>`;
+    }
+    
+    modalBody.innerHTML = content;
+    
+    // Stocker les données pour l'application
+    modal.dataset.previewData = JSON.stringify(data);
+    modal.dataset.mode = mode;
+    
+    try {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    } catch (e) {
+        console.warn('Erreur création modal:', e);
+        console.log('Aperçu des données:', data);
+    }
+}
+
+// Formater le contenu de l'aperçu
+function formatPreviewContent(feature, preview) {
+    let content = `<div class="mb-3 border rounded p-3">`;
+    content += `<h6 class="text-primary">${feature.charAt(0).toUpperCase() + feature.slice(1)}</h6>`;
+    
+    if (typeof preview === 'object') {
+        if (preview.original_title && preview.suggested_title) {
+            content += `
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Actuel :</strong><br>
+                        <span class="text-muted">${preview.original_title}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Suggéré :</strong><br>
+                        <span class="text-success">${preview.suggested_title}</span>
+                    </div>
+                </div>`;
+        } else if (preview.concepts_found !== undefined) {
+            content += `<p><strong>Concepts trouvés :</strong> ${preview.concepts_found}</p>`;
+            if (preview.concepts && preview.concepts.length > 0) {
+                content += '<p><strong>Principaux concepts :</strong></p><ul>';
+                preview.concepts.slice(0, 5).forEach(concept => {
+                    const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
+                    content += `<li>${concept.preferred_label} (${weight}%)</li>`;
+                });
+                content += '</ul>';
+            }
+        } else if (preview.current_summary && preview.suggested_summary) {
+            content += `
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Résumé actuel :</strong><br>
+                        <span class="text-muted">${preview.current_summary || 'Aucun'}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Résumé suggéré :</strong><br>
+                        <span class="text-success">${preview.suggested_summary}</span>
+                    </div>
+                </div>`;
+        } else {
+            content += `<pre class="bg-light p-2 rounded">${JSON.stringify(preview, null, 2)}</pre>`;
+        }
+    } else {
+        content += `<p class="bg-light p-2 rounded">${preview}</p>`;
+    }
+    
+    content += '</div>';
+    return content;
+}
+
+// Créer la modal d'aperçu avec validation
+function createPreviewModalWithValidation() {
+    const modalHtml = `
+        <div class="modal fade" id="mcpPreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title text-dark">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Aperçu des modifications
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Fermer
+                        </button>
+                        <a href="javascript:void(0)" class="btn btn-outline-primary" onclick="goToEditPage()">
+                            <i class="bi bi-pencil me-1"></i>Aller à l'édition
+                        </a>
+                        <button type="button" class="btn btn-success" onclick="applyChangesDirectlyFromShow()">
+                            <i class="bi bi-check-circle me-1"></i>Appliquer directement
+                        </button>
+                    </div>
+                </div>
+            </div>
+                            </div>
+                        `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    return document.getElementById('mcpPreviewModal');
+}
+
+// Créer la modal d'aperçu (ancienne fonction - gardée pour compatibilité)
+function createPreviewModal() {
+    return createPreviewModalWithValidation();
+}
+
+// Aller à la page d'édition depuis la vue show
+function goToEditPage() {
+    const modal = document.getElementById('mcpPreviewModal');
+    if (!modal) return;
+    
+    const recordId = modal.dataset.recordId;
+    if (recordId) {
+        window.location.href = `/records/${recordId}/edit`;
+    } else {
+        // Fallback : essayer de récupérer l'ID depuis l'URL actuelle
+        const currentUrl = window.location.pathname;
+        const editUrl = currentUrl.replace('/records/', '/records/').replace('show', 'edit');
+        window.location.href = editUrl;
+    }
+}
+
+// Appliquer les changements directement depuis la vue show
+function applyChangesDirectlyFromShow() {
+    const modal = document.getElementById('mcpPreviewModal');
+    if (!modal) return;
+    
+    const previewData = JSON.parse(modal.dataset.previewData || '{}');
+    const mode = modal.dataset.mode || 'MCP';
+    const action = modal.dataset.action || '';
+    const recordId = modal.dataset.recordId;
+    const apiPrefix = modal.dataset.apiPrefix || '/api/mcp';
+    
+    // DEBUG: Afficher les données exactes pour diagnostic
+    console.log('Application directe depuis Show:', {
+        action: action,
+        previewData: previewData,
+        recordId: recordId,
+        apiPrefix: apiPrefix,
+        timestamp: new Date().toISOString()
+    });
+    
+    if (!recordId) {
+        showMcpNotification('Erreur: ID du record introuvable', 'error');
+        return;
+    }
+    
+    // Fermer la modal
+    const bsModal = bootstrap.Modal.getInstance(modal);
+    if (bsModal) {
+        bsModal.hide();
+    }
+    
+    // Déterminer l'endpoint d'application selon l'action
+    let endpoint;
+    let requestData = {};
+    
+    if (action.includes('title') && previewData.preview?.suggested_title) {
+        endpoint = `${apiPrefix}/records/${recordId}/title/reformulate`;
+        requestData = { 
+            suggested_title: previewData.preview.suggested_title,
+            apply_directly: true 
+        };
+        console.log('Préparation application titre:', requestData);
+    } else if (action.includes('summary') && previewData.preview?.suggested_summary) {
+        endpoint = `${apiPrefix}/records/${recordId}/summary/generate`;
+        requestData = { 
+            suggested_summary: previewData.preview.suggested_summary,
+            apply_directly: true 
+        };
+        console.log('Préparation application résumé:', requestData);
+    } else if (action.includes('thesaurus') && previewData.preview?.concepts) {
+        endpoint = `${apiPrefix}/records/${recordId}/thesaurus/index`;
+        requestData = { 
+            concepts: previewData.preview.concepts,
+            apply_directly: true 
+        };
+        console.log('Préparation application thésaurus:', requestData);
+    } else {
+        console.error('Aucune donnée valide à appliquer:', {
+            action: action,
+            preview: previewData.preview
+        });
+        showMcpNotification('Aucune donnée à appliquer', 'error');
+        return;
+    }
+    
+    // Afficher le statut en cours
+    showMcpNotification(`${mode}: Application des modifications en cours...`, 'info');
+    
+    // Faire l'appel API pour appliquer les changements
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Réponse de l\'API:', data);
+        
+        if (data.error) {
+            throw new Error(data.message || 'Erreur inconnue');
+        }
+        
+        showMcpNotification(`${mode}: Modifications appliquées avec succès!`, 'success');
+        
+        // Recharger la page pour voir les changements
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(error => {
+        console.error(`Erreur ${mode}:`, error);
+        showMcpNotification(`Erreur ${mode}: ${error.message}`, 'error');
+    });
+}
+
+// Appliquer les changements de l'aperçu (FONCTIONNALITÉ MAINTENANT ACTIVE)
+function applyPreviewChanges() {
+    const modal = document.getElementById('mcpPreviewModal');
+    if (!modal) return;
+    
+    const previewData = JSON.parse(modal.dataset.previewData || '{}');
+    const mode = modal.dataset.mode || 'MCP';
+    const apiPrefix = mode === 'Mistral' ? '/api/mistral-test' : '/api/mcp';
+    
+    // Récupérer l'ID du record depuis les boutons de la page
+    const recordId = document.querySelector('.mcp-action-btn')?.dataset.recordId;
+    
+    if (!recordId) {
+        showMcpNotification('Erreur: ID du record introuvable', 'error');
+        return;
+    }
+    
+    // Déterminer quelles fonctionnalités appliquer selon les données disponibles
+    let features = [];
+    if (previewData.previews) {
+        features = Object.keys(previewData.previews);
+    } else if (previewData.preview) {
+        features = ['single'];
+    }
+    
+    if (features.length === 0) {
+        showMcpNotification('Aucune modification à appliquer', 'error');
+        return;
+    }
+    
+    // Fermer la modal
+    const bsModal = bootstrap.Modal.getInstance(modal);
+    if (bsModal) {
+        bsModal.hide();
+    }
+    
+    // Appliquer les modifications
+    const endpoint = `${apiPrefix}/records/${recordId}/process`;
+    
+    showMcpNotification(`${mode}: Application des modifications en cours...`, 'info');
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            features: features
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.message || 'Erreur inconnue');
+        }
+        
+        showMcpNotification(`${mode}: Modifications appliquées avec succès!`, 'success');
+        
+        // Recharger la page pour voir les changements
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    })
+    .catch(error => {
+        showMcpNotification(`Erreur ${mode}: ${error.message}`, 'error');
+        console.error(`Erreur ${mode}:`, error);
+    });
+}
     </script>
-@endpush
 
 
 

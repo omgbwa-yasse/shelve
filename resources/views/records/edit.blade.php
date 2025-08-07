@@ -716,7 +716,7 @@ function switchModeEdit(mode) {
     window.location.href = url.toString();
 }
 
-// Gestionnaire principal pour les actions MCP
+// Gestionnaire principal pour les actions MCP - TOUJOURS en mode preview d'abord
 function handleMcpActionWithMode(event) {
     event.preventDefault();
     
@@ -733,13 +733,13 @@ function handleMcpActionWithMode(event) {
     // Désactiver le bouton pendant le traitement
     setButtonState(button, 'processing');
     
-    // Déterminer l'endpoint selon l'action et le mode
-    let endpoint, method = 'POST', isPreview = action.includes('preview');
+    // TOUJOURS utiliser le mode preview d'abord pour validation
+    let endpoint, method = 'POST';
     
     switch(action) {
         case 'title':
         case 'title-preview':
-            endpoint = `${apiPrefix}/records/${recordId}/title/${isPreview ? 'preview' : 'reformulate'}`;
+            endpoint = `${apiPrefix}/records/${recordId}/title/preview`;
             break;
         case 'thesaurus':
         case 'thesaurus-suggest':
@@ -747,7 +747,7 @@ function handleMcpActionWithMode(event) {
             break;
         case 'summary':
         case 'summary-preview':
-            endpoint = `${apiPrefix}/records/${recordId}/summary/${isPreview ? 'preview' : 'generate'}`;
+            endpoint = `${apiPrefix}/records/${recordId}/summary/preview`;
             break;
         case 'all-preview':
             endpoint = `${apiPrefix}/records/${recordId}/preview`;
@@ -783,22 +783,15 @@ function handleMcpActionWithMode(event) {
         
         // Message de succès personnalisé selon le mode
         const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
-        showMcpNotification(`${mode}: ${data.message || 'Traitement réussi'}`, 'success');
+        showMcpNotification(`${mode}: ${data.message || 'Aperçu généré'}`, 'success');
         
         // Afficher les tokens utilisés si disponible (Mistral)
         if (data.tokens_used) {
             console.log(`Tokens utilisés (${mode}):`, data.tokens_used);
         }
         
-        // Afficher les résultats selon le type d'action
-        if (isPreview || action.startsWith('all-preview')) {
-            showMcpPreview(data, mode);
-        } else {
-            // Recharger la page après un délai pour voir les changements
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
-        }
+        // TOUJOURS afficher l'aperçu pour validation
+        showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix);
     })
     .catch(error => {
         setButtonState(button, 'error');
@@ -889,7 +882,162 @@ function createToastContainer() {
     return container;
 }
 
-// Afficher l'aperçu des modifications
+// Afficher l'aperçu avec validation obligatoire AVANT application
+function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
+    if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap non disponible, affichage en console:', data);
+        return;
+    }
+    
+    let modal = document.getElementById('mcpPreviewModal');
+    if (!modal) {
+        modal = createPreviewModalWithValidation();
+    }
+    
+    const modalTitle = modal.querySelector('.modal-title');
+    modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle text-warning me-2"></i>Validation requise - ${mode}`;
+    
+    const modalBody = modal.querySelector('.modal-body');
+    let content = `
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Validation requise :</strong> Vérifiez les modifications avant de les appliquer au formulaire
+        </div>
+    `;
+    
+    // Formater l'aperçu selon le type d'action
+    if (action.includes('title')) {
+        content += formatTitlePreview(data);
+    } else if (action.includes('thesaurus')) {
+        content += formatThesaurusPreview(data);
+    } else if (action.includes('summary')) {
+        content += formatSummaryPreview(data);
+    } else if (data.previews) {
+        Object.entries(data.previews).forEach(([feature, preview]) => {
+            content += formatPreviewContent(feature, preview);
+        });
+    }
+    
+    if (data.tokens_used) {
+        content += `<div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Tokens utilisés :</strong> ${data.tokens_used}
+        </div>`;
+    }
+    
+    modalBody.innerHTML = content;
+    
+    // Stocker les données pour l'application
+    modal.dataset.previewData = JSON.stringify(data);
+    modal.dataset.mode = mode;
+    modal.dataset.action = action;
+    modal.dataset.recordId = recordId;
+    modal.dataset.apiPrefix = apiPrefix;
+    
+    try {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    } catch (e) {
+        console.warn('Erreur création modal:', e);
+        console.log('Aperçu des données:', data);
+    }
+}
+
+// Formater l'aperçu spécifique pour le titre
+function formatTitlePreview(data) {
+    if (data.preview && data.preview.suggested_title) {
+        const currentTitle = document.getElementById('name')?.value || 'Non défini';
+        return `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-magic me-2"></i>Reformulation du titre</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Titre actuel :</strong><br>
+                        <span class="text-muted">${currentTitle}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Titre suggéré :</strong><br>
+                        <span class="text-success fw-bold">${data.preview.suggested_title}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    return '<div class="alert alert-warning">Aucune suggestion de titre reçue</div>';
+}
+
+// Formater l'aperçu spécifique pour le résumé
+function formatSummaryPreview(data) {
+    if (data.preview && data.preview.suggested_summary) {
+        const currentContent = document.getElementById('content')?.value || 'Vide';
+        return `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-file-text me-2"></i>Résumé ISAD(G) - Portée et contenu (3.3.1)</h6>
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Contenu actuel :</strong><br>
+                        <div class="bg-white p-2 border rounded" style="max-height: 150px; overflow-y: auto;">
+                            <span class="text-muted">${currentContent}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <strong>Résumé suggéré :</strong><br>
+                        <div class="bg-white p-2 border rounded" style="max-height: 150px; overflow-y: auto;">
+                            <span class="text-success fw-bold">${data.preview.suggested_summary}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Le résumé sera ajouté dans le champ "Content" selon la norme ISAD(G)
+                    </small>
+                </div>
+            </div>
+        `;
+    }
+    return '<div class="alert alert-warning">Aucun résumé généré</div>';
+}
+
+// Formater l'aperçu spécifique pour l'indexation thésaurus
+function formatThesaurusPreview(data) {
+    if (data.preview && data.preview.concepts && data.preview.concepts.length > 0) {
+        let content = `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-tags me-2"></i>Indexation automatique</h6>
+                <p><strong>Concepts trouvés :</strong> ${data.preview.concepts.length}</p>
+                <div class="mb-3">
+                    <strong>Mots-clés suggérés :</strong>
+                    <div class="mt-2">
+        `;
+        
+        data.preview.concepts.forEach(concept => {
+            const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
+            content += `
+                <span class="badge bg-success me-2 mb-2 p-2">
+                    ${concept.preferred_label} 
+                    <small>(${weight}%)</small>
+                </span>
+            `;
+        });
+        
+        content += `
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Ces termes seront ajoutés à la sélection du thésaurus
+                    </small>
+                </div>
+            </div>
+        `;
+        return content;
+    }
+    return '<div class="alert alert-warning">Aucun concept trouvé dans le thésaurus</div>';
+}
+
+// Afficher l'aperçu des modifications (ancienne fonction - gardée pour compatibilité)
 function showMcpPreview(data, mode = 'MCP') {
     if (typeof bootstrap === 'undefined') {
         console.log('Bootstrap non disponible, affichage en console:', data);
@@ -984,22 +1132,26 @@ function formatPreviewContent(feature, preview) {
     return content;
 }
 
-// Créer la modal d'aperçu
-function createPreviewModal() {
+// Créer la modal d'aperçu avec validation
+function createPreviewModalWithValidation() {
     const modalHtml = `
         <div class="modal fade" id="mcpPreviewModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="bi bi-robot me-2"></i>Aperçu
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title text-dark">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Validation requise
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body"></div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                        <button type="button" class="btn btn-primary" onclick="applyPreviewChanges()">Appliquer les modifications</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Annuler
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="applyValidatedChanges()">
+                            <i class="bi bi-check-circle me-1"></i>Valider et appliquer au formulaire
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1010,9 +1162,207 @@ function createPreviewModal() {
     return document.getElementById('mcpPreviewModal');
 }
 
-// Appliquer les changements de l'aperçu
+// Créer la modal d'aperçu (ancienne fonction - gardée pour compatibilité)
+function createPreviewModal() {
+    return createPreviewModalWithValidation();
+}
+
+// Appliquer les changements validés aux champs du formulaire
+function applyValidatedChanges() {
+    const modal = document.getElementById('mcpPreviewModal');
+    if (!modal) return;
+    
+    const previewData = JSON.parse(modal.dataset.previewData || '{}');
+    const action = modal.dataset.action || '';
+    
+    // DEBUG: Afficher les données exactes pour diagnostic
+    console.log('Application des changements:', {
+        action: action,
+        previewData: previewData,
+        timestamp: new Date().toISOString()
+    });
+    
+    // Appliquer selon le type d'action
+    if (action.includes('title')) {
+        applyTitleChanges(previewData);
+    } else if (action.includes('thesaurus')) {
+        applyThesaurusChanges(previewData);
+    } else if (action.includes('summary')) {
+        applySummaryChanges(previewData);
+    }
+    
+    // Fermer la modal
+    const bsModal = bootstrap.Modal.getInstance(modal);
+    if (bsModal) {
+        bsModal.hide();
+    }
+}
+
+// Appliquer les changements de titre au formulaire
+function applyTitleChanges(data) {
+    if (data.preview && data.preview.suggested_title) {
+        const titleField = document.getElementById('name');
+        if (titleField) {
+            titleField.value = data.preview.suggested_title;
+            titleField.style.backgroundColor = '#d4edda'; // Vert clair pour indiquer le changement
+            
+            showMcpNotification('✅ Titre appliqué au formulaire ! N\'oubliez pas de sauvegarder.', 'success');
+            
+            // Retirer la couleur après 3 secondes
+            setTimeout(() => {
+                titleField.style.backgroundColor = '';
+            }, 3000);
+        }
+    } else {
+        showMcpNotification('❌ Aucun titre à appliquer', 'error');
+    }
+}
+
+// Appliquer les changements de résumé au formulaire (dans le champ Content)
+function applySummaryChanges(data) {
+    console.log('applySummaryChanges appelée avec:', data);
+    
+    if (data.preview && data.preview.suggested_summary) {
+        const contentField = document.getElementById('content');
+        if (contentField) {
+            const oldContent = contentField.value;
+            const newContent = data.preview.suggested_summary;
+            
+            // REMPLACER complètement le contenu existant
+            contentField.value = newContent;
+            contentField.style.backgroundColor = '#d4edda'; // Vert clair pour indiquer le changement
+            
+            console.log('Résumé appliqué:', {
+                ancien_contenu: oldContent,
+                nouveau_contenu: newContent,
+                champ_actuel: contentField.value
+            });
+            
+            showMcpNotification('✅ Résumé REMPLACÉ dans le champ Content ! N\'oubliez pas de sauvegarder.', 'success');
+            
+            // Scroller vers le champ pour le rendre visible
+            document.getElementById('contenu-tab')?.click(); // Aller à l'onglet Contenu
+            setTimeout(() => {
+                contentField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Flash du champ pour attirer l'attention
+                contentField.style.border = '3px solid #28a745';
+                setTimeout(() => {
+                    contentField.style.border = '';
+                }, 2000);
+            }, 300);
+            
+            // Retirer la couleur après 5 secondes
+            setTimeout(() => {
+                contentField.style.backgroundColor = '';
+            }, 5000);
+        } else {
+            console.error('Champ content introuvable !');
+            showMcpNotification('❌ Erreur: Champ content introuvable', 'error');
+        }
+    } else {
+        console.error('Données de résumé manquantes:', data);
+        showMcpNotification('❌ Aucun résumé à appliquer (données manquantes)', 'error');
+    }
+}
+
+// Appliquer les changements d'indexation au formulaire (ajouter les termes)
+function applyThesaurusChanges(data) {
+    console.log('applyThesaurusChanges appelée avec:', data);
+    
+    if (data.preview && data.preview.concepts && data.preview.concepts.length > 0) {
+        const container = document.getElementById('selected-terms-container');
+        if (!container) {
+            console.error('Conteneur selected-terms-container introuvable !');
+            showMcpNotification('❌ Erreur: Conteneur des termes introuvable', 'error');
+            return;
+        }
+        
+        let addedCount = 0;
+        let skippedCount = 0;
+        
+        data.preview.concepts.forEach((concept, index) => {
+            console.log(`Traitement concept ${index + 1}:`, concept);
+            
+            // Vérifier si le terme n'est pas déjà sélectionné
+            const existingTerm = container.querySelector(`[data-id="${concept.id}"]`);
+            if (!existingTerm) {
+                // Créer l'élément du terme
+                const termElement = document.createElement('div');
+                termElement.className = 'selected-term badge bg-success me-2 mb-2 p-2';
+                termElement.dataset.id = concept.id;
+                termElement.style.backgroundColor = '#28a745'; // Vert pour nouveau terme
+                termElement.innerHTML = `
+                    <span>${concept.preferred_label || concept.label || concept.literal_form || 'Terme sans nom'}</span>
+                    <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
+                `;
+                
+                container.appendChild(termElement);
+                addedCount++;
+                console.log(`Terme ajouté: ${concept.preferred_label || concept.label}`);
+            } else {
+                skippedCount++;
+                console.log(`Terme déjà présent: ${concept.preferred_label || concept.label}`);
+            }
+        });
+        
+        // Mettre à jour les champs cachés
+        if (typeof updateTermIds === 'function') {
+            updateTermIds();
+        } else {
+            console.warn('Fonction updateTermIds non disponible');
+            // Fallback: créer manuellement les champs cachés
+            const termIdsContainer = document.getElementById('term-ids-container');
+            if (termIdsContainer) {
+                termIdsContainer.innerHTML = '';
+                container.querySelectorAll('.selected-term').forEach(termEl => {
+                    const termId = termEl.dataset.id;
+                    if (termId) {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'term_ids[]';
+                        hiddenInput.value = termId;
+                        termIdsContainer.appendChild(hiddenInput);
+                    }
+                });
+            }
+        }
+        
+        console.log(`Résumé indexation: ${addedCount} ajoutés, ${skippedCount} ignorés`);
+        
+        if (addedCount > 0) {
+            showMcpNotification(`✅ ${addedCount} terme(s) ajouté(s) au thésaurus ! N\'oubliez pas de sauvegarder.`, 'success');
+            
+            // Scroller vers la section indexation
+            document.getElementById('indexation-tab')?.click(); // Aller à l'onglet Indexation
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+            
+            // Retirer la couleur verte après 3 secondes
+            setTimeout(() => {
+                data.preview.concepts.forEach(concept => {
+                    const termElement = container.querySelector(`[data-id="${concept.id}"]`);
+                    if (termElement) {
+                        termElement.style.backgroundColor = '';
+                        termElement.className = 'selected-term badge bg-primary me-2 mb-2 p-2';
+                    }
+                });
+            }, 3000);
+        } else if (skippedCount > 0) {
+            showMcpNotification(`ℹ️ Tous les ${skippedCount} terme(s) suggérés sont déjà sélectionnés`, 'info');
+        } else {
+            showMcpNotification('❌ Aucun terme valide à ajouter', 'error');
+        }
+    } else {
+        console.error('Données de thésaurus manquantes ou vides:', data);
+        showMcpNotification('❌ Aucun terme à ajouter (données manquantes)', 'error');
+    }
+}
+
+// Appliquer les changements de l'aperçu (ancienne fonction - gardée pour compatibilité)
 function applyPreviewChanges() {
-    showMcpNotification('Fonctionnalité à implémenter : application directe des changements', 'info');
+    applyValidatedChanges();
 }
 </script>
 

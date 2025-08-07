@@ -286,10 +286,10 @@
                             <dd class="col-sm-9">{{ $record->rule_convention ?? 'N/A' }}</dd>
 
                             <dt class="col-sm-3">{{ __('created_at') }}</dt>
-                            <dd class="col-sm-9">{{ $record->created_at->format('Y-m-d H:i:s') }}</dd>
+                            <dd class="col-sm-9">{{ $record->created_at ? $record->created_at->format('Y-m-d H:i:s') : 'N/A' }}</dd>
 
                             <dt class="col-sm-3">{{ __('updated_at') }}</dt>
-                            <dd class="col-sm-9">{{ $record->updated_at->format('Y-m-d H:i:s') }}</dd>
+                            <dd class="col-sm-9">{{ $record->updated_at ? $record->updated_at->format('Y-m-d H:i:s') : 'N/A' }}</dd>
 
                             <dt class="col-sm-3">{{ __('organisation') }}</dt>
                             <dd class="col-sm-9">{{ $record->organisation->name ?? 'N/A' }}</dd>
@@ -397,7 +397,7 @@
                                         <dd class="col-sm-7">{{ $communicabilityData['duration'] }} {{ __('years') ?? 'ans' }}</dd>
 
                                         <dt class="col-sm-5">{{ __('lifecycle_end_date') ?? 'Date de fin' }}</dt>
-                                        <dd class="col-sm-7">{{ $communicabilityData['end_date']->format('d/m/Y') }}</dd>
+                                        <dd class="col-sm-7">{{ $communicabilityData['end_date'] ? $communicabilityData['end_date']->format('d/m/Y') : 'N/A' }}</dd>
 
                                         <dt class="col-sm-5">{{ __('lifecycle_status') ?? 'Statut' }}</dt>
                                         <dd class="col-sm-7">
@@ -443,7 +443,7 @@
                                         <dd class="col-sm-7">{{ $retentionData['duration'] }} {{ __('years') ?? 'ans' }}</dd>
 
                                         <dt class="col-sm-5">{{ __('lifecycle_end_date') ?? 'Date de fin' }}</dt>
-                                        <dd class="col-sm-7">{{ $retentionData['end_date']->format('d/m/Y') }}</dd>
+                                        <dd class="col-sm-7">{{ $retentionData['end_date'] ? $retentionData['end_date']->format('d/m/Y') : 'N/A' }}</dd>
 
                                         <dt class="col-sm-5">{{ __('final_sort') ?? 'Sort final' }}</dt>
                                         <dd class="col-sm-7">
