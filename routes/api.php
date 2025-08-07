@@ -72,7 +72,7 @@ Route::prefix('mcp')->name('mcp.')->group(function () {
 
     // Routes publiques (pour le diagnostic et le statut)
     Route::middleware(['web'])->group(function () {
-        Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])->name('status');
+        Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkOllamaStatus'])->name('status');
         Route::get('tags', [App\Http\Controllers\McpProxyController::class, 'getMcpTags'])->name('tags');
         Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])->name('info');
     });
