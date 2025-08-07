@@ -9,13 +9,39 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon-v2.ico') }}" type="image/x-icon">
 
+    <!-- Preload des assets critiques -->
+    <link rel="preload" href="{{ asset('linear.svg') }}" as="image">
+    
     <!-- Scripts PDF uniquement (avant Vite) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
     
     <!-- Vite - gère Bootstrap CSS, JS et les fonts automatiquement -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    
+    <!-- Script de préchargement pour éviter FOUC -->
+    <script>
+        // Assurer que le DOM est prêt avant que Vite charge
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOM Ready - Vite peut charger ses assets');
+        });
+    </script>
 
     <style>
+        /* Styles critiques pour éviter FOUC */
+        .header-logo img {
+            background-color: #f8f9fa !important;
+            padding: 0.25rem !important;
+            border-radius: 0.25rem !important;
+            transition: none !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Préchargement des icônes Bootstrap */
+        .bi {
+            font-family: "bootstrap-icons" !important;
+        }
+        
         /* Styles pour le menu latéral */
         .submenu-card {
             background-color: #f8f9fa;
@@ -191,7 +217,9 @@
                     <!-- Logo et SAI -->
                     <div class="left-section">
                         <a href="{{ url('/') }}" class="header-logo">
-                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo" class="bg-light p-1 rounded">
+                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo" 
+                                 class="bg-light p-1 rounded"
+                                 style="background-color: #f8f9fa !important; padding: 0.25rem !important; border-radius: 0.25rem !important; transition: none !important;">
                         </a>
                         <div class="header-sai">
                             <span>SAI</span>
