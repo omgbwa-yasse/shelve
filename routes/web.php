@@ -6,6 +6,9 @@ require __DIR__.'/mcp.php';
 // Routes Administration MCP
 require __DIR__.'/admin-mcp.php';
 
+// Routes Test Mistral (pour tester l'intégration Mistral)
+require __DIR__.'/mistral-test.php';
+
 use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PhantomController;

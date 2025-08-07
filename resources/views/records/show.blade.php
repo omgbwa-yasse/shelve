@@ -23,13 +23,24 @@
                     </button>
                 </div>
                 
-                {{-- Boutons MCP --}}
-                @include('records.partials.mcp-buttons', [
-                    'record' => $record, 
-                    'style' => 'individual',
-                    'size' => 'sm',
-                    'showLabels' => false
-                ])
+                {{-- Boutons MCP avec option test Mistral --}}
+                @if(request()->get('test_mode') === 'mistral')
+                    @include('records.partials.mcp-buttons-test', [
+                        'record' => $record, 
+                        'style' => 'individual',
+                        'size' => 'sm',
+                        'showLabels' => false,
+                        'mode' => 'mistral'
+                    ])
+                @else
+                    @include('records.partials.mcp-buttons-test', [
+                        'record' => $record, 
+                        'style' => 'individual',
+                        'size' => 'sm',
+                        'showLabels' => false,
+                        'mode' => request()->get('mode', 'mcp')
+                    ])
+                @endif
             </div>
         </div>
 

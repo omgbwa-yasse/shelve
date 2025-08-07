@@ -2,7 +2,26 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ __('edit_description') }}</h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>{{ __('edit_description') }}</h1>
+            
+            {{-- Sélecteur de mode IA --}}
+            <div class="d-flex align-items-center gap-3">
+                <label class="form-label mb-0 fw-bold">Mode IA :</label>
+                <div class="btn-group" role="group" aria-label="Choix du mode IA">
+                    <input type="radio" class="btn-check" name="ia-mode-edit" id="mode-mcp-edit" value="mcp" {{ request()->get('mode', 'mcp') === 'mcp' ? 'checked' : '' }}>
+                    <label class="btn btn-outline-primary btn-sm" for="mode-mcp-edit">
+                        <i class="bi bi-robot"></i> MCP
+                    </label>
+
+                    <input type="radio" class="btn-check" name="ia-mode-edit" id="mode-mistral-edit" value="mistral" {{ request()->get('mode') === 'mistral' ? 'checked' : '' }}>
+                    <label class="btn btn-outline-warning btn-sm" for="mode-mistral-edit">
+                        <i class="bi bi-stars"></i> Mistral
+                    </label>
+                </div>
+            </div>
+        </div>
+        
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -18,28 +37,28 @@
             @method('PUT')
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="identification-tab" data-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
+                    <a class="nav-link active" id="identification-tab" data-bs-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contexte-tab" data-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
+                    <a class="nav-link" id="contexte-tab" data-bs-toggle="tab" href="#contexte" role="tab" aria-controls="contexte" aria-selected="false">{{ __('context') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="contenu-tab" data-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
+                    <a class="nav-link" id="contenu-tab" data-bs-toggle="tab" href="#contenu" role="tab" aria-controls="contenu" aria-selected="false">{{ __('content') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="condition-tab" data-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_conditions') }}</a>
+                    <a class="nav-link" id="condition-tab" data-bs-toggle="tab" href="#condition" role="tab" aria-controls="condition" aria-selected="false">{{ __('access_conditions') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="sources-tab" data-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('allied_materials_area') }}</a>
+                    <a class="nav-link" id="sources-tab" data-bs-toggle="tab" href="#sources" role="tab" aria-controls="sources" aria-selected="false">{{ __('allied_materials_area') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
+                    <a class="nav-link" id="notes-tab" data-bs-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">{{ __('notes') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="controle-tab" data-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
+                    <a class="nav-link" id="controle-tab" data-bs-toggle="tab" href="#controle" role="tab" aria-controls="controle" aria-selected="false">{{ __('description_control') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="indexation-tab" data-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
+                    <a class="nav-link" id="indexation-tab" data-bs-toggle="tab" href="#indexation" role="tab" aria-controls="indexation" aria-selected="false">{{ __('indexing') }}</a>
                 </li>
             </ul>
 
@@ -70,13 +89,13 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="name" class="form-label mb-0">Name</label>
-                            <div class="btn-group btn-group-sm">
-                                <button type="button" class="btn btn-outline-primary mcp-action-btn" 
-                                        data-action="title-preview" data-record-id="{{ $record->id }}"
-                                        data-bs-toggle="tooltip" title="Reformuler selon ISAD(G)">
-                                    <i class="bi bi-magic"></i> Reformuler
-                                </button>
-                            </div>
+                            @include('records.partials.mcp-buttons-test', [
+                                'record' => $record, 
+                                'style' => 'edit-title',
+                                'size' => 'sm',
+                                'showLabels' => true,
+                                'mode' => request()->get('mode', 'mcp')
+                            ])
                         </div>
                         <textarea name="name" id="name" class="form-control" required>{{ isset($suggestedTitle) ? $suggestedTitle : $record->name }}</textarea>
                         @if(isset($suggestedTitle))
@@ -156,13 +175,13 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="content" class="form-label mb-0">Content</label>
-                            <div class="btn-group btn-group-sm">
-                                <button type="button" class="btn btn-outline-info mcp-action-btn" 
-                                        data-action="summary-preview" data-record-id="{{ $record->id }}"
-                                        data-bs-toggle="tooltip" title="Générer le résumé ISAD(G)">
-                                    <i class="bi bi-file-text"></i> Générer résumé
-                                </button>
-                            </div>
+                            @include('records.partials.mcp-buttons-test', [
+                                'record' => $record, 
+                                'style' => 'edit-summary',
+                                'size' => 'sm',
+                                'showLabels' => true,
+                                'mode' => request()->get('mode', 'mcp')
+                            ])
                         </div>
                         <textarea name="content" id="content" class="form-control" rows="6">{{ $record->content }}</textarea>
                         <small class="form-text text-muted">
@@ -266,11 +285,13 @@
                                 </h6>
                                 <small class="text-muted">L'IA peut suggérer automatiquement des mots-clés basés sur le contenu</small>
                             </div>
-                            <button type="button" class="btn btn-outline-success btn-sm mcp-action-btn" 
-                                    data-action="thesaurus-suggest" data-record-id="{{ $record->id }}"
-                                    data-bs-toggle="tooltip" title="Extraire des mots-clés automatiquement">
-                                <i class="bi bi-tags"></i> Suggérer mots-clés
-                            </button>
+                            @include('records.partials.mcp-buttons-test', [
+                                'record' => $record, 
+                                'style' => 'edit-thesaurus',
+                                'size' => 'sm',
+                                'showLabels' => true,
+                                'mode' => request()->get('mode', 'mcp')
+                            ])
                         </div>
                     </div>
                     
@@ -599,7 +620,400 @@
         }
     </style>
 
-{{-- Inclusion des scripts MCP pour les boutons d'aide --}}
-@include('records.partials.mcp-buttons')
+{{-- Scripts JavaScript consolidés --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // S'assurer que jQuery est disponible pour les scripts legacy
+    if (typeof $ === 'undefined' && typeof window.jQuery !== 'undefined') {
+        window.$ = window.jQuery;
+    }
+
+    // Initialiser les onglets Bootstrap 5
+    function initializeTabs() {
+        if (typeof bootstrap !== 'undefined') {
+            // Initialiser tous les onglets
+            const triggerTabList = document.querySelectorAll('#myTab a[data-bs-toggle="tab"]');
+            triggerTabList.forEach(triggerEl => {
+                const tabTrigger = new bootstrap.Tab(triggerEl);
+                
+                triggerEl.addEventListener('click', event => {
+                    event.preventDefault();
+                    tabTrigger.show();
+                });
+            });
+        } else {
+            console.warn('Bootstrap non disponible - les onglets pourraient ne pas fonctionner');
+        }
+    }
+
+    // Attendre que Bootstrap soit disponible
+    function initializeMcpButtons() {
+        // Initialiser les tooltips seulement si Bootstrap est disponible
+        if (typeof bootstrap !== 'undefined') {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            if (tooltipTriggerList.length > 0) {
+                tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                    try {
+                        new bootstrap.Tooltip(tooltipTriggerEl);
+                    } catch (e) {
+                        console.warn('Erreur initialisation tooltip:', e);
+                    }
+                });
+            }
+        }
+
+        // Gestionnaire pour les boutons d'action MCP (seulement s'ils existent)
+        const mcpActionBtns = document.querySelectorAll('.mcp-action-btn');
+        if (mcpActionBtns.length > 0) {
+            mcpActionBtns.forEach(button => {
+                button.addEventListener('click', handleMcpActionWithMode);
+            });
+        }
+
+        // Gestionnaire pour le changement de mode global (seulement s'ils existent)
+        const modeRadios = document.querySelectorAll('input[name="ia-mode"]');
+        if (modeRadios.length > 0) {
+            modeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        switchMode(this.value);
+                    }
+                });
+            });
+        }
+    }
+
+    // Gestionnaire pour le changement de mode dans la vue edit
+    const modeEditRadios = document.querySelectorAll('input[name="ia-mode-edit"]');
+    if (modeEditRadios.length > 0) {
+        modeEditRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    switchModeEdit(this.value);
+                }
+            });
+        });
+    }
+
+    // Initialiser les onglets immédiatement
+    initializeTabs();
+
+    // Démarrer l'initialisation MCP après un délai pour s'assurer que tout est chargé
+    setTimeout(initializeMcpButtons, 100);
+});
+
+// Fonction pour changer de mode global
+function switchMode(mode) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('mode', mode);
+    window.location.href = url.toString();
+}
+
+// Fonction pour changer de mode dans la vue edit
+function switchModeEdit(mode) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('mode', mode);
+    window.location.href = url.toString();
+}
+
+// Gestionnaire principal pour les actions MCP
+function handleMcpActionWithMode(event) {
+    event.preventDefault();
+    
+    const button = event.currentTarget;
+    const action = button.dataset.action;
+    const recordId = button.dataset.recordId;
+    const apiPrefix = button.dataset.apiPrefix || '/api/mcp';
+    
+    if (!recordId) {
+        showMcpNotification('Erreur: ID du record manquant', 'error');
+        return;
+    }
+    
+    // Désactiver le bouton pendant le traitement
+    setButtonState(button, 'processing');
+    
+    // Déterminer l'endpoint selon l'action et le mode
+    let endpoint, method = 'POST', isPreview = action.includes('preview');
+    
+    switch(action) {
+        case 'title':
+        case 'title-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/title/${isPreview ? 'preview' : 'reformulate'}`;
+            break;
+        case 'thesaurus':
+        case 'thesaurus-suggest':
+            endpoint = `${apiPrefix}/records/${recordId}/thesaurus/index`;
+            break;
+        case 'summary':
+        case 'summary-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/summary/${isPreview ? 'preview' : 'generate'}`;
+            break;
+        case 'all-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/preview`;
+            break;
+        case 'all-apply':
+            endpoint = `${apiPrefix}/records/${recordId}/process`;
+            break;
+        default:
+            setButtonState(button, 'error');
+            showMcpNotification('Action inconnue: ' + action, 'error');
+            return;
+    }
+    
+    // Effectuer la requête
+    fetch(endpoint, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            features: action.startsWith('all') ? ['title', 'thesaurus', 'summary'] : [action.split('-')[0]]
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.message || 'Erreur inconnue');
+        }
+        
+        setButtonState(button, 'success');
+        
+        // Message de succès personnalisé selon le mode
+        const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
+        showMcpNotification(`${mode}: ${data.message || 'Traitement réussi'}`, 'success');
+        
+        // Afficher les tokens utilisés si disponible (Mistral)
+        if (data.tokens_used) {
+            console.log(`Tokens utilisés (${mode}):`, data.tokens_used);
+        }
+        
+        // Afficher les résultats selon le type d'action
+        if (isPreview || action.startsWith('all-preview')) {
+            showMcpPreview(data, mode);
+        } else {
+            // Recharger la page après un délai pour voir les changements
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        setButtonState(button, 'error');
+        const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
+        showMcpNotification(`Erreur ${mode}: ${error.message}`, 'error');
+        console.error(`Erreur ${mode}:`, error);
+    });
+}
+
+// Gestion des états des boutons
+function setButtonState(button, state) {
+    button.classList.remove('mcp-processing', 'mcp-success', 'mcp-error');
+    
+    const existingSpinner = button.querySelector('.spinner-border');
+    if (existingSpinner) {
+        existingSpinner.remove();
+    }
+    
+    switch(state) {
+        case 'processing':
+            button.classList.add('mcp-processing');
+            button.disabled = true;
+            button.insertAdjacentHTML('afterbegin', '<span class="spinner-border spinner-border-sm me-1" role="status"></span>');
+            break;
+        case 'success':
+            button.classList.add('mcp-success');
+            button.disabled = false;
+            setTimeout(() => {
+                button.classList.remove('mcp-success');
+            }, 3000);
+            break;
+        case 'error':
+            button.classList.add('mcp-error');
+            button.disabled = false;
+            setTimeout(() => {
+                button.classList.remove('mcp-error');
+            }, 5000);
+            break;
+        default:
+            button.disabled = false;
+    }
+}
+
+// Afficher les notifications
+function showMcpNotification(message, type = 'info') {
+    if (typeof bootstrap === 'undefined') {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        return;
+    }
+    
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toastId = 'toast-' + Date.now();
+    const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+    
+    const toastHtml = `
+        <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header ${bgClass} text-white border-0">
+                <i class="bi bi-robot me-2"></i>
+                <strong class="me-auto">IA Processing</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">${message}</div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    try {
+        const toast = new bootstrap.Toast(document.getElementById(toastId));
+        toast.show();
+        
+        document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+            this.remove();
+        });
+    } catch (e) {
+        console.warn('Erreur création toast:', e);
+        console.log(`${type.toUpperCase()}: ${message}`);
+    }
+}
+
+// Créer le conteneur de toast
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '1055';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Afficher l'aperçu des modifications
+function showMcpPreview(data, mode = 'MCP') {
+    if (typeof bootstrap === 'undefined') {
+        console.log('Bootstrap non disponible, affichage en console:', data);
+        return;
+    }
+    
+    let modal = document.getElementById('mcpPreviewModal');
+    if (!modal) {
+        modal = createPreviewModal();
+    }
+    
+    const modalTitle = modal.querySelector('.modal-title');
+    modalTitle.innerHTML = `<i class="bi bi-robot me-2"></i>Aperçu ${mode}`;
+    
+    const modalBody = modal.querySelector('.modal-body');
+    let content = `<h6>Aperçu des modifications (${mode}) :</h6>`;
+    
+    if (data.previews) {
+        Object.entries(data.previews).forEach(([feature, preview]) => {
+            content += formatPreviewContent(feature, preview);
+        });
+    } else if (data.preview) {
+        content += formatPreviewContent('single', data.preview);
+    }
+    
+    if (data.tokens_used) {
+        content += `<div class="alert alert-info mt-3">
+            <i class="bi bi-info-circle me-1"></i>
+            <strong>Tokens utilisés :</strong> ${data.tokens_used}
+        </div>`;
+    }
+    
+    modalBody.innerHTML = content;
+    
+    try {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    } catch (e) {
+        console.warn('Erreur création modal:', e);
+        console.log('Aperçu des données:', data);
+    }
+}
+
+// Formater le contenu de l'aperçu
+function formatPreviewContent(feature, preview) {
+    let content = `<div class="mb-3 border rounded p-3">`;
+    content += `<h6 class="text-primary">${feature.charAt(0).toUpperCase() + feature.slice(1)}</h6>`;
+    
+    if (typeof preview === 'object') {
+        if (preview.original_title && preview.suggested_title) {
+            content += `
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Actuel :</strong><br>
+                        <span class="text-muted">${preview.original_title}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Suggéré :</strong><br>
+                        <span class="text-success">${preview.suggested_title}</span>
+                    </div>
+                </div>`;
+        } else if (preview.concepts_found !== undefined) {
+            content += `<p><strong>Concepts trouvés :</strong> ${preview.concepts_found}</p>`;
+            if (preview.concepts && preview.concepts.length > 0) {
+                content += '<p><strong>Principaux concepts :</strong></p><ul>';
+                preview.concepts.slice(0, 5).forEach(concept => {
+                    const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
+                    content += `<li>${concept.preferred_label} (${weight}%)</li>`;
+                });
+                content += '</ul>';
+            }
+        } else if (preview.current_summary && preview.suggested_summary) {
+            content += `
+                <div class="row">
+                    <div class="col-6">
+                        <strong>Résumé actuel :</strong><br>
+                        <span class="text-muted">${preview.current_summary || 'Aucun'}</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>Résumé suggéré :</strong><br>
+                        <span class="text-success">${preview.suggested_summary}</span>
+                    </div>
+                </div>`;
+        } else {
+            content += `<pre class="bg-light p-2 rounded">${JSON.stringify(preview, null, 2)}</pre>`;
+        }
+    } else {
+        content += `<p class="bg-light p-2 rounded">${preview}</p>`;
+    }
+    
+    content += '</div>';
+    return content;
+}
+
+// Créer la modal d'aperçu
+function createPreviewModal() {
+    const modalHtml = `
+        <div class="modal fade" id="mcpPreviewModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-robot me-2"></i>Aperçu
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary" onclick="applyPreviewChanges()">Appliquer les modifications</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    return document.getElementById('mcpPreviewModal');
+}
+
+// Appliquer les changements de l'aperçu
+function applyPreviewChanges() {
+    showMcpNotification('Fonctionnalité à implémenter : application directe des changements', 'info');
+}
+</script>
 
 @endsection

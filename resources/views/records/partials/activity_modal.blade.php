@@ -50,7 +50,6 @@
     </div>
 </div>
 
-@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables
@@ -72,12 +71,17 @@
         // Initialize the modal
         if (activityModal) {
             console.log('Activity modal found, adding event listener');
-            activityModal.addEventListener('show.bs.modal', function() {
-                console.log('Modal show event triggered');
-                initializeAlphabetFilter();
-                resetBreadcrumb();
-                loadActivities();
-            });
+            // Vérifier si Bootstrap est disponible
+            if (typeof bootstrap !== 'undefined') {
+                activityModal.addEventListener('show.bs.modal', function() {
+                    console.log('Modal show event triggered');
+                    initializeAlphabetFilter();
+                    resetBreadcrumb();
+                    loadActivities();
+                });
+            } else {
+                console.warn('Bootstrap non disponible - modal activity ne peut pas être initialisé');
+            }
         } else {
             console.error('Activity modal not found!');
         }
@@ -514,8 +518,12 @@
                     document.getElementById('selected-activity-display').value = `${selectedActivity.code} - ${selectedActivity.name}`;
 
                     // Close the modal
-                    const modal = bootstrap.Modal.getInstance(activityModal);
-                    modal.hide();
+                    if (typeof bootstrap !== 'undefined') {
+                        const modal = bootstrap.Modal.getInstance(activityModal);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
                 } else {
                     alert('Veuillez sélectionner une activité.');
                 }
@@ -552,4 +560,3 @@
         }
     });
 </script>
-@endpush

@@ -182,7 +182,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="orgModalLabel">{{ __('Change Organization') }}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -262,7 +262,7 @@
 
                             <!-- Sélecteur de langue -->
                             <div class="header-action-item">
-                                <a href="#" class="header-action-btn" id="langBtn" role="button" data-toggle="dropdown" aria-expanded="false">
+                                <a href="#" class="header-action-btn" id="langBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <span>{{ strtoupper(App::getLocale()) }}</span>
                                     <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
                                 </a>
@@ -274,7 +274,7 @@
 
                             <!-- Utilisateur -->
                             <div class="header-action-item">
-                                <a href="#" class="header-action-btn" id="userBtn" role="button" data-toggle="dropdown" aria-expanded="false">
+                                <a href="#" class="header-action-btn" id="userBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-person-circle"></i>
                                     <i class="bi bi-chevron-down ml-1" style="font-size: 0.75rem;"></i>
                                 </a>
@@ -549,7 +549,17 @@
             });
         }
 
-        $(document).ready(function() {
+        // S'assurer que jQuery est disponible
+        function initializeLayoutScripts() {
+            if (typeof $ === 'undefined') {
+                if (typeof window.jQuery !== 'undefined') {
+                    window.$ = window.jQuery;
+                } else {
+                    console.warn('jQuery non disponible - certaines fonctionnalités pourraient ne pas marcher');
+                    return;
+                }
+            }
+
             $('.close').on('click', function() {
                 $('#orgModal').modal('hide');
             });
@@ -597,6 +607,12 @@
             // Vérification périodique du statut MCP
             updateMcpStatus();
             setInterval(updateMcpStatus, 60000); // Toutes les 60 secondes
+        }
+
+        // Initialiser les scripts quand le DOM est prêt et que Vite a chargé les dépendances
+        document.addEventListener('DOMContentLoaded', function() {
+            // Attendre un peu que Vite charge jQuery
+            setTimeout(initializeLayoutScripts, 200);
         });
 
 

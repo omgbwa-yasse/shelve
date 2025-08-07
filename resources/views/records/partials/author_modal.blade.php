@@ -107,10 +107,6 @@
     </div>
 </div>
 
-@push('styles')
-@endpush
-
-@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables
@@ -130,12 +126,17 @@
 
         // Initialize the modal
         if (authorModal) {
-            authorModal.addEventListener('show.bs.modal', function() {
-                loadAuthorTypes();
-                initializeSelectedAuthorsFromForm();
-                loadAuthors();
-                initializeAlphabetFilter();
-            });
+            // Vérifier si Bootstrap est disponible
+            if (typeof bootstrap !== 'undefined') {
+                authorModal.addEventListener('show.bs.modal', function() {
+                    loadAuthorTypes();
+                    initializeSelectedAuthorsFromForm();
+                    loadAuthors();
+                    initializeAlphabetFilter();
+                });
+            } else {
+                console.warn('Bootstrap non disponible - modal author ne peut pas être initialisé');
+            }
         }
 
         // Initialize selected authors from form
@@ -385,21 +386,33 @@
                 // Fermer le modal proprement
                 setTimeout(() => {
                     try {
-                        const modal = bootstrap.Modal.getInstance(authorModal);
-                        if (modal) {
-                            modal.hide();
+                        if (typeof bootstrap !== 'undefined') {
+                            const modal = bootstrap.Modal.getInstance(authorModal);
+                            if (modal) {
+                                modal.hide();
+                            } else {
+                                // Fallback : fermer manuellement
+                                authorModal.classList.remove('show');
+                                authorModal.style.display = 'none';
+                                authorModal.setAttribute('aria-hidden', 'true');
+                                document.body.classList.remove('modal-open');
+
+                                // Supprimer tous les backdrops
+                                const backdrops = document.querySelectorAll('.modal-backdrop');
+                                backdrops.forEach(backdrop => backdrop.remove());
+
+                                // Rétablir le style du body
+                                document.body.style.overflow = '';
+                                document.body.style.paddingRight = '';
+                            }
                         } else {
-                            // Fallback : fermer manuellement
+                            // Bootstrap non disponible - fermer manuellement
                             authorModal.classList.remove('show');
                             authorModal.style.display = 'none';
                             authorModal.setAttribute('aria-hidden', 'true');
                             document.body.classList.remove('modal-open');
-
-                            // Supprimer tous les backdrops
                             const backdrops = document.querySelectorAll('.modal-backdrop');
                             backdrops.forEach(backdrop => backdrop.remove());
-
-                            // Rétablir le style du body
                             document.body.style.overflow = '';
                             document.body.style.paddingRight = '';
                         }
@@ -490,8 +503,10 @@
                             document.getElementById('parent_name').value = '';
 
                             // Passer à l'onglet de sélection des auteurs
-                            const selectTab = new bootstrap.Tab(document.querySelector('a[href="#select-authors"]'));
-                            selectTab.show();
+                            if (typeof bootstrap !== 'undefined') {
+                                const selectTab = new bootstrap.Tab(document.querySelector('a[href="#select-authors"]'));
+                                selectTab.show();
+                            }
 
                             // Recharger la liste des auteurs
                             loadAuthors();
@@ -655,8 +670,4 @@
 
 
     });
-
-
-
-    </script>
-@endpush
+</script>
