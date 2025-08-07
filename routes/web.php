@@ -820,9 +820,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Dashboard du module workflow
         Route::get('/', function () {
-            return redirect()->route('workflows.dashboard');
+            return redirect()->route('workflows.instances.index');
         });
-        Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
 
 
 

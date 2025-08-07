@@ -11,13 +11,13 @@
 
     <!-- Preload des assets critiques -->
     <link rel="preload" href="{{ asset('linear.svg') }}" as="image">
-    
+
     <!-- Scripts PDF uniquement (avant Vite) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
-    
+
     <!-- Vite - gère Bootstrap CSS, JS et les fonts automatiquement -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    
+
     <!-- Script de préchargement pour éviter FOUC -->
     <script>
         // Assurer que le DOM est prêt avant que Vite charge
@@ -36,12 +36,12 @@
             opacity: 1 !important;
             visibility: visible !important;
         }
-        
+
         /* Préchargement des icônes Bootstrap */
         .bi {
             font-family: "bootstrap-icons" !important;
         }
-        
+
         /* Styles pour le menu latéral */
         .submenu-card {
             background-color: #f8f9fa;
@@ -217,7 +217,7 @@
                     <!-- Logo et SAI -->
                     <div class="left-section">
                         <a href="{{ url('/') }}" class="header-logo">
-                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo" 
+                            <img src="{{ asset('linear.svg') }}" alt="Shelve Logo"
                                  class="bg-light p-1 rounded"
                                  style="background-color: #f8f9fa !important; padding: 0.25rem !important; border-radius: 0.25rem !important; transition: none !important;">
                         </a>
@@ -374,7 +374,7 @@
                         @endcan
                         @can('module_workflow_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.dashboard') }}">
+                            <a class="nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.instances.index') }}">
                                 <i class="bi bi-diagram-3"></i>
                                 <span>{{ __('Workflows') }}</span>
                             </a>
@@ -518,7 +518,7 @@
         /**
          * Met à jour les badges de notifications
          */
- 
+
         function updateMcpStatus() {
             const mcpStatusElement = document.querySelector('#mcp-status');
             if (!mcpStatusElement) {
@@ -535,9 +535,9 @@
             .then(data => {
                 const statusClass = data.overall_status === 'ok' ? 'text-success' : 'text-danger';
                 const statusIcon = data.overall_status === 'ok' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-                
+
                 mcpStatusElement.innerHTML = `
-                    <i class="fas ${statusIcon} ${statusClass}"></i> 
+                    <i class="fas ${statusIcon} ${statusClass}"></i>
                     MCP ${data.overall_status.toUpperCase()}
                 `;
                 mcpStatusElement.className = `badge ${data.overall_status === 'ok' ? 'badge-success' : 'badge-warning'}`;

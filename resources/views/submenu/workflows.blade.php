@@ -70,23 +70,7 @@
         }
     </style>
 
-    <!-- Section Tableau de bord -->
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-grid"></i>
-            {{ __('Vue d\'ensemble') }}
-        </div>
-        <div class="submenu-content">
-            @can('workflow_dashboard')
-            <div class="submenu-item">
-                <a href="{{ route('workflows.dashboard') }}" class="submenu-link {{ request()->routeIs('workflows.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer"></i>
-                    {{ __('Tableau de bord') }}
-                </a>
-            </div>
-            @endcan
-        </div>
-    </div>
+
 
     <!-- Section Modèles -->
     <div class="submenu-section">
