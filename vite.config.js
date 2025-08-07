@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
+import { resolve } from 'path';
 
 export default defineConfig({
     plugins: [
@@ -45,7 +46,9 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': '/resources/js'
+            '@': '/resources/js',
+            '~bootstrap': resolve(__dirname, 'node_modules/bootstrap'),
+            '~bootstrap-icons': resolve(__dirname, 'node_modules/bootstrap-icons')
         },
         extensions: ['.js', '.jsx', '.ts', '.tsx']
     }

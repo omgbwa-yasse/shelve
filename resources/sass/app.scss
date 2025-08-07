@@ -7,8 +7,8 @@
 // Bootstrap uniquement (suppression de Tailwind pour éviter les conflits)
 @import 'bootstrap/scss/bootstrap';
 
-// Bootstrap Icons
-@import 'bootstrap-icons/font/bootstrap-icons.css';
+// Bootstrap Icons - import en utilisant l'alias
+@import '~bootstrap-icons/font/bootstrap-icons.css';
 
 // Custom styles
 .app {
