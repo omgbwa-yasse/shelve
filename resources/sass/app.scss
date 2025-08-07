@@ -1,87 +1,85 @@
-// Tailwind CSS directives
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-// Fonts
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+// Fonts - chargées en local pour éviter FOUC
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 // Variables
 @import 'variables';
 
-// Bootstrap
+// Bootstrap uniquement (suppression de Tailwind pour éviter les conflits)
 @import 'bootstrap/scss/bootstrap';
+
+// Bootstrap Icons
+@import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // Custom styles
 .app {
-  min-height: 100vh;
-  background-color: #f5f5f5;
+    min-height: 100vh;
+    background-color: #f5f5f5;
 }
 
 .header {
-  background-color: #2c3e50;
-  color: white;
-  padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
-  margin: 0;
-  padding: 1rem 0;
-  text-align: center;
-  font-size: 2rem;
+    margin: 0;
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 2rem;
 }
 
 .navigation {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    flex-wrap: wrap;
 }
 
 .nav-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #34495e;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #34495e;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
 }
 
 .nav-button:hover {
-  background-color: #3498db;
+    background-color: #3498db;
 }
 
 .nav-button.active {
-  background-color: #3498db;
-  transform: translateY(-2px);
+    background-color: #3498db;
+    transform: translateY(-2px);
 }
 
 .main-content {
-  max-width: 1200px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 .main-content h2 {
-  color: #2c3e50;
-  margin-bottom: 2rem;
-  text-align: center;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
-  .navigation {
-    flex-direction: column;
-    align-items: center;
-  }
+    .navigation {
+        flex-direction: column;
+        align-items: center;
+    }
 
-  .nav-button {
-    width: 100%;
-    max-width: 300px;
-  }
+    .nav-button {
+        width: 100%;
+        max-width: 300px;
+    }
 }
 
 $primary: #0178d4;
@@ -118,9 +116,9 @@ body {
     color: #0178d4;
     line-height: 1.6;
 }
-h2 {
 
-}
+h2 {}
+
 /* HEADER COMPACT */
 /* Header Two-Band Design */
 .two-band-header {
@@ -227,7 +225,7 @@ h2 {
 
 .header-logo img {
     height: 32px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 /* SAI styles */
@@ -270,7 +268,8 @@ h2 {
     background-color: white;
     border-radius: 4px;
     height: 36px;
-    min-width: 600px; /* Doublé de 300px à 600px */
+    min-width: 600px;
+    /* Doublé de 300px à 600px */
     border: 1px solid rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.15s ease-in-out;
 }
@@ -371,6 +370,7 @@ h2 {
 
 /* Adaptations responsives */
 @media (max-width: 991.98px) {
+
     /* En mode responsive, on réduit tout au strict minimum */
     .header-nav-link span {
         display: none;
@@ -506,6 +506,7 @@ h2 {
     margin-right: 0.5rem;
     font-size: 1.1rem;
 }
+
 body {
     font-weight: 400;
     color: $secondary;

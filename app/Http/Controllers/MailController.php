@@ -639,4 +639,24 @@ class MailController extends Controller
 
         return $candidateCode;
     }
+
+    /**
+     * Compte les mails non lus pour l'utilisateur actuel
+     */
+    public function countUnread()
+    {
+        $organisationId = Auth::user()->current_organisation_id;
+        
+        // Compter les mails entrants non traités pour l'organisation de l'utilisateur
+        $count = Mail::where('recipient_organisation_id', $organisationId)
+            ->where('mail_type', Mail::TYPE_INCOMING)
+            ->where('status', MailStatusEnum::RECEIVED)
+            ->whereNull('processed_at')  // Mails non encore traités
+            ->count();
+
+        return response()->json([
+            'count' => $count,
+            'status' => 'success'
+        ]);
+    }
 }

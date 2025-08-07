@@ -9,22 +9,10 @@
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon-v2.ico') }}" type="image/x-icon">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Icons (locaux) -->
-    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap-icons.css') }}">
-
-    <!-- CSS Dependencies (locaux) -->
-    <link rel="stylesheet" href="{{ asset('css/vendor/bootstrap.min.css') }}">
-
-    <!-- Suppression globale des ombres -->
-    <link rel="stylesheet" href="{{ asset('css/no-shadows.css') }}">
-
-    <!-- Scripts (locaux) -->
+    <!-- Scripts PDF uniquement (avant Vite) -->
     <script src="{{ asset('js/vendor/pdf.min.js') }}"></script>
+    
+    <!-- Vite - gère Bootstrap CSS, JS et les fonts automatiquement -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <style>
@@ -483,19 +471,47 @@
     @stack('scripts')
     @yield('scripts')
 
-    <!-- Scripts locaux -->
-    <script src="{{ asset('js/vendor/jquery-3.5.1.min.js') }}"></script>
-    <script src="{{ asset('js/vendor/popper.min.js') }}"></script>
-
-    <!-- Script de suppression des ombres -->
-    <script src="{{ asset('js/remove-shadows.js') }}"></script>
-    <script src="{{ asset('js/vendor/bootstrap.min.js') }}"></script>
+    <!-- Scripts complémentaires uniquement (Bootstrap/jQuery déjà dans Vite) -->
     <script src="{{ asset('js/vendor/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('js/vendor/chart.min.js') }}"></script>
 
     <script>
         function openOrgModal() {
             $('#orgModal').modal('show');
+        }
+
+        /**
+         * Met à jour les badges de notifications
+         */
+ 
+        function updateMcpStatus() {
+            const mcpStatusElement = document.querySelector('#mcp-status');
+            if (!mcpStatusElement) {
+                return; // Élément non présent sur cette page
+            }
+
+            fetch('/api/mcp/health', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const statusClass = data.overall_status === 'ok' ? 'text-success' : 'text-danger';
+                const statusIcon = data.overall_status === 'ok' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+                
+                mcpStatusElement.innerHTML = `
+                    <i class="fas ${statusIcon} ${statusClass}"></i> 
+                    MCP ${data.overall_status.toUpperCase()}
+                `;
+                mcpStatusElement.className = `badge ${data.overall_status === 'ok' ? 'badge-success' : 'badge-warning'}`;
+            })
+            .catch(error => {
+                console.log('Erreur statut MCP:', error);
+                mcpStatusElement.innerHTML = '<i class="fas fa-times text-danger"></i> MCP Offline';
+                mcpStatusElement.className = 'badge badge-danger';
+            });
         }
 
         $(document).ready(function() {

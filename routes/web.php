@@ -326,8 +326,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('send/transfer', [MailSendController::class, 'transfer'])->name('mail-send.transfer');
 
         // Routes anciennes (compatibilité temporaire)
-        Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
-        Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
+            Route::get('incoming', [MailController::class, 'indexIncoming'])->name('mails.incoming.index');
+    Route::get('incoming/create', [MailController::class, 'createIncoming'])->name('mails.incoming.create');
+    Route::get('count-unread', [MailController::class, 'countUnread'])->name('mails.count-unread');
         Route::post('incoming', [MailController::class, 'storeIncoming'])->name('mails.incoming.store');
         Route::get('incoming/{id}', [MailController::class, 'show'])->name('mails.incoming.show');
         Route::get('incoming/{id}/edit', [MailController::class, 'edit'])->name('mails.incoming.edit');
@@ -414,12 +415,15 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     // Gestion des chariots en AJAX, les routes
+    // Routes dolly-handler avec authentification
+Route::middleware(['auth'])->group(function () {
     Route::post('/dolly-handler/create', [DollyHandlerController::class, 'addDolly']);
     Route::get('/dolly-handler/list', [DollyHandlerController::class, 'list']);
     Route::post('/dolly-handler/add-items', [DollyHandlerController::class, 'addItems']);
     Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
     Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);
     Route::delete('/dolly-handler/{dolly_id}', [DollyHandlerController::class, 'deleteDolly']);
+});
 
 
 

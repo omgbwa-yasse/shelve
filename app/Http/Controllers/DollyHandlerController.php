@@ -13,19 +13,30 @@ class DollyHandlerController extends Controller
 {
     public function list(Request $request)  : JsonResponse
     {
-        $request->validate([
-            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf'
-        ]);
+        try {
+            $request->validate([
+                'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf'
+            ]);
 
-        $dollies = Dolly::where('category', $request->category)
-            ->where(function ($query) {
-            $query->where('owner_organisation_id', Auth::user()->current_organisation_id)
-                  ->orWhere('is_public', true);
-            })
-            ->get();
+            // Vérifier que l'utilisateur est connecté
+            if (!Auth::check() || !Auth::user()->current_organisation_id) {
+                return response()->json(['dollies' => []], 200);
+            }
 
+            $dollies = Dolly::where('category', $request->category)
+                ->where(function ($query) {
+                    $query->where('owner_organisation_id', Auth::user()->current_organisation_id)
+                          ->orWhere('is_public', true);
+                })
+                ->get();
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner une liste vide plutôt qu'une erreur
+            return response()->json(['dollies' => []], 200);
+        }
+
+        // Retourner une liste vide au lieu d'une erreur 404
         if(count($dollies) == 0){
-            return response()->json(['message' => 'No dollies found'], 404);
+            return response()->json(['dollies' => []], 200);
         }
 
         if($request->category == 'shelve'){

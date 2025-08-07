@@ -1,6 +1,6 @@
 // dollies.js - Fonctions pour la gestion des chariots (dollies)
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initDolliesManager();
 });
 
@@ -17,13 +17,13 @@ function initDolliesManager() {
     }
 
     // Afficher le formulaire de création
-    addDollyBtn.addEventListener('click', function() {
+    addDollyBtn.addEventListener('click', function () {
         dolliesList.style.display = 'none';
         dollyForm.style.display = 'block';
     });
 
     // Retour à la liste des chariots
-    backToListBtn.addEventListener('click', function() {
+    backToListBtn.addEventListener('click', function () {
         dolliesList.style.display = 'block';
         dollyForm.style.display = 'none';
     });
@@ -35,7 +35,7 @@ function initDolliesManager() {
     refreshDolliesList();
 
     // Délégation d'événements pour les boutons "Remplir"
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         if (event.target.classList.contains('fillDollyBtn')) {
             const dollyId = event.target.getAttribute('data-id');
             fillDolly(dollyId);
@@ -74,23 +74,23 @@ function handleDollyFormSubmit(event) {
         },
         body: JSON.stringify(formData)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur réseau: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert('Chariot créé avec succès!');
-        document.getElementById('createDollyForm').reset();
-        document.getElementById('dolliesList').style.display = 'block';
-        document.getElementById('dollyForm').style.display = 'none';
-        refreshDolliesList();
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        alert('Une erreur est survenue lors de la création du chariot.');
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Chariot créé avec succès!');
+            document.getElementById('createDollyForm').reset();
+            document.getElementById('dolliesList').style.display = 'block';
+            document.getElementById('dollyForm').style.display = 'none';
+            refreshDolliesList();
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la création du chariot.');
+        });
 }
 
 
@@ -112,29 +112,29 @@ function refreshDolliesList() {
             'Content-Type': 'application/json',
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur réseau: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        const dollies = data.dollies;
-        const dolliesList = document.getElementById('dolliesList');
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const dollies = data.dollies || [];
+            const dolliesList = document.getElementById('dolliesList');
 
-        if (!dolliesList) return;
+            if (!dolliesList) return;
 
-        if (dollies.length === 0) {
-            dolliesList.innerHTML = '<p>Aucun chariot chargé</p>';
-            return;
-        }
+            if (dollies.length === 0) {
+                dolliesList.innerHTML = '<p class="text-muted">Aucun chariot chargé</p>';
+                return;
+            }
 
-        let dolliesListHTML = '';
-        let baseUrl = window.location.origin;
-        dollies.forEach(dolly => {
-            const itemCount = getItemCount(dolly, category);
+            let dolliesListHTML = '';
+            let baseUrl = window.location.origin;
+            dollies.forEach(dolly => {
+                const itemCount = getItemCount(dolly, category);
 
-            dolliesListHTML += `
+                dolliesListHTML += `
                 <div class="card mb-1 shadow-sm border-0 rounded-3">
                     <div class="card-body p-4">
                         <div class="d-flex flex-column">
@@ -157,16 +157,17 @@ function refreshDolliesList() {
                     </div>
                 </div>
             `;
-        });
+            });
 
-        dolliesList.innerHTML = dolliesListHTML;
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        if (dolliesList) {
-            dolliesList.innerHTML = '<p>Erreur lors du chargement des chariots</p>';
-        }
-    });
+            dolliesList.innerHTML = dolliesListHTML;
+        })
+        .catch(error => {
+            console.log('Info dollies:', error.message);
+            const dolliesList = document.getElementById('dolliesList');
+            if (dolliesList) {
+                dolliesList.innerHTML = '<p class="text-muted">Aucun chariot disponible</p>';
+            }
+        });
 }
 
 
@@ -195,20 +196,20 @@ function fillDolly(dollyId) {
             dolly_id: dollyId
         })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Erreur réseau: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert(`Les ${getItemLabelPlural(category)} ont été ajoutés au chariot avec succès.`);
-        refreshDolliesList();
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        alert(`Une erreur est survenue lors de l'ajout des ${getItemLabelPlural(category)} au chariot.`);
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Erreur réseau: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(`Les ${getItemLabelPlural(category)} ont été ajoutés au chariot avec succès.`);
+            refreshDolliesList();
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert(`Une erreur est survenue lors de l'ajout des ${getItemLabelPlural(category)} au chariot.`);
+        });
 }
 
 

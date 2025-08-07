@@ -1,12 +1,10 @@
 import './bootstrap';
+import jQuery from 'jquery';
 
-// Import any additional JavaScript dependencies here
-// For example:
-// import Vue from 'vue';
-// import axios from 'axios';
+// Rendre jQuery disponible globalement pour les scripts inline
+window.$ = window.jQuery = jQuery;
 
-// Initialize any JavaScript components here
-// For example:
-// new Vue({
-//     el: '#app'
-// });
+// Import Bootstrap JavaScript (déjà fait dans bootstrap.js mais on s'assure)
+import 'bootstrap';
+
+console.log('✅ Vite: Bootstrap et jQuery chargés');
