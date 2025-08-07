@@ -1,5 +1,8 @@
 <?php
 
+// Routes MCP (Model Context Protocol)
+require __DIR__.'/mcp.php';
+
 use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PhantomController;
