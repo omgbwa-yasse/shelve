@@ -90,7 +90,7 @@
                                         <span class="badge badge-pill badge-primary">{{ $template->steps_count }}</span>
                                     </td>
                                     <td class="text-center">
-                                        @if(!empty($template->configuration))
+                                        @if(!empty($template->configuration) && is_array($template->configuration))
                                             <span class="badge badge-pill badge-success"
                                                   data-bs-toggle="tooltip"
                                                   title="{{ count($template->configuration) }} étape(s) configurée(s)">
