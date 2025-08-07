@@ -68,7 +68,16 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="name" class="form-label mb-0">Name</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-primary mcp-action-btn" 
+                                        data-action="title-preview" data-record-id="{{ $record->id }}"
+                                        data-bs-toggle="tooltip" title="Reformuler selon ISAD(G)">
+                                    <i class="bi bi-magic"></i> Reformuler
+                                </button>
+                            </div>
+                        </div>
                         <textarea name="name" id="name" class="form-control" required>{{ isset($suggestedTitle) ? $suggestedTitle : $record->name }}</textarea>
                         @if(isset($suggestedTitle))
                             <div class="alert alert-info mt-2">
@@ -145,8 +154,20 @@
                 <!-- Onglet "contenu" -->
                 <div class="tab-pane fade" id="contenu" role="tabpanel" aria-labelledby="contenu-tab">
                     <div class="mb-3">
-                        <label for="content" class="form-label">Content</label>
-                        <textarea name="content" id="content" class="form-control">{{ $record->content }}</textarea>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="content" class="form-label mb-0">Content</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-info mcp-action-btn" 
+                                        data-action="summary-preview" data-record-id="{{ $record->id }}"
+                                        data-bs-toggle="tooltip" title="Générer le résumé ISAD(G)">
+                                    <i class="bi bi-file-text"></i> Générer résumé
+                                </button>
+                            </div>
+                        </div>
+                        <textarea name="content" id="content" class="form-control" rows="6">{{ $record->content }}</textarea>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Le résumé sera généré selon l'élément 3.3.1 ISAD(G) - Portée et contenu
+                        </small>
                     </div>
                     <div class="mb-3">
                         <label for="appraisal" class="form-label">Appraisal</label>
@@ -236,6 +257,23 @@
 
                 <!-- Onglet "indexation" -->
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
+                    {{-- Aide MCP pour l'indexation --}}
+                    <div class="alert alert-light border-primary mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-robot text-primary"></i> Assistance IA pour l'Indexation
+                                </h6>
+                                <small class="text-muted">L'IA peut suggérer automatiquement des mots-clés basés sur le contenu</small>
+                            </div>
+                            <button type="button" class="btn btn-outline-success btn-sm mcp-action-btn" 
+                                    data-action="thesaurus-suggest" data-record-id="{{ $record->id }}"
+                                    data-bs-toggle="tooltip" title="Extraire des mots-clés automatiquement">
+                                <i class="bi bi-tags"></i> Suggérer mots-clés
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="mb-3">
                         <label for="thesaurus-search" class="form-label">Thésaurus</label>
                         <div class="position-relative">
@@ -560,5 +598,8 @@
             color: #dc3545;
         }
     </style>
+
+{{-- Inclusion des scripts MCP pour les boutons d'aide --}}
+@include('records.partials.mcp-buttons')
 
 @endsection

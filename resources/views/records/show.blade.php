@@ -10,19 +10,26 @@
                     <li class="breadcrumb-item active">{{ $record->code }}</li>
                 </ol>
             </nav>
-            <div class="btn-group">
-                <a href="{{ route('records.showFull', $record) }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-eye-fill"></i> {{ __('detailed_view') ?? 'Detailed View' }}
-                </a>
-                <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-pencil"></i> {{ __('edit_sheet') }}
-                </a>
-                <button type="button" class="btn btn-sm btn-outline-info" id="reformulateBtn" data-record-id="{{ $record->id }}">
-                    <i class="bi bi-magic"></i> {{ __('reformulate_title') ?? 'Reformuler le titre' }}
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
-                </button>
+            <div class="d-flex gap-2 flex-wrap">
+                <div class="btn-group">
+                    <a href="{{ route('records.showFull', $record) }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-eye-fill"></i> {{ __('detailed_view') ?? 'Detailed View' }}
+                    </a>
+                    <a href="{{ route('records.edit', $record) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> {{ __('edit_sheet') }}
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
+                    </button>
+                </div>
+                
+                {{-- Boutons MCP --}}
+                @include('records.partials.mcp-buttons', [
+                    'record' => $record, 
+                    'style' => 'individual',
+                    'size' => 'sm',
+                    'showLabels' => false
+                ])
             </div>
         </div>
 

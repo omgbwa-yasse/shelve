@@ -35,6 +35,13 @@
                         <i class="bi bi-envelope me-2"></i>
                         {{ __('communicate') }}
                     </button>
+                    {{-- Boutons MCP --}}
+                    @include('records.partials.mcp-buttons', [
+                        'style' => 'batch',
+                        'size' => 'sm',
+                        'showLabels' => true
+                    ])
+                    
                     <div class="ms-auto">
                         <button id="checkAllBtn" class="btn btn-primary btn-sm d-flex align-items-center">
                             <i class="bi bi-check-square me-2"></i>
@@ -664,6 +671,10 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
         }
     </style>
+
+    {{-- Modale MCP pour traitement par lots --}}
+    @include('records.partials.mcp-batch-modal')
+
 @endsection
 
 @push('scripts')
