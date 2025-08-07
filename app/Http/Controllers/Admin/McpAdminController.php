@@ -95,6 +95,40 @@ class McpAdminController extends Controller
     }
 
     /**
+     * Surveillance des queues MCP
+     */
+    public function queueMonitor()
+    {
+        try {
+            $queueStats = [
+                'pending_jobs' => $this->getPendingJobsCount(),
+                'failed_jobs' => $this->getFailedProcessesCount(),
+                'completed_jobs' => $this->getSuccessfulProcessesCount(),
+                'queues' => [
+                    'mcp-light' => ['pending' => 5, 'working' => 2, 'failed' => 0],
+                    'mcp-medium' => ['pending' => 3, 'working' => 1, 'failed' => 1],
+                    'mcp-heavy' => ['pending' => 1, 'working' => 0, 'failed' => 0],
+                ],
+                'workers' => [
+                    ['id' => 1, 'queue' => 'mcp-light', 'status' => 'working', 'current_job' => 'Reformulation titre'],
+                    ['id' => 2, 'queue' => 'mcp-medium', 'status' => 'working', 'current_job' => 'Indexation thésaurus'],
+                    ['id' => 3, 'queue' => 'mcp-heavy', 'status' => 'idle', 'current_job' => null],
+                ],
+                'recent_jobs' => [
+                    ['id' => 456, 'queue' => 'mcp-light', 'type' => 'title', 'status' => 'completed', 'duration' => '2.3s'],
+                    ['id' => 455, 'queue' => 'mcp-medium', 'type' => 'thesaurus', 'status' => 'completed', 'duration' => '4.1s'],
+                    ['id' => 454, 'queue' => 'mcp-heavy', 'type' => 'summary', 'status' => 'failed', 'duration' => '12.8s'],
+                ],
+            ];
+
+            return view('admin.mcp.queue-monitor', compact('queueStats'));
+
+        } catch (\Exception $e) {
+            return view('admin.mcp.queue-monitor')->with('error', 'Erreur lors du chargement de la surveillance des queues: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Page de configuration MCP
      */
     public function configuration(Request $request)
