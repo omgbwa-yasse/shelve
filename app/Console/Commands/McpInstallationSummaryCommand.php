@@ -101,19 +101,19 @@ class McpInstallationSummaryCommand extends Command
             [
                 'title' => '📝 Reformulation du Titre Record (ISAD-G)',
                 'description' => 'Reformule automatiquement les titres selon les règles ISAD(G)',
-                'model' => 'llama3.1:8b',
+                'model' => 'gemma3:4b',
                 'example' => 'Documents mairie → Personnel municipal, médailles du travail : listes. 1950-1960'
             ],
             [
                 'title' => '🏷️ Indexation Thésaurus',
                 'description' => 'Extrait 5 mots-clés + 3 synonymes, recherche dans le thésaurus',
-                'model' => 'mistral:7b',
+                'model' => 'gemma3:4b',
                 'example' => 'Texte → [personnel, médaille, municipal] → Concepts trouvés'
             ],
             [
                 'title' => '📄 Résumé ISAD(G) - Élément 3.3.1',
                 'description' => 'Génère le résumé "Portée et contenu" selon le niveau',
-                'model' => 'llama3.1:8b',
+                'model' => 'gemma3:4b',
                 'example' => 'Contient les listes nominatives et correspondance concernant...'
             ]
         ];
@@ -135,7 +135,7 @@ class McpInstallationSummaryCommand extends Command
         $this->line('   1️⃣ INSTALLER OLLAMA');
         $this->line('      • Windows: winget install ollama');
         $this->line('      • Démarrer: ollama serve');
-        $this->line('      • Modèles: ollama pull llama3.1:8b && ollama pull mistral:7b');
+        $this->line('      • Modèle: ollama pull gemma3:4b');
         $this->newLine();
         
         $this->line('   2️⃣ CONFIGURER LARAVEL');
@@ -188,7 +188,7 @@ class McpInstallationSummaryCommand extends Command
         $this->info('🆘 DÉPANNAGE');
         $this->info('─'.str_repeat('─', 40));
         $this->line('   • Ollama non accessible: ollama serve');
-        $this->line('   • Modèle manquant: ollama pull llama3.1:8b');
+        $this->line('   • Modèle manquant: ollama pull gemma3:4b');
         $this->line('   • Logs détaillés: tail -f storage/logs/laravel.log');
         $this->line('   • Test santé: curl http://127.0.0.1:11434/api/tags');
         $this->newLine();

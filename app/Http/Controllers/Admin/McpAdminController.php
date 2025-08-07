@@ -227,8 +227,7 @@ class McpAdminController extends Controller
     private function getModelUsageStats(int $days): array
     {
         return [
-            'llama3.1:8b' => 65,
-            'mistral:7b' => 35,
+            'gemma3:4b' => 100,
         ];
     }
 
@@ -262,7 +261,7 @@ class McpAdminController extends Controller
                         $recommendations[] = [
                             'type' => 'warning',
                             'title' => 'Modèles manquants',
-                            'message' => 'Installez les modèles requis avec: ollama pull llama3.1:8b',
+                            'message' => 'Installez le modèle requis avec: ollama pull gemma3:4b',
                             'action' => 'Installer modèles'
                         ];
                         break;
@@ -303,6 +302,12 @@ class McpAdminController extends Controller
     private function getAvailableModels(): array
     {
         return [
+            'gemma3:4b' => [
+                'name' => 'Gemma 3 4B (Recommandé)',
+                'description' => 'Modèle unique optimisé pour toutes les fonctionnalités MCP',
+                'size' => '2.8GB',
+                'recommended_for' => ['title', 'summary', 'thesaurus', 'keywords']
+            ],
             'llama3.1:8b' => [
                 'name' => 'Llama 3.1 8B',
                 'description' => 'Modèle polyvalent excellent pour la reformulation et les résumés',
@@ -329,8 +334,7 @@ class McpAdminController extends Controller
         try {
             // Simuler la récupération des modèles installés
             return [
-                'llama3.1:8b' => ['size' => '4.7GB', 'modified' => '2024-01-15'],
-                'mistral:7b' => ['size' => '4.1GB', 'modified' => '2024-01-12'],
+                'gemma3:4b' => ['size' => '2.8GB', 'modified' => '2024-01-20'],
             ];
         } catch (\Exception $e) {
             return [];
@@ -340,8 +344,7 @@ class McpAdminController extends Controller
     private function getModelStatistics(): array
     {
         return [
-            'llama3.1:8b' => ['usage_count' => 150, 'avg_time' => 2.3, 'success_rate' => 96.5],
-            'mistral:7b' => ['usage_count' => 89, 'avg_time' => 1.8, 'success_rate' => 94.2],
+            'gemma3:4b' => ['usage_count' => 239, 'avg_time' => 1.9, 'success_rate' => 97.8],
         ];
     }
 

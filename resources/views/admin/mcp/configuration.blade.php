@@ -257,7 +257,7 @@
                         <select class="form-select mb-3" name="thesaurus_model" id="thesaurus_model">
                             @foreach($models as $modelId => $modelInfo)
                                 <option value="{{ $modelId }}" 
-                                        {{ old('thesaurus_model', $config['models']['thesaurus'] ?? 'mistral:7b') === $modelId ? 'selected' : '' }}>
+                                        {{ old('thesaurus_model', $config['models']['thesaurus'] ?? 'gemma3:4b') === $modelId ? 'selected' : '' }}>
                                     {{ $modelInfo['name'] ?? $modelId }}
                                 </option>
                             @endforeach
@@ -272,7 +272,7 @@
                         <select class="form-select mb-3" name="summary_model" id="summary_model">
                             @foreach($models as $modelId => $modelInfo)
                                 <option value="{{ $modelId }}" 
-                                        {{ old('summary_model', $config['models']['summary'] ?? 'llama3.1:8b') === $modelId ? 'selected' : '' }}>
+                                        {{ old('summary_model', $config['models']['summary'] ?? 'gemma3:4b') === $modelId ? 'selected' : '' }}>
                                     {{ $modelInfo['name'] ?? $modelId }}
                                 </option>
                             @endforeach

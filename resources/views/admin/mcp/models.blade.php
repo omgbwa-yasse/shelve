@@ -187,8 +187,7 @@
             <div class="col-md-4">
                 <strong>Pour débuter :</strong>
                 <ul class="mb-0 mt-1">
-                    <li>llama3.1:8b (polyvalent)</li>
-                    <li>mistral:7b (rapide)</li>
+                    <li>gemma3:4b (unique modèle recommandé)</li>
                 </ul>
             </div>
             <div class="col-md-4">
@@ -201,8 +200,7 @@
             <div class="col-md-4">
                 <strong>Pour la qualité :</strong>
                 <ul class="mb-0 mt-1">
-                    <li>llama3.1:8b pour les résumés</li>
-                    <li>mistral:7b pour l'indexation</li>
+                    <li>gemma3:4b pour toutes les fonctionnalités</li>
                 </ul>
             </div>
         </div>

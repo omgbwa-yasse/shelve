@@ -401,8 +401,7 @@ ollama serve
                         <div class="code-block">
                             <button class="copy-btn" onclick="copyCode(this)">Copier</button>
 # Modèles recommandés pour MCP
-ollama pull llama3.1:8b      # Reformulation et résumés
-ollama pull mistral:7b       # Indexation rapide
+ollama pull gemma3:4b        # Modèle unique pour toutes les fonctionnalités
 ollama pull codellama:7b     # Structuration avancée (optionnel)
 
 # Vérifier l'installation
@@ -436,9 +435,9 @@ return [
     'base_url' => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
     
     'models' => [
-        'title' => 'llama3.1:8b',
-        'thesaurus' => 'mistral:7b',
-        'summary' => 'llama3.1:8b',
+        'title' => 'gemma3:4b',
+'thesaurus' => 'gemma3:4b',
+'summary' => 'gemma3:4b',
     ],
     
     'options' => [
@@ -680,7 +679,7 @@ php artisan mcp:installation-summary
                                         <strong>Symptôme :</strong> Erreur "model not found"<br>
                                         <strong>Solutions :</strong>
                                         <ul>
-                                            <li>Installez les modèles : <code>ollama pull llama3.1:8b</code></li>
+                                            <li>Installez le modèle : <code>ollama pull gemma3:4b</code></li>
                                             <li>Vérifiez les modèles installés : <code>ollama list</code></li>
                                             <li>Contrôlez la configuration dans <code>config/ollama-mcp.php</code></li>
                                         </ul>
