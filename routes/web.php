@@ -792,6 +792,8 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Routes pour les instances de workflow
         Route::resource('instances', WorkflowInstanceController::class);
+        // Autocomplete entités liées pour les instances
+        Route::get('instances/entities/autocomplete', [WorkflowInstanceController::class, 'autocompleteEntity'])->name('instances.entities.autocomplete');
         Route::post('instances/{instance}/start', [WorkflowInstanceController::class, 'start'])->name('instances.start');
         Route::post('instances/{instance}/cancel', [WorkflowInstanceController::class, 'cancel'])->name('instances.cancel');
         Route::post('instances/{instance}/pause', [WorkflowInstanceController::class, 'pause'])->name('instances.pause');
