@@ -16,10 +16,10 @@ return [
     'timeout' => env('OLLAMA_CONNECTION_TIMEOUT', 300),
     
     'models' => [
-        'title_reformulation' => env('OLLAMA_MCP_TITLE_MODEL', 'llama3.1:8b'),
-        'thesaurus_indexing' => env('OLLAMA_MCP_THESAURUS_MODEL', 'mistral:7b'),
-        'content_summarization' => env('OLLAMA_MCP_SUMMARY_MODEL', 'llama3.1:8b'),
-        'keyword_extraction' => env('OLLAMA_MCP_KEYWORD_MODEL', 'mistral:7b'),
+        'title_reformulation' => env('OLLAMA_MCP_TITLE_MODEL', 'gemma3:4b'),
+        'thesaurus_indexing' => env('OLLAMA_MCP_THESAURUS_MODEL', 'gemma3:4b'),
+        'content_summarization' => env('OLLAMA_MCP_SUMMARY_MODEL', 'gemma3:4b'),
+        'keyword_extraction' => env('OLLAMA_MCP_KEYWORD_MODEL', 'gemma3:4b'),
     ],
     
     'options' => [

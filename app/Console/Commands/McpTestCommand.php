@@ -115,7 +115,12 @@ class McpTestCommand extends Command
             $duration = microtime(true) - $startTime;
 
             $this->line("   ✓ Connexion réussie en " . round($duration, 2) . "s");
-            $this->line("   ✓ Réponse: " . substr($response['response'], 0, 50) . "...");
+            
+            if (isset($response['response']) && !empty($response['response'])) {
+                $this->line("   ✓ Réponse: " . substr($response['response'], 0, 50) . "...");
+            } else {
+                $this->line("   ⚠ Réponse Ollama vide ou format inattendu");
+            }
             
             return true;
 

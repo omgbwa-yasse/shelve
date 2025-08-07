@@ -461,6 +461,13 @@
                                         @case('public-admin')
                                             @include('submenu.public-admin')
                                             @break
+                                        @case('admin')
+                                            @if(Request::segment(2) == 'mcp')
+                                                @include('submenu.mcp')
+                                            @else
+                                                @include('submenu.admin')
+                                            @endif
+                                            @break
                                     @endswitch
                                 </div>
                             </div>

@@ -95,8 +95,8 @@
             <div class="col-md-4 text-end">
                 <div class="d-flex flex-column align-items-end">
                     <div class="mb-2">
-                        <span class="status-indicator status-{{ isset($health['overall_status']) && $health['overall_status'] === 'ok' ? 'online' : 'offline' }}"></span>
-                        <span class="fw-bold">{{ isset($health['overall_status']) && $health['overall_status'] === 'ok' ? 'Système Opérationnel' : 'Système Dégradé' }}</span>
+                        <span class="status-indicator status-{{ isset($health) && $health['overall_status'] ?? '' === 'ok' ? 'online' : 'offline' }}"></span>
+                        <span class="fw-bold">{{ isset($health) && $health['overall_status'] ?? '' === 'ok' ? 'Système Opérationnel' : 'Système Dégradé' }}</span>
                     </div>
                     <small class="opacity-75">Dernière mise à jour: {{ now()->format('H:i:s') }}</small>
                 </div>

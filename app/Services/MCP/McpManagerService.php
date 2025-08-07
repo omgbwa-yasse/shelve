@@ -256,7 +256,47 @@ class McpManagerService
             ];
         }
         
+        // Calculer le statut global
+        $health['overall_status'] = $this->calculateOverallStatus($health);
+        
         return $health;
+    }
+
+    /**
+     * Calcule le statut global basé sur les composants individuels
+     */
+    private function calculateOverallStatus(array $health): string
+    {
+        $hasErrors = false;
+        $hasWarnings = false;
+        
+        // Vérifier le statut de connexion Ollama (critique)
+        if (isset($health['ollama_connection']['status']) && $health['ollama_connection']['status'] === 'error') {
+            return 'error';
+        }
+        
+        // Vérifier la base de données (critique)
+        if (isset($health['database']['status']) && $health['database']['status'] === 'error') {
+            return 'error';
+        }
+        
+        // Vérifier les modèles configurés
+        if (isset($health['models'])) {
+            foreach ($health['models'] as $feature => $modelHealth) {
+                if (!$modelHealth['configured']) {
+                    $hasWarnings = true;
+                }
+            }
+        }
+        
+        // Déterminer le statut global
+        if ($hasErrors) {
+            return 'error';
+        } elseif ($hasWarnings) {
+            return 'warning';
+        } else {
+            return 'ok';
+        }
     }
 
     /**

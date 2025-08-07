@@ -84,7 +84,12 @@ class McpThesaurusIndexingService
             ->options(array_merge(config('ollama-mcp.options'), ['temperature' => 0.1]))
             ->ask();
 
-        return $this->parseKeywordResponse($response['response']);
+                    // Vérifier que la réponse contient bien la clé 'response'
+            if (!isset($response['response']) || empty($response['response'])) {
+                throw new \Exception('Réponse Ollama invalide ou vide pour l\'extraction de mots-clés');
+            }
+
+            return $this->parseKeywordResponse($response['response']);
     }
 
     /**

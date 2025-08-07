@@ -22,6 +22,11 @@ class McpTitleReformulationService
                 ->options(config('ollama-mcp.options'))
                 ->ask();
 
+            // Vérifier que la réponse contient bien la clé 'response'
+            if (!isset($response['response']) || empty($response['response'])) {
+                throw new \Exception('Réponse Ollama invalide ou vide');
+            }
+
             $reformulatedTitle = $this->extractTitle($response['response']);
             
             // Mettre à jour le record
