@@ -630,7 +630,10 @@ class RecordController extends Controller
                 $dolly = Dolly::create([
                     'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
                     'description' => 'Import automatique avec mapping personnalisé',
-                    'type_id' => 1,
+                    'category' => 'record',
+                    'is_public' => false,
+                    'created_by' => Auth::id(),
+                    'owner_organisation_id' => Auth::user()->current_organisation_id,
                 ]);
 
                 // Lancer l'import
@@ -665,7 +668,10 @@ class RecordController extends Controller
         $dolly = Dolly::create([
             'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
             'description' => 'Imported data',
-            'type_id' => 1, // Assurez-vous d'avoir un type par défaut
+            'category' => 'record',
+            'is_public' => false,
+            'created_by' => Auth::id(),
+            'owner_organisation_id' => Auth::user()->current_organisation_id,
         ]);
 
         try {
