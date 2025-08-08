@@ -4,8 +4,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container-fluid">
         <div class="row mb-3">
-            <div class="col-md-8">
-                <h4 class="mb-3">{{ __('create_description') }}</h4>
+            <div class="col-md-8 d-flex align-items-center gap-2">
+                <a href="{{ session('records.back_url', route('records.index')) }}" class="btn btn-outline-secondary btn-sm" title="{{ __('back') }}">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h4 class="mb-0">{{ __('create_description') }}</h4>
             </div>
             <div class="col-md-4 text-end">
                 <a href="{{ route('records.create.full') }}" class="btn btn-outline-primary btn-sm">
@@ -734,3 +737,5 @@
         // La fonction initModals() est maintenant dans records.js
     </script>
 @endsection
+
+@include('records.partials.quick-nav')

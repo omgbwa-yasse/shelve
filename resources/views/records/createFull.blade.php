@@ -4,7 +4,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h1>{{ __('create_description') }}</h1>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ session('records.back_url', route('records.index')) }}" class="btn btn-outline-secondary btn-sm" title="{{ __('back') }}">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h1 class="mb-0">{{ __('create_description') }}</h1>
+            </div>
             <a href="{{ route('records.create') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-file-alt me-1"></i>Fiche simplifiée
             </a>
@@ -876,3 +881,5 @@
         }
     </style>
 @endsection
+
+@include('records.partials.quick-nav')

@@ -6,11 +6,24 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('records.index') }}">{{ __('records') }}</a></li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ session('records.back_url', route('records.index')) }}">{{ __('records') }}</a>
+                    </li>
                     <li class="breadcrumb-item active">{{ $record->code }}</li>
                 </ol>
             </nav>
             <div class="d-flex gap-2 flex-wrap">
+                <div class="btn-group" role="group" aria-label="Prev next navigation">
+                    <a href="{{ session('records.back_url', route('records.index')) }}" class="btn btn-sm btn-outline-secondary" title="{{ __('back') }}">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <a href="{{ isset($prevId) ? route('records.show', $prevId) : '#' }}" class="btn btn-sm btn-outline-secondary {{ isset($prevId) ? '' : 'disabled' }}" title="{{ __('previous') }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                    <a href="{{ isset($nextId) ? route('records.show', $nextId) : '#' }}" class="btn btn-sm btn-outline-secondary {{ isset($nextId) ? '' : 'disabled' }}" title="{{ __('next') }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
                 <div class="btn-group">
                     <a href="{{ route('records.showFull', $record) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-eye-fill"></i> {{ __('detailed_view') ?? 'Detailed View' }}
@@ -1294,6 +1307,4 @@ function applyPreviewChanges() {
 }
     </script>
 
-
-
-
+    @include('records.partials.quick-nav')

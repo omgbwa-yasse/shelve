@@ -46,7 +46,7 @@
                     </div>
                     
                     {{-- Sélecteur de mode IA --}}
-                    <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
                         <label class="form-label mb-0 fw-bold small">Mode IA :</label>
                         <div class="btn-group btn-group-sm" role="group" aria-label="Choix du mode IA">
                             <input type="radio" class="btn-check" name="ia-mode-index" id="mode-mcp-index" value="mcp" {{ request()->get('mode', 'mcp') === 'mcp' ? 'checked' : '' }}>
@@ -64,6 +64,34 @@
                             <i class="bi bi-check-square me-2"></i>
                             {{ __('checkAll') }}
                         </button>
+
+                        <div class="d-flex align-items-center gap-2 ms-2">
+                            <span id="selectionCountBadge" class="badge bg-primary-subtle text-primary">
+                                0 {{ __('selected') }}
+                            </span>
+                            <button id="expandAllBtn" class="btn btn-outline-secondary btn-sm" type="button">
+                                <i class="bi bi-arrows-expand"></i>
+                            </button>
+                            <button id="collapseAllBtn" class="btn btn-outline-secondary btn-sm" type="button">
+                                <i class="bi bi-arrows-collapse"></i>
+                            </button>
+                        </div>
+
+                        <div class="ms-2" style="min-width: 220px;">
+                            <input id="listFilter" type="text" class="form-control form-control-sm" placeholder="{{ __('search') }}..." autocomplete="off" />
+                        </div>
+                        
+                        <div class="ms-2">
+                            <button id="toggleThumbnailsBtn" class="btn btn-outline-secondary btn-sm" type="button" title="{{ __('toggle_thumbnails') ?? 'Afficher/Masquer vignettes' }}">
+                                <i class="bi bi-images"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="ms-2">
+                            <button id="filterWithAttachmentsBtn" class="btn btn-outline-info btn-sm" type="button" title="{{ __('filter_with_attachments') ?? 'Filtrer avec pièces jointes' }}">
+                                <i class="bi bi-paperclip"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -98,6 +126,11 @@
                                         <span class="text-dark">{{ Str::limit($record->name, 60) }}</span>
                                         <span class="badge bg-primary-subtle text-primary">{{ $record->level->name }}</span>
                                         <span class="badge bg-success-subtle text-success">{{ $record->status->name ?? 'N/A' }}</span>
+                                        @if($record->attachments->isNotEmpty())
+                                            <span class="badge bg-info-subtle text-info">
+                                                <i class="bi bi-paperclip me-1"></i>{{ $record->attachments->count() }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </a>
                             </div>
@@ -138,6 +171,44 @@
                                                     {{ $concept->preferred_label ?? 'N/A' }}
                                                 </span>
                                             @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Attachments Vignettes -->
+                                @if($record->attachments->isNotEmpty())
+                                    <div class="mt-3">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="bi bi-paperclip text-muted"></i>
+                                            <span class="text-muted small">{{ __('attachments') }} ({{ $record->attachments->count() }})</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            @foreach($record->attachments->take(4) as $attachment)
+                                                <div class="attachment-thumbnail" title="{{ $attachment->name }}">
+                                                    @if($attachment->thumbnail_path && Storage::disk('public')->exists($attachment->thumbnail_path))
+                                                        <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}" 
+                                                             alt="{{ $attachment->name }}"
+                                                             class="img-thumbnail"
+                                                             style="width: 60px; height: 60px; object-fit: cover;">
+                                                    @else
+                                                        <div class="attachment-placeholder d-flex align-items-center justify-content-center"
+                                                             style="width: 60px; height: 60px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
+                                                            <i class="bi bi-file-earmark text-muted"></i>
+                                                        </div>
+                                                    @endif
+                                                    <div class="attachment-info small text-muted mt-1 text-center">
+                                                        {{ Str::limit($attachment->name, 15) }}
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                            @if($record->attachments->count() > 4)
+                                                <div class="attachment-more d-flex align-items-center justify-content-center"
+                                                     style="width: 60px; height: 60px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; cursor: pointer;"
+                                                     data-record-id="{{ $record->id }}"
+                                                     data-attachment-count="{{ $record->attachments->count() }}">
+                                                    <span class="text-muted small">+{{ $record->attachments->count() - 4 }}</span>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endif
@@ -687,10 +758,76 @@
         .bg-gradient {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
         }
+
+        /* Styles pour les vignettes d'attachments */
+        .attachment-thumbnail {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .attachment-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .attachment-thumbnail img {
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .attachment-thumbnail:hover img {
+            filter: brightness(1.1);
+        }
+
+        .attachment-placeholder {
+            transition: all 0.2s ease;
+        }
+
+        .attachment-thumbnail:hover .attachment-placeholder {
+            background: #e9ecef !important;
+            border-color: #adb5bd !important;
+        }
+
+        .attachment-more {
+            transition: all 0.2s ease;
+        }
+
+        .attachment-more:hover {
+            background: #e9ecef !important;
+            border-color: #adb5bd !important;
+        }
+
+        .attachment-info {
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
     </style>
 
     {{-- Modale MCP pour traitement par lots --}}
     @include('records.partials.mcp-batch-modal')
+
+    <!-- Modal pour afficher tous les attachments -->
+    <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="attachmentsModalLabel">
+                        <i class="bi bi-paperclip me-2"></i>{{ __('attachments') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="attachmentsModalBody">
+                    <!-- Le contenu sera chargé dynamiquement -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('close') }}</button>
+                    <a href="#" id="viewRecordBtn" class="btn btn-primary">{{ __('view_record') ?? 'Voir le document' }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -777,5 +914,152 @@
             url.searchParams.set('mode', mode);
             window.location.href = url.toString();
         }
+
+        // Gestion des vignettes d'attachments
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle des vignettes
+            const toggleBtn = document.getElementById('toggleThumbnailsBtn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const thumbnails = document.querySelectorAll('.attachment-thumbnail, .attachment-more');
+                    const isVisible = thumbnails.length > 0 && thumbnails[0].style.display !== 'none';
+                    
+                    thumbnails.forEach(thumb => {
+                        thumb.style.display = isVisible ? 'none' : 'block';
+                    });
+                    
+                    // Changer l'icône
+                    const icon = this.querySelector('i');
+                    if (isVisible) {
+                        icon.className = 'bi bi-images';
+                        this.title = '{{ __("show_thumbnails") ?? "Afficher vignettes" }}';
+                    } else {
+                        icon.className = 'bi bi-images-fill';
+                        this.title = '{{ __("hide_thumbnails") ?? "Masquer vignettes" }}';
+                    }
+                });
+            }
+
+            // Filtre pour les records avec attachments
+            const filterWithAttachmentsBtn = document.getElementById('filterWithAttachmentsBtn');
+            if (filterWithAttachmentsBtn) {
+                filterWithAttachmentsBtn.addEventListener('click', function() {
+                    const records = document.querySelectorAll('.record-card');
+                    const isFiltered = this.classList.contains('btn-info');
+                    
+                    records.forEach(record => {
+                        const hasAttachments = record.querySelector('.attachment-thumbnail, .attachment-more');
+                        if (isFiltered) {
+                            // Retirer le filtre
+                            record.parentElement.style.display = '';
+                            this.classList.remove('btn-info');
+                            this.classList.add('btn-outline-info');
+                            this.title = '{{ __("filter_with_attachments") ?? "Filtrer avec pièces jointes" }}';
+                        } else {
+                            // Appliquer le filtre
+                            if (hasAttachments) {
+                                record.parentElement.style.display = '';
+                            } else {
+                                record.parentElement.style.display = 'none';
+                            }
+                            this.classList.remove('btn-outline-info');
+                            this.classList.add('btn-info');
+                            this.title = '{{ __("show_all") ?? "Afficher tous" }}';
+                        }
+                    });
+                });
+            }
+
+            // Ajouter des event listeners pour les vignettes
+            document.querySelectorAll('.attachment-thumbnail').forEach(thumbnail => {
+                thumbnail.addEventListener('click', function() {
+                    const recordId = this.closest('.record-card').querySelector('input[type="checkbox"]').value;
+                    const attachmentName = this.getAttribute('title');
+                    
+                    // Ouvrir la page de détail du record pour voir les attachments
+                    window.location.href = `/repositories/records/${recordId}#attachments`;
+                });
+            });
+
+            // Ajouter des tooltips pour les vignettes
+            document.querySelectorAll('.attachment-thumbnail').forEach(thumbnail => {
+                const attachmentName = thumbnail.getAttribute('title');
+                if (attachmentName) {
+                    thumbnail.setAttribute('data-bs-toggle', 'tooltip');
+                    thumbnail.setAttribute('data-bs-placement', 'top');
+                    thumbnail.setAttribute('data-bs-title', attachmentName);
+                }
+            });
+
+            // Initialiser les tooltips Bootstrap
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Gestion de la modal des attachments
+            document.querySelectorAll('.attachment-more').forEach(moreBtn => {
+                moreBtn.addEventListener('click', function() {
+                    const recordId = this.getAttribute('data-record-id');
+                    const attachmentCount = this.getAttribute('data-attachment-count');
+                    
+                    // Charger les attachments via AJAX
+                    fetch(`/repositories/records/${recordId}/attachments`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const modalBody = document.getElementById('attachmentsModalBody');
+                            const viewRecordBtn = document.getElementById('viewRecordBtn');
+                            
+                            let html = `
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <h6>Document: ${data.record.code} - ${data.record.name}</h6>
+                                        <p class="text-muted">${attachmentCount} pièce(s) jointe(s)</p>
+                                    </div>
+                            `;
+                            
+                            data.attachments.forEach(attachment => {
+                                html += `
+                                    <div class="col-md-3">
+                                        <div class="card h-100">
+                                            <div class="card-img-top bg-light" style="height: 200px;">
+                                                ${attachment.thumbnail_path ? 
+                                                    `<img src="/storage/${attachment.thumbnail_path}" class="img-fluid h-100 w-100" style="object-fit: cover;" alt="${attachment.name}">` :
+                                                    `<div class="d-flex align-items-center justify-content-center h-100">
+                                                        <i class="bi bi-file-earmark-pdf fs-1 text-secondary"></i>
+                                                    </div>`
+                                                }
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <h6 class="card-title small">${attachment.name}</h6>
+                                                <p class="card-text small text-muted">
+                                                    ${attachment.size ? (attachment.size / 1024).toFixed(1) + ' KB' : 'N/A'}
+                                                </p>
+                                                <a href="/repositories/records/${recordId}/attachments/${attachment.id}" class="btn btn-sm btn-outline-primary w-100">
+                                                    <i class="bi bi-download me-1"></i>{{ __('view_file') ?? 'Voir' }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += '</div>';
+                            modalBody.innerHTML = html;
+                            
+                            // Mettre à jour le lien vers le record
+                            viewRecordBtn.href = `/repositories/records/${recordId}`;
+                            
+                            // Afficher la modal
+                            const modal = new bootstrap.Modal(document.getElementById('attachmentsModal'));
+                            modal.show();
+                        })
+                        .catch(error => {
+                            console.error('Erreur lors du chargement des attachments:', error);
+                            alert('Erreur lors du chargement des pièces jointes');
+                        });
+                });
+            });
+        });
     </script>
 @endpush
