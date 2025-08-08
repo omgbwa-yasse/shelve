@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success) {
                     fileHeaders = data.headers;
+                    window.__filePreview = data.preview || [];
                     createMappingInterface(data.headers);
                     showStep('mapping');
                 } else {
@@ -294,7 +295,27 @@ document.addEventListener('DOMContentLoaded', function() {
             'terms': { label: 'Termes', required: false, description: 'Termes séparés par des virgules' }
         };
 
-        let html = '<div class="table-responsive"><table class="table table-bordered">';
+        let html = '';
+        const preview = window.__filePreview || [];
+        if (Array.isArray(preview) && preview.length) {
+            html += '<div class="mb-3">';
+            html += '<h6 class="text-muted">Aperçu des données</h6>';
+            html += '<div class="table-responsive">';
+            html += '<table class="table table-sm table-striped">';
+            html += '<thead><tr>';
+            headers.forEach(h => { html += `<th>${h}</th>`; });
+            html += '</tr></thead><tbody>';
+            preview.forEach(row => {
+                html += '<tr>';
+                headers.forEach((_, idx) => {
+                    const cell = ((row[idx] ?? '') + '').substring(0, 80);
+                    html += `<td title="${cell}">${cell}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table></div></div>';
+        }
+        html += '<div class="table-responsive"><table class="table table-bordered">';
         html += '<thead><tr>';
         html += '<th>Champ de la base de données</th>';
         html += '<th>Requis</th>';
@@ -332,7 +353,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const field = span.dataset.field;
             const select = document.querySelector(`select[data-field="${field}"]`);
             if (select.value) {
-                span.textContent = 'Exemple de données...';
+                const firstRow = (window.__filePreview || [])[0] || [];
+                const idx = parseInt(select.value, 10);
+                const val = firstRow[idx];
+                span.textContent = (val !== undefined && val !== null) ? (val + '').substring(0, 80) : '—';
             } else {
                 span.textContent = '--';
             }

@@ -907,17 +907,20 @@ class RecordController extends Controller
             $file = $request->file('file');
             $format = $request->input('format');
             $headers = [];
+            $preview = [];
 
             if ($format === 'excel') {
                 $headers = $this->extractExcelHeaders($file);
+                $preview = $this->extractExcelPreview($file, 5);
             } else if ($format === 'csv') {
                 $headers = $this->extractCsvHeaders($file);
+                $preview = $this->extractCsvPreview($file, 5);
             }
 
             return response()->json([
                 'success' => true,
                 'headers' => $headers,
-                'preview' => [],
+                'preview' => $preview,
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de l\'analyse du fichier: ' . $e->getMessage());
@@ -963,6 +966,55 @@ class RecordController extends Controller
             throw new \Exception('Impossible de lire les en-têtes du fichier CSV');
         }
         return $headers;
+    }
+
+    /**
+     * Extraire un aperçu (quelques lignes) d'un Excel
+     */
+    private function extractExcelPreview($file, int $maxRows = 5): array
+    {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+        $highestRow = $sheet->getHighestRow();
+        $highestColumn = $sheet->getHighestColumn();
+        // Commencer après la 1ère ligne (en-têtes)
+        $startRow = 2;
+        $endRow = min($highestRow, 1 + $maxRows);
+        if ($endRow < $startRow) {
+            return [];
+        }
+        $range = 'A' . $startRow . ':' . $highestColumn . $endRow;
+        $rows = $sheet->rangeToArray($range, null, true, true, false);
+        // $rows est un array de lignes, chacune un array indexé 0..n par colonne
+        return array_map(function ($row) {
+            return array_map(function ($value) {
+                if (is_null($value)) { return null; }
+                return is_string($value) ? trim($value) : (string) $value;
+            }, $row);
+        }, $rows);
+    }
+
+    /**
+     * Extraire un aperçu (quelques lignes) d'un CSV
+     */
+    private function extractCsvPreview($file, int $maxRows = 5): array
+    {
+        $handle = fopen($file->getPathname(), 'r');
+        if (!$handle) {
+            throw new \Exception('Impossible de lire le fichier CSV');
+        }
+        // Sauter la première ligne (en-têtes)
+        fgetcsv($handle);
+        $rows = [];
+        $count = 0;
+        while (($data = fgetcsv($handle)) !== false && $count < $maxRows) {
+            $rows[] = array_map(function ($value) {
+                return is_string($value) ? trim($value) : $value;
+            }, $data);
+            $count++;
+        }
+        fclose($handle);
+        return $rows;
     }
 
     public function printRecords(Request $request)
