@@ -3,27 +3,27 @@
 @section('content')
 <div class="container-fluid">
     {{-- Header avec gradient --}}
-    <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="card-body text-white py-4">
+    <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body text-white py-3">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1 class="h3 mb-2">
+                    <h1 class="h5 mb-1">
                         <i class="bi bi-graph-up-arrow me-3"></i>
                         Statistiques MCP
                     </h1>
-                    <p class="mb-0 opacity-90">
+                    <p class="mb-0 opacity-90 small">
                         Analyse des performances et de l'utilisation du Model Context Protocol
                     </p>
                 </div>
                 <div class="col-md-4 text-end">
                     <div class="d-flex flex-column align-items-end">
-                        <div class="mb-2">
-                            <span class="badge bg-light text-dark px-3 py-2">
+                        <div class="mb-1">
+                            <span class="badge bg-light text-dark px-2 py-1">
                                 <i class="bi bi-calendar3 me-1"></i>
                                 Période: {{ ucfirst($period ?? 'month') }}
                             </span>
                         </div>
-                        <small class="opacity-75">Dernière mise à jour: {{ now()->format('H:i:s') }}</small>
+                         <small class="opacity-75">Maj: {{ now()->format('H:i') }}</small>
                     </div>
                 </div>
             </div>
@@ -34,23 +34,23 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
-                <div class="card-body py-3">
+                <div class="card-body py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
                             <i class="bi bi-funnel text-primary me-2"></i>
                             Filtrer par période
                         </h6>
-                        <div class="btn-group" role="group">
-                            <a href="?period=day" class="btn btn-sm {{ $period === 'day' ? 'btn-primary' : 'btn-outline-primary' }}">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="?period=day" class="btn {{ $period === 'day' ? 'btn-primary' : 'btn-outline-primary' }}">
                                 Aujourd'hui
                             </a>
-                            <a href="?period=week" class="btn btn-sm {{ $period === 'week' ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <a href="?period=week" class="btn {{ $period === 'week' ? 'btn-primary' : 'btn-outline-primary' }}">
                                 Cette semaine
                             </a>
-                            <a href="?period=month" class="btn btn-sm {{ ($period === 'month' || !$period) ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <a href="?period=month" class="btn {{ ($period === 'month' || !$period) ? 'btn-primary' : 'btn-outline-primary' }}">
                                 Ce mois
                             </a>
-                            <a href="?period=year" class="btn btn-sm {{ $period === 'year' ? 'btn-primary' : 'btn-outline-primary' }}">
+                            <a href="?period=year" class="btn {{ $period === 'year' ? 'btn-primary' : 'btn-outline-primary' }}">
                                 Cette année
                             </a>
                         </div>
@@ -130,8 +130,8 @@
                         Évolution des traitements
                     </h6>
                 </div>
-                <div class="card-body">
-                    <canvas id="performanceChart" height="300"></canvas>
+                <div class="card-body pt-2">
+                    <canvas id="performanceChart" height="220"></canvas>
                 </div>
             </div>
         </div>
@@ -143,8 +143,8 @@
                         Répartition par fonctionnalité
                     </h6>
                 </div>
-                <div class="card-body">
-                    <canvas id="featuresChart" height="300"></canvas>
+                <div class="card-body pt-2">
+                    <canvas id="featuresChart" height="220"></canvas>
                 </div>
             </div>
         </div>

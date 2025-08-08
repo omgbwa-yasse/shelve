@@ -40,32 +40,17 @@
                     @include('records.partials.mcp-buttons-test', [
                         'style' => 'batch',
                         'size' => 'sm',
-                        'showLabels' => true,
-                        'mode' => request()->get('mode', 'mcp')
+                        'showLabels' => true
                     ])
                     </div>
                     
-                    {{-- Sélecteur de mode IA --}}
                     <div class="d-flex align-items-center gap-3 flex-wrap">
-                        <label class="form-label mb-0 fw-bold small">Mode IA :</label>
-                        <div class="btn-group btn-group-sm" role="group" aria-label="Choix du mode IA">
-                            <input type="radio" class="btn-check" name="ia-mode-index" id="mode-mcp-index" value="mcp" {{ request()->get('mode', 'mcp') === 'mcp' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-primary btn-sm" for="mode-mcp-index">
-                                <i class="bi bi-robot"></i> MCP
-                            </label>
-
-                            <input type="radio" class="btn-check" name="ia-mode-index" id="mode-mistral-index" value="mistral" {{ request()->get('mode') === 'mistral' ? 'checked' : '' }}>
-                            <label class="btn btn-outline-warning btn-sm" for="mode-mistral-index">
-                                <i class="bi bi-stars"></i> Mistral
-                            </label>
-                        </div>
-                        
-                        <button id="checkAllBtn" class="btn btn-primary btn-sm d-flex align-items-center ms-3">
+                        <button id="checkAllBtn" class="btn btn-primary btn-sm d-flex align-items-center ms-0">
                             <i class="bi bi-check-square me-2"></i>
                             {{ __('checkAll') }}
                         </button>
 
-                        <div class="d-flex align-items-center gap-2 ms-2">
+                        <div class="d-flex align-items-center gap-2">
                             <span id="selectionCountBadge" class="badge bg-primary-subtle text-primary">
                                 0 {{ __('selected') }}
                             </span>
@@ -899,21 +884,7 @@
             });
         });
 
-        // Gestionnaire pour le changement de mode dans l'index
-        document.querySelectorAll('input[name="ia-mode-index"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    switchModeIndex(this.value);
-                }
-            });
-        });
-
-        function switchModeIndex(mode) {
-            // Recharger la page avec le nouveau mode
-            const url = new URL(window.location.href);
-            url.searchParams.set('mode', mode);
-            window.location.href = url.toString();
-        }
+        // Mode IA global: plus de bascule côté index
 
         // Gestion des vignettes d'attachments
         document.addEventListener('DOMContentLoaded', function() {

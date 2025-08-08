@@ -7,33 +7,24 @@
     $style = $style ?? 'individual';
     $size = $size ?? 'sm';
     $showLabels = $showLabels ?? true;
-    $mode = $mode ?? 'mcp'; // 'mcp' ou 'mistral'
+    // Déterminer le mode à partir des paramètres globaux si non fourni
+    if (!isset($mode)) {
+        try {
+            $provider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+            $mode = $provider === 'mistral' ? 'mistral' : 'mcp';
+        } catch (\Throwable $e) {
+            $mode = 'mcp';
+        }
+    }
     $apiPrefix = $mode === 'mistral' ? '/api/mistral-test' : '/api/mcp';
+    // ID du record sécurisé (évite les warnings si $record est absent ou invalide)
+    $recordId = '';
+    try {
+        $recordId = isset($record) && is_object($record) && isset($record->id) ? (string)$record->id : '';
+    } catch (\Throwable $e) {
+        $recordId = '';
+    }
 @endphp
-
-{{-- Sélecteur de mode --}}
-<div class="d-flex align-items-center gap-3 mb-3">
-    <label class="form-label mb-0 fw-bold">Mode IA :</label>
-    <div class="btn-group" role="group" aria-label="Choix du mode IA">
-        <input type="radio" class="btn-check" name="ia-mode" id="mode-mcp" value="mcp" {{ $mode === 'mcp' ? 'checked' : '' }}>
-        <label class="btn btn-outline-primary btn-sm" for="mode-mcp">
-            <i class="bi bi-robot"></i> MCP (Ollama)
-        </label>
-
-        <input type="radio" class="btn-check" name="ia-mode" id="mode-mistral" value="mistral" {{ $mode === 'mistral' ? 'checked' : '' }}>
-        <label class="btn btn-outline-warning btn-sm" for="mode-mistral">
-            <i class="bi bi-stars"></i> Mistral (Test)
-        </label>
-    </div>
-    
-    <small class="text-muted">
-        @if($mode === 'mistral')
-            <i class="bi bi-exclamation-triangle text-warning"></i> Mode test avec API Mistral
-        @else
-            <i class="bi bi-check-circle text-success"></i> Mode production avec MCP Ollama
-        @endif
-    </small>
-</div>
 
 @if($style === 'individual' && isset($record))
     {{-- Boutons pour un record individuel --}}
@@ -42,7 +33,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
                 data-action="title" 
-                data-record-id="{{ $record->id }}"
+                data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="top" 
@@ -55,7 +46,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn" 
                 data-action="thesaurus" 
-                data-record-id="{{ $record->id }}"
+                data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="top" 
@@ -68,7 +59,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
                 data-action="summary" 
-                data-record-id="{{ $record->id }}"
+                data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
                 data-bs-toggle="tooltip" 
                 data-bs-placement="top" 
@@ -83,7 +74,7 @@
                     class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-warning' }} dropdown-toggle mcp-batch-btn" 
                     data-bs-toggle="dropdown" 
                     aria-expanded="false"
-                    data-record-id="{{ $record->id }}"
+                    data-record-id="{{ $recordId }}"
                     data-api-prefix="{{ $apiPrefix }}">
                 <i class="bi bi-cpu"></i>
                 @if($showLabels) {{ __('mcp_complete') ?? 'Complet' }} @endif
@@ -93,7 +84,7 @@
                     <a class="dropdown-item mcp-action-btn" 
                        href="#" 
                        data-action="all-preview" 
-                       data-record-id="{{ $record->id }}"
+                        data-record-id="{{ $recordId }}"
                        data-api-prefix="{{ $apiPrefix }}">
                         <i class="bi bi-eye me-2"></i>{{ __('preview_all') ?? 'Prévisualiser tout' }}
                     </a>
@@ -102,7 +93,7 @@
                     <a class="dropdown-item mcp-action-btn" 
                        href="#" 
                        data-action="all-apply" 
-                       data-record-id="{{ $record->id }}"
+                        data-record-id="{{ $recordId }}"
                        data-api-prefix="{{ $apiPrefix }}">
                         <i class="bi bi-check-circle me-2"></i>{{ __('apply_all') ?? 'Appliquer tout' }}
                     </a>
@@ -152,7 +143,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
                 data-action="title-preview" 
-                data-record-id="{{ $record->id ?? '' }}"
+                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-magic me-1"></i>{{ __('suggest_title') ?? 'Suggérer un titre' }}
         </button>
@@ -160,7 +151,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn" 
                 data-action="thesaurus-suggest" 
-                data-record-id="{{ $record->id ?? '' }}"
+                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-tags me-1"></i>{{ __('suggest_keywords') ?? 'Suggérer des mots-clés' }}
         </button>
@@ -168,7 +159,7 @@
         <button type="button" 
                 class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
                 data-action="summary-preview" 
-                data-record-id="{{ $record->id ?? '' }}"
+                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-file-text me-1"></i>{{ __('generate_content') ?? 'Générer le contenu' }}
         </button>
@@ -180,7 +171,7 @@
         <button type="button" 
                 class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
                 data-action="title-preview" 
-                data-record-id="{{ $record->id ?? '' }}"
+             data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
                 data-bs-toggle="tooltip" 
                 title="Reformuler selon ISAD(G) - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
@@ -194,7 +185,7 @@
         <button type="button" 
                 class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
                 data-action="summary-preview" 
-                data-record-id="{{ $record->id ?? '' }}"
+             data-record-id="{{ isset($record) ? $record->id : '' }}"
                 data-api-prefix="{{ $apiPrefix }}"
                 data-bs-toggle="tooltip" 
                 title="Générer le résumé ISAD(G) - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
@@ -207,7 +198,7 @@
     <button type="button" 
             class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} btn-sm mcp-action-btn" 
             data-action="thesaurus-suggest" 
-            data-record-id="{{ $record->id ?? '' }}"
+            data-record-id="{{ $recordId }}"
             data-api-prefix="{{ $apiPrefix }}"
             data-bs-toggle="tooltip" 
             title="Extraire des mots-clés automatiquement - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">

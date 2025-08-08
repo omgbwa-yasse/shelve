@@ -10,21 +10,7 @@
                 <h1 class="mb-0">{{ __('edit_description') }}</h1>
             </div>
             
-            {{-- Sélecteur de mode IA --}}
-            <div class="d-flex align-items-center gap-3">
-                <label class="form-label mb-0 fw-bold">Mode IA :</label>
-                <div class="btn-group" role="group" aria-label="Choix du mode IA">
-                    <input type="radio" class="btn-check" name="ia-mode-edit" id="mode-mcp-edit" value="mcp" {{ request()->get('mode', 'mcp') === 'mcp' ? 'checked' : '' }}>
-                    <label class="btn btn-outline-primary btn-sm" for="mode-mcp-edit">
-                        <i class="bi bi-robot"></i> MCP
-                    </label>
-
-                    <input type="radio" class="btn-check" name="ia-mode-edit" id="mode-mistral-edit" value="mistral" {{ request()->get('mode') === 'mistral' ? 'checked' : '' }}>
-                    <label class="btn btn-outline-warning btn-sm" for="mode-mistral-edit">
-                        <i class="bi bi-stars"></i> Mistral
-                    </label>
-                </div>
-            </div>
+            {{-- Le mode IA est déterminé par les paramètres globaux (Admin MCP) --}}
         </div>
         
         @if ($errors->any())
@@ -675,30 +661,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Gestionnaire pour le changement de mode global (seulement s'ils existent)
-        const modeRadios = document.querySelectorAll('input[name="ia-mode"]');
-        if (modeRadios.length > 0) {
-            modeRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        switchMode(this.value);
-                    }
-                });
-            });
-        }
+        // Mode IA global: plus de bascule côté vue
     }
 
-    // Gestionnaire pour le changement de mode dans la vue edit
-    const modeEditRadios = document.querySelectorAll('input[name="ia-mode-edit"]');
-    if (modeEditRadios.length > 0) {
-        modeEditRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.checked) {
-                    switchModeEdit(this.value);
-                }
-            });
-        });
-    }
+    // Mode IA global: plus de bascule côté vue edit
 
     // Initialiser les onglets immédiatement
     initializeTabs();
@@ -707,19 +673,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeMcpButtons, 100);
 });
 
-// Fonction pour changer de mode global
-function switchMode(mode) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('mode', mode);
-    window.location.href = url.toString();
-}
+// Mode IA global: plus de switch côté client
 
-// Fonction pour changer de mode dans la vue edit
-function switchModeEdit(mode) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('mode', mode);
-    window.location.href = url.toString();
-}
+// Mode IA global: plus de switch côté client
 
 // Gestionnaire principal pour les actions MCP - TOUJOURS en mode preview d'abord
 function handleMcpActionWithMode(event) {

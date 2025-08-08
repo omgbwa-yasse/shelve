@@ -81,17 +81,16 @@ class McpAdminController extends Controller
      */
     public function statistics(Request $request)
     {
-        $period = $request->get('period', '30'); // jours
-        
-        $stats = [
-            'period_stats' => $this->getPeriodStats($period),
-            'feature_usage' => $this->getFeatureUsageStats($period),
-            'success_rates' => $this->getSuccessRates($period),
-            'processing_times' => $this->getProcessingTimes($period),
-            'model_usage' => $this->getModelUsageStats($period),
-        ];
+        $periodKey = $request->get('period', 'month'); // day|week|month|year
+        $daysMap = ['day' => 1, 'week' => 7, 'month' => 30, 'year' => 365];
+        $days = $daysMap[$periodKey] ?? 30;
 
-        return view('admin.mcp.statistics', compact('stats', 'period'));
+        $stats = $this->computeStatsFromLogs($days);
+
+        return view('admin.mcp.statistics', [
+            'stats' => $stats,
+            'period' => $periodKey,
+        ]);
     }
 
     /**
@@ -221,12 +220,56 @@ class McpAdminController extends Controller
         ];
     }
 
-    private function getPeriodStats(int $days): array
+    private function computeStatsFromLogs(int $days): array
     {
+        // Les logs stockent: user_id, action (route name), description, ip, ua, timestamps
+        // On filtre sur les actions MCP ou Mistral test
+        $since = now()->subDays($days);
+        $baseQuery = \App\Models\Log::query()
+            ->where('created_at', '>=', $since)
+            ->where(function($q){
+                $q->where('action', 'like', 'mcp.%')
+                  ->orWhere('action', 'like', 'mistral-test.%');
+            });
+
+        $total = (clone $baseQuery)->count();
+
+        // Succès/échecs: heuristique via description contenant status ou code 2xx/5xx
+        $success = (clone $baseQuery)->where(function($q){
+            $q->where('description', 'like', '%200%')
+              ->orWhere('description', 'like', '%201%')
+              ->orWhere('description', 'like', '%success%')
+              ->orWhere('description', 'like', '%succès%');
+        })->count();
+        $failed = max(0, $total - $success);
+
+        // Répartition par fonctionnalité (par route)
+        $features = [
+            'title_reformulation' => (clone $baseQuery)->where('action', 'like', '%title.reformulate')->count(),
+            'thesaurus_indexing'  => (clone $baseQuery)->where('action', 'like', '%thesaurus.index')->count(),
+            'content_summary'     => (clone $baseQuery)->where('action', 'like', '%summary.generate')->count(),
+        ];
+
+        // Temps moyens: si on logge pas la durée, on laisse null/NA
+        $processingTimes = [
+            'avg_title' => null,
+            'avg_thesaurus' => null,
+            'avg_summary' => null,
+        ];
+
+        // Utilisation modèles: non directement traçable via logs génériques -> placeholder 100% Gemma si MCP
+        $modelUsage = [
+            'gemma3:4b' => 100,
+        ];
+
         return [
-            'total_processed' => rand(50, 200),
-            'success_rate' => 94.8,
-            'avg_processing_time' => 2.3,
+            'total_records' => $total,
+            'failed_processes' => $failed,
+            'success_rate' => $total > 0 ? round($success * 100 / $total, 1) : 0,
+            'avg_processing_time' => null,
+            'feature_usage' => $features,
+            'processing_times' => $processingTimes,
+            'model_usage' => $modelUsage,
         ];
     }
 
@@ -425,10 +468,21 @@ class McpAdminController extends Controller
                 'max_tokens' => 'required|integer|min:100|max:4000',
                 'auto_processing' => 'boolean',
                 'cache_enabled' => 'boolean',
+                'ai_default_provider' => 'nullable|string|in:ollama,mistral,lmstudio,anythingllm,openai',
             ]);
 
             // Ici, vous pourriez sauvegarder dans un fichier de config ou en base
             Cache::put('mcp_custom_config', $config, now()->addDays(30));
+
+            // Persister le provider AI global si fourni
+            if ($request->filled('ai_default_provider')) {
+                try {
+                    app(\App\Services\SettingService::class)->set('ai_default_provider', $request->string('ai_default_provider')->toString());
+                } catch (\Throwable $e) {
+                    // Continuer sans bloquer, mais retourner un message informatif
+                    return back()->with('success', 'Configuration mise à jour. (Note: provider non sauvegardé: ' . $e->getMessage() . ')');
+                }
+            }
             
             return back()->with('success', 'Configuration mise à jour avec succès');
         } catch (\Exception $e) {

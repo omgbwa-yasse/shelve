@@ -7,17 +7,17 @@
     .health-overview {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .component-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
         overflow: hidden;
         transition: transform 0.3s ease;
     }
@@ -27,16 +27,14 @@
     }
 
     .component-header {
-        padding: 1.5rem;
+        padding: 0.75rem 1rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-bottom: 1px solid #e9ecef;
     }
 
-    .component-body {
-        padding: 1.5rem;
-    }
+    .component-body { padding: 1rem; }
 
     .status-badge {
         padding: 0.5rem 1rem;
@@ -70,24 +68,20 @@
     .metric-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
     }
 
-    .metric-item {
-        text-align: center;
-        padding: 1rem;
+    .metric-item { text-align: center; padding: 0.75rem;
         background: #f8f9fa;
-        border-radius: 8px;
+        border-radius: 6px;
         border-left: 4px solid #007bff;
     }
 
-    .metric-value {
-        font-size: 1.5rem;
+    .metric-value { font-size: 1.25rem;
         font-weight: 700;
         color: #2c3e50;
-        margin-bottom: 0.25rem;
-    }
+        margin-bottom: 0.1rem; }
 
     .metric-label {
         color: #6c757d;
@@ -97,9 +91,9 @@
     .recommendation-card {
         border-left: 4px solid #17a2b8;
         background: #f0f9ff;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0 8px 8px 0;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-radius: 0 6px 6px 0;
     }
 
     .recommendation-card.error {

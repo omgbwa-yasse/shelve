@@ -6,22 +6,20 @@
 <style>
     .config-section {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        margin-bottom: 1rem;
         overflow: hidden;
     }
 
     .config-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1.5rem;
+        padding: 0.75rem 1rem;
         border: none;
     }
 
-    .config-body {
-        padding: 2rem;
-    }
+    .config-body { padding: 1rem; }
 
     .form-floating label {
         color: #6c757d;
@@ -34,9 +32,9 @@
 
     .model-card {
         border: 2px solid #e9ecef;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
         transition: all 0.3s ease;
     }
 
@@ -51,13 +49,13 @@
     }
 
     .test-connection {
-        min-height: 100px;
+        min-height: 80px;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #f8f9fa;
-        border-radius: 8px;
-        border: 2px dashed #dee2e6;
+        border-radius: 6px;
+        border: 1px dashed #dee2e6;
     }
 
     .test-success {
@@ -117,6 +115,34 @@
 
     <form id="configForm" method="POST" action="{{ route('admin.mcp.configuration') }}">
         @csrf
+        
+        <!-- Provider IA global -->
+        <div class="config-section">
+            <div class="config-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-cpu me-2"></i>Provider IA
+                </h4>
+            </div>
+            <div class="config-body">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Sélection du provider</label>
+                        @php
+                            $currentProvider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+                        @endphp
+                        <div class="btn-group" role="group" aria-label="Choix du provider">
+                            <input type="radio" class="btn-check" name="ai_default_provider" id="provider-ollama" value="ollama" {{ $currentProvider === 'ollama' ? 'checked' : '' }}>
+                            <label class="btn btn-outline-primary" for="provider-ollama"><i class="bi bi-robot"></i> Ollama (MCP)</label>
+
+                            <input type="radio" class="btn-check" name="ai_default_provider" id="provider-mistral" value="mistral" {{ $currentProvider === 'mistral' ? 'checked' : '' }}>
+                            <label class="btn btn-outline-warning" for="provider-mistral"><i class="bi bi-stars"></i> Mistral (Test)
+                            </label>
+                        </div>
+                        <div class="form-text">Ce choix s'applique à toute l'application (Records, traitements MCP, etc.).</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- Test de connexion -->
         <div class="config-section">

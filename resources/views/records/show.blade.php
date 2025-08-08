@@ -36,24 +36,13 @@
                     </button>
                 </div>
                 
-                {{-- Boutons MCP avec option test Mistral --}}
-                @if(request()->get('test_mode') === 'mistral')
-                    @include('records.partials.mcp-buttons-test', [
-                        'record' => $record, 
-                        'style' => 'individual',
-                        'size' => 'sm',
-                        'showLabels' => false,
-                        'mode' => 'mistral'
-                    ])
-                @else
-                    @include('records.partials.mcp-buttons-test', [
-                        'record' => $record, 
-                        'style' => 'individual',
-                        'size' => 'sm',
-                        'showLabels' => false,
-                        'mode' => request()->get('mode', 'mcp')
-                    ])
-                @endif
+                {{-- Boutons MCP (mode déterminé par les paramètres globaux) --}}
+                @include('records.partials.mcp-buttons-test', [
+                    'record' => $record, 
+                    'style' => 'individual',
+                    'size' => 'sm',
+                    'showLabels' => false
+                ])
             </div>
         </div>
 
@@ -655,17 +644,7 @@
             });
         }
 
-        // Gestionnaire pour le changement de mode global (seulement s'ils existent)
-        const modeRadios = document.querySelectorAll('input[name="ia-mode"]');
-        if (modeRadios.length > 0) {
-            modeRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.checked) {
-                        switchMode(this.value);
-                    }
-                });
-            });
-        }
+        // Le mode IA est désormais global (Admin MCP). Aucun toggle dans la vue record.
     }
 
     // Démarrer l'initialisation MCP après un délai pour s'assurer que tout est chargé
@@ -673,11 +652,7 @@
 });
 
 // Fonction pour changer de mode global
-function switchMode(mode) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('mode', mode);
-    window.location.href = url.toString();
-}
+// Mode global: plus de switch côté vue
 
 // Gestionnaire principal pour les actions MCP
 function handleMcpActionWithMode(event) {

@@ -166,12 +166,7 @@
                     {{ __('Statistiques') ?? 'Statistiques' }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/history" class="submenu-link {{ request()->is('admin/mcp/history') ? 'active' : '' }}">
-                    <i class="bi bi-clock-history"></i>
-                    {{ __('Historique') ?? 'Historique' }}
-                </a>
-            </div>
+            {{-- Lien désactivé: page Historique non implémentée --}}
         </div>
     </div>
 
@@ -182,34 +177,7 @@
             {{ __('Fonctionnalités IA') ?? 'Fonctionnalités IA' }}
         </div>
         <div class="submenu-content">
-            <div class="submenu-item">
-                <a href="/admin/mcp/title-reformulation" class="submenu-link {{ request()->is('admin/mcp/title-reformulation') ? 'active' : '' }}">
-                    <i class="bi bi-magic"></i>
-                    {{ __('Reformulation Titre') ?? 'Reformulation Titre' }}
-                    <span class="submenu-badge success">ISAD(G)</span>
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/thesaurus-indexing" class="submenu-link {{ request()->is('admin/mcp/thesaurus-indexing') ? 'active' : '' }}">
-                    <i class="bi bi-tags"></i>
-                    {{ __('Indexation Thésaurus') ?? 'Indexation Thésaurus' }}
-                    <span id="thesaurusCount" class="submenu-badge warning">304</span>
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/content-summary" class="submenu-link {{ request()->is('admin/mcp/content-summary') ? 'active' : '' }}">
-                    <i class="bi bi-file-text"></i>
-                    {{ __('Résumé ISAD(G)') ?? 'Résumé ISAD(G)' }}
-                    <span class="submenu-badge success">3.3.1</span>
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/batch-processing" class="submenu-link {{ request()->is('admin/mcp/batch-processing') ? 'active' : '' }}">
-                    <i class="bi bi-layers"></i>
-                    {{ __('Traitement par Lots') ?? 'Traitement par Lots' }}
-                    <span id="queueCount" class="submenu-badge">0</span>
-                </a>
-            </div>
+            {{-- Liens de fonctionnalités non implémentés masqués pour l'instant --}}
         </div>
     </div>
 
@@ -227,25 +195,7 @@
                     <div class="status-indicator online" id="healthStatus"></div>
                 </a>
             </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/queue-monitor" class="submenu-link {{ request()->is('admin/mcp/queue-monitor') ? 'active' : '' }}">
-                    <i class="bi bi-list-task"></i>
-                    {{ __('Files d\'attente') ?? 'Files d\'attente' }}
-                    <span id="activeJobs" class="submenu-badge">0</span>
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/logs" class="submenu-link {{ request()->is('admin/mcp/logs') ? 'active' : '' }}">
-                    <i class="bi bi-journal-text"></i>
-                    {{ __('Logs MCP') ?? 'Logs MCP' }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/performance" class="submenu-link {{ request()->is('admin/mcp/performance') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer"></i>
-                    {{ __('Performance') ?? 'Performance' }}
-                </a>
-            </div>
+            {{-- Liens monitoring non nécessaires masqués (queue-monitor, logs, performance) --}}
         </div>
     </div>
 
@@ -262,25 +212,7 @@
                     {{ __('Configuration') ?? 'Configuration' }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/models" class="submenu-link {{ request()->is('admin/mcp/models') ? 'active' : '' }}">
-                    <i class="bi bi-cpu"></i>
-                    {{ __('Modèles Ollama') ?? 'Modèles Ollama' }}
-                    <div class="status-indicator online" id="ollamaStatus"></div>
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/users" class="submenu-link {{ request()->is('admin/mcp/users') ? 'active' : '' }}">
-                    <i class="bi bi-people"></i>
-                    {{ __('Utilisateurs') ?? 'Utilisateurs' }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a href="/admin/mcp/maintenance" class="submenu-link {{ request()->is('admin/mcp/maintenance') ? 'active' : '' }}">
-                    <i class="bi bi-wrench"></i>
-                    {{ __('Maintenance') ?? 'Maintenance' }}
-                </a>
-            </div>
+            {{-- Lien gestion des modèles masqué (non prioritaire) --}}
         </div>
     </div>
 
@@ -329,13 +261,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function updateMcpStatusIndicators() {
-    // Vérifier l'état de santé MCP
-    fetch('/api/mcp/health')
+    // Vérifier l'état de santé MCP (utilise route admin interne)
+    fetch('/admin/mcp/actions/system-info')
         .then(response => response.json())
         .then(data => {
-            updateStatusIndicator('mcpSystemStatus', data.overall_status === 'ok');
-            updateStatusIndicator('healthStatus', data.overall_status === 'ok');
-            updateStatusIndicator('ollamaStatus', data.components?.ollama_connection?.status === 'ok');
+            const ok = !!data.php_version;
+            updateStatusIndicator('mcpSystemStatus', ok);
+            updateStatusIndicator('healthStatus', ok);
+            updateStatusIndicator('ollamaStatus', ok);
         })
         .catch(() => {
             updateStatusIndicator('mcpSystemStatus', false);
@@ -344,11 +277,11 @@ function updateMcpStatusIndicators() {
         });
     
     // Mettre à jour le compteur de jobs
-    fetch('/api/mcp/queue/status')
+    fetch('/admin/mcp/actions/queue-stats')
         .then(response => response.json())
         .then(data => {
-            updateBadge('queueCount', data.pending || 0);
-            updateBadge('activeJobs', data.active || 0);
+            updateBadge('queueCount', data.total_pending || 0);
+            updateBadge('activeJobs', data.failed_jobs || 0);
         })
         .catch(() => {
             updateBadge('queueCount', '?');

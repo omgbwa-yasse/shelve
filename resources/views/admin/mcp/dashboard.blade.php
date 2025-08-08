@@ -7,17 +7,17 @@
     .mcp-dashboard {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     .metric-card {
         background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
         height: 100%;
@@ -29,16 +29,12 @@
     }
 
     .metric-value {
-        font-size: 2.5rem;
+        font-size: 1.8rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
     }
 
-    .metric-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
+    .metric-label { color: #6c757d; font-size: 0.8rem; font-weight: 500; }
 
     .status-indicator {
         width: 12px;
@@ -53,9 +49,9 @@
     .status-offline { background-color: #dc3545; }
 
     .health-component {
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        margin-bottom: 0.4rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -71,10 +67,11 @@
         margin-bottom: 1rem;
     }
 
-    .chart-container {
-        height: 300px;
-        position: relative;
-    }
+    .chart-container { height: 220px; }
+    .card-header h5 { font-size: 1rem; }
+    h1 { font-size: 1.25rem; }
+    .mcp-dashboard p { font-size: 0.85rem; }
+    .progress { height: 6px !important; }
 </style>
 @endpush
 
@@ -367,7 +364,7 @@ function initUsageChart() {
 }
 
 function refreshDashboard() {
-    fetch('/api/mcp/health')
+    fetch('/admin/mcp/actions/system-info')
         .then(response => response.json())
         .then(data => updateHealthStatus(data))
         .catch(error => console.warn('Erreur lors de la mise à jour:', error));
@@ -376,7 +373,7 @@ function refreshDashboard() {
 function updateHealthStatus(health) {
     const indicators = document.querySelectorAll('.status-indicator');
     indicators.forEach(indicator => {
-        const isOnline = health.overall_status === 'ok';
+        const isOnline = !!health.php_version;
         indicator.className = 'status-indicator status-' + (isOnline ? 'online' : 'offline');
     });
 }
@@ -388,10 +385,10 @@ function testConnection() {
     button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Test...';
     button.disabled = true;
     
-    fetch('/api/mcp/health')
+    fetch('/admin/mcp/actions/system-info')
         .then(response => response.json())
         .then(data => {
-            const success = data.overall_status === 'ok';
+            const success = !!data.php_version;
             button.innerHTML = `<i class="bi bi-${success ? 'check-circle' : 'x-circle'} me-2"></i>${success ? 'Connexion OK' : 'Connexion KO'}`;
             button.className = `btn btn-sm w-100 ${success ? 'btn-success' : 'btn-danger'}`;
             
@@ -424,7 +421,7 @@ function clearCache() {
         button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Nettoyage...';
         button.disabled = true;
         
-        fetch('/api/mcp/cache/clear', { 
+        fetch('/admin/mcp/actions/clear-cache', { 
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

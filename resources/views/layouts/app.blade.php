@@ -182,9 +182,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="orgModalLabel">{{ __('Change Organization') }}</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="{{ route('switch.organisation') }}" method="POST">
@@ -512,7 +510,24 @@
 
     <script>
         function openOrgModal() {
-            $('#orgModal').modal('show');
+            // Support Bootstrap 5 API; fallback to jQuery if available
+            try {
+                if (window.bootstrap && bootstrap.Modal) {
+                    var modalElement = document.getElementById('orgModal');
+                    var modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modalInstance.show();
+                    return;
+                }
+            } catch (e) {}
+
+            if (typeof $ !== 'undefined' && typeof $('#orgModal').modal === 'function') {
+                $('#orgModal').modal('show');
+            } else if (document.getElementById('orgModal')) {
+                // Minimal fallback
+                document.getElementById('orgModal').classList.add('show');
+                document.getElementById('orgModal').style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
         }
 
         /**
@@ -560,8 +575,18 @@
                 }
             }
 
-            $('.close').on('click', function() {
-                $('#orgModal').modal('hide');
+            // Close button handled by data-bs-dismiss; add defensive fallback
+            $(document).on('click', '[data-bs-dismiss="modal"]', function() {
+                if (typeof $('#orgModal').modal === 'function') {
+                    $('#orgModal').modal('hide');
+                } else if (window.bootstrap && bootstrap.Modal) {
+                    var modalElement = document.getElementById('orgModal');
+                    var instance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    instance.hide();
+                } else {
+                    $('#orgModal').removeClass('show').hide();
+                    $('body').removeClass('modal-open');
+                }
             });
 
             // Gestion de la soumission du formulaire de recherche
