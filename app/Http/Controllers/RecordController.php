@@ -76,7 +76,7 @@ class RecordController extends Controller
                 $q->where('name', 'LIKE', '%' . $query . '%')
                     ->orWhere('code', 'LIKE', '%' . $query . '%');
             })
-                ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'])
+                ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments'])
                 ->paginate(10);
         } else {
             // Si pas de query, retourner une collection vide paginée
@@ -90,6 +90,12 @@ class RecordController extends Controller
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
 
+        // Contexte de navigation pour une expérience fluide
+        session([
+            'records.back_url' => $request->fullUrl(),
+            'records.list_ids' => $records->getCollection()->pluck('id')->all(),
+        ]);
+
         return view('records.index', compact(
             'records',
             'statuses',
@@ -101,14 +107,14 @@ class RecordController extends Controller
         ));
     }
 
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('records_view');
 
         // Pour l'instant, tous les utilisateurs ayant la permission records_view peuvent voir tous les records
         // Cette logique peut être ajustée plus tard si nécessaire
         $records = Record::with([
-            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts'
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments'
         ])->paginate(10);
 
         $slipStatuses = SlipStatus::all();
@@ -116,6 +122,12 @@ class RecordController extends Controller
         $terms = [];
         $users = User::select('id', 'name')->get();
         $organisations = Organisation::select('id', 'name')->get();
+
+        // Contexte de navigation pour une expérience fluide
+        session([
+            'records.back_url' => $request->fullUrl(),
+            'records.list_ids' => $records->getCollection()->pluck('id')->all(),
+        ]);
 
         return view('records.index', compact(
             'records',
@@ -323,7 +335,7 @@ class RecordController extends Controller
         }
     }
 
-    public function show(Record $record)
+    public function show(Record $record, Request $request)
     {
 
         Gate::authorize('records_view');
@@ -340,10 +352,26 @@ class RecordController extends Controller
             'user'
         ]);
 
-        return view('records.show', compact('record'));
+        // Calcul précédent/suivant basé sur la dernière liste consultée
+        $listIds = (array) session('records.list_ids', []);
+        $prevId = null;
+        $nextId = null;
+        if (!empty($listIds)) {
+            $index = array_search($record->id, $listIds, true);
+            if ($index !== false) {
+                if ($index > 0) {
+                    $prevId = $listIds[$index - 1];
+                }
+                if ($index < count($listIds) - 1) {
+                    $nextId = $listIds[$index + 1];
+                }
+            }
+        }
+
+        return view('records.show', compact('record', 'prevId', 'nextId'));
     }
 
-    public function showFull(Record $record)
+    public function showFull(Record $record, Request $request)
     {
         Gate::authorize('records_view');
 
@@ -364,7 +392,23 @@ class RecordController extends Controller
             'organisation'
         ]);
 
-        return view('records.showFull', compact('record'));
+        // Calcul précédent/suivant basé sur la dernière liste consultée
+        $listIds = (array) session('records.list_ids', []);
+        $prevId = null;
+        $nextId = null;
+        if (!empty($listIds)) {
+            $index = array_search($record->id, $listIds, true);
+            if ($index !== false) {
+                if ($index > 0) {
+                    $prevId = $listIds[$index - 1];
+                }
+                if ($index < count($listIds) - 1) {
+                    $nextId = $listIds[$index + 1];
+                }
+            }
+        }
+
+        return view('records.showFull', compact('record', 'prevId', 'nextId'));
     }
 
     public function edit(Record $record, Request $request)
@@ -566,6 +610,49 @@ class RecordController extends Controller
     public function import(Request $request)
     {
         Gate::authorize('records_import');
+
+        // Import avec remapping (appel AJAX)
+        if ($request->filled('mapping')) {
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,csv',
+                'format' => 'required|in:excel,csv',
+                'mapping' => 'required|json',
+            ]);
+
+            try {
+                $file = $request->file('file');
+                $format = $request->input('format');
+                $mapping = json_decode($request->input('mapping'), true);
+                $hasHeaders = (bool) $request->input('has_headers', false);
+                $updateExisting = (bool) $request->input('update_existing', false);
+
+                // Créer un nouveau Dolly pour cet import
+                $dolly = Dolly::create([
+                    'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
+                    'description' => 'Import automatique avec mapping personnalisé',
+                    'type_id' => 1,
+                ]);
+
+                // Lancer l'import
+                $import = new RecordsImport($dolly, $mapping, $hasHeaders, $updateExisting);
+                Excel::import($import, $file);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Import terminé avec succès',
+                    'dolly_id' => $dolly->id,
+                    'records_count' => method_exists($import, 'getImportedCount') ? $import->getImportedCount() : null,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Erreur lors de l\'import remappé: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de l\'import: ' . $e->getMessage(),
+                ], 500);
+            }
+        }
+
+        // Import classique (formulaire HTML existant)
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xml',
             'format' => 'required|in:excel,ead,seda',
@@ -584,7 +671,7 @@ class RecordController extends Controller
         try {
             switch ($format) {
                 case 'excel':
-                    Excel::import(new RecordsImport($dolly), $file);
+                    Excel::import(new RecordsImport($dolly, []), $file);
                     break;
                 case 'ead':
                     $this->importEAD($file, $dolly);
@@ -777,15 +864,23 @@ class RecordController extends Controller
                     $filePath = $extractPath . '/attachments/' . $fileName;
 
                     if (file_exists($filePath)) {
-                        $newAttachment = new RecordAttachment([
-                            'name' => $fileName,
+                        $hashMd5 = md5_file($filePath);
+                        $hashSha512 = hash_file('sha512', $filePath);
+                        $mimeType = mime_content_type($filePath);
+
+                        $createdAttachment = Attachment::create([
                             'path' => 'attachments/' . $fileName,
+                            'name' => $fileName,
+                            'crypt' => $hashMd5,
+                            'crypt_sha512' => $hashSha512,
                             'size' => (int)$attachment->Size,
-                            'crypt' => (string)$attachment->Crypt,
-                            'creator_id' => Auth::id(), // Assuming the current user is the creator
+                            'creator_id' => Auth::id(),
+                            'type' => 'record',
+                            'thumbnail_path' => '',
+                            'mime_type' => $mimeType,
                         ]);
 
-                        $newRecord->attachments()->save($newAttachment);
+                        $newRecord->attachments()->attach($createdAttachment->id);
 
                         // Move file to the correct storage location
                         Storage::putFileAs('public/attachments', $filePath, $fileName);
@@ -796,6 +891,78 @@ class RecordController extends Controller
             // Clean up temporary files
             Storage::deleteDirectory('temp_import');
         }
+    }
+
+    /**
+     * Analyser un fichier pour extraire les en-têtes (remapping UI)
+     */
+    public function analyzeFile(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv',
+            'format' => 'required|in:excel,csv',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $format = $request->input('format');
+            $headers = [];
+
+            if ($format === 'excel') {
+                $headers = $this->extractExcelHeaders($file);
+            } else if ($format === 'csv') {
+                $headers = $this->extractCsvHeaders($file);
+            }
+
+            return response()->json([
+                'success' => true,
+                'headers' => $headers,
+                'preview' => [],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'analyse du fichier: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'analyse du fichier: ' . $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Extraire les en-têtes d'un fichier Excel
+     */
+    private function extractExcelHeaders($file)
+    {
+        // Utiliser PhpSpreadsheet directement pour éviter l'appel avec un import null
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getPathname());
+        $sheet = $spreadsheet->getActiveSheet();
+        if ($sheet->getHighestRow() < 1) {
+            throw new \Exception('Le fichier est vide');
+        }
+        $highestColumn = $sheet->getHighestColumn();
+        $headersRow = $sheet->rangeToArray('A1:' . $highestColumn . '1', null, true, true, true);
+        $headersAssoc = $headersRow[1] ?? [];
+        $headers = array_values(array_map(function ($value) {
+            return is_string($value) ? trim($value) : (string) $value;
+        }, array_values($headersAssoc)));
+        return $headers;
+    }
+
+    /**
+     * Extraire les en-têtes d'un fichier CSV
+     */
+    private function extractCsvHeaders($file)
+    {
+        $handle = fopen($file->getPathname(), 'r');
+        if (!$handle) {
+            throw new \Exception('Impossible de lire le fichier CSV');
+        }
+        $headers = fgetcsv($handle);
+        fclose($handle);
+        if (!$headers) {
+            throw new \Exception('Impossible de lire les en-têtes du fichier CSV');
+        }
+        return $headers;
     }
 
     public function printRecords(Request $request)
@@ -860,5 +1027,32 @@ class RecordController extends Controller
             Log::error('Erreur lors de la recherche de termes du thésaurus: ' . $e->getMessage());
             return response()->json([]);
         }
+    }
+
+    /**
+     * Récupérer les attachments d'un record pour l'affichage en modal
+     */
+    public function getAttachments(Record $record)
+    {
+        Gate::authorize('records_view');
+
+        $record->load('attachments');
+
+        return response()->json([
+            'record' => [
+                'id' => $record->id,
+                'code' => $record->code,
+                'name' => $record->name
+            ],
+            'attachments' => $record->attachments->map(function($attachment) {
+                return [
+                    'id' => $attachment->id,
+                    'name' => $attachment->name,
+                    'size' => $attachment->size,
+                    'thumbnail_path' => $attachment->thumbnail_path,
+                    'path' => $attachment->path
+                ];
+            })
+        ]);
     }
 }

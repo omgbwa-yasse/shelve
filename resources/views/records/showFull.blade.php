@@ -3,9 +3,15 @@
 @section('content')
     <div class="container-fluid">
         {{-- Back Button --}}
-        <div class="mb-3">
-            <a href="{{ route('records.index') }}" class="btn btn-outline-secondary">
+        <div class="mb-3 d-flex gap-2">
+            <a href="{{ session('records.back_url', route('records.index')) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>{{ __('back_to_home') }}
+            </a>
+            <a href="{{ isset($prevId) ? route('records.showFull', $prevId) : '#' }}" class="btn btn-outline-secondary btn-sm {{ isset($prevId) ? '' : 'disabled' }}" title="{{ __('previous') }}">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <a href="{{ isset($nextId) ? route('records.showFull', $nextId) : '#' }}" class="btn btn-outline-secondary btn-sm {{ isset($nextId) ? '' : 'disabled' }}" title="{{ __('next') }}">
+                <i class="bi bi-chevron-right"></i>
             </a>
         </div>
 
@@ -13,7 +19,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('records.index') }}">{{ __('records') }}</a></li>
+                    <li class="breadcrumb-item"><a href="{{ session('records.back_url', route('records.index')) }}">{{ __('records') }}</a></li>
                     <li class="breadcrumb-item active">{{ $record->code }} - {{ __('detailed_view') }}</li>
                 </ol>
             </nav>
@@ -933,3 +939,5 @@
         });
     </script>
 @endpush
+
+@include('records.partials.quick-nav')

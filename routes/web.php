@@ -527,7 +527,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
         Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
         Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
+        Route::post('records/analyze-file', [RecordController::class, 'analyzeFile'])->name('records.analyze-file');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
+        Route::get('records/{record}/attachments', [RecordController::class, 'getAttachments'])->name('records.attachments.list');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');

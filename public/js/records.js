@@ -1,7 +1,12 @@
 // records.js - Gestion des fonctionnalités pour les records
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initRecordsManager();
+    initSelectionUX();
+    initExpandCollapseAll();
+    initLiveFilter();
+    initSelectionPersistence();
+    initGlobalHotkeys();
 });
 
 /**
@@ -32,7 +37,7 @@ function initExportButton() {
 
     if (!exportBtn || !confirmExportBtn) return;
 
-    exportBtn.addEventListener('click', function(e) {
+    exportBtn.addEventListener('click', function (e) {
         e.preventDefault();
         let checkedRecords = getSelectedRecordIds();
 
@@ -45,7 +50,7 @@ function initExportButton() {
         exportModal.show();
     });
 
-    confirmExportBtn.addEventListener('click', function() {
+    confirmExportBtn.addEventListener('click', function () {
         let checkedRecords = getSelectedRecordIds();
         let format = document.querySelector('input[name="exportFormat"]:checked').value;
         const exportUrl = `/records/export?records=${checkedRecords.join(',')}&format=${format}`;
@@ -56,41 +61,41 @@ function initExportButton() {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => {
-            if (!response.ok) throw new Error(getTranslation('networkError'));
+            .then(response => {
+                if (!response.ok) throw new Error(getTranslation('networkError'));
 
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json().then(data => {
-                    throw new Error(data.error || getTranslation('anErrorOccurred'));
-                });
-            }
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || getTranslation('anErrorOccurred'));
+                    });
+                }
 
-            return response.blob();
-        })
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
 
-            let extension;
-            switch (format) {
-                case 'excel': extension = 'xlsx'; break;
-                case 'ead': extension = 'xml'; break;
-                case 'seda': extension = 'zip'; break;
-                default: extension = 'txt';
-            }
+                let extension;
+                switch (format) {
+                    case 'excel': extension = 'xlsx'; break;
+                    case 'ead': extension = 'xml'; break;
+                    case 'seda': extension = 'zip'; break;
+                    default: extension = 'txt';
+                }
 
-            a.download = `records_export.${extension}`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        })
-        .catch(error => {
-            console.error(getTranslation('error'), error);
-            alert(error.message || getTranslation('errorOccurredDuringExport'));
-        });
+                a.download = `records_export.${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error(getTranslation('error'), error);
+                alert(error.message || getTranslation('errorOccurredDuringExport'));
+            });
 
         bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
     });
@@ -103,7 +108,7 @@ function initPrintButton() {
     const printBtn = document.getElementById('printBtn');
     if (!printBtn) return;
 
-    printBtn.addEventListener('click', function(e) {
+    printBtn.addEventListener('click', function (e) {
         e.preventDefault();
         let checkedRecords = getSelectedRecordIds();
 
@@ -121,20 +126,20 @@ function initPrintButton() {
             },
             body: JSON.stringify({ records: checkedRecords })
         })
-        .then(response => response.blob())
-        .then(blob => {
-            let url = window.URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = 'records_print.pdf';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        })
-        .catch(error => {
-            console.error(getTranslation('error'), error);
-            alert(getTranslation('errorOccurredDuringPrint'));
-        });
+            .then(response => response.blob())
+            .then(blob => {
+                let url = window.URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = 'records_print.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error(getTranslation('error'), error);
+                alert(getTranslation('errorOccurredDuringPrint'));
+            });
     });
 }
 
@@ -145,18 +150,20 @@ function initCheckAllButton() {
     let checkAllBtn = document.getElementById('checkAllBtn');
     if (!checkAllBtn) return;
 
-    checkAllBtn.addEventListener('click', function(e) {
+    checkAllBtn.addEventListener('click', function (e) {
         e.preventDefault();
         let checkboxes = document.querySelectorAll('input[type="checkbox"][name="selected_record[]"]');
         let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
-        checkboxes.forEach(function(checkbox) {
+        checkboxes.forEach(function (checkbox) {
             checkbox.checked = !allChecked;
         });
 
         this.innerHTML = allChecked ?
             '<i class="bi bi-check-square me-1"></i>' + getTranslation('checkAll') :
             '<i class="bi bi-square me-1"></i>' + getTranslation('uncheckAll');
+
+        updateSelectionUX();
     });
 }
 
@@ -167,7 +174,7 @@ function initTransferButton() {
     const transferBtn = document.getElementById('transferBtn');
     if (!transferBtn) return;
 
-    transferBtn.addEventListener('click', function(e) {
+    transferBtn.addEventListener('click', function (e) {
         e.preventDefault();
         let checkedRecords = document.querySelectorAll('input[type="checkbox"][name="selected_record[]"]:checked');
 
@@ -206,7 +213,7 @@ function initCommunicateButton() {
     const communicateBtn = document.getElementById('communicateBtn');
     if (!communicateBtn) return;
 
-    communicateBtn.addEventListener('click', function(e) {
+    communicateBtn.addEventListener('click', function (e) {
         e.preventDefault();
         let checkedRecords = document.querySelectorAll('input[type="checkbox"][name="selected_record[]"]:checked');
 
@@ -251,11 +258,181 @@ function initCommunicateButton() {
 }
 
 /**
+ * Comptage sélection + désactivation des actions quand aucune sélection
+ */
+function initSelectionUX() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"][name="selected_record[]"]');
+    checkboxes.forEach(cb => cb.addEventListener('change', updateSelectionUX));
+    updateSelectionUX();
+}
+
+function updateSelectionUX() {
+    const selected = getSelectedRecordIds();
+    const countBadge = document.getElementById('selectionCountBadge');
+    if (countBadge) {
+        countBadge.textContent = `${selected.length} ${getTranslation('selected')}`;
+    }
+
+    const actionIds = ['exportBtn', 'printBtn', 'transferBtn', 'communicateBtn'];
+    actionIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (selected.length === 0) {
+            el.setAttribute('disabled', 'disabled');
+            el.classList.add('disabled');
+        } else {
+            el.removeAttribute('disabled');
+            el.classList.remove('disabled');
+        }
+    });
+}
+
+/**
+ * Persistance de la sélection entre pages (localStorage)
+ */
+function initSelectionPersistence() {
+    const STORAGE_KEY = 'records:selected';
+    // Restaurer
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        if (Array.isArray(saved) && saved.length > 0) {
+            document.querySelectorAll('input[name="selected_record[]"]').forEach(cb => {
+                if (saved.includes(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+            updateSelectionUX();
+        }
+    } catch (_) { }
+
+    // Sauvegarder à chaque changement
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.matches('input[name="selected_record[]"]')) {
+            const ids = getSelectedRecordIds();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+        }
+    });
+
+    // Nettoyer si l'utilisateur clique sur un bouton dédié (optionnel)
+    const clearBtn = document.getElementById('clearSelectionBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            localStorage.removeItem(STORAGE_KEY);
+            document.querySelectorAll('input[name="selected_record[]"]').forEach(cb => cb.checked = false);
+            updateSelectionUX();
+        });
+    }
+}
+
+/**
+ * Raccourcis clavier globaux
+ */
+function initGlobalHotkeys() {
+    document.addEventListener('keydown', function (e) {
+        // Ignorer si on tape dans un champ
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable)) {
+            return;
+        }
+
+        // Focus filtre
+        if (e.key === '/') {
+            const filter = document.getElementById('listFilter');
+            if (filter) {
+                e.preventDefault();
+                filter.focus();
+                return;
+            }
+        }
+
+        // Export (x), Print (p), Transfer (t), Communicate (m)
+        const actions = {
+            'x': 'exportBtn',
+            'p': 'printBtn',
+            't': 'transferBtn',
+            'm': 'communicateBtn',
+        };
+        if (actions[e.key]) {
+            const btn = document.getElementById(actions[e.key]);
+            if (btn && !btn.classList.contains('disabled')) {
+                e.preventDefault();
+                btn.click();
+            }
+        }
+
+        // Toggle all details (o to open, w to collapse)
+        if (e.key === 'o') {
+            const expandBtn = document.getElementById('expandAllBtn');
+            if (expandBtn) { e.preventDefault(); expandBtn.click(); }
+        }
+        if (e.key === 'w') {
+            const collapseBtn = document.getElementById('collapseAllBtn');
+            if (collapseBtn) { e.preventDefault(); collapseBtn.click(); }
+        }
+
+        // Toggle thumbnails (v)
+        if (e.key === 'v') {
+            const toggleThumbnailsBtn = document.getElementById('toggleThumbnailsBtn');
+            if (toggleThumbnailsBtn) { e.preventDefault(); toggleThumbnailsBtn.click(); }
+        }
+
+        // Filter with attachments (a)
+        if (e.key === 'a') {
+            const filterWithAttachmentsBtn = document.getElementById('filterWithAttachmentsBtn');
+            if (filterWithAttachmentsBtn) { e.preventDefault(); filterWithAttachmentsBtn.click(); }
+        }
+    });
+}
+
+/**
+ * Déplier/Replier toutes les cartes
+ */
+function initExpandCollapseAll() {
+    const expandBtn = document.getElementById('expandAllBtn');
+    const collapseBtn = document.getElementById('collapseAllBtn');
+    if (expandBtn) {
+        expandBtn.addEventListener('click', function () {
+            document.querySelectorAll('.details-content').forEach(el => {
+                if (el.style.display === 'none' || el.style.display === '') {
+                    el.style.display = 'block';
+                    el.style.height = 'auto';
+                }
+            });
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.add('expanded'));
+        });
+    }
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', function () {
+            document.querySelectorAll('.details-content').forEach(el => {
+                el.style.display = 'none';
+                el.style.height = '';
+            });
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('expanded'));
+        });
+    }
+}
+
+/**
+ * Filtre local de la liste
+ */
+function initLiveFilter() {
+    const input = document.getElementById('listFilter');
+    if (!input) return;
+    input.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        document.querySelectorAll('#recordList .record-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
+            const visible = text.includes(q);
+            card.parentElement.style.display = visible ? '' : 'none';
+        });
+    });
+}
+
+/**
  * Initialise les boutons voir plus/voir moins pour le contenu
  */
 function initContentToggleButtons() {
     document.querySelectorAll('.content-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
+        toggle.addEventListener('click', function (e) {
             e.preventDefault();
             const targetId = this.getAttribute('data-target');
             const targetElement = document.getElementById(targetId);
@@ -304,7 +481,7 @@ function initThesaurusAjax() {
     // Les termes du thésaurus sont facultatifs - pas de vérification requise
 
     // Recherche AJAX avec délai
-    thesaurusSearch.addEventListener('input', function() {
+    thesaurusSearch.addEventListener('input', function () {
         const query = this.value.trim();
         console.log('⌨️ Saisie détectée:', query);
 
@@ -326,14 +503,14 @@ function initThesaurusAjax() {
     });
 
     // Masquer les suggestions quand on clique ailleurs
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!e.target.closest('#thesaurus-search') && !e.target.closest('#thesaurus-suggestions')) {
             hideSuggestions();
         }
     });
 
     // Afficher les suggestions quand on focus le champ
-    thesaurusSearch.addEventListener('focus', function() {
+    thesaurusSearch.addEventListener('focus', function () {
         if (this.value.trim().length >= 3) {
             showSuggestions();
         }
@@ -349,29 +526,29 @@ function initThesaurusAjax() {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
-        .then(response => {
-            console.log('📡 Réponse reçue:', response.status, response.statusText);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const contentType = response.headers.get('content-type');
-            console.log('📄 Type de contenu:', contentType);
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('La réponse n\'est pas au format JSON');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('📦 Données reçues:', data);
-            console.log('📊 Nombre de résultats:', data.length);
-            displaySuggestions(data);
-        })
-        .catch(error => {
-            console.error('❌ Erreur lors de la recherche dans le thésaurus:', error);
-            console.error('🔍 Query était:', query);
-            console.error('🌐 URL utilisée:', `/records/terms/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
-            hideSuggestions();
-        });
+            .then(response => {
+                console.log('📡 Réponse reçue:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const contentType = response.headers.get('content-type');
+                console.log('📄 Type de contenu:', contentType);
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('La réponse n\'est pas au format JSON');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('📦 Données reçues:', data);
+                console.log('📊 Nombre de résultats:', data.length);
+                displaySuggestions(data);
+            })
+            .catch(error => {
+                console.error('❌ Erreur lors de la recherche dans le thésaurus:', error);
+                console.error('🔍 Query était:', query);
+                console.error('🌐 URL utilisée:', `/records/terms/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
+                hideSuggestions();
+            });
     }
 
     function displaySuggestions(terms) {
@@ -414,7 +591,7 @@ function initThesaurusAjax() {
                 suggestion.textContent = displayText;
                 console.log(`   Texte affiché: "${displayText}"`);
 
-                suggestion.addEventListener('click', function() {
+                suggestion.addEventListener('click', function () {
                     console.log(`👆 Clic sur le terme:`, term.id, termLabel);
                     selectTerm(
                         term.id,
@@ -454,7 +631,7 @@ function initThesaurusAjax() {
         removeButton.innerHTML = '×';
         removeButton.title = 'Supprimer ce terme';
 
-        removeButton.addEventListener('click', function() {
+        removeButton.addEventListener('click', function () {
             removeTerm(id);
         });
 
@@ -515,7 +692,7 @@ function initThesaurusAjax() {
     // Validation du formulaire
     const recordForm = document.getElementById('recordForm');
     if (recordForm) {
-        recordForm.addEventListener('submit', function(e) {
+        recordForm.addEventListener('submit', function (e) {
             // Le thésaurus est désormais facultatif, pas besoin de validation
 
             // Nettoyer tout message d'erreur existant avant la soumission
@@ -558,6 +735,7 @@ function getTranslation(key) {
         'errorOccurredDuringPrint': 'Une erreur est survenue lors de l\'impression',
         'checkAll': 'Tout cocher',
         'uncheckAll': 'Tout décocher',
+        'selected': 'sélectionné(s)',
         'original': 'Original',
         'content': 'Contenu'
     };
