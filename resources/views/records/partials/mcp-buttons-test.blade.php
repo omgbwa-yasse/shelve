@@ -1,4 +1,4 @@
-{{-- 
+{{--
     Boutons MCP pour les records avec support test Mistral
     Usage: @include('records.partials.mcp-buttons-test', ['record' => $record, 'style' => 'individual|batch', 'mode' => 'mcp|mistral'])
 --}}
@@ -30,69 +30,93 @@
     {{-- Boutons pour un record individuel --}}
     <div class="btn-group" role="group" aria-label="Actions {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
         {{-- Reformulation de titre --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
-                data-action="title" 
+        @php $labelReformulate = __('reformulate_title'); if ($labelReformulate === 'reformulate_title') { $labelReformulate = 'Reformuler'; } @endphp
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn"
+                data-action="title"
                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
-                title="{{ __('Reformuler le titre selon les règles ISAD(G)') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
-            <i class="bi bi-magic"></i>
-            @if($showLabels) {{ __('reformulate_title') ?? 'Reformuler' }} @endif
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="{{ __('Reformuler le titre selon les règles ISAD(G)') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}"
+                aria-label="{{ $labelReformulate }} ({{ $mode === 'mistral' ? 'Mistral' : 'MCP' }})">
+            <i class="bi bi-magic" aria-hidden="true"></i>
+            @if($showLabels)
+                <span class="btn-label">{{ $labelReformulate }}</span>
+            @else
+                <span class="visually-hidden">{{ $labelReformulate }}</span>
+            @endif
         </button>
 
         {{-- Indexation thésaurus --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn" 
-                data-action="thesaurus" 
+        @php $labelThesaurus = __('index_thesaurus'); if ($labelThesaurus === 'index_thesaurus') { $labelThesaurus = 'Indexer'; } @endphp
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn"
+                data-action="thesaurus"
                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
-                title="{{ __('Indexation automatique avec le thésaurus') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
-            <i class="bi bi-tags"></i>
-            @if($showLabels) {{ __('index_thesaurus') ?? 'Indexer' }} @endif
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="{{ __('Indexation automatique avec le thésaurus') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}"
+                aria-label="{{ $labelThesaurus }} ({{ $mode === 'mistral' ? 'Mistral' : 'MCP' }})">
+            <i class="bi bi-tags" aria-hidden="true"></i>
+            @if($showLabels)
+                <span class="btn-label">{{ $labelThesaurus }}</span>
+            @else
+                <span class="visually-hidden">{{ $labelThesaurus }}</span>
+            @endif
         </button>
 
         {{-- Résumé ISAD(G) --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
-                data-action="summary" 
+        @php $labelSummary = __('generate_summary'); if ($labelSummary === 'generate_summary') { $labelSummary = 'Résumé'; } @endphp
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn"
+                data-action="summary"
                 data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
-                title="{{ __('Générer le résumé ISAD(G) - Élément 3.3.1') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
-            <i class="bi bi-file-text"></i>
-            @if($showLabels) {{ __('generate_summary') ?? 'Résumé' }} @endif
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="{{ __('Générer le résumé ISAD(G) - Élément 3.3.1') }} - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}"
+                aria-label="{{ $labelSummary }} ({{ $mode === 'mistral' ? 'Mistral' : 'MCP' }})">
+            <i class="bi bi-file-text" aria-hidden="true"></i>
+            @if($showLabels)
+                <span class="btn-label">{{ $labelSummary }}</span>
+            @else
+                <span class="visually-hidden">{{ $labelSummary }}</span>
+            @endif
         </button>
 
         {{-- Traitement complet --}}
         <div class="btn-group" role="group">
-            <button type="button" 
-                    class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-warning' }} dropdown-toggle mcp-batch-btn" 
-                    data-bs-toggle="dropdown" 
+            @php $labelComplete = __('mcp_complete'); if ($labelComplete === 'mcp_complete') { $labelComplete = 'Complet'; } @endphp
+            <button type="button"
+                    class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-warning' }} dropdown-toggle mcp-batch-btn"
+                    data-bs-toggle="dropdown"
                     aria-expanded="false"
                     data-record-id="{{ $recordId }}"
-                    data-api-prefix="{{ $apiPrefix }}">
-                <i class="bi bi-cpu"></i>
-                @if($showLabels) {{ __('mcp_complete') ?? 'Complet' }} @endif
+                    data-api-prefix="{{ $apiPrefix }}"
+                    aria-label="{{ $labelComplete }} ({{ $mode === 'mistral' ? 'Mistral' : 'MCP' }})">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                @if($showLabels)
+                    <span class="btn-label">{{ $labelComplete }}</span>
+                @else
+                    <span class="visually-hidden">{{ $labelComplete }}</span>
+                @endif
             </button>
             <ul class="dropdown-menu">
                 <li>
-                    <a class="dropdown-item mcp-action-btn" 
-                       href="#" 
-                       data-action="all-preview" 
+                    <a class="dropdown-item mcp-action-btn"
+                       href="#"
+                       data-action="all-preview"
                         data-record-id="{{ $recordId }}"
                        data-api-prefix="{{ $apiPrefix }}">
                         <i class="bi bi-eye me-2"></i>{{ __('preview_all') ?? 'Prévisualiser tout' }}
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item mcp-action-btn" 
-                       href="#" 
-                       data-action="all-apply" 
+                    <a class="dropdown-item mcp-action-btn"
+                       href="#"
+                       data-action="all-apply"
                         data-record-id="{{ $recordId }}"
                        data-api-prefix="{{ $apiPrefix }}">
                         <i class="bi bi-check-circle me-2"></i>{{ __('apply_all') ?? 'Appliquer tout' }}
@@ -100,15 +124,15 @@
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                    <a class="dropdown-item" 
-                       href="{{ $mode === 'mistral' ? '/admin/mistral-test' : '/admin/mcp' }}" 
+                    <a class="dropdown-item"
+                       href="{{ $mode === 'mistral' ? '/admin/mistral-test' : '/admin/mcp' }}"
                        target="_blank">
                         <i class="bi bi-gear me-2"></i>{{ $mode === 'mistral' ? 'Configuration Mistral' : 'Configuration MCP' }}
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" 
-                       href="/admin/mistral-test/compare" 
+                    <a class="dropdown-item"
+                       href="/admin/mistral-test/compare"
                        target="_blank">
                         <i class="bi bi-bar-chart me-2"></i>Comparer MCP vs Mistral
                     </a>
@@ -120,45 +144,59 @@
 @elseif($style === 'batch')
     {{-- Boutons pour traitement par lots --}}
     <div class="btn-group" role="group" aria-label="Actions {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }} par lots">
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }}" 
-                data-bs-toggle="modal" 
+        @php $labelBatch = $mode === 'mistral' ? 'Test Mistral par lots' : 'Traitement MCP par lots'; @endphp
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }}"
+                data-bs-toggle="modal"
                 data-bs-target="#mcpBatchModal"
-                data-mode="{{ $mode }}">
-            <i class="bi bi-layers"></i>
-            @if($showLabels) {{ ($mode === 'mistral' ? 'Test Mistral' : 'Traitement MCP') . ' par lots' }} @endif
+                data-mode="{{ $mode }}"
+                title="{{ $labelBatch }}"
+                aria-label="{{ $labelBatch }}">
+            <i class="bi bi-layers" aria-hidden="true"></i>
+            @if($showLabels)
+                <span class="btn-label">{{ $labelBatch }}</span>
+            @else
+                <span class="visually-hidden">{{ $labelBatch }}</span>
+            @endif
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-info" 
-                onclick="window.open('{{ $mode === 'mistral' ? '/admin/mistral-test' : '/admin/mcp' }}', '_blank')">
-            <i class="bi bi-speedometer2"></i>
-            @if($showLabels) {{ $mode === 'mistral' ? 'Dashboard Mistral' : 'Dashboard MCP' }} @endif
+
+        @php $labelDashboard = $mode === 'mistral' ? 'Dashboard Mistral' : 'Dashboard MCP'; @endphp
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-info"
+                onclick="window.open('{{ $mode === 'mistral' ? '/admin/mistral-test' : '/admin/mcp' }}', '_blank')"
+                title="{{ $labelDashboard }}"
+                aria-label="{{ $labelDashboard }}">
+            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+            @if($showLabels)
+                <span class="btn-label">{{ $labelDashboard }}</span>
+            @else
+                <span class="visually-hidden">{{ $labelDashboard }}</span>
+            @endif
         </button>
     </div>
 
 @elseif($style === 'edit')
     {{-- Boutons pour la vue d'édition --}}
     <div class="d-flex gap-2 flex-wrap">
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
-                data-action="title-preview" 
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn"
+                data-action="title-preview"
                  data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-magic me-1"></i>{{ __('suggest_title') ?? 'Suggérer un titre' }}
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn" 
-                data-action="thesaurus-suggest" 
+
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} mcp-action-btn"
+                data-action="thesaurus-suggest"
                  data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-tags me-1"></i>{{ __('suggest_keywords') ?? 'Suggérer des mots-clés' }}
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
-                data-action="summary-preview" 
+
+        <button type="button"
+                class="btn btn-{{ $size }} {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn"
+                data-action="summary-preview"
                  data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}">
             <i class="bi bi-file-text me-1"></i>{{ __('generate_content') ?? 'Générer le contenu' }}
@@ -168,12 +206,12 @@
 @elseif($style === 'edit-title')
     {{-- Bouton spécifique pour reformuler le titre --}}
     <div class="btn-group btn-group-sm">
-        <button type="button" 
-                class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn" 
-                data-action="title-preview" 
+        <button type="button"
+                class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-primary' }} mcp-action-btn"
+                data-action="title-preview"
              data-record-id="{{ $recordId }}"
                 data-api-prefix="{{ $apiPrefix }}"
-                data-bs-toggle="tooltip" 
+                data-bs-toggle="tooltip"
                 title="Reformuler selon ISAD(G) - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
             <i class="bi bi-magic"></i> {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }} Reformuler
         </button>
@@ -182,12 +220,12 @@
 @elseif($style === 'edit-summary')
     {{-- Bouton spécifique pour générer le résumé --}}
     <div class="btn-group btn-group-sm">
-        <button type="button" 
-                class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn" 
-                data-action="summary-preview" 
+        <button type="button"
+                class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-info' }} mcp-action-btn"
+                data-action="summary-preview"
              data-record-id="{{ isset($record) ? $record->id : '' }}"
                 data-api-prefix="{{ $apiPrefix }}"
-                data-bs-toggle="tooltip" 
+                data-bs-toggle="tooltip"
                 title="Générer le résumé ISAD(G) - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
             <i class="bi bi-file-text"></i> {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }} Générer résumé
         </button>
@@ -195,12 +233,12 @@
 
 @elseif($style === 'edit-thesaurus')
     {{-- Bouton spécifique pour suggérer des mots-clés --}}
-    <button type="button" 
-            class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} btn-sm mcp-action-btn" 
-            data-action="thesaurus-suggest" 
+    <button type="button"
+            class="btn {{ $mode === 'mistral' ? 'btn-outline-warning' : 'btn-outline-success' }} btn-sm mcp-action-btn"
+            data-action="thesaurus-suggest"
             data-record-id="{{ $recordId }}"
             data-api-prefix="{{ $apiPrefix }}"
-            data-bs-toggle="tooltip" 
+            data-bs-toggle="tooltip"
             title="Extraire des mots-clés automatiquement - {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }}">
         <i class="bi bi-tags"></i> {{ $mode === 'mistral' ? 'Mistral' : 'MCP' }} Suggérer mots-clés
     </button>

@@ -35,14 +35,8 @@
                         <i class="bi bi-trash"></i> {{ __('delete_sheet') }}
                     </button>
                 </div>
-                
-                {{-- Boutons MCP (mode déterminé par les paramètres globaux) --}}
-                @include('records.partials.mcp-buttons-test', [
-                    'record' => $record, 
-                    'style' => 'individual',
-                    'size' => 'sm',
-                    'showLabels' => false
-                ])
+
+                {{-- (Déplacé) Boutons MCP maintenant dans la section "Intelligence artificielle" plus bas --}}
             </div>
         </div>
 
@@ -196,6 +190,26 @@
                         </dl>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        {{-- Intelligence Artificielle Section (MCP / Mistral) --}}
+        <div class="card mb-3">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-cpu me-2"></i>{{ __('ai_section_title') ?? 'Intelligence artificielle' }}
+                </h5>
+                <div class="d-flex gap-2">
+                    @include('records.partials.mcp-buttons-test', [
+                        'record' => $record,
+                        'style' => 'individual',
+                        'size' => 'sm',
+                        'showLabels' => true
+                    ])
+                </div>
+            </div>
+            <div class="card-body small text-muted">
+                {{ __('ai_section_help') ?? 'Actions d’assistance : reformulation de titre, résumé normalisé, mots-clés thésaurus.' }}
             </div>
         </div>
 
@@ -502,7 +516,7 @@
                                 <div class="card-img-top bg-light" style="height: 140px;">
                                     @if($attachment->thumbnail_path)
                                         <img src="{{ asset('storage/' . $attachment->thumbnail_path) }}"
-                                             class="img-fluid h-100 w-100" style="object-fit: cover;">
+                                             class="img-fluid h-100 w-100" style="object-fit: cover;" alt="{{ $attachment->name ?? 'Attachment' }}">
                                     @else
                                         <div class="d-flex align-items-center justify-content-center h-100">
                                             <i class="bi bi-file-earmark-pdf fs-1 text-secondary"></i>
@@ -657,23 +671,23 @@
 // Gestionnaire principal pour les actions MCP
 function handleMcpActionWithMode(event) {
     event.preventDefault();
-    
+
     const button = event.currentTarget;
     const action = button.dataset.action;
     const recordId = button.dataset.recordId;
     const apiPrefix = button.dataset.apiPrefix || '/api/mcp';
-    
+
     if (!recordId) {
         showMcpNotification('Erreur: ID du record manquant', 'error');
         return;
     }
-    
+
     // Désactiver le bouton pendant le traitement
     setButtonState(button, 'processing');
-    
+
     // Déterminer l'endpoint selon l'action et le mode
     let endpoint, method = 'POST', isPreview = action.includes('preview');
-    
+
     switch(action) {
         case 'title':
         case 'title-preview':
@@ -698,7 +712,7 @@ function handleMcpActionWithMode(event) {
             showMcpNotification('Action inconnue: ' + action, 'error');
             return;
     }
-    
+
     // Effectuer la requête
     fetch(endpoint, {
         method: method,
@@ -716,18 +730,18 @@ function handleMcpActionWithMode(event) {
         if (data.error) {
             throw new Error(data.message || 'Erreur inconnue');
         }
-        
+
         setButtonState(button, 'success');
-        
+
         // Message de succès personnalisé selon le mode
         const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
         showMcpNotification(`${mode}: ${data.message || 'Traitement réussi'}`, 'success');
-        
+
         // Afficher les tokens utilisés si disponible (Mistral)
         if (data.tokens_used) {
             console.log(`Tokens utilisés (${mode}):`, data.tokens_used);
         }
-        
+
         // TOUJOURS afficher l'aperçu pour validation
         showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix);
                 })
@@ -742,12 +756,12 @@ function handleMcpActionWithMode(event) {
 // Gestion des états des boutons
 function setButtonState(button, state) {
     button.classList.remove('mcp-processing', 'mcp-success', 'mcp-error');
-    
+
     const existingSpinner = button.querySelector('.spinner-border');
     if (existingSpinner) {
         existingSpinner.remove();
     }
-    
+
     switch(state) {
         case 'processing':
             button.classList.add('mcp-processing');
@@ -779,11 +793,11 @@ function showMcpNotification(message, type = 'info') {
         console.log(`${type.toUpperCase()}: ${message}`);
         return;
     }
-    
+
     const toastContainer = document.getElementById('toast-container') || createToastContainer();
     const toastId = 'toast-' + Date.now();
     const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
-    
+
     const toastHtml = `
         <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header ${bgClass} text-white border-0">
@@ -794,13 +808,13 @@ function showMcpNotification(message, type = 'info') {
             <div class="toast-body">${message}</div>
         </div>
     `;
-    
+
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
+
     try {
         const toast = new bootstrap.Toast(document.getElementById(toastId));
         toast.show();
-        
+
         document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
             this.remove();
         });
@@ -826,15 +840,15 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
         console.log('Bootstrap non disponible, affichage en console:', data);
         return;
     }
-    
+
     let modal = document.getElementById('mcpPreviewModal');
     if (!modal) {
         modal = createPreviewModalWithValidation();
     }
-    
+
     const modalTitle = modal.querySelector('.modal-title');
     modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle text-warning me-2"></i>Validation requise - ${mode}`;
-    
+
     const modalBody = modal.querySelector('.modal-body');
     let content = `
         <div class="alert alert-warning">
@@ -846,7 +860,7 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
             <strong>Deux options disponibles :</strong> Vous pouvez appliquer directement les modifications ou aller à la page d'édition pour plus de contrôle.
         </div>
     `;
-    
+
     // Formater l'aperçu selon le type d'action
     if (action.includes('title')) {
         content += formatTitlePreviewShow(data);
@@ -859,23 +873,23 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
             content += formatPreviewContent(feature, preview);
         });
     }
-    
+
     if (data.tokens_used) {
         content += `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-1"></i>
             <strong>Tokens utilisés :</strong> ${data.tokens_used}
         </div>`;
     }
-    
+
     modalBody.innerHTML = content;
-    
+
     // Stocker les données pour l'application
     modal.dataset.previewData = JSON.stringify(data);
     modal.dataset.mode = mode;
     modal.dataset.action = action;
     modal.dataset.recordId = recordId;
     modal.dataset.apiPrefix = apiPrefix;
-    
+
     try {
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
@@ -937,17 +951,17 @@ function formatThesaurusPreviewShow(data) {
                     <strong>Mots-clés suggérés :</strong>
                     <div class="mt-2">
         `;
-        
+
         data.preview.concepts.forEach(concept => {
             const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
             content += `
                 <span class="badge bg-success me-2 mb-2 p-2">
-                    ${concept.preferred_label} 
+                    ${concept.preferred_label}
                     <small>(${weight}%)</small>
                 </span>
             `;
         });
-        
+
         content += `
                     </div>
                 </div>
@@ -964,18 +978,18 @@ function showMcpPreview(data, mode = 'MCP') {
         console.log('Bootstrap non disponible, affichage en console:', data);
         return;
     }
-    
+
     let modal = document.getElementById('mcpPreviewModal');
     if (!modal) {
         modal = createPreviewModal();
     }
-    
+
     const modalTitle = modal.querySelector('.modal-title');
     modalTitle.innerHTML = `<i class="bi bi-robot me-2"></i>Aperçu ${mode}`;
-    
+
     const modalBody = modal.querySelector('.modal-body');
     let content = `<h6>Aperçu des modifications (${mode}) :</h6>`;
-    
+
     if (data.previews) {
         Object.entries(data.previews).forEach(([feature, preview]) => {
             content += formatPreviewContent(feature, preview);
@@ -983,20 +997,20 @@ function showMcpPreview(data, mode = 'MCP') {
     } else if (data.preview) {
         content += formatPreviewContent('single', data.preview);
     }
-    
+
     if (data.tokens_used) {
         content += `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-1"></i>
             <strong>Tokens utilisés :</strong> ${data.tokens_used}
         </div>`;
     }
-    
+
     modalBody.innerHTML = content;
-    
+
     // Stocker les données pour l'application
     modal.dataset.previewData = JSON.stringify(data);
     modal.dataset.mode = mode;
-    
+
     try {
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
@@ -1010,7 +1024,7 @@ function showMcpPreview(data, mode = 'MCP') {
 function formatPreviewContent(feature, preview) {
     let content = `<div class="mb-3 border rounded p-3">`;
     content += `<h6 class="text-primary">${feature.charAt(0).toUpperCase() + feature.slice(1)}</h6>`;
-    
+
     if (typeof preview === 'object') {
         if (preview.original_title && preview.suggested_title) {
             content += `
@@ -1052,7 +1066,7 @@ function formatPreviewContent(feature, preview) {
     } else {
         content += `<p class="bg-light p-2 rounded">${preview}</p>`;
     }
-    
+
     content += '</div>';
     return content;
 }
@@ -1085,7 +1099,7 @@ function createPreviewModalWithValidation() {
             </div>
                             </div>
                         `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     return document.getElementById('mcpPreviewModal');
 }
@@ -1099,7 +1113,7 @@ function createPreviewModal() {
 function goToEditPage() {
     const modal = document.getElementById('mcpPreviewModal');
     if (!modal) return;
-    
+
     const recordId = modal.dataset.recordId;
     if (recordId) {
         window.location.href = `/records/${recordId}/edit`;
@@ -1115,13 +1129,13 @@ function goToEditPage() {
 function applyChangesDirectlyFromShow() {
     const modal = document.getElementById('mcpPreviewModal');
     if (!modal) return;
-    
+
     const previewData = JSON.parse(modal.dataset.previewData || '{}');
     const mode = modal.dataset.mode || 'MCP';
     const action = modal.dataset.action || '';
     const recordId = modal.dataset.recordId;
     const apiPrefix = modal.dataset.apiPrefix || '/api/mcp';
-    
+
     // DEBUG: Afficher les données exactes pour diagnostic
     console.log('Application directe depuis Show:', {
         action: action,
@@ -1130,41 +1144,41 @@ function applyChangesDirectlyFromShow() {
         apiPrefix: apiPrefix,
         timestamp: new Date().toISOString()
     });
-    
+
     if (!recordId) {
         showMcpNotification('Erreur: ID du record introuvable', 'error');
         return;
     }
-    
+
     // Fermer la modal
     const bsModal = bootstrap.Modal.getInstance(modal);
     if (bsModal) {
         bsModal.hide();
     }
-    
+
     // Déterminer l'endpoint d'application selon l'action
     let endpoint;
     let requestData = {};
-    
+
     if (action.includes('title') && previewData.preview?.suggested_title) {
         endpoint = `${apiPrefix}/records/${recordId}/title/reformulate`;
-        requestData = { 
+        requestData = {
             suggested_title: previewData.preview.suggested_title,
-            apply_directly: true 
+            apply_directly: true
         };
         console.log('Préparation application titre:', requestData);
     } else if (action.includes('summary') && previewData.preview?.suggested_summary) {
         endpoint = `${apiPrefix}/records/${recordId}/summary/generate`;
-        requestData = { 
+        requestData = {
             suggested_summary: previewData.preview.suggested_summary,
-            apply_directly: true 
+            apply_directly: true
         };
         console.log('Préparation application résumé:', requestData);
     } else if (action.includes('thesaurus') && previewData.preview?.concepts) {
         endpoint = `${apiPrefix}/records/${recordId}/thesaurus/index`;
-        requestData = { 
+        requestData = {
             concepts: previewData.preview.concepts,
-            apply_directly: true 
+            apply_directly: true
         };
         console.log('Préparation application thésaurus:', requestData);
     } else {
@@ -1175,10 +1189,10 @@ function applyChangesDirectlyFromShow() {
         showMcpNotification('Aucune donnée à appliquer', 'error');
         return;
     }
-    
+
     // Afficher le statut en cours
     showMcpNotification(`${mode}: Application des modifications en cours...`, 'info');
-    
+
     // Faire l'appel API pour appliquer les changements
     fetch(endpoint, {
         method: 'POST',
@@ -1192,13 +1206,13 @@ function applyChangesDirectlyFromShow() {
     .then(response => response.json())
     .then(data => {
         console.log('Réponse de l\'API:', data);
-        
+
         if (data.error) {
             throw new Error(data.message || 'Erreur inconnue');
         }
-        
+
         showMcpNotification(`${mode}: Modifications appliquées avec succès!`, 'success');
-        
+
         // Recharger la page pour voir les changements
         setTimeout(() => {
             window.location.reload();
@@ -1214,19 +1228,19 @@ function applyChangesDirectlyFromShow() {
 function applyPreviewChanges() {
     const modal = document.getElementById('mcpPreviewModal');
     if (!modal) return;
-    
+
     const previewData = JSON.parse(modal.dataset.previewData || '{}');
     const mode = modal.dataset.mode || 'MCP';
     const apiPrefix = mode === 'Mistral' ? '/api/mistral-test' : '/api/mcp';
-    
+
     // Récupérer l'ID du record depuis les boutons de la page
     const recordId = document.querySelector('.mcp-action-btn')?.dataset.recordId;
-    
+
     if (!recordId) {
         showMcpNotification('Erreur: ID du record introuvable', 'error');
         return;
     }
-    
+
     // Déterminer quelles fonctionnalités appliquer selon les données disponibles
     let features = [];
     if (previewData.previews) {
@@ -1234,23 +1248,23 @@ function applyPreviewChanges() {
     } else if (previewData.preview) {
         features = ['single'];
     }
-    
+
     if (features.length === 0) {
         showMcpNotification('Aucune modification à appliquer', 'error');
         return;
     }
-    
+
     // Fermer la modal
     const bsModal = bootstrap.Modal.getInstance(modal);
     if (bsModal) {
         bsModal.hide();
     }
-    
+
     // Appliquer les modifications
     const endpoint = `${apiPrefix}/records/${recordId}/process`;
-    
+
     showMcpNotification(`${mode}: Application des modifications en cours...`, 'info');
-    
+
     fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -1267,9 +1281,9 @@ function applyPreviewChanges() {
         if (data.error) {
             throw new Error(data.message || 'Erreur inconnue');
         }
-        
+
         showMcpNotification(`${mode}: Modifications appliquées avec succès!`, 'success');
-        
+
         // Recharger la page pour voir les changements
         setTimeout(() => {
             window.location.reload();
