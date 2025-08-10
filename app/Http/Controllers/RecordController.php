@@ -1061,10 +1061,31 @@ class RecordController extends Controller
 
     public function printRecords(Request $request)
     {
-        $recordIds = $request->input('records');
-        $records = Record::whereIn('id', $recordIds)->get();
+        Gate::authorize('records_export'); // ou créer une permission dédiée 'records_print'
 
-        $pdf = PDF::loadView('records.print', compact('records'));
+        $recordIds = $request->input('records', []);
+        if (!is_array($recordIds) || empty($recordIds)) {
+            return redirect()->back()->with('error', __('Aucun document sélectionné.'));
+        }
+
+        // Eager loading des relations utilisées dans la vue d'impression
+        $records = Record::with([
+            'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
+        ])->whereIn('id', $recordIds)->get();
+
+        // Conserver l'ordre de sélection (tel qu'affiché côté interface)
+        $idOrder = array_flip($recordIds);
+        $records = $records->sortBy(fn($r) => $idOrder[$r->id])->values();
+
+        $pdf = PDF::loadView('records.print', [
+            'records' => $records,
+        ]);
+
+    // Mode flux (prévisualisation dans le navigateur) si demandé (query ou body)
+    $mode = $request->query('mode', $request->input('mode'));
+    if ($mode === 'stream') {
+            return $pdf->stream('records_print.pdf');
+        }
         return $pdf->download('records_print.pdf');
     }
 

@@ -160,19 +160,7 @@
             @endif
         </button>
 
-        @php $labelDashboard = $mode === 'mistral' ? 'Dashboard Mistral' : 'Dashboard MCP'; @endphp
-        <button type="button"
-                class="btn btn-{{ $size }} btn-outline-info"
-                onclick="window.open('{{ $mode === 'mistral' ? '/admin/mistral-test' : '/admin/mcp' }}', '_blank')"
-                title="{{ $labelDashboard }}"
-                aria-label="{{ $labelDashboard }}">
-            <i class="bi bi-speedometer2" aria-hidden="true"></i>
-            @if($showLabels)
-                <span class="btn-label">{{ $labelDashboard }}</span>
-            @else
-                <span class="visually-hidden">{{ $labelDashboard }}</span>
-            @endif
-        </button>
+    {{-- Dashboard button removed per requirement --}}
     </div>
 
 @elseif($style === 'edit')

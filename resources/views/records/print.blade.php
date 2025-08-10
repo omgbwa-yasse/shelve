@@ -84,10 +84,59 @@
 <body>
 <h1>Impression des enregistrements sélectionnés</h1>
 
+@php($total = count($records))
+
+<!-- Sommaire / Table des matières -->
+<div style="margin-bottom:25px; page-break-after:avoid;">
+    <h2 style="font-size:12pt; margin:0 0 8px 0;">Sommaire</h2>
+    <table style="width:100%; border-collapse:collapse; font-size:9pt;">
+        <thead>
+            <tr style="background:#efefef;">
+                <th style="text-align:left; padding:3px 4px;">Enregistrement</th>
+                <th style="text-align:left; padding:3px 4px;">Niveau</th>
+                <th style="text-align:right; padding:3px 4px;">Page</th>
+            </tr>
+        </thead>
+        @foreach($records as $i => $record)
+            <tr>
+                <td style="padding:2px 4px; width:55%;">{{ $i+1 }}. {{ $record->code }} : {{ $record->name }}</td>
+                <td style="padding:2px 4px; width:25%; color:#555;">{{ $record->level->name ?? '' }}</td>
+                <td style="padding:2px 4px; width:20%; text-align:right;">→ p. <!-- page number placeholder (généré par moteur PDF non trivial) --></td>
+            </tr>
+        @endforeach
+    </table>
+</div>
+
+<!-- Index simplifié (par code) -->
+@php($byCode = $records->sortBy(fn($r) => $r->code)->values())
+<div style="margin-bottom:30px; page-break-after:always;">
+    <h2 style="font-size:12pt; margin:0 0 8px 0;">Index (Codes)</h2>
+    <table style="width:100%; border-collapse:collapse; font-size:8.5pt;">
+        <thead>
+            <tr style="background:#efefef;">
+                <th style="text-align:left; padding:3px 4px; width:25%;">Code</th>
+                <th style="text-align:left; padding:3px 4px;">Titre</th>
+            </tr>
+        </thead>
+        @foreach($byCode as $r)
+            <tr>
+                <td style="padding:1px 4px; width:25%;">{{ $r->code }}</td>
+                <td style="padding:1px 4px;">{{ $r->name }}</td>
+            </tr>
+        @endforeach
+    </table>
+</div>
+
 @foreach($records as $record)
-    <div class="record">
+    <div class="record" id="rec-{{ $record->id }}">
         <h2>{{ $record->code }} : {{ $record->name }}</h2>
         <table>
+            <thead>
+                <tr>
+                    <th style="width:150px; text-align:left;">Champ</th>
+                    <th style="text-align:left;">Valeur</th>
+                </tr>
+            </thead>
             <tr>
                 <td>Contenu</td>
                 <td>{{ $record->content ?? 'N/A' }}</td>
@@ -139,6 +188,31 @@
                     @endif
                 </td>
             </tr>
+            @if($record->relationLoaded('attachments') && $record->attachments->isNotEmpty())
+            <tr>
+                <td>Pièces jointes</td>
+                <td>
+                    <table style="width:100%; font-size:8pt; border-collapse:collapse; margin:4px 0;">
+                        <thead>
+                            <tr style="background:#efefef;">
+                                <th style="text-align:left; width:45%;">Nom</th>
+                                <th style="text-align:left; width:20%;">Type</th>
+                                <th style="text-align:left; width:15%;">Taille</th>
+                                <th style="text-align:left; width:20%;">Date</th>
+                            </tr>
+                        </thead>
+                        @foreach($record->attachments as $att)
+                            <tr>
+                                <td style="padding:2px 3px;">{{ $att->name }}</td>
+                                <td style="padding:2px 3px;">{{ pathinfo($att->name, PATHINFO_EXTENSION) }}</td>
+                                <td style="padding:2px 3px;">@if($att->size) {{ number_format($att->size/1024,1,',',' ') }} KB @else N/A @endif</td>
+                                <td style="padding:2px 3px;">{{ optional($att->created_at)->format('d/m/Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </table>
+                </td>
+            </tr>
+            @endif
         </table>
     </div>
 @endforeach
