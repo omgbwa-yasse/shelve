@@ -52,8 +52,7 @@ class Record extends Model
         'status_id',
         'support_id',
         'activity_id',
-        'parent_id',
-        'container_id',
+    'parent_id',
         'accession_id',
         'user_id',
         'organisation_id'

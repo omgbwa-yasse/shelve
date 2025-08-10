@@ -9,10 +9,10 @@
                 </a>
                 <h1 class="mb-0">{{ __('edit_description') }}</h1>
             </div>
-            
+
             {{-- Le mode IA est déterminé par les paramètres globaux (Admin MCP) --}}
         </div>
-        
+
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -81,7 +81,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="name" class="form-label mb-0">Name</label>
                             @include('records.partials.mcp-buttons-test', [
-                                'record' => $record, 
+                                'record' => $record,
                                 'style' => 'edit-title',
                                 'size' => 'sm',
                                 'showLabels' => true,
@@ -118,6 +118,16 @@
                             <label for="width_description" class="form-label">Width Description</label>
                             <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100" value="{{ $record->width_description }}">
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="container_ids" class="form-label">{{ __('containers') }}</label>
+                        <select id="container_ids" name="container_ids[]" class="form-select" multiple>
+                            @php $currentContainers = $record->containers->pluck('id')->toArray(); @endphp
+                            @foreach($containers as $c)
+                                <option value="{{ $c->id }}" {{ in_array($c->id, $currentContainers) ? 'selected' : '' }}>{{ $c->code }} - {{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">{{ __('you_can_select_multiple') }}</small>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
@@ -167,7 +177,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="content" class="form-label mb-0">Content</label>
                             @include('records.partials.mcp-buttons-test', [
-                                'record' => $record, 
+                                'record' => $record,
                                 'style' => 'edit-summary',
                                 'size' => 'sm',
                                 'showLabels' => true,
@@ -277,7 +287,7 @@
                                 <small class="text-muted">L'IA peut suggérer automatiquement des mots-clés basés sur le contenu</small>
                             </div>
                             @include('records.partials.mcp-buttons-test', [
-                                'record' => $record, 
+                                'record' => $record,
                                 'style' => 'edit-thesaurus',
                                 'size' => 'sm',
                                 'showLabels' => true,
@@ -285,7 +295,7 @@
                             ])
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="thesaurus-search" class="form-label">Thésaurus</label>
                         <div class="position-relative">
@@ -626,7 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const triggerTabList = document.querySelectorAll('#myTab a[data-bs-toggle="tab"]');
             triggerTabList.forEach(triggerEl => {
                 const tabTrigger = new bootstrap.Tab(triggerEl);
-                
+
                 triggerEl.addEventListener('click', event => {
                     event.preventDefault();
                     tabTrigger.show();
@@ -680,23 +690,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // Gestionnaire principal pour les actions MCP - TOUJOURS en mode preview d'abord
 function handleMcpActionWithMode(event) {
     event.preventDefault();
-    
+
     const button = event.currentTarget;
     const action = button.dataset.action;
     const recordId = button.dataset.recordId;
     const apiPrefix = button.dataset.apiPrefix || '/api/mcp';
-    
+
     if (!recordId) {
         showMcpNotification('Erreur: ID du record manquant', 'error');
         return;
     }
-    
+
     // Désactiver le bouton pendant le traitement
     setButtonState(button, 'processing');
-    
+
     // TOUJOURS utiliser le mode preview d'abord pour validation
     let endpoint, method = 'POST';
-    
+
     switch(action) {
         case 'title':
         case 'title-preview':
@@ -721,7 +731,7 @@ function handleMcpActionWithMode(event) {
             showMcpNotification('Action inconnue: ' + action, 'error');
             return;
     }
-    
+
     // Effectuer la requête
     fetch(endpoint, {
         method: method,
@@ -739,18 +749,18 @@ function handleMcpActionWithMode(event) {
         if (data.error) {
             throw new Error(data.message || 'Erreur inconnue');
         }
-        
+
         setButtonState(button, 'success');
-        
+
         // Message de succès personnalisé selon le mode
         const mode = apiPrefix.includes('mistral') ? 'Mistral' : 'MCP';
         showMcpNotification(`${mode}: ${data.message || 'Aperçu généré'}`, 'success');
-        
+
         // Afficher les tokens utilisés si disponible (Mistral)
         if (data.tokens_used) {
             console.log(`Tokens utilisés (${mode}):`, data.tokens_used);
         }
-        
+
         // TOUJOURS afficher l'aperçu pour validation
         showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix);
     })
@@ -765,12 +775,12 @@ function handleMcpActionWithMode(event) {
 // Gestion des états des boutons
 function setButtonState(button, state) {
     button.classList.remove('mcp-processing', 'mcp-success', 'mcp-error');
-    
+
     const existingSpinner = button.querySelector('.spinner-border');
     if (existingSpinner) {
         existingSpinner.remove();
     }
-    
+
     switch(state) {
         case 'processing':
             button.classList.add('mcp-processing');
@@ -802,11 +812,11 @@ function showMcpNotification(message, type = 'info') {
         console.log(`${type.toUpperCase()}: ${message}`);
         return;
     }
-    
+
     const toastContainer = document.getElementById('toast-container') || createToastContainer();
     const toastId = 'toast-' + Date.now();
     const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
-    
+
     const toastHtml = `
         <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header ${bgClass} text-white border-0">
@@ -817,13 +827,13 @@ function showMcpNotification(message, type = 'info') {
             <div class="toast-body">${message}</div>
         </div>
     `;
-    
+
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
+
     try {
         const toast = new bootstrap.Toast(document.getElementById(toastId));
         toast.show();
-        
+
         document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
             this.remove();
         });
@@ -849,15 +859,15 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
         console.log('Bootstrap non disponible, affichage en console:', data);
         return;
     }
-    
+
     let modal = document.getElementById('mcpPreviewModal');
     if (!modal) {
         modal = createPreviewModalWithValidation();
     }
-    
+
     const modalTitle = modal.querySelector('.modal-title');
     modalTitle.innerHTML = `<i class="bi bi-exclamation-triangle text-warning me-2"></i>Validation requise - ${mode}`;
-    
+
     const modalBody = modal.querySelector('.modal-body');
     let content = `
         <div class="alert alert-warning">
@@ -865,7 +875,7 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
             <strong>Validation requise :</strong> Vérifiez les modifications avant de les appliquer au formulaire
         </div>
     `;
-    
+
     // Formater l'aperçu selon le type d'action
     if (action.includes('title')) {
         content += formatTitlePreview(data);
@@ -878,23 +888,23 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
             content += formatPreviewContent(feature, preview);
         });
     }
-    
+
     if (data.tokens_used) {
         content += `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-1"></i>
             <strong>Tokens utilisés :</strong> ${data.tokens_used}
         </div>`;
     }
-    
+
     modalBody.innerHTML = content;
-    
+
     // Stocker les données pour l'application
     modal.dataset.previewData = JSON.stringify(data);
     modal.dataset.mode = mode;
     modal.dataset.action = action;
     modal.dataset.recordId = recordId;
     modal.dataset.apiPrefix = apiPrefix;
-    
+
     try {
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
@@ -971,17 +981,17 @@ function formatThesaurusPreview(data) {
                     <strong>Mots-clés suggérés :</strong>
                     <div class="mt-2">
         `;
-        
+
         data.preview.concepts.forEach(concept => {
             const weight = concept.weight ? Math.round(concept.weight * 100) : 'N/A';
             content += `
                 <span class="badge bg-success me-2 mb-2 p-2">
-                    ${concept.preferred_label} 
+                    ${concept.preferred_label}
                     <small>(${weight}%)</small>
                 </span>
             `;
         });
-        
+
         content += `
                     </div>
                 </div>
@@ -1004,18 +1014,18 @@ function showMcpPreview(data, mode = 'MCP') {
         console.log('Bootstrap non disponible, affichage en console:', data);
         return;
     }
-    
+
     let modal = document.getElementById('mcpPreviewModal');
     if (!modal) {
         modal = createPreviewModal();
     }
-    
+
     const modalTitle = modal.querySelector('.modal-title');
     modalTitle.innerHTML = `<i class="bi bi-robot me-2"></i>Aperçu ${mode}`;
-    
+
     const modalBody = modal.querySelector('.modal-body');
     let content = `<h6>Aperçu des modifications (${mode}) :</h6>`;
-    
+
     if (data.previews) {
         Object.entries(data.previews).forEach(([feature, preview]) => {
             content += formatPreviewContent(feature, preview);
@@ -1023,16 +1033,16 @@ function showMcpPreview(data, mode = 'MCP') {
     } else if (data.preview) {
         content += formatPreviewContent('single', data.preview);
     }
-    
+
     if (data.tokens_used) {
         content += `<div class="alert alert-info mt-3">
             <i class="bi bi-info-circle me-1"></i>
             <strong>Tokens utilisés :</strong> ${data.tokens_used}
         </div>`;
     }
-    
+
     modalBody.innerHTML = content;
-    
+
     try {
         const bsModal = new bootstrap.Modal(modal);
         bsModal.show();
@@ -1046,7 +1056,7 @@ function showMcpPreview(data, mode = 'MCP') {
 function formatPreviewContent(feature, preview) {
     let content = `<div class="mb-3 border rounded p-3">`;
     content += `<h6 class="text-primary">${feature.charAt(0).toUpperCase() + feature.slice(1)}</h6>`;
-    
+
     if (typeof preview === 'object') {
         if (preview.original_title && preview.suggested_title) {
             content += `
@@ -1088,7 +1098,7 @@ function formatPreviewContent(feature, preview) {
     } else {
         content += `<p class="bg-light p-2 rounded">${preview}</p>`;
     }
-    
+
     content += '</div>';
     return content;
 }
@@ -1118,7 +1128,7 @@ function createPreviewModalWithValidation() {
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     return document.getElementById('mcpPreviewModal');
 }
@@ -1132,17 +1142,17 @@ function createPreviewModal() {
 function applyValidatedChanges() {
     const modal = document.getElementById('mcpPreviewModal');
     if (!modal) return;
-    
+
     const previewData = JSON.parse(modal.dataset.previewData || '{}');
     const action = modal.dataset.action || '';
-    
+
     // DEBUG: Afficher les données exactes pour diagnostic
     console.log('Application des changements:', {
         action: action,
         previewData: previewData,
         timestamp: new Date().toISOString()
     });
-    
+
     // Appliquer selon le type d'action
     if (action.includes('title')) {
         applyTitleChanges(previewData);
@@ -1151,7 +1161,7 @@ function applyValidatedChanges() {
     } else if (action.includes('summary')) {
         applySummaryChanges(previewData);
     }
-    
+
     // Fermer la modal
     const bsModal = bootstrap.Modal.getInstance(modal);
     if (bsModal) {
@@ -1166,9 +1176,9 @@ function applyTitleChanges(data) {
         if (titleField) {
             titleField.value = data.preview.suggested_title;
             titleField.style.backgroundColor = '#d4edda'; // Vert clair pour indiquer le changement
-            
+
             showMcpNotification('✅ Titre appliqué au formulaire ! N\'oubliez pas de sauvegarder.', 'success');
-            
+
             // Retirer la couleur après 3 secondes
             setTimeout(() => {
                 titleField.style.backgroundColor = '';
@@ -1182,37 +1192,37 @@ function applyTitleChanges(data) {
 // Appliquer les changements de résumé au formulaire (dans le champ Content)
 function applySummaryChanges(data) {
     console.log('applySummaryChanges appelée avec:', data);
-    
+
     if (data.preview && data.preview.suggested_summary) {
         const contentField = document.getElementById('content');
         if (contentField) {
             const oldContent = contentField.value;
             const newContent = data.preview.suggested_summary;
-            
+
             // REMPLACER complètement le contenu existant
             contentField.value = newContent;
             contentField.style.backgroundColor = '#d4edda'; // Vert clair pour indiquer le changement
-            
+
             console.log('Résumé appliqué:', {
                 ancien_contenu: oldContent,
                 nouveau_contenu: newContent,
                 champ_actuel: contentField.value
             });
-            
+
             showMcpNotification('✅ Résumé REMPLACÉ dans le champ Content ! N\'oubliez pas de sauvegarder.', 'success');
-            
+
             // Scroller vers le champ pour le rendre visible
             document.getElementById('contenu-tab')?.click(); // Aller à l'onglet Contenu
             setTimeout(() => {
                 contentField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
+
                 // Flash du champ pour attirer l'attention
                 contentField.style.border = '3px solid #28a745';
                 setTimeout(() => {
                     contentField.style.border = '';
                 }, 2000);
             }, 300);
-            
+
             // Retirer la couleur après 5 secondes
             setTimeout(() => {
                 contentField.style.backgroundColor = '';
@@ -1230,7 +1240,7 @@ function applySummaryChanges(data) {
 // Appliquer les changements d'indexation au formulaire (ajouter les termes)
 function applyThesaurusChanges(data) {
     console.log('applyThesaurusChanges appelée avec:', data);
-    
+
     if (data.preview && data.preview.concepts && data.preview.concepts.length > 0) {
         const container = document.getElementById('selected-terms-container');
         if (!container) {
@@ -1238,13 +1248,13 @@ function applyThesaurusChanges(data) {
             showMcpNotification('❌ Erreur: Conteneur des termes introuvable', 'error');
             return;
         }
-        
+
         let addedCount = 0;
         let skippedCount = 0;
-        
+
         data.preview.concepts.forEach((concept, index) => {
             console.log(`Traitement concept ${index + 1}:`, concept);
-            
+
             // Vérifier si le terme n'est pas déjà sélectionné
             const existingTerm = container.querySelector(`[data-id="${concept.id}"]`);
             if (!existingTerm) {
@@ -1257,7 +1267,7 @@ function applyThesaurusChanges(data) {
                     <span>${concept.preferred_label || concept.label || concept.literal_form || 'Terme sans nom'}</span>
                     <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.8em;" onclick="removeTerm(this)"></button>
                 `;
-                
+
                 container.appendChild(termElement);
                 addedCount++;
                 console.log(`Terme ajouté: ${concept.preferred_label || concept.label}`);
@@ -1266,7 +1276,7 @@ function applyThesaurusChanges(data) {
                 console.log(`Terme déjà présent: ${concept.preferred_label || concept.label}`);
             }
         });
-        
+
         // Mettre à jour les champs cachés
         if (typeof updateTermIds === 'function') {
             updateTermIds();
@@ -1288,18 +1298,18 @@ function applyThesaurusChanges(data) {
                 });
             }
         }
-        
+
         console.log(`Résumé indexation: ${addedCount} ajoutés, ${skippedCount} ignorés`);
-        
+
         if (addedCount > 0) {
             showMcpNotification(`✅ ${addedCount} terme(s) ajouté(s) au thésaurus ! N\'oubliez pas de sauvegarder.`, 'success');
-            
+
             // Scroller vers la section indexation
             document.getElementById('indexation-tab')?.click(); // Aller à l'onglet Indexation
             setTimeout(() => {
                 container.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 300);
-            
+
             // Retirer la couleur verte après 3 secondes
             setTimeout(() => {
                 data.preview.concepts.forEach(concept => {
@@ -1328,5 +1338,52 @@ function applyPreviewChanges() {
 </script>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('container_ids');
+        if(!select) return;
+        let timeout=null;
+        const parent = select.parentElement;
+        const search = document.createElement('input');
+        search.type='text';
+        search.className='form-control form-control-sm mb-1';
+        search.placeholder='{{ __('search') }} containers...';
+        parent.insertBefore(search, select);
+        const list=document.createElement('div');
+        list.className='list-group';
+        parent.appendChild(list);
+
+        function load(term){
+                const url='{{ route('api.containers') }}'+(term?('?q='+encodeURIComponent(term)):'');
+                fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+                    .then(r=>r.json())
+                    .then(data=>{
+                        list.innerHTML='';
+                        data.forEach(c=>{
+                            if([...select.selectedOptions].some(o=>o.value==c.id)) return;
+                            const btn=document.createElement('button');
+                            btn.type='button';
+                            btn.className='list-group-item list-group-item-action py-1';
+                            btn.textContent=c.code+' - '+c.name;
+                            btn.onclick=()=>{ let opt=[...select.options].find(o=>o.value==c.id); if(!opt){ opt=document.createElement('option'); opt.value=c.id; opt.textContent=btn.textContent; select.appendChild(opt);} opt.selected=true; render(); };
+                            list.appendChild(btn);
+                        });
+                    });
+        }
+        function render(){
+                let zone=parent.querySelector('.selected-containers');
+                if(!zone){ zone=document.createElement('div'); zone.className='selected-containers mt-2'; parent.appendChild(zone);} zone.innerHTML='';
+                [...select.selectedOptions].forEach(o=>{
+                    const tag=document.createElement('span'); tag.className='badge bg-secondary me-1 mb-1'; tag.textContent=o.textContent; const rm=document.createElement('button'); rm.type='button'; rm.className='btn-close btn-close-white ms-1'; rm.style.fontSize='0.6rem'; rm.onclick=()=>{o.selected=false; render();}; tag.appendChild(rm); zone.appendChild(tag);
+                });
+        }
+        search.addEventListener('input',()=>{clearTimeout(timeout); timeout=setTimeout(()=>load(search.value.trim()),250);});
+        load('');
+        render();
+});
+</script>
+@endpush
 
 @include('records.partials.quick-nav')

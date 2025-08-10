@@ -110,6 +110,15 @@
                             <input type="text" name="width_description" id="width_description" class="form-control" maxlength="100" value="{{ old('width_description') }}">
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label for="container_ids" class="form-label">{{ __('containers') }}</label>
+                        <select id="container_ids" name="container_ids[]" class="form-select" multiple>
+                            @foreach($containers as $c)
+                                <option value="{{ $c->id }}">{{ $c->code }} - {{ $c->name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">{{ __('you_can_select_multiple') }}</small>
+                    </div>
                 </div>
                 <div class="tab-pane fade" id="contexte" role="tabpanel" aria-labelledby="contexte-tab">
                     <div class="mb-3">
@@ -881,5 +890,52 @@
         }
     </style>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('container_ids');
+        if(!select) return;
+        let timeout = null;
+        const wrap = select.parentElement;
+        const search = document.createElement('input');
+        search.type = 'text';
+        search.className = 'form-control form-control-sm mb-1';
+        search.placeholder = '{{ __('search') }} containers...';
+        wrap.insertBefore(search, select);
+        const list = document.createElement('div');
+        list.className = 'list-group position-relative';
+        wrap.appendChild(list);
+
+        function load(term){
+                const url='{{ route('api.containers') }}'+(term?('?q='+encodeURIComponent(term)):'');
+                fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+                    .then(r=>r.json())
+                    .then(data=>{
+                        list.innerHTML='';
+                        data.forEach(c=>{
+                            if([...select.selectedOptions].some(o=>o.value==c.id)) return;
+                            const b=document.createElement('button');
+                            b.type='button';
+                            b.className='list-group-item list-group-item-action py-1';
+                            b.textContent=c.code+' - '+c.name;
+                            b.onclick=()=>{ let opt=[...select.options].find(o=>o.value==c.id); if(!opt){ opt=document.createElement('option'); opt.value=c.id; opt.textContent=b.textContent; select.appendChild(opt);} opt.selected=true; render(); };
+                            list.appendChild(b);
+                        });
+                    });
+        }
+        function render(){
+                let zone = wrap.querySelector('.selected-containers');
+                if(!zone){ zone=document.createElement('div'); zone.className='selected-containers mt-2'; wrap.appendChild(zone);} zone.innerHTML='';
+                [...select.selectedOptions].forEach(o=>{
+                    const tag=document.createElement('span'); tag.className='badge bg-info text-dark me-1 mb-1'; tag.textContent=o.textContent; const rm=document.createElement('button'); rm.type='button'; rm.className='btn-close ms-1'; rm.style.fontSize='0.6rem'; rm.onclick=()=>{o.selected=false; render();}; tag.appendChild(rm); zone.appendChild(tag);
+                });
+        }
+        search.addEventListener('input',()=>{ clearTimeout(timeout); timeout=setTimeout(()=>load(search.value.trim()),250); });
+        load('');
+        render();
+});
+</script>
+@endpush
 
 @include('records.partials.quick-nav')

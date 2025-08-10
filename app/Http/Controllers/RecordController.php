@@ -238,9 +238,10 @@ class RecordController extends Controller
             'support_id' => 'required|integer|exists:record_supports,id',
             'activity_id' => 'required|integer|exists:activities,id',
             'parent_id' => 'nullable|integer|exists:records,id',
-            'container_id' => 'nullable|integer|exists:containers,id',
             'accession_id' => 'nullable|integer|exists:accessions,id',
             'user_id' => 'required|integer|exists:users,id',
+            'container_ids' => 'nullable|array',
+            'container_ids.*' => 'integer|exists:containers,id',
         ]);
 
         // Supprimer author_ids et term_ids des données validées car ils ne sont pas des champs de la table
@@ -284,6 +285,23 @@ class RecordController extends Controller
                     'context' => 'manuel',
                     'extraction_note' => null
                 ]);
+            }
+        }
+
+        // Containers (multiple via pivot)
+        $containerIds = $this->processIds($request->input('container_ids', []));
+        if (!empty($containerIds)) {
+            $attachData = [];
+            foreach (array_unique($containerIds) as $cid) {
+                if ($cid > 0) {
+                    $attachData[$cid] = [
+                        'description' => null,
+                        'creator_id' => Auth::id(),
+                    ];
+                }
+            }
+            if (!empty($attachData)) {
+                $record->containers()->attach($attachData);
             }
         }
 
@@ -483,9 +501,10 @@ class RecordController extends Controller
             'support_id' => 'required|integer|exists:record_supports,id',
             'activity_id' => 'required|integer|exists:activities,id',
             'parent_id' => 'nullable|integer|exists:records,id',
-            'container_id' => 'nullable|integer|exists:containers,id',
             'accession_id' => 'nullable|integer|exists:accessions,id',
             'user_id' => 'required|integer|exists:users,id',
+            'container_ids' => 'nullable|array',
+            'container_ids.*' => 'integer|exists:containers,id',
         ]);
 
         // Supprimer author_ids et term_ids des données validées car ils ne sont pas des champs de la table
@@ -516,6 +535,23 @@ class RecordController extends Controller
             $record->thesaurusConcepts()->sync($conceptData);
         } else {
             $record->thesaurusConcepts()->detach();
+        }
+
+        // Update containers pivot
+        $containerIds = $this->processIds($request->input('container_ids', []));
+        if (!empty($containerIds)) {
+            $syncData = [];
+            foreach (array_unique($containerIds) as $cid) {
+                if ($cid > 0) {
+                    $syncData[$cid] = [
+                        'description' => null,
+                        'creator_id' => Auth::id(),
+                    ];
+                }
+            }
+            $record->containers()->sync($syncData);
+        } else {
+            $record->containers()->detach();
         }
 
         return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');

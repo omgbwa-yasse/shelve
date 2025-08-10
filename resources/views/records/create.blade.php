@@ -107,6 +107,18 @@
                                     <input type="text" name="width_description" class="form-control form-control-sm" value="{{ old('width_description') }}">
                                 </div>
                             </div>
+
+                            <div class="row mt-2 g-2">
+                                <div class="col-12">
+                                    <label for="container_ids" class="form-label small">{{ __('containers') }}</label>
+                                    <select id="container_ids" name="container_ids[]" class="form-select form-select-sm" multiple data-placeholder="{{ __('select') }}...">
+                                        @foreach($containers as $c)
+                                            <option value="{{ $c->id }}">{{ $c->code }} - {{ $c->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-muted">{{ __('you_can_select_multiple') }}</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -737,5 +749,100 @@
         // La fonction initModals() est maintenant dans records.js
     </script>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('container_ids');
+    if(!select) return;
+
+    // Simple enhancement: convert to searchable multi-select via AJAX dropdown (minimal vanilla)
+    // Replace with Select2 if already included globally.
+    let timeout = null;
+    const originalParent = select.parentElement;
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('position-relative');
+    originalParent.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'form-control form-control-sm mt-1';
+    searchInput.placeholder = '{{ __('search') }}';
+    wrapper.insertBefore(searchInput, select);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'list-group position-absolute w-100 shadow-sm';
+    dropdown.style.zIndex = 2000;
+    dropdown.style.maxHeight = '240px';
+    dropdown.style.overflowY = 'auto';
+    dropdown.style.display = 'none';
+    wrapper.appendChild(dropdown);
+
+    function fetchContainers(term){
+        const url = '{{ route('api.containers') }}' + (term ? ('?q=' + encodeURIComponent(term)) : '');
+        fetch(url, {headers: { 'X-Requested-With': 'XMLHttpRequest'}})
+            .then(r => r.json())
+            .then(data => {
+                dropdown.innerHTML = '';
+                data.forEach(c => {
+                    // Skip already selected
+                    if([...select.options].some(o => o.value == c.id && o.selected)) return;
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'list-group-item list-group-item-action py-1';
+                    item.textContent = c.code + ' - ' + c.name;
+                    item.addEventListener('click', () => {
+                        // Ensure option exists & select it
+                        let opt = [...select.options].find(o => o.value == c.id);
+                        if(!opt){
+                            opt = document.createElement('option');
+                            opt.value = c.id;
+                            opt.textContent = c.code + ' - ' + c.name;
+                            select.appendChild(opt);
+                        }
+                        opt.selected = true;
+                        dropdown.style.display = 'none';
+                        renderBadges();
+                    });
+                    dropdown.appendChild(item);
+                });
+                dropdown.style.display = data.length ? 'block' : 'none';
+            });
+    }
+
+    function renderBadges(){
+        let badgeBar = wrapper.querySelector('.selected-containers');
+        if(!badgeBar){
+            badgeBar = document.createElement('div');
+            badgeBar.className = 'selected-containers mt-2';
+            wrapper.appendChild(badgeBar);
+        }
+        badgeBar.innerHTML = '';
+        [...select.selectedOptions].forEach(o => {
+            const span = document.createElement('span');
+            span.className = 'badge bg-secondary me-1 mb-1';
+            span.textContent = o.textContent;
+            const x = document.createElement('button');
+            x.type = 'button';
+            x.className = 'btn-close btn-close-white btn-sm ms-1';
+            x.style.fontSize = '0.6rem';
+            x.addEventListener('click', () => { o.selected = false; renderBadges(); });
+            span.appendChild(x);
+            badgeBar.appendChild(span);
+        });
+    }
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fetchContainers(searchInput.value.trim()), 250);
+    });
+
+    // Initial load (blank)
+    fetchContainers('');
+    renderBadges();
+});
+</script>
+@endpush
 
 @include('records.partials.quick-nav')

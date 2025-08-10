@@ -169,6 +169,29 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users()->orderBy('name')->get(['id', 'name', 'email']);
         });
+        Route::get('/containers', function() {
+            $q = request('q');
+            $orgId = auth()->user()->current_organisation_id ?? null;
+            $query = \App\Models\Container::query()
+                ->whereHas('shelf.room.organisations', function($q2) use ($orgId) {
+                    if ($orgId) {
+                        $q2->where('organisations.id', $orgId);
+                    } else {
+                        // Si pas d'organisation courante, retourner zéro résultat pour éviter fuite
+                        $q2->whereRaw('1=0');
+                    }
+                });
+            if ($q) {
+                $query->where(function($sub) use ($q) {
+                    $sub->where('code', 'like', "%$q%")
+                        ->orWhere('name', 'like', "%$q%");
+                });
+            }
+            return $query->with(['shelf:id,code','shelf.room:id,code'])
+                ->orderBy('code')
+                ->limit(50)
+                ->get(['id','code','name','shelve_id']);
+        })->name('api.containers');
     });
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');

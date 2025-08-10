@@ -155,7 +155,7 @@ class SlipController extends Controller
                 'width_description' => 1,
                 'support_id' => 1,
                 'activity_id' => 1,
-                'container_id' => 1,
+                // 'container_id' removed: containers now managed via record_container pivot
                 'creator_id' => auth()->user()->id,
             ]);
             $i++;
@@ -206,7 +206,7 @@ class SlipController extends Controller
                 'width_description' => $record->width_description,
                 'support_id' => $record->support_id,
                 'activity_id' => $record->activity_id,
-                'container_id' => $record->container_id,
+                // container relationship migrated to pivot; skip single container_id
                 'creator_id' => auth()->id(),
             ]);
 
@@ -310,7 +310,7 @@ class SlipController extends Controller
                     'width_description' => $source->width_description,
                     'support_id' => $source->support_id,
                     'activity_id' => $source->activity_id,
-                    'container_id' => $source->container_id,
+                    // container_id removed; manage containers via pivot after creation if needed
                     'user_id' => $source->creator_id,
                     'status_id' => 1,
                 ]);

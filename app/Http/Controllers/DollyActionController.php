@@ -481,7 +481,13 @@ class DollyActionController extends Controller
         $dolly = Dolly::findOrFail($id);
         $dolly->load('records');
         foreach ($dolly->records as $record) {
-            $record->update(['container_id' => $value]);
+            // Attach container via pivot if not already linked
+            if (!$record->containers()->where('containers.id', $value)->exists()) {
+                $record->containers()->attach($value, [
+                    'description' => null,
+                    'creator_id' => auth()->id(),
+                ]);
+            }
         }
     }
 
@@ -589,6 +595,7 @@ class DollyActionController extends Controller
         $dolly = Dolly::findOrFail($id);
         $dolly->load('slipRecords');
         foreach ($dolly->slipRecords as $record) {
+            // slipRecords still have container_id field? leaving unchanged if model structure differs
             $record->update(['container_id' => $value]);
         }
      }
