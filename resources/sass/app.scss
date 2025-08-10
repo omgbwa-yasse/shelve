@@ -1,10 +1,12 @@
 // Fonts - chargées en local pour éviter FOUC
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-// Variables
+// Variables de base + thème (ordre important)
 @import 'variables';
+@import 'theme';
+@import 'submenu';
 
-// Bootstrap uniquement (suppression de Tailwind pour éviter les conflits)
+// Bootstrap (après définition des variables)
 @import 'bootstrap/scss/bootstrap';
 
 // Bootstrap Icons - import en utilisant l'alias
@@ -82,8 +84,7 @@
     }
 }
 
-$primary: #0178d4;
-$secondary: #2c3e50; // Nouvelle couleur secondaire
+// (Couleurs désormais définies dans _theme.scss)
 $font-family-sans-serif: 'Poppins', sans-serif;
 $font-family-serif: 'Poppins', sans-serif;
 $font-family-base: $font-family-sans-serif;
@@ -95,39 +96,36 @@ $headings-font-family: $font-family-serif;
 @import '../css/custom.scss';
 
 // Styles personnalisés
+// Variables CSS alignées sur la palette SCSS
 :root {
-    --primary: #0178d4;
-    --primary-dark: #0052b3;
-    --primary-light: #3b82f6;
-    --secondary: #64748b;
-    --success: #10b981;
-    --info: #06b6d4;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --light: #f8fafc;
-    --dark: #0f172a;
-    --white: #ffffff;
-    --body-bg: #f1f5f9;
+    --primary: #1F4673;
+    --primary-dark: #15324F;
+    --primary-light: #2F6FB3;
+    --secondary: #5A6472;
+    --success: #198754;
+    --info: #2F6FB3;
+    --warning: #FFB347;
+    --danger: #DC3545;
+    --light: #F5F7FA;
+    --dark: #0F172A;
+    --white: #FFFFFF;
+    --body-bg: #FFFFFF;
+    --border-color: #D9E0E6;
 }
 
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--body-bg);
-    color: #0178d4;
+    color: var(--secondary);
     line-height: 1.6;
 }
 
-h2 {}
+// Titres (personnalisation additionnelle possible)
+h2 { font-weight:600; }
 
 /* HEADER COMPACT */
 /* Header Two-Band Design */
-.two-band-header {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    position: sticky;
-    top: 0;
-    z-index: 1030;
-    box-shadow: none !important;
-}
+.two-band-header { @extend .header-gradient; position: sticky; top: 0; z-index: 1030; box-shadow: none !important; }
 
 /* Top Band - Logo, SAI, Organisation, Search, Actions */
 .top-band {
@@ -507,10 +505,8 @@ h2 {}
     font-size: 1.1rem;
 }
 
-body {
-    font-weight: 400;
-    color: $secondary;
-}
+// (Déplacé dans première définition de body plus haut)
+// Ancien bloc body supprimé pour éviter doublon
 
 h1,
 h2,

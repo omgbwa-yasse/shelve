@@ -1,0 +1,39 @@
+// Thème bleu / gris / blanc (doit être importé AVANT bootstrap)
+// Palette principale
+$primary: #1F4673 !default; // Bleu profond
+$secondary: #5A6472 !default; // Gris texte secondaire
+$info: #2F6FB3 !default; // Accent
+$light: #F5F7FA !default;
+$body-bg: #FFFFFF !default;
+$body-color: #2F3540 !default;
+$border-color: #D9E0E6 !default;
+$success: #198754 !default;
+$danger: #DC3545 !default;
+$warning: #FFB347 !default;
+$link-color: #2F6FB3 !default;
+$link-hover-color: #255A90 !default;
+$input-focus-border-color: #2F6FB3 !default;
+$focus-ring-color: rgba(47,111,179,.35) !default;
+
+// Divers
+$card-border-color: $border-color !default;
+$card-bg: #FFFFFF !default;
+
+// Radius / spacing mineurs
+$btn-border-radius: .45rem !default;
+
+// Utilitaires spécifiques (classes légères)
+.header-gradient { background: linear-gradient(90deg,#1F4673,#255A90 55%,#2F6FB3); }
+.top-band { background:#1F4673; color:#E6F0F8; }
+.bottom-band { background:#15324F; }
+
+.main-navigation .nav-link { color:#E6F0F8; font-weight:500; transition:.18s; border-radius:6px; }
+.main-navigation .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+.main-navigation .nav-link.active { background:#2F6FB3; color:#fff; box-shadow:0 0 0 1px #2F6FB3,0 2px 4px rgba(0,0,0,.25); }
+
+.submenu-card { background:#F5F7FA; border:1px solid #D9E0E6; }
+.submenu-card .nav-link { color:#2F3540; border-left:3px solid transparent; }
+.submenu-card .nav-link:hover { background:#E6F0F8; }
+.submenu-card .nav-link.active { background:#E6F0F8; border-left-color:#1F4673; font-weight:600; }
+
+.badge-primary { background:#2F6FB3; }

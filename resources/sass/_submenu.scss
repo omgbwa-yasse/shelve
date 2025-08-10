@@ -1,0 +1,61 @@
+// Styles communs pour les sous-menus (thème bleu/gris/blanc)
+.submenu-container, .bulletinboards-submenu {
+  font-family: 'Inter', 'Poppins', sans-serif;
+  font-size: .9rem;
+  position: relative;
+  z-index: 10;
+}
+
+.submenu-heading {
+  background: var(--primary);
+  color:#fff;
+  border-radius:6px;
+  padding:8px 12px;
+  margin-bottom:6px;
+  font-weight:500;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  transition:.18s;
+  box-shadow:0 1px 3px rgba(0,0,0,.1);
+  -webkit-user-select:none;
+  user-select:none;
+}
+.submenu-heading:hover { background: var(--primary-dark); }
+.submenu-heading i { margin-right:8px; font-size:14px; }
+.submenu-heading::after { content:'\25BC'; margin-left:auto; font-size:12px; transition:transform .25s; }
+.submenu-heading.collapsed::after { transform:rotate(-90deg); }
+
+.add-section > .submenu-heading { background:#198754; }
+.add-section > .submenu-heading:hover { background:#146c43; }
+
+.submenu-content, .submenu-section-content {
+  padding:0 0 8px 12px;
+  margin-bottom:8px;
+  overflow:hidden;
+  transition:max-height .3s ease, opacity .25s ease;
+}
+.submenu-content.collapsed, .submenu-section-content.collapsed { max-height:0 !important; padding-top:0; padding-bottom:0; margin-bottom:0; opacity:0; }
+
+.submenu-item { margin-bottom:2px; }
+
+.submenu-link {
+  display:flex;
+  align-items:center;
+  padding:4px 8px;
+  color: var(--secondary);
+  text-decoration:none;
+  border-radius:4px;
+  transition:background-color .18s, color .18s, transform .18s;
+  font-size:12.5px;
+}
+.submenu-link:hover { background:#F5F7FA; color: var(--primary); text-decoration:none; }
+.submenu-link i { margin-right:8px; color:#5f6368; font-size:13px; transition:color .18s; }
+.submenu-link:hover i { color: var(--primary); }
+
+.submenu-divider { height:1px; background: var(--border-color); margin:8px 0; }
+.submenu-category-title { font-size:11px; text-transform:uppercase; color:#5f6368; margin:8px 0 4px 8px; letter-spacing:.5px; font-weight:500; }
+
+// Badge générique dans les sous-menus
+.submenu-link .badge { font-size:.65rem; padding:.2rem .4rem; border-radius:10px; margin-left:auto; }

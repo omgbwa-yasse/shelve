@@ -1,150 +1,5 @@
 <div class="submenu-container py-2">
-    <!-- Google Fonts - Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
-    <style>
-        .submenu-container {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-        }
-
-        .submenu-heading {
-            background-color: #4285f4;
-            color: white;
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-bottom: 6px;
-            font-weight: 500;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .submenu-heading:hover {
-            background-color: #3367d6;
-        }
-
-        .submenu-heading i {
-            margin-right: 8px;
-            font-size: 14px;
-        }
-
-        .submenu-content { 
-            padding: 0 0 8px 12px; 
-            margin-bottom: 8px; 
-            display: block; 
-        }
-
-        .submenu-item {
-            margin-bottom: 2px;
-        }
-
-        .submenu-link {
-            display: flex;
-            align-items: center;
-            padding: 4px 8px;
-            color: #202124;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            font-size: 12px;
-            min-height: 24px;
-        }
-
-        .submenu-link:hover {
-            background-color: #f8f9fa;
-            color: #1a73e8;
-            text-decoration: none;
-        }
-
-        .submenu-link i {
-            margin-right: 6px;
-            font-size: 12px;
-            width: 12px;
-            text-align: center;
-        }
-
-        .submenu-link.active {
-            background-color: #e8f0fe;
-            color: #1a73e8;
-            font-weight: 500;
-        }
-
-        .status-indicator {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            margin-left: auto;
-            margin-right: 4px;
-        }
-
-        .status-indicator.online {
-            background-color: #34a853;
-        }
-
-        .status-indicator.offline {
-            background-color: #ea4335;
-        }
-
-        .status-indicator.warning {
-            background-color: #fbbc04;
-        }
-
-        .mcp-heading {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .mcp-heading:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-
-        .feature-heading {
-            background-color: #34a853;
-        }
-
-        .feature-heading:hover {
-            background-color: #2d8f47;
-        }
-
-        .admin-heading {
-            background-color: #ea4335;
-        }
-
-        .admin-heading:hover {
-            background-color: #d33b2c;
-        }
-
-        .monitoring-heading {
-            background-color: #fbbc04;
-        }
-
-        .monitoring-heading:hover {
-            background-color: #f29900;
-        }
-
-        .submenu-badge {
-            background-color: #ff4444;
-            color: white;
-            border-radius: 10px;
-            padding: 1px 6px;
-            font-size: 10px;
-            margin-left: auto;
-            font-weight: 500;
-        }
-
-        .submenu-badge.success {
-            background-color: #00C851;
-        }
-
-        .submenu-badge.warning {
-            background-color: #ffbb33;
-        }
-    </style>
+    <!-- Styles partagés via _submenu.scss -->
 
     <!-- Dashboard Principal -->
     <div class="submenu-section">
@@ -218,28 +73,28 @@
 
     <!-- Actions Rapides -->
     <div class="submenu-section">
-        <div class="submenu-heading" style="background-color: #9c27b0;">
+        <div class="submenu-heading">
             <i class="bi bi-lightning"></i>
             {{ __('Actions Rapides') ?? 'Actions Rapides' }}
         </div>
         <div class="submenu-content">
             <div class="submenu-item">
-                <a href="#" class="submenu-link" onclick="testMcpConnection()">
+                <button type="button" class="submenu-link btn btn-link p-0 text-start" onclick="testMcpConnection()">
                     <i class="bi bi-wifi"></i>
                     {{ __('Test Connexion') ?? 'Test Connexion' }}
-                </a>
+                </button>
             </div>
             <div class="submenu-item">
-                <a href="#" class="submenu-link" onclick="clearMcpCache()">
+                <button type="button" class="submenu-link btn btn-link p-0 text-start" onclick="clearMcpCache()">
                     <i class="bi bi-arrow-clockwise"></i>
                     {{ __('Vider Cache') ?? 'Vider Cache' }}
-                </a>
+                </button>
             </div>
             <div class="submenu-item">
-                <a href="#" class="submenu-link" onclick="openBatchModal()">
+                <button type="button" class="submenu-link btn btn-link p-0 text-start" onclick="openBatchModal()">
                     <i class="bi bi-play-circle"></i>
                     {{ __('Traitement Express') ?? 'Traitement Express' }}
-                </a>
+                </button>
             </div>
             <div class="submenu-item">
                 <a href="/admin/mcp/documentation" class="submenu-link {{ request()->is('admin/mcp/documentation') ? 'active' : '' }}">
@@ -255,7 +110,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Mettre à jour les indicateurs de statut
     updateMcpStatusIndicators();
-    
+
     // Actualiser toutes les 30 secondes
     setInterval(updateMcpStatusIndicators, 30000);
 });
@@ -275,7 +130,7 @@ function updateMcpStatusIndicators() {
             updateStatusIndicator('healthStatus', false);
             updateStatusIndicator('ollamaStatus', false);
         });
-    
+
     // Mettre à jour le compteur de jobs
     fetch('/admin/mcp/actions/queue-stats')
         .then(response => response.json())
@@ -307,15 +162,15 @@ function updateBadge(elementId, value) {
 function testMcpConnection() {
     const link = event.target.closest('.submenu-link');
     const originalText = link.innerHTML;
-    
+
     link.innerHTML = '<i class="bi bi-hourglass-split"></i> Test en cours...';
-    
+
     fetch('/api/mcp/health')
         .then(response => response.json())
         .then(data => {
             const success = data.overall_status === 'ok';
             link.innerHTML = `<i class="bi bi-${success ? 'check-circle text-success' : 'x-circle text-danger'}"></i> ${success ? 'Connexion OK' : 'Connexion KO'}`;
-            
+
             setTimeout(() => {
                 link.innerHTML = originalText;
             }, 3000);
@@ -332,9 +187,9 @@ function clearMcpCache() {
     if (confirm('Vider le cache MCP ? Cette action supprimera tous les résultats mis en cache.')) {
         const link = event.target.closest('.submenu-link');
         const originalText = link.innerHTML;
-        
+
         link.innerHTML = '<i class="bi bi-hourglass-split"></i> Nettoyage...';
-        
+
         fetch('/api/mcp/cache/clear', { method: 'POST' })
             .then(response => response.json())
             .then(data => {
