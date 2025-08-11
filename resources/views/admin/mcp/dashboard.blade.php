@@ -141,6 +141,72 @@
         </div>
     </div>
 
+    <!-- Statistiques LLM -->
+    @if(isset($stats['llm']))
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card metric-card">
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-cpu me-2"></i>Activité LLM ({{ $stats['llm']['period_days'] }}j)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h4 mb-0">{{ $stats['llm']['total_requests'] }}</div>
+                            <small class="text-muted">Requêtes</small>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h4 text-success mb-0">{{ $stats['llm']['success_rate'] }}%</div>
+                            <small class="text-muted">Succès</small>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h4 text-danger mb-0">{{ $stats['llm']['error_rate'] }}%</div>
+                            <small class="text-muted">Erreurs</small>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h4 mb-0">{{ $stats['llm']['avg_latency_ms'] }}ms</div>
+                            <small class="text-muted">Latence moy.</small>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h4 mb-0">{{ number_format($stats['llm']['total_tokens']) }}</div>
+                            <small class="text-muted">Tokens</small>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <div class="fw-bold h5 mb-0">${{ number_format($stats['llm']['total_cost_microusd'] / 1000000, 4) }}</div>
+                            <small class="text-muted">Coût (USD)</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Modèle</th>
+                                    <th>Provider</th>
+                                    <th>Requêtes</th>
+                                    <th>Tokens</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($stats['llm']['top_models'] as $m)
+                                    <tr>
+                                        <td class="fw-semibold">{{ $m->model }}</td>
+                                        <td><span class="badge bg-secondary">{{ $m->provider }}</span></td>
+                                        <td>{{ $m->c }}</td>
+                                        <td>{{ number_format($m->tokens) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="text-center text-muted">Aucune donnée</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- État de santé détaillé -->
     <div class="row mb-4">
         <div class="col-md-8">
@@ -381,17 +447,17 @@ function updateHealthStatus(health) {
 function testConnection() {
     const button = event.target;
     const originalText = button.innerHTML;
-    
+
     button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Test...';
     button.disabled = true;
-    
+
     fetch('/admin/mcp/actions/system-info')
         .then(response => response.json())
         .then(data => {
             const success = !!data.php_version;
             button.innerHTML = `<i class="bi bi-${success ? 'check-circle' : 'x-circle'} me-2"></i>${success ? 'Connexion OK' : 'Connexion KO'}`;
             button.className = `btn btn-sm w-100 ${success ? 'btn-success' : 'btn-danger'}`;
-            
+
             setTimeout(() => {
                 button.innerHTML = originalText;
                 button.className = 'btn btn-outline-primary btn-sm w-100';
@@ -417,11 +483,11 @@ function clearCache() {
     if (confirm('Vider le cache MCP ?')) {
         const button = event.target;
         const originalText = button.innerHTML;
-        
+
         button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Nettoyage...';
         button.disabled = true;
-        
-        fetch('/admin/mcp/actions/clear-cache', { 
+
+        fetch('/admin/mcp/actions/clear-cache', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')

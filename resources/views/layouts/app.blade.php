@@ -401,6 +401,14 @@
                             </a>
                         </div>
                         @endcan
+
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'admin' && Request::segment(2) == 'mcp' && Request::segment(3) == 'models') active @endif" href="{{ route('admin.mcp.models') }}">
+                                <i class="bi bi-cpu"></i>
+                                <span>Ai Model</span>
+                            </a>
+                        </div>
+
                     </nav>
                 </div>
             </div>

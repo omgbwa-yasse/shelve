@@ -3,27 +3,29 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Services\MCP\McpManagerService;
 use App\Models\Record;
 use App\Models\ThesaurusConcept;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use App\Services\Llm\LlmMetricsService;
+use App\Services\MCP\McpManagerService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class McpAdminController extends Controller
 {
+    private const DEFAULT_PRIMARY_MODEL = 'gemma3:4b';
+    private const VALID_STRING_RULE = 'required|string';
+
     public function __construct(
-        protected McpManagerService $mcpManager
+        protected McpManagerService $mcpManager,
+        protected LlmMetricsService $llmMetricsService
     ) {}
 
-    /**
-     * Dashboard principal MCP
-     */
     public function dashboard()
     {
         try {
-            // Statistiques générales
+            $llm = $this->llmMetricsService->getDashboardSummary(7);
             $stats = [
                 'total_records' => Record::count(),
                 'processed_records' => Record::whereNotNull('updated_at')
@@ -33,69 +35,51 @@ class McpAdminController extends Controller
                 'pending_jobs' => $this->getPendingJobsCount(),
                 'successful_processes' => $this->getSuccessfulProcessesCount(),
                 'failed_processes' => $this->getFailedProcessesCount(),
+                'llm' => $llm,
             ];
-
-            // État de santé du système
             $health = $this->mcpManager->healthCheck();
-
-            // Activité récente
             $recentActivity = $this->getRecentActivity();
-
-            // Métriques de performance
             $performance = $this->getPerformanceMetrics();
-
             return view('admin.mcp.dashboard', compact('stats', 'health', 'recentActivity', 'performance'));
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Erreur dashboard MCP', ['error' => $e->getMessage()]);
-            
-            // Fournir des valeurs par défaut en cas d'erreur
-            $stats = [
-                'total_records' => 0,
-                'processed_records' => 0,
-                'thesaurus_concepts' => 0,
-                'pending_jobs' => 0,
-                'successful_processes' => 0,
-                'failed_processes' => 0,
+            $fallback = [
+                'llm' => [
+                    'period_days' => 7,
+                    'total_requests' => 0,
+                    'success_rate' => 0,
+                    'error_rate' => 0,
+                    'avg_latency_ms' => 0,
+                    'total_tokens' => 0,
+                    'total_cost_microusd' => 0,
+                    'top_models' => collect(),
+                ],
             ];
-            
-            $health = [
-                'overall_status' => 'error',
-                'message' => 'Erreur lors de la vérification de l\'état de santé'
-            ];
-            
-            $recentActivity = ['recent_processes' => []];
-            $performance = [
+            $stats = ($stats ?? []) + $fallback;
+            $health = $health ?? ['overall_status' => 'error'];
+            $recentActivity = $recentActivity ?? ['recent_processes' => []];
+            $performance = $performance ?? [
                 'avg_response_time' => 0,
                 'cache_hit_rate' => 0,
-                'success_rate' => 0
+                'success_rate' => 0,
             ];
-            
             return view('admin.mcp.dashboard', compact('stats', 'health', 'recentActivity', 'performance'))
-                ->with('error', 'Erreur lors du chargement du dashboard: ' . $e->getMessage());
+                ->with('error', 'Erreur dashboard: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Page des statistiques détaillées
-     */
     public function statistics(Request $request)
     {
-        $periodKey = $request->get('period', 'month'); // day|week|month|year
+        $periodKey = $request->get('period', 'month');
         $daysMap = ['day' => 1, 'week' => 7, 'month' => 30, 'year' => 365];
         $days = $daysMap[$periodKey] ?? 30;
-
-        $stats = $this->computeStatsFromLogs($days);
-
+        $stats = $this->llmMetricsService->getDetailedStats($days);
         return view('admin.mcp.statistics', [
             'stats' => $stats,
             'period' => $periodKey,
         ]);
     }
 
-    /**
-     * Surveillance des queues MCP
-     */
     public function queueMonitor()
     {
         try {
@@ -119,61 +103,42 @@ class McpAdminController extends Controller
                     ['id' => 454, 'queue' => 'mcp-heavy', 'type' => 'summary', 'status' => 'failed', 'duration' => '12.8s'],
                 ],
             ];
-
             return view('admin.mcp.queue-monitor', compact('queueStats'));
-
-        } catch (\Exception $e) {
-            return view('admin.mcp.queue-monitor')->with('error', 'Erreur lors du chargement de la surveillance des queues: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            return view('admin.mcp.queue-monitor')->with('error', 'Erreur queues: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Page de configuration MCP
-     */
     public function configuration(Request $request)
     {
         if ($request->isMethod('post')) {
             return $this->updateConfiguration($request);
         }
-
         $config = $this->getCurrentConfiguration();
         $models = $this->getAvailableModels();
-
         return view('admin.mcp.configuration', compact('config', 'models'));
     }
 
-    /**
-     * Gestion des modèles Ollama
-     */
     public function models()
     {
         try {
             $installedModels = $this->getInstalledModels();
             $availableModels = $this->getAvailableModels();
             $modelStats = $this->getModelStatistics();
-
             return view('admin.mcp.models', compact('installedModels', 'availableModels', 'modelStats'));
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return view('admin.mcp.models')->with('error', 'Impossible de se connecter à Ollama');
         }
     }
 
-    /**
-     * Page de vérification de santé
-     */
     public function healthCheck()
     {
         $health = $this->mcpManager->healthCheck();
         $systemInfo = $this->getSystemInfo();
         $recommendations = $this->getHealthRecommendations($health);
-
         return view('admin.mcp.health-check', compact('health', 'systemInfo', 'recommendations'));
     }
 
-    /**
-     * Documentation MCP
-     */
     public function documentation()
     {
         $docs = [
@@ -181,11 +146,8 @@ class McpAdminController extends Controller
             'full_guide' => file_exists(base_path('README_MCP.md')) ? file_get_contents(base_path('README_MCP.md')) : '',
             'api_endpoints' => $this->getApiEndpoints(),
         ];
-
         return view('admin.mcp.documentation', compact('docs'));
     }
-
-    // Méthodes utilitaires privées
 
     private function getPendingJobsCount(): int
     {
@@ -220,94 +182,6 @@ class McpAdminController extends Controller
         ];
     }
 
-    private function computeStatsFromLogs(int $days): array
-    {
-        // Les logs stockent: user_id, action (route name), description, ip, ua, timestamps
-        // On filtre sur les actions MCP ou Mistral test
-        $since = now()->subDays($days);
-        $baseQuery = \App\Models\Log::query()
-            ->where('created_at', '>=', $since)
-            ->where(function($q){
-                $q->where('action', 'like', 'mcp.%')
-                  ->orWhere('action', 'like', 'mistral-test.%');
-            });
-
-        $total = (clone $baseQuery)->count();
-
-        // Succès/échecs: heuristique via description contenant status ou code 2xx/5xx
-        $success = (clone $baseQuery)->where(function($q){
-            $q->where('description', 'like', '%200%')
-              ->orWhere('description', 'like', '%201%')
-              ->orWhere('description', 'like', '%success%')
-              ->orWhere('description', 'like', '%succès%');
-        })->count();
-        $failed = max(0, $total - $success);
-
-        // Répartition par fonctionnalité (par route)
-        $features = [
-            'title_reformulation' => (clone $baseQuery)->where('action', 'like', '%title.reformulate')->count(),
-            'thesaurus_indexing'  => (clone $baseQuery)->where('action', 'like', '%thesaurus.index')->count(),
-            'content_summary'     => (clone $baseQuery)->where('action', 'like', '%summary.generate')->count(),
-        ];
-
-        // Temps moyens: si on logge pas la durée, on laisse null/NA
-        $processingTimes = [
-            'avg_title' => null,
-            'avg_thesaurus' => null,
-            'avg_summary' => null,
-        ];
-
-        // Utilisation modèles: non directement traçable via logs génériques -> placeholder 100% Gemma si MCP
-        $modelUsage = [
-            'gemma3:4b' => 100,
-        ];
-
-        return [
-            'total_records' => $total,
-            'failed_processes' => $failed,
-            'success_rate' => $total > 0 ? round($success * 100 / $total, 1) : 0,
-            'avg_processing_time' => null,
-            'feature_usage' => $features,
-            'processing_times' => $processingTimes,
-            'model_usage' => $modelUsage,
-        ];
-    }
-
-    private function getFeatureUsageStats(int $days): array
-    {
-        return [
-            'title_reformulation' => rand(20, 50),
-            'thesaurus_indexing' => rand(30, 80),
-            'content_summary' => rand(15, 40),
-        ];
-    }
-
-    private function getSuccessRates(int $days): array
-    {
-        return [
-            'overall' => 94.8,
-            'title' => 98.2,
-            'thesaurus' => 94.1,
-            'summary' => 93.8,
-        ];
-    }
-
-    private function getProcessingTimes(int $days): array
-    {
-        return [
-            'avg_title' => 2.3,
-            'avg_thesaurus' => 3.1,
-            'avg_summary' => 4.2,
-        ];
-    }
-
-    private function getModelUsageStats(int $days): array
-    {
-        return [
-            'gemma3:4b' => 100,
-        ];
-    }
-
     private function getSystemInfo(): array
     {
         return [
@@ -322,7 +196,6 @@ class McpAdminController extends Controller
     private function getHealthRecommendations(array $health): array
     {
         $recommendations = [];
-        
         foreach ($health as $component => $status) {
             if (isset($status['status']) && $status['status'] !== 'ok') {
                 switch ($component) {
@@ -330,7 +203,7 @@ class McpAdminController extends Controller
                         $recommendations[] = [
                             'type' => 'error',
                             'title' => 'Connexion Ollama',
-                            'message' => 'Vérifiez qu\'Ollama est démarré avec: ollama serve',
+                            'message' => 'Vérifiez qu\'Ollama est démarré (ollama serve)',
                             'action' => 'Démarrer Ollama'
                         ];
                         break;
@@ -338,7 +211,7 @@ class McpAdminController extends Controller
                         $recommendations[] = [
                             'type' => 'warning',
                             'title' => 'Modèles manquants',
-                            'message' => 'Installez le modèle requis avec: ollama pull gemma3:4b',
+                            'message' => 'Installer avec: ollama pull gemma3:4b',
                             'action' => 'Installer modèles'
                         ];
                         break;
@@ -346,13 +219,12 @@ class McpAdminController extends Controller
                         $recommendations[] = [
                             'type' => 'info',
                             'title' => ucfirst($component),
-                            'message' => 'Vérifiez la configuration du composant: ' . $component,
+                            'message' => 'Vérifiez la configuration du composant',
                             'action' => 'Vérifier'
                         ];
                 }
             }
         }
-        
         if (empty($recommendations)) {
             $recommendations[] = [
                 'type' => 'success',
@@ -361,7 +233,6 @@ class McpAdminController extends Controller
                 'action' => null
             ];
         }
-        
         return $recommendations;
     }
 
@@ -387,19 +258,19 @@ class McpAdminController extends Controller
             ],
             'llama3.1:8b' => [
                 'name' => 'Llama 3.1 8B',
-                'description' => 'Modèle polyvalent excellent pour la reformulation et les résumés',
+                'description' => 'Polyvalent reformulation & résumés',
                 'size' => '4.7GB',
                 'recommended_for' => ['title', 'summary']
             ],
             'mistral:7b' => [
                 'name' => 'Mistral 7B',
-                'description' => 'Optimisé pour l\'extraction de mots-clés et l\'analyse',
+                'description' => 'Extraction mots-clés & analyse',
                 'size' => '4.1GB',
                 'recommended_for' => ['thesaurus', 'keywords']
             ],
             'codellama:7b' => [
                 'name' => 'CodeLlama 7B',
-                'description' => 'Spécialisé dans le code et la structuration',
+                'description' => 'Spécialisé structuration',
                 'size' => '3.8GB',
                 'recommended_for' => ['structure']
             ]
@@ -408,14 +279,9 @@ class McpAdminController extends Controller
 
     private function getInstalledModels(): array
     {
-        try {
-            // Simuler la récupération des modèles installés
-            return [
-                'gemma3:4b' => ['size' => '2.8GB', 'modified' => '2024-01-20'],
-            ];
-        } catch (\Exception $e) {
-            return [];
-        }
+        return [
+            'gemma3:4b' => ['size' => '2.8GB', 'modified' => '2024-01-20'],
+        ];
     }
 
     private function getModelStatistics(): array
@@ -461,31 +327,25 @@ class McpAdminController extends Controller
         try {
             $config = $request->validate([
                 'ollama_url' => 'required|url',
-                'title_model' => 'required|string',
-                'thesaurus_model' => 'required|string',
-                'summary_model' => 'required|string',
+                'title_model' => self::VALID_STRING_RULE,
+                'thesaurus_model' => self::VALID_STRING_RULE,
+                'summary_model' => self::VALID_STRING_RULE,
                 'temperature' => 'required|numeric|between:0,2',
                 'max_tokens' => 'required|integer|min:100|max:4000',
                 'auto_processing' => 'boolean',
                 'cache_enabled' => 'boolean',
                 'ai_default_provider' => 'nullable|string|in:ollama,mistral,lmstudio,anythingllm,openai',
             ]);
-
-            // Ici, vous pourriez sauvegarder dans un fichier de config ou en base
             Cache::put('mcp_custom_config', $config, now()->addDays(30));
-
-            // Persister le provider AI global si fourni
             if ($request->filled('ai_default_provider')) {
                 try {
                     app(\App\Services\SettingService::class)->set('ai_default_provider', $request->string('ai_default_provider')->toString());
                 } catch (\Throwable $e) {
-                    // Continuer sans bloquer, mais retourner un message informatif
-                    return back()->with('success', 'Configuration mise à jour. (Note: provider non sauvegardé: ' . $e->getMessage() . ')');
+                    return back()->with('success', 'Configuration mise à jour (provider non sauvegardé: ' . $e->getMessage() . ')');
                 }
             }
-            
             return back()->with('success', 'Configuration mise à jour avec succès');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Erreur: ' . $e->getMessage());
         }
     }

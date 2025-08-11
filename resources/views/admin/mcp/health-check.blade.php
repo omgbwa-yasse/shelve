@@ -228,13 +228,13 @@
     <div class="row">
         <div class="col-md-8">
             <h3 class="mb-4">Composants du Système</h3>
-            
+
             <!-- Composant dynamique généré par JS -->
             <div id="componentsContainer">
                 <!-- Les composants seront injectés ici par JavaScript -->
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <!-- Recommandations -->
             <h3 class="mb-4">Recommandations</h3>
@@ -329,22 +329,22 @@ let healthCheckInterval;
 document.addEventListener('DOMContentLoaded', function() {
     // Lancer la première vérification
     refreshHealthCheck();
-    
+
     // Actualiser automatiquement toutes les 30 secondes
     healthCheckInterval = setInterval(refreshHealthCheck, 30000);
-    
+
     // Charger les logs initiaux
     refreshLogs();
 });
 
 function refreshHealthCheck() {
     updateLastCheckTime();
-    
+
     // Afficher l'état "vérification en cours"
     document.getElementById('globalStatusBadge').innerHTML = '<i class="bi bi-hourglass-split pulse me-1"></i>Vérification';
     document.getElementById('globalStatusBadge').className = 'status-badge status-unknown';
     document.getElementById('globalStatusText').textContent = 'Vérification en cours...';
-    
+
     // Appel API pour récupérer l'état de santé
     fetch('/api/mcp/health')
         .then(response => response.json())
@@ -358,7 +358,7 @@ function refreshHealthCheck() {
             console.error('Erreur lors de la vérification:', error);
             showErrorState();
         });
-    
+
     // Récupérer les informations système
     fetch('/admin/mcp/actions/system-info')
         .then(response => response.json())
@@ -371,7 +371,7 @@ function refreshHealthCheck() {
 function updateGlobalStatus(health) {
     const statusBadge = document.getElementById('globalStatusBadge');
     const statusText = document.getElementById('globalStatusText');
-    
+
     if (health.overall_status === 'ok') {
         statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Opérationnel';
         statusBadge.className = 'status-badge status-ok';
@@ -390,10 +390,10 @@ function updateGlobalStatus(health) {
 function updateComponents(health) {
     const container = document.getElementById('componentsContainer');
     container.innerHTML = '';
-    
+
     Object.entries(health).forEach(([component, status]) => {
         if (component === 'overall_status') return;
-        
+
         const componentCard = createComponentCard(component, status);
         container.appendChild(componentCard);
     });
@@ -402,13 +402,13 @@ function updateComponents(health) {
 function createComponentCard(name, status) {
     const card = document.createElement('div');
     card.className = 'component-card';
-    
-    const statusClass = status.status === 'ok' ? 'status-ok' : 
+
+    const statusClass = status.status === 'ok' ? 'status-ok' :
                        status.status === 'warning' ? 'status-warning' : 'status-error';
-    
-    const statusIcon = status.status === 'ok' ? 'check-circle' : 
+
+    const statusIcon = status.status === 'ok' ? 'check-circle' :
                       status.status === 'warning' ? 'exclamation-triangle' : 'x-circle';
-    
+
     card.innerHTML = `
         <div class="component-header">
             <div>
@@ -437,7 +437,7 @@ function createComponentCard(name, status) {
             </div>
         </div>
     `;
-    
+
     return card;
 }
 
@@ -451,7 +451,7 @@ function formatComponentName(name) {
         'cache': 'Système de Cache',
         'queue': 'Files d\'Attente'
     };
-    
+
     return names[name] || name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
@@ -460,11 +460,11 @@ function updateMetrics(health) {
     const responseTimes = Object.values(health)
         .filter(status => status.response_time)
         .map(status => status.response_time);
-    
-    const avgResponseTime = responseTimes.length > 0 
+
+    const avgResponseTime = responseTimes.length > 0
         ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
         : 0;
-    
+
     document.getElementById('responseTime').textContent = (avgResponseTime * 1000).toFixed(0);
 }
 
@@ -473,22 +473,22 @@ function updateSystemMetrics(systemInfo) {
         const memoryPercent = ((systemInfo.memory_usage.current / systemInfo.memory_usage.peak) * 100).toFixed(1);
         document.getElementById('memoryUsage').textContent = memoryPercent + '%';
     }
-    
+
     if (systemInfo.disk_usage) {
         const diskPercent = ((systemInfo.disk_usage.free / systemInfo.disk_usage.total) * 100).toFixed(1);
         document.getElementById('diskSpace').textContent = diskPercent + '%';
     }
-    
+
     document.getElementById('activeConnections').textContent = Math.floor(Math.random() * 10) + 1; // Simulation
 }
 
 function updateRecommendations(health) {
     const container = document.getElementById('recommendationsContainer');
     container.innerHTML = '';
-    
+
     // Générer des recommandations basées sur l'état de santé
     const recommendations = generateRecommendations(health);
-    
+
     recommendations.forEach(rec => {
         const recCard = document.createElement('div');
         recCard.className = `recommendation-card ${rec.type}`;
@@ -508,7 +508,7 @@ function updateRecommendations(health) {
 
 function generateRecommendations(health) {
     const recommendations = [];
-    
+
     // Vérifier les problèmes de connexion Ollama
     if (health.ollama_connection && health.ollama_connection.status !== 'ok') {
         recommendations.push({
@@ -520,11 +520,11 @@ function generateRecommendations(health) {
             actionText: 'Tester à nouveau'
         });
     }
-    
+
     // Vérifier les modèles manquants
     const missingModels = Object.entries(health)
         .filter(([key, status]) => key.includes('_model') && status.status !== 'ok');
-    
+
     if (missingModels.length > 0) {
         recommendations.push({
             type: 'warning',
@@ -535,7 +535,7 @@ function generateRecommendations(health) {
             actionText: 'Gérer les modèles'
         });
     }
-    
+
     // Si tout va bien
     if (recommendations.length === 0) {
         recommendations.push({
@@ -547,13 +547,13 @@ function generateRecommendations(health) {
             actionText: null
         });
     }
-    
+
     return recommendations;
 }
 
 function refreshLogs() {
     const logViewer = document.getElementById('logViewer');
-    
+
     // Simulation de logs (en réalité, cela viendrait d'une API)
     const logs = [
         { level: 'info', time: new Date().toISOString(), message: 'MCP Health check completed successfully' },
@@ -562,7 +562,7 @@ function refreshLogs() {
         { level: 'info', time: new Date(Date.now() - 120000).toISOString(), message: 'Cache cleared by user action' },
         { level: 'debug', time: new Date(Date.now() - 180000).toISOString(), message: 'Processing record ID: 123 with features: title,thesaurus' }
     ];
-    
+
     logViewer.innerHTML = logs.map(log => {
         const time = new Date(log.time).toLocaleTimeString();
         return `<span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span> ${time} - ${log.message}`;
