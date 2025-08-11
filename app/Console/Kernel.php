@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Log;
 
 class Kernel extends ConsoleKernel
 {
@@ -14,6 +15,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\UpdateCodesToNewFormat::class,
+    \App\Console\Commands\LlmAggregateDaily::class,
+    \App\Console\Commands\LlmPrune::class,
     ];
 
     /**
@@ -64,8 +67,18 @@ class Kernel extends ConsoleKernel
         ->everyFiveMinutes()
         ->onFailure(function () {
             // Notifier en cas de problème
-            \Log::warning('Ollama health check failed');
+            Log::warning('Ollama health check failed');
         });
+
+    // Agrégation quotidienne LLM (quelques minutes après minuit)
+    $schedule->command('llm:aggregate-daily')
+        ->dailyAt('00:10')
+        ->withoutOverlapping();
+
+    // Purge hebdomadaire (rotation des interactions > 90 jours)
+    $schedule->command('llm:prune --days=90')
+        ->weeklyOn(1, '01:00') // Lundi 01:00
+        ->withoutOverlapping();
     }
 
     /**
@@ -77,6 +90,7 @@ class Kernel extends ConsoleKernel
     {
         $this->load(__DIR__.'/Commands');
 
-        require base_path('routes/console.php');
+    // Chargement des routes console (pattern Laravel standard)
+    require_once base_path('routes/console.php'); // phpcs:ignore
     }
 }

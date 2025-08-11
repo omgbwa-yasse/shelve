@@ -1,319 +1,93 @@
 @extends('layouts.app')
-
+@section('title','Statistiques LLM')
 @section('content')
 <div class="container-fluid">
-    {{-- Header avec gradient --}}
-    <div class="card border-0 shadow-sm mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="card-body text-white py-3">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1 class="h5 mb-1">
-                        <i class="bi bi-graph-up-arrow me-3"></i>
-                        Statistiques MCP
-                    </h1>
-                    <p class="mb-0 opacity-90 small">
-                        Analyse des performances et de l'utilisation du Model Context Protocol
-                    </p>
-                </div>
-                <div class="col-md-4 text-end">
-                    <div class="d-flex flex-column align-items-end">
-                        <div class="mb-1">
-                            <span class="badge bg-light text-dark px-2 py-1">
-                                <i class="bi bi-calendar3 me-1"></i>
-                                Période: {{ ucfirst($period ?? 'month') }}
-                            </span>
-                        </div>
-                         <small class="opacity-75">Maj: {{ now()->format('H:i') }}</small>
-                    </div>
-                </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h5 mb-0"><i class="bi bi-bar-chart me-2"></i>Statistiques LLM</h1>
+        <a href="{{ route('admin.mcp.dashboard') }}" class="btn btn-sm btn-outline-secondary">Dashboard</a>
+    </div>
+
+    <form method="GET" class="mb-3">
+        @php($p = $period ?? request('period','month'))
+        <div class="btn-group btn-group-sm" role="group">
+            <a class="btn {{ $p==='day'?'btn-primary':'btn-outline-primary' }}" href="?period=day">1j</a>
+            <a class="btn {{ $p==='week'?'btn-primary':'btn-outline-primary' }}" href="?period=week">7j</a>
+            <a class="btn {{ $p==='month'?'btn-primary':'btn-outline-primary' }}" href="?period=month">30j</a>
+            <a class="btn {{ $p==='year'?'btn-primary':'btn-outline-primary' }}" href="?period=year">365j</a>
+        </div>
+    </form>
+
+    @php($total = $stats['by_model']->sum('requests'))
+    @php($tokens = $stats['by_model']->sum('tokens'))
+    @php($cost = $stats['by_model']->sum('cost')/1_000_000)
+    @php($success = $stats['status_breakdown']['success'] ?? 0)
+    <div class="row g-3 mb-2 small">
+        <div class="col-md-3"><div class="card h-100"><div class="card-body py-2"><div class="text-muted">Requêtes</div><div class="fs-5 fw-semibold">{{ $total }}</div></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body py-2"><div class="text-muted">Tokens</div><div class="fs-6 fw-semibold">{{ number_format($tokens) }}</div></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body py-2"><div class="text-muted">Coût (USD)</div><div class="fs-6 fw-semibold">${{ number_format($cost,4) }}</div></div></div></div>
+        <div class="col-md-3"><div class="card h-100"><div class="card-body py-2"><div class="text-muted">Succès</div><div class="fs-6 fw-semibold">{{ $total? round($success*100/$total,1):0 }}%</div></div></div></div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header py-2 small fw-semibold">Évolution quotidienne</div>
+        <div class="card-body p-2">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0 small">
+                    <thead><tr><th>Date</th><th>Req.</th><th>Tokens</th><th>Coût ($)</th><th>Latence ms</th><th>Succès</th></tr></thead>
+                    <tbody>
+                    @foreach(app(\App\Services\Llm\LlmMetricsService::class)->getTimeSeries($stats['period_days']) as $row)
+                        <tr>
+                            <td>{{ $row['date'] }}</td>
+                            <td>{{ $row['requests'] }}</td>
+                            <td>{{ number_format($row['tokens']) }}</td>
+                            <td>{{ number_format($row['cost_microusd']/1_000_000,4) }}</td>
+                            <td>{{ $row['avg_latency_ms'] }}</td>
+                            <td>{{ $row['success_rate'] }}%</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    {{-- Sélecteur de période --}}
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body py-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">
-                            <i class="bi bi-funnel text-primary me-2"></i>
-                            Filtrer par période
-                        </h6>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="?period=day" class="btn {{ $period === 'day' ? 'btn-primary' : 'btn-outline-primary' }}">
-                                Aujourd'hui
-                            </a>
-                            <a href="?period=week" class="btn {{ $period === 'week' ? 'btn-primary' : 'btn-outline-primary' }}">
-                                Cette semaine
-                            </a>
-                            <a href="?period=month" class="btn {{ ($period === 'month' || !$period) ? 'btn-primary' : 'btn-outline-primary' }}">
-                                Ce mois
-                            </a>
-                            <a href="?period=year" class="btn {{ $period === 'year' ? 'btn-primary' : 'btn-outline-primary' }}">
-                                Cette année
-                            </a>
-                        </div>
-                    </div>
-                </div>
+    <div class="card mb-3">
+        <div class="card-header py-2 small fw-semibold">Par Modèle</div>
+        <div class="card-body p-2">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0 small">
+                    <thead><tr><th>Provider</th><th>Modèle</th><th>Req.</th><th>Tokens</th><th>Coût ($)</th><th>Latence moy.</th><th>Succès %</th></tr></thead>
+                    <tbody>
+                    @foreach($stats['by_model'] as $m)
+                        @php($tot=$m->requests?:1)
+                        <tr>
+                            <td>{{ $m->provider }}</td>
+                            <td>{{ $m->model }}</td>
+                            <td>{{ $m->requests }}</td>
+                            <td>{{ number_format($m->tokens) }}</td>
+                            <td>{{ number_format($m->cost/1_000_000,4) }}</td>
+                            <td>{{ (int)$m->avg_latency }} ms</td>
+                            <td>{{ round(($m->success_count*100)/$tot,1) }}%</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    {{-- Métriques principales --}}
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-primary mb-2">
-                        <i class="bi bi-files"></i>
-                    </div>
-                    <h5 class="card-title">{{ $stats['total_records'] ?? 0 }}</h5>
-                    <p class="card-text text-muted">Records traités</p>
-                    <small class="text-success">
-                        <i class="bi bi-arrow-up"></i> +{{ round(($stats['total_records'] ?? 0) * 0.15) }} ce mois
-                    </small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-success mb-2">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <h5 class="card-title">{{ $stats['success_rate'] ?? 0 }}%</h5>
-                    <p class="card-text text-muted">Taux de succès</p>
-                    <small class="text-success">
-                        <i class="bi bi-arrow-up"></i> +2.3% vs mois dernier
-                    </small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-info mb-2">
-                        <i class="bi bi-stopwatch"></i>
-                    </div>
-                    <h5 class="card-title">{{ $stats['avg_processing_time'] ?? 0 }}s</h5>
-                    <p class="card-text text-muted">Temps moyen</p>
-                    <small class="text-info">
-                        <i class="bi bi-dash"></i> -0.8s vs mois dernier
-                    </small>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-warning mb-2">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <h5 class="card-title">{{ $stats['failed_processes'] ?? 0 }}</h5>
-                    <p class="card-text text-muted">Échecs</p>
-                    <small class="text-danger">
-                        <i class="bi bi-arrow-down"></i> -{{ round(($stats['failed_processes'] ?? 0) * 0.3) }} ce mois
-                    </small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Graphiques de performance --}}
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-graph-up text-primary me-2"></i>
-                        Évolution des traitements
-                    </h6>
-                </div>
-                <div class="card-body pt-2">
-                    <canvas id="performanceChart" height="220"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-pie-chart text-success me-2"></i>
-                        Répartition par fonctionnalité
-                    </h6>
-                </div>
-                <div class="card-body pt-2">
-                    <canvas id="featuresChart" height="220"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Utilisation des modèles --}}
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-cpu text-info me-2"></i>
-                        Utilisation des modèles
-                    </h6>
-                </div>
-                <div class="card-body">
-                    @if(isset($stats['model_usage']) && count($stats['model_usage']) > 0)
-                        @foreach($stats['model_usage'] as $model => $usage)
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <span class="fw-medium">{{ $model }}</span>
-                                    <span class="text-muted">{{ $usage }}%</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-info" style="width: {{ $usage }}%"></div>
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-info-circle display-4"></i>
-                            <p class="mt-2">Aucune donnée d'utilisation disponible</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-clock-history text-warning me-2"></i>
-                        Temps de traitement par type
-                    </h6>
-                </div>
-                <div class="card-body">
-                    @if(isset($stats['processing_times']))
-                        <div class="row text-center">
-                            <div class="col-4">
-                                <div class="border rounded p-3">
-                                    <h5 class="text-primary">{{ $stats['processing_times']['avg_title'] ?? 'N/A' }}s</h5>
-                                    <small class="text-muted">Reformulation titre</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="border rounded p-3">
-                                    <h5 class="text-success">{{ $stats['processing_times']['avg_thesaurus'] ?? 'N/A' }}s</h5>
-                                    <small class="text-muted">Indexation thésaurus</small>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="border rounded p-3">
-                                    <h5 class="text-info">{{ $stats['processing_times']['avg_summary'] ?? 'N/A' }}s</h5>
-                                    <small class="text-muted">Résumé ISAD(G)</small>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-clock display-4"></i>
-                            <p class="mt-2">Aucune donnée de temps disponible</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Actions rapides --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h6 class="mb-0">
-                        <i class="bi bi-lightning text-warning me-2"></i>
-                        Actions rapides
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ route('admin.mcp.dashboard') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-house me-1"></i> Dashboard
-                        </a>
-                        <a href="{{ route('admin.mcp.queue-monitor') }}" class="btn btn-outline-info">
-                            <i class="bi bi-list-task me-1"></i> Surveillance des queues
-                        </a>
-                        <a href="{{ route('admin.mcp.models') }}" class="btn btn-outline-success">
-                            <i class="bi bi-cpu me-1"></i> Gestion des modèles
-                        </a>
-                        <a href="{{ route('admin.mcp.health-check') }}" class="btn btn-outline-warning">
-                            <i class="bi bi-shield-check me-1"></i> Vérification santé
-                        </a>
-                        <button class="btn btn-outline-secondary" onclick="window.print()">
-                            <i class="bi bi-printer me-1"></i> Imprimer le rapport
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div class="card mb-4">
+        <div class="card-header py-2 small fw-semibold">Top Erreurs</div>
+        <div class="card-body p-2">
+            @php($fail = app(\App\Services\Llm\LlmMetricsService::class)->getTopFailures($stats['period_days']))
+            <table class="table table-sm mb-0 small"><thead><tr><th>Code</th><th>Occurrences</th></tr></thead><tbody>
+                @forelse($fail as $f)
+                    <tr><td>{{ $f->code }}</td><td>{{ $f->c }}</td></tr>
+                @empty
+                    <tr><td colspan="2" class="text-muted">Aucune erreur</td></tr>
+                @endforelse
+            </tbody></table>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Graphique des performances
-    const performanceCtx = document.getElementById('performanceChart').getContext('2d');
-    new Chart(performanceCtx, {
-        type: 'line',
-        data: {
-            labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-            datasets: [{
-                label: 'Traitements réussis',
-                data: [65, 78, 82, 71, 89, 95, 88],
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                tension: 0.1
-            }, {
-                label: 'Échecs',
-                data: [8, 5, 3, 7, 2, 1, 4],
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    // Graphique des fonctionnalités
-    const featuresCtx = document.getElementById('featuresChart').getContext('2d');
-    new Chart(featuresCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Reformulation titre', 'Indexation thésaurus', 'Résumé ISAD(G)'],
-            datasets: [{
-                data: [45, 30, 25],
-                backgroundColor: [
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)',
-                    'rgb(255, 99, 132)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-});
-</script>
-@endpush
-
 @endsection
