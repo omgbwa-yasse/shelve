@@ -18,9 +18,11 @@ use App\Http\Controllers\Api\PublicRecordAttachmentApiController;
 use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
+use App\Http\Controllers\PromptController;
 
 // Public API routes with rate limiting
 Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general,100,60')->group(function () {
+    $authRateLimit = 'rate.limit:auth,3,60';
     // Records - Services ouverts (rate limit plus restrictif)
     Route::apiResource('records', PublicRecordApiController::class)
         ->names('records')
@@ -34,7 +36,7 @@ Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general
 
     Route::post('users/register', [PublicUserApiController::class, 'register'])
         ->name('users.register')
-        ->middleware('rate.limit:auth,3,60'); // 3 inscriptions par heure
+        ->middleware($authRateLimit); // 3 inscriptions par heure
 
     Route::post('users/verify-token', [PublicUserApiController::class, 'verifyToken'])
         ->name('users.verify-token')
@@ -42,11 +44,11 @@ Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general
 
     Route::post('users/forgot-password', [PublicUserApiController::class, 'forgotPassword'])
         ->name('users.forgot-password')
-        ->middleware('rate.limit:auth,3,60'); // 3 demandes de reset par heure
+        ->middleware($authRateLimit); // 3 demandes de reset par heure
 
     Route::post('users/reset-password', [PublicUserApiController::class, 'resetPassword'])
         ->name('users.reset-password')
-        ->middleware('rate.limit:auth,3,60'); // 3 resets par heure
+        ->middleware($authRateLimit); // 3 resets par heure
 });
 
 
@@ -63,3 +65,10 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
 
 
 // MCP/AI API routes retirées
+
+// Prompt & AI routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('prompts', [PromptController::class, 'index'])->name('api.prompts.index');
+    Route::get('prompts/{id}', [PromptController::class, 'show'])->name('api.prompts.show');
+    Route::post('prompts/{id}/actions', [PromptController::class, 'actions'])->name('api.prompts.actions');
+});

@@ -46,6 +46,9 @@ class DatabaseSeeder extends Seeder
             ToolActivitySeeder::class, // Seeder pour les activités
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
             ToolOrganisationSeeder::class, // Seeder pour les organisations et services
+
+            // Prompts & AI defaults
+            AiSeeder::class,
         ]);
     }
 }
