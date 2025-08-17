@@ -402,12 +402,7 @@
                         </div>
                         @endcan
 
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'admin' && Request::segment(2) == 'mcp' && Request::segment(3) == 'models') active @endif" href="{{ route('admin.mcp.models') }}">
-                                <i class="bi bi-cpu"></i>
-                                <span>Ai Model</span>
-                            </a>
-                        </div>
+                        
 
                     </nav>
                 </div>
@@ -468,11 +463,7 @@
                                             @include('submenu.public-admin')
                                             @break
                                         @case('admin')
-                                            @if(Request::segment(2) == 'mcp')
-                                                @include('submenu.mcp')
-                                            @else
-                                                @include('submenu.admin')
-                                            @endif
+                                            @include('submenu.admin')
                                             @break
                                     @endswitch
                                 </div>
@@ -538,39 +529,9 @@
             }
         }
 
-        /**
-         * Met à jour les badges de notifications
-         */
-
-        function updateMcpStatus() {
-            const mcpStatusElement = document.querySelector('#mcp-status');
-            if (!mcpStatusElement) {
-                return; // Élément non présent sur cette page
-            }
-
-            fetch('/api/mcp/health', {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                const statusClass = data.overall_status === 'ok' ? 'text-success' : 'text-danger';
-                const statusIcon = data.overall_status === 'ok' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-
-                mcpStatusElement.innerHTML = `
-                    <i class="fas ${statusIcon} ${statusClass}"></i>
-                    MCP ${data.overall_status.toUpperCase()}
-                `;
-                mcpStatusElement.className = `badge ${data.overall_status === 'ok' ? 'badge-success' : 'badge-warning'}`;
-            })
-            .catch(error => {
-                console.log('Erreur statut MCP:', error);
-                mcpStatusElement.innerHTML = '<i class="fas fa-times text-danger"></i> MCP Offline';
-                mcpStatusElement.className = 'badge badge-danger';
-            });
-        }
+    /**
+     * Met à jour les badges de notifications
+     */
 
         // S'assurer que jQuery est disponible
         function initializeLayoutScripts() {
@@ -637,9 +598,7 @@
             setInterval(updateNotificationBadges, 30000); // Toutes les 30 secondes
             @endcan
 
-            // Vérification périodique du statut MCP
-            updateMcpStatus();
-            setInterval(updateMcpStatus, 60000); // Toutes les 60 secondes
+            // Retiré: suivi du statut MCP
         }
 
         // Initialiser les scripts quand le DOM est prêt et que Vite a chargé les dépendances

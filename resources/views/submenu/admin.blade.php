@@ -31,18 +31,7 @@
 
 <div class="nav-divider my-3"></div>
 
-{{-- Section MCP si accessible --}}
-<div class="submenu-header mb-2">
-    <h6 class="text-muted">
-        <i class="bi bi-robot me-2"></i>
-        Intelligence Artificielle
-    </h6>
-</div>
-
-<a class="nav-link @if(Request::is('admin/mcp*')) active @endif" href="{{ route('admin.mcp.dashboard') }}">
-    <i class="bi bi-cpu-fill"></i>
-    Model Context Protocol
-</a>
+{{-- Section IA retirée --}}
 
 @endcan
 

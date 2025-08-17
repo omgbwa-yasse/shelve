@@ -1,13 +1,6 @@
 <?php
 
-// Routes MCP (Model Context Protocol)
-require __DIR__.'/mcp.php';
-
-// Routes Administration MCP
-require __DIR__.'/admin-mcp.php';
-
-// Routes Test Mistral (pour tester l'intégration Mistral)
-require __DIR__.'/mistral-test.php';
+// MCP/AI routes retirées
 
 use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
@@ -148,8 +141,7 @@ use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\MailTaskController;
 
 
-// MCP
-use App\Http\Controllers\McpProxyController;
+// MCP retiré
 use App\Http\Controllers\RecordEnricherController;
 
 
@@ -960,21 +952,7 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
 
-// Routes MCP Web - Communication avec le serveur MCP depuis l'interface web
-// MCP Proxy routes moved to api.php to avoid conflicts
-// Uncomment if you need web-specific MCP routes
-/*
-Route::middleware(['auth'])->prefix('web/mcp')->name('web.mcp.')->group(function () {
-    Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
-        ->name('reformulate-record');
-
-    Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkMcpStatus'])
-        ->name('status');
-
-    Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])
-        ->name('info');
-});
-*/
+// MCP/AI web proxy routes retirées
 
 
 

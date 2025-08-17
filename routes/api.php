@@ -62,18 +62,4 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
 
 
 
-// MCP Proxy routes - Communication avec le serveur MCP
-Route::prefix('mcp')->name('mcp.')->group(function () {
-    // Routes nécessitant une authentification (utiliser 'web' pour les sessions Laravel)
-    Route::middleware(['web', 'auth'])->group(function () {
-        Route::post('reformulate-record', [App\Http\Controllers\McpProxyController::class, 'reformulateRecord'])
-            ->name('reformulate-record');
-    });
-
-    // Routes publiques (pour le diagnostic et le statut)
-    Route::middleware(['web'])->group(function () {
-        Route::get('status', [App\Http\Controllers\McpProxyController::class, 'checkOllamaStatus'])->name('status');
-        Route::get('tags', [App\Http\Controllers\McpProxyController::class, 'getMcpTags'])->name('tags');
-        Route::get('info', [App\Http\Controllers\McpProxyController::class, 'getMcpInfo'])->name('info');
-    });
-});
+// MCP/AI API routes retirées
