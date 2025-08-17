@@ -9,9 +9,6 @@
             <i class="bi bi-diagram-3 mr-2"></i>Dashboard Workflow
         </h1>
         <div class="d-flex">
-            <a href="{{ route('notifications.organisation') }}" class="btn btn-outline-primary btn-sm mr-2">
-                <i class="bi bi-bell"></i> Notifications
-            </a>
             <button class="btn btn-primary btn-sm" onclick="location.reload()">
                 <i class="bi bi-arrow-clockwise"></i> Actualiser
             </button>
@@ -23,9 +20,6 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Assignés à moi
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['assigned_to_me'] }}</div>
@@ -59,7 +53,7 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
+    <!-- Actions rapides -->
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                 Échéances proches

@@ -8,11 +8,7 @@ use App\Http\Controllers\PhantomController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TaskStatusController;
 use App\Http\Controllers\TaskTypeController;
-use App\Http\Controllers\NotificationController as NewNotificationController;
 use App\Http\Controllers\RateLimitController;
-use App\Services\NotificationService;
-use App\Enums\NotificationModule;
-use App\Enums\NotificationAction;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\MailController;
@@ -236,23 +232,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('/{bulletinBoard}/events/{event}/attachments/ajax', [EventController::class, 'attachmentsAjaxStore'])->name('bulletin-boards.events.attachments.ajax.store');
         Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}/ajax', [EventController::class, 'attachmentsAjaxDestroy'])->name('bulletin-boards.events.attachments.ajax.destroy');
 
-        // Routes pour les notifications
-        Route::prefix('notifications')->name('notifications.')->group(function () {
-            Route::get('/organisation', [NewNotificationController::class, 'indexOrganisation'])->name('organisation');
-            Route::get('/current', [NewNotificationController::class, 'indexUser'])->name('current');
-            Route::get('/{id}', [NewNotificationController::class, 'showView'])->name('show');
-
-            // Routes API pour AJAX
-            Route::prefix('api')->name('api.')->group(function () {
-                Route::get('/organisation', [NewNotificationController::class, 'getForOrganisation'])->name('organisation');
-                Route::get('/current', [NewNotificationController::class, 'getForCurrentUser'])->name('current');
-                Route::post('/mark-read', [NewNotificationController::class, 'markAsRead'])->name('mark-read');
-                Route::post('/mark-all-read', [NewNotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-                Route::get('/unread-count', [NewNotificationController::class, 'getUnreadCount'])->name('unread-count');
-                Route::post('/cleanup', [NewNotificationController::class, 'cleanup'])->name('cleanup');
-                Route::get('/{id}', [NewNotificationController::class, 'show'])->name('show');
-            });
-        });
+    // Notifications retirées
 
         // Routes principales pour les publications (existantes)
         Route::get('/{bulletinBoard}/posts', [PostController::class, 'index'])

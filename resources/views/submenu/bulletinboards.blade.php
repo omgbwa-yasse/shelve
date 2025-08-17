@@ -1,26 +1,7 @@
 <div class="bulletinboards-submenu" id="bulletinBoardsMenu">
     <!-- Styles partagés via _submenu.scss -->
 
-    <!-- Notifications Section -->
-    <div class="submenu-section">
-        <div class="submenu-heading">
-            <i class="bi bi-bell"></i> {{ __('Notifications') }}
-        </div>
-        <div class="submenu-section-content" id="notificationsSection">
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('notifications.current') }}">
-                    <i class="bi bi-person"></i> Mes Notifications
-                </a>
-            </div>
-            @if(auth()->user() && auth()->user()->current_organisation_id)
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('notifications.organisation') }}">
-                    <i class="bi bi-building"></i> Notifications Organisation
-                </a>
-            </div>
-            @endif
-        </div>
-    </div>
+    <!-- Notifications retirées -->
 
     <!-- Gestion Section -->
     @can('viewAny', App\Models\BulletinBoard::class)

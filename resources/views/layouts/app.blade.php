@@ -314,10 +314,6 @@
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
                                 <i class="bi bi-envelope"></i>
-                                <!-- Badge de notifications -->
-                                <span id="mail-notification-badge" class="position-absolute badge badge-danger" style="top: -5px; right: -10px; font-size: 0.7rem; display: none;">
-                                    <span id="notification-count">0</span>
-                                </span>
                                 <span>{{ __('Mails') }}</span>
                             </a>
                         </div>
