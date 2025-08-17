@@ -29,24 +29,14 @@
                             <option value="seda">SEDA</option>
                         </select>
                     </div>
-                    <button id="printBtn" class="btn btn-outline-info btn-sm d-flex align-items-center" disabled>
-                        <i class="bi bi-printer me-2"></i>
-                        {{ __('print') }}
-                    </button>
 
-                    <button id="communicateBtn" class="btn btn-outline-secondary btn-sm d-flex align-items-center">
-                        <i class="bi bi-envelope me-2"></i>
-                        {{ __('communicate') }}
-                    </button>
                     {{-- Boutons MCP avec test Mistral --}}
                     <button id="mosaicToggle" class="btn btn-outline-dark btn-sm d-flex align-items-center">
                         <i class="bi bi-grid-3x3-gap me-2"></i>Mosaïque
                     </button>
-                    @include('records.partials.mcp-buttons-test', [
-                        'style' => 'batch',
-                        'size' => 'sm',
-                        'showLabels' => true
-                    ])
+
+
+
                     </div>
 
                     <div class="d-flex align-items-center gap-3 flex-wrap">
