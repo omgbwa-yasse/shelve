@@ -85,7 +85,7 @@ class AiSeeder extends Seeder
             ],
             [
                 'setting_key' => 'default_model',
-                'setting_value' => 'llama3',
+                'setting_value' => 'gemma3:4b',
                 'setting_type' => 'string',
                 'description' => 'Identifiant du modèle par défaut (ex: llama3, mistral, gpt-4o, claude-3)',
                 'is_encrypted' => false,

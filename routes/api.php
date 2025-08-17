@@ -71,4 +71,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('prompts', [PromptController::class, 'index'])->name('api.prompts.index');
     Route::get('prompts/{id}', [PromptController::class, 'show'])->name('api.prompts.show');
     Route::post('prompts/{id}/actions', [PromptController::class, 'actions'])->name('api.prompts.actions');
+    // Apply AI suggestions to records
+    Route::prefix('records/{record}/ai')->name('api.records.ai.')->group(function () {
+        Route::post('title', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveTitle'])->name('title');
+        Route::post('summary', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveSummary'])->name('summary');
+        Route::post('thesaurus', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveThesaurus'])->name('thesaurus');
+        Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
+    });
 });

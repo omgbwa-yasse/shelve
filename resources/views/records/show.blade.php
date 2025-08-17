@@ -13,7 +13,7 @@
                 </ol>
             </nav>
             <div class="d-flex gap-2 flex-wrap">
-                <div class="btn-group" role="group" aria-label="Prev next navigation">
+                <div class="btn-group">
                     <a href="{{ session('records.back_url', route('records.index')) }}" class="btn btn-sm btn-outline-secondary" title="{{ __('back') }}">
                         <i class="bi bi-arrow-left"></i>
                     </a>
@@ -47,7 +47,7 @@
             </div>
         @endif
 
-        {{-- Main Content Card --}}
+    {{-- Main Content Card --}}
         <div class="card mb-3">
             <div class="card-header bg-light">
                 <h4 class="mb-0">{{ $record->name }} [{{ $record->level->name }}]</h4>
@@ -193,6 +193,62 @@
             </div>
         </div>
 
+
+        {{-- Intelligence artificielle Section (global, above Lifecycle) --}}
+        @php
+            $aiPrompts = [];
+            if (Schema::hasTable('prompts')) {
+                $promptQuery = DB::table('prompts')->select('id','title')
+                    ->whereIn('title', ['record_reformulate','record_summarize','assign_thesaurus','assign_activity']);
+                if (Schema::hasColumn('prompts', 'is_system')) {
+                    $promptQuery->where('is_system', true);
+                }
+                $aiPrompts = $promptQuery->pluck('id','title');
+            }
+            $thesaurusLabels = isset($record) && $record->thesaurusConcepts ? $record->thesaurusConcepts->pluck('preferred_label')->filter()->values()->all() : [];
+            $activityCandidates = isset($record) && $record->activity ? [ (string)($record->activity->name ?? '') ] : [];
+        @endphp
+        <div class="card mb-3">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-cpu me-2"></i>{{ __('artificial_intelligence') ?? 'Intelligence artificielle' }}
+                </h5>
+                <fieldset class="btn-group btn-group-sm">
+                    <legend class="visually-hidden">AI actions</legend>
+                    <button type="button" class="btn btn-outline-primary ai-action-btn"
+                            data-action="reformulate_title"
+                            data-prompt-id="{{ $aiPrompts['record_reformulate'] ?? '' }}">
+                        {{ __('reformulate_title') ?? 'Reformuler titre' }}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary ai-action-btn"
+                            data-action="summarize"
+                            data-prompt-id="{{ $aiPrompts['record_summarize'] ?? '' }}">
+                        {{ __('summarize') ?? 'Résumer' }}
+                    </button>
+                    <button type="button" class="btn btn-outline-success ai-action-btn"
+                            data-action="assign_thesaurus"
+                            data-prompt-id="{{ $aiPrompts['assign_thesaurus'] ?? '' }}">
+                        {{ __('index_thesaurus') ?? 'Indexer thésaurus' }}
+                    </button>
+                    <button type="button" class="btn btn-outline-info ai-action-btn"
+                            data-action="assign_activity"
+                            data-prompt-id="{{ $aiPrompts['assign_activity'] ?? '' }}">
+                        {{ __('index_activities') ?? 'Indexer activités' }}
+                    </button>
+                </fieldset>
+            </div>
+            <div class="card-body">
+                <output id="aiStatus" class="d-none">
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    <span class="ms-2">{{ __('processing') ?? 'Traitement en cours…' }}</span>
+                </output>
+                <div id="aiError" class="alert alert-danger d-none mt-2"></div>
+                <div id="aiResult" class="mt-2 d-none">
+                    <h6 class="fw-semibold">{{ __('ai_output') ?? 'Résultat AI' }}</h6>
+                    <pre class="bg-light p-2 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                </div>
+            </div>
+        </div>
 
         {{-- Lifecycle Section --}}
         <div class="card mb-3">
@@ -467,6 +523,9 @@
                             <a href="{{ route('records.show', $child) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong>{{ $child->code }}</strong>
+
+                                {{-- Intelligence artificielle Section removed here; now displayed globally above Lifecycle --}}
+
                                     <span class="text-muted ms-2">{{ $child->name }}</span>
                                 </div>
                                 <span class="badge bg-primary rounded-pill">{{ $child->level->name ?? 'N/A' }}</span>
@@ -549,6 +608,266 @@
                             {{ __('delete') }}
                         </button>
                     </form>
+                </div>
+            </div>
+        </div>
+
+@push('scripts')
+<script>
+    (function(){
+        const buttons = document.querySelectorAll('.ai-action-btn');
+        const statusEl = document.getElementById('aiStatus');
+        const resultWrap = document.getElementById('aiResult');
+        const resultPre = resultWrap ? resultWrap.querySelector('pre') : null;
+        const errorEl = document.getElementById('aiError');
+        const recordId = {{ (int)($record->id ?? 0) }};
+        const contextBase = {
+            title: @json($record->name ?? ''),
+            text: @json($record->content ?? ''),
+            pref_labels: @json($thesaurusLabels ?? []),
+            candidates: @json($activityCandidates ?? []),
+            slip_records: []
+        };
+
+    // Modal state for AI review
+    const aiModalEl = document.getElementById('aiReviewModal');
+    const aiModalBody = document.getElementById('aiReviewBody');
+    const aiModalTitle = document.getElementById('aiReviewTitle');
+    const aiSaveBtn = document.getElementById('aiReviewSaveBtn');
+    let currentAi = { action: null, output: '', parsed: null };
+
+        function setBusy(busy){
+            buttons.forEach(b => b.disabled = !!busy);
+            statusEl && statusEl.classList.toggle('d-none', !busy);
+        }
+        function showError(msg){
+            if(!errorEl) return; errorEl.textContent = (msg && msg.toString()) || 'Erreur AI'; errorEl.classList.remove('d-none');
+        }
+        function clearError(){ if(errorEl) errorEl.classList.add('d-none'); }
+        function showResult(text){ if(resultWrap && resultPre){ resultPre.textContent = text || ''; resultWrap.classList.remove('d-none'); } }
+
+        function uniqStrings(arr){ const s=new Set(); const out=[]; arr.forEach(v=>{ const t=(v||'').toString().trim(); if(t && !s.has(t)){ s.add(t); out.push(t); } }); return out; }
+        function parseList(text){
+            const raw = (text||'').replace(/\r/g,'').split(/\n|,|;|\t|\u2022|\*/);
+            return uniqStrings(raw).slice(0, 30);
+        }
+        function openAiReviewModal(action, output){
+            if(!aiModalEl || !aiModalBody || !aiModalTitle){ return; }
+            currentAi = { action, output, parsed: null };
+            let html = '';
+            switch(action){
+                case 'reformulate_title': {
+                    const first = (output||'').split(/\n/)[0].trim().replace(/^"|"$/g,'');
+                    currentAi.parsed = { title: first };
+                    aiModalTitle.textContent = '{{ __('reformulate_title') ?? 'Reformuler le titre' }}';
+                    html = `
+                        <label for="aiTitleInput" class="form-label">{{ __('new_title') ?? 'Nouveau titre' }}</label>
+                        <input id="aiTitleInput" type="text" class="form-control" value="${first.replaceAll('"','&quot;')}">
+                        <small class="text-muted d-block mt-2">{{ __('you_can_edit_before_saving') ?? 'Vous pouvez modifier avant d\'enregistrer.' }}</small>
+                    `;
+                    break;
+                }
+                case 'summarize': {
+                    currentAi.parsed = { summary: output||'' };
+                    aiModalTitle.textContent = '{{ __('summary') ?? 'Résumé' }}';
+                    html = `
+                        <label for="aiSummaryInput" class="form-label">{{ __('generated_summary') ?? 'Résumé généré' }}</label>
+                        <textarea id="aiSummaryInput" class="form-control" rows="8">${(output||'').replaceAll('<','&lt;')}</textarea>
+                        <small class="text-muted d-block mt-2">{{ __('edit_before_save') ?? 'Modifiez si besoin avant d\'enregistrer.' }}</small>
+                    `;
+                    break;
+                }
+                case 'assign_thesaurus': {
+                    const items = parseList(output);
+                    currentAi.parsed = { labels: items };
+                    aiModalTitle.textContent = '{{ __('index_thesaurus') ?? 'Indexer thésaurus' }}';
+                    html = `
+                        <div class="mb-2">{{ __('select_keywords_to_apply') ?? 'Sélectionnez les mots-clés à appliquer' }}</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            ${items.map((k,i)=>`<div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="kw_${i}" value="${k.replaceAll('"','&quot;')}" checked>
+                                <label class="form-check-label" for="kw_${i}">${k}</label>
+                            </div>`).join('')}
+                        </div>
+                    `;
+                    break;
+                }
+                case 'assign_activity': {
+                    const items = parseList(output).slice(0, 5);
+                    currentAi.parsed = { activities: items };
+                    aiModalTitle.textContent = '{{ __('index_activities') ?? 'Indexer activités' }}';
+                    html = `
+                        <div class="mb-2">{{ __('choose_activity') ?? 'Choisissez l\'activité' }}</div>
+                        <div class="d-flex flex-column gap-2">
+                            ${items.map((k,i)=>`<div class="form-check">
+                                <input class="form-check-input" type="radio" name="aiActivity" id="act_${i}" value="${k.replaceAll('"','&quot;')}" ${i===0?'checked':''}>
+                                <label class="form-check-label" for="act_${i}">${k}</label>
+                            </div>`).join('')}
+                        </div>
+                    `;
+                    break;
+                }
+                default: {
+                    aiModalTitle.textContent = 'AI';
+                    html = `<pre class="bg-light p-2 rounded" style="white-space: pre-wrap;">${(output||'').replaceAll('<','&lt;')}</pre>`;
+                }
+            }
+            aiModalBody.innerHTML = html;
+            try{ new bootstrap.Modal(aiModalEl).show(); }catch(e){ console.warn('Modal error', e); }
+        }
+
+        async function saveAiReview(){
+            if(!currentAi || !currentAi.action){ return; }
+            let url = '';
+            let payload = {};
+            switch(currentAi.action){
+                case 'reformulate_title': {
+                    const val = document.getElementById('aiTitleInput')?.value?.trim();
+                    if(!val){ showError('Titre vide'); return; }
+                    url = `/api/records/${recordId}/ai/title`;
+                    payload = { title: val };
+                    break;
+                }
+                case 'summarize': {
+                    const val = document.getElementById('aiSummaryInput')?.value?.trim();
+                    if(!val){ showError('Résumé vide'); return; }
+                    url = `/api/records/${recordId}/ai/summary`;
+                    payload = { summary: val };
+                    break;
+                }
+                case 'assign_thesaurus': {
+                    const checks = aiModalBody.querySelectorAll('input.form-check-input[type="checkbox"]:checked');
+                    const labels = Array.from(checks).map(c=>c.value).filter(Boolean);
+                    if(labels.length===0){ showError('Sélectionnez au moins un mot-clé'); return; }
+                    url = `/api/records/${recordId}/ai/thesaurus`;
+                    payload = { concepts: labels.map(l=>({ preferred_label: l })) };
+                    break;
+                }
+                case 'assign_activity': {
+                    const sel = aiModalBody.querySelector('input[name="aiActivity"]:checked');
+                    if(!sel){ showError('Choisissez une activité'); return; }
+                    url = `/api/records/${recordId}/ai/activity`;
+                    payload = { activity_name: sel.value };
+                    break;
+                }
+                default:
+                    return;
+            }
+            try{
+                aiSaveBtn.disabled = true;
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 20000);
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' ,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timer);
+                const data = await resp.json();
+                if(!resp.ok || data?.status==='error'){
+                    throw new Error(data?.message || 'Erreur sauvegarde');
+                }
+                // Close modal and show toast
+                try{ bootstrap.Modal.getInstance(aiModalEl)?.hide(); }catch(e){}
+                showResult(currentAi.output);
+                // Optionally refresh to show applied changes
+                setTimeout(()=>{ window.location.reload(); }, 800);
+            }catch(e){
+                if (e.name === 'AbortError') {
+                    showError('La sauvegarde a expiré. Réessayez.');
+                } else {
+                    showError(e.message || 'Erreur');
+                }
+            }finally{
+                aiSaveBtn.disabled = false;
+            }
+        }
+
+        async function runAction(btn){
+            const action = btn.getAttribute('data-action');
+            const promptId = btn.getAttribute('data-prompt-id');
+            clearError(); showResult('');
+            if(!promptId){ showError('Prompt introuvable pour cette action.'); return; }
+            setBusy(true);
+            try{
+                const body = {
+                    action: action,
+                    entity: 'record',
+                    entity_ids: [recordId],
+                    context: contextBase
+                };
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 25000);
+                const resp = await fetch(`/api/prompts/${promptId}/actions`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' ,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(body),
+                    signal: controller.signal
+                });
+                clearTimeout(timer);
+                let data;
+                try { data = await resp.json(); }
+                catch(_){ data = { message: (await resp.text()).slice(0,500) }; }
+                if(!resp.ok){
+                    const status = `${resp.status} ${resp.statusText}`;
+                    const msg = data?.message || data || 'Erreur AI';
+                    throw new Error(`HTTP ${status} - ${msg}`);
+                }
+                const outText = data?.output || '';
+                showResult(outText);
+                openAiReviewModal(action, outText);
+            }catch(e){
+                if (e.name === 'AbortError') {
+                    showError('La requête AI a expiré. Vérifiez le fournisseur et réessayez.');
+                } else {
+                    showError(e.message || 'Erreur AI');
+                }
+            }finally{
+                setBusy(false);
+            }
+        }
+
+        // Disable AI buttons if no prompt ids resolved
+        (function initAIActions(){
+            const noPrompt = Array.from(buttons).every(b => !b.getAttribute('data-prompt-id'));
+            if(noPrompt){
+                buttons.forEach(b => { b.disabled = true; b.title = 'Prompts non disponibles'; });
+                showError('Prompts non disponibles. Vérifiez la base de données ou exécutez le seeder AI.');
+            }
+            buttons.forEach(btn => btn.addEventListener('click', () => runAction(btn)));
+        })();
+
+        if(aiSaveBtn){ aiSaveBtn.addEventListener('click', saveAiReview); }
+    })();
+</script>
+@endpush
+    </div>
+
+    <!-- AI Review Modal -->
+    <div class="modal fade" id="aiReviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiReviewTitle">AI</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="aiReviewBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cancel') ?? 'Annuler' }}</button>
+                    <button type="button" class="btn btn-primary" id="aiReviewSaveBtn">{{ __('save') ?? 'Enregistrer' }}</button>
                 </div>
             </div>
         </div>

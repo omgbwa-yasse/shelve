@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
 
             // Prompts & AI defaults
             AiSeeder::class,
+            AiProvidersSeeder::class, // Paramètres des providers IA (settings)
         ]);
     }
 }

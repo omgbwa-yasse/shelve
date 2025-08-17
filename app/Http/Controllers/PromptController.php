@@ -96,11 +96,14 @@ class PromptController extends Controller
                     $t1 = (int) (microtime(true) * 1000);
                     $this->tx->finishFailure($txId, $e->getMessage(), max(0, $t1 - $t0));
                     Log::error('Prompt action failed', ['tx' => $txId, 'ex' => $e]);
-                    $response = response()->json(['status' => 'error', 'transaction_id' => $txId, 'message' => 'AI error'], 500);
+                    $response = response()->json([
+                        'status' => 'error',
+                        'transaction_id' => $txId,
+                        'message' => $e->getMessage() ?: 'AI error',
+                    ], ($e instanceof AiProviderNotConfiguredException) ? 422 : 500);
                 }
             }
         }
-
         return $response;
     }
 
@@ -136,7 +139,7 @@ class PromptController extends Controller
     {
         $action = $request->string('action')->toString();
         $context = $request->input('context', []);
-        $system = $prompt->is_system ? ($prompt->content ?? '') : '';
+    $system = (property_exists($prompt, 'is_system') && $prompt->is_system) ? ($prompt->content ?? '') : '';
 
         $messages = [];
         if ($system) {

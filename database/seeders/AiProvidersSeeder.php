@@ -37,7 +37,7 @@ class AiProvidersSeeder extends Seeder
         );
 
         // Paramètres généraux pour l'IA
-        $aiSettings = [
+    $aiSettings = [
             [
                 'category_id' => $aiCategory->id,
                 'name' => 'ai_default_provider',
@@ -51,7 +51,7 @@ class AiProvidersSeeder extends Seeder
                 'category_id' => $aiCategory->id,
                 'name' => 'ai_default_model',
                 'type' => 'string',
-                'default_value' => json_encode('llama3'),
+                'default_value' => json_encode('gemma3:4b'),
                 'description' => 'Modèle d\'IA par défaut',
                 'is_system' => true,
             ],
@@ -161,7 +161,7 @@ class AiProvidersSeeder extends Seeder
                 'category_id' => $aiModelsCategory->id,
                 'name' => 'model_summary',
                 'type' => 'string',
-                'default_value' => json_encode('llama3'),
+                'default_value' => json_encode('gemma3:4b'),
                 'description' => 'Modèle pour la génération de résumés',
                 'is_system' => true,
             ],
@@ -169,7 +169,7 @@ class AiProvidersSeeder extends Seeder
                 'category_id' => $aiModelsCategory->id,
                 'name' => 'model_keywords',
                 'type' => 'string',
-                'default_value' => json_encode('llama3'),
+                'default_value' => json_encode('gemma3:4b'),
                 'description' => 'Modèle pour l\'extraction de mots-clés',
                 'is_system' => true,
             ],
@@ -177,15 +177,15 @@ class AiProvidersSeeder extends Seeder
                 'category_id' => $aiModelsCategory->id,
                 'name' => 'model_analysis',
                 'type' => 'string',
-                'default_value' => json_encode('llama3'),
+                'default_value' => json_encode('gemma3:4b'),
                 'description' => 'Modèle pour l\'analyse de texte',
                 'is_system' => true,
             ],
         ];
 
-        // Créer les paramètres s'ils n'existent pas déjà
+        // Upsert pour mettre à jour les valeurs par défaut si déjà existantes
         foreach ($aiSettings as $settingData) {
-            Setting::firstOrCreate(
+            Setting::updateOrCreate(
                 ['name' => $settingData['name']],
                 $settingData
             );
