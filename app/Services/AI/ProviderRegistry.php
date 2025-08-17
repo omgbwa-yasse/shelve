@@ -30,6 +30,7 @@ class ProviderRegistry
             'openrouter' => 'registerOpenrouter',
             'onn' => 'registerOnn',
             'grok' => 'registerGrok',
+            'ollama' => 'registerOllamaCompat',
             'ollama_turbo' => 'registerOllamaTurbo',
             'openai_custom' => 'registerOpenaiCustom',
         ];
@@ -37,6 +38,40 @@ class ProviderRegistry
             $this->{$map[$providerName]}();
         }
         // Providers like 'ollama' are configured via package config/env; nothing to do otherwise
+    }
+
+    /**
+     * Register an Ollama provider using its OpenAI-compatible API.
+     * Falls back to http://127.0.0.1:11434/v1 if no setting is found.
+     */
+    private function registerOllamaCompat(): void
+    {
+        // Prefer DB setting if present, else env/config
+        $baseUrl = (string) ($this->getSetting('ollama_base_url', '') ?? '');
+        if ($baseUrl === '') {
+            $baseUrl = rtrim(config('ollama-laravel.url', env('OLLAMA_URL', 'http://127.0.0.1:11434')), '/');
+        }
+        // OpenAI compatible endpoint is under /v1
+        $base = rtrim($baseUrl, '/') . '/v1';
+
+        // Standard OpenAI-style endpoints
+        $paths = [
+            'chat' => '/chat/completions',
+            'embeddings' => '/embeddings',
+            'image' => '/images/generations',
+            'tts' => '/audio/speech',
+            'stt' => '/audio/transcriptions',
+        ];
+
+        // No auth by default for local Ollama
+        AiBridge::registerProvider('ollama', new CustomOpenAIProvider(
+            '', // no API key
+            $base,
+            $paths,
+            '', // no auth header
+            '', // no auth prefix
+            [] // extra headers
+        ));
     }
 
     private function registerOpenai(): void

@@ -72,7 +72,7 @@ class PromptController extends Controller
                 try {
                     [$messages, $options] = $this->buildMessagesAndOptions($prompt, $request);
                     $providerName = $options['provider'] ?? 'ollama';
-                    $model = $options['model'] ?? config('ollama-laravel.model', 'llama2');
+                    $model = $options['model'] ?? config('ollama-laravel.model', 'gemma3:4b');
                     $opts = $options; $opts['model'] = $model;
 
                     // Execute chat using AiBridge provider (with optional streaming)
@@ -158,7 +158,7 @@ class PromptController extends Controller
         $messages[] = ['role' => 'user', 'content' => $userContent];
 
     $defaultProvider = app(ProviderRegistry::class)->getSetting('default_provider', 'ollama');
-    $defaultModel = app(ProviderRegistry::class)->getSetting('default_model', config('ollama-laravel.model', 'llama2'));
+    $defaultModel = app(ProviderRegistry::class)->getSetting('default_model', config('ollama-laravel.model', 'gemma3:4b'));
         $options = [
             'provider' => $request->input('model_provider', $defaultProvider),
             'model' => $request->input('model', $defaultModel),

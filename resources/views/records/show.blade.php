@@ -629,6 +629,33 @@
             slip_records: []
         };
 
+    // --- Auth/CSRF helpers for Sanctum/Session ---
+    function getCookie(name){
+        const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)'));
+        return match ? decodeURIComponent(match[1]) : '';
+    }
+    async function ensureCsrfCookie(){
+        // If no XSRF-TOKEN cookie, ask Sanctum to set it
+        if(!getCookie('XSRF-TOKEN')){
+            try{
+                await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+            }catch(e){ /* ignore, will fail later gracefully */ }
+        }
+    }
+    function buildAuthHeaders(){
+        const xsrf = getCookie('XSRF-TOKEN');
+        const metaCsrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        // Prefer Sanctum XSRF header when cookie exists, else fall back to meta CSRF
+        if(xsrf){ headers['X-XSRF-TOKEN'] = xsrf; }
+        else if(metaCsrf){ headers['X-CSRF-TOKEN'] = metaCsrf; }
+        return headers;
+    }
+
     // Modal state for AI review
     const aiModalEl = document.getElementById('aiReviewModal');
     const aiModalBody = document.getElementById('aiReviewBody');
@@ -716,7 +743,7 @@
             try{ new bootstrap.Modal(aiModalEl).show(); }catch(e){ console.warn('Modal error', e); }
         }
 
-        async function saveAiReview(){
+    async function saveAiReview(){
             if(!currentAi || !currentAi.action){ return; }
             let url = '';
             let payload = {};
@@ -755,22 +782,23 @@
             }
             try{
                 aiSaveBtn.disabled = true;
+                await ensureCsrfCookie();
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 20000);
                 const resp = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' ,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: buildAuthHeaders(),
                     credentials: 'same-origin',
                     body: JSON.stringify(payload),
                     signal: controller.signal
                 });
                 clearTimeout(timer);
-                const data = await resp.json();
+                let data;
+                try { data = await resp.json(); }
+                catch(_){ data = { message: (await resp.text()).slice(0,500) }; }
+                if(resp.status === 401){
+                    throw new Error('Non autorisé (401). Veuillez vous reconnecter.');
+                }
                 if(!resp.ok || data?.status==='error'){
                     throw new Error(data?.message || 'Erreur sauvegarde');
                 }
@@ -803,16 +831,12 @@
                     entity_ids: [recordId],
                     context: contextBase
                 };
+                await ensureCsrfCookie();
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 25000);
                 const resp = await fetch(`/api/prompts/${promptId}/actions`, {
                     method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' ,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
+                    headers: buildAuthHeaders(),
                     credentials: 'same-origin',
                     body: JSON.stringify(body),
                     signal: controller.signal
@@ -821,6 +845,9 @@
                 let data;
                 try { data = await resp.json(); }
                 catch(_){ data = { message: (await resp.text()).slice(0,500) }; }
+                if(resp.status === 401){
+                    throw new Error('Non autorisé (401). Votre session a peut-être expiré. Connectez-vous puis réessayez.');
+                }
                 if(!resp.ok){
                     const status = `${resp.status} ${resp.statusText}`;
                     const msg = data?.message || data || 'Erreur AI';
