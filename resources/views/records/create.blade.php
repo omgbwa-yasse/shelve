@@ -61,17 +61,20 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small">{{ __('code') }} *</label>
-                                    <input type="text" name="code" class="form-control form-control-sm" required maxlength="10" value="{{ old('code') }}">
-                                </div>
-                                <div class="col-md-5">
+                                <div class="col-md-8">
                                     <label class="form-label small">{{ __('status') }} *</label>
                                     <select name="status_id" class="form-select form-select-sm" required>
                                         @foreach ($statuses as $status)
                                             <option value="{{ $status->id }}" {{ old('status_id') == $status->id ? 'selected' : '' }}>{{ $status->name }}</option>
                                         @endforeach
                                     </select>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <label class="form-label small">{{ __('code') }} *</label>
+                                    <input type="text" name="code" class="form-control form-control-sm" required maxlength="10" value="{{ old('code') }}">
                                 </div>
                             </div>
 
