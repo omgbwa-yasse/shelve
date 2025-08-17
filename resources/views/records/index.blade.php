@@ -27,6 +27,7 @@
                             <option value="excel">Excel</option>
                             <option value="ead">EAD</option>
                             <option value="seda">SEDA</option>
+                            <option value="pdf">PDF</option>
                         </select>
                     </div>
 
