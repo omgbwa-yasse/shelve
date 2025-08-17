@@ -588,6 +588,20 @@ class RecordController extends Controller
                         ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
                 case 'seda':
                     return $this->exportSEDA($records,$slips);
+                case 'pdf':
+                    // Charger les relations nécessaires et conserver l'ordre de sélection
+                    $recordsForPdf = Record::with([
+                        'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
+                    ])->whereIn('id', $recordIds)->get();
+
+                    $idOrder = array_flip($recordIds);
+                    $recordsForPdf = $recordsForPdf->sortBy(fn($r) => $idOrder[$r->id] ?? PHP_INT_MAX)->values();
+
+                    $pdf = PDF::loadView('records.print', [
+                        'records' => $recordsForPdf,
+                    ]);
+
+                    return $pdf->download('records_export.pdf');
                 default:
                     return response()->json(['error' => 'Format d\'exportation non valide.'], 400);
             }
