@@ -462,9 +462,6 @@
                                         @case('public-admin')
                                             @include('submenu.public-admin')
                                             @break
-                                        @case('admin')
-                                            @include('submenu.admin')
-                                            @break
                                     @endswitch
                                 </div>
                             </div>
