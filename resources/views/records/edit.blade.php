@@ -80,13 +80,6 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="name" class="form-label mb-0">Name</label>
-                            @include('records.partials.mcp-buttons-test', [
-                                'record' => $record,
-                                'style' => 'edit-title',
-                                'size' => 'sm',
-                                'showLabels' => true,
-                                'mode' => request()->get('mode', 'mcp')
-                            ])
                         </div>
                         <textarea name="name" id="name" class="form-control" required>{{ isset($suggestedTitle) ? $suggestedTitle : $record->name }}</textarea>
                         @if(isset($suggestedTitle))
@@ -176,13 +169,6 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label for="content" class="form-label mb-0">Content</label>
-                            @include('records.partials.mcp-buttons-test', [
-                                'record' => $record,
-                                'style' => 'edit-summary',
-                                'size' => 'sm',
-                                'showLabels' => true,
-                                'mode' => request()->get('mode', 'mcp')
-                            ])
                         </div>
                         <textarea name="content" id="content" class="form-control" rows="6">{{ $record->content }}</textarea>
                         <small class="form-text text-muted">
@@ -277,24 +263,7 @@
 
                 <!-- Onglet "indexation" -->
                 <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
-                    {{-- Aide MCP pour l'indexation --}}
-                    <div class="alert alert-light border-primary mb-4">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">
-                                    <i class="bi bi-robot text-primary"></i> Assistance IA pour l'Indexation
-                                </h6>
-                                <small class="text-muted">L'IA peut suggérer automatiquement des mots-clés basés sur le contenu</small>
-                            </div>
-                            @include('records.partials.mcp-buttons-test', [
-                                'record' => $record,
-                                'style' => 'edit-thesaurus',
-                                'size' => 'sm',
-                                'showLabels' => true,
-                                'mode' => request()->get('mode', 'mcp')
-                            ])
-                        </div>
-                    </div>
+
 
                     <div class="mb-3">
                         <label for="thesaurus-search" class="form-label">Thésaurus</label>
@@ -1386,4 +1355,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 
-@include('records.partials.quick-nav')
+

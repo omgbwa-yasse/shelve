@@ -1,0 +1,7 @@
+Deleted AI UI from views:
+- resources/views/records/show.blade.php (AI card removed)
+- resources/views/records/edit.blade.php (AI includes and helper alert removed)
+
+Next manual cleanup (optional):
+- Consider deleting resources/views/records/partials/mcp-buttons-test.blade.php if no longer used anywhere.
+- Consider pruning unused ai_* translation keys in lang/en.json and lang/fr.json if not referenced elsewhere.

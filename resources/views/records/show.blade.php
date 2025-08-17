@@ -193,25 +193,6 @@
             </div>
         </div>
 
-        {{-- Intelligence Artificielle Section (MCP / Mistral) --}}
-        <div class="card mb-3">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-cpu me-2"></i>{{ __('ai_section_title') ?? 'Intelligence artificielle' }}
-                </h5>
-                <div class="d-flex gap-2">
-                    @include('records.partials.mcp-buttons-test', [
-                        'record' => $record,
-                        'style' => 'individual',
-                        'size' => 'sm',
-                        'showLabels' => true
-                    ])
-                </div>
-            </div>
-            <div class="card-body small text-muted">
-                {{ __('ai_section_help') ?? 'Actions d’assistance : reformulation de titre, résumé normalisé, mots-clés thésaurus.' }}
-            </div>
-        </div>
 
         {{-- Lifecycle Section --}}
         <div class="card mb-3">
@@ -1296,4 +1277,4 @@ function applyPreviewChanges() {
 }
     </script>
 
-    @include('records.partials.quick-nav')
+

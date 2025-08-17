@@ -940,4 +940,4 @@
     </script>
 @endpush
 
-@include('records.partials.quick-nav')
+

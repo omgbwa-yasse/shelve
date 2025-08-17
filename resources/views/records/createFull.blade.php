@@ -31,7 +31,7 @@
             @if (!empty($record))
                 <input type="hidden" name="parent_id" value="{{$record->id}}">
             @endif
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <ul class="nav nav-tabs" id="myTab">
                 <li class="nav-item">
                     <a class="nav-link active" id="identification-tab" data-bs-toggle="tab" href="#identification" role="tab" aria-controls="identification" aria-selected="true">{{ __('identification') }}</a>
                 </li>
@@ -242,9 +242,9 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
+        <div class="tab-pane fade" id="indexation" role="tabpanel" aria-labelledby="indexation-tab">
                     <div class="mb-3">
-                        <label class="form-label">{{ __('thesaurus') }} *</label>
+            <label for="thesaurus-search" class="form-label">{{ __('thesaurus') }} *</label>
                         <div class="position-relative">
                             <input type="text" class="form-control form-control-sm" id="thesaurus-search" placeholder="Rechercher dans le thésaurus..." autocomplete="off">
                             <div id="thesaurus-suggestions" class="position-absolute w-100 bg-white border border-top-0 shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;">
@@ -265,7 +265,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">{{ __('activities') }} *</label>
+                        <label for="selected-activity-display" class="form-label">{{ __('activities') }} *</label>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control" id="selected-activity-display" readonly>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#activityModal">
@@ -938,4 +938,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 
-@include('records.partials.quick-nav')
+
