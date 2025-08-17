@@ -762,7 +762,7 @@
         }
     </style>
 
-    
+
 
     <!-- Modal pour afficher tous les attachments -->
     <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
