@@ -31,7 +31,6 @@
                         </select>
                     </div>
 
-                    {{-- Boutons MCP avec test Mistral --}}
                     <button id="mosaicToggle" class="btn btn-outline-dark btn-sm d-flex align-items-center">
                         <i class="bi bi-grid-3x3-gap me-2"></i>Mosaïque
                     </button>
@@ -763,8 +762,7 @@
         }
     </style>
 
-    {{-- Modale MCP pour traitement par lots --}}
-    @include('records.partials.mcp-batch-modal')
+    
 
     <!-- Modal pour afficher tous les attachments -->
     <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
