@@ -402,7 +402,7 @@
                         </div>
                         @endcan
 
-                        
+
 
                     </nav>
                 </div>
