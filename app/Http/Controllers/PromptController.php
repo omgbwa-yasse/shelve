@@ -142,7 +142,16 @@ class PromptController extends Controller
         if ($system) {
             $messages[] = ['role' => 'system', 'content' => $system];
         }
-    $userContent = $this->buildUserPromptForAction($action, $context);
+
+        // Load user message template from DB by action title (e.g., action.reformulate_title.user)
+        $templateTitle = 'action.' . $action . '.user';
+        $tpl = DB::table('prompts')->where('title', $templateTitle)->first();
+        if ($tpl && !empty($tpl->content)) {
+            $userContent = $this->renderActionTemplate($tpl->content, $action, $context);
+        } else {
+            // Fallback to minimal inline prompts if template not found
+            $userContent = $this->fallbackUserPrompt($action, $context);
+        }
         $messages[] = ['role' => 'user', 'content' => $userContent];
 
     $defaultProvider = app(ProviderRegistry::class)->getSetting('default_provider', 'ollama');
@@ -154,49 +163,46 @@ class PromptController extends Controller
         return [$messages, $options];
     }
 
-    private function buildUserPromptForAction(string $action, array $context): string
+    private function renderActionTemplate(string $template, string $action, array $ctx): string
+    {
+        $vars = [];
+        switch ($action) {
+            case 'reformulate_title':
+                $vars['title'] = (string) ($ctx['title'] ?? '');
+                break;
+            case 'summarize':
+                $vars['text'] = (string) ($ctx['text'] ?? '');
+                break;
+            case 'assign_activity':
+                $vars['candidates'] = implode(', ', array_map('strval', (array)($ctx['candidates'] ?? [])));
+                break;
+            case 'assign_thesaurus':
+                $vars['pref_labels'] = implode(', ', array_map('strval', (array)($ctx['pref_labels'] ?? [])));
+                break;
+            case 'summarize_slip':
+                $items = (array)($ctx['slip_records'] ?? []);
+                $vars['slip_records'] = substr(json_encode($items, JSON_UNESCAPED_UNICODE), 0, 4000);
+                break;
+            default:
+                // no variables
+                break;
+        }
+        // Replace {{var}} placeholders
+        $replacements = [];
+        foreach ($vars as $k => $v) { $replacements['{{'.$k.'}}'] = $v; }
+        return strtr($template, $replacements);
+    }
+
+    private function fallbackUserPrompt(string $action, array $ctx): string
     {
         return match ($action) {
-            'reformulate_title' => $this->promptReformulateTitle($context),
-            'summarize' => $this->promptSummarize($context),
-            'assign_activity' => $this->promptAssignActivity($context),
-            'assign_thesaurus' => $this->promptAssignThesaurus($context),
-            'summarize_slip' => $this->promptSummarizeSlip($context),
-            default => 'Provide assistance based on the given context.'
+            'reformulate_title' => "Reformule ce titre, renvoie uniquement le nouveau titre :\n\nTitre:\n" . ((string)($ctx['title'] ?? '')),
+            'summarize' => "Résume ce texte en 3 à 5 phrases (FR) :\n\n" . ((string)($ctx['text'] ?? '')),
+            'assign_activity' => "Identifie les activités pertinentes parmi: " . implode(', ', array_map('strval', (array)($ctx['candidates'] ?? []))) . ". Réponds en texte clair.",
+            'assign_thesaurus' => "Propose des libellés pertinents à partir de: " . implode(', ', array_map('strval', (array)($ctx['pref_labels'] ?? []))) . ".",
+            'summarize_slip' => "Génère un résumé synthétique de ces slips:\n\n" . substr(json_encode((array)($ctx['slip_records'] ?? []), JSON_UNESCAPED_UNICODE), 0, 4000),
+            default => 'Provide assistance based on the given context.',
         };
-    }
-
-    private function promptReformulateTitle(array $ctx): string
-    {
-        $title = $ctx['title'] ?? '';
-        return "Reformule ce titre de manière claire et concise, renvoie uniquement le nouveau titre :\n\nTitre:\n{$title}";
-    }
-
-    private function promptSummarize(array $ctx): string
-    {
-        $text = $ctx['text'] ?? '';
-        return "Résume le texte suivant en 3 à 5 phrases maximum, en français :\n\n{$text}";
-    }
-
-    private function promptAssignActivity(array $ctx): string
-    {
-        $candidates = $ctx['candidates'] ?? [];
-        $joined = implode(", ", array_map('strval', $candidates));
-        return "Identifie la ou les activités (parmi: {$joined}) les plus pertinentes pour ce contenu. Réponds en texte clair.";
-    }
-
-    private function promptAssignThesaurus(array $ctx): string
-    {
-        $labels = $ctx['pref_labels'] ?? [];
-        $joined = implode(", ", array_map('strval', $labels));
-        return "À partir de ces libellés préférentiels du thésaurus ({$joined}), propose les termes les plus pertinents pour ce contenu. Réponds en texte clair.";
-    }
-
-    private function promptSummarizeSlip(array $ctx): string
-    {
-        $items = $ctx['slip_records'] ?? [];
-        $preview = substr(json_encode($items, JSON_UNESCAPED_UNICODE), 0, 4000);
-        return "Génère un résumé synthétique de ces slips à partir des données suivantes (JSON tronqué si nécessaire):\n\n{$preview}";
     }
 
     private function extractText(array $res): string

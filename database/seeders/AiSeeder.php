@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Schema;
 
 class AiSeeder extends Seeder
 {
@@ -46,20 +47,28 @@ class AiSeeder extends Seeder
             ],
         ];
 
-    foreach ($prompts as $p) {
-            DB::table('prompts')->updateOrInsert(
-                [
-                    'title' => $p['title'],
-                    'is_system' => (bool) $p['is_system'],
-                    'organisation_id' => null,
-                    'user_id' => null,
-                ],
-                [
-                    'content' => $p['content'],
-                    'updated_at' => $now,
-                    'created_at' => $now,
-                ]
-            );
+        foreach ($prompts as $p) {
+            $keys = ['title' => $p['title']];
+            if (Schema::hasColumn('prompts', 'is_system')) {
+                $keys['is_system'] = (bool) $p['is_system'];
+            }
+            if (Schema::hasColumn('prompts', 'organisation_id')) {
+                $keys['organisation_id'] = null;
+            }
+            if (Schema::hasColumn('prompts', 'user_id')) {
+                $keys['user_id'] = null;
+            }
+
+            $updates = [
+                'content' => $p['content'],
+                'updated_at' => $now,
+                'created_at' => $now,
+            ];
+            if (Schema::hasColumn('prompts', 'is_system')) {
+                $updates['is_system'] = (bool) $p['is_system'];
+            }
+
+            DB::table('prompts')->updateOrInsert($keys, $updates);
         }
     }
 
