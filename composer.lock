@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a776ac37551c0565022540dfbd0d831c",
+    "content-hash": "39db8d16b27ad17e137f69b42d17d010",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -3989,6 +3989,54 @@
                 }
             ],
             "time": "2025-05-08T08:14:37+00:00"
+        },
+        {
+            "name": "omgbwa-yasse/aibridge",
+            "version": "v2.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/omgbwa-yasse/AiBridge.git",
+                "reference": "efa0791fbb04b9a5003051c534a905352f55b2ac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/omgbwa-yasse/AiBridge/zipball/efa0791fbb04b9a5003051c534a905352f55b2ac",
+                "reference": "efa0791fbb04b9a5003051c534a905352f55b2ac",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/container": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/http": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0",
+                "php": ">=8.1",
+                "psr/http-message": "^1.1|^2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "AiBridge\\AiBridgeServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AiBridge\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Laravel / Ai Bridge - Package Laravel unifié pour interagir avec OpenAI, Ollama, Onn, Gemini, Grok, Claude.",
+            "support": {
+                "issues": "https://github.com/omgbwa-yasse/AiBridge/issues",
+                "source": "https://github.com/omgbwa-yasse/AiBridge/tree/v2.5.0"
+            },
+            "time": "2025-08-18T19:17:16+00:00"
         },
         {
             "name": "php-ffmpeg/php-ffmpeg",
