@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use App\Models\Prompt;
+use AiBridge\Facades\AiBridge;
+use App\Services\AI\ProviderRegistry;
 
 class AiRecordApplyController extends Controller
 {
@@ -74,6 +77,102 @@ class AiRecordApplyController extends Controller
         return response()->json(['status' => 'ok', 'record_id' => $record->id, 'attached' => array_keys($attach)]);
     }
 
+    /**
+     * Suggest thesaurus concepts from AI-extracted keywords with synonyms.
+     * Input: { raw_text?: string } where raw_text contains lines like:
+     *   - [Catégorie] Mot-clé — synonymes : s1; s2; s3
+     * or a summary block that includes such a section.
+     * Returns: { suggestions: [ { label, category, synonyms[], concept_id?, matches: [ {concept_id, label, type} ] } ] }
+     */
+    public function suggestThesaurus(Request $request, Record $record)
+    {
+        Gate::authorize('records_edit');
+        $data = $request->validate([
+            'raw_text' => self::RULE_RAW,
+        ]);
+        $text = (string)($data['raw_text'] ?? '');
+        if ($text === '') {
+            return response()->json(['status' => 'error', 'message' => self::ERR_NO_DATA], 422);
+        }
+
+        $items = $this->extractKeywordSynonymLines($text);
+        $suggestions = [];
+        foreach ($items as $it) {
+            // Search pref/alt labels for the main keyword and synonyms
+            $matches = $this->findConceptMatchesForTerms(array_merge([$it['label']], $it['synonyms']));
+            $suggestions[] = [
+                'label' => $it['label'],
+                'category' => $it['category'],
+                'synonyms' => $it['synonyms'],
+                'matches' => $matches,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'suggestions' => $suggestions,
+        ]);
+    }
+
+    /**
+     * End-to-end: build record text, call AI summarization prompt, extract keyword lines, match concepts, return suggestions.
+     */
+    public function autoSuggestThesaurus(Request $request, Record $record)
+    {
+        Gate::authorize('records_edit');
+
+        // 1) Build text from the record similar to PromptController summarize path
+        $text = $this->buildTextFromRecord($record);
+
+        // 2) Load action.summarize.user (user template) and record_summarize (system) prompts
+        $system = Prompt::where('title', 'record_summarize')->first();
+        $user = Prompt::where('title', 'action.summarize.user')->first();
+        $messages = [];
+        if ($system && !empty($system->content)) {
+            $messages[] = ['role' => 'system', 'content' => $system->content];
+        }
+        $userText = $user?->content ?: "À partir du texte suivant, produis un résumé et 5 mots-clés catégorisés avec 3 synonymes chacun.\nTexte:\n{{text}}";
+        $messages[] = ['role' => 'user', 'content' => strtr($userText, ['{{text}}' => $text])];
+
+        // 3) Execute using default provider/model
+        $provider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+        $model = app(\App\Services\SettingService::class)->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
+        // Ensure provider is configured
+        try { app(ProviderRegistry::class)->ensureConfigured($provider); } catch (\Throwable $e) {
+            return response()->json(['status' => 'error', 'message' => 'AI provider not configured: '.$provider], 422);
+        }
+
+        $res = AiBridge::provider($provider)->chat($messages, [
+            'model' => $model,
+            'temperature' => 0.3,
+            'max_tokens' => 400,
+            'timeout' => 40000,
+        ]);
+        $content = $this->extractText(is_array($res) ? $res : (array)$res);
+
+        // 4) Extract lines and match concepts
+        $items = $this->extractKeywordSynonymLines($content);
+        $suggestions = [];
+        foreach ($items as $it) {
+            $matches = $this->findConceptMatchesForTerms(array_merge([$it['label']], $it['synonyms']))
+                ;
+            $suggestions[] = [
+                'label' => $it['label'],
+                'category' => $it['category'],
+                'synonyms' => $it['synonyms'],
+                'matches' => $matches,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'ai_output' => $content,
+            'suggestions' => $suggestions,
+        ]);
+    }
+
     public function saveActivity(Request $request, Record $record)
     {
         Gate::authorize('records_edit');
@@ -83,14 +182,35 @@ class AiRecordApplyController extends Controller
             'raw_text' => self::RULE_RAW,
         ]);
 
-        $activityId = $this->resolveActivityId($data);
+    $selection = null;
+        $activityId = null;
+
+        // Prefer JSON selection if provided in raw_text
+        if (!empty($data['raw_text'])) {
+            $parsed = $this->parseActivitySelectionJson($data['raw_text']);
+            if ($parsed) {
+                $selection = $parsed; // keep for response
+                $activityId = $this->resolveActivityFromSelection($parsed['selected'] ?? []);
+            }
+        }
+
+        // Fallback to direct id/name/parsed list if JSON not provided or resolution failed
+        if ($activityId === null) {
+            $activityId = $this->resolveActivityId($data);
+        }
+
         if ($activityId === null) {
             return response()->json(['status' => 'error', 'message' => 'Activity not found'], 422);
         }
         $record->activity_id = $activityId;
 
         $record->save();
-        return response()->json(['status' => 'ok', 'record_id' => $record->id, 'activity_id' => $record->activity_id]);
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'activity_id' => $record->activity_id,
+            'ai_selection' => $selection,
+        ]);
     }
 
     private function parseList(string $text): array
@@ -136,7 +256,7 @@ class AiRecordApplyController extends Controller
     private function attachFromRawLabels(string $raw): array
     {
         $attach = [];
-        $labels = $this->parseList($raw);
+        $labels = $this->parseThesaurusLines($raw);
         foreach ($labels as $label) {
             $concept = $this->findConceptByLabel($label);
             if ($concept) {
@@ -148,6 +268,151 @@ class AiRecordApplyController extends Controller
             }
         }
         return $attach;
+    }
+
+    /**
+     * Parse thesaurus suggestions formatted like:
+     *   - [Catégorie] Libellé — synonymes : s1; s2; s3
+     * or simple lines with just the label. Returns an array of cleaned label strings.
+     */
+    private function parseThesaurusLines(string $text): array
+    {
+        $text = str_replace("\r", '', $text);
+        $lines = preg_split('/\n+/', $text) ?: [];
+        $out = [];
+        $seen = [];
+        foreach ($lines as $line) {
+            $t = trim($line);
+            if ($t === '') { continue; }
+            // Skip headers
+            if (preg_match('/^(résumé\s*:|mots[- ]clés|keywords)/i', $t)) { continue; }
+            // Remove leading bullets or numbering
+            $t = preg_replace('/^([\-\*•\d]+[\).\]]?)\s*/u', '', $t);
+            // Remove leading category tag like [P], [M], [En], [Es]
+            $t = preg_replace('/^\[[^\]]+\]\s*/u', '', $t);
+            // If line contains an em dash or hyphen used as separator before synonyms, keep only the left part
+            if (preg_match('/\s—\s|\s-\s/u', $t)) {
+                $parts = preg_split('/\s—\s|\s-\s/u', $t, 2);
+                $t = trim($parts[0] ?? $t);
+            }
+            // Also strip explicit "synonymes : ..." tails if present
+            $t = preg_replace('/\s*synonymes?\s*:.*/iu', '', $t);
+            // Clean trailing punctuation
+            $t = trim($t, " \t\x0B\f\v.\x{2026}");
+            if ($t === '') { continue; }
+            $k = mb_strtolower($t);
+            if (isset($seen[$k])) { continue; }
+            $seen[$k] = true;
+            $out[] = $t;
+            if (count($out) >= 30) { break; }
+        }
+        return $out;
+    }
+
+    /**
+     * Extract keywords with optional category and synonyms from a block of text.
+     * Supports lines formatted as: "- [Catégorie] Mot — synonymes : s1; s2; s3".
+     */
+    private function extractKeywordSynonymLines(string $text): array
+    {
+        $text = str_replace("\r", '', $text);
+        $lines = preg_split('/\n+/', $text) ?: [];
+        $out = [];
+        foreach ($lines as $line) {
+            $t = trim($line);
+            if ($t === '') { continue; }
+            // Skip summary headers
+            if (preg_match('/^(résumé\s*:|mots[- ]clés|keywords)/i', $t)) { continue; }
+            // Strip leading bullet/number
+            $t = preg_replace('/^([\-\*•\d]+[\).\]]?)\s*/u', '', $t);
+            // Capture category if present at the start
+            $category = null;
+            if (preg_match('/^\[([^\]]+)\]\s*(.*)$/u', $t, $m)) {
+                $category = trim($m[1]);
+                $t = $m[2];
+            }
+            // Split label vs synonyms
+            $label = $t;
+            $syn = '';
+            if (preg_match('/\s—\s|\s-\s/u', $t)) {
+                $parts = preg_split('/\s—\s|\s-\s/u', $t, 2);
+                $label = trim($parts[0] ?? '');
+                $syn = trim($parts[1] ?? '');
+            }
+            // Extract synonyms after 'synonymes :' if present
+            $synonyms = [];
+            if ($syn !== '') {
+                if (preg_match('/synonymes?\s*:\s*(.*)$/iu', $syn, $m2)) {
+                    $synonyms = array_filter(array_map('trim', preg_split('/[;,]+/u', $m2[1])));
+                } else {
+                    $synonyms = array_filter(array_map('trim', preg_split('/[;,]+/u', $syn)));
+                }
+            }
+            if ($label !== '') {
+                $out[] = [
+                    'label' => $label,
+                    'category' => $category,
+                    'synonyms' => array_values($synonyms),
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Build a concise text from a record to drive AI summarization/keyword extraction.
+     */
+    private function buildTextFromRecord(Record $record): string
+    {
+        $parts = [];
+        $name = trim((string)($record->name ?? ''));
+        if ($name !== '') { $parts[] = 'Titre: ' . $name; }
+        $content = trim((string)($record->content ?? ''));
+        if ($content !== '') {
+            $parts[] = 'Contenu: ' . mb_substr(preg_replace('/\s+/u', ' ', $content), 0, 1200);
+        }
+        return implode("\n", $parts);
+    }
+
+    /**
+     * Find matching thesaurus concepts for a set of terms (pref or alt labels).
+     * Returns a list of {concept_id, label, type}.
+     */
+    private function findConceptMatchesForTerms(array $terms): array
+    {
+        $matches = [];
+        $seen = [];
+        foreach ($terms as $term) {
+            $term = trim((string)$term);
+            if ($term === '') { continue; }
+            // PrefLabel matches
+            $pref = ThesaurusConcept::query()
+                ->whereHas('labels', function ($q) use ($term) {
+                    $q->where('literal_form', $term)->where('type', 'prefLabel');
+                })
+                ->get();
+            foreach ($pref as $c) {
+                $k = 'p:'.$c->id;
+                if (!isset($seen[$k])) {
+                    $seen[$k] = true;
+                    $matches[] = ['concept_id' => $c->id, 'label' => $term, 'type' => 'prefLabel'];
+                }
+            }
+            // AltLabel matches
+            $alt = ThesaurusConcept::query()
+                ->whereHas('labels', function ($q) use ($term) {
+                    $q->where('literal_form', $term)->where('type', 'altLabel');
+                })
+                ->get();
+            foreach ($alt as $c) {
+                $k = 'a:'.$c->id;
+                if (!isset($seen[$k])) {
+                    $seen[$k] = true;
+                    $matches[] = ['concept_id' => $c->id, 'label' => $term, 'type' => 'altLabel'];
+                }
+            }
+        }
+        return $matches;
     }
 
     /**
@@ -187,5 +452,60 @@ class AiRecordApplyController extends Controller
             }
         }
         return $id;
+    }
+
+    /**
+     * Parses a strict JSON selection structure as requested from the model.
+     * Expected shape:
+     *   { "selected": {"id":int|null, "code":string|null, "name":string|null},
+     *     "alternative": {...}, "confidence": number, "reason": string }
+     * Returns associative array or null if not valid JSON/shape.
+     */
+    private function parseActivitySelectionJson(string $raw): ?array
+    {
+        $trim = ltrim($raw);
+        if ($trim === '' || $trim[0] !== '{') { return null; }
+        try {
+            $obj = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\Throwable) {
+            return null;
+        }
+        if (!is_array($obj) || !isset($obj['selected'])) { return null; }
+        // Normalize
+        $norm = [
+            'selected' => [
+                'id' => isset($obj['selected']['id']) ? (is_numeric($obj['selected']['id']) ? (int)$obj['selected']['id'] : null) : null,
+                'code' => isset($obj['selected']['code']) ? (string)$obj['selected']['code'] : null,
+                'name' => isset($obj['selected']['name']) ? (string)$obj['selected']['name'] : null,
+            ],
+            'alternative' => [
+                'id' => isset($obj['alternative']['id']) ? (is_numeric($obj['alternative']['id']) ? (int)$obj['alternative']['id'] : null) : null,
+                'code' => isset($obj['alternative']['code']) ? (string)$obj['alternative']['code'] : null,
+                'name' => isset($obj['alternative']['name']) ? (string)$obj['alternative']['name'] : null,
+            ],
+            'confidence' => isset($obj['confidence']) && is_numeric($obj['confidence']) ? max(0, min(1, (float)$obj['confidence'])) : null,
+            'reason' => isset($obj['reason']) ? (string)$obj['reason'] : null,
+        ];
+        return $norm;
+    }
+
+    /**
+     * Resolve an activity id from a partial selection record {id, code, name}.
+     */
+    private function resolveActivityFromSelection(array $sel): ?int
+    {
+        if (!empty($sel['id'])) {
+            $found = Activity::find((int)$sel['id']);
+            if ($found) { return $found->id; }
+        }
+        if (!empty($sel['code'])) {
+            $found = Activity::where('code', (string)$sel['code'])->first();
+            if ($found) { return $found->id; }
+        }
+        if (!empty($sel['name'])) {
+            $found = Activity::where('name', (string)$sel['name'])->first();
+            if ($found) { return $found->id; }
+        }
+        return null;
     }
 }

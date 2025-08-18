@@ -76,6 +76,8 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::post('title', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveTitle'])->name('title');
         Route::post('summary', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveSummary'])->name('summary');
         Route::post('thesaurus', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveThesaurus'])->name('thesaurus');
+    Route::post('thesaurus/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurus'])->name('thesaurus.suggest');
+    Route::post('thesaurus/auto', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'autoSuggestThesaurus'])->name('thesaurus.auto');
         Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
     });
 });

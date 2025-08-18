@@ -18,34 +18,35 @@ class AiSeeder extends Seeder
 
     private function seedPrompts($now): void
     {
-        // Seed Prompts (system prompts used as base instructions)
-        $prompts = [
+        $ex = "Exemples :\n"; $ex1 = "Exemple :\n"; $fmt = "Format :\n";
+        $prompts = array_merge(
+            $this->promptsReformulate($ex, $ex1),
+            $this->promptsSummarize($fmt),
+            $this->promptsAssignThesaurus($fmt),
             [
-                'title' => 'record_reformulate',
-                'content' => "Tu es un assistant archivistique. Reformule les titres de dossiers pour qu'ils soient clairs, concis et informatifs. Respecte la langue d'origine (FR). Ne renvoie que le nouveau titre sans commentaire.",
-                'is_system' => true,
-            ],
-            [
-                'title' => 'record_summarize',
-                'content' => "Tu es un assistant archivistique. Résume des contenus de dossiers en 3 à 5 phrases maximum, en français, en conservant les informations clés et le contexte administratif.",
-                'is_system' => true,
-            ],
-            [
-                'title' => 'assign_activity',
-                'content' => "Tu aides à l'indexation par activités. Choisis les activités les plus pertinentes parmi une liste fournie, en te basant uniquement sur le contenu.",
-                'is_system' => true,
-            ],
-            [
-                'title' => 'assign_thesaurus',
-                'content' => "Tu aides à l'indexation avec un thésaurus. Propose des libellés préférentiels pertinents à partir d'une liste fournie.",
-                'is_system' => true,
-            ],
-            [
-                'title' => 'slip_summarize',
-                'content' => "Tu es un assistant archivistique. Génère un résumé synthétique d'un ensemble de slips (bordereaux), en mettant en évidence les points saillants.",
-                'is_system' => true,
-            ],
-        ];
+                [
+                    'title' => 'assign_activity',
+                    'content' => "Tu aides à l'indexation par activités. Choisis les activités les plus pertinentes parmi une liste fournie, en te basant uniquement sur le contenu.",
+                    'is_system' => true,
+                ],
+                [
+                    'title' => 'action.assign_activity.user',
+                    'content' =>
+                        "Voici la liste complète des activités disponibles (id | code | name), une par ligne :\n" .
+                        "{{activities}}\n\n" .
+                        "Contexte (si présent) :\n{{context}}\n\n" .
+                        "Tâche : choisis l'activité la plus pertinente (selected) et propose une alternative (alternative).\n" .
+                        "Réponds STRICTEMENT en JSON valide (sans texte additionnel) avec ce schéma :\n" .
+                        "{\n  \"selected\": { \"id\": <int|null>, \"code\": <string|null>, \"name\": <string|null> },\n  \"alternative\": { \"id\": <int|null>, \"code\": <string|null>, \"name\": <string|null> },\n  \"confidence\": <number 0..1>,\n  \"reason\": <string court en FR>\n}\n",
+                    'is_system' => false,
+                ],
+                [
+                    'title' => 'slip_summarize',
+                    'content' => "Tu es un assistant archivistique. Génère un résumé synthétique d'un ensemble de slips (bordereaux), en mettant en évidence les points saillants.",
+                    'is_system' => true,
+                ],
+            ]
+        );
 
         foreach ($prompts as $p) {
             $keys = ['title' => $p['title']];
@@ -70,6 +71,154 @@ class AiSeeder extends Seeder
 
             DB::table('prompts')->updateOrInsert($keys, $updates);
         }
+    }
+
+    private function promptsReformulate(string $ex, string $ex1): array
+    {
+        return [
+            [
+                'title' => 'record_reformulate',
+                'content' =>
+                    "Tu es un assistant archivistique. Reformule les intitulés de dossiers selon les règles archivistiques françaises afin qu'ils soient clairs, concis et informatifs.\n\n" .
+                    "Règles de présentation :\n" .
+                    "• Point-tiret (. —) pour séparer l'objet principal du reste (recommandé).\n" .
+                    "• Virgule (,) : données de même niveau ; point-virgule (;) : éléments d'analyse de même nature ; deux points (:) : typologie ; point (.) : termine une sous-partie.\n" .
+                    "• Mise en facteur commun : regrouper le commun dans des niveaux intermédiaires, du général vers le particulier ; éviter 'Idem'.\n" .
+                    "• Mots-outils utiles : avec, dont, contient, concerne, en particulier, notamment, aussi, ne concerne que.\n\n" .
+                    "1) Intitulé à UN objet\n" .
+                    "Structure de base : Objet, action : typologie documentaire. Dates extrêmes\n" .
+                    $ex .
+                    "- Rouen, aménagement du quartier Sainte-Thérèse. 1956-1985\n" .
+                    "- Commission de surveillance de la prison départementale de Lons-le-Saunier : registres des délibérations. 1827\n" .
+                    "- Personnel de la mairie, attribution de la médaille du travail : liste des bénéficiaires. 1950-1960\n" .
+                    "Variante point-tiret (recommandée) : Objet. — Action : typologie documentaire. Dates extrêmes\n" .
+                    $ex .
+                    "- Rouen. — Aménagement du quartier Sainte-Thérèse. 1956-1985\n" .
+                    "- Personnel de la mairie. — Attribution de la médaille du travail : liste des bénéficiaires. 1950-1960\n\n" .
+                    "2) Intitulé à DEUX objets\n" .
+                    "Structure (actions différentes) : Objet, action (dates) ; autre action (dates). Dates extrêmes\n" .
+                    $ex .
+                    "- Gymnase, construction (1958-1962) ; extension (1983). 1958-1983\n" .
+                    "- Médecins, autorisations d'exercer : demandes, listes tenues à jour des autorisations accordées. an XI-1896\n" .
+                    "Variante point-tiret : Objet. — Action (dates). Extension (dates). Dates extrêmes\n" .
+                    $ex1 .
+                    "- Gymnase. — Construction (1958-1962). Extension (1983). 1958-1983\n" .
+                    "Structure (typologies différentes) : Objet, action : typologie, autre typologie. Dates extrêmes\n" .
+                    $ex1 .
+                    "- Sociétés de gymnastique, création : demandes de subvention, plans d'un stand de tir. 1887-1903\n\n" .
+                    "3) Intitulé à TROIS objets ou plus\n" .
+                    "Structure hiérarchisée : Objet principal. — Objet secondaire : typologie (dates). Autre objet secondaire : typologie (dates), autre typologie (dates). Dates extrêmes\n" .
+                    $ex .
+                    "- Géomètres du cadastre. — Effectifs : états nominatifs (1844). Rémunération : correspondance, décomptes des travaux faits, arrêtés préfectoraux fixant les indemnités, rapports (an XI-1869), états des sommes allouées (1810, 1844-1845). an XI-1869\n" .
+                    "- Édifices communaux. — Mairie, reconstruction : plans (1880-1900), correspondance (1892-1899) ; extension : procès-verbal d'adjudication des travaux (1933). Écoles, aménagement : devis (par ordre alphabétique des entreprises, 1872-1930). 1872-1933\n\n" .
+                    "Exemples d'usage des mots-outils :\n" .
+                    "- Maison de la culture. — Construction, concerne aussi la rénovation du parking commun avec la médiathèque (1978-1986).\n" .
+                    "- Débits de boissons. — Réglementation, concerne en particulier les horaires d'ouverture (1967-1973).\n" .
+                    "- Gymnase. — Entretien (avec plans, 1987-1992).\n\n" .
+                    "Contraintes de sortie : renvoyer uniquement le nouvel intitulé, sur une seule ligne, sans guillemets ni commentaire.",
+                'is_system' => true,
+            ],
+            [
+                'title' => 'action.reformulate_title.user',
+                'content' =>
+                    "Reformule l'intitulé archivistique ci-dessous en respectant strictement les règles suivantes (FR). N'invente rien ; conserve les dates existantes et positionne-les en fin comme dates extrêmes si pertinent.\n\n" .
+                    "Règles et ponctuation :\n" .
+                    "• Point-tiret (. —) recommandé pour séparer l'objet principal du reste.\n" .
+                    "• Virgule : niveau équivalent ; point-virgule : éléments de même nature ; deux points : typologie ; point : clôt une sous-partie.\n" .
+                    "• Mise en facteur commun : général → particulier ; éviter 'Idem'.\n\n" .
+                    "1) UN objet — Structure : Objet. — Action : typologie documentaire. Dates extrêmes\n" .
+                    $ex .
+                    "- Rouen. — Aménagement du quartier Sainte-Thérèse. 1956-1985\n" .
+                    "- Personnel de la mairie. — Attribution de la médaille du travail : liste des bénéficiaires. 1950-1960\n\n" .
+                    "2) DEUX objets — Structures :\n" .
+                    "- Objet, action (dates) ; autre action (dates). Dates extrêmes\n" .
+                    "- Objet. — Action (dates). Extension (dates). Dates extrêmes\n" .
+                    $ex .
+                    "- Gymnase, construction (1958-1962) ; extension (1983). 1958-1983\n" .
+                    "- Gymnase. — Construction (1958-1962). Extension (1983). 1958-1983\n" .
+                    "- Médecins, autorisations d'exercer : demandes, listes tenues à jour des autorisations accordées. an XI-1896\n\n" .
+                    "3) TROIS objets ou plus — Structure hiérarchisée : Objet principal. — Objet secondaire : typologie (dates). Autre objet secondaire : typologie (dates), autre typologie (dates). Dates extrêmes\n" .
+                    $ex .
+                    "- Géomètres du cadastre. — Effectifs : états nominatifs (1844). Rémunération : correspondance, décomptes des travaux faits, arrêtés préfectoraux fixant les indemnités, rapports (an XI-1869), états des sommes allouées (1810, 1844-1845). an XI-1869\n" .
+                    "- Édifices communaux. — Mairie, reconstruction : plans (1880-1900), correspondance (1892-1899) ; extension : procès-verbal d'adjudication des travaux (1933). Écoles, aménagement : devis (par ordre alphabétique des entreprises, 1872-1930). 1872-1933\n\n" .
+                    "Exemples d'usage :\n" .
+                    "- Maison de la culture. — Construction, concerne aussi la rénovation du parking commun avec la médiathèque (1978-1986).\n" .
+                    "- Débits de boissons. — Réglementation, concerne en particulier les horaires d'ouverture (1967-1973).\n" .
+                    "- Gymnase. — Entretien (avec plans, 1987-1992).\n\n" .
+                    "Contraintes de sortie : une seule ligne, claire et concise ; renvoyer uniquement le nouveau titre, sans guillemets ni commentaires.\n\n" .
+                    "Intitulé d'origine :\n{{title}}",
+                'is_system' => false,
+            ],
+        ];
+    }
+
+    private function promptsSummarize(string $fmt): array
+    {
+        return [
+            [
+                'title' => 'record_summarize',
+                'content' =>
+                    "Tu es un assistant archivistique.\n" .
+                    "1) Résume le contenu des dossiers en 3 à 5 phrases (FR), en conservant les informations clés et le contexte administratif.\n" .
+                    "2) Puis extrais 5 mots-clés, chacun accompagné de 3 synonymes en français.\n" .
+                    "   Classe chaque mot-clé dans l'une des catégories suivantes : Personnalité (P), Matière (M), Énergie (E), Espace (E).\n" .
+                    "   - Personnalité (P) : l'objet principal d'étude, son essence\n" .
+                    "   - Matière (M) : composants, matériaux ou éléments constitutifs\n" .
+                    "   - Énergie (E) : actions, processus ou fonctions liés au sujet\n" .
+                    "   - Espace (E) : localisation géographique ou spatiale\n" .
+                    $fmt .
+                    "Résumé : <ton résumé>\n" .
+                    "Mots-clés (5) :\n" .
+                    "- [Catégorie] Mot-clé — synonymes : s1; s2; s3",
+                'is_system' => true,
+            ],
+            [
+                'title' => 'action.summarize.user',
+                'content' =>
+                    "À partir du texte suivant, fournis :\n" .
+                    "1) Un résumé en 3 à 5 phrases (FR), concis et informatif.\n" .
+                    "2) 5 mots-clés, chacun avec 3 synonymes (FR).\n" .
+                    "   Catégorise chaque mot-clé parmi : Personnalité (P), Matière (M), Énergie (E), Espace (E).\n" .
+                    "   - P : essence/objet principal ; M : composants/éléments ; E (Énergie) : actions/processus/fonctions ; E (Espace) : localisation.\n" .
+                    "Contraintes : n'invente pas de faits ; reste fidèle au texte ; une ligne par mot-clé.\n\n" .
+                    $fmt .
+                    "Résumé : <ton résumé>\n" .
+                    "Mots-clés (5) :\n" .
+                    "- [Catégorie] Mot-clé — synonymes : s1; s2; s3\n\n" .
+                    "Texte :\n{{text}}",
+                'is_system' => false,
+            ],
+        ];
+    }
+
+    private function promptsAssignThesaurus(string $fmt): array
+    {
+        return [
+            [
+                'title' => 'assign_thesaurus',
+                'content' =>
+                    "Tu aides à l'indexation avec un thésaurus.\n" .
+                    "À partir d'un contenu fourni, propose 5 à 10 libellés préférentiels (FR) pertinents.\n" .
+                    "Pour chaque libellé, fournis 1 à 3 synonymes (FR) utiles.\n" .
+                    "Catégorise chaque proposition : P (Personnalité), M (Matière), En (Énergie), Es (Espace).\n" .
+                    $fmt .
+                    "- [Catégorie] Libellé — synonymes : s1; s2; s3",
+                'is_system' => true,
+            ],
+            [
+                'title' => 'action.assign_thesaurus.user',
+                'content' =>
+                    "À partir du contenu ci-dessous, propose 5 à 10 libellés préférentiels (FR) pertinents du thésaurus.\n" .
+                    "Pour chaque ligne :\n" .
+                    "- Indique une catégorie entre crochets : P (Personnalité), M (Matière), En (Énergie), Es (Espace).\n" .
+                    "- Donne le libellé principal (prefLabel) puis 1 à 3 synonymes séparés par des points-virgules.\n" .
+                    "- Évite les doublons et les termes trop généraux.\n\n" .
+                    $fmt .
+                    "- [Catégorie] Libellé — synonymes : s1; s2; s3\n\n" .
+                    "Contenu :\n{{text}}",
+                'is_system' => false,
+            ],
+        ];
     }
 
     private function seedSettings($now): void

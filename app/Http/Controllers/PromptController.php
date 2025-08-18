@@ -290,6 +290,24 @@ class PromptController extends Controller
             $ids = (array) $request->input('entity_ids', []);
             $context['text'] = $this->buildRecordsThesaurusText($ids);
         }
+        // If activity assignment, provide full activities list (id, code, name) and optional record context
+        if ($effectiveAction === 'assign_activity') {
+            if (empty($context['activities'])) {
+                $context['activities'] = $this->buildActivitiesListText();
+            }
+            if (empty($context['context']) && $request->string('entity')->toString() === 'record') {
+                $ids = (array) $request->input('entity_ids', []);
+                $context['context'] = $this->buildRecordsActivityContext($ids);
+            }
+        }
+        // If title reformulation and no title provided, fetch record name as source title
+        if ($effectiveAction === 'reformulate_title' && empty($context['title']) && $request->string('entity')->toString() === 'record') {
+            $ids = array_values(array_filter(array_map('intval', (array)$request->input('entity_ids', [])), fn($v) => $v > 0));
+            if (!empty($ids)) {
+                $rec = Record::query()->where('id', $ids[0])->first(['id','name']);
+                if ($rec && !empty($rec->name)) { $context['title'] = (string) $rec->name; }
+            }
+        }
 
         // Load user message template from DB by action title (e.g., action.reformulate_title.user)
         $templateTitle = 'action.' . $effectiveAction . '.user';
@@ -319,10 +337,18 @@ class PromptController extends Controller
             $options['max_tokens'] = 300;
             $options['temperature'] = 0.2;
             $options['timeout'] = 60000; // 60s for indexing
+        } elseif ($effectiveAction === 'assign_activity') {
+            $options['max_tokens'] = 180;
+            $options['temperature'] = 0.1;
+            $options['timeout'] = 30000; // JSON selection should be quick
         } elseif ($effectiveAction === 'summarize') {
-            $options['max_tokens'] = 250;
+            $options['max_tokens'] = 350; // allow room for 5 keywords with synonyms
             $options['temperature'] = 0.3;
-            $options['timeout'] = 35000; // 35s for summary
+            $options['timeout'] = 40000; // 40s to accommodate extra output
+        } elseif ($effectiveAction === 'reformulate_title') {
+            $options['max_tokens'] = 60;
+            $options['temperature'] = 0.2;
+            $options['timeout'] = 25000; // titles are short
         } else {
             $options['timeout'] = 30000;
         }
@@ -347,10 +373,12 @@ class PromptController extends Controller
                 $vars['text'] = (string) ($ctx['text'] ?? '');
                 break;
             case 'assign_activity':
-                $vars['candidates'] = implode(', ', array_map('strval', (array)($ctx['candidates'] ?? [])));
+                $vars['activities'] = (string) ($ctx['activities'] ?? '');
+                $vars['context'] = (string) ($ctx['context'] ?? '');
                 break;
             case 'assign_thesaurus':
                 $vars['pref_labels'] = implode(', ', array_map('strval', (array)($ctx['pref_labels'] ?? [])));
+                $vars['text'] = (string) ($ctx['text'] ?? '');
                 break;
             case 'summarize_slip':
                 $items = (array)($ctx['slip_records'] ?? []);
@@ -377,12 +405,48 @@ class PromptController extends Controller
     private function fallbackUserPrompt(string $action, array $ctx): string
     {
         return match ($action) {
-            'reformulate_title' => "Reformule ce titre, renvoie uniquement le nouveau titre :\n\nTitre:\n" . ((string)($ctx['title'] ?? '')),
-            'summarize' => "Résume ce texte en 3 à 5 phrases (FR) :\n\n" . ((string)($ctx['text'] ?? '')),
-            'assign_activity' => "Identifie les activités pertinentes parmi: " . implode(', ', array_map('strval', (array)($ctx['candidates'] ?? []))) . ". Réponds en texte clair.",
-            'assign_thesaurus' => isset($ctx['text']) && $ctx['text'] !== ''
-                ? "À partir du contenu ci-dessous, propose 5 à 10 libellés précis de thésaurus (FR), de préférence des 'prefLabel', en évitant les doublons et les termes trop généraux. Réponds uniquement par une liste à puces de libellés.\n\n" . (string)$ctx['text']
-                : "Propose des libellés pertinents à partir de: " . implode(', ', array_map('strval', (array)($ctx['pref_labels'] ?? []))) . ".",
+            'reformulate_title' =>
+                "Reformule l'intitulé archivistique ci-dessous en respectant strictement ces règles (FR) :\n" .
+                "- Utilise le point-tiret (. —) pour séparer l'objet principal du reste (préféré).\n" .
+                "- Virgule : données de même niveau ; point-virgule : éléments d'analyse de même nature ; deux points : typologie ; point : termine une sous-partie.\n" .
+                "- 1 objet : Objet. — Action : typologie documentaire. Dates extrêmes\n" .
+                "- 2 objets : Objet. — Action (dates). Autre action (dates). Dates extrêmes\n" .
+                "- ≥3 objets : Objet principal. — Objet secondaire : typologie (dates). Autre objet secondaire : typologie (dates). Dates extrêmes\n" .
+                "- Mets en facteur commun ce qui peut l'être, du général vers le particulier ; évite 'Idem'.\n" .
+                "- Mots-outils possibles : avec, dont, contient, concerne, en particulier, notamment, aussi, ne concerne que.\n" .
+                "- N'invente rien ; conserve les dates existantes et place-les en fin comme dates extrêmes si pertinent.\n\n" .
+                "Contraintes de sortie :\n" .
+                "- Une seule ligne, claire et concise ; renvoie uniquement le nouveau titre, sans guillemets ni commentaires.\n\n" .
+                "Intitulé d'origine :\n" . ((string)($ctx['title'] ?? '')),
+            'summarize' =>
+                "À partir du texte suivant :\n" .
+                "1) Fournis un résumé en 3 à 5 phrases (FR), concis et fidèle.\n" .
+                "2) Puis extrais 5 mots-clés, chacun avec 3 synonymes (FR), et catégorise-les :\n" .
+                "   - P (Personnalité) : objet principal / essence\n" .
+                "   - M (Matière) : composants / éléments\n" .
+                "   - E (Énergie) : actions / processus / fonctions\n" .
+                "   - E (Espace) : localisation géographique ou spatiale\n" .
+                "Format :\n" .
+                "Résumé : <résumé>\n" .
+                "Mots-clés (5) :\n" .
+                "- [Catégorie] Mot-clé — synonymes : s1; s2; s3\n\n" .
+                ((string)($ctx['text'] ?? '')),
+            'assign_activity' =>
+                "Voici la liste complète des activités disponibles (id | code | name), une par ligne :\n" .
+                ((string)($ctx['activities'] ?? '')) . "\n\n" .
+                "Contexte (si présent) :\n" . ((string)($ctx['context'] ?? '')) . "\n\n" .
+                "Tâche : choisis l'activité la plus pertinente (selected) et propose une alternative (alternative).\n" .
+                "Réponds STRICTEMENT en JSON valide (sans texte additionnel) avec ce schéma :\n" .
+                "{\n  \"selected\": { \"id\": <int|null>, \"code\": <string|null>, \"name\": <string|null> },\n  \"alternative\": { \"id\": <int|null>, \"code\": <string|null>, \"name\": <string|null> },\n  \"confidence\": <number 0..1>,\n  \"reason\": <string court en FR>\n}\n",
+                        'assign_thesaurus' => isset($ctx['text']) && $ctx['text'] !== ''
+                                ? "À partir du contenu ci-dessous, propose 5 à 10 libellés préférentiels (FR) pertinents du thésaurus.\n" .
+                                    "Pour chaque ligne :\n" .
+                                    "- Indique une catégorie entre crochets : P (Personnalité), M (Matière), En (Énergie), Es (Espace).\n" .
+                                    "- Donne le libellé principal (prefLabel) puis 1 à 3 synonymes séparés par des points-virgules.\n" .
+                                    "- Évite les doublons et les termes trop généraux.\n" .
+                                    "Format :\n" .
+                                    "- [Catégorie] Libellé — synonymes : s1; s2; s3\n\n" . (string)$ctx['text']
+                                : "Propose des libellés pertinents à partir de: " . implode(', ', array_map('strval', (array)($ctx['pref_labels'] ?? []))) . ".",
             'summarize_slip' => "Génère un résumé synthétique de ces slips:\n\n" . substr(json_encode((array)($ctx['slip_records'] ?? []), JSON_UNESCAPED_UNICODE), 0, 4000),
             default => 'Provide assistance based on the given context.',
         };
@@ -408,6 +472,37 @@ class PromptController extends Controller
             $text = json_encode($res);
         }
         return $text;
+    }
+
+    /**
+     * Builds a per-line text list of all activities: "id | code | name".
+     */
+    private function buildActivitiesListText(): string
+    {
+        $rows = Activity::query()->orderBy('id')->get(['id','code','name']);
+        $lines = [];
+        foreach ($rows as $r) {
+            $lines[] = $r->id . ' | ' . (string)($r->code ?? '') . ' | ' . (string)($r->name ?? '');
+        }
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Builds a short context from records to help choose an activity.
+     */
+    private function buildRecordsActivityContext(array $ids): string
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids), fn($v) => $v > 0));
+        if (empty($ids)) { return ''; }
+        $recs = Record::query()->whereIn('id', $ids)->get(['id','name','content','activity_id']);
+        $buf = [];
+        foreach ($recs as $r) {
+            $name = trim((string)($r->name ?? ''));
+            $content = trim((string)($r->content ?? ''));
+            if ($content !== '') { $content = mb_substr(preg_replace('/\s+/u',' ', $content), 0, 300); }
+            $buf[] = "Record #{$r->id}: " . ($name !== '' ? $name : '[sans titre]') . ($content !== '' ? " — " . $content : '');
+        }
+        return implode("\n", $buf);
     }
 
     /**
