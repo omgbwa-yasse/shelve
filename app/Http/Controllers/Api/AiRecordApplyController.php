@@ -116,6 +116,42 @@ class AiRecordApplyController extends Controller
     }
 
     /**
+     * Suggest from client-provided JSON array of items: [{label, category, synonyms[]}]
+     * This supports your “je veux les données en JSON … et la recherche” use case directly.
+     */
+    public function suggestThesaurusFromJson(Request $request, Record $record)
+    {
+        Gate::authorize('records_edit');
+        $data = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.label' => 'required|string|min:1',
+            'items.*.category' => 'nullable|string',
+            'items.*.synonyms' => 'nullable|array',
+            'items.*.synonyms.*' => 'nullable|string',
+        ]);
+
+        $suggestions = [];
+        foreach ($data['items'] as $it) {
+            $label = trim((string)$it['label']);
+            if ($label === '') { continue; }
+            $syn = array_values(array_filter(array_map('trim', (array)($it['synonyms'] ?? []))));
+            $matches = $this->findConceptMatchesForTerms(array_merge([$label], $syn));
+            $suggestions[] = [
+                'label' => $label,
+                'category' => $it['category'] ?? null,
+                'synonyms' => $syn,
+                'matches' => $matches,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'suggestions' => $suggestions,
+        ]);
+    }
+
+    /**
      * End-to-end: build record text, call AI summarization prompt, extract keyword lines, match concepts, return suggestions.
      */
     public function autoSuggestThesaurus(Request $request, Record $record)
@@ -395,7 +431,12 @@ class AiRecordApplyController extends Controller
                 $k = 'p:'.$c->id;
                 if (!isset($seen[$k])) {
                     $seen[$k] = true;
-                    $matches[] = ['concept_id' => $c->id, 'label' => $term, 'type' => 'prefLabel'];
+                    $matches[] = [
+                        'concept_id' => $c->id,
+                        'preferred_label' => $c->preferred_label ?? null,
+                        'matched' => $term,
+                        'type' => 'prefLabel'
+                    ];
                 }
             }
             // AltLabel matches
@@ -408,7 +449,12 @@ class AiRecordApplyController extends Controller
                 $k = 'a:'.$c->id;
                 if (!isset($seen[$k])) {
                     $seen[$k] = true;
-                    $matches[] = ['concept_id' => $c->id, 'label' => $term, 'type' => 'altLabel'];
+                    $matches[] = [
+                        'concept_id' => $c->id,
+                        'preferred_label' => $c->preferred_label ?? null,
+                        'matched' => $term,
+                        'type' => 'altLabel'
+                    ];
                 }
             }
         }

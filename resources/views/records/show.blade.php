@@ -722,18 +722,30 @@
                     break;
                 }
                 case 'assign_thesaurus': {
-                    const items = parseList(output);
-                    currentAi.parsed = { labels: items };
+                    // Parse categorized lines like: "- [M] Stage — synonymes : ..."
+                    const lines = (output||'').replace(/\r/g,'').split(/\n+/).map(t=>t.trim()).filter(Boolean);
+                    const items = [];
+                    for(const line of lines){
+                        if (/^(résumé\s*:|mots[- ]clés|keywords)/i.test(line)) continue;
+                        const stripped = line.replace(/^([\-\*•\d]+[).\]]?)\s*/u,'');
+                        let category=null, rest=stripped;
+                        const m = /^[[]([^\]]+)]\s*(.*)$/.exec(stripped);
+                        if(m){ category=m[1].trim(); rest=m[2].trim(); }
+                        let label=rest, syn='';
+                        const sep = /(\s—\s|\s-\s)/u;
+                        if(sep.test(rest)){
+                            const p = rest.split(sep); label=p[0].trim(); syn=(p.slice(-1)[0]||'').trim();
+                        }
+                        let synonyms=[];
+                        const sm = /synonymes?\s*:\s*(.*)$/iu.exec(syn);
+                        if(sm){ synonyms = sm[1].split(/[;,]+/).map(s=>s.trim()).filter(Boolean); }
+                        else if(syn){ synonyms = syn.split(/[;,]+/).map(s=>s.trim()).filter(Boolean); }
+                        if(label){ items.push({ label, category, synonyms }); }
+                    }
+                    currentAi.parsed = { items };
                     aiModalTitle.textContent = '{{ __('index_thesaurus') ?? 'Indexer thésaurus' }}';
-                    html = `
-                        <div class="mb-2">{{ __('select_keywords_to_apply') ?? 'Sélectionnez les mots-clés à appliquer' }}</div>
-                        <div class="d-flex flex-wrap gap-2">
-                            ${items.map((k,i)=>`<div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="kw_${i}" value="${k.replaceAll('"','&quot;')}" checked>
-                                <label class="form-check-label" for="kw_${i}">${k}</label>
-                            </div>`).join('')}
-                        </div>
-                    `;
+                    // Ask backend for DB matches
+                    html = `<div class="text-muted">Recherche des correspondances dans le thésaurus…</div>`;
                     break;
                 }
                 case 'assign_activity': {
@@ -757,6 +769,49 @@
                 }
             }
             aiModalBody.innerHTML = html;
+            // For thesaurus, fetch suggestions based on parsed items and render checkable list
+            if(action==='assign_thesaurus' && currentAi.parsed?.items?.length){
+                (async()=>{
+                    try{
+                        await ensureCsrfCookie();
+                        const url = `/api/records/${recordId}/ai/thesaurus/suggest-json`;
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            headers: buildAuthHeaders(),
+                            credentials: 'same-origin',
+                            body: JSON.stringify({ items: currentAi.parsed.items })
+                        });
+                        const data = await resp.json();
+                        if(!resp.ok || data?.status!=='ok') throw new Error(data?.message||'Erreur suggestions');
+                        const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+                        // Build UI: group by provided label with checkboxes of DB concepts
+                        let ui = '';
+                        if(suggestions.length===0){ ui = '<div class="alert alert-warning">Aucune correspondance trouvée.</div>'; }
+                        else {
+                            ui = suggestions.map((it,idx)=>{
+                                const head = `<div class="mb-1"><strong>${it.label}</strong>${it.category?` <span class="badge bg-secondary ms-1">${it.category}</span>`:''}</div>`;
+                                const chips = (it.synonyms||[]).map(s=>`<span class="badge bg-light text-dark me-1">${s}</span>`).join('');
+                                const matches = (it.matches||[]).map((m,j)=>{
+                                    const text = (m.preferred_label||`#${m.concept_id}`) + (m.type==='altLabel'?` <small class="text-muted">(alt: ${m.matched})</small>`:'');
+                                    return `<div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="sug_${idx}_${j}" data-concept-id="${m.concept_id}" checked>
+                                        <label class="form-check-label" for="sug_${idx}_${j}">${text}</label>
+                                    </div>`;
+                                }).join('') || '<div class="text-muted">Aucun match en base pour ce libellé.</div>';
+                                return `<div class="border rounded p-2 mb-2">
+                                    ${head}
+                                    ${chips?`<div class="mb-2">${chips}</div>`:''}
+                                    ${matches}
+                                </div>`;
+                            }).join('');
+                        }
+                        aiModalBody.innerHTML = ui || '<div class="text-muted">Aucune suggestion.</div>';
+                    }catch(e){
+                        console.error('[AI] thesaurus suggest-json error', e);
+                        aiModalBody.innerHTML = `<div class="alert alert-danger">${e.message||'Erreur de suggestion'}</div>`;
+                    }
+                })();
+            }
             try{ new bootstrap.Modal(aiModalEl).show(); }catch(e){ console.warn('Modal error', e); }
         }
 
@@ -781,11 +836,12 @@
                     break;
                 }
                 case 'assign_thesaurus': {
-                    const checks = aiModalBody.querySelectorAll('input.form-check-input[type="checkbox"]:checked');
-                    const labels = Array.from(checks).map(c=>c.value).filter(Boolean);
-                    if(labels.length===0){ showError('Sélectionnez au moins un mot-clé'); return; }
+                    // Collect selected concept IDs
+                    const checks = aiModalBody.querySelectorAll('input.form-check-input[type="checkbox"]:checked[data-concept-id]');
+                    const ids = Array.from(checks).map(c=>parseInt(c.getAttribute('data-concept-id'),10)).filter(n=>Number.isInteger(n));
+                    if(ids.length===0){ showError('Sélectionnez au moins un concept'); return; }
                     url = `/api/records/${recordId}/ai/thesaurus`;
-                    payload = { concepts: labels.map(l=>({ preferred_label: l })) };
+                    payload = { concepts: ids.map(id=>({ id, weight: 0.7 })) };
                     break;
                 }
                 case 'assign_activity': {
