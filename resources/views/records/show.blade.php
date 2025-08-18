@@ -242,7 +242,7 @@
                     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                     <span class="ms-2">{{ __('processing') ?? 'Traitement en cours…' }}</span>
                 </output>
-                <div id="aiError" class="alert alert-danger d-none mt-2"></div>
+                <div id="aiError" class="alert alert-danger alert-permanent d-none mt-2"></div>
                 <div id="aiResult" class="mt-2 d-none">
                     <h6 class="fw-semibold">{{ __('ai_output') ?? 'Résultat AI' }}</h6>
                     <pre class="bg-light p-2 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
@@ -668,7 +668,11 @@
             statusEl && statusEl.classList.toggle('d-none', !busy);
         }
         function showError(msg){
-            if(!errorEl) return; errorEl.textContent = (msg && msg.toString()) || 'Erreur AI'; errorEl.classList.remove('d-none');
+            if(!errorEl) return;
+            // Hide previous result when showing an error
+            if(resultWrap){ resultWrap.classList.add('d-none'); }
+            errorEl.textContent = (msg && msg.toString()) || 'Erreur AI';
+            errorEl.classList.remove('d-none');
         }
         function clearError(){ if(errorEl) errorEl.classList.add('d-none'); }
         function showResult(text){ if(resultWrap && resultPre){ resultPre.textContent = text || ''; resultWrap.classList.remove('d-none'); } }
