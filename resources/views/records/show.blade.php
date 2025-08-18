@@ -628,6 +628,7 @@
             candidates: @json($activityCandidates ?? []),
             slip_records: []
         };
+    console.log('[AI:init] record/show', { recordId, hasContent: !!contextBase.text, titleLen: (contextBase.title||'').length, prefLabels: contextBase.pref_labels, candidates: contextBase.candidates });
 
     // --- Auth/CSRF helpers for Sanctum/Session ---
     function getCookie(name){
@@ -636,10 +637,15 @@
     }
     async function ensureCsrfCookie(){
         // If no XSRF-TOKEN cookie, ask Sanctum to set it
-        if(!getCookie('XSRF-TOKEN')){
+        const hasXsrf = !!getCookie('XSRF-TOKEN');
+        if(!hasXsrf){
+            console.log('[AI] ensureCsrfCookie: XSRF cookie missing, requesting /sanctum/csrf-cookie');
             try{
                 await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
-            }catch(e){ /* ignore, will fail later gracefully */ }
+                console.log('[AI] ensureCsrfCookie: cookie request done');
+            }catch(e){ console.warn('[AI] ensureCsrfCookie error', e); /* ignore, will fail later gracefully */ }
+        } else {
+            console.log('[AI] ensureCsrfCookie: XSRF cookie present');
         }
     }
     function buildAuthHeaders(){
@@ -653,6 +659,7 @@
         // Prefer Sanctum XSRF header when cookie exists, else fall back to meta CSRF
         if(xsrf){ headers['X-XSRF-TOKEN'] = xsrf; }
         else if(metaCsrf){ headers['X-CSRF-TOKEN'] = metaCsrf; }
+        console.log('[AI] buildAuthHeaders: using', { hasXsrf: !!xsrf, hasMeta: !!metaCsrf, keys: Object.keys(headers) });
         return headers;
     }
 
@@ -664,10 +671,12 @@
     let currentAi = { action: null, output: '', parsed: null };
 
         function setBusy(busy){
+            console.log('[AI] setBusy', { busy });
             buttons.forEach(b => b.disabled = !!busy);
             statusEl && statusEl.classList.toggle('d-none', !busy);
         }
         function showError(msg){
+            console.error('[AI] ERROR:', msg);
             if(!errorEl) return;
             // Hide previous result when showing an error
             if(resultWrap){ resultWrap.classList.add('d-none'); }
@@ -675,7 +684,10 @@
             errorEl.classList.remove('d-none');
         }
         function clearError(){ if(errorEl) errorEl.classList.add('d-none'); }
-        function showResult(text){ if(resultWrap && resultPre){ resultPre.textContent = text || ''; resultWrap.classList.remove('d-none'); } }
+        function showResult(text){
+            console.log('[AI] showResult', { length: (text||'').length, preview: (text||'').slice(0, 200) });
+            if(resultWrap && resultPre){ resultPre.textContent = text || ''; resultWrap.classList.remove('d-none'); }
+        }
 
         function uniqStrings(arr){ const s=new Set(); const out=[]; arr.forEach(v=>{ const t=(v||'').toString().trim(); if(t && !s.has(t)){ s.add(t); out.push(t); } }); return out; }
         function parseList(text){
@@ -683,6 +695,7 @@
             return uniqStrings(raw).slice(0, 30);
         }
         function openAiReviewModal(action, output){
+            console.log('[AI] openAiReviewModal', { action, outputLen: (output||'').length });
             if(!aiModalEl || !aiModalBody || !aiModalTitle){ return; }
             currentAi = { action, output, parsed: null };
             let html = '';
@@ -748,6 +761,7 @@
         }
 
     async function saveAiReview(){
+            console.log('[AI] saveAiReview:start', { action: currentAi?.action });
             if(!currentAi || !currentAi.action){ return; }
             let url = '';
             let payload = {};
@@ -784,6 +798,7 @@
                 default:
                     return;
             }
+            console.log('[AI] saveAiReview:request', { url, payload });
             try{
                 aiSaveBtn.disabled = true;
                 await ensureCsrfCookie();
@@ -800,6 +815,7 @@
                 let data;
                 try { data = await resp.json(); }
                 catch(_){ data = { message: (await resp.text()).slice(0,500) }; }
+                console.log('[AI] saveAiReview:response', { status: resp.status, ok: resp.ok, data });
                 if(resp.status === 401){
                     throw new Error('Non autorisé (401). Veuillez vous reconnecter.');
                 }
@@ -812,12 +828,14 @@
                 // Optionally refresh to show applied changes
                 setTimeout(()=>{ window.location.reload(); }, 800);
             }catch(e){
+                console.error('[AI] saveAiReview:error', e);
                 if (e.name === 'AbortError') {
                     showError('La sauvegarde a expiré. Réessayez.');
                 } else {
                     showError(e.message || 'Erreur');
                 }
             }finally{
+                console.log('[AI] saveAiReview:finally');
                 aiSaveBtn.disabled = false;
             }
         }
@@ -825,6 +843,7 @@
         async function runAction(btn){
             const action = btn.getAttribute('data-action');
             const promptId = btn.getAttribute('data-prompt-id');
+            console.log('[AI] runAction:click', { action, promptId });
             clearError(); showResult('');
             if(!promptId){ showError('Prompt introuvable pour cette action.'); return; }
             setBusy(true);
@@ -835,10 +854,13 @@
                     entity_ids: [recordId],
                     context: contextBase
                 };
+                console.log('[AI] runAction:requestBody', body);
                 await ensureCsrfCookie();
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), 25000);
-                const resp = await fetch(`/api/prompts/${promptId}/actions`, {
+                const url = `/api/prompts/${promptId}/actions`;
+                console.log('[AI] runAction:fetch', { url });
+                const resp = await fetch(url, {
                     method: 'POST',
                     headers: buildAuthHeaders(),
                     credentials: 'same-origin',
@@ -849,6 +871,7 @@
                 let data;
                 try { data = await resp.json(); }
                 catch(_){ data = { message: (await resp.text()).slice(0,500) }; }
+                console.log('[AI] runAction:response', { status: resp.status, ok: resp.ok, data });
                 if(resp.status === 401){
                     throw new Error('Non autorisé (401). Votre session a peut-être expiré. Connectez-vous puis réessayez.');
                 }
@@ -861,12 +884,14 @@
                 showResult(outText);
                 openAiReviewModal(action, outText);
             }catch(e){
+                console.error('[AI] runAction:error', e);
                 if (e.name === 'AbortError') {
                     showError('La requête AI a expiré. Vérifiez le fournisseur et réessayez.');
                 } else {
                     showError(e.message || 'Erreur AI');
                 }
             }finally{
+                console.log('[AI] runAction:finally');
                 setBusy(false);
             }
         }
@@ -877,11 +902,16 @@
             if(noPrompt){
                 buttons.forEach(b => { b.disabled = true; b.title = 'Prompts non disponibles'; });
                 showError('Prompts non disponibles. Vérifiez la base de données ou exécutez le seeder AI.');
+                console.warn('[AI] initAIActions: no prompts found on buttons');
             }
+            console.log('[AI] initAIActions: binding click handlers', { count: buttons.length });
             buttons.forEach(btn => btn.addEventListener('click', () => runAction(btn)));
         })();
 
-        if(aiSaveBtn){ aiSaveBtn.addEventListener('click', saveAiReview); }
+        if(aiSaveBtn){
+            console.log('[AI] binding saveAiReview click');
+            aiSaveBtn.addEventListener('click', saveAiReview);
+        }
     })();
 </script>
 @endpush

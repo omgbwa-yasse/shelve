@@ -281,8 +281,8 @@ class PromptController extends Controller
         }
         $messages[] = ['role' => 'user', 'content' => $userContent];
 
-    $defaultProvider = app(ProviderRegistry::class)->getSetting('default_provider', 'ollama');
-    $defaultModel = app(ProviderRegistry::class)->getSetting('default_model', config('ollama-laravel.model', 'gemma3:4b'));
+    $defaultProvider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+    $defaultModel = app(\App\Services\SettingService::class)->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
         $options = [
             'provider' => $request->input('model_provider', $defaultProvider),
             'model' => $request->input('model', $defaultModel),
