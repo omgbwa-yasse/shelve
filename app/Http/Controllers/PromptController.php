@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Prompt;
+use App\Models\Activity;
+use App\Models\Record;
+use App\Models\ThesaurusConcept;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\JsonResponse;
 use App\Services\AI\PromptTransactionService;
 use Illuminate\Support\Facades\DB;
 use AiBridge\Facades\AiBridge;
@@ -19,22 +25,44 @@ class PromptController extends Controller
         private ProviderRegistry $providers
     ) {}
 
+
+    /**
+     * List prompts with optional filters.
+     * @return JsonResponse
+     */
     public function index(Request $request)
     {
-        $q = DB::table('prompts');
-        if ($request->filled('is_system')) { $q->where('is_system', (bool)$request->boolean('is_system')); }
+        $q = Prompt::query();
+        if ($request->filled('is_system')) { $q->where('is_system', $request->boolean('is_system')); }
         if ($request->filled('organisation_id')) { $q->where('organisation_id', $request->integer('organisation_id')); }
         if ($request->filled('user_id')) { $q->where('user_id', $request->integer('user_id')); }
         return response()->json($q->orderByDesc('id')->paginate(20));
     }
 
+
+
+
+    /**
+     * Show a specific prompt by ID.
+     * @param int $id
+     * @return JsonResponse
+     */
     public function show(int $id)
     {
-        $row = DB::table('prompts')->where('id', $id)->first();
+        $row = Prompt::find($id);
         if (!$row) { return response()->json(['message' => 'Not found'], 404); }
         return response()->json($row);
     }
 
+
+
+
+    /**
+     * Perform an action using the specified prompt.
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
     public function actions(Request $request, int $id)
     {
         $validator = Validator::make($request->all(), [
@@ -51,7 +79,7 @@ class PromptController extends Controller
         if ($validator->fails()) {
             $response = response()->json(['errors' => $validator->errors()], 422);
         } else {
-            $prompt = DB::table('prompts')->where('id', $id)->first();
+            $prompt = Prompt::find($id);
             if (!$prompt) {
                 $response = response()->json(['message' => 'Prompt not found'], 404);
             } else {
@@ -107,6 +135,10 @@ class PromptController extends Controller
         return $response;
     }
 
+
+
+
+
     /**
      * Execute chat against AiBridge provider with optional streaming.
      * @return array{0:string,1:array|null} [text, usage]
@@ -117,9 +149,94 @@ class PromptController extends Controller
         if (!$provider) {
             throw new AiProviderNotConfiguredException("AI provider '{$providerName}' not configured.");
         }
+
+        // Extract simple roles from our limited usage (optional system + one user)
+        $systemContent = '';
+        $userContents = [];
+        foreach ($messages as $m) {
+            $role = $m['role'] ?? null; $content = $m['content'] ?? '';
+            if ($role === 'system' && $content) { $systemContent = (string) $content; }
+            elseif ($role === 'user' && $content) { $userContents[] = (string) $content; }
+        }
+
+        $model = $opts['model'] ?? null;
         $text = '';
         $usage = null;
-        if ($stream && $provider->supportsStreaming()) {
+
+        // Try new explicit builder-style API if available
+        try {
+            $builder = null;
+            if (method_exists($provider, 'newChat')) {
+                $builder = $provider->newChat();
+            } elseif (method_exists($provider, 'chatRequest')) {
+                $builder = $provider->chatRequest();
+            } elseif (method_exists($provider, 'chatBuilder')) {
+                $builder = $provider->chatBuilder();
+            }
+
+            if ($builder) {
+                // Model
+                if ($model && method_exists($builder, 'model')) { $builder = $builder->model($model); }
+
+                // Common options if supported (best-effort)
+                $map = [
+                    'temperature' => ['temperature','setTemperature'],
+                    'top_p' => ['topP','setTopP'],
+                    'top_k' => ['topK','setTopK'],
+                    'repeat_penalty' => ['repeatPenalty','setRepeatPenalty'],
+                ];
+                foreach ($map as $optKey => $methods) {
+                    if (isset($opts[$optKey])) {
+                        foreach ($methods as $meth) {
+                            if (method_exists($builder, $meth)) { $builder = $builder->{$meth}($opts[$optKey]); break; }
+                        }
+                    }
+                }
+
+                // Messages
+                if ($systemContent && method_exists($builder, 'system')) { $builder = $builder->system($systemContent); }
+                foreach ($userContents as $uc) {
+                    if (method_exists($builder, 'user')) { $builder = $builder->user($uc); }
+                    elseif (method_exists($builder, 'message')) { $builder = $builder->message('user', $uc); }
+                }
+
+                // Streaming path if available
+                if ($stream) {
+                    if (method_exists($builder, 'sendStream')) {
+                        foreach ($builder->sendStream() as $chunk) {
+                            if (is_array($chunk)) {
+                                $text .= $chunk['delta'] ?? ($chunk['content'] ?? json_encode($chunk));
+                            } else {
+                                $text .= (string) $chunk;
+                            }
+                        }
+                        return [$text, $usage];
+                    }
+                    if (method_exists($builder, 'enableStreaming')) { $builder = $builder->enableStreaming(); }
+                }
+
+                if (method_exists($builder, 'send')) {
+                    $res = $builder->send();
+                    // Try to normalize output/usage
+                    if (is_array($res)) {
+                        $text = $this->extractText($res);
+                        $usage = $res['usage'] ?? null;
+                    } elseif (is_string($res)) {
+                        $text = $res;
+                    } elseif (is_object($res)) {
+                        $text = (string) ($res->content ?? '');
+                        $usage = $res->usage ?? null;
+                    }
+                    return [$text, $usage];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fall back to legacy array-based API below
+            Log::warning('AiBridge new API path failed, falling back to legacy', ['ex' => $e->getMessage()]);
+        }
+
+        // Legacy path (arrays)
+        if ($stream && method_exists($provider, 'supportsStreaming') && $provider->supportsStreaming()) {
             foreach ($provider->stream($messages, $opts) as $chunk) {
                 if (is_array($chunk)) {
                     $text .= $chunk['delta'] ?? ($chunk['content'] ?? json_encode($chunk));
@@ -135,11 +252,18 @@ class PromptController extends Controller
         return [$text, $usage];
     }
 
+
+
+
+    /**
+     * Builds messages and options for the AI request based on the prompt and request data.
+     * Returns an array of messages and options.
+     */
     private function buildMessagesAndOptions(object $prompt, Request $request): array
     {
         $action = $request->string('action')->toString();
         $context = $request->input('context', []);
-    $system = (property_exists($prompt, 'is_system') && $prompt->is_system) ? ($prompt->content ?? '') : '';
+    $system = (!empty($prompt->is_system)) ? ($prompt->content ?? '') : '';
 
         $messages = [];
         if ($system) {
@@ -147,8 +271,8 @@ class PromptController extends Controller
         }
 
         // Load user message template from DB by action title (e.g., action.reformulate_title.user)
-        $templateTitle = 'action.' . $action . '.user';
-        $tpl = DB::table('prompts')->where('title', $templateTitle)->first();
+    $templateTitle = 'action.' . $action . '.user';
+    $tpl = Prompt::where('title', $templateTitle)->first();
         if ($tpl && !empty($tpl->content)) {
             $userContent = $this->renderActionTemplate($tpl->content, $action, $context);
         } else {
@@ -165,6 +289,13 @@ class PromptController extends Controller
         ];
         return [$messages, $options];
     }
+
+
+
+
+
+
+
 
     private function renderActionTemplate(string $template, string $action, array $ctx): string
     {
@@ -196,6 +327,14 @@ class PromptController extends Controller
         return strtr($template, $replacements);
     }
 
+
+
+
+
+    /**
+     * Fallback user prompt for common actions.
+     * Returns a simple prompt based on the action and context.
+     */
     private function fallbackUserPrompt(string $action, array $ctx): string
     {
         return match ($action) {
@@ -208,6 +347,13 @@ class PromptController extends Controller
         };
     }
 
+
+
+
+    /**
+     * Extracts text content from various response formats.
+     * Handles different structures to ensure we get the main text.
+     */
     private function extractText(array $res): string
     {
         $text = null;
