@@ -20,7 +20,8 @@ class ProviderRegistry
 
     public function ensureConfigured(string $providerName): void
     {
-        if (AiBridge::provider($providerName)) {
+    $providerName = $this->normalizeProviderName($providerName);
+    if (AiBridge::provider($providerName)) {
             return;
         }
         $map = [
@@ -38,6 +39,20 @@ class ProviderRegistry
             $this->{$map[$providerName]}();
         }
         // Providers like 'ollama' are configured via package config/env; nothing to do otherwise
+    }
+
+    private function normalizeProviderName(string $name): string
+    {
+        // Trim quotes and whitespace, lowercase
+        $n = trim($name);
+        $n = trim($n, " \t\n\r\0\x0B'\"");
+        $n = strtolower($n);
+        // Simple aliases
+        return match ($n) {
+            'openai-custom', 'openai custom' => 'openai_custom',
+            'ollama-turbo', 'ollama turbo' => 'ollama_turbo',
+            default => $n,
+        };
     }
 
     /**

@@ -120,7 +120,7 @@ class AiRecordApplyController extends Controller
                     'extraction_note' => null,
                 ];
             } elseif (!empty($c['preferred_label'])) {
-                $concept = ThesaurusConcept::where('preferred_label', $c['preferred_label'])->first();
+                $concept = $this->findConceptByLabel((string)$c['preferred_label']);
                 if ($concept) {
                     $attach[$concept->id] = [
                         'weight' => isset($c['weight']) ? (float)$c['weight'] : 0.7,
@@ -138,7 +138,7 @@ class AiRecordApplyController extends Controller
         $attach = [];
         $labels = $this->parseList($raw);
         foreach ($labels as $label) {
-            $concept = ThesaurusConcept::where('preferred_label', $label)->first();
+            $concept = $this->findConceptByLabel($label);
             if ($concept) {
                 $attach[$concept->id] = [
                     'weight' => 0.7,
@@ -148,6 +148,27 @@ class AiRecordApplyController extends Controller
             }
         }
         return $attach;
+    }
+
+    /**
+     * Resolve a concept by a human label using labels relation (prefLabel preferred, then altLabel), any language.
+     */
+    private function findConceptByLabel(string $label): ?ThesaurusConcept
+    {
+        $label = trim($label);
+        if ($label === '') { return null; }
+        $q = ThesaurusConcept::query()
+            ->whereHas('labels', function ($sub) use ($label) {
+                $sub->where('literal_form', $label)->where('type', 'prefLabel');
+            });
+        $concept = $q->first();
+        if ($concept) { return $concept; }
+        // Fallback to altLabel
+        return ThesaurusConcept::query()
+            ->whereHas('labels', function ($sub) use ($label) {
+                $sub->where('literal_form', $label)->where('type', 'altLabel');
+            })
+            ->first();
     }
 
     private function resolveActivityId(array $data): ?int
