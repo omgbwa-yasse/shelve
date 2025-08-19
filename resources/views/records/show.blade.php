@@ -76,15 +76,15 @@
                     @endif
 
                     {{-- Essential Information --}}
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <dl class="row mb-0">
-                            <dt class="col-sm-3">{{ __('code') }}</dt>
+                            <dt class="col-sm-2">{{ __('code') }}</dt>
                             <dd class="col-sm-9">{{ $record->code }}</dd>
 
-                            <dt class="col-sm-3">{{ __('title_analysis') }}</dt>
+                            <dt class="col-sm-2">{{ __('title_analysis') }}</dt>
                             <dd class="col-sm-9">{{ $record->name }}</dd>
 
-                            <dt class="col-sm-3">{{ __('dates') }}</dt>
+                            <dt class="col-sm-2">{{ __('dates') }}</dt>
                             <dd class="col-sm-9">
                                 @if($record->date_exact == NULL)
                                     @if($record->date_end == NULL)
@@ -97,8 +97,8 @@
                                 @endif
                             </dd>
 
-                            <dt class="col-sm-3">{{ __('producers') }}</dt>
-                            <dd class="col-sm-9">
+                            <dt class="col-sm-2">{{ __('producers') }}</dt>
+                            <dd class="col-sm-10">
                                 @foreach($record->authors as $author)
                                     <a href="{{ route('records.sort')}}?categ=authors&id={{ $author->id }}">
                                         {{ $author->name }}
@@ -111,33 +111,6 @@
                                     N/A
                                 @endif
                             </dd>
-                        </dl>
-                    </div>
-
-                    <div class="col-md-6">
-                        <dl class="row mb-0">
-                            <dt class="col-sm-3">{{ __('support') }}</dt>
-                            <dd class="col-sm-9">{{ $record->support->name ?? 'N/A' }}</dd>
-
-                            <dt class="col-sm-3">{{ __('status') }}</dt>
-                            <dd class="col-sm-9">{{ $record->status->name ?? 'N/A' }}</dd>
-
-                            <dt class="col-sm-3">{{ __('container') }}</dt>
-                            <dd class="col-sm-9">
-                                @if($record->containers->isNotEmpty())
-                                    @foreach($record->containers as $container)
-                                        <a href="{{ route('records.sort')}}?categ=container&id={{ $container->id }}">
-                                            {{ $container->code }} - {{ $container->name }}
-                                        </a>
-                                        @if(!$loop->last), @endif
-                                    @endforeach
-                                @else
-                                    {{ __('not_containerized') }}
-                                @endif
-                            </dd>
-
-                            <dt class="col-sm-3">{{ __('created_by') }}</dt>
-                            <dd class="col-sm-9">{{ $record->user->name ?? 'N/A' }}</dd>
                         </dl>
                     </div>
 
@@ -187,6 +160,20 @@
 
                             <dt class="col-sm-2">{{ __('archivist_note') }}</dt>
                             <dd class="col-sm-10">{{ $record->archivist_note ?? 'N/A' }}</dd>
+                        </dl>
+                    </div>
+
+
+                    <div class="col-12">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-2">{{ __('support') }}</dt>
+                            <dd class="col-sm-10">{{ $record->support->name ?? 'N/A' }}</dd>
+
+                            <dt class="col-sm-2">{{ __('status') }}</dt>
+                            <dd class="col-sm-10">{{ $record->status->name ?? 'N/A' }}</dd>
+
+                            <dt class="col-sm-2">{{ __('created_by') }}</dt>
+                            <dd class="col-sm-10">{{ $record->user->name ?? 'N/A' }}</dd>
                         </dl>
                     </div>
                 </div>
