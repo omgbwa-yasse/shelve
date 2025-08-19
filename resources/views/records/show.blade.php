@@ -13,7 +13,42 @@
                 </ol>
             </nav>
             <div class="d-flex gap-2 flex-wrap">
-
+                {{-- Action Buttons --}}
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download"></i> {{ __('export') }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.exportButton', ['records' => $record->id, 'format' => 'excel']) }}">
+                                <i class="bi bi-file-earmark-excel me-2"></i> Excel (.xlsx)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.exportButton', ['records' => $record->id, 'format' => 'ead']) }}">
+                                <i class="bi bi-code-slash me-2"></i> EAD
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="dropdown-header small text-muted">SEDA 2.1</li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.export.seda', $record) }}">
+                                <i class="bi bi-filetype-xml me-2"></i> Manifest XML
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.export.seda', $record) }}?zip=1">
+                                <i class="bi bi-file-zip me-2"></i> Package ZIP
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.exportButton', ['records' => $record->id, 'format' => 'pdf']) }}">
+                                <i class="bi bi-filetype-pdf me-2"></i> PDF
+                            </a>
+                        </li>
+                    </ul>
+                </div>
                 <div class="btn-group">
                     <a href="{{ route('records.showFull', $record) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-eye-fill"></i> {{ __('detailed_view') ?? 'Detailed View' }}
