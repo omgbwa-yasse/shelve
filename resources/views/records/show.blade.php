@@ -594,6 +594,11 @@
 @push('scripts')
 <script>
     (function(){
+        // Timeout côté client aligné sur le paramètre applicatif ai_request_timeout (secs)
+        const AI_TIMEOUT_MS = (function(){
+            try { return Math.max(15000, ({{ (int) app(\App\Services\SettingService::class)->get('ai_request_timeout', 120) }} * 1000)); }
+            catch(_) { return 60000; }
+        })();
         const buttons = document.querySelectorAll('.ai-action-btn');
         const statusEl = document.getElementById('aiStatus');
         const resultWrap = document.getElementById('aiResult');
@@ -838,7 +843,7 @@
                 aiSaveBtn.disabled = true;
                 await ensureCsrfCookie();
                 const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 20000);
+                const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
                 const resp = await fetch(url, {
                     method: 'POST',
                     headers: buildAuthHeaders(),
@@ -892,7 +897,7 @@
                 console.log('[AI] runAction:requestBody', body);
                 await ensureCsrfCookie();
                 const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 25000);
+                const timer = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
                 const url = `/api/prompts/${promptId}/actions`;
                 console.log('[AI] runAction:fetch', { url });
                 const resp = await fetch(url, {

@@ -119,14 +119,27 @@ class AiMessageBuilder
         $modRaw = $request->input('model', $defaultModel);
         $prov = strtolower(trim(trim((string)$provRaw, self::TRIM_CHARS))) ?: 'ollama';
         $mod = trim(trim((string)$modRaw, self::TRIM_CHARS)) ?: $this->defaultModel();
-        $options = ['provider' => $prov, 'model' => $mod];
+        $timeoutMs = $this->getTimeoutMs();
+        $options = ['provider' => $prov, 'model' => $mod, 'timeout' => $timeoutMs];
         return match ($effectiveAction) {
-            'assign_thesaurus' => $options + ['max_tokens' => 300, 'temperature' => 0.2, 'timeout' => 60000],
-            'assign_activity' => $options + ['max_tokens' => 180, 'temperature' => 0.1, 'timeout' => 30000],
-            'summarize' => $options + ['max_tokens' => 350, 'temperature' => 0.3, 'timeout' => 40000],
-            'reformulate_title' => $options + ['max_tokens' => 60, 'temperature' => 0.2, 'timeout' => 25000],
-            default => $options + ['timeout' => 30000],
+            'assign_thesaurus' => $options + ['max_tokens' => 300, 'temperature' => 0.2],
+            'assign_activity' => $options + ['max_tokens' => 180, 'temperature' => 0.1],
+            'summarize' => $options + ['max_tokens' => 350, 'temperature' => 0.3],
+            'reformulate_title' => $options + ['max_tokens' => 60, 'temperature' => 0.2],
+            default => $options,
         };
+    }
+
+    private function getTimeoutMs(): int
+    {
+        try {
+            $sec = (int) (app(\App\Services\SettingService::class)->get('ai_request_timeout', 120) ?? 120);
+            if ($sec < 15) { $sec = 15; }
+            if ($sec > 600) { $sec = 600; }
+            return $sec * 1000;
+        } catch (\Throwable) {
+            return 60000; // 60s par défaut en cas d'erreur
+        }
     }
 
     private function defaultModel(): string

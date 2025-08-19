@@ -20,8 +20,16 @@ class ProviderRegistry
 
     public function ensureConfigured(string $providerName): void
     {
-    $providerName = $this->normalizeProviderName($providerName);
-    if (AiBridge::provider($providerName)) {
+        $providerName = $this->normalizeProviderName($providerName);
+
+        // Special-case: always (re)register 'ollama' to force the OpenAI-compatible implementation
+        // This avoids the legacy provider that targets /api/chat with fixed 30s timeout
+        if ($providerName === 'ollama') {
+            $this->registerOllamaCompat();
+            return;
+        }
+
+        if (AiBridge::provider($providerName)) {
             return;
         }
         $map = [
