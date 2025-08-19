@@ -3,12 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Exports\SEDAExport;
+use App\Services\SedaZipBuilder;
 use App\Models\Record;
 use Illuminate\Console\Command;
 
 class ExportRecordSeda extends Command
 {
-    protected $signature = 'seda:export-record {record : Record ID} {--output= : Output file path}';
+    protected $signature = 'seda:export-record {record : Record ID} {--output= : Output file path} {--zip : Produce a ZIP named with the manifest hash}';
 
     protected $description = 'Export a single record to SEDA 2.1 XML file';
 
@@ -18,6 +19,14 @@ class ExportRecordSeda extends Command
         $output = $this->option('output');
 
         $record = Record::with(['attachments', 'containers', 'level', 'parent', 'thesaurusConcepts'])->findOrFail($recordId);
+
+        if ($this->option('zip')) {
+            /** @var SedaZipBuilder $zipper */
+            $zipper = app(SedaZipBuilder::class);
+            [$zipPath] = $zipper->buildForRecord($record);
+            $this->info('SEDA ZIP saved to: ' . $zipPath);
+            return Command::SUCCESS;
+        }
 
         /** @var SEDAExport $exporter */
         $exporter = app(SEDAExport::class);
