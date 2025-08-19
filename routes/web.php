@@ -109,6 +109,7 @@ use App\Http\Controllers\BackupFileController;
 use App\Http\Controllers\BackupPlanningController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingCategoryController;
+use App\Http\Controllers\SEDAExportController;
 
 use App\Http\Controllers\PublicUserController;
 use App\Http\Controllers\PublicChatController;
@@ -159,7 +160,7 @@ Route::group(['middleware' => 'auth'], function () {
         });
         Route::get('/containers', function() {
             $q = request('q');
-            $orgId = auth()->user()->current_organisation_id ?? null;
+            $orgId = Auth::user()->current_organisation_id ?? null;
             $query = \App\Models\Container::query()
                 ->whereHas('shelf.room.organisations', function($q2) use ($orgId) {
                     if ($orgId) {
@@ -529,6 +530,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
 
+    // Export SEDA 2.1
+    Route::get('records/{record}/export/seda', [SEDAExportController::class, 'exportRecord'])->name('records.export.seda');
+
         // Routes containers AVANT la route resource
         Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
         Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
@@ -604,6 +608,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
         Route::get('slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
         Route::resource('slips', SlipController::class);
+    // Export SEDA 2.1
+    Route::get('slips/{slip}/export/seda', [SEDAExportController::class, 'exportSlip'])->name('slips.export.seda');
         Route::resource('slips.records', SlipRecordController::class);
         Route::resource('slips.records.containers', SlipRecordContainerController::class);
         Route::resource('containers', SlipContainerController::class)->names('slips.containers');

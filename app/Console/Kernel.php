@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\UpdateCodesToNewFormat::class,
     \App\Console\Commands\LlmAggregateDaily::class,
     \App\Console\Commands\LlmPrune::class,
+    \App\Console\Commands\ExportRecordSeda::class,
+    \App\Console\Commands\ExportSlipSeda::class,
     ];
 
     /**
