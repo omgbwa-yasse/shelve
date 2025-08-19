@@ -678,6 +678,18 @@
             const raw = (text||'').replace(/\r/g,'').split(/\n|,|;|\t|\u2022|\*/);
             return uniqStrings(raw).slice(0, 30);
         }
+        function buildActivityRawContext(output){
+            // Build a simple context text from title, content and known labels/candidates to help server ranking
+            const lines = [];
+            const t = (contextBase.title||'').toString().trim(); if(t) lines.push('Title: '+t);
+            const txt = (contextBase.text||'').toString().trim(); if(txt) lines.push('Text: '+txt);
+            const lbls = Array.isArray(contextBase.pref_labels)? contextBase.pref_labels.filter(Boolean) : [];
+            if(lbls.length){ lines.push('Labels: '+lbls.join(', ')); }
+            const cands = Array.isArray(contextBase.candidates)? contextBase.candidates.filter(Boolean) : [];
+            if(cands.length){ lines.push('Candidates: '+cands.join(', ')); }
+            const out = (output||'').toString().trim(); if(out){ lines.unshift(out); }
+            return lines.join('\n');
+        }
         function openAiReviewModal(action, output){
             console.log('[AI] openAiReviewModal', { action, outputLen: (output||'').length });
             if(!aiModalEl || !aiModalBody || !aiModalTitle){ return; }
@@ -733,18 +745,10 @@
                     break;
                 }
                 case 'assign_activity': {
-                    const items = parseList(output).slice(0, 5);
+                    const items = parseList(output).slice(0, 10);
                     currentAi.parsed = { activities: items };
                     aiModalTitle.textContent = '{{ __('index_activities') ?? 'Indexer activités' }}';
-                    html = `
-                        <div class="mb-2">{{ __('choose_activity') ?? 'Choisissez l\'activité' }}</div>
-                        <div class="d-flex flex-column gap-2">
-                            ${items.map((k,i)=>`<div class="form-check">
-                                <input class="form-check-input" type="radio" name="aiActivity" id="act_${i}" value="${k.replaceAll('"','&quot;')}" ${i===0?'checked':''}>
-                                <label class="form-check-label" for="act_${i}">${k}</label>
-                            </div>`).join('')}
-                        </div>
-                    `;
+                    html = `<div class="text-muted">Recherche des activités pertinentes…</div>`;
                     break;
                 }
                 default: {
@@ -796,6 +800,46 @@
                     }
                 })();
             }
+            // For activity, ask backend for best matches and render radio list with id/code/name
+            if(action==='assign_activity'){
+                (async()=>{
+                    try{
+                        await ensureCsrfCookie();
+                        const url = `/api/records/${recordId}/ai/activity/suggest`;
+                        const raw = buildActivityRawContext(output||'');
+                        const payload = {};
+                        if(raw){ payload.raw_text = raw; }
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            headers: buildAuthHeaders(),
+                            credentials: 'same-origin',
+                            body: JSON.stringify(payload)
+                        });
+                        let data;
+                        try { data = await resp.json(); }
+                        catch(_) { data = { message: (await resp.text()).slice(0,500) }; }
+                        if(!resp.ok || data?.status!=='ok') throw new Error(data?.message||'Erreur suggestions activité');
+                        const list = Array.isArray(data.candidates) ? data.candidates : [];
+                        if(list.length === 0){
+                            aiModalBody.innerHTML = '<div class="alert alert-warning">Aucune activité pertinente trouvée.</div>';
+                            return;
+                        }
+                        const ui = `
+                            <div class="mb-2">{{ __('choose_activity') ?? 'Choisissez l\'activité' }}</div>
+                            <div class="d-flex flex-column gap-2">
+                                ${list.map((c,idx)=>`<div class="form-check">
+                                    <input class="form-check-input" type="radio" name="aiActivity" id="act_${c.id}" value="${c.id}" data-activity-id="${c.id}" data-code="${(c.code||'').replaceAll('"','&quot;')}" data-name="${(c.name||'').replaceAll('"','&quot;')}" ${idx===0?'checked':''}>
+                                    <label class="form-check-label" for="act_${c.id}"><strong>${(c.code||'—')}</strong> — ${(c.name||'')}</label>
+                                    ${typeof c.score==='number' ? `<div class=\"small text-muted\">score: ${c.score}</div>` : ''}
+                                </div>`).join('')}
+                            </div>`;
+                        aiModalBody.innerHTML = ui;
+                    }catch(e){
+                        console.error('[AI] activity suggest error', e);
+                        aiModalBody.innerHTML = `<div class="alert alert-danger">${e.message||'Erreur de suggestion d\'activité'}</div>`;
+                    }
+                })();
+            }
             try{ new bootstrap.Modal(aiModalEl).show(); }catch(e){ console.warn('Modal error', e); }
         }
 
@@ -832,7 +876,13 @@
                     const sel = aiModalBody.querySelector('input[name="aiActivity"]:checked');
                     if(!sel){ showError('Choisissez une activité'); return; }
                     url = `/api/records/${recordId}/ai/activity`;
-                    payload = { activity_name: sel.value };
+                    const actId = parseInt(sel.value, 10);
+                    if(Number.isInteger(actId)){
+                        payload = { activity_id: actId };
+                    } else {
+                        // Fallback: try name if value isn't id for some reason
+                        payload = { activity_name: sel.getAttribute('data-name') || sel.value };
+                    }
                     break;
                 }
                 default:
@@ -929,6 +979,12 @@
                     showError('La requête AI a expiré. Vérifiez le fournisseur et réessayez.');
                 } else {
                     showError(e.message || 'Erreur AI');
+                }
+                // Fallback for activity: open the selection modal using DB-based suggestions
+                if(action === 'assign_activity'){
+                    try {
+                        openAiReviewModal('assign_activity', '');
+                    } catch(_) {}
                 }
             }finally{
                 console.log('[AI] runAction:finally');

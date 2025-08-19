@@ -249,6 +249,99 @@ class AiRecordApplyController extends Controller
         ]);
     }
 
+    /**
+     * Suggest relevant activities from the database based on an AI output string.
+     * Input: { raw_text?: string }
+     * Returns: { candidates: [ { id, code, name, score } ] }
+     */
+    public function suggestActivityCandidates(Request $request, Record $record)
+    {
+        Gate::authorize('records_edit');
+        $data = $request->validate([
+            'raw_text' => self::RULE_RAW,
+        ]);
+
+        $raw = (string)($data['raw_text'] ?? '');
+        $terms = $this->parseList($raw);
+
+        // Also include tokens split from the raw text to help matching
+        $extraTokens = [];
+        if ($raw !== '') {
+            $tmp = preg_split('/[^\p{L}\p{N}\-]+/u', mb_strtolower($raw));
+            foreach ($tmp as $t) {
+                $t = trim($t);
+                if ($t !== '' && mb_strlen($t) >= 2) { $extraTokens[$t] = true; }
+            }
+        }
+
+        $hasSignals = !empty($terms) || !empty($extraTokens);
+
+        $all = Activity::query()->select('id','code','name')->get();
+        $candidates = [];
+        foreach ($all as $act) {
+            $score = 0.0;
+            $name = (string)($act->name ?? '');
+            $code = (string)($act->code ?? '');
+            $lname = mb_strtolower($name);
+            $lcode = mb_strtolower($code);
+
+            // Strong signal: exact code mention in list or text
+            if ($code !== '') {
+                foreach ($terms as $t) {
+                    if (trim($t) === $code) { $score += 8; }
+                }
+                if ($raw !== '' && preg_match('/(^|\b)'.preg_quote($code, '/').'($|\b)/iu', $raw)) {
+                    $score += 5;
+                }
+            }
+
+            // Name signals
+            foreach ($terms as $t) {
+                $lt = mb_strtolower($t);
+                if ($lt === $lname) { $score += 6; }
+                elseif ($lname !== '' && str_contains($lname, $lt)) { $score += 3; }
+            }
+            foreach (array_keys($extraTokens) as $tok) {
+                if ($tok === $lname) { $score += 2; }
+                elseif ($tok !== '' && $lname !== '' && str_contains($lname, $tok)) { $score += 1.2; }
+                if ($lcode !== '' && $tok === $lcode) { $score += 3; }
+            }
+
+            // Slight boost if existing record already has this activity (de-dup)
+            if ($record->activity_id && (int)$record->activity_id === (int)$act->id) {
+                $score += 0.1;
+            }
+
+            $candidates[] = [
+                'id' => (int)$act->id,
+                'code' => $code,
+                'name' => $name,
+                'score' => round($score, 3),
+            ];
+        }
+
+        // Sort by score desc, then by code/name for stability
+        usort($candidates, function($a, $b){
+            if ($a['score'] === $b['score']) {
+                return strcmp(($a['code'].$a['name']), ($b['code'].$b['name']));
+            }
+            return $a['score'] < $b['score'] ? 1 : -1;
+        });
+
+        // If we had no signals, just return the first 10 alphabetically by name
+        if (!$hasSignals) {
+            usort($candidates, function($a, $b){ return strcmp($a['name'], $b['name']); });
+        }
+
+        $top = array_slice($candidates, 0, 10);
+
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'candidates' => $top,
+        ]);
+    }
+
     private function parseList(string $text): array
     {
         $parts = preg_split('/[\n,;\t\x{2022}\*]+/u', str_replace("\r", '', $text));

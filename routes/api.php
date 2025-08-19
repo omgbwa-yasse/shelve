@@ -80,6 +80,7 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
     Route::post('thesaurus/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurus'])->name('thesaurus.suggest');
     Route::post('thesaurus/auto', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'autoSuggestThesaurus'])->name('thesaurus.auto');
     Route::post('thesaurus/suggest-json', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurusFromJson'])->name('thesaurus.suggest_json');
-        Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
+    Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
+    Route::post('activity/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestActivityCandidates'])->name('activity.suggest');
     });
 });
