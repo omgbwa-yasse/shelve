@@ -86,13 +86,15 @@ class ProviderRegistry
             'stt' => '/audio/transcriptions',
         ];
 
-        // No auth by default for local Ollama
+        // Local Ollama typically doesn't require auth. However, passing an empty header name
+        // can break some HTTP clients. Use a valid header name with an empty key value so no
+        // invalid header name is ever sent downstream.
         AiBridge::registerProvider('ollama', new CustomOpenAIProvider(
-            '', // no API key
+            '', // API key not required for local Ollama
             $base,
             $paths,
-            '', // no auth header
-            '', // no auth prefix
+            self::AUTH_HEADER, // use a valid header name (e.g. "Authorization")
+            self::AUTH_PREFIX_BEARER, // standard prefix; final value will be empty if key is empty
             [] // extra headers
         ));
     }
@@ -167,9 +169,17 @@ class ProviderRegistry
             'tts' => '/v1/audio/speech',
             'stt' => '/v1/audio/transcriptions',
         ]);
-        $authHeader = (string) ($this->getSetting('openai_custom_auth_header', self::AUTH_HEADER) ?? self::AUTH_HEADER);
+        // Ensure header names are valid (non-empty) to avoid HTTP client errors
+        $authHeader = trim((string) ($this->getSetting('openai_custom_auth_header', self::AUTH_HEADER) ?? self::AUTH_HEADER));
+        if ($authHeader === '') { $authHeader = self::AUTH_HEADER; }
         $authPrefix = (string) ($this->getSetting('openai_custom_auth_prefix', self::AUTH_PREFIX_BEARER) ?? self::AUTH_PREFIX_BEARER);
-        $extraHeaders = (array) ($this->getSetting('openai_custom_extra_headers', []) ?? []);
+        $rawExtra = (array) ($this->getSetting('openai_custom_extra_headers', []) ?? []);
+        $extraHeaders = [];
+        foreach ($rawExtra as $k => $v) {
+            $kn = trim((string) $k);
+            if ($kn === '') { continue; }
+            $extraHeaders[$kn] = $v;
+        }
         AiBridge::registerProvider('openai_custom', new CustomOpenAIProvider($key, $base, $paths, $authHeader, $authPrefix, $extraHeaders));
     }
 
