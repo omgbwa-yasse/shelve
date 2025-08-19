@@ -121,7 +121,16 @@ class SettingSeeder extends Seeder
             'default_value' => json_encode('ollama'),
             'description' => 'Provider d\'IA par défaut',
             'is_system' => true,
-            'constraints' => json_encode(['options' => ['ollama', 'lmstudio', 'anythingllm', 'openai']]),
+            'constraints' => json_encode(['options' => [
+                'ollama',
+                'openai',
+                'gemini',
+                'claude',
+                'openrouter',
+                'onn',
+                'ollama_turbo',
+                'openai_custom',
+            ]]),
         ]);
 
         Setting::create([

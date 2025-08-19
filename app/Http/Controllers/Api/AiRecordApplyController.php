@@ -416,48 +416,67 @@ class AiRecordApplyController extends Controller
      */
     private function findConceptMatchesForTerms(array $terms): array
     {
+        // Batch normalize and deduplicate terms to reduce DB round-trips
+        $norm = [];
+        foreach ($terms as $t) {
+            $t = trim((string)$t);
+            if ($t === '') { continue; }
+            $key = mb_strtolower($t);
+            $norm[$key] = $t; // preserve original casing for 'matched'
+            if (count($norm) >= 50) { break; } // hard cap to avoid overly large queries
+        }
+        if (empty($norm)) { return []; }
+        $in = array_values($norm);
+
         $matches = [];
         $seen = [];
-        foreach ($terms as $term) {
-            $term = trim((string)$term);
-            if ($term === '') { continue; }
-            // PrefLabel matches
-            $pref = ThesaurusConcept::query()
-                ->whereHas('labels', function ($q) use ($term) {
-                    $q->where('literal_form', $term)->where('type', 'prefLabel');
-                })
-                ->get();
-            foreach ($pref as $c) {
-                $k = 'p:'.$c->id;
-                if (!isset($seen[$k])) {
-                    $seen[$k] = true;
-                    $matches[] = [
-                        'concept_id' => $c->id,
-                        'preferred_label' => $c->preferred_label ?? null,
-                        'matched' => $term,
-                        'type' => 'prefLabel'
-                    ];
-                }
-            }
-            // AltLabel matches
-            $alt = ThesaurusConcept::query()
-                ->whereHas('labels', function ($q) use ($term) {
-                    $q->where('literal_form', $term)->where('type', 'altLabel');
-                })
-                ->get();
-            foreach ($alt as $c) {
-                $k = 'a:'.$c->id;
-                if (!isset($seen[$k])) {
-                    $seen[$k] = true;
-                    $matches[] = [
-                        'concept_id' => $c->id,
-                        'preferred_label' => $c->preferred_label ?? null,
-                        'matched' => $term,
-                        'type' => 'altLabel'
-                    ];
-                }
+
+        // PrefLabel: eager-load only matched labels to capture exact literal_form
+        $prefConcepts = ThesaurusConcept::query()
+            ->with(['labels' => function ($q) use ($in) {
+                $q->whereIn('literal_form', $in)->where('type', 'prefLabel');
+            }])
+            ->whereHas('labels', function ($q) use ($in) {
+                $q->whereIn('literal_form', $in)->where('type', 'prefLabel');
+            })
+            ->get();
+        foreach ($prefConcepts as $c) {
+            foreach ($c->labels as $lbl) {
+                $key = 'p:' . $c->id . ':' . mb_strtolower((string)$lbl->literal_form);
+                if (isset($seen[$key])) { continue; }
+                $seen[$key] = true;
+                $matches[] = [
+                    'concept_id' => $c->id,
+                    'preferred_label' => $c->preferred_label ?? null,
+                    'matched' => (string)$lbl->literal_form,
+                    'type' => 'prefLabel',
+                ];
             }
         }
+
+        // AltLabel: same batching approach
+        $altConcepts = ThesaurusConcept::query()
+            ->with(['labels' => function ($q) use ($in) {
+                $q->whereIn('literal_form', $in)->where('type', 'altLabel');
+            }])
+            ->whereHas('labels', function ($q) use ($in) {
+                $q->whereIn('literal_form', $in)->where('type', 'altLabel');
+            })
+            ->get();
+        foreach ($altConcepts as $c) {
+            foreach ($c->labels as $lbl) {
+                $key = 'a:' . $c->id . ':' . mb_strtolower((string)$lbl->literal_form);
+                if (isset($seen[$key])) { continue; }
+                $seen[$key] = true;
+                $matches[] = [
+                    'concept_id' => $c->id,
+                    'preferred_label' => $c->preferred_label ?? null,
+                    'matched' => (string)$lbl->literal_form,
+                    'type' => 'altLabel',
+                ];
+            }
+        }
+
         return $matches;
     }
 

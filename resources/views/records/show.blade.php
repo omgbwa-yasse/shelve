@@ -190,6 +190,7 @@
                 <h5 class="mb-0">
                     <i class="bi bi-cpu me-2"></i>{{ __('artificial_intelligence') ?? 'Intelligence artificielle' }}
                 </h5>
+
                 <fieldset class="btn-group btn-group-sm">
                     <legend class="visually-hidden">AI actions</legend>
                     <button type="button" class="btn btn-outline-primary ai-action-btn"

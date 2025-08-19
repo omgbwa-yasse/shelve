@@ -47,6 +47,15 @@ class AiProvidersSeeder extends Seeder
 
     private function buildSettings(int $aiCategoryId, int $aiProvidersCategoryId, int $aiModelsCategoryId): array
     {
+        return array_merge(
+            $this->generalSettings($aiCategoryId),
+            $this->providerSettings($aiProvidersCategoryId),
+            $this->modelSettings($aiModelsCategoryId)
+        );
+    }
+
+    private function generalSettings(int $aiCategoryId): array
+    {
         return [
             [
                 'category_id' => $aiCategoryId,
@@ -55,7 +64,16 @@ class AiProvidersSeeder extends Seeder
                 'default_value' => json_encode('ollama'),
                 'description' => 'Provider d\'IA par défaut',
                 'is_system' => true,
-                'constraints' => json_encode(['options' => ['ollama', 'lmstudio', 'anythingllm', 'openai']]),
+                'constraints' => json_encode(['options' => [
+                    'ollama',
+                    'openai',
+                    'gemini',
+                    'claude',
+                    'openrouter',
+                    'onn',
+                    'ollama_turbo',
+                    'openai_custom',
+                ]]),
             ],
             [
                 'category_id' => $aiCategoryId,
@@ -74,6 +92,12 @@ class AiProvidersSeeder extends Seeder
                 'is_system' => true,
                 'constraints' => json_encode(['min' => 30, 'max' => 300]),
             ],
+        ];
+    }
+
+    private function providerSettings(int $aiProvidersCategoryId): array
+    {
+        return [
             // Configuration Ollama
             [
                 'category_id' => $aiProvidersCategoryId,
@@ -166,6 +190,12 @@ class AiProvidersSeeder extends Seeder
                 'description' => 'Organisation OpenAI (optionnelle)',
                 'is_system' => true,
             ],
+        ];
+    }
+
+    private function modelSettings(int $aiModelsCategoryId): array
+    {
+        return [
             // Configuration des modèles par défaut
             [
                 'category_id' => $aiModelsCategoryId,
