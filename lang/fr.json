@@ -729,4 +729,8 @@
     "New Reservation": "Nouvelle réservation",
     "Communication generated": "Communication générée",
     "View communication": "Voir la communication"
+    ,
+    "ai_output": "Résultat IA",
+    "you_can_edit_before_saving": "Vous pouvez modifier le résultat de l’IA avant d’enregistrer.",
+    "edit_before_save": "Modifier avant d’enregistrer"
 }

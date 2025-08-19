@@ -223,6 +223,7 @@
                 <div id="aiResult" class="mt-2 d-none">
                     <h6 class="fw-semibold">{{ __('ai_output') ?? 'Résultat AI' }}</h6>
                     <pre class="bg-light p-2 rounded" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+                    <p class="text-muted small mt-2">{{ __('you_can_edit_before_saving') }}</p>
                 </div>
             </div>
         </div>
