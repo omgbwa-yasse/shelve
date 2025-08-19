@@ -67,7 +67,8 @@ Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum',
 // MCP/AI API routes retirées
 
 // Prompt & AI routes (use web session auth to support same-origin Blade pages)
-Route::middleware(['web', 'auth'])->group(function () {
+// Add a specific rate limit for AI actions to prevent abuse
+Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
     Route::get('prompts', [PromptController::class, 'index'])->name('api.prompts.index');
     Route::get('prompts/{id}', [PromptController::class, 'show'])->name('api.prompts.show');
     Route::post('prompts/{id}/actions', [PromptController::class, 'actions'])->name('api.prompts.actions');

@@ -13,7 +13,10 @@ class AiSeeder extends Seeder
     {
         $now = now();
         $this->seedPrompts($now);
-        $this->seedSettings($now);
+        // Seed legacy ai_global_settings only if the table exists to avoid duplication
+        if (Schema::hasTable('ai_global_settings')) {
+            $this->seedSettings($now);
+        }
     }
 
     private function seedPrompts($now): void
