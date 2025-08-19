@@ -7,6 +7,7 @@ use App\Exports\SlipExport;
 use App\Exports\SEDAExport;
 use App\Exports\EADExport;
 use App\Models\Dolly;
+use App\Models\Record;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -79,7 +80,12 @@ class DollyExportController extends Controller
     private function exportEAD($items, $fileName)
     {
         $eadExport = new EADExport();
-        $xml = $eadExport->export($items);
+        $first = method_exists($items, 'first') ? $items->first() : null;
+        if ($first instanceof Record) {
+            $xml = $eadExport->exportRecords($items);
+        } else {
+            $xml = $eadExport->export($items);
+        }
         return response($xml)
             ->header('Content-Type', 'application/xml')
             ->header('Content-Disposition', 'attachment; filename="' . $fileName . '.xml"');

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
+use App\Services\EADImportService;
+use App\Services\SedaImportService;
 use App\Models\RecordAttachment;
 use App\Models\SlipStatus;
 use App\Models\Attachment;
@@ -730,11 +732,20 @@ class RecordController extends Controller
                     Excel::import(new RecordsImport($dolly, []), $file);
                     break;
                 case 'ead':
-                    $this->importEAD($file, $dolly);
+                    $service = new EADImportService();
+                    $service->importRecordsFromString(file_get_contents($file->getPathname()), $dolly);
                     break;
                 case 'seda':
-                    $this->importSEDA($file, $dolly);
+                    $service = new SedaImportService();
+                    $ext = strtolower($file->getClientOriginalExtension());
+                    if ($ext === 'zip') {
+                        $service->importRecordsFromZip($file->getPathname(), $dolly);
+                    } else {
+                        $service->importRecordsFromString(file_get_contents($file->getPathname()), $dolly);
+                    }
                     break;
+                default:
+                    return redirect()->back()->with('error', 'Invalid import format');
             }
             return redirect()->route('records.index')->with('success', 'Records imported successfully and attached to new Dolly.');
         } catch (\Exception $e) {
@@ -948,6 +959,7 @@ class RecordController extends Controller
             Storage::deleteDirectory('temp_import');
         }
     }
+    // EAD/SEDA import logic handled by services
 
     /**
      * Analyser un fichier pour extraire les en-têtes (remapping UI)

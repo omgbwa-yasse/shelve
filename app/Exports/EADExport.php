@@ -2,48 +2,63 @@
 
 namespace App\Exports;
 
+use App\Models\Record;
 use App\Models\Slip;
 use SimpleXMLElement;
 
 class EADExport
 {
-    protected $xml;
+    protected SimpleXMLElement $xml;
 
     public function __construct()
     {
-        $this->xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead xmlns="urn:isbn:1-931666-22-9" xmlns:xlink="http://www.w3.org/1999/xlink"></ead>');
+        // EAD3 root with default namespace (no xlink needed; EAD3 uses unprefixed href/title attributes)
+        $this->xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead xmlns="http://ead3.archivists.org/schema/"></ead>');
     }
 
-    public function export($slips)
+    // Export a set of slips, each with nested records
+    public function export($slips): string
     {
-        $this->addEadHeader();
-        $this->addArchDesc($slips);
-
+        $this->addControl('Export des bordereaux de versement');
+        $this->addArchDescForSlips($slips);
         return $this->xml->asXML();
     }
 
-    protected function addEadHeader()
+    // Export a set of records (without slips)
+    public function exportRecords($records): string
     {
-        $eadheader = $this->xml->addChild('eadheader');
-        $eadheader->addAttribute('countryencoding', 'iso3166-1');
-        $eadheader->addAttribute('dateencoding', 'iso8601');
-        $eadheader->addAttribute('langencoding', 'iso639-2b');
-        $eadheader->addAttribute('repositoryencoding', 'iso15511');
-        $eadheader->addAttribute('scriptencoding', 'iso15924');
+        $this->addControl('Export des unités documentaires');
+        $this->addArchDescForRecords($records);
+        return $this->xml->asXML();
+    }
 
-        $eadheader->addChild('eadid', 'EAD_Export_' . time());
+    protected function addControl(string $title): void
+    {
+        // EAD3 control section
+        $control = $this->xml->addChild('control');
+        $control->addAttribute('countryencoding', 'iso3166-1');
+        $control->addAttribute('dateencoding', 'iso8601');
+        $control->addAttribute('langencoding', 'iso639-2b');
+        $control->addAttribute('repositoryencoding', 'iso15511');
+        $control->addAttribute('scriptencoding', 'iso15924');
 
-        $filedesc = $eadheader->addChild('filedesc');
+        $control->addChild('recordid', 'EAD3_Export_' . time());
+
+        $filedesc = $control->addChild('filedesc');
         $titlestmt = $filedesc->addChild('titlestmt');
-        $titlestmt->addChild('titleproper', 'Export des bordereaux de versement');
+        $titlestmt->addChild('titleproper', $title);
         $titlestmt->addChild('author', 'Système d\'archivage');
-
         $publicationstmt = $filedesc->addChild('publicationstmt');
         $publicationstmt->addChild('publisher', 'Service d\'archives');
         $publicationstmt->addChild('date', date('Y-m-d'));
+
+        $control->addChild('maintenancestatus')->addAttribute('value', 'new');
+        $agency = $control->addChild('maintenanceagency');
+        // Optional countrycode
+        $agency->addChild('agencyname', 'Service d\'archives applicatif');
     }
 
-    protected function addArchDesc($slips)
+    protected function addArchDescForSlips($slips): void
     {
         $archdesc = $this->xml->addChild('archdesc');
         $archdesc->addAttribute('level', 'collection');
@@ -53,29 +68,155 @@ class EADExport
         $did->addChild('unitdate', date('Y-m-d'));
         $did->addChild('unitid', 'COL-BV-' . date('Ymd'));
 
+        // Components go inside a dsc
+        $dsc = $archdesc->addChild('dsc');
         foreach ($slips as $slip) {
-            $this->addComponent($archdesc, $slip);
+            $this->addSlipComponent($dsc, $slip);
         }
     }
 
-    protected function addComponent($parent, $slip)
+    protected function addArchDescForRecords($records): void
+    {
+        $archdesc = $this->xml->addChild('archdesc');
+        $archdesc->addAttribute('level', 'collection');
+
+        $did = $archdesc->addChild('did');
+        $did->addChild('unittitle', 'Collection d\'unités documentaires');
+        $did->addChild('unitdate', date('Y-m-d'));
+        $did->addChild('unitid', 'COL-UD-' . date('Ymd'));
+
+        $dsc = $archdesc->addChild('dsc');
+        foreach ($records as $record) {
+            $this->addRecordComponent($dsc, $record);
+        }
+    }
+
+    protected function addSlipComponent(SimpleXMLElement $parent, Slip $slip): void
     {
         $c = $parent->addChild('c');
-        $c->addAttribute('level', 'item');
+        $c->addAttribute('level', 'file');
 
         $did = $c->addChild('did');
-        $did->addChild('unittitle', $slip->name);
-        $did->addChild('unitid', $slip->code);
-        $did->addChild('unitdate', $slip->created_at->format('Y-m-d'));
-        $did->addChild('physdesc')->addChild('extent', '1 bordereau');
+        $did->addChild('unittitle', (string)($slip->name ?? ('Bordereau ' . $slip->id)));
+        if (!empty($slip->code)) {
+            $did->addChild('unitid', (string)$slip->code);
+        }
+        if (!empty($slip->created_at)) {
+            $did->addChild('unitdate', $slip->created_at->format('Y-m-d'));
+        }
 
-        $scopecontent = $c->addChild('scopecontent');
-        $scopecontent->addChild('p', $slip->description);
+        if (!empty($slip->description)) {
+            $scopecontent = $c->addChild('scopecontent');
+            $scopecontent->addChild('p', (string)$slip->description);
+        }
 
-        $odd = $c->addChild('odd');
-        $odd->addChild('head', 'Informations supplémentaires');
-        $odd->addChild('p', 'Créé par: ' . $slip->user->name);
+        // Nest records under this slip component if available
+        if (method_exists($slip, 'records') && $slip->records) {
+            foreach ($slip->records as $record) {
+                $this->addRecordComponent($c, $record);
+            }
+        }
+    }
 
-        // Ajoutez d'autres éléments selon vos besoins
+    protected function addRecordComponent(SimpleXMLElement $parent, $record): void
+    {
+        $c = $parent->addChild('c');
+        $c->addAttribute('level', $this->mapDescriptionLevel(optional($record->level)->name));
+
+        $did = $c->addChild('did');
+        $title = $record->name ?: ('Record ' . $record->id);
+        $did->addChild('unittitle', (string)$title);
+
+        if (!empty($record->code)) {
+            $did->addChild('unitid', (string)$record->code);
+        } else {
+            $did->addChild('unitid', 'R-' . $record->id);
+        }
+
+        // Dates
+        if (!empty($record->date_start) || !empty($record->date_end)) {
+            $start = (string)($record->date_start ?? '');
+            $end = (string)($record->date_end ?? '');
+            if ($start && $end) {
+                $ud = $did->addChild('unitdate', $start . ' - ' . $end);
+                $ud->addAttribute('unitdatetype', 'inclusive');
+                $ud->addAttribute('normal', $start . '/' . $end);
+            } else {
+                $dateVal = $start ?: $end;
+                $ud = $did->addChild('unitdate', $dateVal);
+                $ud->addAttribute('normal', $dateVal);
+            }
+        }
+
+        // Containers as EAD3 containers
+        if (method_exists($record, 'containers')) {
+            foreach ($record->containers as $container) {
+                $containerEl = $did->addChild('container', (string)($container->code ?? $container->label ?? ''));
+                if (!empty($container->id)) {
+                    $containerEl->addAttribute('containerid', (string)$container->id);
+                }
+                if (!empty($container->parent_id)) {
+                    $containerEl->addAttribute('parent', 'C-' . $container->parent_id);
+                }
+            }
+        }
+
+        // Attachments as digital object links (dao) with href
+        if (method_exists($record, 'attachments')) {
+            foreach ($record->attachments as $att) {
+                $dao = $did->addChild('dao');
+                $dao->addAttribute('daotype', 'borndigital');
+                if (!empty($att->name)) {
+                    $dao->addAttribute('label', (string)$att->name);
+                }
+                if (!empty($att->path)) {
+                    $dao->addAttribute('href', (string)$att->path);
+                }
+                if (!empty($att->mime_type)) {
+                    // optional descriptive note for mime type
+                    $dn = $dao->addChild('descriptivenote');
+                    $dn->addChild('p', 'MIME: ' . $att->mime_type);
+                }
+            }
+        }
+
+        // Content/notes
+        if (!empty($record->content)) {
+            $scopecontent = $c->addChild('scopecontent');
+            $scopecontent->addChild('p', (string)$record->content);
+        }
+
+        // Keywords / subjects from thesaurus
+        if (method_exists($record, 'thesaurusConcepts') && $record->thesaurusConcepts && $record->thesaurusConcepts->count()) {
+            $controlaccess = $c->addChild('controlaccess');
+            foreach ($record->thesaurusConcepts as $concept) {
+                $label = $concept->preferred_label ?? $concept->notation ?? $concept->uri;
+                if (!empty($label)) {
+                    $subject = $controlaccess->addChild('subject');
+                    $subject->addChild('part', (string)$label);
+                }
+            }
+        }
+    }
+
+    protected function mapDescriptionLevel(?string $levelName): string
+    {
+        $map = [
+            'fonds' => 'fonds',
+            'subfonds' => 'subfonds',
+            'class' => 'class',
+            'collection' => 'collection',
+            'series' => 'series',
+            'subseries' => 'subseries',
+            'recordgrp' => 'recordgrp',
+            'subgrp' => 'subgrp',
+            'file' => 'file',
+            'item' => 'item',
+        ];
+        if (empty($levelName)) {
+            return 'item';
+        }
+        $key = strtolower(trim($levelName));
+        return $map[$key] ?? 'otherlevel';
     }
 }

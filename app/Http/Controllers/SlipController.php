@@ -18,7 +18,10 @@ use App\Models\Record;
 use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\EADImportService;
+use App\Services\SedaImportService;
 use SimpleXMLElement;
 use ZipArchive;
 use Illuminate\Validation\Rule;
@@ -87,7 +90,6 @@ class SlipController extends Controller
 
     public function store(Request $request)
     {
-//        dd($request);
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
@@ -103,7 +105,7 @@ class SlipController extends Controller
 
         // Ajouter automatiquement l'organisation courante de l'utilisateur et l'officer_id
         $request->merge([
-            'officer_id' => Auth::user()->id,
+            'officer_id' => Auth::id(),
             'officer_organisation_id' => Auth::user()->current_organisation_id
         ]);
 
@@ -124,13 +126,13 @@ class SlipController extends Controller
             'mail_containers' => 'required|array',
         ]);
 
-        $request->merge(['officer_id' => Auth::user()->id]);
+    $request->merge(['officer_id' => Auth::id()]);
         $request->merge(['organisation_id' => Auth::user()->current_organisation_id]);
         $request->merge(['slip_status_id' => 1]);
-        $request->merge(['is_received' => False]);
+    $request->merge(['is_received' => false]);
         $request->merge(['received_date' => null]);
-        $request->merge(['is_approved' => false]);
-        $request->merge(['approved_date' => NULL]);
+    $request->merge(['is_approved' => false]);
+    $request->merge(['approved_date' => null]);
 
         $slip = Slip::create($request->all());
 
@@ -138,7 +140,7 @@ class SlipController extends Controller
         $containers = MailContainer::findOrFail($selectedMailContainers)->with('mails')->get();
         $mails = $containers->mails;
 
-        $container = Container::findOrFail(); // transferer les containers
+    // containers transfer handled elsewhere via pivot
 
 
         foreach( $mails as $mail){
@@ -156,7 +158,7 @@ class SlipController extends Controller
                 'support_id' => 1,
                 'activity_id' => 1,
                 // 'container_id' removed: containers now managed via record_container pivot
-                'creator_id' => auth()->user()->id,
+                'creator_id' => Auth::id(),
             ]);
             $i++;
         }
@@ -170,7 +172,6 @@ class SlipController extends Controller
 
     public function storetransfert(Request $request)
     {
-//        dd($request);
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
@@ -182,7 +183,7 @@ class SlipController extends Controller
             'selected_records' => 'required|array',
         ]);
 
-        $request->merge(['officer_id' => auth()->user()->id]);
+    $request->merge(['officer_id' => Auth::id()]);
 
         $slip = Slip::create($request->all());
 
@@ -207,7 +208,7 @@ class SlipController extends Controller
                 'support_id' => $record->support_id,
                 'activity_id' => $record->activity_id,
                 // container relationship migrated to pivot; skip single container_id
-                'creator_id' => auth()->id(),
+                'creator_id' => Auth::id(),
             ]);
 
             foreach ($record->attachments as $attachment) {
@@ -232,8 +233,8 @@ class SlipController extends Controller
 
         $slip = Slip::findOrFail($request->input('id'));
         $slip->update([
-            'is_received' => TRUE,
-            'received_by' => auth()->id(),
+            'is_received' => true,
+            'received_by' => Auth::id(),
             'received_date' => now(),
         ]);
 
@@ -248,7 +249,7 @@ class SlipController extends Controller
             'id' => [
                 'required',
                 'exists:slips,id',
-                function ($attribute, $value, $fail) {
+                function ($_, $value, $fail) {
                     $slip = Slip::find($value);
                     if (!$slip) {
                         $fail('Le slip spécifié n\'existe pas.');
@@ -266,8 +267,8 @@ class SlipController extends Controller
         $slip = Slip::findOrFail($request->input('id'));
 
         $slip->update([
-            'is_approved' => TRUE,
-            'approved_by' => auth()->id(),
+            'is_approved' => true,
+            'approved_by' => Auth::id(),
             'approved_date' => now(),
         ]);
 
@@ -281,7 +282,7 @@ class SlipController extends Controller
 
     public function integrate(Request $request)
     {
-        $validated = $request->validate([
+    $request->validate([
             'id' => 'required|exists:slips,id',
         ]);
 
@@ -289,7 +290,7 @@ class SlipController extends Controller
             ['id' => $request->input('id')],
             [
                 'is_integrated' => true,
-                'integrated_by' => auth()->id(),
+                'integrated_by' => Auth::id(),
                 'integrated_date' => now(),
             ]
         );
@@ -365,7 +366,7 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
-        $request->merge(['officer_id' => auth()->user()->id]);
+    $request->merge(['officer_id' => Auth::id()]);
 
         $slip->update($request->all());
 
@@ -513,12 +514,14 @@ class SlipController extends Controller
             'file' => [
                 'required',
                 'file',
-                function ($attribute, $value, $fail) use ($format) {
+                function ($_, $value, $fail) use ($format) {
                     $extension = strtolower($value->getClientOriginalExtension());
                     if ($format === 'excel' && $extension !== 'xlsx') {
                         $fail('The file must be an Excel file (.xlsx)');
-                    } elseif (($format === 'ead' || $format === 'seda') && $extension !== 'xml') {
+                    } elseif ($format === 'ead' && $extension !== 'xml') {
                         $fail('The file must be an XML file (.xml)');
+                    } elseif ($format === 'seda' && !in_array($extension, ['xml','zip'])) {
+                        $fail('The file must be a SEDA XML (.xml) or package (.zip)');
                     }
                 },
             ],
@@ -533,66 +536,39 @@ class SlipController extends Controller
             'type_id' => 1,
         ]);
 
-        try {
+    try {
             switch ($format) {
                 case 'excel':
                     Excel::import(new SlipsImport($dolly), $file);
                     break;
                 case 'ead':
-                    $this->importEAD($file, $dolly);
+            $service = new EADImportService();
+            $service->importSlipsFromString(file_get_contents($file->getPathname()), $dolly);
                     break;
                 case 'seda':
-                    $this->importSEDA($file, $dolly);
+                    $service = new SedaImportService();
+                    $ext = strtolower($file->getClientOriginalExtension());
+                    if ($ext === 'zip') {
+                        $service->importSlipFromZip($file->getPathname(), $dolly);
+                    } else {
+                        $service->importSlipFromString(file_get_contents($file->getPathname()), $dolly);
+                    }
                     break;
+                default:
+                    return redirect()->back()->with('error', 'Invalid import format');
             }
             return redirect()->route('slips.index')
                 ->with('success', 'Slips imported successfully and attached to new Dolly.');
         } catch (\Exception $e) {
             // Log the error for debugging
-            \Log::error('Import error: ' . $e->getMessage());
+            Log::error('Import error: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Error importing slips: ' . $e->getMessage());
         }
     }
 
 
-    private function importEAD($file, $dolly)
-    {
-        $xml = simplexml_load_file($file);
-        $xml->registerXPathNamespace('ead', 'urn:isbn:1-931666-22-9');
-
-        $slips = $xml->xpath('//ead:c');
-
-        foreach ($slips as $slip) {
-            $data = [
-                'name' => (string)$slip->did->unittitle,
-                'code' => (string)$slip->did->unitid,
-                'description' => (string)$slip->scopecontent->p,
-
-            ];
-
-            $newSlip = Slip::create($data);
-            $dolly->slips()->attach($newSlip->id);
-        }
-    }
-
-    private function importSEDA($file, $dolly)
-    {
-        $xml = simplexml_load_file($file);
-        $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
-
-        $slips = $xml->xpath('//seda:ArchiveObject');
-
-        foreach ($slips as $slip) {
-            $data = [
-                'name' => (string)$slip->Name,
-                'description' => (string)$slip->Description,
-            ];
-
-            $newSlip = Slip::create($data);
-            $dolly->slips()->attach($newSlip->id);
-        }
-    }
+    // EAD/SEDA specific import logic is handled by dedicated services.
 
 
     private function generateEAD($slips)
@@ -664,7 +640,7 @@ class SlipController extends Controller
         $zipFileName = 'slips_seda_export_' . time() . '.zip';
         $zip = new ZipArchive();
 
-        if ($zip->open(storage_path('app/public/' . $zipFileName), ZipArchive::CREATE) === TRUE) {
+    if ($zip->open(storage_path('app/public/' . $zipFileName), ZipArchive::CREATE) === true) {
             $zip->addFromString('slips.xml', $formattedXml);
 
             // Ajoutez ici la logique pour inclure les pièces jointes si nécessaire
