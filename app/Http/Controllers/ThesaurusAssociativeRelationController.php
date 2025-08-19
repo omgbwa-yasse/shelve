@@ -45,12 +45,12 @@ class ThesaurusAssociativeRelationController extends Controller
     public function store(Request $request, ThesaurusConcept $term)
     {
         $request->validate([
-            'related_term_id' => 'required|exists:terms,id',
+            'related_term_id' => 'required|exists:thesaurus_concepts,id',
             'relation_subtype' => 'required|string',
         ]);
 
         // Vérifie que le terme n'est pas déjà en relation
-        $exists = $term->associatedTerms()->where('terms.id', $request->related_term_id)->exists();
+    $exists = $term->associatedTerms()->where('thesaurus_concepts.id', $request->related_term_id)->exists();
         if ($exists) {
             return back()->with('error', 'Ce terme est déjà associé.');
         }

@@ -17,11 +17,6 @@ class Language extends Model
         'native_name',
     ];
 
-    public function terms()
-    {
-    // The Term model stores language as an ISO code string in the 'language' column
-    // while Language uses 'code' as its PK-like identifier
-    return $this->hasMany(Term::class, 'language', 'code');
-    }
+    // Intentionally no relation to Term since Term model does not exist in this setup
 
 }

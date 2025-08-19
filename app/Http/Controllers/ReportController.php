@@ -31,7 +31,8 @@ use App\Models\SlipRecord;
 use App\Models\SlipStatus;
 use App\Models\Sort;
 
-use App\Models\TermCategory;
+use App\Models\ThesaurusConcept;
+use App\Models\ThesaurusScheme;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Task;
@@ -533,19 +534,24 @@ class ReportController extends Controller
         $totalOrganisations = Organisation::count();
         $topLevelOrganisations = Organisation::whereNull('parent_id')->count();
 
-        // Thésaurus (Terms)
-        $totalTerms = Term::count();
-        $termsByCategory = Term::select('category_id', DB::raw('count(*) as count'))
-            ->groupBy('category_id')
-            ->pluck('count', 'category_id')
+        // Thésaurus (Concepts)
+        $totalTerms = ThesaurusConcept::count();
+        // Group by scheme as a proxy for category
+        $termsByCategory = ThesaurusConcept::select('scheme_id', DB::raw('count(*) as count'))
+            ->groupBy('scheme_id')
+            ->pluck('count', 'scheme_id')
             ->toArray();
-        $categoryNames = TermCategory::pluck('name', 'id')->toArray();
+        $categoryNames = \App\Models\ThesaurusScheme::whereIn('id', array_keys($termsByCategory))
+            ->pluck('title', 'id')
+            ->toArray();
 
-        $termsByLanguage = Term::select('language_id', DB::raw('count(*) as count'))
-            ->groupBy('language_id')
-            ->pluck('count', 'language_id')
+        // Group by language via preferred labels
+        $termsByLanguage = \App\Models\ThesaurusLabel::select('language', DB::raw('count(*) as count'))
+            ->where('type', 'prefLabel')
+            ->groupBy('language')
+            ->pluck('count', 'language')
             ->toArray();
-        $languageNames = DB::table('languages')->pluck('name', 'id')->toArray();
+        $languageNames = $termsByLanguage ? array_combine(array_keys($termsByLanguage), array_keys($termsByLanguage)) : [];
 
         return view('report.statistics.tools', compact(
             'totalActivities', 'topLevelActivities', 'activitiesWithCommunicability',
