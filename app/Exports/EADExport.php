@@ -86,7 +86,12 @@ class EADExport
         $did->addChild('unitid', 'COL-UD-' . date('Ymd'));
 
         $dsc = $archdesc->addChild('dsc');
-        foreach ($records as $record) {
+        // Only export top-level records; children will be nested recursively
+        $recordsCollection = collect($records);
+        $topLevel = $recordsCollection->filter(function ($r) use ($recordsCollection) {
+            return empty($r->parent_id) || !$recordsCollection->contains('id', $r->parent_id);
+        });
+        foreach ($topLevel as $record) {
             $this->addRecordComponent($dsc, $record);
         }
     }
@@ -344,7 +349,7 @@ class EADExport
         }
 
         // Nested children if present (hierarchy)
-        if (method_exists($record, 'children') && $record->relationLoaded('children') && $record->children->isNotEmpty()) {
+        if (method_exists($record, 'children') && $record->children && $record->children->isNotEmpty()) {
             foreach ($record->children as $child) {
                 $this->addRecordComponent($c, $child);
             }
