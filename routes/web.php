@@ -517,13 +517,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
         // Routes spécifiques AVANT la route resource (pour éviter les conflits)
-        Route::get('records/exportButton', [RecordController::class, 'exportButton'])->name('records.exportButton');
-        Route::post('records/print', [RecordController::class, 'printRecords'])->name('records.print');
-        Route::post('records/export', [RecordController::class, 'export'])->name('records.export');
-        Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
-        Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
-        Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
-        Route::post('records/analyze-file', [RecordController::class, 'analyzeFile'])->name('records.analyze-file');
+    // Dedicated export/import controllers for records
+    Route::get('records/exportButton', [\App\Http\Controllers\RecordExportController::class, 'exportButton'])->name('records.exportButton');
+    Route::post('records/print', [\App\Http\Controllers\RecordExportController::class, 'printRecords'])->name('records.print');
+    Route::post('records/export', [\App\Http\Controllers\RecordExportController::class, 'export'])->name('records.export');
+    Route::get('records/export', [\App\Http\Controllers\RecordExportController::class, 'exportForm'])->name('records.export.form');
+    Route::get('records/import', [\App\Http\Controllers\RecordImportController::class, 'importForm'])->name('records.import.form');
+    Route::post('records/import', [\App\Http\Controllers\RecordImportController::class, 'import'])->name('records.import');
+    Route::post('records/analyze-file', [\App\Http\Controllers\RecordImportController::class, 'analyzeFile'])->name('records.analyze-file');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::get('records/{record}/attachments', [RecordController::class, 'getAttachments'])->name('records.attachments.list');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
