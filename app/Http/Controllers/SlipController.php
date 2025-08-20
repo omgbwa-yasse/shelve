@@ -491,7 +491,8 @@ class SlipController extends Controller
             case 'excel':
                 return Excel::download(new SlipExport($slip), 'bordereau_' . $slip->code . '.xlsx');
             case 'ead':
-                $xml = $this->generateEAD(collect([$slip]));
+                $ead = new \App\Exports\EADExport();
+                $xml = $ead->export(collect([$slip]));
                 return response($xml)
                     ->header('Content-Type', 'application/xml')
                     ->header('Content-Disposition', 'attachment; filename="bordereau_' . $slip->code . '.xml"');
@@ -571,42 +572,7 @@ class SlipController extends Controller
     // EAD/SEDA specific import logic is handled by dedicated services.
 
 
-    private function generateEAD($slips)
-    {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9 "></ead>');
-
-        $eadheader = $xml->addChild('eadheader');
-        $eadheader->addChild('eadid', 'YOUR_UNIQUE_ID');
-        $filedesc = $eadheader->addChild('filedesc');
-        $filedesc->addChild('titlestmt')->addChild('titleproper', 'Your Archive Title');
-
-        $archdesc = $xml->addChild('archdesc');
-        $archdesc->addAttribute('level', 'collection');
-        $did = $archdesc->addChild('did');
-        $did->addChild('unittitle', 'Your Collection Title');
-
-        foreach ($slips as $slip) {
-            $c = $archdesc->addChild('c');
-            $c->addAttribute('level', 'item');
-            $c_did = $c->addChild('did');
-            $c_did->addChild('unittitle', $slip->name);
-            $c_did->addChild('unitid', $slip->code);
-            $c_did->addChild('unitdate', $slip->created_at->format('Y-m-d'));
-            $c_did->addChild('physdesc')->addChild('extent', '1 slip');
-
-            if ($slip->description) {
-                $c->addChild('scopecontent')->addChild('p', $slip->description);
-            }
-        }
-
-        // Format the XML with indentation
-        $dom = new \DOMDocument('1.0');
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        $dom->loadXML($xml->asXML());
-
-        return $dom->saveXML();
-    }
+    // Legacy EAD2002 generator removed in favor of App\Exports\EADExport (EAD3)
 
     private function exportSEDA($slips)
     {

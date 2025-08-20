@@ -576,7 +576,12 @@ class RecordController extends Controller
 
         $recordIds = explode(',', $request->query('records'));
         $format = $request->query('format', 'excel');
-        $records = Record::whereIn('id', $recordIds)->get();
+        // Eager-load relations for richer exports (EAD/PDF)
+        $records = Record::with([
+            'level','status','support','activity','organisation',
+            'containers','recordContainers.container','authors','thesaurusConcepts','attachments',
+            'children'
+        ])->whereIn('id', $recordIds)->get();
 
         $slips = "";
         try {
@@ -584,7 +589,8 @@ class RecordController extends Controller
                 case 'excel':
                     return Excel::download(new RecordsExport($records), 'records_export.xlsx');
                 case 'ead':
-                    $xml = $this->generateEAD($records);
+                    $ead = new \App\Exports\EADExport();
+                    $xml = $ead->exportRecords($records);
                     return response($xml)
                         ->header('Content-Type', 'application/xml')
                         ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
@@ -622,10 +628,16 @@ class RecordController extends Controller
 
         if ($dollyId) {
             $dolly = Dolly::findOrFail($dollyId);
-            $records = $dolly->records;
+            $records = $dolly->records()->with([
+                'level','status','support','activity','organisation',
+                'containers','recordContainers.container','authors','thesaurusConcepts','attachments','children'
+            ])->get();
             $slips = $dolly->slips;
         } else {
-            $records = Record::all();
+            $records = Record::with([
+                'level','status','support','activity','organisation',
+                'containers','recordContainers.container','authors','thesaurusConcepts','attachments','children'
+            ])->get();
             $slips = Slip::all();
         }
 
@@ -633,7 +645,8 @@ class RecordController extends Controller
             case 'excel':
                 return Excel::download(new RecordsExport($records), 'records.xlsx');
             case 'ead':
-                $xml = $this->generateEAD($records);
+                $ead = new \App\Exports\EADExport();
+                $xml = $ead->exportRecords($records);
                 return response($xml)
                     ->header('Content-Type', 'application/xml')
                     ->header('Content-Disposition', 'attachment; filename="records.xml"');
@@ -753,43 +766,7 @@ class RecordController extends Controller
         }
     }
 
-    private function generateEAD($records)
-    {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?>
-    <ead xmlns="urn:isbn:1-931666-22-9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:isbn:1-931666-22-9">
-    </ead>');
-
-        $eadheader = $xml->addChild('eadheader');
-        $eadheader->addChild('eadid', 'YOUR_UNIQUE_ID');
-        $filedesc = $eadheader->addChild('filedesc');
-        $filedesc->addChild('titlestmt')->addChild('titleproper', 'Your Archive Title');
-
-        $archdesc = $xml->addChild('archdesc');
-        $archdesc->addAttribute('level', 'collection');
-        $did = $archdesc->addChild('did');
-        $did->addChild('unittitle', 'Your Collection Title');
-
-        foreach ($records as $record) {
-            $c = $archdesc->addChild('c');
-            $c->addAttribute('level', $record->level->name ?? 'item');
-            $c_did = $c->addChild('did');
-            $c_did->addChild('unittitle', $record->name);
-            $c_did->addChild('unitdate', $record->date_start)->addAttribute('normal', $record->date_start);
-            $c_did->addChild('physdesc')->addChild('extent', $record->width_description);
-
-            if ($record->content) {
-                $c->addChild('scopecontent')->addChild('p', $record->content);
-            }
-        }
-
-        // Format the XML with indentation
-        $dom = new \DOMDocument('1.0');
-        $dom->preserveWhiteSpace = false;
-        $dom->formatOutput = true;
-        $dom->loadXML($xml->asXML());
-
-        return $dom->saveXML();
-    }
+    // Legacy EAD2002 generator removed in favor of App\Exports\EADExport (EAD3)
 
     private function exportSEDA($records, $slips)
     {
