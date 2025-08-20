@@ -36,4 +36,16 @@ return [
         'api_key' => env('MCP_API_KEY'),
     ],
 
+    // Tesseract OCR integration (optional)
+    'tesseract' => [
+        // Full path to tesseract binary (enable OCR when set)
+        // Windows example: C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+        'bin' => env('TESSERACT_BIN'),
+        // Language(s) codes (e.g., 'fra', 'eng', or 'fra+eng') if language packs installed
+        'lang' => env('TESSERACT_LANG', 'eng'),
+        // Optional: path to pdftoppm (Poppler) used to rasterize PDFs for OCR
+        // Windows example: C:\\Program Files\\Poppler\\bin\\pdftoppm.exe
+        'pdftoppm_bin' => env('PDFTOPPM_BIN', 'pdftoppm'),
+    ],
+
 ];

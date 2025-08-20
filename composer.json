@@ -23,7 +23,8 @@
         "phpoffice/phpword": "^1.2",
         "smalot/pdfparser": "^2.7",
         "teamtnt/laravel-scout-tntsearch-driver": "^15.0.0",
-        "teamtnt/tntsearch": "^4.3"
+        "teamtnt/tntsearch": "^4.3",
+        "thiagoalessio/tesseract_ocr": "^2.13"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
