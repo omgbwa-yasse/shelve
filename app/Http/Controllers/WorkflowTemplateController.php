@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WorkflowTemplate;
 use App\Models\WorkflowStep;
+use App\Enums\WorkflowCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -176,7 +177,8 @@ class WorkflowTemplateController extends Controller
      */
     public function create()
     {
-        return view('workflow.templates.create');
+        $categories = WorkflowCategory::forSelect();
+        return view('workflow.templates.create', compact('categories'));
     }
 
     /**
@@ -187,7 +189,11 @@ class WorkflowTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:workflow_templates',
             'description' => 'nullable|string',
-            'category' => 'required|string|max:50',
+            'category' => [
+                'required',
+                'string',
+                Rule::in(array_keys(WorkflowCategory::forSelect()))
+            ],
             'is_active' => 'boolean',
             'configuration' => self::NULLABLE_ARRAY,
             'configuration.*.id' => 'required_with:configuration|string',
@@ -250,7 +256,8 @@ class WorkflowTemplateController extends Controller
      */
     public function edit(WorkflowTemplate $template)
     {
-        return view('workflow.templates.edit', compact('template'));
+        $categories = WorkflowCategory::forSelect();
+        return view('workflow.templates.edit', compact('template', 'categories'));
     }
 
     /**
@@ -266,7 +273,11 @@ class WorkflowTemplateController extends Controller
                 Rule::unique('workflow_templates')->ignore($template->id),
             ],
             'description' => 'nullable|string',
-            'category' => 'required|string|max:50',
+            'category' => [
+                'required',
+                'string',
+                Rule::in(array_keys(WorkflowCategory::forSelect()))
+            ],
             'is_active' => 'boolean',
             'configuration' => self::NULLABLE_ARRAY,
             'configuration.*.id' => self::REQUIRED_STRING,

@@ -42,8 +42,14 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="category" class="form-label">{{ __('Catégorie') }} <span class="text-danger">*</span></label>
-                            <input type="text" id="category" name="category" class="form-control @error('category') is-invalid @enderror"
-                                   value="{{ old('category', $template->category) }}" required>
+                            <select id="category" name="category" class="form-control @error('category') is-invalid @enderror" required>
+                                <option value="">{{ __('Sélectionnez une catégorie') }}</option>
+                                @foreach($categories as $value => $label)
+                                    <option value="{{ $value }}" {{ old('category', $template->category) == $value ? 'selected' : '' }} data-category="{{ $value }}">
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('category')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -740,5 +746,25 @@ function exportConfiguration() {
         showAlert('danger', 'Impossible d\'exporter: JSON invalide');
     }
 }
+
+// Amélioration du selecteur de catégorie
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('category');
+    if (categorySelect) {
+        // Ajouter la classe lors du chargement si une catégorie est déjà sélectionnée
+        if (categorySelect.value) {
+            categorySelect.classList.add('category-selected');
+        }
+
+        categorySelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                this.classList.add('category-selected');
+            } else {
+                this.classList.remove('category-selected');
+            }
+        });
+    }
+});
 </script>
 @endsection
