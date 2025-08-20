@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class slipAttachment extends Model
+class SlipAttachment extends Model
 {
     use HasFactory;
 
