@@ -136,14 +136,23 @@ use App\Http\Controllers\TaskCommentController;
 use App\Http\Controllers\TaskAssignmentController;
 use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\MailTaskController;
-
+use Illuminate\Support\Facades\Gate;
 
 // MCP retiré
 use App\Http\Controllers\RecordEnricherController;
 
 
-Auth::routes();
+Route::get('/', function () {
+    if (Gate::allows('module_repositories_access')) {
+        return redirect('/repositories');
+    } elseif (Gate::allows('module_mails_access')) {
+        return redirect('/mails/received');
+    }else{
+        return redirect('/bulletin-boards');
+    }
+});
 
+Auth::routes();
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 
