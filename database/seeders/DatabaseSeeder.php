@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
 
             // Seeders pour les thésaurus
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
+            ThesaurusMatiereSeeder::class,   // Seeder pour le thésaurus des matières
+            ThesaurusGeographiqueSeeder::class, // Seeder pour le thésaurus géographique
             ThesaurusActionsAdministrativesSeeder::class, // Seeder pour le thésaurus des actions administratives
 
             // Seeders pour les données records
@@ -42,6 +44,9 @@ class DatabaseSeeder extends Seeder
             // Seeders pour les tâches
             TaskCategorySeeder::class, // Seeder pour les catégories de tâches
             TaskSeeder::class, // Seeder pour les exemples de tâches
+
+            // Paramètres applicatifs
+            SettingSeeder::class, // Paramètres et catégories de paramètres (idempotent)
 
             ToolActivitySeeder::class, // Seeder pour les activités
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité

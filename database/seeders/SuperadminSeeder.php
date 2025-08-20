@@ -12,7 +12,7 @@ use App\Models\Organisation;
 use App\Models\Role;
 use App\Models\Permission;
 
-class SuperadminSeeder extends Seeder
+class SuperAdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
