@@ -37,7 +37,7 @@ return new class extends Migration
             $table->integer('order_index');
             $table->enum('step_type', ['manual', 'automatic', 'approval', 'notification', 'conditional'])->default('manual');
             $table->json('configuration')->nullable()->comment('Configuration de l\'étape');
-            $table->integer('estimated_duration')->nullable()->comment('Durée estimée en minutes');
+            $table->integer('estimated_duration')->nullable()->comment('Durée estimée en heures');
             $table->boolean('is_required')->default(true);
             $table->boolean('can_be_skipped')->default(false);
             $table->json('conditions')->nullable()->comment('Conditions pour cette étape');

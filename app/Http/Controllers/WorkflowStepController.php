@@ -74,27 +74,44 @@ class WorkflowStepController extends Controller
             'assignments.*.role' => 'nullable|string',
         ]);
 
-        // Decode JSON fields if they are strings
+        // Uniformiser la conversion des champs JSON
         $configuration = null;
         if ($request->filled('configuration')) {
-            if (is_array($request->input('configuration'))) {
-                $configuration = $request->input('configuration');
+            $rawConfig = $request->input('configuration');
+            if (is_array($rawConfig)) {
+                $configuration = $rawConfig;
             } else {
-                $configuration = json_decode($request->input('configuration'), true);
+                $configuration = json_decode($rawConfig, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    return back()->withInput()->withErrors(['configuration' => __('Configuration JSON invalide')]);
+                    return back()->withInput()->withErrors(['configuration' => __('Le champ configuration doit être un JSON valide.')]);
                 }
             }
         }
 
         $conditions = null;
         if ($request->filled('conditions')) {
-            if (is_array($request->input('conditions'))) {
-                $conditions = $request->input('conditions');
+            $rawCond = $request->input('conditions');
+            if (is_array($rawCond)) {
+                $conditions = $rawCond;
             } else {
-                $conditions = json_decode($request->input('conditions'), true);
+                $conditions = json_decode($rawCond, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    return back()->withInput()->withErrors(['conditions' => __('Conditions JSON invalides')]);
+                    return back()->withInput()->withErrors(['conditions' => __('Le champ conditions doit être un JSON valide.')]);
+                }
+            }
+        }
+
+        // Validation des assignations
+        if (!empty($validated['assignments'])) {
+            foreach ($validated['assignments'] as $i => $assignment) {
+                if (empty($assignment['assignee_type']) || !in_array($assignment['assignee_type'], ['user', 'organisation'])) {
+                    return back()->withInput()->withErrors(["assignments.$i.assignee_type" => __('Type d’assigné invalide')]);
+                }
+                if ($assignment['assignee_type'] === 'user' && empty($assignment['assignee_id'])) {
+                    return back()->withInput()->withErrors(["assignments.$i.assignee_id" => __('Utilisateur assigné requis')]);
+                }
+                if ($assignment['assignee_type'] === 'organisation' && empty($assignment['organisation_id'])) {
+                    return back()->withInput()->withErrors(["assignments.$i.organisation_id" => __('Organisation assignée requise')]);
                 }
             }
         }
@@ -308,6 +325,14 @@ class WorkflowStepController extends Controller
             return redirect()
                 ->route('workflows.steps.show', [$template, $step])
                 ->with('error', 'Impossible de supprimer cette étape car elle est utilisée dans des workflows actifs.');
+        }
+
+        // Blocage si étape critique (étape unique du workflow)
+        $totalSteps = $template->steps()->count();
+        if ($totalSteps <= 1) {
+            return redirect()
+                ->route('workflows.steps.show', [$template, $step])
+                ->with('error', 'Impossible de supprimer l’étape : c’est l’unique étape du workflow.');
         }
 
         // Récupérer l'ordre pour réorganiser

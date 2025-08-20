@@ -65,10 +65,11 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (minutes)') }}</label>
+                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (heures)') }}</label>
                             <input type="number" id="estimated_duration" name="estimated_duration" min="0" step="1"
                                    class="form-control @error('estimated_duration') is-invalid @enderror"
                                    value="{{ old('estimated_duration') }}">
+                            <div class="form-text text-muted small">{{ __('Indiquez la durée en heures. Exemple : 2 pour 2 heures.') }}</div>
                             @error('estimated_duration')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -118,21 +119,21 @@
                 <div class="form-group mb-3">
                     <label for="configuration" class="form-label">{{ __('Configuration') }}</label>
                     <textarea id="configuration" name="configuration" class="form-control @error('configuration') is-invalid @enderror"
-                              rows="3" placeholder="{{ __('Configuration JSON pour cette étape (optionnel)') }}">{{ old('configuration') }}</textarea>
+                              rows="3" placeholder="{ '{"role": "Agent du Courrier"}' }">{{ old('configuration') }}</textarea>
                     @error('configuration')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text text-muted small">{{ __('Format JSON pour les paramètres spécifiques de l\'étape') }}</div>
+                    <div class="form-text text-muted small">{{ __('Format JSON pour les paramètres spécifiques de l\'étape. Exemple: {"role": "Agent du Courrier"}.') }}</div>
                 </div>
 
                 <div class="form-group mb-3">
                     <label for="conditions" class="form-label">{{ __('Conditions') }}</label>
                     <textarea id="conditions" name="conditions" class="form-control @error('conditions') is-invalid @enderror"
-                              rows="3" placeholder="{{ __('Conditions d\'exécution de l\'étape (optionnel)') }}">{{ old('conditions') }}</textarea>
+                              rows="3" placeholder="{ '{"if": "mail.status == \"sensitive\""}' }">{{ old('conditions') }}</textarea>
                     @error('conditions')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text text-muted small">{{ __('Format JSON pour définir les conditions d\'activation de l\'étape') }}</div>
+                    <div class="form-text text-muted small">{{ __('Format JSON pour définir les conditions d\'activation de l\'étape. Exemple: {"if": "mail.status == \"sensitive\""}.') }}</div>
                 </div>
 
                 <div class="border-top pt-3 mt-4 mb-3">
@@ -145,7 +146,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
+                                        <label for="assignee_type_{{ $loop->index }}" class="form-label">{{ __('Type d\'assigné') }}</label>
                                         <select name="assignments[0][assignee_type]" class="form-control assignee-type-select">
                                             <option value="user">{{ __('Utilisateur') }}</option>
                                             <option value="organisation">{{ __('Organisation') }}</option>
@@ -155,14 +156,14 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group assignee-user">
-                                        <label class="form-label">{{ __('Utilisateur') }}</label>
+                                        <label for="user_select_{{ $loop->index }}" class="form-label">{{ __('Utilisateur') }}</label>
                                         <select name="assignments[0][assignee_id]" class="form-control user-select" disabled>
                                             <option value="">{{ __('Chargement des utilisateurs...') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group assignee-organisation" style="display: none;">
-                                        <label class="form-label">{{ __('Organisation') }}</label>
+                                        <label for="organisation_select_{{ $loop->index }}" class="form-label">{{ __('Organisation') }}</label>
                                         <select name="assignments[0][organisation_id]" class="form-control organisation-select">
                                             <option value="">{{ __('Sélectionner une organisation') }}</option>
                                             @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
@@ -176,7 +177,7 @@
                             <div class="row mt-2 organisation-users" style="display: none;">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
+                                        <label for="organisation_user_select_{{ $loop->index }}" class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
                                         <select name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
                                             <option value="">{{ __('Sélectionner une organisation d\'abord') }}</option>
                                         </select>
@@ -185,7 +186,7 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Rôle / Note') }}</label>
+                                        <label for="role_{{ $loop->index }}" class="form-label">{{ __('Rôle / Note') }}</label>
                                         <input type="text" name="assignments[0][role]" class="form-control"
                                                placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
                                     </div>
@@ -223,6 +224,64 @@
 @section('js')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Simple client-side JSON validation for configuration and conditions
+        function validateJSONField(fieldId) {
+            const field = document.getElementById(fieldId);
+            if (!field) return true;
+            const value = field.value.trim();
+            if (!value) return true;
+            try {
+                JSON.parse(value);
+                field.classList.remove('is-invalid');
+                return true;
+            } catch (e) {
+                field.classList.add('is-invalid');
+                return false;
+            }
+        }
+
+        document.getElementById('configuration').addEventListener('blur', function() {
+            validateJSONField('configuration');
+        });
+        document.getElementById('conditions').addEventListener('blur', function() {
+            validateJSONField('conditions');
+        });
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const validConfig = validateJSONField('configuration');
+            const validCond = validateJSONField('conditions');
+            let validAssignments = true;
+            document.querySelectorAll('.assignment-row').forEach(row => {
+                const type = row.querySelector('.assignee-type-select')?.value;
+                if (!type) {
+                    validAssignments = false;
+                    row.querySelector('.assignee-type-select').classList.add('is-invalid');
+                }
+                if (type === 'user') {
+                    const user = row.querySelector('.user-select')?.value;
+                    if (!user) {
+                        validAssignments = false;
+                        row.querySelector('.user-select').classList.add('is-invalid');
+                    }
+                }
+                if (type === 'organisation') {
+                    const org = row.querySelector('.organisation-select')?.value;
+                    const orgUser = row.querySelector('.organisation-user-select')?.value;
+                    if (!org) {
+                        validAssignments = false;
+                        row.querySelector('.organisation-select').classList.add('is-invalid');
+                    }
+                    if (!orgUser) {
+                        validAssignments = false;
+                        row.querySelector('.organisation-user-select').classList.add('is-invalid');
+                    }
+                }
+            });
+            if (!validConfig || !validCond || !validAssignments) {
+                e.preventDefault();
+                alert('Veuillez corriger les champs invalides (JSON ou assignations).');
+            }
+        });
         // Gestion des assignations
         let assignmentIndex = 0;
 
@@ -265,7 +324,6 @@
             userSelect.innerHTML = loadingOption;
             userSelect.disabled = true;
 
-            // Récupérer toutes les organisations et leurs utilisateurs
             fetch('/api/organisations', {
                 method: 'GET',
                 headers: {
@@ -275,53 +333,57 @@
                 },
                 credentials: 'same-origin'
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(orgs => {
-                    const allUsersPromises = orgs.map(org =>
-                        fetch(`/api/organisations/${org.id}/users`, {
-                            method: 'GET',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            credentials: 'same-origin'
-                        }).then(r => {
-                            if (!r.ok) {
-                                throw new Error(`HTTP error! status: ${r.status}`);
-                            }
-                            return r.json();
-                        })
-                    );
-                    return Promise.all(allUsersPromises);
-                })
-                .then(userArrays => {
-                    const allUsers = userArrays.flat();
-                    // Supprimer les doublons par ID
-                    const uniqueUsers = allUsers.filter((user, index, self) =>
-                        index === self.findIndex(u => u.id === user.id)
-                    );
-
-                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
-                    uniqueUsers.sort((a, b) => a.name.localeCompare(b.name)).forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
-                        userSelect.appendChild(option);
-                    });
-                    userSelect.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des utilisateurs:', error);
-                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
-                    userSelect.disabled = false;
-                    alert('Erreur lors du chargement des utilisateurs. Vérifiez la console pour plus de détails.');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(orgs => {
+                const allUsersPromises = orgs.map(org =>
+                    fetch(`/api/organisations/${org.id}/users`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    }).then(r => {
+                        if (!r.ok) {
+                            throw new Error(`HTTP error! status: ${r.status}`);
+                        }
+                        return r.json();
+                    })
+                );
+                return Promise.all(allUsersPromises);
+            })
+            .then(userArrays => {
+                const allUsers = userArrays.flat();
+                // Supprimer les doublons par ID
+                const seen = new Set();
+                const uniqueUsers = allUsers.filter(user => {
+                    if (seen.has(user.id)) return false;
+                    seen.add(user.id);
+                    return true;
                 });
+
+                userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
+                uniqueUsers.sort((a, b) => a.name.localeCompare(b.name)).forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                    userSelect.appendChild(option);
+                });
+                userSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des utilisateurs:', error);
+                userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                userSelect.disabled = true;
+                window.alert('Erreur lors du chargement des utilisateurs. Veuillez réessayer ou contacter un administrateur.');
+            });
+        }
         }
 
         function loadUsersForOrganisation(organisationId, userSelect) {
@@ -344,28 +406,36 @@
                 },
                 credentials: 'same-origin'
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(users => {
-                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
-                    users.forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
-                        userSelect.appendChild(option);
-                    });
-                    userSelect.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des utilisateurs:', error);
-                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
-                    userSelect.disabled = false;
-                    alert('Erreur lors du chargement des utilisateurs pour l\'organisation. Vérifiez la console.');
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(users => {
+                // Supprimer les doublons par ID
+                const seen = new Set();
+                const uniqueUsers = users.filter(user => {
+                    if (seen.has(user.id)) return false;
+                    seen.add(user.id);
+                    return true;
                 });
+                userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
+                uniqueUsers.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                    userSelect.appendChild(option);
+                });
+                userSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des utilisateurs:', error);
+                userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                userSelect.disabled = true;
+                window.alert('Erreur lors du chargement des utilisateurs pour l\'organisation. Veuillez réessayer ou contacter un administrateur.');
+            });
+        }
         }
 
         // Initialiser l'affichage
@@ -408,15 +478,45 @@
                 }
             });
 
-            // Réinitialiser l'état des selects utilisateurs
+            // Initialiser les selects utilisateurs et organisations
             const userSelect = template.querySelector('.user-select');
+            const orgSelect = template.querySelector('.organisation-select');
             const orgUserSelect = template.querySelector('.organisation-user-select');
 
-            if (userSelect) {
-                userSelect.innerHTML = '<option value="">{{ __("Chargement des utilisateurs...") }}</option>';
-                userSelect.disabled = true;
+            // Charger toutes les organisations dans organisation-select
+            if (orgSelect) {
+                fetch('/api/organisations', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(orgs => {
+                    orgSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation") }}</option>';
+                    orgs.forEach(org => {
+                        const option = document.createElement('option');
+                        option.value = org.id;
+                        option.textContent = org.name;
+                        orgSelect.appendChild(option);
+                    });
+                    orgSelect.disabled = false;
+                })
+                .catch(() => {
+                    orgSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                    orgSelect.disabled = false;
+                });
             }
 
+            // Charger tous les utilisateurs dans user-select
+            if (userSelect) {
+                loadAllUsers(userSelect);
+            }
+
+            // Réinitialiser organisation-user-select
             if (orgUserSelect) {
                 orgUserSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
                 orgUserSelect.disabled = true;
@@ -430,9 +530,11 @@
             // Mettre à jour l'affichage en fonction du type d'assigné sélectionné
             updateAssigneeTypeVisibility();
 
-            // Activer le bouton de suppression pour la première assignation
+            // Activer le bouton de suppression pour toutes les assignations si > 1
             if (document.querySelectorAll('.assignment-row').length > 1) {
-                document.querySelector('.assignment-row .remove-assignment').style.display = 'inline-block';
+                document.querySelectorAll('.assignment-row .remove-assignment').forEach(btn => {
+                    btn.style.display = 'inline-block';
+                });
             }
         });
 
