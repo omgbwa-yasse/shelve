@@ -90,6 +90,12 @@
           </select>
         </div>
       </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="attachment_content">Contenu des pièces jointes :</label>
+          <input type="text" name="attachment_content" class="form-control" id="attachment_content" placeholder="Mot/phrase contenu dans les pièces jointes">
+        </div>
+      </div>
     </div>
   </div>
 

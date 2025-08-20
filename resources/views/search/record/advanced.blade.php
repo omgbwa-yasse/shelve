@@ -75,6 +75,12 @@
                                 <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="content" data-name-field="{{ __('search.content') }}">
                                     <i class="bi bi-file-text field-icon"></i> {{ __('search.content') }}
                                 </a>
+                                <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="attachment" data-name-field="{{ __('Attachments') }}">
+                                    <i class="bi bi-paperclip field-icon"></i> {{ __('Attachments') }}
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="attachment_content" data-name-field="{{ __('Attachment content') }}">
+                                    <i class="bi bi-paperclip field-icon"></i> {{ __('Attachment content') }}
+                                </a>
                                 <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="date_start" data-name-field="{{ __('search.start_date') }}">
                                     <i class="bi bi-calendar field-icon"></i> {{ __('search.start_date') }}
                                 </a>
@@ -251,6 +257,8 @@
                         code: 'text',
                         name: 'text',
                         content: 'text',
+                            attachment: 'text',
+                            attachment_content: 'text',
                         date_start: 'date',
                         date_end: 'date',
                         date_exact: 'date',
