@@ -146,7 +146,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="assignee_type_{{ $loop->index }}" class="form-label">{{ __('Type d\'assigné') }}</label>
+                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
                                         <select name="assignments[0][assignee_type]" class="form-control assignee-type-select">
                                             <option value="user">{{ __('Utilisateur') }}</option>
                                             <option value="organisation">{{ __('Organisation') }}</option>
@@ -156,15 +156,15 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group assignee-user">
-                                        <label for="user_select_{{ $loop->index }}" class="form-label">{{ __('Utilisateur') }}</label>
+                                        <label class="form-label">{{ __('Utilisateur') }}</label>
                                         <select name="assignments[0][assignee_id]" class="form-control user-select" disabled>
                                             <option value="">{{ __('Chargement des utilisateurs...') }}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group assignee-organisation" style="display: none;">
-                                        <label for="organisation_select_{{ $loop->index }}" class="form-label">{{ __('Organisation') }}</label>
-                                        <select name="assignments[0][organisation_id]" class="form-control organisation-select">
+                                        <label for="organisation_select_0" class="form-label">{{ __('Organisation') }}</label>
+                                        <select id="organisation_select_0" name="assignments[0][organisation_id]" class="form-control organisation-select">
                                             <option value="">{{ __('Sélectionner une organisation') }}</option>
                                             @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
                                                 <option value="{{ $org->id }}">{{ $org->name }}</option>
@@ -177,8 +177,8 @@
                             <div class="row mt-2 organisation-users" style="display: none;">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="organisation_user_select_{{ $loop->index }}" class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
-                                        <select name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
+                                        <label for="organisation_user_select_0" class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
+                                        <select id="organisation_user_select_0" name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
                                             <option value="">{{ __('Sélectionner une organisation d\'abord') }}</option>
                                         </select>
                                     </div>
@@ -186,8 +186,8 @@
 
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="role_{{ $loop->index }}" class="form-label">{{ __('Rôle / Note') }}</label>
-                                        <input type="text" name="assignments[0][role]" class="form-control"
+                                            <label for="role_0" class="form-label">{{ __('Rôle / Note') }}</label>
+                                            <input id="role_0" type="text" name="assignments[0][role]" class="form-control"
                                                placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
                                     </div>
                                 </div>
