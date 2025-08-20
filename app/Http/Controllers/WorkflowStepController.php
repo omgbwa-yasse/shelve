@@ -60,17 +60,44 @@ class WorkflowStepController extends Controller
                 'required',
                 Rule::enum(WorkflowStepType::class),
             ],
-            'configuration' => 'nullable|array',
+            // Accept raw JSON string or array and decode below
+            'configuration' => 'nullable',
             'estimated_duration' => 'nullable|integer|min:0',
             'is_required' => 'boolean',
             'can_be_skipped' => 'boolean',
-            'conditions' => 'nullable|array',
+            // Accept raw JSON string or array and decode below
+            'conditions' => 'nullable',
             'assignments' => 'nullable|array',
             'assignments.*.assignee_type' => 'required|string',
             'assignments.*.assignee_id' => 'nullable|exists:users,id',
             'assignments.*.organisation_id' => 'nullable|exists:organisations,id',
             'assignments.*.role' => 'nullable|string',
         ]);
+
+        // Decode JSON fields if they are strings
+        $configuration = null;
+        if ($request->filled('configuration')) {
+            if (is_array($request->input('configuration'))) {
+                $configuration = $request->input('configuration');
+            } else {
+                $configuration = json_decode($request->input('configuration'), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return back()->withInput()->withErrors(['configuration' => __('Configuration JSON invalide')]);
+                }
+            }
+        }
+
+        $conditions = null;
+        if ($request->filled('conditions')) {
+            if (is_array($request->input('conditions'))) {
+                $conditions = $request->input('conditions');
+            } else {
+                $conditions = json_decode($request->input('conditions'), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return back()->withInput()->withErrors(['conditions' => __('Conditions JSON invalides')]);
+                }
+            }
+        }
 
         // Réordonner les étapes existantes si nécessaire
         $orderIndex = $validated['order_index'];
@@ -85,11 +112,11 @@ class WorkflowStepController extends Controller
             'description' => $validated['description'] ?? null,
             'order_index' => $orderIndex,
             'step_type' => $validated['type'],
-            'configuration' => $validated['configuration'] ?? null,
+            'configuration' => $configuration,
             'estimated_duration' => $validated['estimated_duration'] ?? null,
             'is_required' => $validated['is_required'] ?? true,
             'can_be_skipped' => $validated['can_be_skipped'] ?? false,
-            'conditions' => $validated['conditions'] ?? null,
+            'conditions' => $conditions,
         ]);
 
         $step->save();
@@ -156,11 +183,13 @@ class WorkflowStepController extends Controller
                 'required',
                 Rule::enum(WorkflowStepType::class),
             ],
-            'configuration' => 'nullable|array',
+            // Accept raw JSON string or array and decode below
+            'configuration' => 'nullable',
             'estimated_duration' => 'nullable|integer|min:0',
             'is_required' => 'boolean',
             'can_be_skipped' => 'boolean',
-            'conditions' => 'nullable|array',
+            // Accept raw JSON string or array and decode below
+            'conditions' => 'nullable',
             'assignments' => 'nullable|array',
             'assignments.*.assignee_type' => 'required|string',
             'assignments.*.assignee_id' => 'nullable|exists:users,id',
@@ -168,6 +197,31 @@ class WorkflowStepController extends Controller
             'assignments.*.role' => 'nullable|string',
             'assignments.*.assignment_id' => 'nullable|exists:workflow_step_assignments,id',
         ]);
+
+        // Decode JSON fields if they are strings
+        $configuration = null;
+        if ($request->filled('configuration')) {
+            if (is_array($request->input('configuration'))) {
+                $configuration = $request->input('configuration');
+            } else {
+                $configuration = json_decode($request->input('configuration'), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return back()->withInput()->withErrors(['configuration' => __('Configuration JSON invalide')]);
+                }
+            }
+        }
+
+        $conditions = null;
+        if ($request->filled('conditions')) {
+            if (is_array($request->input('conditions'))) {
+                $conditions = $request->input('conditions');
+            } else {
+                $conditions = json_decode($request->input('conditions'), true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return back()->withInput()->withErrors(['conditions' => __('Conditions JSON invalides')]);
+                }
+            }
+        }
 
         // Gérer la réorganisation
         if ($validated['order_index'] != $step->order_index) {
@@ -190,11 +244,11 @@ class WorkflowStepController extends Controller
             'description' => $validated['description'] ?? null,
             'order_index' => $validated['order_index'],
             'step_type' => $validated['step_type'],
-            'configuration' => $validated['configuration'] ?? null,
+            'configuration' => $configuration,
             'estimated_duration' => $validated['estimated_duration'] ?? null,
             'is_required' => $validated['is_required'] ?? true,
             'can_be_skipped' => $validated['can_be_skipped'] ?? false,
-            'conditions' => $validated['conditions'] ?? null,
+            'conditions' => $conditions,
         ]);
 
         // Mettre à jour les assignations existantes et créer les nouvelles

@@ -65,8 +65,8 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (jours)') }}</label>
-                            <input type="number" id="estimated_duration" name="estimated_duration" min="0" step="0.5"
+                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (minutes)') }}</label>
+                            <input type="number" id="estimated_duration" name="estimated_duration" min="0" step="1"
                                    class="form-control @error('estimated_duration') is-invalid @enderror"
                                    value="{{ old('estimated_duration') }}">
                             @error('estimated_duration')

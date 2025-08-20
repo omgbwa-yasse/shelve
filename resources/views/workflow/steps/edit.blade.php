@@ -60,12 +60,12 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (jours)') }}</label>
-                            <input type="number" class="form-control @error('estimated_duration') is-invalid @enderror" id="estimated_duration" name="estimated_duration" value="{{ old('estimated_duration', $step->estimated_duration) }}" min="0" step="0.5">
+                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (minutes)') }}</label>
+                            <input type="number" class="form-control @error('estimated_duration') is-invalid @enderror" id="estimated_duration" name="estimated_duration" value="{{ old('estimated_duration', $step->estimated_duration) }}" min="0" step="1">
                             @error('estimated_duration')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="form-text text-muted">{{ __('Durée estimée en jours pour compléter cette étape.') }}</small>
+                            <small class="form-text text-muted">{{ __('Durée estimée en minutes pour compléter cette étape.') }}</small>
                         </div>
 
                         <div class="form-group mb-3">

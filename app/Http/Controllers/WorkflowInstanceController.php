@@ -133,8 +133,8 @@ class WorkflowInstanceController extends Controller
             $workflowInstance->current_step_id = $firstStep->id;
             $workflowInstance->save();
 
-            // Créer les instances d'étapes pour toutes les étapes du template
-            foreach ($template->steps as $step) {
+        // Créer les instances d'étapes pour toutes les étapes du template
+        foreach ($template->steps as $step) {
                 $dueDate = null;
                 if ($step->estimated_duration) {
                     $dueDate = Carbon::now()->addMinutes($step->estimated_duration);
@@ -143,7 +143,8 @@ class WorkflowInstanceController extends Controller
                 $stepInstance = new WorkflowStepInstance([
                     'workflow_instance_id' => $workflowInstance->id,
                     'workflow_step_id' => $step->id,
-                    'status' => $step->order_index === 0 ? WorkflowStepInstanceStatus::PENDING : WorkflowStepInstanceStatus::PENDING,
+            // La première étape démarre immédiatement
+            'status' => $step->id === $firstStep->id ? WorkflowStepInstanceStatus::IN_PROGRESS : WorkflowStepInstanceStatus::PENDING,
                     'due_date' => $dueDate,
                 ]);
 
