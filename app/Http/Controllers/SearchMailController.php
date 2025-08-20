@@ -61,6 +61,15 @@ class SearchMailController extends Controller
             }
         }
 
+        // Filtre facultatif: contenu des pièces jointes (content_text)
+        if ($request->filled('attachment_content')) {
+            $needle = $request->input('attachment_content');
+            $query->whereHas('attachments', function ($q) use ($needle) {
+                $q->where('attachments.content_text', 'like', '%' . $needle . '%');
+            });
+            $filters['Pièces jointes'] = 'contient « ' . $needle . ' »';
+        }
+
         // Filtres basés sur les relations
         $relationFilters = [
             'priority_id' => ['relation' => 'priority', 'model' => MailPriority::class, 'label' => 'Priorité'],
@@ -118,6 +127,8 @@ class SearchMailController extends Controller
                     break;
                 case "container":
                     $this->handleContainerSearch($query, $request, $filters);
+                    break;
+                default:
                     break;
             }
         }

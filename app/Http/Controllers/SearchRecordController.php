@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\Auth;
 
 class SearchRecordController extends Controller
 {
+    private const OP_STARTS_WITH = 'commence par';
+    private const OP_CONTAINS = 'contient';
+    private const OP_NOT_CONTAINS = 'ne contient pas';
+
     public function form()
     {
         $data = [
@@ -61,6 +65,8 @@ class SearchRecordController extends Controller
                     case 'code':
                     case 'name':
                     case 'content':
+                    case 'attachment':
+                    case 'attachment_content':
                         $this->applyTextSearch($query, $field, $operator, $value);
                         break;
 
@@ -118,15 +124,63 @@ class SearchRecordController extends Controller
 
     private function applyTextSearch($query, $field, $operator, $value)
     {
+        // Special handling for searching inside attachments content
+        if ($field === 'attachment' || $field === 'attachment_content') {
+            if ($operator === self::OP_STARTS_WITH) {
+                $query->whereHas('attachments', function ($q) use ($value) {
+                    $q->where('attachments.content_text', 'like', $value . '%');
+                });
+            } elseif ($operator === self::OP_CONTAINS) {
+                $query->whereHas('attachments', function ($q) use ($value) {
+                    $q->where('attachments.content_text', 'like', '%' . $value . '%');
+                });
+            } elseif ($operator === self::OP_NOT_CONTAINS) {
+                $query->whereDoesntHave('attachments', function ($q) use ($value) {
+                    $q->where('attachments.content_text', 'like', '%' . $value . '%');
+                });
+            }
+            return;
+        }
+
+        // Combine record content + attachments content when field is 'content'
+        if ($field === 'content') {
+            if ($operator === self::OP_STARTS_WITH) {
+                $query->where(function ($q) use ($value) {
+                    $q->where('content', 'like', $value . '%')
+                      ->orWhereHas('attachments', function ($qa) use ($value) {
+                          $qa->where('attachments.content_text', 'like', $value . '%');
+                      });
+                });
+            } elseif ($operator === self::OP_CONTAINS) {
+                $query->where(function ($q) use ($value) {
+                    $q->where('content', 'like', '%' . $value . '%')
+                      ->orWhereHas('attachments', function ($qa) use ($value) {
+                          $qa->where('attachments.content_text', 'like', '%' . $value . '%');
+                      });
+                });
+            } elseif ($operator === self::OP_NOT_CONTAINS) {
+                $query->where(function ($q) use ($value) {
+                    $q->where('content', 'not like', '%' . $value . '%')
+                      ->whereDoesntHave('attachments', function ($qa) use ($value) {
+                          $qa->where('attachments.content_text', 'like', '%' . $value . '%');
+                      });
+                });
+            }
+            return;
+        }
+
+        // Default text search on the given field
         switch ($operator) {
-            case 'commence par':
+            case self::OP_STARTS_WITH:
                 $query->where($field, 'like', $value . '%');
                 break;
-            case 'contient':
+            case self::OP_CONTAINS:
                 $query->where($field, 'like', '%' . $value . '%');
                 break;
-            case 'ne contient pas':
+            case self::OP_NOT_CONTAINS:
                 $query->where($field, 'not like', '%' . $value . '%');
+                break;
+            default:
                 break;
         }
     }
@@ -142,6 +196,8 @@ class SearchRecordController extends Controller
                 break;
             case '<':
                 $query->whereDate($field, '<', $value);
+                break;
+            default:
                 break;
         }
     }
@@ -221,7 +277,7 @@ class SearchRecordController extends Controller
     {
         $query = Record::query();
 
-        switch ($request->input('categ')) {
+    switch ($request->input('categ')) {
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
@@ -264,6 +320,8 @@ class SearchRecordController extends Controller
                 $query->whereHas('containers', function ($q) use ($containerId) {
                     $q->where('containers.id', $containerId);
                 });
+                break;
+            default:
                 break;
         }
 

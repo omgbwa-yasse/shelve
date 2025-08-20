@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
     \App\Console\Commands\LlmPrune::class,
     \App\Console\Commands\ExportRecordSeda::class,
     \App\Console\Commands\ExportSlipSeda::class,
+    \App\Console\Commands\AttachmentsReindex::class,
     ];
 
     /**

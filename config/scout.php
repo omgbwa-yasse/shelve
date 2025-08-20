@@ -256,6 +256,16 @@ return [
             ],
         ],
 
+        'App\\Models\\Attachment' => [
+            'index' => 'attachments',
+            'type' => 'attachment',
+            'searchable_attributes' => [
+                'name',
+                'mime_type',
+                'content',
+            ],
+        ],
+
     ],
 ],
 
