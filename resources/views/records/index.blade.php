@@ -65,7 +65,84 @@
                 <div class="d-flex align-items-center gap-3">
                     <span>{{ __('Affichés par page:') }} {{ $records->perPage() }}</span>
                     @if($records->hasPages())
-                        <span class="top-pagination">{!! $records->onEachSide(1)->links() !!}</span>
+                        <div class="d-flex justify-content-center mb-5">
+                            <nav aria-label="{{ __('pagination') }}">
+                                <ul class="pagination pagination-lg shadow-sm">
+                                    {{-- Previous Page Link --}}
+                                    @if ($records->onFirstPage())
+                                        <li class="page-item disabled">
+                                <span class="page-link border-0 bg-light">
+                                    <i class="bi bi-chevron-left"></i>
+                                </span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link border-0" href="{{ $records->previousPageUrl() }}">
+                                                <i class="bi bi-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Pagination Elements --}}
+                                    @php
+                                        $start = max($records->currentPage() - 2, 1);
+                                        $end = min($start + 4, $records->lastPage());
+                                        $start = max($end - 4, 1);
+                                    @endphp
+
+                                    @if($start > 1)
+                                        <li class="page-item">
+                                            <a class="page-link border-0" href="{{ $records->url(1) }}">1</a>
+                                        </li>
+                                        @if($start > 2)
+                                            <li class="page-item disabled">
+                                                <span class="page-link border-0 bg-light">...</span>
+                                            </li>
+                                        @endif
+                                    @endif
+
+                                    @for ($i = $start; $i <= $end; $i++)
+                                        @if ($i == $records->currentPage())
+                                            <li class="page-item active">
+                                                <span class="page-link border-0 bg-primary">{{ $i }}</span>
+                                            </li>
+                                        @else
+                                            <li class="page-item">
+                                                <a class="page-link border-0" href="{{ $records->url($i) }}">{{ $i }}</a>
+                                            </li>
+                                        @endif
+                                    @endfor
+
+                                    @if($end < $records->lastPage())
+                                        @if($end < $records->lastPage() - 1)
+                                            <li class="page-item disabled">
+                                                <span class="page-link border-0 bg-light">...</span>
+                                            </li>
+                                        @endif
+                                        <li class="page-item">
+                                            <a class="page-link border-0" href="{{ $records->url($records->lastPage()) }}">
+                                                {{ $records->lastPage() }}
+                                            </a>
+                                        </li>
+                                    @endif
+
+                                    {{-- Next Page Link --}}
+                                    @if ($records->hasMorePages())
+                                        <li class="page-item">
+                                            <a class="page-link border-0" href="{{ $records->nextPageUrl() }}">
+                                                <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    @else
+                                        <li class="page-item disabled">
+                                <span class="page-link border-0 bg-light">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                                        </li>
+                                    @endif
+                                </ul>
+                            </nav>
+                        </div>
                     @endif
                 </div>
             </div>
