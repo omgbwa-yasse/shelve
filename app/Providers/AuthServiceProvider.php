@@ -32,17 +32,12 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Mail::class => \App\Policies\MailPolicy::class,
         \App\Models\Slip::class => \App\Policies\SlipPolicy::class,
         \App\Models\SlipRecord::class => \App\Policies\SlipRecordPolicy::class,
-    // \App\Models\Tool model not found; mapping removed
-    // \App\Models\Transferring model not found; mapping removed
-        \App\Models\Task::class => \App\Policies\TaskPolicy::class,
-    // \App\Models\Deposit model not found; mapping removed
         \App\Models\Dolly::class => \App\Policies\DollyPolicy::class,
         \App\Models\Container::class => \App\Policies\ContainerPolicy::class,
         \App\Models\Retention::class => \App\Policies\RetentionPolicy::class,
         \App\Models\Law::class => \App\Policies\LawPolicy::class,
         \App\Models\Communicability::class => \App\Policies\CommunicabilityPolicy::class,
         \App\Models\Reservation::class => \App\Policies\ReservationPolicy::class,
-    // \App\Models\Report model not found; mapping removed
         \App\Models\Event::class => \App\Policies\EventPolicy::class,
         \App\Models\Log::class => \App\Policies\LogPolicy::class,
         \App\Models\Backup::class => \App\Policies\BackupPolicy::class,
@@ -58,14 +53,6 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Post::class => \App\Policies\PostPolicy::class,
     // \App\Models\Ai model and AiPolicy not found; mapping removed
     // \App\Models\Barcode model not found; mapping removed
-
-        // Workflow module policies
-        \App\Models\WorkflowTemplate::class => \App\Policies\WorkflowTemplatePolicy::class,
-        \App\Models\WorkflowStep::class => \App\Policies\WorkflowStepPolicy::class,
-        \App\Models\WorkflowInstance::class => \App\Policies\WorkflowInstancePolicy::class,
-        \App\Models\WorkflowStepInstance::class => \App\Policies\WorkflowStepInstancePolicy::class,
-        \App\Models\TaskComment::class => \App\Policies\TaskCommentPolicy::class,
-        \App\Models\TaskAssignment::class => \App\Policies\TaskAssignmentPolicy::class,
     ];
 
     /**
