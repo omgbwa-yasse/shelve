@@ -10,8 +10,11 @@
                             <i class="bi bi-card-text me-2"></i>
                             Task Details: {{ $task->name }}
                         </h1>
-                        <span class="badge bg-light text-primary">
-                            Status: {{ $task->status ? $task->status->label() : 'N/A' }}
+                        @php
+                            $statusEnum = $task->status ? \App\Enums\TaskStatus::tryFrom($task->status) : null;
+                        @endphp
+                        <span class="badge {{ $statusEnum ? $statusEnum->color() : 'bg-light text-primary' }}">
+                            Status: {{ $statusEnum ? $statusEnum->label() : 'N/A' }}
                         </span>
                     </div>
                     <div class="card-body">

@@ -181,7 +181,7 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        $task->load(['taskType', 'taskStatus', 'users', 'organisations', 'attachments', 'taskMails', 'taskContainers', 'taskRecords', 'taskRemembers', 'taskSupervisions']);
+        $task->load(['taskType', 'users', 'organisations', 'attachments', 'taskMails', 'taskContainers', 'taskRecords', 'taskRemembers', 'taskSupervisions']);
         return view('tasks.show', compact('task'));
     }
 

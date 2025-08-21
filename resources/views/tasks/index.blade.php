@@ -83,13 +83,16 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge {{ $task->status ? $task->status->color() : 'bg-secondary' }}">
-                                        {{ $task->status ? $task->status->label() : "N/A" }}
+                                    @php
+                                        $statusEnum = $task->status ? \App\Enums\TaskStatus::tryFrom($task->status) : null;
+                                    @endphp
+                                    <span class="badge {{ $statusEnum ? $statusEnum->color() : 'bg-secondary' }}">
+                                        {{ $statusEnum ? $statusEnum->label() : "N/A" }}
                                     </span>
                                 </td>
                                 <td>
                                     <i class="bi bi-clock me-1"></i>
-                                    {{ $task->duration }} hours
+                                    {{ $task->estimated_hours ?? 0 }} hours
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">

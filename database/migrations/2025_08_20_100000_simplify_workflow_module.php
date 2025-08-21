@@ -14,8 +14,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('workflow_templates', function (Blueprint $table) {
+            if (Schema::hasColumn('workflow_templates', 'category')) {
+                $table->dropColumn('category');
+            }
             if (Schema::hasColumn('workflow_templates', 'configuration')) {
-                $table->dropColumn(['category', 'configuration']);
+                $table->dropColumn('configuration');
             }
         });
 
@@ -28,38 +31,77 @@ return new class extends Migration
             $table->string('step_type', 20)->change();
 
             if (Schema::hasColumn('workflow_steps', 'configuration')) {
-                $table->dropColumn(['configuration', 'can_be_skipped', 'conditions']);
+                $table->dropColumn('configuration');
+            }
+            if (Schema::hasColumn('workflow_steps', 'can_be_skipped')) {
+                $table->dropColumn('can_be_skipped');
+            }
+            if (Schema::hasColumn('workflow_steps', 'conditions')) {
+                $table->dropColumn('conditions');
             }
         });
 
         // 3. Simplification de la table workflow_step_assignments
         Schema::table('workflow_step_assignments', function (Blueprint $table) {
             if (Schema::hasColumn('workflow_step_assignments', 'assignee_type')) {
-                $table->dropColumn(['assignee_type', 'assignee_role_id', 'assignment_rules', 'allow_reassignment']);
+                $table->dropColumn('assignee_type');
+            }
+            if (Schema::hasColumn('workflow_step_assignments', 'assignee_role_id')) {
+                $table->dropColumn('assignee_role_id');
+            }
+            if (Schema::hasColumn('workflow_step_assignments', 'assignment_rules')) {
+                $table->dropColumn('assignment_rules');
+            }
+            if (Schema::hasColumn('workflow_step_assignments', 'allow_reassignment')) {
+                $table->dropColumn('allow_reassignment');
             }
         });
 
         // 4. Simplification de la table workflow_instances
         Schema::table('workflow_instances', function (Blueprint $table) {
             if (Schema::hasColumn('workflow_instances', 'context_data')) {
-                $table->dropColumn(['context_data', 'notes']);
+                $table->dropColumn('context_data');
+            }
+            if (Schema::hasColumn('workflow_instances', 'notes')) {
+                $table->dropColumn('notes');
             }
         });
 
         // 5. Simplification de la table workflow_step_instances
         Schema::table('workflow_step_instances', function (Blueprint $table) {
             if (Schema::hasColumn('workflow_step_instances', 'assignment_type')) {
-                $table->dropColumn(['assignment_type', 'input_data', 'output_data', 'notes', 'assignment_notes']);
+                $table->dropColumn('assignment_type');
+            }
+            if (Schema::hasColumn('workflow_step_instances', 'input_data')) {
+                $table->dropColumn('input_data');
+            }
+            if (Schema::hasColumn('workflow_step_instances', 'output_data')) {
+                $table->dropColumn('output_data');
+            }
+            if (Schema::hasColumn('workflow_step_instances', 'notes')) {
+                $table->dropColumn('notes');
+            }
+            if (Schema::hasColumn('workflow_step_instances', 'assignment_notes')) {
+                $table->dropColumn('assignment_notes');
             }
         });
 
         // 6. Simplification de la table tasks
         Schema::table('tasks', function (Blueprint $table) {
             if (Schema::hasColumn('tasks', 'assignment_type')) {
-                $table->dropColumn([
-                    'assignment_type', 'tags', 'custom_fields',
-                    'assignment_notes', 'progress_percentage'
-                ]);
+                $table->dropColumn('assignment_type');
+            }
+            if (Schema::hasColumn('tasks', 'tags')) {
+                $table->dropColumn('tags');
+            }
+            if (Schema::hasColumn('tasks', 'custom_fields')) {
+                $table->dropColumn('custom_fields');
+            }
+            if (Schema::hasColumn('tasks', 'assignment_notes')) {
+                $table->dropColumn('assignment_notes');
+            }
+            if (Schema::hasColumn('tasks', 'progress_percentage')) {
+                $table->dropColumn('progress_percentage');
             }
         });
 

@@ -37,16 +37,13 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="type" class="form-label">{{ __('Type d\'étape') }}</label>
-                            <select id="type" name="type" class="form-control @error('type') is-invalid @enderror">
-                                <option value="">{{ __('Standard') }}</option>
-                                @foreach(\App\Enums\WorkflowStepType::cases() as $type)
-                                    <option value="{{ $type->value }}" {{ old('type') == $type->value ? 'selected' : '' }}>
-                                        {{ $type->label() }}
-                                    </option>
-                                @endforeach
+                            <label for="step_type" class="form-label">{{ __('Type d\'étape') }}</label>
+                            <select id="step_type" name="step_type" class="form-control @error('step_type') is-invalid @enderror">
+                                <option value="manual">{{ __('Standard (manuel)') }}</option>
+                                <option value="automatic" {{ old('step_type') == 'automatic' ? 'selected' : '' }}>{{ __('Automatique') }}</option>
+                                <option value="approval" {{ old('step_type') == 'approval' ? 'selected' : '' }}>{{ __('Approbation') }}</option>
                             </select>
-                            @error('type')
+                            @error('step_type')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
