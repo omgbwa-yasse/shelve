@@ -6,8 +6,6 @@ use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PhantomController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\TaskStatusController;
-use App\Http\Controllers\TaskTypeController;
 use App\Http\Controllers\RateLimitController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -125,17 +123,7 @@ use App\Http\Controllers\PublicRecordController;
 use App\Http\Controllers\PublicResponseController;
 use App\Http\Controllers\PublicResponseAttachmentController;
 use App\Http\Controllers\PublicFeedbackController;
-
-// Workflow related controllers
-use App\Http\Controllers\WorkflowTemplateController;
-use App\Http\Controllers\WorkflowStepController;
-use App\Http\Controllers\WorkflowInstanceController;
-use App\Http\Controllers\WorkflowStepInstanceController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\TaskCommentController;
-use App\Http\Controllers\TaskAssignmentController;
 use App\Http\Controllers\OllamaController;
-use App\Http\Controllers\MailTaskController;
 use Illuminate\Support\Facades\Gate;
 
 // MCP retiré
@@ -398,11 +386,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('archives/{containerId}/add-mails', [MailArchiveController::class, 'addMails'])->name('mail-archive.add-mails');
         Route::post('archives/{containerId}/remove-mails', [MailArchiveController::class, 'removeMails'])->name('mail-archive.remove-mails');
 
-        // Routes pour les tâches et workflows
-        Route::get('tasks', [MailTaskController::class, 'index'])->name('mails.tasks.index');
-        Route::get('my-tasks', [MailTaskController::class, 'myTasks'])->name('mails.tasks.my-tasks');
-        Route::get('workflows', [MailWorkflowController::class, 'index'])->name('mails.workflows.index');
-        Route::get('my-workflows', [MailWorkflowController::class, 'myWorkflows'])->name('mails.workflows.my-workflows');
+        // Les routes pour les tâches et workflows ont été supprimées
 
     });
 
@@ -673,8 +657,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('record-statuses', RecordStatusController::class);
         Route::resource('transferring-status', SlipStatusController::class);
         Route::resource('mail-action', MailActionController::class);
-        Route::resource('taskstatus', TaskStatusController::class);
-        Route::resource('tasktype', TaskTypeController::class);
         Route::resource('logs', LogController::class)->only(['index', 'show']);
         Route::resource('backups', BackupController::class);
         Route::resource('backups.files', BackupFileController::class);
@@ -793,92 +775,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    // Routes pour le module Workflow
-    Route::prefix('workflows')->name('workflows.')->group(function () {
-        // Routes pour les templates de workflow
-        Route::resource('templates', WorkflowTemplateController::class);
-        Route::post('templates/{template}/toggle-active', [WorkflowTemplateController::class, 'toggleActive'])->name('templates.toggle-active');
-        Route::post('templates/{template}/duplicate', [WorkflowTemplateController::class, 'duplicate'])->name('templates.duplicate');
-
-        // Routes supplémentaires pour la configuration JSON
-        Route::get('templates/{template}/configuration/form', [WorkflowTemplateController::class, 'getConfigurationForForm'])->name('templates.configuration.form');
-        Route::post('templates/{template}/configuration/sync', [WorkflowTemplateController::class, 'syncConfigurationWithSteps'])->name('templates.configuration.sync');
-
-        // Routes pour les étapes de workflow
-        Route::resource('templates.steps', WorkflowStepController::class)->shallow();
-        Route::post('steps/{step}/assignments', [WorkflowStepController::class, 'storeAssignments'])->name('steps.assignments.store');
-        Route::delete('steps/{step}/assignments/{assignment}', [WorkflowStepController::class, 'destroyAssignment'])->name('steps.assignments.destroy');
-        Route::post('templates/{template}/steps/reorder', [WorkflowStepController::class, 'reorder'])->name('templates.steps.reorder');
-
-        // Routes pour les instances de workflow
-        Route::resource('instances', WorkflowInstanceController::class);
-        // Autocomplete entités liées pour les instances
-        Route::get('instances/entities/autocomplete', [WorkflowInstanceController::class, 'autocompleteEntity'])->name('instances.entities.autocomplete');
-        Route::post('instances/{instance}/start', [WorkflowInstanceController::class, 'start'])->name('instances.start');
-        Route::post('instances/{instance}/cancel', [WorkflowInstanceController::class, 'cancel'])->name('instances.cancel');
-        Route::post('instances/{instance}/pause', [WorkflowInstanceController::class, 'pause'])->name('instances.pause');
-        Route::post('instances/{instance}/resume', [WorkflowInstanceController::class, 'resume'])->name('instances.resume');
-
-        // Routes pour les instances d'étapes de workflow
-        Route::resource('step-instances', WorkflowStepInstanceController::class)->only(['show', 'update']);
-        Route::post('step-instances/{stepInstance}/complete', [WorkflowStepInstanceController::class, 'complete'])->name('step-instances.complete');
-        Route::post('step-instances/{stepInstance}/reject', [WorkflowStepInstanceController::class, 'reject'])->name('step-instances.reject');
-        Route::post('step-instances/{stepInstance}/reassign', [WorkflowStepInstanceController::class, 'reassign'])->name('step-instances.reassign');
-
-        // Dashboard du module workflow
-        Route::get('/', function () {
-            return redirect()->route('workflows.instances.index');
-        });
-
-
-
-
-
-
-
-
-
-
-
-
-
-        // Routes pour les tâches liées au workflow
-        Route::prefix('tasks')->name('tasks.')->group(function () {
-            Route::get('/', [TaskController::class, 'index'])->name('index');
-            Route::get('/my', [TaskController::class, 'myTasks'])->name('my');
-            Route::get('/create', [TaskController::class, 'create'])->name('create');
-            Route::post('/', [TaskController::class, 'store'])->name('store');
-            Route::get('/{task}', [TaskController::class, 'show'])->name('show');
-            Route::get('/{task}/edit', [TaskController::class, 'edit'])->name('edit');
-            Route::put('/{task}', [TaskController::class, 'update'])->name('update');
-            Route::delete('/{task}', [TaskController::class, 'destroy'])->name('destroy');
-
-            // Commentaires sur les tâches
-            Route::post('{task}/comments', [TaskCommentController::class, 'store'])->name('comments.store');
-            Route::delete('{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('comments.destroy');
-
-            // Assignation de tâches
-            Route::post('{task}/assignments', [TaskAssignmentController::class, 'store'])->name('assignments.store');
-            Route::delete('{task}/assignments/{assignment}', [TaskAssignmentController::class, 'destroy'])->name('assignments.destroy');
-
-            // Actions spéciales sur les tâches
-            Route::post('{task}/complete', [TaskController::class, 'complete'])->name('complete');
-            Route::post('{task}/start', [TaskController::class, 'start'])->name('start');
-            Route::post('{task}/pause', [TaskController::class, 'pause'])->name('pause');
-
-            // Gestion des pièces jointes
-            Route::post('{task}/attachment/{attachmentId}/remove', [TaskController::class, 'removeAttachment'])->name('removeAttachment');
-            Route::get('{task}/attachment/{attachmentId}/download', [TaskController::class, 'downloadAttachment'])->name('download');
-
-        Route::get('/supervision', [TaskController::class, 'supervision'])->name('supervision');
-    });
-
-    // Dashboard du module workflow
-    Route::get('/', function () {
-        return redirect()->route('workflows.dashboard');
-    });
-    Route::get('dashboard', [WorkflowInstanceController::class, 'dashboard'])->name('dashboard');
-});
+    // Le module Workflow a été supprimé
 
 // Routes d'administration du Rate Limiting
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {

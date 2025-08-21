@@ -38,13 +38,6 @@ class DatabaseSeeder extends Seeder
             // Seeders pour les organisations
             OrganisationSeeder::class, // Seeder pour les organisations
 
-            // Seeders pour les workflows
-            WorkflowSeeder::class, // Seeder pour les exemples de workflows
-
-            // Seeders pour les tâches
-            TaskCategorySeeder::class, // Seeder pour les catégories de tâches
-            TaskSeeder::class, // Seeder pour les exemples de tâches
-
             // Paramètres applicatifs
             SettingSeeder::class, // Paramètres et catégories de paramètres (idempotent)
 
