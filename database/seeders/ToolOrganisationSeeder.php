@@ -16,9 +16,20 @@ class ToolOrganisationSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Use database-agnostic approach for foreign key checks
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } else {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        }
+        
         Organisation::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } else {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        }
 
         // Création de la Direction Générale
         $directionGenerale = Organisation::create([
@@ -26,7 +37,7 @@ class ToolOrganisationSeeder extends Seeder
             'name' => 'Direction Générale'
         ]);
 
-        // Création des Directions avec codes
+        // Création des Directions avec codes - Réduit à 3 directions principales
         $directions = [
             'Direction des Finances' => [
                 'code' => 'DF',
@@ -41,20 +52,6 @@ class ToolOrganisationSeeder extends Seeder
                     'Service de la Paie' => 'DRH-PAIE',
                     'Service du Recrutement' => 'DRH-RECRU',
                     'Service de la Formation' => 'DRH-FORM',
-                ]
-            ],
-            'Direction des Communications' => [
-                'code' => 'DCOM',
-                'services' => [
-                    'Service de la Communication Interne' => 'DCOM-INT',
-                    'Service des Relations Publiques' => 'DCOM-PUB',
-                ]
-            ],
-            'Direction des Projets' => [
-                'code' => 'DP',
-                'services' => [
-                    'Service de la Planification' => 'DP-PLAN',
-                    'Service du Suivi-Évaluation' => 'DP-SUIVI',
                 ]
             ],
             'Direction des Systèmes d\'Information' => [

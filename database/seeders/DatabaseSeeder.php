@@ -35,8 +35,8 @@ class DatabaseSeeder extends Seeder
             // Seeders pour les outils de gestion
             SortSeeder::class, // Seeder pour les sorts finaux (E, T, C)
 
-            // Seeders pour les organisations
-            OrganisationSeeder::class, // Seeder pour les organisations
+            // Seeders pour les organisations (ToolOrganisationSeeder provides the 4-organization structure)
+            ToolOrganisationSeeder::class, // Seeder pour les organisations et services
 
             // Seeders pour les workflows
             WorkflowSeeder::class, // Seeder pour les exemples de workflows
@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
 
             ToolActivitySeeder::class, // Seeder pour les activités
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
-            ToolOrganisationSeeder::class, // Seeder pour les organisations et services
+            // Note: ToolOrganisationSeeder was moved earlier to avoid conflicts with OrganisationSeeder
 
             // Prompts & AI defaults
             AiSeeder::class,
