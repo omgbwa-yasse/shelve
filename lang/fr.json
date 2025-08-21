@@ -508,6 +508,7 @@
     "classify": "Classifier",
     "report": "Rapport",
     "intelligence": "Intelligence",
+    "prompts": "Prompts",
     "run_all_processes": "Exécuter tous les processus",
     "ai_intelligence_desc": "Utilisez l'IA MCP pour améliorer la qualité des enregistrements en un clic - résumer le contenu, reformater les titres, extraire les mots-clés et associer avec les termes du thésaurus.",
     "format_title": "Formater le titre",

@@ -508,6 +508,7 @@
     "classify": "Classify",
     "report": "Report",
     "intelligence": "Intelligence",
+    "prompts": "Prompts",
     "run_all_processes": "Run All Processes",
     "ai_intelligence_desc": "Use MCP AI to enhance record quality with one click - summarize content, reformat titles, extract keywords, and associate with thesaurus terms.",
     "format_title": "Format Title",

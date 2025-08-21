@@ -108,6 +108,7 @@ use App\Http\Controllers\BackupPlanningController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SettingCategoryController;
 use App\Http\Controllers\SEDAExportController;
+use App\Http\Controllers\PromptManagementController;
 
 use App\Http\Controllers\PublicUserController;
 use App\Http\Controllers\PublicChatController;
@@ -628,6 +629,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('definitions', SettingController::class)->names('settings.definitions');
         Route::resource('categories', SettingCategoryController::class)->names('settings.categories');
+        Route::resource('prompts', PromptManagementController::class)->names('settings.prompts');
 
         // Routes supplémentaires pour les catégories
         Route::get('categories/tree', [SettingCategoryController::class, 'tree'])->name('settings.categories.tree');

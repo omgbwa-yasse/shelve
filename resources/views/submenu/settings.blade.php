@@ -159,6 +159,20 @@
         </div>
     </div>
 
+    <!-- Intelligence Artificielle Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading" >
+            <i class="bi bi-robot"></i> {{ __('intelligence') }}
+        </div>
+        <div class="submenu-content" id="intelligenceMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.prompts.index') }}">
+                    <i class="bi bi-chat-square-text"></i> {{ __('prompts') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Outils de gestion Section -->
     <div class="submenu-section">
         <div class="submenu-heading" >
