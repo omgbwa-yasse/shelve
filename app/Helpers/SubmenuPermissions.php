@@ -36,7 +36,6 @@ class SubmenuPermissions
             'config' => [
                 'typologies' => 'mail_config',
                 'priorities' => 'mail_config',
-                'workflows' => 'mail_config',
                 'templates' => 'mail_config',
             ],
             // Section Outils

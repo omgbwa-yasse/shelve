@@ -195,10 +195,7 @@ class Mail extends Model
         return $this->belongsTo(Organisation::class, 'assigned_organisation_id');
     }
 
-    public function workflow()
-    {
-        return $this->hasOne(MailWorkflow::class);
-    }
+    // La relation workflow a été supprimée
 
     public function histories()
     {
@@ -271,25 +268,12 @@ class Mail extends Model
 
     // === WORKFLOW & STATUS METHODS ===
 
-    public function initializeWorkflow()
-    {
-        if (!$this->workflow) {
-            return $this->workflow()->create([
-                'current_status' => $this->status ?? MailStatusEnum::DRAFT,
-                'current_assignee_id' => $this->assigned_to,
-                'deadline' => $this->deadline,
-                'approval_required' => $this->requiresApproval(),
-            ]);
-        }
-        return $this->workflow;
-    }
+    // La méthode initializeWorkflow a été supprimée
 
     public function updateStatus(MailStatusEnum $newStatus, $reason = null)
     {
-        $workflow = $this->initializeWorkflow();
-
         $this->update(['status' => $newStatus]);
-        $workflow->updateStatus($newStatus, $reason);
+        // La partie workflow a été supprimée
 
         return $this;
     }
@@ -301,7 +285,7 @@ class Mail extends Model
             'assigned_at' => now()
         ]);
 
-        $this->initializeWorkflow()->assignTo($userId, $reason);
+        // La partie workflow a été supprimée
 
         return $this;
     }
@@ -387,7 +371,7 @@ class Mail extends Model
         /*
         static::created(function ($mail) {
             $mail->logAction('created', null, null, null, 'Courrier créé');
-            $mail->initializeWorkflow();
+            // La référence à workflow a été supprimée
         });
 
         static::updated(function ($mail) {

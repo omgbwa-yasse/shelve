@@ -177,9 +177,6 @@ class MailController extends Controller
                 }
             }
 
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
-
             // Log the action
             $mail->logAction('created', null, null, null, 'Courrier entrant créé');
 
@@ -253,9 +250,6 @@ class MailController extends Controller
                     $this->handleFileUpload($file, $mail);
                 }
             }
-
-            // Initialize workflow for the mail
-            $mail->initializeWorkflow();
 
             // Log the action
             $mail->logAction('created', null, null, null, 'Courrier sortant créé');
@@ -646,7 +640,7 @@ class MailController extends Controller
     public function countUnread()
     {
         $organisationId = Auth::user()->current_organisation_id;
-        
+
         // Compter les mails entrants non traités pour l'organisation de l'utilisateur
         $count = Mail::where('recipient_organisation_id', $organisationId)
             ->where('mail_type', Mail::TYPE_INCOMING)

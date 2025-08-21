@@ -366,14 +366,7 @@
                             </a>
                         </div>
                         @endcan
-                        @can('module_workflow_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workflows') active @endif" href="{{ route('workflows.instances.index') }}">
-                                <i class="bi bi-diagram-3"></i>
-                                <span>{{ __('Workflows') }}</span>
-                            </a>
-                        </div>
-                        @endcan
+                        <!-- Module Workflow a été supprimé -->
                         <!-- External contacts/organizations module -->
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'external') active @endif" href="{{ route('external.contacts.index') }}">
@@ -452,9 +445,7 @@
                                         @case('dollies')
                                             @include('submenu.dollies')
                                             @break
-                                        @case('workflows')
-                                            @include('submenu.workflows')
-                                            @break
+                                        <!-- Module Workflow a été supprimé -->
                                         @case('public-admin')
                                             @include('submenu.public-admin')
                                             @break
