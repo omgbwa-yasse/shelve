@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\WorkflowInstanceStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -20,13 +19,9 @@ class WorkflowInstance extends Model
         'started_at',
         'completed_at',
         'due_date',
-        'context_data',
-        'notes',
     ];
 
     protected $casts = [
-        'status' => WorkflowInstanceStatus::class,
-        'context_data' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'due_date' => 'datetime',

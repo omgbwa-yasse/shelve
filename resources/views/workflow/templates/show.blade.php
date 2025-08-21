@@ -23,7 +23,6 @@
                 <div class="card-header bg-light"><h5 class="card-title mb-0">{{ __('Informations') }}</h5></div>
                 <div class="card-body">
                     <div class="mb-3"><label class="text-muted small">{{ __('Statut') }}</label><div>@if($template->is_active)<span class="badge bg-success">{{ __('Actif') }}</span>@else<span class="badge bg-danger">{{ __('Inactif') }}</span>@endif</div></div>
-                    <div class="mb-3"><label class="text-muted small">{{ __('Catégorie') }}</label><div>{{ $template->category }}</div></div>
                     <div class="mb-3"><label class="text-muted small">{{ __('Description') }}</label><div>{{ $template->description ?: __('Aucune description') }}</div></div>
                     <div class="mb-3"><label class="text-muted small">{{ __('Créé par') }}</label><div>{{ $template->creator->name ?? 'N/A' }}</div></div>
                     <div class="mb-3"><label class="text-muted small">{{ __('Date de création') }}</label><div>{{ $template->created_at->format('d/m/Y H:i') }}</div></div>
@@ -90,12 +89,6 @@
                                                             <span class="badge bg-danger">{{ __('Obligatoire') }}</span>
                                                         @else
                                                             <span class="badge bg-secondary">{{ __('Optionnelle') }}</span>
-                                                        @endif
-                                                        @if($step->estimated_duration)
-                                                            <span class="badge bg-warning">
-                                                                <i class="bi bi-clock me-1"></i>
-                                                                {{ $step->estimated_duration }} {{ __('jours') }}
-                                                            </span>
                                                         @endif
                                                     </div>
                                                     @if($step->assignments->isNotEmpty())

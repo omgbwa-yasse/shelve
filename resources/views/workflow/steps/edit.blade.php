@@ -60,12 +60,12 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="estimated_duration" class="form-label">{{ __('Durée estimée (minutes)') }}</label>
-                            <input type="number" class="form-control @error('estimated_duration') is-invalid @enderror" id="estimated_duration" name="estimated_duration" value="{{ old('estimated_duration', $step->estimated_duration) }}" min="0" step="1">
-                            @error('estimated_duration')
+                            <label for="estimated_hours" class="form-label">{{ __('Durée estimée (heures)') }}</label>
+                            <input type="number" class="form-control @error('estimated_hours') is-invalid @enderror" id="estimated_hours" name="estimated_hours" value="{{ old('estimated_hours', $step->estimated_hours) }}" min="0" step="1">
+                            @error('estimated_hours')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="form-text text-muted">{{ __('Durée estimée en minutes pour compléter cette étape.') }}</small>
+                            <small class="form-text text-muted">{{ __('Durée estimée en heures pour compléter cette étape.') }}</small>
                         </div>
 
                         <div class="form-group mb-3">
@@ -84,31 +84,6 @@
                             <input class="form-check-input" type="checkbox" id="is_required" name="is_required" value="1" {{ old('is_required', $step->is_required) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_required">{{ __('Étape obligatoire') }}</label>
                         </div>
-
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" id="can_be_skipped" name="can_be_skipped" value="1" {{ old('can_be_skipped', $step->can_be_skipped) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="can_be_skipped">{{ __('Peut être ignorée') }}</label>
-                            <small class="form-text d-block text-muted">{{ __('L\'étape peut être ignorée sous certaines conditions.') }}</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group mb-3">
-                            <label for="configuration" class="form-label">{{ __('Configuration') }}</label>
-                            <textarea class="form-control @error('configuration') is-invalid @enderror" id="configuration" name="configuration" rows="3">{{ old('configuration', json_encode($step->configuration, JSON_PRETTY_PRINT)) }}</textarea>
-                            @error('configuration')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">{{ __('Configuration JSON pour cette étape (optionnel).') }}</small>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="conditions" class="form-label">{{ __('Conditions') }}</label>
-                            <textarea class="form-control @error('conditions') is-invalid @enderror" id="conditions" name="conditions" rows="3">{{ old('conditions', json_encode($step->conditions, JSON_PRETTY_PRINT)) }}</textarea>
-                            @error('conditions')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">{{ __('Conditions d\'exécution de l\'étape (optionnel).') }}</small>
-                        </div>
                     </div>
                 </div>
 
@@ -123,29 +98,21 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
-                                        <select name="assignments[{{ $index }}][assignee_type]" class="form-control assignee-type-select">
-                                            <option value="user" {{ $assignment->assignee_type == 'user' ? 'selected' : '' }}>{{ __('Utilisateur') }}</option>
-                                            <option value="organisation" {{ $assignment->assignee_type == 'organisation' ? 'selected' : '' }}>{{ __('Organisation') }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group assignee-user" style="{{ $assignment->assignee_type == 'user' ? 'display: block;' : 'display: none;' }}">
-                                        <label class="form-label">{{ __('Utilisateur') }}</label>
-                                        <select name="assignments[{{ $index }}][assignee_id]" class="form-control user-select">
-                                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
+                                        <label for="user_select_{{ $index }}" class="form-label">{{ __('Utilisateur') }}</label>
+                                        <select id="user_select_{{ $index }}" name="assignments[{{ $index }}][assignee_user_id]" class="form-control user-select">
+                                            <option value="">{{ __('Sélectionner un utilisateur (optionnel)') }}</option>
                                             @foreach(\App\Models\User::orderBy('name')->get() as $user)
                                                 <option value="{{ $user->id }}" {{ $assignment->assignee_user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
+                                </div>
 
-                                    <div class="form-group assignee-organisation" style="{{ $assignment->assignee_type == 'organisation' ? 'display: block;' : 'display: none;' }}">
-                                        <label class="form-label">{{ __('Organisation') }}</label>
-                                        <select name="assignments[{{ $index }}][organisation_id]" class="form-control organisation-select">
-                                            <option value="">{{ __('Sélectionner une organisation') }}</option>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="organisation_select_{{ $index }}" class="form-label">{{ __('Organisation') }}</label>
+                                        <select id="organisation_select_{{ $index }}" name="assignments[{{ $index }}][assignee_organisation_id]" class="form-control organisation-select">
+                                            <option value="">{{ __('Sélectionner une organisation (optionnel)') }}</option>
                                             @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
                                                 <option value="{{ $org->id }}" {{ $assignment->assignee_organisation_id == $org->id ? 'selected' : '' }}>{{ $org->name }}</option>
                                             @endforeach
@@ -154,30 +121,7 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-2 organisation-users" style="{{ $assignment->assignee_type == 'organisation' ? 'display: block;' : 'display: none;' }}">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
-                                        <select name="assignments[{{ $index }}][assignee_id]" class="form-control organisation-user-select">
-                                            <option value="">{{ __('Sélectionner un utilisateur') }}</option>
-                                            @if($assignment->assignee_type == 'organisation' && $assignment->assignee_organisation_id)
-                                                @foreach(\App\Models\Organisation::find($assignment->assignee_organisation_id)?->users ?? [] as $user)
-                                                    <option value="{{ $user->id }}" {{ $assignment->assignee_user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                                @endforeach
-                                            @endif
-                                        </select>
-                                    </div>
-                                </div>
 
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">{{ __('Rôle / Note') }}</label>
-                                        <input type="text" name="assignments[{{ $index }}][role]" class="form-control"
-                                               value="{{ $assignment->assignment_rules['role'] ?? '' }}"
-                                               placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
-                                    </div>
-                                </div>
-                            </div>
 
                             <div class="mt-2">
                                 <button type="button" class="btn btn-sm btn-danger remove-assignment" style="{{ count($step->assignments) > 1 ? 'display: inline-block;' : 'display: none;' }}">
@@ -190,49 +134,25 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Type d\'assigné') }}</label>
-                                        <select name="assignments[0][assignee_type]" class="form-control assignee-type-select">
-                                            <option value="user">{{ __('Utilisateur') }}</option>
-                                            <option value="organisation">{{ __('Organisation') }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group assignee-user">
-                                        <label class="form-label">{{ __('Utilisateur') }}</label>
-                                        <select name="assignments[0][assignee_id]" class="form-control user-select" disabled>
-                                            <option value="">{{ __('Chargement des utilisateurs...') }}</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group assignee-organisation" style="display: none;">
-                                        <label class="form-label">{{ __('Organisation') }}</label>
-                                        <select name="assignments[0][organisation_id]" class="form-control organisation-select">
-                                            <option value="">{{ __('Sélectionner une organisation') }}</option>
-                                            @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
-                                                <option value="{{ $org->id }}">{{ $org->name }}</option>
+                                        <label for="user_select_0" class="form-label">{{ __('Utilisateur') }}</label>
+                                        <select id="user_select_0" name="assignments[0][assignee_user_id]" class="form-control user-select">
+                                            <option value="">{{ __('Sélectionner un utilisateur (optionnel)') }}</option>
+                                            @foreach(\App\Models\User::orderBy('name')->get() as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="row mt-2 organisation-users" style="display: none;">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label class="form-label">{{ __('Utilisateurs de l\'organisation') }}</label>
-                                        <select name="assignments[0][assignee_id]" class="form-control organisation-user-select" disabled>
-                                            <option value="">{{ __('Sélectionner une organisation d\'abord') }}</option>
+                                        <label for="organisation_select_0" class="form-label">{{ __('Organisation') }}</label>
+                                        <select id="organisation_select_0" name="assignments[0][assignee_organisation_id]" class="form-control organisation-select">
+                                            <option value="">{{ __('Sélectionner une organisation (optionnel)') }}</option>
+                                            @foreach(\App\Models\Organisation::orderBy('name')->get() as $org)
+                                                <option value="{{ $org->id }}">{{ $org->name }}</option>
+                                            @endforeach
                                         </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label class="form-label">{{ __('Rôle / Note') }}</label>
-                                        <input type="text" name="assignments[0][role]" class="form-control"
-                                               placeholder="{{ __('Ex: Approbateur, Vérificateur, etc.') }}">
                                     </div>
                                 </div>
                             </div>
@@ -272,141 +192,64 @@
         // Gestion des assignations
         let assignmentIndex = {{ $step->assignments->count() }};
 
-        function updateAssigneeTypeVisibility() {
-            document.querySelectorAll('.assignee-type-select').forEach(select => {
-                const row = select.closest('.assignment-row');
-                const userDiv = row.querySelector('.assignee-user');
-                const orgDiv = row.querySelector('.assignee-organisation');
-                const orgUsersDiv = row.querySelector('.organisation-users');
-
-                if (select.value === 'user') {
-                    // Mode utilisateur : afficher tous les utilisateurs
-                    userDiv.style.display = 'block';
-                    orgDiv.style.display = 'none';
-                    if (orgUsersDiv) orgUsersDiv.style.display = 'none';
-
-                    // Charger tous les utilisateurs
-                    const userSelect = row.querySelector('.user-select');
-                    if (userSelect) {
-                        loadUsersForOrganisation(null, userSelect, true, userSelect.value);
-                    }
-                } else {
-                    // Mode organisation : afficher organisation puis utilisateurs de l'organisation
-                    userDiv.style.display = 'none';
-                    orgDiv.style.display = 'block';
-                    if (orgUsersDiv) orgUsersDiv.style.display = 'block';
-
-                    // Charger les utilisateurs de l'organisation si une organisation est sélectionnée
-                    const orgSelect = row.querySelector('.organisation-select');
-                    const orgUserSelect = row.querySelector('.organisation-user-select');
-                    if (orgSelect && orgUserSelect && orgSelect.value) {
-                        loadUsersForOrganisation(orgSelect.value, orgUserSelect, false, orgUserSelect.value);
-                    }
-                }
-            });
-        }
-
-        function loadUsersForOrganisation(organisationId, userSelect, showAllUsers = false, selectedUserId = null) {
+        function loadUsers(userSelect, selectedUserId = null) {
             const loadingOption = '<option value="">{{ __("Chargement...") }}</option>';
             userSelect.innerHTML = loadingOption;
             userSelect.disabled = true;
 
-            let url;
-            if (showAllUsers || !organisationId) {
-                url = '/api/organisations';
-            } else {
-                url = `/api/organisations/${organisationId}/users`;
-            }
-
-            const fetchOptions = {
+            // Charger tous les utilisateurs
+            fetch('/api/users', {
                 method: 'GET',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            };
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(users => {
+                users.sort((a, b) => a.name.localeCompare(b.name));
+                userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur (optionnel)") }}</option>';
 
-            fetch(url, fetchOptions)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name + (user.email ? ` (${user.email})` : '');
+                    if (selectedUserId && user.id == selectedUserId) {
+                        option.selected = true;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    userSelect.innerHTML = '<option value="">{{ __("Sélectionner un utilisateur") }}</option>';
-
-                    if (showAllUsers || !organisationId) {
-                        // Si on affiche tous les utilisateurs, on fait un appel pour récupérer tous les utilisateurs
-                        return fetch('/api/organisations', fetchOptions)
-                            .then(r => {
-                                if (!r.ok) {
-                                    throw new Error(`HTTP error! status: ${r.status}`);
-                                }
-                                return r.json();
-                            })
-                            .then(orgs => {
-                                const allUsersPromises = orgs.map(org =>
-                                    fetch(`/api/organisations/${org.id}/users`, fetchOptions)
-                                        .then(r => {
-                                            if (!r.ok) {
-                                                throw new Error(`HTTP error! status: ${r.status}`);
-                                            }
-                                            return r.json();
-                                        })
-                                );
-                                return Promise.all(allUsersPromises).then(userArrays => {
-                                    const allUsers = userArrays.flat();
-                                    // Supprimer les doublons par ID
-                                    const uniqueUsers = allUsers.filter((user, index, self) =>
-                                        index === self.findIndex(u => u.id === user.id)
-                                    );
-                                    return uniqueUsers.sort((a, b) => a.name.localeCompare(b.name));
-                                });
-                            });
-                    } else {
-                        return data;
-                    }
-                })
-                .then(users => {
-                    users.forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.name + (user.email ? ` (${user.email})` : '');
-                        if (selectedUserId && user.id == selectedUserId) {
-                            option.selected = true;
-                        }
-                        userSelect.appendChild(option);
-                    });
-                    userSelect.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Erreur lors du chargement des utilisateurs:', error);
-                    userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
-                    userSelect.disabled = false;
-                    alert('Erreur lors du chargement des utilisateurs. Vérifiez la console pour plus de détails.');
+                    userSelect.appendChild(option);
                 });
+                userSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des utilisateurs:', error);
+                userSelect.innerHTML = '<option value="">{{ __("Erreur de chargement") }}</option>';
+                userSelect.disabled = false;
+            });
+        }
+            });
         }
 
-        // Initialiser l'affichage et charger les utilisateurs pour les assignations existantes
-        updateAssigneeTypeVisibility();
+        // Initialiser le chargement des utilisateurs pour chaque assignation
+        document.querySelectorAll('.user-select').forEach(userSelect => {
+            loadUsers(userSelect, userSelect.value);
+        });
+        }
 
-        // Écouter les changements de type d'assigné
-        document.addEventListener('change', function(e) {
-            if (e.target.classList.contains('assignee-type-select')) {
-                updateAssigneeTypeVisibility();
-            }
-
-            // Gestion du changement d'organisation pour charger ses utilisateurs
-            if (e.target.classList.contains('organisation-select')) {
+                // Ajouter un écouteur pour le bouton d'ajout d'assignation
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-assignment') || e.target.parentElement.classList.contains('remove-assignment')) {
                 const row = e.target.closest('.assignment-row');
-                const orgUserSelect = row.querySelector('.organisation-user-select');
-                const organisationId = e.target.value;
 
-                if (orgUserSelect) {
-                    loadUsersForOrganisation(organisationId, orgUserSelect);
+                // Ne pas supprimer s'il n'y a qu'une seule assignation
+                if (document.querySelectorAll('.assignment-row').length > 1) {
+                    row.remove();
+                }
+
+                // Masquer le bouton de suppression s'il ne reste qu'une seule assignation
+                if (document.querySelectorAll('.assignment-row').length === 1) {
+                    document.querySelector('.assignment-row .remove-assignment').style.display = 'none';
                 }
             }
         });
@@ -428,6 +271,11 @@
                 const name = input.getAttribute('name');
                 input.setAttribute('name', name.replace(/assignments\[\d+\]/, `assignments[${assignmentIndex}]`));
 
+                // Mettre à jour les IDs aussi
+                if (input.id) {
+                    input.id = input.id.replace(/\d+$/, assignmentIndex);
+                }
+
                 // Réinitialiser les valeurs
                 if (input.tagName === 'SELECT') {
                     input.selectedIndex = 0;
@@ -436,18 +284,17 @@
                 }
             });
 
-            // Réinitialiser l'état des selects utilisateurs
+            // Mettre à jour les labels qui référencent les IDs
+            template.querySelectorAll('label').forEach(label => {
+                if (label.getAttribute('for')) {
+                    label.setAttribute('for', label.getAttribute('for').replace(/\d+$/, assignmentIndex));
+                }
+            });
+
+            // Réinitialiser et charger les utilisateurs pour le select
             const userSelect = template.querySelector('.user-select');
-            const orgUserSelect = template.querySelector('.organisation-user-select');
-
             if (userSelect) {
-                userSelect.innerHTML = '<option value="">{{ __("Chargement des utilisateurs...") }}</option>';
-                userSelect.disabled = true;
-            }
-
-            if (orgUserSelect) {
-                orgUserSelect.innerHTML = '<option value="">{{ __("Sélectionner une organisation d\'abord") }}</option>';
-                orgUserSelect.disabled = true;
+                loadUsers(userSelect);
             }
 
             // Afficher le bouton de suppression
@@ -455,31 +302,11 @@
 
             document.getElementById('assignments-container').appendChild(template);
 
-            // Mettre à jour l'affichage en fonction du type d'assigné sélectionné
-            updateAssigneeTypeVisibility();
-
             // Activer le bouton de suppression pour toutes les assignations si > 1
             if (document.querySelectorAll('.assignment-row').length > 1) {
                 document.querySelectorAll('.assignment-row .remove-assignment').forEach(btn => {
                     btn.style.display = 'inline-block';
                 });
-            }
-        });
-
-        // Supprimer une assignation
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-assignment') || e.target.parentElement.classList.contains('remove-assignment')) {
-                const row = e.target.closest('.assignment-row');
-
-                // Ne pas supprimer s'il n'y a qu'une seule assignation
-                if (document.querySelectorAll('.assignment-row').length > 1) {
-                    row.remove();
-                }
-
-                // Masquer le bouton de suppression s'il ne reste qu'une seule assignation
-                if (document.querySelectorAll('.assignment-row').length === 1) {
-                    document.querySelector('.assignment-row .remove-assignment').style.display = 'none';
-                }
             }
         });
     });

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\AssigneeType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -12,18 +11,8 @@ class WorkflowStepAssignment extends Model
 
     protected $fillable = [
         'workflow_step_id',
-        'assignee_type',
         'assignee_user_id',
         'assignee_organisation_id',
-        'assignee_role_id',
-        'assignment_rules',
-        'allow_reassignment',
-    ];
-
-    protected $casts = [
-        'assignee_type' => AssigneeType::class,
-        'assignment_rules' => 'array',
-        'allow_reassignment' => 'boolean',
     ];
 
     /**

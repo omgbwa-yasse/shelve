@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\AssignmentType;
-use App\Enums\WorkflowStepInstanceStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -18,25 +16,14 @@ class WorkflowStepInstance extends Model
         'status',
         'assigned_to_user_id',
         'assigned_to_organisation_id',
-        'assignment_type',
         'started_at',
         'completed_at',
-        'due_date',
-        'input_data',
-        'output_data',
         'notes',
-        'failure_reason',
-        'assignment_notes',
     ];
 
     protected $casts = [
-        'status' => WorkflowStepInstanceStatus::class,
-        'assignment_type' => AssignmentType::class,
-        'input_data' => 'array',
-        'output_data' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
-        'due_date' => 'datetime',
     ];
 
     /**

@@ -12,15 +12,12 @@ class WorkflowTemplate extends Model
     protected $fillable = [
         'name',
         'description',
-        'category',
         'is_active',
-        'configuration',
         'created_by',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'configuration' => 'array',
     ];
 
     /**

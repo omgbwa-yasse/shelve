@@ -91,30 +91,11 @@ class WorkflowStepInstanceController extends Controller
 
         $validated = $request->validate([
             'status' => [new Enum(WorkflowStepInstanceStatus::class)],
-            'assignment_type' => [new Enum(AssignmentType::class)],
             'assigned_to_user_id' => 'nullable|exists:users,id',
             'assigned_to_organisation_id' => 'nullable|exists:organisations,id',
-            'notes' => 'nullable|string',
-            'input_data' => 'nullable|array',
-            'output_data' => 'nullable|array',
             'due_date' => 'nullable|date',
             'failure_reason' => 'nullable|string|required_if:status,failed',
-            'assignment_notes' => 'nullable|string',
         ]);
-
-        // Vérifier la cohérence de l'assignation
-        if ($validated['assignment_type'] === AssignmentType::USER->value && empty($validated['assigned_to_user_id'])) {
-            return redirect()->back()->withErrors(['assigned_to_user_id' => 'Un utilisateur doit être sélectionné pour ce type d\'assignation.']);
-        }
-
-        if ($validated['assignment_type'] === AssignmentType::ORGANISATION->value && empty($validated['assigned_to_organisation_id'])) {
-            return redirect()->back()->withErrors(['assigned_to_organisation_id' => 'Une organisation doit être sélectionnée pour ce type d\'assignation.']);
-        }
-
-        if ($validated['assignment_type'] === AssignmentType::BOTH->value &&
-            (empty($validated['assigned_to_user_id']) || empty($validated['assigned_to_organisation_id']))) {
-            return redirect()->back()->withErrors(['assignment_type' => 'Un utilisateur et une organisation doivent être sélectionnés pour ce type d\'assignation.']);
-        }
 
         // Gérer les états de l'étape
         $oldStatus = $stepInstance->status;
@@ -134,15 +115,10 @@ class WorkflowStepInstanceController extends Controller
         // Mettre à jour l'étape
         $stepInstance->update([
             'status' => $validated['status'],
-            'assignment_type' => $validated['assignment_type'],
             'assigned_to_user_id' => $validated['assigned_to_user_id'] ?? null,
             'assigned_to_organisation_id' => $validated['assigned_to_organisation_id'] ?? null,
-            'notes' => $validated['notes'] ?? $stepInstance->notes,
-            'input_data' => $validated['input_data'] ?? $stepInstance->input_data,
-            'output_data' => $validated['output_data'] ?? $stepInstance->output_data,
             'due_date' => $validated['due_date'] ?? $stepInstance->due_date,
             'failure_reason' => $validated['failure_reason'] ?? $stepInstance->failure_reason,
-            'assignment_notes' => $validated['assignment_notes'] ?? $stepInstance->assignment_notes,
         ]);
 
         // Si l'étape actuelle est terminée, passer à la suivante dans le workflow

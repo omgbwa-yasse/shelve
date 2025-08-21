@@ -60,40 +60,13 @@ class WorkflowTemplateController extends Controller
     }
 
     /**
-     * Valider l'unicité des IDs et ordres dans une configuration
+     * Note: Ces méthodes ont été simplifiées suite à la refactorisation du module workflow.
+     * Les configurations JSON complexes ont été remplacées par des relations et des champs structurés.
      */
-    private function validateConfigurationUniqueness(array $configuration): ?array
-    {
-        $config = collect($configuration);
-
-        // Vérifier l'unicité des IDs
-        $ids = $config->pluck('id');
-        if ($ids->count() !== $ids->unique()->count()) {
-            return ['Les IDs des étapes doivent être uniques'];
-        }
-
-        // Vérifier l'unicité des ordres
-        $ordres = $config->pluck('ordre');
-        if ($ordres->count() !== $ordres->unique()->count()) {
-            return ['Les ordres des étapes doivent être uniques'];
-        }
-
-        return null;
-    }
-
-    /**
-     * Effectuer les validations métier pour une configuration
-     */
-    private function performConfigurationValidation(array $configuration): array
+    private function validateConfigurationUniqueness($configuration)
     {
         $errors = [];
         $warnings = [];
-
-        if (empty($configuration)) {
-            $errors[] = 'La configuration est vide';
-            return [$errors, $warnings];
-        }
-
         $config = collect($configuration);
 
         // Vérifier l'unicité des IDs
@@ -189,46 +162,8 @@ class WorkflowTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:workflow_templates',
             'description' => 'nullable|string',
-            'category' => [
-                'required',
-                'string',
-                Rule::in(array_keys(WorkflowCategory::forSelect()))
-            ],
             'is_active' => 'boolean',
-            'configuration' => self::NULLABLE_ARRAY,
-            'configuration.*.id' => 'required_with:configuration|string',
-            'configuration.*.name' => 'required_with:configuration|string',
-            'configuration.*.organisation_id' => self::NULLABLE_ORG_EXISTS,
-            'configuration.*.action_id' => 'required_with:configuration|integer|exists:workflow_actions,id',
-            'configuration.*.ordre' => 'required_with:configuration|integer|min:1',
-            'configuration.*.conditions' => self::NULLABLE_ARRAY,
-            'configuration.*.auto_assign' => self::NULLABLE_BOOLEAN,
-            'configuration.*.timeout_hours' => self::NULLABLE_INTEGER_MIN_1,
-            'configuration.*.metadata' => self::NULLABLE_ARRAY,
         ]);
-
-        // Valider l'unicité des IDs et ordres si configuration fournie
-        if (!empty($validated['configuration'])) {
-            $config = collect($validated['configuration']);
-
-            // Vérifier l'unicité des IDs
-            $ids = $config->pluck('id');
-            if ($ids->count() !== $ids->unique()->count()) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['configuration' => 'Les IDs des étapes doivent être uniques.']);
-            }
-
-            // Vérifier l'unicité des ordres
-            $ordres = $config->pluck('ordre');
-            if ($ordres->count() !== $ordres->unique()->count()) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['configuration' => 'Les ordres des étapes doivent être uniques.']);
-            }
-        }
 
         $validated['created_by'] = Auth::id();
 
@@ -273,46 +208,8 @@ class WorkflowTemplateController extends Controller
                 Rule::unique('workflow_templates')->ignore($template->id),
             ],
             'description' => 'nullable|string',
-            'category' => [
-                'required',
-                'string',
-                Rule::in(array_keys(WorkflowCategory::forSelect()))
-            ],
             'is_active' => 'boolean',
-            'configuration' => self::NULLABLE_ARRAY,
-            'configuration.*.id' => self::REQUIRED_STRING,
-            'configuration.*.name' => self::REQUIRED_STRING,
-            'configuration.*.organisation_id' => self::NULLABLE_ORG_EXISTS,
-            'configuration.*.action_id' => self::REQUIRED_ACTION_EXISTS,
-            'configuration.*.ordre' => self::REQUIRED_INTEGER_MIN_1,
-            'configuration.*.conditions' => self::NULLABLE_ARRAY,
-            'configuration.*.auto_assign' => self::NULLABLE_BOOLEAN,
-            'configuration.*.timeout_hours' => self::NULLABLE_INTEGER_MIN_1,
-            'configuration.*.metadata' => self::NULLABLE_ARRAY,
         ]);
-
-        // Valider l'unicité des IDs et ordres si configuration fournie
-        if (!empty($validated['configuration'])) {
-            $config = collect($validated['configuration']);
-
-            // Vérifier l'unicité des IDs
-            $ids = $config->pluck('id');
-            if ($ids->count() !== $ids->unique()->count()) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['configuration' => 'Les IDs des étapes doivent être uniques.']);
-            }
-
-            // Vérifier l'unicité des ordres
-            $ordres = $config->pluck('ordre');
-            if ($ordres->count() !== $ordres->unique()->count()) {
-                return redirect()
-                    ->back()
-                    ->withInput()
-                    ->withErrors(['configuration' => 'Les ordres des étapes doivent être uniques.']);
-            }
-        }
 
         $template->update($validated);
 
@@ -389,298 +286,262 @@ class WorkflowTemplateController extends Controller
     }
 
     /**
-     * Récupérer la configuration JSON complète d'un template
-     * API endpoint: GET /api/workflows/templates/{template}/configuration
+     * Récupérer les étapes d'un template
+     * API endpoint: GET /api/workflows/templates/{template}/steps
+     * Note: Méthode simplifiée pour retourner les étapes structurées au lieu du JSON
      */
     public function getConfiguration(WorkflowTemplate $template)
     {
+        $template->load(['steps' => function($query) {
+            $query->orderBy('order_index');
+        }, 'steps.assignments']);
+
         return response()->json([
             'success' => true,
             'data' => [
                 'template_id' => $template->id,
                 'template_name' => $template->name,
-                'configuration' => $template->configuration ?? [],
+                'steps' => $template->steps,
             ]
         ]);
     }
 
     /**
-     * Mettre à jour la configuration JSON complète d'un template
+     * Mettre à jour la configuration complète d'un template
      * API endpoint: PUT /api/workflows/templates/{template}/configuration
+     * Note: Méthode simplifiée pour utiliser les étapes de workflow structurées au lieu de JSON
      */
     public function updateConfiguration(Request $request, WorkflowTemplate $template)
     {
         $validator = Validator::make($request->all(), [
-            'configuration' => 'required|array',
-            'configuration.*.id' => self::REQUIRED_STRING,
-            'configuration.*.name' => self::REQUIRED_STRING,
-            'configuration.*.organisation_id' => self::NULLABLE_ORG_EXISTS,
-            'configuration.*.action_id' => self::REQUIRED_ACTION_EXISTS,
-            'configuration.*.ordre' => self::REQUIRED_INTEGER_MIN_1,
-            'configuration.*.conditions' => self::NULLABLE_ARRAY,
-            'configuration.*.auto_assign' => self::NULLABLE_BOOLEAN,
-            'configuration.*.timeout_hours' => self::NULLABLE_INTEGER_MIN_1,
-            'configuration.*.metadata' => self::NULLABLE_ARRAY,
+            'steps' => 'required|array',
+            'steps.*.name' => 'required|string|max:100',
+            'steps.*.organisation_id' => 'nullable|integer|exists:organisations,id',
+            'steps.*.action_id' => 'required|integer|exists:workflow_actions,id',
+            'steps.*.order_index' => 'required|integer|min:1',
+            'steps.*.auto_assign' => 'nullable|boolean',
+            'steps.*.timeout_hours' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse('Données de configuration invalides', $validator->errors());
         }
 
-        // Valider l'unicité des IDs et ordres
-        $uniquenessErrors = $this->validateConfigurationUniqueness($request->configuration);
-        if ($uniquenessErrors) {
-            return $this->errorResponse($uniquenessErrors[0]);
+        // Vérifier l'unicité des ordres
+        $orders = collect($request->steps)->pluck('order_index');
+        if ($orders->count() !== $orders->unique()->count()) {
+            return $this->errorResponse('Les ordres des étapes doivent être uniques');
         }
 
-        $template->configuration = $request->configuration;
-        $template->save();
+        // Suppression des anciennes étapes
+        $template->steps()->delete();
+
+        // Création des nouvelles étapes
+        foreach ($request->steps as $stepData) {
+            $step = new WorkflowStep([
+                'name' => $stepData['name'],
+                'organisation_id' => $stepData['organisation_id'] ?? null,
+                'action_id' => $stepData['action_id'],
+                'order_index' => $stepData['order_index'],
+                'auto_assign' => $stepData['auto_assign'] ?? false,
+                'timeout_hours' => $stepData['timeout_hours'] ?? null,
+            ]);
+
+            $template->steps()->save($step);
+        }
 
         return $this->successResponse('Configuration mise à jour avec succès', [
             'template_id' => $template->id,
-            'configuration' => $template->configuration,
+            'steps_count' => $template->steps()->count(),
         ]);
     }
 
     /**
-     * Ajouter une étape à la configuration JSON
-     * API endpoint: POST /api/workflows/templates/{template}/configuration/steps
+     * Ajouter une étape à un template de workflow
+     * API endpoint: POST /api/workflows/templates/{template}/steps
+     * Note: Méthode simplifiée pour utiliser les étapes de workflow structurées au lieu de JSON
      */
     public function addConfigurationStep(Request $request, WorkflowTemplate $template)
     {
         $validator = Validator::make($request->all(), [
-            'id' => self::REQUIRED_STRING,
-            'name' => self::REQUIRED_STRING,
-            'organisation_id' => self::NULLABLE_ORG_EXISTS,
-            'action_id' => self::REQUIRED_ACTION_EXISTS,
-            'ordre' => self::REQUIRED_INTEGER_MIN_1,
-            'conditions' => self::NULLABLE_ARRAY,
-            'auto_assign' => self::NULLABLE_BOOLEAN,
-            'timeout_hours' => self::NULLABLE_INTEGER_MIN_1,
-            'metadata' => self::NULLABLE_ARRAY,
+            'name' => 'required|string|max:100',
+            'organisation_id' => 'nullable|integer|exists:organisations,id',
+            'action_id' => 'required|integer|exists:workflow_actions,id',
+            'order_index' => 'required|integer|min:1',
+            'auto_assign' => 'nullable|boolean',
+            'timeout_hours' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
             return $this->errorResponse('Données de l\'étape invalides', $validator->errors());
         }
 
-        $configuration = $template->configuration ?? [];
-
-        // Vérifier l'unicité de l'ID et de l'ordre
-        $existingIds = collect($configuration)->pluck('id');
-        $existingOrdres = collect($configuration)->pluck('ordre');
-
-        if ($existingIds->contains($request->id)) {
-            return $this->errorResponse('L\'ID de l\'étape doit être unique');
-        }
-
-        if ($existingOrdres->contains($request->ordre)) {
+        // Vérifier l'unicité de l'ordre
+        if ($template->steps()->where('order_index', $request->order_index)->exists()) {
             return $this->errorResponse('L\'ordre de l\'étape doit être unique');
         }
 
-        // Ajouter la nouvelle étape
-        $newStep = $request->only([
-            'id', 'name', 'organisation_id', 'action_id', 'ordre',
-            'conditions', 'auto_assign', 'timeout_hours', 'metadata'
+        // Créer la nouvelle étape
+        $step = new WorkflowStep([
+            'name' => $request->name,
+            'organisation_id' => $request->organisation_id,
+            'action_id' => $request->action_id,
+            'order_index' => $request->order_index,
+            'auto_assign' => $request->auto_assign ?? false,
+            'timeout_hours' => $request->timeout_hours,
         ]);
 
-        $configuration[] = $newStep;
-        $template->configuration = $configuration;
-        $template->save();
+        $template->steps()->save($step);
 
         return $this->successResponse('Étape ajoutée avec succès', [
             'template_id' => $template->id,
-            'step' => $newStep,
-            'configuration' => $template->configuration,
+            'step_id' => $step->id,
         ]);
     }
 
     /**
-     * Mettre à jour une étape spécifique dans la configuration JSON
-     * API endpoint: PUT /api/workflows/templates/{template}/configuration/steps/{stepId}
+     * Mettre à jour une étape spécifique dans un template de workflow
+     * API endpoint: PUT /api/workflows/templates/{template}/steps/{stepId}
+     * Note: Méthode simplifiée pour utiliser les étapes de workflow structurées au lieu de JSON
      */
-    public function updateConfigurationStep(Request $request, WorkflowTemplate $template, string $stepId)
+    public function updateConfigurationStep(Request $request, WorkflowTemplate $template, int $stepId)
     {
+        $step = $template->steps()->find($stepId);
+
+        if (!$step) {
+            return $this->errorResponse('Étape non trouvée', null, 404);
+        }
+
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string',
-            'organisation_id' => self::NULLABLE_ORG_EXISTS,
+            'name' => 'sometimes|required|string|max:100',
+            'organisation_id' => 'nullable|integer|exists:organisations,id',
             'action_id' => 'sometimes|required|integer|exists:workflow_actions,id',
-            'ordre' => 'sometimes|required|integer|min:1',
-            'conditions' => self::NULLABLE_ARRAY,
-            'auto_assign' => self::NULLABLE_BOOLEAN,
-            'timeout_hours' => self::NULLABLE_INTEGER_MIN_1,
-            'metadata' => self::NULLABLE_ARRAY,
+            'order_index' => 'sometimes|required|integer|min:1',
+            'auto_assign' => 'nullable|boolean',
+            'timeout_hours' => 'nullable|integer|min:1',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Données de l\'étape invalides',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $configuration = $template->configuration ?? [];
-        $stepIndex = collect($configuration)->search(function ($step) use ($stepId) {
-            return $step['id'] === $stepId;
-        });
-
-        if ($stepIndex === false) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Étape non trouvée',
-            ], 404);
+            return $this->errorResponse('Données de l\'étape invalides', $validator->errors());
         }
 
         // Vérifier l'unicité de l'ordre (exclure l'étape actuelle)
-        if ($request->has('ordre')) {
-            $configurationWithoutCurrent = $configuration;
-            unset($configurationWithoutCurrent[$stepIndex]);
-            $existingOrdres = collect($configurationWithoutCurrent)->pluck('ordre');
-
-            if ($existingOrdres->contains($request->ordre)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'L\'ordre de l\'étape doit être unique',
-                ], 422);
-            }
+        if ($request->has('order_index') && $request->order_index != $step->order_index &&
+            $template->steps()->where('order_index', $request->order_index)->exists()) {
+            return $this->errorResponse('L\'ordre de l\'étape doit être unique');
         }
 
-        // Mettre à jour l'étape
-        $configuration[$stepIndex] = array_merge(
-            $configuration[$stepIndex],
-            $request->only([
-                'name', 'organisation_id', 'action_id', 'ordre',
-                'conditions', 'auto_assign', 'timeout_hours', 'metadata'
-            ])
-        );
+        // Mettre à jour les champs de l'étape
+        $step->fill($request->only([
+            'name', 'organisation_id', 'action_id', 'order_index',
+            'auto_assign', 'timeout_hours'
+        ]));
 
-        $template->configuration = $configuration;
-        $template->save();
+        $step->save();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Étape mise à jour avec succès',
-            'data' => [
-                'template_id' => $template->id,
-                'step' => $configuration[$stepIndex],
-                'configuration' => $template->configuration,
-            ]
+        return $this->successResponse('Étape mise à jour avec succès', [
+            'template_id' => $template->id,
+            'step' => $step,
         ]);
     }
 
     /**
-     * Supprimer une étape de la configuration JSON
-     * API endpoint: DELETE /api/workflows/templates/{template}/configuration/steps/{stepId}
+     * Supprimer une étape d'un template de workflow
+     * API endpoint: DELETE /api/workflows/templates/{template}/steps/{stepId}
+     * Note: Méthode simplifiée pour utiliser les étapes de workflow structurées au lieu de JSON
      */
-    public function deleteConfigurationStep(WorkflowTemplate $template, string $stepId)
+    public function deleteConfigurationStep(WorkflowTemplate $template, int $stepId)
     {
-        $configuration = $template->configuration ?? [];
-        $stepIndex = collect($configuration)->search(function ($step) use ($stepId) {
-            return $step['id'] === $stepId;
-        });
+        $step = $template->steps()->find($stepId);
 
-        if ($stepIndex === false) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Étape non trouvée',
-            ], 404);
+        if (!$step) {
+            return $this->errorResponse('Étape non trouvée', null, 404);
         }
 
         // Supprimer l'étape
-        unset($configuration[$stepIndex]);
-        $configuration = array_values($configuration); // Réindexer le tableau
+        $step->delete();
 
-        $template->configuration = $configuration;
-        $template->save();
+        // Réordonner les étapes restantes pour éviter les trous dans la séquence
+        $template->steps()
+            ->where('order_index', '>', $step->order_index)
+            ->decrement('order_index');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Étape supprimée avec succès',
-            'data' => [
-                'template_id' => $template->id,
-                'configuration' => $template->configuration,
-            ]
+        return $this->successResponse('Étape supprimée avec succès', [
+            'template_id' => $template->id,
+            'steps_count' => $template->steps()->count(),
         ]);
     }
 
     /**
-     * Réorganiser les étapes dans la configuration JSON
-     * API endpoint: PUT /api/workflows/templates/{template}/configuration/reorder
+     * Réorganiser les étapes dans un template de workflow
+     * API endpoint: PUT /api/workflows/templates/{template}/steps/reorder
+     * Note: Méthode simplifiée pour utiliser les étapes de workflow structurées au lieu de JSON
      */
     public function reorderConfigurationSteps(Request $request, WorkflowTemplate $template)
     {
         $validator = Validator::make($request->all(), [
             'step_orders' => 'required|array',
-            'step_orders.*.id' => 'required|string',
-            'step_orders.*.ordre' => 'required|integer|min:1',
+            'step_orders.*.id' => 'required|integer|exists:workflow_steps,id',
+            'step_orders.*.order_index' => 'required|integer|min:1',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Données de réorganisation invalides',
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->errorResponse('Données de réorganisation invalides', $validator->errors());
         }
 
-        $configuration = $template->configuration ?? [];
-        $stepOrders = collect($request->step_orders);
+        // Vérifier que toutes les étapes appartiennent à ce template
+        $stepIds = collect($request->step_orders)->pluck('id')->toArray();
+        $templateStepsCount = $template->steps()->whereIn('id', $stepIds)->count();
 
-        // Vérifier que tous les IDs existent
-        $configIds = collect($configuration)->pluck('id');
-        $requestIds = $stepOrders->pluck('id');
-
-        if (!$requestIds->diff($configIds)->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Certains IDs d\'étapes n\'existent pas',
-            ], 422);
+        if (count($stepIds) !== $templateStepsCount) {
+            return $this->errorResponse('Certaines étapes ne font pas partie de ce template');
         }
 
         // Vérifier l'unicité des ordres
-        $ordres = $stepOrders->pluck('ordre');
-        if ($ordres->count() !== $ordres->unique()->count()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Les ordres des étapes doivent être uniques',
-            ], 422);
+        $orderIndexes = collect($request->step_orders)->pluck('order_index');
+        if ($orderIndexes->count() !== $orderIndexes->unique()->count()) {
+            return $this->errorResponse('Les ordres des étapes doivent être uniques');
         }
 
         // Mettre à jour les ordres
-        foreach ($configuration as &$step) {
-            $newOrder = $stepOrders->firstWhere('id', $step['id']);
-            if ($newOrder) {
-                $step['ordre'] = $newOrder['ordre'];
-            }
+        foreach ($request->step_orders as $stepOrder) {
+            WorkflowStep::where('id', $stepOrder['id'])
+                ->update(['order_index' => $stepOrder['order_index']]);
         }
 
-        // Trier par ordre
-        usort($configuration, function ($a, $b) {
-            return $a['ordre'] <=> $b['ordre'];
-        });
-
-        $template->configuration = $configuration;
-        $template->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Étapes réorganisées avec succès',
-            'data' => [
-                'template_id' => $template->id,
-                'configuration' => $template->configuration,
-            ]
+        return $this->successResponse('Étapes réorganisées avec succès', [
+            'template_id' => $template->id,
         ]);
     }
 
+
+
     /**
-     * Valider la configuration JSON d'un template
-     * API endpoint: POST /api/workflows/templates/{template}/configuration/validate
+     * Valider les étapes d'un template
+     * API endpoint: POST /api/workflows/templates/{template}/steps/validate
+     * Note: Méthode simplifiée pour valider les étapes structurées au lieu de JSON
      */
     public function validateConfiguration(WorkflowTemplate $template)
     {
-        $configuration = $template->configuration ?? [];
-        [$errors, $warnings] = $this->performConfigurationValidation($configuration);
+        $steps = $template->steps;
+        $errors = [];
+        $warnings = [];
+
+        // Vérifier l'unicité des ordres
+        $orderIndexes = $steps->pluck('order_index');
+        if ($orderIndexes->count() !== $orderIndexes->unique()->count()) {
+            $errors[] = 'Des ordres d\'étapes sont dupliqués';
+        }
+
+        // Vérifier la continuité des ordres
+        $sortedOrders = $orderIndexes->sort()->values();
+        for ($i = 0; $i < $sortedOrders->count(); $i++) {
+            if ($sortedOrders[$i] !== $i + 1) {
+                $warnings[] = 'Les ordres des étapes ne sont pas continus';
+                break;
+            }
+        }
+
         $isValid = empty($errors);
 
         return response()->json([
@@ -690,7 +551,7 @@ class WorkflowTemplateController extends Controller
                 'is_valid' => $isValid,
                 'errors' => $errors,
                 'warnings' => $warnings,
-                'steps_count' => count($configuration),
+                'steps_count' => $steps->count(),
             ]
         ]);
     }
@@ -700,7 +561,7 @@ class WorkflowTemplateController extends Controller
      */
 
     /**
-     * Récupérer la configuration JSON d'un template pour les formulaires
+     * Récupérer les étapes d'un template pour les formulaires
      */
     public function getConfigurationForForm(WorkflowTemplate $template)
     {
@@ -710,42 +571,48 @@ class WorkflowTemplateController extends Controller
 
         return response()->json([
             'template' => $template,
-            'configuration' => $template->configuration ?? [],
-            'existing_steps' => $template->steps->map(function($step) {
+            'steps' => $template->steps->map(function($step) {
                 return [
                     'id' => $step->id,
                     'name' => $step->name,
                     'order_index' => $step->order_index,
+                    'action_id' => $step->action_id,
+                    'organisation_id' => $step->organisation_id,
+                    'auto_assign' => $step->auto_assign,
+                    'timeout_hours' => $step->timeout_hours,
                 ];
             }),
         ]);
     }
 
     /**
-     * Synchroniser la configuration JSON avec les étapes de la base de données
+     * Vérifier la cohérence des étapes d'un template
+     * Note: Méthode simplifiée puisqu'il n'y a plus de synchronisation entre JSON et DB
      */
     public function syncConfigurationWithSteps(WorkflowTemplate $template)
     {
-        $configuration = $template->configuration ?? [];
         $steps = $template->steps()->orderBy('order_index')->get();
 
-        // Créer une correspondance entre la configuration JSON et les étapes DB
-        $syncData = [];
-        foreach ($configuration as $configStep) {
-            $dbStep = $steps->firstWhere('name', $configStep['name']) ??
-                     $steps->firstWhere('order_index', $configStep['ordre']);
+        // Vérifier l'intégrité des ordres
+        $orderIndexes = $steps->pluck('order_index');
+        $hasDuplicates = $orderIndexes->count() !== $orderIndexes->unique()->count();
 
-            $syncData[] = [
-                'config_step' => $configStep,
-                'db_step' => $dbStep,
-                'needs_sync' => $dbStep ? false : true,
-            ];
+        // Vérifier la continuité des ordres
+        $hasGaps = false;
+        $sortedOrders = $orderIndexes->sort()->values();
+        for ($i = 0; $i < $sortedOrders->count(); $i++) {
+            if ($sortedOrders[$i] !== $i + 1) {
+                $hasGaps = true;
+                break;
+            }
         }
 
         return response()->json([
             'template_id' => $template->id,
-            'sync_data' => $syncData,
-            'needs_attention' => collect($syncData)->contains('needs_sync', true),
+            'steps_count' => $steps->count(),
+            'has_order_issues' => $hasDuplicates || $hasGaps,
+            'has_duplicate_orders' => $hasDuplicates,
+            'has_order_gaps' => $hasGaps
         ]);
     }
 }

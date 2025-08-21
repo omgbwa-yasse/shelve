@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\WorkflowStepType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,19 +15,12 @@ class WorkflowStep extends Model
         'description',
         'order_index',
         'step_type',
-        'configuration',
-        'estimated_duration',
+        'estimated_hours',
         'is_required',
-        'can_be_skipped',
-        'conditions',
     ];
 
     protected $casts = [
-        'step_type' => WorkflowStepType::class,
-        'configuration' => 'array',
         'is_required' => 'boolean',
-        'can_be_skipped' => 'boolean',
-        'conditions' => 'array',
     ];
 
     /**

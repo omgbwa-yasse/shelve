@@ -2,9 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\AssignmentType;
-use App\Enums\TaskPriority;
-use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -21,32 +18,17 @@ class Task extends Model
         'status',
         'priority',
         'due_date',
-        'start_date',
         'completed_at',
         'estimated_hours',
-        'actual_hours',
-        'progress_percentage',
         'category_id',
         'assigned_to_organisation_id',
         'assigned_to_user_id',
-        'assignment_type',
         'created_by',
         'mail_id',
-        'workflow_step_instance_id',
-        'parent_task_id',
-        'tags',
-        'custom_fields',
-        'completion_notes',
-        'assignment_notes',
-        'name',
-        'duration',
-        'task_type_id'
+        'workflow_step_instance_id'
     ];
 
     protected $casts = [
-        'status' => TaskStatus::class,
-        'priority' => TaskPriority::class,
-        'assignment_type' => AssignmentType::class,
         'due_date' => 'datetime',
         'start_date' => 'datetime',
         'completed_at' => 'datetime',

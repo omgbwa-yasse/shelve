@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\TaskCommentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,13 +13,6 @@ class TaskComment extends Model
         'task_id',
         'user_id',
         'comment',
-        'type',
-        'metadata',
-    ];
-
-    protected $casts = [
-        'type' => TaskCommentType::class,
-        'metadata' => 'array',
     ];
 
     /**
@@ -39,27 +31,11 @@ class TaskComment extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Scope pour filtrer par type de commentaire
+        /**
+     * Scope pour les commentaires ordonnés par date
      */
-    public function scopeOfType($query, TaskCommentType $type)
+    public function scopeLatest($query)
     {
-        return $query->where('type', $type);
-    }
-
-    /**
-     * Scope pour les commentaires utilisateurs uniquement
-     */
-    public function scopeUserComments($query)
-    {
-        return $query->where('type', TaskCommentType::COMMENT);
-    }
-
-    /**
-     * Scope pour les notifications système uniquement
-     */
-    public function scopeSystemNotifications($query)
-    {
-        return $query->where('type', '!=', TaskCommentType::COMMENT);
+        return $query->orderBy('created_at', 'desc');
     }
 }
