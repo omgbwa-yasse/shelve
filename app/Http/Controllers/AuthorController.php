@@ -54,8 +54,9 @@ class AuthorController extends Controller
 
     public function index()
     {
-        $authors = Author::with(['authorType', 'records'])->get();
-        return view('authors.index', compact('authors'));
+        $authors = Author::with(['authorType', 'records', 'parent'])->get();
+        $authorTypes = AuthorType::all();
+        return view('authors.index', compact('authors', 'authorTypes'));
     }
 
 

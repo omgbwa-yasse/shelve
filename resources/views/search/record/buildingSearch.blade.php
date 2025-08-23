@@ -63,18 +63,42 @@
                             <!-- Building Details -->
                             <div class="mb-4">
                                 @if($building->description)
-                                    <p class="card-text text-muted mb-2">
+                                    <p class="card-text text-muted mb-3">
                                         <i class="bi bi-file-text me-2"></i>
                                         <span>{{ Str::limit($building->description, 80) }}</span>
                                     </p>
                                 @endif
                                 
                                 @if($building->floors && $building->floors->count() > 0)
-                                    <div class="d-flex align-items-center text-muted small">
+                                    <div class="d-flex align-items-center text-muted small mb-2">
                                         <i class="bi bi-layers me-2"></i>
                                         <span>{{ $building->floors->count() }} {{ $building->floors->count() > 1 ? __('levels') : __('level') }} {{ __('available') }}</span>
                                     </div>
                                 @endif
+
+                                <!-- Statistics -->
+                                <div class="row g-2 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            @php $containersCount = $building->containers_count ?? 0; @endphp
+                                            <i class="bi bi-archive {{ $containersCount > 0 ? 'text-primary' : 'text-muted' }} me-2"></i>
+                                            <div>
+                                                <div class="fw-bold {{ $containersCount > 0 ? 'text-primary' : 'text-muted' }}">{{ number_format($containersCount) }}</div>
+                                                <div class="small text-muted">{{ __('containers') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            @php $recordsCount = $building->records_count ?? 0; @endphp
+                                            <i class="bi bi-files {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }} me-2"></i>
+                                            <div>
+                                                <div class="fw-bold {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }}">{{ number_format($recordsCount) }}</div>
+                                                <div class="small text-muted">{{ __('records') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Action Button -->

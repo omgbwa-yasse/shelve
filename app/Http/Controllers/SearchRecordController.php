@@ -395,36 +395,126 @@ class SearchRecordController extends Controller
 
     public function selectBuilding()
     {
+        $buildings = Building::with(['floors.rooms.shelves.containers.records'])->get();
+        
+        // Ajouter les statistiques pour chaque building
+        $buildings->each(function ($building) {
+            $containersCount = 0;
+            $recordsCount = 0;
+            
+            foreach ($building->floors as $floor) {
+                foreach ($floor->rooms as $room) {
+                    foreach ($room->shelves as $shelf) {
+                        $containersCount += $shelf->containers->count();
+                        foreach ($shelf->containers as $container) {
+                            $recordsCount += $container->records->count();
+                        }
+                    }
+                }
+            }
+            
+            $building->containers_count = $containersCount;
+            $building->records_count = $recordsCount;
+        });
+        
         return view('search.record.buildingSearch', [
-            'buildings' => Building::all()
+            'buildings' => $buildings
         ]);
     }
 
     public function selectFloor(Request $request)
     {
+        $floors = Floor::with(['rooms.shelves.containers.records'])
+            ->where('building_id', $request->input('id'))
+            ->get();
+        
+        // Ajouter les statistiques pour chaque floor
+        $floors->each(function ($floor) {
+            $containersCount = 0;
+            $recordsCount = 0;
+            
+            foreach ($floor->rooms as $room) {
+                foreach ($room->shelves as $shelf) {
+                    $containersCount += $shelf->containers->count();
+                    foreach ($shelf->containers as $container) {
+                        $recordsCount += $container->records->count();
+                    }
+                }
+            }
+            
+            $floor->containers_count = $containersCount;
+            $floor->records_count = $recordsCount;
+        });
+        
         return view('search.record.floorSearch', [
-            'floors' => Floor::where('building_id', $request->input('id'))->get()
+            'floors' => $floors
         ]);
     }
 
     public function selectRoom(Request $request)
     {
+        $rooms = Room::with(['shelves.containers.records'])
+            ->where('floor_id', $request->input('id'))
+            ->get();
+        
+        // Ajouter les statistiques pour chaque room
+        $rooms->each(function ($room) {
+            $containersCount = 0;
+            $recordsCount = 0;
+            
+            foreach ($room->shelves as $shelf) {
+                $containersCount += $shelf->containers->count();
+                foreach ($shelf->containers as $container) {
+                    $recordsCount += $container->records->count();
+                }
+            }
+            
+            $room->containers_count = $containersCount;
+            $room->records_count = $recordsCount;
+        });
+        
         return view('search.record.roomSearch', [
-            'rooms' => Room::where('floor_id', $request->input('id'))->get()
+            'rooms' => $rooms
         ]);
     }
 
     public function selectShelve(Request $request)
     {
+        $shelves = Shelf::with(['containers.records'])
+            ->where('room_id', $request->input('id'))
+            ->get();
+        
+        // Ajouter les statistiques pour chaque shelf
+        $shelves->each(function ($shelf) {
+            $containersCount = $shelf->containers->count();
+            $recordsCount = 0;
+            
+            foreach ($shelf->containers as $container) {
+                $recordsCount += $container->records->count();
+            }
+            
+            $shelf->containers_count = $containersCount;
+            $shelf->records_count = $recordsCount;
+        });
+        
         return view('search.record.shelveSearch', [
-            'shelves' => Shelf::where('room_id', $request->input('id'))->get()
+            'shelves' => $shelves
         ]);
     }
 
     public function selectContainer(Request $request)
     {
+        $containers = Container::with(['records'])
+            ->where('shelve_id', $request->input('id'))
+            ->get();
+        
+        // Ajouter les statistiques pour chaque container
+        $containers->each(function ($container) {
+            $container->records_count = $container->records->count();
+        });
+        
         return view('search.record.containerSearch', [
-            'containers' => Container::where('shelve_id', $request->input('id'))->get()
+            'containers' => $containers
         ]);
     }
 

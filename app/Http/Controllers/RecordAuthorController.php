@@ -182,7 +182,10 @@ class RecordAuthorController extends Controller
 
     public function edit(Author $author)
     {
-        return view('records.authors.edit', compact('author'));
+        $authorTypes = AuthorType::all();
+        $parents = Author::all();
+        $parents->load('authorType');
+        return view('records.authors.edit', compact('author', 'authorTypes', 'parents'));
     }
 
 

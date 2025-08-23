@@ -1,68 +1,130 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container mt-4">
-        <h2>Add New Author</h2>
-        <form action="{{ route('mail-author.store') }}" method="POST">
-            @csrf
-            <div class="mb-3">
-                <label for="type_id" class="form-label">Type d'entité</label>
-                <div class="select-with-search">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search type...">
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 text-dark">
+                            <i class="fas fa-user-plus me-2 text-primary"></i>
+                            {{ __('add_new_author') }}
+                        </h4>
+                        <a href="{{ route('mail-author.index') }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>{{ __('back_to_authors') }}
+                        </a>
                     </div>
-                    <select id="type_id" name="type_id" class="form-control" required>
-                        @foreach ($authorTypes as $type)
-                            <option value="{{ $type->id }}">{{ $type->name }}</option>
-                        @endforeach
-                    </select>
+                </div>
+
+                <div class="card-body p-4">
+                    <form action="{{ route('mail-author.store') }}" method="POST">
+                        @csrf
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="type_id" class="form-label fw-medium">
+                                        <i class="fas fa-tag me-1 text-muted"></i>{{ __('entity_type') }}
+                                    </label>
+                                    <div class="select-with-search">
+                                        <div class="input-group mb-2">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control search-input" 
+                                                   placeholder="{{ __('search_type') }}">
+                                        </div>
+                                        <select id="type_id" name="type_id" class="form-select" required>
+                                            <option value="">{{ __('select_type') }}</option>
+                                            @foreach ($authorTypes as $type)
+                                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="name" class="form-label fw-medium">
+                                        <i class="fas fa-user me-1 text-muted"></i>{{ __('name') }}
+                                    </label>
+                                    <input type="text" id="name" name="name" class="form-control" 
+                                           data-field="name" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="parallel_name" class="form-label fw-medium">
+                                        <i class="fas fa-user-tag me-1 text-muted"></i>{{ __('parallel_name') }}
+                                    </label>
+                                    <input type="text" id="parallel_name" name="parallel_name" class="form-control" 
+                                           data-field="parallel_name">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="other_name" class="form-label fw-medium">
+                                        <i class="fas fa-user-plus me-1 text-muted"></i>{{ __('other_name') }}
+                                    </label>
+                                    <input type="text" id="other_name" name="other_name" class="form-control" 
+                                           data-field="other_name">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="lifespan" class="form-label fw-medium">
+                                        <i class="fas fa-calendar me-1 text-muted"></i>{{ __('lifespan') }}
+                                    </label>
+                                    <input type="text" id="lifespan" name="lifespan" class="form-control" 
+                                           placeholder="ex: 1920-1990">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="locations" class="form-label fw-medium">
+                                        <i class="fas fa-map-marker-alt me-1 text-muted"></i>{{ __('residence') }}
+                                    </label>
+                                    <input type="text" id="locations" name="locations" class="form-control" 
+                                           data-field="locations">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="parent_id" class="form-label fw-medium">
+                                <i class="fas fa-sitemap me-1 text-muted"></i>{{ __('parent_entity') }}
+                            </label>
+                            <div class="select-with-search">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control search-input" 
+                                           placeholder="{{ __('search_parent_author') }}">
+                                </div>
+                                <select id="parent_id" name="parent_id" class="form-select">
+                                    <option value="">{{ __('select_parent') }}</option>
+                                    @foreach ($parents as $parent)
+                                        <option value="{{ $parent->id }}">
+                                            {{ $parent->name }} <i>({{ $parent->authorType->name }})</i>
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ route('mail-author.index') }}" class="btn btn-outline-secondary">
+                                {{ __('cancel') }}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{{ __('save') }}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <div class="mb-3">
-                <label for="name" class="form-label">Nom</label>
-                <input type="text" id="name" name="name" class="form-control" data-field="name" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="parallel_name" class="form-label">Nom équivalent</label>
-                <input type="text" id="parallel_name" name="parallel_name" class="form-control" data-field="parallel_name">
-            </div>
-
-            <div class="mb-3">
-                <label for="other_name" class="form-label">Autre nom</label>
-                <input type="text" id="other_name" name="other_name" class="form-control" data-field="other_name">
-            </div>
-
-            <div class="mb-3">
-                <label for="lifespan" class="form-label">Période de vie</label>
-                <input type="text" id="lifespan" name="lifespan" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label for="locations" class="form-label">Résidence</label>
-                <input type="text" id="locations" name="locations" class="form-control" data-field="locations">
-            </div>
-
-            <div class="mb-3">
-                <label for="parent_id" class="form-label">Entité parente</label>
-                <div class="select-with-search">
-                    <div class="input-group mb-2">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control search-input" placeholder="Search parent author...">
-                    </div>
-                    <select id="parent_id" name="parent_id" class="form-control">
-                        @foreach ($parents as $parent)
-                            <option value="{{ $parent->id }}">{{ $parent->name }} <i>({{ $parent->authorType->name }})</i></option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-        </form>
+        </div>
     </div>
+</div>
 
     <style>
         .select-with-search {
@@ -120,7 +182,7 @@
                         const noResultsOption = select.querySelector('option[data-no-results]');
                         if (!noResultsOption) {
                             const newNoResultsOption = document.createElement('option');
-                            newNoResultsOption.textContent = 'No results found';
+                            newNoResultsOption.textContent = '{{ __("no_results_found") }}';
                             newNoResultsOption.disabled = true;
                             newNoResultsOption.setAttribute('data-no-results', 'true');
                             select.appendChild(newNoResultsOption);

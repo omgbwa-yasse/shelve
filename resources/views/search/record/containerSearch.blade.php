@@ -89,9 +89,21 @@
                                     <span><strong>{{ __('property') }}:</strong> {{ $container->property->name ?? __('N/A') }}</span>
                                 </div>
                                 
-                                <div class="d-flex align-items-center text-muted small">
+                                <div class="d-flex align-items-center text-muted small mb-2">
                                     <i class="bi bi-bookshelf me-2"></i>
                                     <span><strong>{{ __('shelf') }}:</strong> {{ $container->shelf->code ?? __('N/A') }}</span>
+                                </div>
+
+                                <!-- Statistics -->
+                                <div class="mt-2 pt-2 border-top">
+                                    <div class="d-flex align-items-center">
+                                        @php $recordsCount = $container->records_count ?? 0; @endphp
+                                        <i class="bi bi-files {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }} me-2"></i>
+                                        <div>
+                                            <div class="fw-bold {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }}">{{ number_format($recordsCount) }}</div>
+                                            <div class="small text-muted">{{ __('records_stored') }}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

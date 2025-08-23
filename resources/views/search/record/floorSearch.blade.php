@@ -52,7 +52,7 @@
                             <!-- Floor Details -->
                             <div class="mb-4">
                                 @if($floor->description)
-                                    <p class="card-text text-muted mb-2">
+                                    <p class="card-text text-muted mb-3">
                                         <i class="bi bi-file-text me-2"></i>
                                         <span>{{ Str::limit($floor->description, 80) }}</span>
                                     </p>
@@ -61,6 +61,30 @@
                                 <div class="d-flex align-items-center text-muted small mb-2">
                                     <i class="bi bi-building me-2"></i>
                                     <span><strong>{{ __('building') }}:</strong> {{ $floor->building->name ?? __('N/A') }}</span>
+                                </div>
+
+                                <!-- Statistics -->
+                                <div class="row g-2 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            @php $containersCount = $floor->containers_count ?? 0; @endphp
+                                            <i class="bi bi-archive {{ $containersCount > 0 ? 'text-primary' : 'text-muted' }} me-2"></i>
+                                            <div>
+                                                <div class="fw-bold {{ $containersCount > 0 ? 'text-primary' : 'text-muted' }}">{{ number_format($containersCount) }}</div>
+                                                <div class="small text-muted">{{ __('containers') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="d-flex align-items-center">
+                                            @php $recordsCount = $floor->records_count ?? 0; @endphp
+                                            <i class="bi bi-files {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }} me-2"></i>
+                                            <div>
+                                                <div class="fw-bold {{ $recordsCount > 0 ? 'text-success' : 'text-muted' }}">{{ number_format($recordsCount) }}</div>
+                                                <div class="small text-muted">{{ __('records') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
