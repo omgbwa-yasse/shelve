@@ -45,28 +45,76 @@
                                     <div class="d-flex align-items-center">
                                         <span class="fw-medium">{{ $author->name }}</span>
                                         <span class="badge bg-secondary ms-2 text-white">
-                                        {{ $author->type->name??'' }}
+                                        {{ $author->authorType->name ?? '' }}
                                     </span>
                                     </div>
-                                    @if($author->parent)
-                                        <small class="text-muted mt-1 d-block">
-                                            <i class="bi bi-diagram-2 me-1"></i>
-                                            {{ __('parent') }}: {{ $author->parent->name }}
-                                        </small>
-                                    @endif
-                                    @if($author->lifespan)
-                                        <small class="text-muted mt-1 d-block">
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            {{ $author->lifespan }}
-                                        </small>
-                                    @endif
+                                    
+                                    <!-- Informations de base -->
+                                    <div class="author-details mt-2">
+                                        @if($author->parent)
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="bi bi-diagram-2 me-1"></i>
+                                                {{ __('parent') }}: {{ $author->parent->name }}
+                                            </small>
+                                        @endif
+                                        @if($author->lifespan)
+                                            <small class="text-muted d-block mb-1">
+                                                <i class="bi bi-calendar-event me-1"></i>
+                                                {{ $author->lifespan }}
+                                            </small>
+                                        @endif
+                                        
+                                        <!-- NOUVEAU: Noms d'archive -->
+                                        @if($author->records && $author->records->count() > 0)
+                                            <div class="archive-names mt-2">
+                                                <small class="text-muted d-block mb-1">
+                                                    <i class="bi bi-archive me-1"></i>
+                                                    <strong>{{ __('archive_names') }} :</strong>
+                                                </small>
+                                                <div class="archive-badges">
+                                                    @foreach($author->records->take(3) as $record)
+                                                        <span class="badge bg-light text-dark me-1 mb-1 archive-badge">
+                                                            {{ Str::limit($record->name, 25) }}
+                                                        </span>
+                                                    @endforeach
+                                                    @if($author->records->count() > 3)
+                                                        <span class="badge bg-info text-white">
+                                                            +{{ $author->records->count() - 3 }} autres
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @else
+                                            <small class="text-muted d-block mt-2">
+                                                <i class="bi bi-archive me-1"></i>
+                                                {{ __('no_archive_documents') }}
+                                            </small>
+                                        @endif
+                                        
+                                        <!-- Compteur de documents -->
+                                        <div class="records-count mt-2">
+                                            @if($author->records && $author->records->count() > 0)
+                                                <span class="badge bg-success text-white">
+                                                    <i class="bi bi-file-text me-1"></i>
+                                                    {{ $author->records->count() }} {{ __('archive_documents_count') }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-light text-muted">
+                                                    <i class="bi bi-file-text me-1"></i>
+                                                    {{ __('no_archive_documents_count') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="ms-auto d-flex gap-2 align-items-center">
-                                    <a href="{{ route('records.sort') }}?categ=author&id={{ $author->id}}"
-                                       class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-archive me-1"></i>
-                                        {{ __('view_archives') }}
-                                    </a>
+                                    @if($author->records && $author->records->count() > 0)
+                                        <a href="{{ route('records.sort') }}?categ=author&id={{ $author->id}}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-archive me-1"></i>
+                                            {{ __('view_archives') }}
+                                        </a>
+                                    @endif
                                     <div class="dropdown">
                                         <button class="btn btn-light btn-sm" data-bs-toggle="dropdown">
                                             <i class="bi bi-three-dots"></i>
@@ -129,6 +177,7 @@
         <style>
             .author-item:hover {
                 background-color: #f8f9fa;
+                transition: background-color 0.2s ease;
             }
             .author-info:hover {
                 color: #0d6efd;
@@ -150,6 +199,61 @@
             }
             .btn-light:hover {
                 background-color: #f8f9fa;
+            }
+            
+            /* Nouveaux styles pour les archives */
+            .archive-badges {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.25rem;
+            }
+            
+            .archive-badge {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                border: 1px solid #dee2e6;
+                background-color: #f8f9fa;
+                color: #495057;
+                transition: all 0.2s ease;
+            }
+            
+            .archive-badge:hover {
+                background-color: #e9ecef;
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .records-count .badge {
+                font-size: 0.75rem;
+                padding: 0.375rem 0.75rem;
+            }
+            
+            .author-details {
+                line-height: 1.4;
+            }
+            
+            .author-details small {
+                font-size: 0.8rem;
+            }
+            
+            /* Amélioration de l'espacement */
+            .author-item {
+                transition: all 0.2s ease;
+            }
+            
+            .author-item:hover {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            
+            /* Responsive design */
+            @media (max-width: 768px) {
+                .archive-badges {
+                    flex-direction: column;
+                }
+                
+                .archive-badge {
+                    margin-bottom: 0.25rem;
+                }
             }
         </style>
     @endpush

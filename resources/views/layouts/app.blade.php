@@ -196,7 +196,7 @@
                                 @endforeach
                             @else
                                 <div class="list-group-item">
-                                    <i class="bi bi-info-circle mr-2"></i> Aucune organisation disponible
+                                    <i class="bi bi-info-circle mr-2"></i> {{ __('no_organisation_available') }}
                                 </div>
                             @endif
                         </div>
@@ -220,7 +220,7 @@
                                  style="background-color: #f8f9fa !important; padding: 0.25rem !important; border-radius: 0.25rem !important; transition: none !important;">
                         </a>
                         <div class="header-sai">
-                            <span>Système d'Archivage Intelligent</span>
+                            <span>{{ __('intelligent_archiving_system') }}</span>
                         </div>
                     </div>
 

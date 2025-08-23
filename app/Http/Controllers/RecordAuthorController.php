@@ -12,7 +12,7 @@ class RecordAuthorController extends Controller
 
     public function index()
     {
-        $authors = Author::paginate(50);
+        $authors = Author::with(['authorType', 'records', 'parent'])->paginate(50);
         return view('records.authors.index', compact('authors'));
     }
 

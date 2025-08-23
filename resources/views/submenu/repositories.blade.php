@@ -75,7 +75,7 @@
             @can('create', App\Models\Author::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-author.create') }}">
-                    <i class="bi bi-plus-square"></i> {{ __('producer') }}
+                    <i class="bi bi-plus-square"></i> {{ __('author') }}
                 </a>
             </div>
             @endcan
