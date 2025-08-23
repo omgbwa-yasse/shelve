@@ -102,6 +102,18 @@ class RecordAttachmentController extends Controller
 
             return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
 
+        } catch (\Illuminate\Http\Exceptions\PostTooLargeException $e) {
+            // Gestion spécifique de l'erreur de taille POST
+            $message = 'Le fichier est trop volumineux pour la configuration actuelle du serveur. ';
+            $message .= 'Configuration requise : upload_max_filesize=100M, post_max_size=100M';
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $message
+                ], 413);
+            }
+            return back()->with('error', $message);
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Gestion des erreurs de validation
             if ($request->ajax()) {
@@ -273,6 +285,65 @@ class RecordAttachmentController extends Controller
         
         if (!ini_get('file_uploads')) {
             throw new \Exception('Les uploads de fichiers sont désactivés sur ce serveur.');
+        }
+    }
+    
+    /**
+     * Endpoint de diagnostic pour les limites d'upload
+     */
+    public function diagnostics()
+    {
+        $config = [
+            'file_uploads' => ini_get('file_uploads') ? 'Activé' : 'Désactivé',
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'max_execution_time' => ini_get('max_execution_time'),
+            'max_input_time' => ini_get('max_input_time'),
+            'memory_limit' => ini_get('memory_limit'),
+            'max_file_uploads' => ini_get('max_file_uploads'),
+        ];
+        
+        // Convertir en bytes pour comparaison
+        $uploadMaxBytes = $this->parseSize(ini_get('upload_max_filesize'));
+        $postMaxBytes = $this->parseSize(ini_get('post_max_size'));
+        $memoryLimitBytes = $this->parseSize(ini_get('memory_limit'));
+        
+        $recommendations = [];
+        
+        if ($uploadMaxBytes < 100 * 1024 * 1024) {
+            $recommendations[] = "upload_max_filesize doit être au moins 100M (actuellement: " . ini_get('upload_max_filesize') . ")";
+        }
+        
+        if ($postMaxBytes < 100 * 1024 * 1024) {
+            $recommendations[] = "post_max_size doit être au moins 100M (actuellement: " . ini_get('post_max_size') . ")";
+        }
+        
+        if ($memoryLimitBytes < 150 * 1024 * 1024 && $memoryLimitBytes > 0) {
+            $recommendations[] = "memory_limit devrait être au moins 150M (actuellement: " . ini_get('memory_limit') . ")";
+        }
+        
+        return response()->json([
+            'config' => $config,
+            'config_bytes' => [
+                'upload_max_filesize' => $uploadMaxBytes,
+                'post_max_size' => $postMaxBytes,
+                'memory_limit' => $memoryLimitBytes
+            ],
+            'recommendations' => $recommendations,
+            'php_version' => PHP_VERSION
+        ]);
+    }
+    
+    /**
+     * Convertir les tailles PHP en bytes
+     */
+    private function parseSize($size) {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size);
+        $size = preg_replace('/[^0-9\.\-]/', '', $size);
+        if ($unit) {
+            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+        } else {
+            return round($size);
         }
     }
 }

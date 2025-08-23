@@ -27,6 +27,14 @@
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
+                @if(str_contains(session('error'), 'PostTooLargeException') || str_contains(session('error'), 'POST data is too large'))
+                    <br><br>
+                    <strong>Problème de configuration serveur :</strong><br>
+                    La taille maximum d'upload est trop petite sur ce serveur.<br>
+                    <a href="{{ route('upload.diagnostics') }}" target="_blank" class="btn btn-sm btn-outline-light mt-2">
+                        <i class="bi bi-gear"></i> Voir diagnostics
+                    </a>
+                @endif
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
