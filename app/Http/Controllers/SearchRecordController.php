@@ -527,8 +527,16 @@ class SearchRecordController extends Controller
 
     public function selectActivity()
     {
+        $activities = Activity::with(['records', 'parent', 'children', 'organisations'])->get();
+        
+        // Ajouter les statistiques pour chaque activité
+        $activities->each(function ($activity) {
+            $activity->records_count = $activity->records->count();
+            $activity->children_count = $activity->children->count();
+        });
+        
         return view('search.record.activitySearch', [
-            'activities' => Activity::all()
+            'activities' => $activities
         ]);
     }
 
