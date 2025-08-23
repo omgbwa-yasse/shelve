@@ -520,8 +520,14 @@ class SearchRecordController extends Controller
 
     public function selectWord()
     {
+        $terms = ThesaurusConcept::with(['labels'])
+            ->has('records') // Seulement les termes qui ont des records
+            ->withCount('records') // Compter les records de manière optimisée
+            ->orderBy('records_count', 'desc') // Trier par nombre de records décroissant
+            ->paginate(50);
+        
         return view('search.record.wordSearch', [
-            'terms' => ThesaurusConcept::with('labels')->paginate(50)
+            'terms' => $terms
         ]);
     }
 
