@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\c\\wamp64\\www\\ICA/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

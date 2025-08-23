@@ -49,6 +49,12 @@ class Container extends Model
         return $this->belongsTo(SlipRecord::class,);
     }
 
+    public function records()
+    {
+        return $this->belongsToMany(Record::class, 'record_container')
+            ->withPivot(['description', 'creator_id']);
+    }
+
     // Relation via shelf->room->organisations pour filtrer par organisation
     public function getOrganisationsAttribute()
     {
