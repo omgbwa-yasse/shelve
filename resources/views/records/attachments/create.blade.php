@@ -3,25 +3,74 @@
 @section('content')
     <div class="container">
         <h1 class="mb-4">Ajouter une pièce jointe à l'enregistrement #{{ $record->id }}</h1>
+        
+        <!-- Messages d'erreur et de succès -->
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h6><i class="bi bi-exclamation-triangle"></i> Erreurs de validation :</h6>
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        
+        <!-- Alert pour les messages d'erreur AJAX -->
+        <div id="ajaxAlert" class="alert alert-danger alert-dismissible fade d-none" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> <span id="ajaxErrorMessage"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
         <div class="card">
             <div class="card-body">
                 <form id="attachmentForm" action="{{ route('records.attachments.store', $record->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="mb-3">
-                        <label for="name" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <label for="name" class="form-label">Nom <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="mb-3">
-                        <label for="file" class="form-label">Fichier (PDF, Image, ou Vidéo)</label>
-                        <input type="file" class="form-control" id="file" name="file" accept="application/pdf,image/*,video/*" required>
+                        <label for="file" class="form-label">Fichier <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control @error('file') is-invalid @enderror" id="file" name="file" accept="application/pdf,image/*,video/*" required>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i> 
+                            Formats acceptés : PDF, images (JPG, PNG, GIF), vidéos (MP4, AVI, MOV). Taille max : 100 MB
+                        </div>
+                        @error('file')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div id="file-preview" class="mb-3">
                         <!-- Preview will be inserted here -->
                     </div>
                     <input type="hidden" name="thumbnail" id="thumbnailInput">
-                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-                        <i class="bi bi-plus-circle"></i> Ajouter la pièce jointe
-                    </button>
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ route('records.attachments.index', $record->id) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                            <i class="bi bi-plus-circle"></i> Ajouter la pièce jointe
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -131,10 +180,45 @@
 
             document.getElementById('attachmentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                // Validation côté client
+                const file = fileInput.files[0];
+                const name = nameInput.value.trim();
+                
+                if (!file) {
+                    showError('Veuillez sélectionner un fichier.');
+                    return;
+                }
+                
+                if (!name) {
+                    showError('Veuillez saisir un nom pour la pièce jointe.');
+                    return;
+                }
+                
+                // Vérification de la taille (100 MB max)
+                if (file.size > 100 * 1024 * 1024) {
+                    showError('Le fichier ne peut pas dépasser 100 MB.');
+                    return;
+                }
+                
+                // Désactiver le bouton et changer le texte
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Envoi en cours...';
+                
+                // Soumettre le formulaire
                 this.submit();
             });
+            
+            function showError(message) {
+                const ajaxAlert = document.getElementById('ajaxAlert');
+                const ajaxErrorMessage = document.getElementById('ajaxErrorMessage');
+                ajaxErrorMessage.textContent = message;
+                ajaxAlert.classList.remove('d-none');
+                ajaxAlert.classList.add('show');
+                
+                // Scroll vers le haut pour voir l'erreur
+                ajaxAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         });
     </script>
 @endsection

@@ -31,18 +31,26 @@ class RecordAttachmentController extends Controller
 
     public function store(Request $request, $id)
     {
-//        dd( $request);
+        // Vérifier les configurations PHP
+        $this->checkUploadConfiguration();
+        
         try {
             $request->validate([
                 'name' => 'required|max:100',
-                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:20480', // 20MB max
+                'file' => 'required|file|mimes:pdf,jpg,jpeg,png,gif,mp4,avi,mov|max:102400', // 100MB max
                 'thumbnail' => 'nullable|string',
             ]);
 
             $record = Record::findOrFail($id);
             $file = $request->file('file');
+            
+            // Vérifier que le fichier est valide
+            if (!$file || !$file->isValid()) {
+                throw new \Exception('Le fichier du champ file n\'a pu être téléversé.');
+            }
 
             $path = $file->store('attachments');
+            $filePath = $file->getRealPath();
 
             $mimeType = $file->getMimeType();
             $fileType = explode('/', $mimeType)[0];
@@ -50,8 +58,8 @@ class RecordAttachmentController extends Controller
             $attachment = Attachment::create([
                 'path' => $path,
                 'name' => $request->input('name'),
-                'crypt' => md5_file($file),
-                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                'crypt' => md5_file($filePath),
+                'crypt_sha512' => hash_file('sha512', $filePath),
                 'size' => $file->getSize(),
                 'creator_id' => auth()->id(),
                 'mime_type' => $mimeType,
@@ -94,11 +102,33 @@ class RecordAttachmentController extends Controller
 
             return redirect()->route('records.attachments.index', $record->id)->with('success', 'Attachment created successfully.');
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Gestion des erreurs de validation
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Erreur de validation',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             // Log l'erreur
-            \Log::error('Erreur dans RecordAttachmentController@store: ' . $e->getMessage());
-            // Retournez l'erreur pour le débogage
-            return response()->json(['error' => $e->getMessage()], 500);
+            \Log::error('Erreur dans RecordAttachmentController@store: ' . $e->getMessage(), [
+                'record_id' => $id,
+                'user_id' => auth()->id(),
+                'file_name' => $request->file('file')?->getClientOriginalName(),
+                'file_size' => $request->file('file')?->getSize(),
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->with('error', $e->getMessage());
         }
     }
 
@@ -184,7 +214,7 @@ class RecordAttachmentController extends Controller
     {
         try {
             $request->validate([
-                'file' => 'required|file|mimes:pdf,txt,docx,doc,rtf,odt,jpg,jpeg,png,gif|max:10240', // 10MB max
+                'file' => 'required|file|mimes:pdf,txt,docx,doc,rtf,odt,jpg,jpeg,png,gif,mp4,avi,mov|max:102400', // 100MB max
             ]);
 
             $file = $request->file('file');
@@ -222,6 +252,27 @@ class RecordAttachmentController extends Controller
                 'success' => false,
                 'error' => 'Erreur lors du téléchargement: ' . $e->getMessage()
             ], 500);
+        }
+    }
+    
+    /**
+     * Vérifier la configuration PHP pour les uploads
+     */
+    private function checkUploadConfiguration()
+    {
+        $maxFileSize = ini_get('upload_max_filesize');
+        $maxPostSize = ini_get('post_max_size');
+        $memoryLimit = ini_get('memory_limit');
+        
+        Log::info('Configuration PHP pour les uploads:', [
+            'upload_max_filesize' => $maxFileSize,
+            'post_max_size' => $maxPostSize,
+            'memory_limit' => $memoryLimit,
+            'file_uploads' => ini_get('file_uploads') ? 'Enabled' : 'Disabled'
+        ]);
+        
+        if (!ini_get('file_uploads')) {
+            throw new \Exception('Les uploads de fichiers sont désactivés sur ce serveur.');
         }
     }
 }

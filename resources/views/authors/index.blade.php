@@ -132,7 +132,7 @@
                                                 <h6 class="mb-1 text-dark fw-bold">{{ $author->name }}</h6>
                                                 @if($author->parallel_name)
                                                     <small class="text-muted">{{ $author->parallel_name }}</small>
-                                                @endif
+                @endif
                                             </div>
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -274,10 +274,10 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <form id="deleteForm" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
+                                    @csrf
+                                    @method('DELETE')
                     <button type="submit" class="btn btn-danger">Supprimer</button>
-                </form>
+                                </form>
             </div>
         </div>
     </div>
@@ -287,7 +287,7 @@
 @endsection
 
 @section('scripts')
-<script>
+    <script>
 // Global variables for filtering and sorting
 let allAuthors = [];
 let filteredAuthors = [];
@@ -507,7 +507,7 @@ function confirmDelete(authorId, authorName) {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
 }
-</script>
+    </script>
 @endsection
 
 @push('styles')
