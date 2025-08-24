@@ -124,6 +124,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | GitHub Repository Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for GitHub API integration for system updates
+    |
+    */
+
+    'github_repo_owner' => env('GITHUB_REPO_OWNER', 'omgbwa-yasse'),
+    'github_repo_name' => env('GITHUB_REPO_NAME', 'shelve'),
+    'github_token' => env('GITHUB_TOKEN'),
+
 
 //    'providers' => [
 //

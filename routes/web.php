@@ -841,6 +841,22 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
     Route::get('import/status/{importId}', [App\Http\Controllers\Api\ThesaurusImportController::class, 'getImportStatus'])->name('import.status');
 });
 
+// System Updates Routes
+Route::middleware(['auth'])->prefix('system/updates')->name('system.updates.')->group(function () {
+    Route::get('/', [App\Http\Controllers\SystemUpdateController::class, 'index'])->name('index');
+    Route::post('/check', [App\Http\Controllers\SystemUpdateController::class, 'checkVersions'])->name('check');
+    Route::post('/update/{version}', [App\Http\Controllers\SystemUpdateController::class, 'updateToVersion'])->name('update');
+    Route::get('/history', [App\Http\Controllers\SystemUpdateController::class, 'history'])->name('history');
+    Route::post('/rollback', [App\Http\Controllers\SystemUpdateController::class, 'rollback'])->name('rollback');
+});
+
+// API routes for system updates
+Route::middleware(['auth'])->prefix('api/system/updates')->name('api.system.updates.')->group(function () {
+    Route::get('/versions', [App\Http\Controllers\SystemUpdateController::class, 'getVersions'])->name('versions');
+    Route::get('/changelog/{version}', [App\Http\Controllers\SystemUpdateController::class, 'getChangelog'])->name('changelog');
+    Route::get('/progress', [App\Http\Controllers\SystemUpdateController::class, 'getUpdateProgress'])->name('progress');
+});
+
 // MCP/AI web proxy routes retirées
 
 
