@@ -72,8 +72,17 @@ class PolicyService
             return $user->hasAnyPermission([
                 'system.settings',
                 'system.logs',
-                'system.maintenance'
+                'system.maintenance',
+                'system.updates'
             ]);
+        });
+
+        // 6.1. Gate pour la gestion des mises à jour système
+        Gate::define('system_updates_manage', function (User $user) {
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+            return $user->hasPermissionTo('system_updates_manage');
         });
 
         // 7. Gate pour vérifier l'accès basé sur l'organisation

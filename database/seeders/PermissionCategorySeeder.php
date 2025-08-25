@@ -356,6 +356,31 @@ class PermissionCategorySeeder extends Seeder
                 'category' => 'system',
                 'description' => 'Surveiller le système'
             ],
+            [
+                'name' => 'system_updates_view',
+                'category' => 'system',
+                'description' => 'Voir les mises à jour système'
+            ],
+            [
+                'name' => 'system_updates_check',
+                'category' => 'system',
+                'description' => 'Vérifier les mises à jour disponibles'
+            ],
+            [
+                'name' => 'system_updates_install',
+                'category' => 'system',
+                'description' => 'Installer les mises à jour système'
+            ],
+            [
+                'name' => 'system_updates_rollback',
+                'category' => 'system',
+                'description' => 'Effectuer des rollbacks de versions'
+            ],
+            [
+                'name' => 'system_updates_manage',
+                'category' => 'system',
+                'description' => 'Gérer complètement les mises à jour système'
+            ],
         ];
 
         $this->insertPermissions($permissions);

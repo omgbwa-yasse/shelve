@@ -214,6 +214,11 @@
         </div>
         <div class="submenu-content" id="systemMenu">
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('system.updates.index')}}">
+                    <i class="bi bi-arrow-clockwise"></i> {{ __('system_updates') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('backups.index')}}">
                     <i class="bi bi-save"></i> {{ __('my_backups') }}
                 </a>

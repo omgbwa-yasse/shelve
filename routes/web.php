@@ -664,6 +664,23 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('backups', BackupController::class);
         Route::resource('backups.files', BackupFileController::class);
         Route::resource('backups.plannings', BackupPlanningController::class);
+
+        // System Updates Routes
+        Route::middleware(['auth'])->prefix('system/updates')->group(function () {
+            Route::get('/', [App\Http\Controllers\SystemUpdateController::class, 'index'])->name('system.updates.index');
+            Route::post('/check', [App\Http\Controllers\SystemUpdateController::class, 'checkVersions'])->name('system.updates.check');
+            Route::post('/update/{version}', [App\Http\Controllers\SystemUpdateController::class, 'updateToVersion'])->name('system.updates.update');
+            Route::get('/history', [App\Http\Controllers\SystemUpdateController::class, 'history'])->name('system.updates.history');
+            Route::post('/rollback', [App\Http\Controllers\SystemUpdateController::class, 'rollback'])->name('system.updates.rollback');
+        });
+
+        // API routes for system updates
+        Route::middleware(['auth'])->prefix('api/system/updates')->name('api.system.updates.')->group(function () {
+            Route::get('/versions', [App\Http\Controllers\SystemUpdateController::class, 'getVersions'])->name('versions');
+            Route::get('/changelog/{version}', [App\Http\Controllers\SystemUpdateController::class, 'getChangelog'])->name('changelog');
+            Route::get('/progress', [App\Http\Controllers\SystemUpdateController::class, 'getUpdateProgress'])->name('progress');
+        });
+
     });
 
 
