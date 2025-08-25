@@ -532,6 +532,7 @@ Route::middleware(['auth'])->group(function () {
         // Routes imbriquées
         Route::resource('records.attachments', RecordAttachmentController::class);
         Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
+        Route::get('upload-diagnostics', [RecordAttachmentController::class, 'diagnostics'])->name('upload.diagnostics');
 
         Route::resource('authors', RecordAuthorController::class)->names('record-author');
         Route::get('authors/list', [RecordAuthorController::class, 'list'])->name('record-author.list');
