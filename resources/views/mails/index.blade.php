@@ -18,63 +18,7 @@
 
     <h1 class="text-3xl font-bold text-gray-900 mb-6">{{ $currentTitle }}</h1>
 
-    <!-- Bandeau de recherche avec icônes -->
-    <div class="d-flex justify-content-start align-items-center bg-light p-2 mb-2 rounded overflow-auto">
-        <div class="d-flex align-items-center gap-3 px-2">
-            {{-- Navigation adaptée selon le type --}}
-            @if(in_array($type ?? '', ['received_external', 'send_external']))
-                {{-- Navigation pour courriers externes --}}
-                <a href="{{ route('mails.received.external.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers reçus externes">
-                    <i class="bi bi-inbox fs-5 text-primary"></i>
-                    <span class="small {{ ($type ?? '') === 'received_external' ? 'fw-bold' : '' }}">Reçus</span>
-                </a>
-                <a href="{{ route('mails.send.external.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers envoyés externes">
-                    <i class="bi bi-envelope fs-5 text-primary"></i>
-                    <span class="small {{ ($type ?? '') === 'send_external' ? 'fw-bold' : '' }}">Envoyés</span>
-                </a>
-            @else
-                {{-- Navigation pour courriers internes --}}
-                <a href="{{ route('mail-received.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers reçus">
-                    <i class="bi bi-inbox fs-5 text-primary"></i>
-                    <span class="small {{ ($type ?? '') === 'received' ? 'fw-bold' : '' }}">Reçus</span>
-                </a>
-                <a href="{{ route('mail-send.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers envoyés">
-                    <i class="bi bi-envelope fs-5 text-primary"></i>
-                    <span class="small {{ ($type ?? '') === 'send' ? 'fw-bold' : '' }}">Envoyés</span>
-                </a>
-            @endif
 
-            <a href="{{ route('mails.archived') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Courriers archivés">
-                <i class="bi bi-archive fs-5 text-primary"></i>
-                <span class="small">Archives</span>
-            </a>
-            <div class="vr mx-1"></div>
-            <a href="{{ route('mail-select-date') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche par dates">
-                <i class="bi bi-calendar fs-5 text-primary"></i>
-                <span class="small">Dates</span>
-            </a>
-            <a href="{{ route('mail-container.index') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Boîtes d'archives">
-                <i class="bi bi-box fs-5 text-primary"></i>
-                <span class="small">Boîtes</span>
-            </a>
-            <div class="vr mx-1"></div>
-            <a href="{{ route('mails.advanced.form') }}" class="text-decoration-none text-dark d-flex flex-column align-items-center" title="Recherche avancée">
-                <i class="bi bi-sliders fs-5 text-primary"></i>
-                <span class="small">Avancée</span>
-            </a>
-        </div>
-
-        <div class="ms-auto pe-2">
-            <form class="d-flex" action="{{ route('mails.search') }}" method="GET">
-                <div class="input-group input-group-sm">
-                    <input type="text" class="form-control form-control-sm" placeholder="Recherche rapide..." name="q" aria-label="Recherche">
-                    <button class="btn btn-outline-secondary" type="submit" title="Rechercher">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
