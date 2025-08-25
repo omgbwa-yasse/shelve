@@ -134,7 +134,7 @@
                                     </div>
                                     <div class="col-md-2">
                                     <span class="badge bg-info bg-opacity-10 text-info px-3 py-2">
-                                        {{ $mailContainer->containerType->name }}
+                                        {{ $mailContainer->containerProperty->name }}
                                     </span>
                                     </div>
                                     <div class="col-md-2">

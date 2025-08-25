@@ -13,16 +13,16 @@ class MailContainer extends Model
     protected $fillable = [
         'code',
         'name',
-        'type_id',
+        'property_id',
         'created_by',
         'creator_organisation_id'
     ];
 
     protected $table = 'mail_containers';
 
-    public function containerType()
+    public function containerProperty()
     {
-        return $this->belongsTo(ContainerType::class, 'type_id');
+        return $this->belongsTo(ContainerProperty::class, 'property_id');
     }
 
     public function mails()

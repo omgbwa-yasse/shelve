@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MailContainer;
-use App\Models\ContainerType;
+use App\Models\ContainerProperty;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -11,8 +11,8 @@ class MailContainerController extends Controller
 {
     public function index()
     {
-        $mailContainers = MailContainer::with(['containerType', 'creator', 'organisation']) // Removed 'mailArchivings'
-                                      ->where('creator_organisation_id', auth()->user()->current_organisation_id) // Corrected field name
+        $mailContainers = MailContainer::with(['containerProperty', 'creator', 'organisation']) // Changed containerType to containerProperty
+                                      ->where('creator_organisation_id', Auth::user()->current_organisation_id) // Corrected field name
                                       ->paginate(10);
 
         return view('mails.containers.index', compact('mailContainers'));
@@ -21,8 +21,8 @@ class MailContainerController extends Controller
 
     public function create()
     {
-        $containerTypes = ContainerType::all();
-        return view('mails.containers.create', compact('containerTypes')); // Removed 'mails'
+        $containerProperties = ContainerProperty::all();
+        return view('mails.containers.create', compact('containerProperties')); // Changed containerTypes to containerProperties
     }
 
 
@@ -32,15 +32,15 @@ class MailContainerController extends Controller
         $request->validate([
             'code' => 'required|unique:mail_containers', // Added unique validation
             'name' => 'required',
-            'type_id' => 'required|exists:container_types,id', // Added exists validation
+            'property_id' => 'required|exists:container_properties,id', // Changed type_id to property_id and container_types to container_properties
         ]);
 
         MailContainer::create([
             'code' => $request->code,
             'name' => $request->name,
-            'type_id' => $request->type_id,
-            'created_by' => auth()->id(), // Corrected field name
-            'creator_organisation_id' => auth()->user()->current_organisation_id,
+            'property_id' => $request->property_id, // Changed type_id to property_id
+            'created_by' => Auth::id(), // Corrected field name
+            'creator_organisation_id' => Auth::user()->current_organisation_id,
         ]);
 
         return redirect()->route('mail-container.index')
@@ -51,7 +51,7 @@ class MailContainerController extends Controller
 
     public function show(int $id)
     {
-        $mailContainer = MailContainer::with('containerType', 'creator')->findOrFail($id);
+        $mailContainer = MailContainer::with('containerProperty', 'creator')->findOrFail($id); // Changed containerType to containerProperty
         return view('mails.containers.show', compact('mailContainer'));
     }
 
@@ -60,9 +60,9 @@ class MailContainerController extends Controller
 
     public function edit(int $id)
     {
-        $containerTypes = ContainerType::all();
-        $mailContainer = MailContainer::with('containerType')->findOrFail($id);
-        return view('mails.containers.edit', compact('mailContainer', 'containerTypes'));
+        $containerProperties = ContainerProperty::all(); // Changed containerTypes to containerProperties
+        $mailContainer = MailContainer::with('containerProperty')->findOrFail($id); // Changed containerType to containerProperty
+        return view('mails.containers.edit', compact('mailContainer', 'containerProperties')); // Changed containerTypes to containerProperties
     }
 
 
@@ -72,13 +72,13 @@ class MailContainerController extends Controller
         $request->validate([
             'code' => 'required|unique:mail_containers,code,' . $mailContainer->id, // Added unique validation
             'name' => 'required',
-            'type_id' => 'required|exists:container_types,id', // Added exists validation
+            'property_id' => 'required|exists:container_properties,id', // Changed type_id to property_id and container_types to container_properties
         ]);
 
         $mailContainer->update([
             'code' => $request->code,
             'name' => $request->name,
-            'type_id' => $request->type_id,
+            'property_id' => $request->property_id, // Changed type_id to property_id
         ]);
 
         return redirect()->route('mail-container.index')
