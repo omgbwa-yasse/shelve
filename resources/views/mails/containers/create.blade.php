@@ -14,7 +14,7 @@
                 <input type="text" class="form-control" id="name" name="name" required>
             </div>
             <div class="mb-3">
-                <label for="property_id" class="form-label">Type</label>
+                <label for="property_id" class="form-label">Propriety</label>
                 <select class="form-select" id="property_id" name="property_id" required>
                     @foreach ($containerProperties as $containerProperty)
                         <option value="{{ $containerProperty->id }}">{{ $containerProperty->name }}</option>
