@@ -27,6 +27,9 @@ class GitHubApiService
     {
         try {
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->repo}/tags");
 
             if ($response->successful()) {
@@ -59,6 +62,9 @@ class GitHubApiService
     {
         try {
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->repo}/releases/tags/{$tag}");
 
             if ($response->successful()) {
@@ -82,6 +88,9 @@ class GitHubApiService
     {
         try {
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->repo}/releases/latest");
 
             if ($response->successful()) {
@@ -102,6 +111,9 @@ class GitHubApiService
     {
         try {
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->repo}/releases");
 
             if ($response->successful()) {
@@ -124,6 +136,9 @@ class GitHubApiService
             $downloadUrl = "{$this->baseUrl}/repos/{$this->owner}/{$this->repo}/zipball/{$tag}";
 
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->timeout(300) // 5 minutes timeout
                 ->get($downloadUrl);
 
@@ -186,6 +201,9 @@ class GitHubApiService
     {
         try {
             $response = Http::withHeaders($this->getHeaders())
+                ->withOptions([
+                    'verify' => config('app.env') === 'production', // Désactiver SSL en développement
+                ])
                 ->get("{$this->baseUrl}/repos/{$this->owner}/{$this->repo}");
 
             if ($response->successful()) {

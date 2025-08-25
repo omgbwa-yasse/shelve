@@ -1,11 +1,11 @@
 {
-    "current_version": "v1.1",
-    "installed_at": "2025-08-24T10:30:00Z",
-    "updated_from": null,
+    "current_version": "v1.2",
+    "installed_at": "2025-08-25T22:30:00Z",
+    "updated_from": "v1.1",
     "github_repo": "omgbwa-yasse\/shelve",
     "update_channel": "stable",
-    "last_check": "2025-08-24T17:00:57.470879Z",
-    "build_number": "20250824",
+    "last_check": "2025-08-25T22:32:54.035671Z",
+    "build_number": "20250825",
     "php_version": "8.2",
     "laravel_version": "12.0"
 }
