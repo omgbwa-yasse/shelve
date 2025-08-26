@@ -285,6 +285,7 @@
                     ))
                         <a href="{{ route('mail-received.approve', $mail->id)}}" target="_blank" class="btn btn-success"> Approuver</a>
                         <a href="{{ route('mail-received.reject', $mail->id)}}" target="_blank" class="btn btn-danger "> Rejecter</a>
+
                     @endif
                 </div>
 

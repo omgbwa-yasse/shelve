@@ -103,6 +103,13 @@
                                 @if(!$mail->action && $mail->priority)
                                     <span class="badge bg-{{ $mail->priority->color ?? 'secondary' }} ms-2">{{ $mail->priority->name ?? '' }}</span>
                                 @endif
+
+                                @if ($mail->status && $mail->status->value == 'in_progress')
+                                    <span class="badge bg-warning ms-2">
+                                        En cours
+                                    </span>
+                                @endif
+
                             @endif
 
                             {{-- Badge archives (commun à tous) --}}
