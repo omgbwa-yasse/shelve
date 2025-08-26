@@ -16,7 +16,7 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
     {
         $mailArchives = MailArchive::with('container', 'mail', 'user') // Relations corrigées
                                   ->where('container_id', '=', $id)
-                                  ->get(); // Ajouté pour récupérer la collection
+                                  ->paginate('50'); // Ajouté pour récupérer la collection
 
         return view('mails.archives.index', compact('mailArchives')); // Nom de la vue corrigé
     }
@@ -233,7 +233,7 @@ class MailArchiveController extends Controller // Nom du contrôleur corrigé
                 'document_type' => $mail['document_type'],
             ]);
         }
-        
+
         return response()->json([
             'success' => true,
         ], 200);

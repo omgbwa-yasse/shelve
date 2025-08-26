@@ -33,10 +33,10 @@
                     <td>{{ $mailArchive->document_type }}</td>
                     <td>{{ $mailArchive->user->name }}</td>
                     <td>
-                        <button type="button" 
-                                class="btn btn-primary remove-mail-btn" 
+                        <button type="button"
+                                class="btn btn-primary remove-mail-btn"
                                 data-archive-mail-id="{{ $mailArchive->id }}"
-                                data-container-id="{{ $mailArchive->container->id }}" 
+                                data-container-id="{{ $mailArchive->container->id }}"
                                 data-mail-id="{{ $mailArchive->mail->id }}"
                                 data-remove-url="{{ route('mail-archive.remove-mails', $mailArchive->container->id) }}">
                             Remove
@@ -46,6 +46,11 @@
             @endforeach
         </tbody>
     </table>
+</div>
+
+<!-- Pagination Bootstrap 5 -->
+<div class="mt-4">
+    {{ $mailArchives->links('pagination::bootstrap-5') }}
 </div>
 
 
@@ -77,7 +82,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            
+
                             window.location.reload();
                         } else {
                             alert('Une erreur est survenue');
@@ -94,7 +99,7 @@
 
 
 
-         
+
 
         // Ajout du code pour les filtres
         const filterInputs = document.querySelectorAll('.filter-input');
