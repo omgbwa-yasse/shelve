@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class MailTransactionController extends Controller
@@ -81,17 +82,63 @@ class MailTransactionController extends Controller
         try {
             $mailIds = $request->input('mail_ids');
             $containerId = $request->input('container_id');
+            $userId = Auth::id();
 
-            // Mettre à jour les courriers avec le container sélectionné
-            Mail::whereIn('id', $mailIds)->update([
-                'mail_container_id' => $containerId,
-                'archived_at' => now()
+            // Vérifier les courriers avec le statut 'in_progress'
+            $mailsInProgress = Mail::whereIn('id', $mailIds)
+                ->whereIn('status', ['in_progress', 'reject'])
+                ->pluck('code')
+                ->toArray();
+
+            if (!empty($mailsInProgress)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impossible d\'archiver les courriers en cours de traitement: ' . implode(', ', $mailsInProgress)
+                ], 400);
+            }
+
+            // Vérifier si des courriers sont déjà archivés dans ce conteneur
+            $existingArchives = DB::table('mail_archives')
+                ->whereIn('mail_id', $mailIds)
+                ->where('container_id', $containerId)
+                ->pluck('mail_id')
+                ->toArray();
+
+            // Filtrer les mails qui ne sont pas déjà archivés
+            $mailsToArchive = array_diff($mailIds, $existingArchives);
+
+            if (empty($mailsToArchive)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tous les courriers sélectionnés sont déjà archivés dans ce conteneur.'
+                ], 400);
+            }
+
+            // Créer les entrées d'archivage dans la table mail_archives
+            $archiveData = [];
+            foreach ($mailsToArchive as $mailId) {
+                $archiveData[] = [
+                    'mail_id' => $mailId,
+                    'container_id' => $containerId,
+                    'archived_by' => $userId,
+                    'document_type' => 'original',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
+
+            DB::table('mail_archives')->insert($archiveData);
+
+            // Optionnellement, marquer les mails comme archivés
+            Mail::whereIn('id', $mailsToArchive)->update([
+                'is_archived' => true
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Courriers archivés avec succès',
-                'count' => count($mailIds)
+                'count' => count($mailsToArchive),
+                'already_archived' => count($existingArchives)
             ]);
 
         } catch (\Exception $e) {

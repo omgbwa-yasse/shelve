@@ -571,6 +571,14 @@
                 $(this).closest('.header-search-form').css('background-color', 'white');
             });
 
+            // Fonction pour mettre à jour les badges de notifications
+            function updateNotificationBadges() {
+                @can('module_mails_access')
+                // Ici vous pouvez ajouter la logique pour récupérer les notifications
+                // Pour l'instant, on laisse une fonction vide pour éviter l'erreur
+                @endcan
+            }
+
             // Mise à jour automatique des badges de notifications
             @can('module_mails_access')
             updateNotificationBadges();

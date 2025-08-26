@@ -759,7 +759,7 @@
         }
 
         function updateConfirmButton() {
-            const selectedContainer = document.querySelector('input[name="archive_container"]:checked');
+            const selectedContainer = document.querySelector('input[name="selected_container"]:checked');
             document.getElementById('confirmArchive').disabled = !selectedContainer;
         }
 
@@ -767,7 +767,7 @@
             let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
                 .map(checkbox => checkbox.value);
 
-            const selectedContainer = document.querySelector('input[name="archive_container"]:checked');
+            const selectedContainer = document.querySelector('input[name="selected_container"]:checked');
 
             if (!selectedContainer) {
                 alert('Veuillez sélectionner une boîte d\'archives.');
