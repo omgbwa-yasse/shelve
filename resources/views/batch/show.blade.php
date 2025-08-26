@@ -27,7 +27,21 @@
             <div class="card-body d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
                     <h4 class="card-title mb-2">
-                        <a href="{{route('mails.show', $mail->id ) }}">
+                        @php
+                            $showRoute = '#';
+                            if ($mail->isIncoming()) {
+                                $showRoute = route('mail-received.show', $mail->id);
+                            } elseif ($mail->isOutgoing()) {
+                                $showRoute = route('mail-send.show', $mail->id);
+                            } elseif ($mail->external_sender_id || $mail->external_recipient_id) {
+                                // Pour les courriers externes, utiliser les routes externes si disponibles
+                                $showRoute = route('mails.incoming.show', $mail->id);
+                            } else {
+                                // Fallback pour les courriers internes
+                                $showRoute = route('mails.incoming.show', $mail->id);
+                            }
+                        @endphp
+                        <a href="{{ $showRoute }}">
                             <strong>{{ $mail->code }} : {{ $mail->name }}
                                 @if($mail->attachments->count() > 1 )
                                     ({{ $mail->attachments->count() }} fichiers)
@@ -38,22 +52,18 @@
                         </a>
                     </h4>
                     <p class="card-text mb-1">
-                        Du <a href="{{route('mails.sort') }}?categ=date&value={{ $mail->date }}">{{ $mail->date }}</a> Par
+                        Du {{ $mail->date }} Par
                         @foreach($mail->authors as $author)
-                            <a href="{{route('mails.sort') }}?categ=author&id={{ $author->id }}">{{ $author->name }}</a>
+                            {{ $author->name }}
                         @endforeach
                     </p>
-                    <p class="mb-1">{{ $author->description }}</p>
+                    <p class="mb-1">{{ $mail->description }}</p>
                     <p class="mb-0">
                         <small>
-                            Priority:
-                            <a href="{{route('mails.sort') }}?categ=priority&id={{ $mail->priority->id }}">{{ $mail->priority ? $mail->priority->name : 'N/A' }}</a>
-                            Mail Type:
-                            <a href="{{route('mails.sort') }}?categ=type&id={{ $mail->type->id }}">{{ $mail->type ? $mail->type->name : 'N/A' }}</a>
-                            Business Type:
-                            <a href="{{route('mails.sort') }}?categ=typology&id={{ $mail->typology->id }}">{{ $mail->typology ? $mail->typology->name : 'N/A' }}</a>
-                            Nature:
-                            <a href="{{route('mails.sort') }}?categ=documentType&id={{ $mail->documentType->id }}">{{ $mail->documentType ? $mail->documentType->name : 'N/A' }}</a>
+                            Priority: {{ $mail->priority ? $mail->priority->name : 'N/A' }}
+                            | Mail Type: {{ $mail->type ? $mail->type->name : 'N/A' }}
+                            | Business Type: {{ $mail->typology ? $mail->typology->name : 'N/A' }}
+                            | Nature: {{ $mail->documentType ? $mail->documentType->name : 'N/A' }}
                         </small>
                     </p>
                 </div>

@@ -51,8 +51,13 @@
             </a>
             <a href="#" id="archiveBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#archiveModal">
                 <i class="bi bi-archive me-1"></i>
-                Archiver
+                Conserver
             </a>
+            <a href="#" id="parapherBtn" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#parapherModal">
+                <i class="bi bi-pencil-square me-1"></i>
+                Parapher
+            </a>
+
         </div>
         <div class="d-flex align-items-center">
             <a href="#" id="checkAllBtn" class="btn btn-light btn-sm">
@@ -398,6 +403,71 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for Parapher -->
+    <div class="modal fade" id="parapherModal" tabindex="-1" aria-labelledby="parapherModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="parapherModalLabel">Parapher les courriers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Sélectionnez le parapheur qui recevra les <span id="selectedMailsCountParapher">0</span> courrier(s) sélectionné(s) :</p>
+
+                    <!-- Zone de chargement -->
+                    <div id="batchesLoading" class="text-center py-3">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Chargement des parapheurs...</p>
+                    </div>
+
+                    <!-- Liste des parapheurs -->
+                    <div id="batchesList" class="d-none">
+                        <div class="row" id="batchesGrid">
+                            <!-- Les parapheurs seront ajoutés ici via JavaScript -->
+                        </div>
+
+                        <!-- Option pour créer un nouveau parapheur -->
+                        <div class="border-top pt-3 mt-3">
+                            <h6>Ou créer un nouveau parapheur :</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="newBatchCode" placeholder="Code du parapheur" maxlength="10">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" id="newBatchName" placeholder="Nom du parapheur" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="radio" name="parapher_option" value="new" id="newBatchOption">
+                                <label class="form-check-label fw-semibold" for="newBatchOption">
+                                    Créer un nouveau parapheur avec ces courriers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message d'erreur -->
+                    <div id="batchesError" class="alert alert-danger d-none">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des parapheurs.
+                    </div>
+
+                    <!-- Informations -->
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Les courriers seront ajoutés au parapheur sélectionné pour faciliter leur traitement en lot.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-warning" id="confirmParapher" disabled>Parapher</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 
@@ -456,6 +526,34 @@
         #dolliesGrid .form-check-input:checked {
             background-color: #28a745;
             border-color: #28a745;
+        }
+
+        /* Styles pour les parapheurs */
+        .batch-card {
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .batch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #ffc107;
+        }
+
+        .batch-card:has(.batch-radio:checked) {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            box-shadow: 0 2px 8px rgba(255,193,7,0.2);
+        }
+
+        .batch-radio:checked + label {
+            color: #856404;
+        }
+
+        #batchesGrid .form-check-input:checked {
+            background-color: #ffc107;
+            border-color: #ffc107;
         }
     </style>
     <script>
@@ -822,6 +920,66 @@
             archiveModal.hide();
         });
 
+        // Event listener pour le bouton parapher
+        document.getElementById('parapherBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (checkedRecords.length === 0) {
+                alert('Veuillez sélectionner au moins un courrier.');
+                return;
+            }
+
+            console.log('IDs sélectionnés pour paraphage:', checkedRecords);
+
+            // Mettre à jour le compteur
+            document.getElementById('selectedMailsCountParapher').textContent = checkedRecords.length;
+
+            // Afficher le modal
+            var parapherModal = new bootstrap.Modal(document.getElementById('parapherModal'));
+            parapherModal.show();
+
+            // Charger les parapheurs
+            loadBatches();
+        });
+
+        document.getElementById('confirmParapher').addEventListener('click', function() {
+            let checkedRecords = Array.from(document.querySelectorAll('input[name="selected_mail[]"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Vérifier l'option sélectionnée
+            const selectedBatch = document.querySelector('input[name="parapher_option"]:checked');
+
+            if (!selectedBatch) {
+                alert('Veuillez sélectionner un parapheur ou créer un nouveau parapheur.');
+                return;
+            }
+
+            // Désactiver le bouton pendant l'opération
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
+
+            if (selectedBatch.value === 'new') {
+                // Créer un nouveau parapheur
+                const batchCode = document.getElementById('newBatchCode').value.trim();
+                const batchName = document.getElementById('newBatchName').value.trim();
+
+                if (!batchName) {
+                    alert('Veuillez saisir un nom pour le nouveau parapheur.');
+                    this.disabled = false;
+                    this.innerHTML = 'Parapher';
+                    return;
+                }
+
+                // Créer le parapheur puis ajouter les mails
+                createNewBatchWithMails(batchCode, batchName, checkedRecords);
+            } else {
+                // Ajouter au parapheur existant
+                addMailsToBatch(selectedBatch.value, checkedRecords);
+            }
+        });
+
         function confirmDelete(mailId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer ce courrier ?')) {
                 document.getElementById('delete-form-' + mailId).submit();
@@ -1003,6 +1161,183 @@
             const confirmButton = document.getElementById('confirmCart');
             confirmButton.disabled = false;
             confirmButton.innerHTML = 'Ajouter au chariot';
+        }
+
+        function loadBatches() {
+            // Afficher le loading
+            document.getElementById('batchesLoading').classList.remove('d-none');
+            document.getElementById('batchesList').classList.add('d-none');
+            document.getElementById('batchesError').classList.add('d-none');
+
+            // Réinitialiser le bouton
+            document.getElementById('confirmParapher').disabled = true;
+
+            fetch('/batch-handler/list', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur HTTP: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayBatches(data.batches || data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors du chargement des parapheurs:', error);
+                    document.getElementById('batchesLoading').classList.add('d-none');
+                    document.getElementById('batchesError').classList.remove('d-none');
+                });
+        }
+
+        function displayBatches(batches) {
+            document.getElementById('batchesLoading').classList.add('d-none');
+
+            const grid = document.getElementById('batchesGrid');
+            grid.innerHTML = '';
+
+            if (batches && batches.length > 0) {
+                batches.forEach(batch => {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'col-md-6 col-lg-4 mb-3';
+
+                    colDiv.innerHTML = `
+                        <div class="card batch-card h-100" data-batch-id="${batch.id}">
+                            <div class="card-body p-3">
+                                <div class="form-check">
+                                    <input class="form-check-input batch-radio" type="radio" name="parapher_option" value="${batch.id}" id="batch_${batch.id}">
+                                    <label class="form-check-label w-100" for="batch_${batch.id}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-2">
+                                                <i class="bi bi-folder-fill text-warning fs-4"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-semibold">${batch.name}</h6>
+                                                ${batch.code ? `<small class="text-muted">Code: ${batch.code}</small><br>` : ''}
+                                                <small class="text-muted">
+                                                    <i class="bi bi-envelope-fill me-1"></i>
+                                                    ${batch.mails_count || 0} courrier(s)
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    grid.appendChild(colDiv);
+                });
+            }
+
+            document.getElementById('batchesList').classList.remove('d-none');
+
+            // Ajouter les événements
+            setupBatchSelection();
+        }
+
+        function setupBatchSelection() {
+            // Sélection par clic sur la carte
+            document.querySelectorAll('.batch-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (e.target.type !== 'radio') {
+                        const radio = this.querySelector('.batch-radio');
+                        radio.checked = true;
+                        updateParapherConfirmButton();
+                    }
+                });
+            });
+
+            // Sélection par radio button
+            document.querySelectorAll('input[name="parapher_option"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateParapherConfirmButton();
+                });
+            });
+        }
+
+        function updateParapherConfirmButton() {
+            const selectedOption = document.querySelector('input[name="parapher_option"]:checked');
+            document.getElementById('confirmParapher').disabled = !selectedOption;
+        }
+
+        function createNewBatchWithMails(code, name, mailIds) {
+            fetch('/batch-handler/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    code: code,
+                    name: name,
+                    mail_ids: mailIds
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Nouveau parapheur créé et courriers ajoutés avec succès.');
+                        // Décocher tous les checkboxes
+                        document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(cb => cb.checked = false);
+                        // Fermer le modal
+                        var parapherModal = bootstrap.Modal.getInstance(document.getElementById('parapherModal'));
+                        parapherModal.hide();
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la création du parapheur: ' + (data.message || 'Erreur inconnue'));
+                    }
+                    resetParapherButton();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la création du parapheur:', error);
+                    alert('Erreur lors de la création du parapheur: ' + error.message);
+                    resetParapherButton();
+                });
+        }
+
+        function addMailsToBatch(batchId, mailIds) {
+            fetch('/batch-handler/add-items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    batch_id: batchId,
+                    mail_ids: mailIds
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Courriers ajoutés au parapheur avec succès.');
+                        // Décocher tous les checkboxes
+                        document.querySelectorAll('input[name="selected_mail[]"]:checked').forEach(cb => cb.checked = false);
+                        // Fermer le modal
+                        var parapherModal = bootstrap.Modal.getInstance(document.getElementById('parapherModal'));
+                        parapherModal.hide();
+                    } else {
+                        alert('Erreur lors de l\'ajout au parapheur: ' + (data.message || 'Erreur inconnue'));
+                    }
+                    resetParapherButton();
+                })
+                .catch(error => {
+                    console.error('Erreur lors de l\'ajout au parapheur:', error);
+                    alert('Erreur lors de l\'ajout au parapheur: ' + error.message);
+                    resetParapherButton();
+                });
+        }
+
+        function resetParapherButton() {
+            const confirmButton = document.getElementById('confirmParapher');
+            confirmButton.disabled = false;
+            confirmButton.innerHTML = 'Parapher';
         }
 
         let checkAllBtn = document.getElementById('checkAllBtn');

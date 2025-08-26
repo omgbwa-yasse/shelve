@@ -76,6 +76,7 @@ use App\Http\Controllers\SearchReservationController;
 use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
 use App\Http\Controllers\BatchMailController;
+use App\Http\Controllers\BatchHandlerController;
 use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
 use App\Http\Controllers\DollyHandlerController;
@@ -413,6 +414,21 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
     Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);
     Route::delete('/dolly-handler/{dolly_id}', [DollyHandlerController::class, 'deleteDolly']);
+});
+
+    // Gestion des parapheurs en AJAX, les routes
+    // Routes batch-handler avec authentification
+Route::middleware(['auth'])->group(function () {
+    Route::post('/batch-handler/create', [BatchHandlerController::class, 'create']);
+    Route::get('/batch-handler/list', [BatchHandlerController::class, 'list']);
+    Route::post('/batch-handler/add-items', [BatchHandlerController::class, 'addItems']);
+    Route::delete('/batch-handler/remove-items', [BatchHandlerController::class, 'removeItems']);
+    Route::delete('/batch-handler/{batch_id}', [BatchHandlerController::class, 'deleteBatch']);
+
+    // Route de test pour le système de parapheur
+    Route::get('/test-batch', function () {
+        return view('test-batch');
+    });
 });
 
 
