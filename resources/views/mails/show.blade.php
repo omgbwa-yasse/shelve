@@ -192,89 +192,100 @@
             </div>
 
             {{-- Colonne latérale --}}
-                <div class="row-md-12">
-                    {{-- Métadonnées --}}
-                    <div class="card">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Informations</h6>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="col g-2 small">
-                                {{-- Code --}}
-                                @if($mail->code)
-                                    <div class="col-4">
-                                        <div class="text-muted">Code</div>
-                                        <div class="fw-semibold">{{ $mail->code }}</div>
-                                    </div>
-                                @endif
+                <div class="row">
+                    <div class="col-md-12">
+                        {{-- Métadonnées --}}
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-info-circle me-1"></i>Informations</h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="row row-cols-4 g-3 small">
+                                    {{-- Code --}}
+                                    @if($mail->code)
+                                        <div class="col">
+                                            <div class="text-muted">Code</div>
+                                            <div class="fw-semibold">{{ $mail->code }}</div>
+                                        </div>
+                                    @endif
 
-                                {{-- Date --}}
-                                <div class="col-4">
-                                    <div class="text-muted">Date</div>
-                                    <div class="fw-semibold">
-                                        {{ $mail->date ? \Carbon\Carbon::parse($mail->date)->format('d/m/Y') : 'N/A' }}
-                                    </div>
-                                </div>
-
-                                {{-- Typologie --}}
-                                @if($mail->typology)
-                                    <div class="col-4">
-                                        <div class="text-muted">Typologie</div>
-                                        <div class="fw-semibold">{{ $mail->typology->name ?? 'N/A' }}</div>
-                                    </div>
-                                @endif
-
-                                {{-- Action --}}
-                                @if($mail->action)
-                                    <div class="col-4">
-                                        <div class="text-muted">Action</div>
-                                        <div class="fw-semibold">{{ $mail->action->name ?? 'N/A' }}</div>
-                                    </div>
-                                @endif
-
-                                {{-- Priorité --}}
-                                @if($mail->priority)
-                                    <div class="col-4">
-                                        <div class="text-muted">Priorité</div>
-                                        <div class="fw-semibold">{{ $mail->priority->name ?? 'N/A' }}</div>
-                                    </div>
-                                @endif
-
-                                {{-- Type de document --}}
-                                @if($mail->document_type)
-                                    <div class="col-4">
-                                        <div class="text-muted">Type de document</div>
-                                        <div class="fw-semibold">{{ ucfirst($mail->document_type) }}</div>
-                                    </div>
-                                @endif
-
-                                {{-- Containers archivés --}}
-                                @if($mail->containers && $mail->containers->count() > 0)
-                                    <div class="col-4">
-                                        <div class="text-muted">Archives</div>
+                                    {{-- Date --}}
+                                    <div class="col">
+                                        <div class="text-muted">Date</div>
                                         <div class="fw-semibold">
-                                            {{ $mail->containers->count() }}
-                                            {{ $mail->containers->count() > 1 ? 'copies archivées' : 'copie archivée' }}
+                                            {{ $mail->date ? \Carbon\Carbon::parse($mail->date)->format('d/m/Y') : 'N/A' }}
                                         </div>
                                     </div>
-                                @endif
 
-                                {{-- Statut --}}
-                                @if($mail->status)
-                                    <div class="col-4">
-                                        <div class="text-muted">Statut</div>
-                                        <div>
-                                            <span class="badge bg-{{ $mail->status_color ?? 'secondary' }}">
-                                                {{ $mail->status->value ?? $mail->status }}
-                                            </span>
+                                    {{-- Typologie --}}
+                                    @if($mail->typology)
+                                        <div class="col">
+                                            <div class="text-muted">Typologie</div>
+                                            <div class="fw-semibold">{{ $mail->typology->name ?? 'N/A' }}</div>
                                         </div>
-                                    </div>
-                                @endif
+                                    @endif
+
+                                    {{-- Action --}}
+                                    @if($mail->action)
+                                        <div class="col">
+                                            <div class="text-muted">Action</div>
+                                            <div class="fw-semibold">{{ $mail->action->name ?? 'N/A' }}</div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Priorité --}}
+                                    @if($mail->priority)
+                                        <div class="col">
+                                            <div class="text-muted">Priorité</div>
+                                            <div class="fw-semibold">{{ $mail->priority->name ?? 'N/A' }}</div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Type de document --}}
+                                    @if($mail->document_type)
+                                        <div class="col">
+                                            <div class="text-muted">Type de document</div>
+                                            <div class="fw-semibold">{{ ucfirst($mail->document_type) }}</div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Containers archivés --}}
+                                    @if($mail->containers && $mail->containers->count() > 0)
+                                        <div class="col">
+                                            <div class="text-muted">Archives</div>
+                                            <div class="fw-semibold">
+                                                {{ $mail->containers->count() }}
+                                                {{ $mail->containers->count() > 1 ? 'copies archivées' : 'copie archivée' }}
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- Statut --}}
+                                    @if($mail->status && $mail->status->value == 'in_progress')
+                                        <div class="col">
+                                            <div class="text-muted">Statut</div>
+                                            <div>
+                                                <span class="badge bg-{{ $mail->status_color ?? 'secondary' }}">
+                                                    {{  'En cours d\'approbation' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
 
+                <div class="col-md-12 mt-3">
+                    @if($mail->status && (
+                        ($mail->recipient && $mail->recipient->id == auth()->id()) ||
+                        ($mail->recipientOrganisation && auth()->user()->currentOrganisation && $mail->recipientOrganisation->id == auth()->user()->currentOrganisation->id)
+                    ))
+                        <a href="{{ route('mail-received.approve', $mail->id)}}" target="_blank" class="btn btn-success"> Approuver</a>
+                        <a href="{{ route('mail-received.reject', $mail->id)}}" target="_blank" class="btn btn-danger "> Rejecter</a>
+                    @endif
                 </div>
 
 
