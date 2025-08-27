@@ -123,7 +123,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ul class="nav nav-tabs" id="boxTab">
+                                <ul class="nav nav-tabs" id="boxTab">
                     <li class="nav-item">
                         <button class="nav-link active" id="select-box-tab" data-bs-toggle="tab" data-bs-target="#select-box" type="button" role="tab" aria-controls="select-box" aria-selected="true">Sélectionner</button>
                     </li>
@@ -138,27 +138,13 @@
                         </div>
                         <div id="box-list-container" style="max-height: 300px; overflow-y: auto;">
                             <div class="text-center">
-                                <output class="spinner-border">
+                                <div class="spinner-border" role="status">
                                     <span class="visually-hidden">Loading...</span>
-                                </output>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="create-box" role="tabpanel" aria-labelledby="create-box-tab">
-                        <form id="createBoxForm" class="mt-3">
-                            <div class="mb-3">
-                                <label for="new_box_code" class="form-label">Code</label>
-                                <input type="text" class="form-control" id="new_box_code" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="new_box_name" class="form-label">Nom</label>
-                                <input type="text" class="form-control" id="new_box_name" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
-                        </form>
-                    </div>
-                </div>
-                <div id="transferBoxError" class="alert alert-danger d-none mt-3"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -238,6 +224,85 @@ document.addEventListener('DOMContentLoaded', function () {
     const transferToDollyModal = new bootstrap.Modal(document.getElementById('transferToDollyModal'));
 
     // --- Add Mail Logic ---
+    // Add search functionality for mails
+    const mailSearchInput = document.getElementById('mail_search');
+    const mailSearchResults = document.getElementById('mail_search_results');
+    const selectedMailIdInput = document.getElementById('selected_mail_id');
+
+    if (mailSearchInput) {
+        mailSearchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                mailSearchResults.innerHTML = '';
+                selectedMailIdInput.value = '';
+                return;
+            }
+
+            // Show loading indicator
+            mailSearchResults.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Recherche...</span></div></div>';
+
+            fetch(`/mails/batch/${batchId}/available-mails?q=${encodeURIComponent(query)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.mails.length > 0) {
+                    let html = '<div class="list-group">';
+                    data.mails.forEach(mail => {
+                        html += `
+                            <button type="button" class="list-group-item list-group-item-action mail-result-item"
+                                    data-mail-id="${mail.id}"
+                                    data-mail-code="${mail.code}"
+                                    data-mail-name="${mail.name}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${mail.code} - ${mail.name}</h6>
+                                    <small class="text-muted">${mail.date}</small>
+                                </div>
+                                <p class="mb-1">${mail.description || ''}</p>
+                                <small class="text-muted">
+                                    Type: ${mail.type?.name || 'N/A'} |
+                                    Priorité: ${mail.priority?.name || 'N/A'}
+                                </small>
+                            </button>`;
+                    });
+                    html += '</div>';
+                    mailSearchResults.innerHTML = html;
+
+                    // Add click handlers for mail selection
+                    document.querySelectorAll('.mail-result-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const mailId = this.dataset.mailId;
+                            const mailCode = this.dataset.mailCode;
+                            const mailName = this.dataset.mailName;
+
+                            // Update the input field and hidden field
+                            mailSearchInput.value = `${mailCode} - ${mailName}`;
+                            selectedMailIdInput.value = mailId;
+
+                            // Clear results
+                            mailSearchResults.innerHTML = '';
+
+                            // Update visual feedback
+                            document.querySelectorAll('.mail-result-item').forEach(el => el.classList.remove('active'));
+                            this.classList.add('active');
+                        });
+                    });
+                } else {
+                    mailSearchResults.innerHTML = '<div class="text-muted p-2">Aucun courrier trouvé ou tous les courriers sont déjà dans ce parapheur.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error searching mails:', error);
+                mailSearchResults.innerHTML = '<div class="text-danger p-2">Erreur lors de la recherche.</div>';
+            });
+        });
+    }
+
     const saveMailButton = document.getElementById('saveMailButton');
     if(saveMailButton) {
         saveMailButton.addEventListener('click', function() {
@@ -249,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             document.getElementById('addMailError').classList.add('d-none');
 
-            fetch(`/batch/${batchId}/mails`, {
+            fetch(`/mails/batches/${batchId}/mail`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,6 +340,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
+
+    // Clear search when modal is hidden
+    document.getElementById('addMailModal').addEventListener('hidden.bs.modal', function() {
+        mailSearchInput.value = '';
+        selectedMailIdInput.value = '';
+        mailSearchResults.innerHTML = '';
+        document.getElementById('addMailError').classList.add('d-none');
+    });
 
     // --- Transfer to Box Logic ---
     const transferToBoxModalEl = document.getElementById('transferToBoxModal');

@@ -367,6 +367,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('batches/{batch}/mail/{batchMail}/edit', [BatchController::class, 'editMail'])->name('batch.mail.edit');
         Route::put('batches/{batch}/mail/{batchMail}', [BatchController::class, 'updateMail'])->name('batch.mail.update');
         Route::delete('batches/{batch}/mail/{id}', [BatchController::class, 'destroyMail'])->name('batch.mail.destroy');
+        Route::get('batch/{batch}/available-mails', [BatchController::class, 'getAvailableMails'])->name('batch.available-mails');
 
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');

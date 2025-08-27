@@ -6,12 +6,13 @@ use App\Models\Batch;
 use App\Models\BatchMail;
 use App\Models\Mail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BatchController extends Controller
 {
     public function index()
     {
-        $mailBatches = Batch::where('organisation_holder_id', auth()->user()->currentOrganisation->id ?? '')
+        $mailBatches = Batch::where('organisation_holder_id', Auth::user()->currentOrganisation->id ?? '')
             ->orderBy('created_at', 'desc')
             ->paginate(10); // Ajoute la pagination, 10 éléments par page
 
@@ -34,7 +35,7 @@ class BatchController extends Controller
             'name' => 'required|max:100',
         ]);
 
-        $validatedData['organisation_holder_id'] = auth()->user()->currentOrganisation->id;
+        $validatedData['organisation_holder_id'] = Auth::user()->currentOrganisation->id;
 
 
         Batch::create($validatedData);
@@ -69,7 +70,7 @@ class BatchController extends Controller
             'code' => 'nullable|unique:batches,code,' . $mailBatch->id . '|max:10',
             'name' => 'required|max:100',
         ]);
-        $validatedData['organisation_holder_id'] = auth()->user()->currentOrganisation->id;
+        $validatedData['organisation_holder_id'] = Auth::user()->currentOrganisation->id;
         $mailBatch->update($validatedData);
         return redirect()->route('batch.index')->with('success', 'Mail batch updated successfully.');
     }
@@ -126,6 +127,22 @@ class BatchController extends Controller
             'mail_id' => 'required|exists:mails,id'
         ]);
 
+        // Vérifier si le courrier est déjà dans ce batch
+        $existingBatchMail = BatchMail::where('batch_id', $batch->id)
+            ->where('mail_id', $validatedData['mail_id'])
+            ->first();
+
+        if ($existingBatchMail) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce courrier est déjà dans ce parapheur.'
+                ], 422);
+            }
+            return redirect()->route('batch.show', $batch->id)
+                ->with('error', 'Ce courrier est déjà dans ce parapheur.');
+        }
+
         $batchMail = new BatchMail([
             'mail_id' => $validatedData['mail_id'],
             'insert_date' => now(),
@@ -133,6 +150,13 @@ class BatchController extends Controller
         ]);
 
         $batchMail->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Courrier ajouté avec succès au parapheur.'
+            ]);
+        }
 
         return redirect()->route('batch.show', $batch->id)
             ->with('success', 'Courriel de lot créé avec succès.');
@@ -169,5 +193,50 @@ class BatchController extends Controller
         return redirect()->route('batch.show', ['batch' => $batch->id])->with('success', 'Mail and its attachments removed from batch successfully.');
     }
 
+    public function getAvailableMails(Request $request, Batch $batch)
+    {
+        $query = $request->get('q', '');
+
+        // Récupérer les IDs des courriers déjà dans ce batch
+        $existingMailIds = $batch->mails()->pluck('mails.id')->toArray();
+
+        // Récupérer l'organisation de l'utilisateur actuel
+        $user = Auth::user();
+        $organisationId = $user->currentOrganisation->id ?? $user->organisation_id ?? null;
+
+        // Rechercher les courriers disponibles pour l'organisation de l'utilisateur
+        $mailsQuery = Mail::query();
+
+        if ($organisationId) {
+            $mailsQuery->where('organisation_id', $organisationId);
+        }
+
+        $mails = $mailsQuery->whereNotIn('id', $existingMailIds) // Exclure les courriers déjà dans le batch
+            ->where(function($q) use ($query) {
+                $q->where('code', 'LIKE', "%{$query}%")
+                  ->orWhere('name', 'LIKE', "%{$query}%")
+                  ->orWhere('description', 'LIKE', "%{$query}%");
+            })
+            ->with(['mailType', 'mailPriority', 'authors'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'mails' => $mails->map(function($mail) {
+                return [
+                    'id' => $mail->id,
+                    'code' => $mail->code,
+                    'name' => $mail->name,
+                    'description' => $mail->description,
+                    'date' => $mail->date,
+                    'type' => $mail->mailType,
+                    'priority' => $mail->mailPriority,
+                    'authors' => $mail->authors
+                ];
+            })
+        ]);
+    }
 
 }
