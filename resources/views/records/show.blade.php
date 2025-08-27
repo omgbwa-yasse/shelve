@@ -715,6 +715,54 @@
     const aiSaveBtn = document.getElementById('aiReviewSaveBtn');
     let currentAi = { action: null, output: '', parsed: null };
 
+    buttons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const action = button.dataset.action;
+            const promptId = button.dataset.promptId;
+
+            if (!action || !promptId) {
+                showError('Action or Prompt ID is missing.');
+                return;
+            }
+
+            setBusy(true);
+            clearError();
+            resultWrap.classList.add('d-none');
+
+            try {
+                const response = await fetch('/mcp/ai/prompt', {
+                    method: 'POST',
+                    headers: buildAuthHeaders(),
+                    body: JSON.stringify({
+                        prompt_id: promptId,
+                        context: contextBase,
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+                }
+
+                const result = await response.json();
+                const output = result.response;
+
+                if (action === 'keywords') {
+                    openAiReviewModal(action, output);
+                } else {
+                    showResult(output);
+                }
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setBusy(false);
+            }
+        });
+    });
+
         function setBusy(busy){
             console.log('[AI] setBusy', { busy });
             buttons.forEach(b => b.disabled = !!busy);
