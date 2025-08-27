@@ -77,11 +77,11 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
         Route::post('title', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveTitle'])->name('title');
         Route::post('summary', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveSummary'])->name('summary');
         Route::post('thesaurus', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveThesaurus'])->name('thesaurus');
-    Route::post('thesaurus/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurus'])->name('thesaurus.suggest');
-    Route::post('thesaurus/auto', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'autoSuggestThesaurus'])->name('thesaurus.auto');
-    Route::post('thesaurus/suggest-json', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurusFromJson'])->name('thesaurus.suggest_json');
-    Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
-    Route::post('activity/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestActivityCandidates'])->name('activity.suggest');
+        Route::post('thesaurus/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurus'])->name('thesaurus.suggest');
+        Route::post('thesaurus/auto', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'autoSuggestThesaurus'])->name('thesaurus.auto');
+        Route::post('thesaurus/suggest-json', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurusFromJson'])->name('thesaurus.suggest_json');
+        Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
+        Route::post('activity/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestActivityCandidates'])->name('activity.suggest');
         Route::post('keywords', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveKeywords'])->name('keywords');
         Route::post('keywords/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestKeywords'])->name('keywords.suggest');
     });
