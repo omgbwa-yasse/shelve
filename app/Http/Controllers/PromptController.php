@@ -10,6 +10,7 @@ use App\Models\Prompt;
 use Illuminate\Http\JsonResponse;
 use App\Services\AI\PromptTransactionService;
 use App\Services\AI\AiMessageBuilder;
+use App\Services\AI\DefaultValueService;
 use AiBridge\Facades\AiBridge;
 use App\Exceptions\AiProviderNotConfiguredException;
 use App\Services\AI\ProviderRegistry;
@@ -19,7 +20,8 @@ class PromptController extends Controller
     public function __construct(
         private PromptTransactionService $tx,
         private ProviderRegistry $providers,
-        private AiMessageBuilder $builder
+        private AiMessageBuilder $builder,
+        private DefaultValueService $defaultValues
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -55,17 +57,17 @@ class PromptController extends Controller
             'user_id' => $user?->id,
             'entity' => $request->string('entity')->toString(),
             'entity_ids' => $request->input('entity_ids', []),
-            'model' => $request->input('model'),
-            'model_provider' => $request->input('model_provider', 'ollama'),
+            'model' => $this->defaultValues->getDefaultModel($request->input('model')),
+            'model_provider' => $this->defaultValues->getValidatedProvider($request->input('model_provider')),
         ]);
 
         $t0 = (int) (microtime(true) * 1000);
         try {
             [$messages, $options] = $this->builder->build($prompt, $request);
-            $providerName = strtolower(trim((string)($options['provider'] ?? 'ollama')));
-            if ($providerName === '') { $providerName = 'ollama'; }
-            $model = $options['model'] ?? null;
-            $opts = $options; if ($model !== null) { $opts['model'] = $model; }
+            $providerName = $this->defaultValues->getValidatedProvider($options['provider'] ?? null);
+            $model = $this->defaultValues->getDefaultModel($options['model'] ?? null);
+            $opts = $options;
+            $opts['model'] = $model;
 
             $this->providers->ensureConfigured($providerName);
             [$text, $usage] = $this->executeAi($providerName, $messages, $opts, $request->boolean('stream'));

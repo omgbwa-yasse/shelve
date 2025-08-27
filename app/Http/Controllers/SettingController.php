@@ -107,34 +107,46 @@ class SettingController extends Controller
     }
 
     /**
-     * Met à jour un paramètre (admin uniquement)
+     * Met à jour la valeur personnalisée d'un paramètre
      */
     public function update(Request $request, $id)
     {
         $setting = Setting::findOrFail($id);
         $this->authorize('update', $setting);
 
+        // Validation pour la valeur seulement
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:100|unique:settings,name,' . $id,
-            'category_id' => 'exists:setting_categories,id',
-            'type' => 'in:integer,string,boolean,json,float,array',
-            'default_value' => 'json',
-            'description' => 'string',
-            'is_system' => 'boolean',
-            'constraints' => 'nullable|json',
-            'user_id' => 'nullable|exists:users,id',
-            'organisation_id' => 'nullable|exists:organisations,id',
-            'value' => 'nullable|json',
+            'value' => 'nullable', // La validation sera faite par convertValueToType
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $setting->update($request->all());
+        // Convertir et valider la valeur selon le type du paramètre
+        $value = $request->input('value');
 
-        return redirect()->route('settings.definitions.index')
-            ->with('success', 'Paramètre mis à jour avec succès.');
+        // Si la valeur est vide ou null, on supprime la valeur personnalisée
+        if (empty($value) && $value !== false && $value !== 0 && $value !== '0') {
+            $setting->value = null;
+        } else {
+            // Convertir la valeur selon le type
+            $convertedValue = $this->convertValueToType($value, $setting->type);
+
+            // Valider la valeur convertie
+            if (!$this->validateValueType($convertedValue, $setting->type, $setting->constraints ?? [])) {
+                return redirect()->back()
+                    ->withErrors(['value' => 'La valeur fournie ne respecte pas les contraintes du paramètre.'])
+                    ->withInput();
+            }
+
+            $setting->value = $convertedValue;
+        }
+
+        $setting->save();
+
+        return redirect()->route('settings.definitions.show', $setting)
+            ->with('success', 'Votre valeur personnalisée a été sauvegardée avec succès.');
     }
 
     /**
@@ -254,7 +266,15 @@ class SettingController extends Controller
      */
     protected function validateValueType($value, $type, $constraints = null)
     {
-        $constraints = json_decode($constraints, true) ?? [];
+        // Si constraints est déjà un array, on l'utilise tel quel
+        // Sinon, on le décode depuis JSON
+        if (is_array($constraints)) {
+            // constraints est déjà un array, on le garde
+        } elseif (is_string($constraints)) {
+            $constraints = json_decode($constraints, true) ?? [];
+        } else {
+            $constraints = [];
+        }
 
         $methodName = 'validate' . ucfirst($type) . 'Type';
         if (method_exists($this, $methodName)) {

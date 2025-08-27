@@ -19,9 +19,13 @@ class ProviderRegistry
     private const AUTH_HEADER = 'Authorization';
     private const AUTH_PREFIX_BEARER = 'Bearer ';
 
+    public function __construct(
+        private DefaultValueService $defaultValues
+    ) {}
+
     public function ensureConfigured(string $providerName): void
     {
-        $providerName = $this->normalizeProviderName($providerName);
+        $providerName = $this->defaultValues->normalizeProviderName($providerName);
 
         Log::info('ProviderRegistry: ensureConfigured called', [
             'provider' => $providerName,
@@ -63,20 +67,6 @@ class ProviderRegistry
         // Providers like 'ollama' are configured via package config/env; nothing to do otherwise
     }
 
-    private function normalizeProviderName(string $name): string
-    {
-        // Trim quotes and whitespace, lowercase
-        $n = trim($name);
-        $n = trim($n, " \t\n\r\0\x0B'\"");
-        $n = strtolower($n);
-        // Simple aliases
-        return match ($n) {
-            'openai-custom', 'openai custom' => 'openai_custom',
-            'ollama-turbo', 'ollama turbo' => 'ollama_turbo',
-            default => $n,
-        };
-    }
-
     /**
      * Register an Ollama provider using its OpenAI-compatible API.
      * Falls back to http://127.0.0.1:11434/v1 if no setting is found.
@@ -85,11 +75,12 @@ class ProviderRegistry
     {
         Log::info('ProviderRegistry: registerOllamaCompat called');
 
-        // Prefer DB setting if present, else env/config
-        $baseUrl = (string) ($this->getSetting('ollama_base_url', '') ?? '');
-        if ($baseUrl === '') {
-            $baseUrl = rtrim(config('ollama-laravel.url', env('OLLAMA_URL', 'http://127.0.0.1:11434')), '/');
-        }
+        // Utiliser le service de valeurs par défaut pour obtenir l'URL Ollama
+        $baseUrl = $this->defaultValues->getEffectiveValue(
+            'ollama_base_url',
+            null,
+            rtrim(config('ollama-laravel.url', env('OLLAMA_URL', 'http://127.0.0.1:11434')), '/')
+        );
 
         Log::info('ProviderRegistry: ollama base URL', ['url' => $baseUrl]);
 
@@ -131,27 +122,27 @@ class ProviderRegistry
 
     private function registerOpenai(): void
     {
-        $key = (string) ($this->getSetting('openai_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('openai_api_key', null, '');
         if ($key) { AiBridge::registerProvider('openai', new OpenAIProvider($key)); }
     }
 
     private function registerGemini(): void
     {
-        $key = (string) ($this->getSetting('gemini_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('gemini_api_key', null, '');
         if ($key) { AiBridge::registerProvider('gemini', new GeminiProvider($key)); }
     }
 
     private function registerClaude(): void
     {
-        $key = (string) ($this->getSetting('claude_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('claude_api_key', null, '');
         if ($key) { AiBridge::registerProvider('claude', new ClaudeProvider($key)); }
     }
 
     private function registerOpenrouter(): void
     {
-        $key = (string) ($this->getSetting('openrouter_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('openrouter_api_key', null, '');
         if (!$key) { return; }
-        $base = (string) ($this->getSetting('openrouter_base_url', 'https://openrouter.ai/api/v1') ?? 'https://openrouter.ai/api/v1');
+        $base = $this->defaultValues->getEffectiveValue('openrouter_base_url', null, 'https://openrouter.ai/api/v1');
         AiBridge::registerProvider('openrouter', new CustomOpenAIProvider(
             $key,
             $base,
@@ -170,29 +161,29 @@ class ProviderRegistry
 
     private function registerOnn(): void
     {
-        $key = (string) ($this->getSetting('onn_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('onn_api_key', null, '');
         if ($key) { AiBridge::registerProvider('onn', new OnnProvider($key)); }
     }
 
     private function registerGrok(): void
     {
-        $key = (string) ($this->getSetting('grok_api_key', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('grok_api_key', null, '');
         if ($key) { AiBridge::registerProvider('grok', new GrokProvider($key)); }
     }
 
     private function registerOllamaTurbo(): void
     {
-        $key = (string) ($this->getSetting('ollama_turbo_api_key', '') ?? '');
-        $endpoint = (string) ($this->getSetting('ollama_turbo_endpoint', 'https://ollama.com') ?? 'https://ollama.com');
+        $key = $this->defaultValues->getEffectiveValue('ollama_turbo_api_key', null, '');
+        $endpoint = $this->defaultValues->getEffectiveValue('ollama_turbo_endpoint', null, 'https://ollama.com');
         if ($key) { AiBridge::registerProvider('ollama_turbo', new OllamaTurboProvider($key, $endpoint)); }
     }
 
     private function registerOpenaiCustom(): void
     {
-        $key = (string) ($this->getSetting('openai_custom_api_key', '') ?? '');
-        $base = (string) ($this->getSetting('openai_custom_base_url', '') ?? '');
+        $key = $this->defaultValues->getEffectiveValue('openai_custom_api_key', null, '');
+        $base = $this->defaultValues->getEffectiveValue('openai_custom_base_url', null, '');
         if (!$key || !$base) { return; }
-        $paths = $this->getSetting('openai_custom_paths', [
+        $paths = $this->defaultValues->getEffectiveValue('openai_custom_paths', null, [
             'chat' => '/v1/chat/completions',
             'embeddings' => '/v1/embeddings',
             'image' => '/v1/images/generations',
@@ -200,10 +191,10 @@ class ProviderRegistry
             'stt' => '/v1/audio/transcriptions',
         ]);
         // Ensure header names are valid (non-empty) to avoid HTTP client errors
-        $authHeader = trim((string) ($this->getSetting('openai_custom_auth_header', self::AUTH_HEADER) ?? self::AUTH_HEADER));
+        $authHeader = trim($this->defaultValues->getEffectiveValue('openai_custom_auth_header', null, self::AUTH_HEADER));
         if ($authHeader === '') { $authHeader = self::AUTH_HEADER; }
-        $authPrefix = (string) ($this->getSetting('openai_custom_auth_prefix', self::AUTH_PREFIX_BEARER) ?? self::AUTH_PREFIX_BEARER);
-        $rawExtra = (array) ($this->getSetting('openai_custom_extra_headers', []) ?? []);
+        $authPrefix = $this->defaultValues->getEffectiveValue('openai_custom_auth_prefix', null, self::AUTH_PREFIX_BEARER);
+        $rawExtra = (array) $this->defaultValues->getEffectiveValue('openai_custom_extra_headers', null, []);
         $extraHeaders = [];
         foreach ($rawExtra as $k => $v) {
             $kn = trim((string) $k);

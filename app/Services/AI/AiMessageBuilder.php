@@ -9,17 +9,17 @@ use App\Models\Activity;
 
 class AiMessageBuilder
 {
-    private const DEFAULT_MODEL = 'gemma3:4b';
-    private const TRIM_CHARS = " \t\n\r\0\x0B'\"";
     private AiRecordContextBuilder $records;
+    private DefaultValueService $defaultValues;
 
     /**
      * Build AI messages and options for a given prompt and request.
      * @return array{0: array, 1: array}
      */
-    public function __construct(?AiRecordContextBuilder $records = null)
+    public function __construct(?AiRecordContextBuilder $records = null, ?DefaultValueService $defaultValues = null)
     {
         $this->records = $records ?? new AiRecordContextBuilder();
+        $this->defaultValues = $defaultValues ?? app(DefaultValueService::class);
     }
 
     public function build(Prompt $prompt, Request $request): array
@@ -113,12 +113,10 @@ class AiMessageBuilder
 
     private function buildActionOptions(string $effectiveAction, Request $request): array
     {
-        $defaultProvider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
-        $defaultModel = $this->defaultModel();
-        $provRaw = $request->input('model_provider', $defaultProvider);
-        $modRaw = $request->input('model', $defaultModel);
-        $prov = strtolower(trim(trim((string)$provRaw, self::TRIM_CHARS))) ?: 'ollama';
-        $mod = trim(trim((string)$modRaw, self::TRIM_CHARS)) ?: $this->defaultModel();
+        $provRaw = $request->input('model_provider');
+        $modRaw = $request->input('model');
+        $prov = $this->defaultValues->getValidatedProvider($provRaw);
+        $mod = $this->defaultValues->getDefaultModel($modRaw);
         $timeoutMs = $this->getTimeoutMs();
         $options = ['provider' => $prov, 'model' => $mod, 'timeout' => $timeoutMs];
         return match ($effectiveAction) {
@@ -133,22 +131,7 @@ class AiMessageBuilder
 
     private function getTimeoutMs(): int
     {
-        try {
-            $sec = (int) (app(\App\Services\SettingService::class)->get('ai_request_timeout', 120) ?? 120);
-            if ($sec < 15) { $sec = 15; }
-            if ($sec > 600) { $sec = 600; }
-            return $sec * 1000;
-        } catch (\Throwable) {
-            return 60000; // 60s par défaut en cas d'erreur
-        }
-    }
-
-    private function defaultModel(): string
-    {
-        $cfg = app(\App\Services\SettingService::class)->get('ai_default_model');
-        $fallback = config('ollama-laravel.model', self::DEFAULT_MODEL);
-        $val = is_string($cfg) && trim($cfg) !== '' ? $cfg : $fallback;
-        return trim($val, self::TRIM_CHARS);
+        return $this->defaultValues->getRequestTimeout() * 1000;
     }
 
     private function renderActionTemplate(string $template, string $action, array $ctx): string

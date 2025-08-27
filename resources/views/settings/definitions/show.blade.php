@@ -229,9 +229,6 @@
                         </div>
                     </div>
                     @endif
-                        </div>
-                    </div>
-                    @endif
 
                     <!-- Actions pour personnaliser le paramètre -->
                     @if(!$setting->hasCustomValue())
@@ -263,8 +260,6 @@
                         </div>
                     </div>
                     @endif
-                        </div>
-                    </div>
 
                     <div class="row mt-4">
                         <div class="col-12">

@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\AI\DefaultValueService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AISettingsController extends Controller
 {
+    public function __construct(
+        private DefaultValueService $defaultValues
+    ) {}
+
     /**
      * Récupère le modèle d'IA par défaut depuis la table settings
      *
@@ -17,35 +22,48 @@ class AISettingsController extends Controller
     public function getDefaultModel()
     {
         try {
-            $defaultModel = Setting::where('name', 'ai_default_model')->first();
+            $model = $this->defaultValues->getDefaultModel();
 
-            // Vérifie si la colonne default_value existe avant d'accéder à sa valeur
-            if ($defaultModel && !array_key_exists('default_value', $defaultModel->getAttributes())) {
-                return response()->json([
-                    'success' => false,
-                    'error' => "La colonne 'default_value' n'existe pas dans la table settings"
-                ], 500);
-            }
-
-            if ($defaultModel) {
-                return response()->json([
-                    'success' => true,
-                    'model' => $defaultModel->default_value
-                ]);
-            }
-
-            // Modèle par défaut si le paramètre n'est pas trouvé en base
             return response()->json([
                 'success' => true,
-                'model' => 'gemma3:4b',
-                'note' => 'Valeur par défaut utilisée, paramètre non trouvé en base de données'
+                'model' => $model
             ]);
         } catch (\Exception $e) {
-            Log::error("Erreur lors de la récupération du modèle d'IA par défaut: " . $e->getMessage());
+            Log::error('Erreur lors de la récupération du modèle par défaut', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'error' => 'Erreur lors de la récupération du modèle par défaut',
-                'details' => $e->getMessage()
+                'error' => 'Erreur lors de la récupération du modèle par défaut'
+            ], 500);
+        }
+    }
+
+    /**
+     * Récupère le provider d'IA par défaut
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDefaultProvider()
+    {
+        try {
+            $provider = $this->defaultValues->getDefaultProvider();
+
+            return response()->json([
+                'success' => true,
+                'provider' => $provider
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération du provider par défaut', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur lors de la récupération du provider par défaut'
             ], 500);
         }
     }
