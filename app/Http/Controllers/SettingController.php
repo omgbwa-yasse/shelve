@@ -47,7 +47,10 @@ class SettingController extends Controller
     public function create()
     {
         $categories = SettingCategory::all();
-        return view('settings.definitions.create', compact('categories'));
+        $users = \App\Models\User::orderBy('name')->get();
+        $organisations = \App\Models\Organisation::orderBy('name')->get();
+
+        return view('settings.definitions.create', compact('categories', 'users', 'organisations'));
     }
 
     /**
@@ -65,9 +68,12 @@ class SettingController extends Controller
      */
     public function edit($id)
     {
-        $setting = Setting::findOrFail($id);
+        $setting = Setting::with(['category', 'user', 'organisation'])->findOrFail($id);
         $categories = SettingCategory::all();
-        return view('settings.definitions.edit', compact('setting', 'categories'));
+        $users = \App\Models\User::orderBy('name')->get();
+        $organisations = \App\Models\Organisation::orderBy('name')->get();
+
+        return view('settings.definitions.edit', compact('setting', 'categories', 'users', 'organisations'));
     }
 
     /**
@@ -85,6 +91,9 @@ class SettingController extends Controller
             'description' => 'required|string',
             'is_system' => 'boolean',
             'constraints' => 'nullable|json',
+            'user_id' => 'nullable|exists:users,id',
+            'organisation_id' => 'nullable|exists:organisations,id',
+            'value' => 'nullable|json',
         ]);
 
         if ($validator->fails()) {
@@ -113,6 +122,9 @@ class SettingController extends Controller
             'description' => 'string',
             'is_system' => 'boolean',
             'constraints' => 'nullable|json',
+            'user_id' => 'nullable|exists:users,id',
+            'organisation_id' => 'nullable|exists:organisations,id',
+            'value' => 'nullable|json',
         ]);
 
         if ($validator->fails()) {
@@ -154,8 +166,11 @@ class SettingController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Récupération et conversion de la valeur selon le type
+        $rawValue = $request->input('value');
+        $value = $this->convertValueToType($rawValue, $setting->type);
+
         // Validation du type de données selon le paramètre
-        $value = $request->input('value');
         if (!$this->validateValueType($value, $setting->type, $setting->constraints)) {
             return response()->json(['errors' => ['value' => 'La valeur ne correspond pas au type de paramètre ou aux contraintes']], 422);
         }
@@ -194,47 +209,149 @@ class SettingController extends Controller
     }
 
     /**
+     * Convertit une valeur string vers le type approprié
+     */
+    protected function convertValueToType($value, $type)
+    {
+        switch ($type) {
+            case 'integer':
+                return (int) $value;
+
+            case 'float':
+                return (float) $value;
+
+            case 'boolean':
+                // Accepte différents formats pour les booleans
+                if (is_string($value)) {
+                    $lowerValue = strtolower(trim($value));
+                    if (in_array($lowerValue, ['true', '1', 'yes', 'on'])) {
+                        return true;
+                    } elseif (in_array($lowerValue, ['false', '0', 'no', 'off', ''])) {
+                        return false;
+                    }
+                }
+                return (bool) $value;
+
+            case 'array':
+            case 'json':
+                // Essaie de décoder le JSON, sinon garde la valeur originale
+                if (is_string($value)) {
+                    $decoded = json_decode($value, true);
+                    if ($decoded !== null) {
+                        return $decoded;
+                    }
+                }
+                return $value;
+
+            case 'string':
+            default:
+                return (string) $value;
+        }
+    }
+
+    /**
      * Valide le type de la valeur en fonction du type attendu et des contraintes
      */
     protected function validateValueType($value, $type, $constraints = null)
     {
         $constraints = json_decode($constraints, true) ?? [];
 
-        switch ($type) {
-            case 'integer':
-                if (!is_int($value)) return false;
-                if (isset($constraints['min']) && $value < $constraints['min']) return false;
-                if (isset($constraints['max']) && $value > $constraints['max']) return false;
-                break;
-
-            case 'float':
-                if (!is_numeric($value)) return false;
-                if (isset($constraints['min']) && $value < $constraints['min']) return false;
-                if (isset($constraints['max']) && $value > $constraints['max']) return false;
-                break;
-
-            case 'string':
-                if (!is_string($value)) return false;
-                if (isset($constraints['min_length']) && strlen($value) < $constraints['min_length']) return false;
-                if (isset($constraints['max_length']) && strlen($value) > $constraints['max_length']) return false;
-                if (isset($constraints['pattern']) && !preg_match($constraints['pattern'], $value)) return false;
-                break;
-
-            case 'boolean':
-                if (!is_bool($value)) return false;
-                break;
-
-            case 'array':
-                if (!is_array($value)) return false;
-                if (isset($constraints['min_items']) && count($value) < $constraints['min_items']) return false;
-                if (isset($constraints['max_items']) && count($value) > $constraints['max_items']) return false;
-                break;
-
-            case 'json':
-                // Déjà validé par le décodage JSON
-                break;
+        $methodName = 'validate' . ucfirst($type) . 'Type';
+        if (method_exists($this, $methodName)) {
+            return $this->{$methodName}($value, $constraints);
         }
 
+        return false;
+    }
+
+    /**
+     * Valide une valeur de type integer
+     */
+    protected function validateIntegerType($value, array $constraints = [])
+    {
+        $isValid = true;
+
+        if (!is_int($value)) {
+            $isValid = false;
+        } elseif (isset($constraints['min']) && $value < $constraints['min']) {
+            $isValid = false;
+        } elseif (isset($constraints['max']) && $value > $constraints['max']) {
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Valide une valeur de type float
+     */
+    protected function validateFloatType($value, array $constraints = [])
+    {
+        $isValid = true;
+
+        if (!is_numeric($value)) {
+            $isValid = false;
+        } elseif (isset($constraints['min']) && $value < $constraints['min']) {
+            $isValid = false;
+        } elseif (isset($constraints['max']) && $value > $constraints['max']) {
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Valide une valeur de type string
+     */
+    protected function validateStringType($value, array $constraints = [])
+    {
+        $isValid = true;
+
+        if (!is_string($value)) {
+            $isValid = false;
+        } elseif (isset($constraints['min_length']) && strlen($value) < $constraints['min_length']) {
+            $isValid = false;
+        } elseif (isset($constraints['max_length']) && strlen($value) > $constraints['max_length']) {
+            $isValid = false;
+        } elseif (isset($constraints['pattern']) && !preg_match($constraints['pattern'], $value)) {
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Valide une valeur de type boolean
+     */
+    protected function validateBooleanType($value, array $constraints = [])
+    {
+        return is_bool($value);
+    }
+
+    /**
+     * Valide une valeur de type array
+     */
+    protected function validateArrayType($value, array $constraints = [])
+    {
+        $isValid = true;
+
+        if (!is_array($value)) {
+            $isValid = false;
+        } elseif (isset($constraints['min_items']) && count($value) < $constraints['min_items']) {
+            $isValid = false;
+        } elseif (isset($constraints['max_items']) && count($value) > $constraints['max_items']) {
+            $isValid = false;
+        }
+
+        return $isValid;
+    }
+
+    /**
+     * Valide une valeur de type json
+     */
+    protected function validateJsonType($value, array $constraints = [])
+    {
+        // Pour le JSON, on accepte tout car il sera re-validé lors du décodage
         return true;
     }
 }
