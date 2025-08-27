@@ -102,15 +102,25 @@
                     <div class="mb-3">
                         <label for="mail_search" class="form-label">Rechercher un courrier</label>
                         <input type="text" class="form-control" id="mail_search" placeholder="Entrez un code, un nom...">
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="selectAllMails">
+                            <label class="form-check-label" for="selectAllMails">
+                                Sélectionner tous sur cette page
+                            </label>
+                        </div>
                         <div id="mail_search_results" class="mt-2"></div>
+                        <div id="pagination_container" class="mt-3"></div>
                     </div>
-                    <input type="hidden" name="mail_id" id="selected_mail_id">
+                    <input type="hidden" name="mail_ids" id="selected_mail_ids">
                 </form>
                 <div id="addMailError" class="alert alert-danger d-none"></div>
             </div>
             <div class="modal-footer">
+                <div class="me-auto">
+                    <span id="selected_count" class="text-muted">0 courrier(s) sélectionné(s)</span>
+                </div>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-primary" id="saveMailButton">Ajouter</button>
+                <button type="button" class="btn btn-primary" id="saveMailButton">Ajouter les courriers sélectionnés</button>
             </div>
         </div>
     </div>
@@ -226,96 +236,185 @@ document.addEventListener('DOMContentLoaded', function () {
     const transferToDollyModal = new bootstrap.Modal(document.getElementById('transferToDollyModal'));
 
     // --- Add Mail Logic ---
+    // Variables globales pour la gestion de la sélection
+    let selectedMailIds = new Set();
+    let currentPage = 1;
+    let totalPages = 1;
+
     // Add search functionality for mails
     const mailSearchInput = document.getElementById('mail_search');
     const mailSearchResults = document.getElementById('mail_search_results');
-    const selectedMailIdInput = document.getElementById('selected_mail_id');
+    const selectedMailIdsInput = document.getElementById('selected_mail_ids');
+    const paginationContainer = document.getElementById('pagination_container');
+    const selectedCountSpan = document.getElementById('selected_count');
+    const selectAllCheckbox = document.getElementById('selectAllMails');
+
+    function updateSelectedCount() {
+        const count = selectedMailIds.size;
+        selectedCountSpan.textContent = `${count} courrier(s) sélectionné(s)`;
+        selectedMailIdsInput.value = Array.from(selectedMailIds).join(',');
+    }
+
+    // Fonction globale pour la pagination
+    window.searchMails = function(query = '', page = 1) {
+        return searchMailsInternal(query, page);
+    };
+
+    function searchMailsInternal(query = '', page = 1) {
+        if (query.length < 2 && query.length > 0) {
+            mailSearchResults.innerHTML = '';
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        // Show loading indicator
+        mailSearchResults.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Recherche...</span></div></div>';
+        paginationContainer.innerHTML = '';
+
+        const searchUrl = `/mails/batch/${batchId}/available-mails?q=${encodeURIComponent(query)}&page=${page}`;
+
+        fetch(searchUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.mails && data.mails.length > 0) {
+                let html = '<div class="list-group">';
+                data.mails.forEach(mail => {
+                    const isSelected = selectedMailIds.has(mail.id);
+                    html += `
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-start">
+                                <input class="form-check-input me-2 mail-checkbox" type="checkbox"
+                                       value="${mail.id}" id="mail_${mail.id}" ${isSelected ? 'checked' : ''}>
+                                <div class="flex-grow-1">
+                                    <label for="mail_${mail.id}" class="form-check-label w-100">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">${mail.code} - ${mail.name}</h6>
+                                            <small class="text-muted">${mail.date}</small>
+                                        </div>
+                                        <p class="mb-1">${mail.description || ''}</p>
+                                        <small class="text-muted">
+                                            ${mail.direction ? `<span class="badge ${mail.direction === 'Émis' ? 'bg-success' : 'bg-primary'}">${mail.direction}</span> | ` : ''}
+                                            Type: ${mail.type?.name || 'N/A'} |
+                                            Priorité: ${mail.priority?.name || 'N/A'}
+                                        </small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                html += '</div>';
+                mailSearchResults.innerHTML = html;
+
+                // Gérer la pagination
+                if (data.pagination) {
+                    currentPage = data.pagination.current_page;
+                    totalPages = data.pagination.last_page;
+
+                    if (totalPages > 1) {
+                        let paginationHtml = '<nav><ul class="pagination pagination-sm justify-content-center">';
+
+                        // Bouton précédent
+                        if (currentPage > 1) {
+                            paginationHtml += `<li class="page-item"><button class="page-link" onclick="searchMails('${query}', ${currentPage - 1})">Précédent</button></li>`;
+                        }
+
+                        // Numéros de pages
+                        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                            paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                                <button class="page-link" onclick="searchMails('${query}', ${i})">${i}</button>
+                            </li>`;
+                        }
+
+                        // Bouton suivant
+                        if (currentPage < totalPages) {
+                            paginationHtml += `<li class="page-item"><button class="page-link" onclick="searchMails('${query}', ${currentPage + 1})">Suivant</button></li>`;
+                        }
+
+                        paginationHtml += '</ul></nav>';
+                        paginationContainer.innerHTML = paginationHtml;
+                    }
+                }
+
+                // Ajouter les gestionnaires d'événements pour les cases à cocher
+                document.querySelectorAll('.mail-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const mailId = parseInt(this.value);
+                        if (this.checked) {
+                            selectedMailIds.add(mailId);
+                        } else {
+                            selectedMailIds.delete(mailId);
+                        }
+                        updateSelectedCount();
+
+                        // Mettre à jour la case "Sélectionner tout"
+                        const allCheckboxes = document.querySelectorAll('.mail-checkbox');
+                        const checkedCheckboxes = document.querySelectorAll('.mail-checkbox:checked');
+                        selectAllCheckbox.checked = allCheckboxes.length === checkedCheckboxes.length;
+                    });
+                });
+
+                // Mettre à jour l'état de la case "Sélectionner tout"
+                const allCheckboxes = document.querySelectorAll('.mail-checkbox');
+                const checkedCheckboxes = document.querySelectorAll('.mail-checkbox:checked');
+                selectAllCheckbox.checked = allCheckboxes.length > 0 && allCheckboxes.length === checkedCheckboxes.length;
+                selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
+
+            } else {
+                mailSearchResults.innerHTML = '<div class="text-muted p-2">Aucun courrier trouvé ou tous les courriers sont déjà dans ce parapheur.</div>';
+                paginationContainer.innerHTML = '';
+            }
+        })
+        .catch(error => {
+            console.error('Error searching mails:', error);
+            mailSearchResults.innerHTML = '<div class="text-danger p-2">Erreur lors de la recherche.</div>';
+            paginationContainer.innerHTML = '';
+        });
+    }
 
     if (mailSearchInput) {
         mailSearchInput.addEventListener('input', function() {
             const query = this.value.trim();
+            currentPage = 1; // Réinitialiser à la première page
+            searchMailsInternal(query, currentPage);
+        });
+    }
 
-            if (query.length < 2) {
-                mailSearchResults.innerHTML = '';
-                selectedMailIdInput.value = '';
-                return;
-            }
-
-            // Show loading indicator
-            mailSearchResults.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Recherche...</span></div></div>';
-
-            fetch(`/mails/batch/${batchId}/available-mails?q=${encodeURIComponent(query)}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken()
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.mails.length > 0) {
-                    let html = '<div class="list-group">';
-                    data.mails.forEach(mail => {
-                        html += `
-                            <button type="button" class="list-group-item list-group-item-action mail-result-item"
-                                    data-mail-id="${mail.id}"
-                                    data-mail-code="${mail.code}"
-                                    data-mail-name="${mail.name}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">${mail.code} - ${mail.name}</h6>
-                                    <small class="text-muted">${mail.date}</small>
-                                </div>
-                                <p class="mb-1">${mail.description || ''}</p>
-                                <small class="text-muted">
-                                    ${mail.direction ? `<span class="badge ${mail.direction === 'Émis' ? 'bg-success' : 'bg-primary'}">${mail.direction}</span> | ` : ''}
-                                    Type: ${mail.type?.name || 'N/A'} |
-                                    Priorité: ${mail.priority?.name || 'N/A'}
-                                </small>
-                            </button>`;
-                    });
-                    html += '</div>';
-                    mailSearchResults.innerHTML = html;
-
-                    // Add click handlers for mail selection
-                    document.querySelectorAll('.mail-result-item').forEach(item => {
-                        item.addEventListener('click', function() {
-                            const mailId = this.dataset.mailId;
-                            const mailCode = this.dataset.mailCode;
-                            const mailName = this.dataset.mailName;
-
-                            // Update the input field and hidden field
-                            mailSearchInput.value = `${mailCode} - ${mailName}`;
-                            selectedMailIdInput.value = mailId;
-
-                            // Clear results
-                            mailSearchResults.innerHTML = '';
-
-                            // Update visual feedback
-                            document.querySelectorAll('.mail-result-item').forEach(el => el.classList.remove('active'));
-                            this.classList.add('active');
-                        });
-                    });
+    // Gestionnaire pour "Sélectionner tout"
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.mail-checkbox');
+            checkboxes.forEach(checkbox => {
+                const mailId = parseInt(checkbox.value);
+                if (this.checked) {
+                    checkbox.checked = true;
+                    selectedMailIds.add(mailId);
                 } else {
-                    mailSearchResults.innerHTML = '<div class="text-muted p-2">Aucun courrier trouvé ou tous les courriers sont déjà dans ce parapheur.</div>';
+                    checkbox.checked = false;
+                    selectedMailIds.delete(mailId);
                 }
-            })
-            .catch(error => {
-                console.error('Error searching mails:', error);
-                mailSearchResults.innerHTML = '<div class="text-danger p-2">Erreur lors de la recherche.</div>';
             });
+            updateSelectedCount();
         });
     }
 
     const saveMailButton = document.getElementById('saveMailButton');
     if(saveMailButton) {
         saveMailButton.addEventListener('click', function() {
-            const mailId = document.getElementById('selected_mail_id').value;
-            if (!mailId) {
-                document.getElementById('addMailError').textContent = 'Veuillez sélectionner un courrier.';
+            if (selectedMailIds.size === 0) {
+                document.getElementById('addMailError').textContent = 'Veuillez sélectionner au moins un courrier.';
                 document.getElementById('addMailError').classList.remove('d-none');
                 return;
             }
             document.getElementById('addMailError').classList.add('d-none');
+
+            // Convertir le Set en Array pour l'envoi
+            const mailIds = Array.from(selectedMailIds);
 
             fetch(`/mails/batches/${batchId}/mail`, {
                 method: 'POST',
@@ -324,13 +423,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-CSRF-TOKEN': getCsrfToken(),
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ mail_id: mailId })
+                body: JSON.stringify({ mail_ids: mailIds })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     addMailModal.hide();
-                    location.reload(); // Reload to see the new mail
+                    location.reload(); // Reload to see the new mails
                 } else {
                     document.getElementById('addMailError').textContent = data.message || 'Une erreur est survenue.';
                     document.getElementById('addMailError').classList.remove('d-none');
@@ -347,8 +446,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Clear search when modal is hidden
     document.getElementById('addMailModal').addEventListener('hidden.bs.modal', function() {
         mailSearchInput.value = '';
-        selectedMailIdInput.value = '';
+        selectedMailIds.clear();
+        selectedMailIdsInput.value = '';
         mailSearchResults.innerHTML = '';
+        paginationContainer.innerHTML = '';
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        updateSelectedCount();
         document.getElementById('addMailError').classList.add('d-none');
     });
 

@@ -123,43 +123,104 @@ class BatchController extends Controller
 
     public function storeMail(Request $request, Batch $batch)
     {
-        $validatedData = $request->validate([
-            'mail_id' => 'required|exists:mails,id'
-        ]);
+        // Supporter l'ajout de courriers multiples ou simple
+        if ($request->has('mail_ids')) {
+            $validatedData = $request->validate([
+                'mail_ids' => 'required|array',
+                'mail_ids.*' => 'exists:mails,id'
+            ]);
 
-        // Vérifier si le courrier est déjà dans ce batch
-        $existingBatchMail = BatchMail::where('batch_id', $batch->id)
-            ->where('mail_id', $validatedData['mail_id'])
-            ->first();
+            $addedCount = 0;
+            $skippedCount = 0;
+            $errors = [];
 
-        if ($existingBatchMail) {
+            foreach ($validatedData['mail_ids'] as $mailId) {
+                // Vérifier si le courrier est déjà dans ce batch
+                $existingBatchMail = BatchMail::where('batch_id', $batch->id)
+                    ->where('mail_id', $mailId)
+                    ->first();
+
+                if ($existingBatchMail) {
+                    $skippedCount++;
+                    continue;
+                }
+
+                $batchMail = new BatchMail([
+                    'mail_id' => $mailId,
+                    'insert_date' => now(),
+                    'batch_id' => $batch->id,
+                ]);
+
+                if ($batchMail->save()) {
+                    $addedCount++;
+                } else {
+                    $errors[] = "Erreur lors de l'ajout du courrier ID {$mailId}";
+                }
+            }
+
+            if ($request->expectsJson()) {
+                $message = "{$addedCount} courrier(s) ajouté(s) avec succès.";
+                if ($skippedCount > 0) {
+                    $message .= " {$skippedCount} courrier(s) déjà présent(s) ont été ignoré(s).";
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'added_count' => $addedCount,
+                    'skipped_count' => $skippedCount,
+                    'errors' => $errors
+                ]);
+            }
+
+            $message = "{$addedCount} courrier(s) ajouté(s) avec succès.";
+            if ($skippedCount > 0) {
+                $message .= " {$skippedCount} courrier(s) déjà présent(s) ont été ignoré(s).";
+            }
+
+            return redirect()->route('batch.show', $batch->id)
+                ->with('success', $message);
+
+        } else {
+            // Logique originale pour un seul courrier
+            $validatedData = $request->validate([
+                'mail_id' => 'required|exists:mails,id'
+            ]);
+
+            // Vérifier si le courrier est déjà dans ce batch
+            $existingBatchMail = BatchMail::where('batch_id', $batch->id)
+                ->where('mail_id', $validatedData['mail_id'])
+                ->first();
+
+            if ($existingBatchMail) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ce courrier est déjà dans ce parapheur.'
+                    ], 422);
+                }
+                return redirect()->route('batch.show', $batch->id)
+                    ->with('error', 'Ce courrier est déjà dans ce parapheur.');
+            }
+
+            $batchMail = new BatchMail([
+                'mail_id' => $validatedData['mail_id'],
+                'insert_date' => now(),
+                'batch_id' => $batch->id,
+            ]);
+
+            $batchMail->save();
+
             if ($request->expectsJson()) {
                 return response()->json([
-                    'success' => false,
-                    'message' => 'Ce courrier est déjà dans ce parapheur.'
-                ], 422);
+                    'success' => true,
+                    'message' => 'Courrier ajouté avec succès au parapheur.'
+                ]);
             }
+
             return redirect()->route('batch.show', $batch->id)
-                ->with('error', 'Ce courrier est déjà dans ce parapheur.');
+                ->with('success', 'Courriel de lot créé avec succès.');
         }
-
-        $batchMail = new BatchMail([
-            'mail_id' => $validatedData['mail_id'],
-            'insert_date' => now(),
-            'batch_id' => $batch->id,
-        ]);
-
-        $batchMail->save();
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Courrier ajouté avec succès au parapheur.'
-            ]);
-        }
-
-        return redirect()->route('batch.show', $batch->id)
-            ->with('success', 'Courriel de lot créé avec succès.');
     }
 
     public function editMail(Batch $batch, BatchMail $batchMail)
@@ -228,10 +289,13 @@ class BatchController extends Controller
             });
         }
 
+        // Ajouter la pagination
+        $page = $request->get('page', 1);
+        $perPage = 20;
+
         $mails = $mailsQuery->with(['typology', 'priority', 'authors'])
             ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
+            ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
             'success' => true,
@@ -255,7 +319,14 @@ class BatchController extends Controller
                     'priority' => $mail->priority,
                     'authors' => $mail->authors
                 ];
-            })
+            }),
+            'pagination' => [
+                'current_page' => $mails->currentPage(),
+                'last_page' => $mails->lastPage(),
+                'per_page' => $mails->perPage(),
+                'total' => $mails->total(),
+                'has_more' => $mails->hasMorePages()
+            ]
         ]);
     }
 
