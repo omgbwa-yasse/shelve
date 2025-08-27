@@ -962,7 +962,32 @@
                         aiModalBody.innerHTML = ui;
                     }catch(e){
                         console.error('[AI] keywords suggest error', e);
-                        aiModalBody.innerHTML = `<div class="alert alert-danger">${e.message||'Erreur d\'extraction des mots-clés'}</div>`;
+                        const errorMsg = e.message || 'Erreur d\'extraction des mots-clés';
+                        let helpText = '';
+
+                        if (errorMsg.includes('AI provider not available')) {
+                            helpText = `
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Vérifiez qu'Ollama est démarré : <code>ollama serve</code><br>
+                                        Modèles disponibles : <code>ollama list</code>
+                                    </small>
+                                </div>
+                            `;
+                        }
+
+                        aiModalBody.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>Erreur :</strong> ${errorMsg}
+                                ${helpText}
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="retryKeywordsExtraction()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Réessayer
+                                </button>
+                            </div>
+                        `;
                     }
                 })();
             }
@@ -1165,6 +1190,92 @@
             console.log('[AI] binding saveAiReview click');
             aiSaveBtn.addEventListener('click', saveAiReview);
         }
+
+        // Function to retry keywords extraction
+        window.retryKeywordsExtraction = async function(){
+            console.log('[AI] retryKeywordsExtraction called');
+            aiModalBody.innerHTML = `<div class="text-muted">Nouvelle tentative d'extraction des mots-clés…</div>`;
+
+            try{
+                await ensureCsrfCookie();
+                const url = `/api/records/${recordId}/ai/keywords/suggest`;
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: buildAuthHeaders(),
+                    credentials: 'same-origin',
+                    body: JSON.stringify({})
+                });
+                const data = await resp.json();
+                if(!resp.ok || data?.status!=='ok') throw new Error(data?.message||'Erreur extraction mots-clés');
+
+                const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+                currentAi.parsed = { keywords: suggestions };
+                currentAi.output = suggestions.length > 0 ?
+                    `${suggestions.length} mot${suggestions.length > 1 ? 's' : ''}-clé${suggestions.length > 1 ? 's' : ''} suggéré${suggestions.length > 1 ? 's' : ''} par l'IA.` :
+                    'Aucun mot-clé suggéré.';
+
+                if(suggestions.length === 0){
+                    aiModalBody.innerHTML = '<div class="alert alert-warning">Aucun mot-clé trouvé.</div>';
+                    return;
+                }
+
+                // Build UI with checkboxes for each keyword
+                const ui = `
+                    <div class="mb-3">
+                        <label class="form-label">{{ __('suggested_keywords') ?? 'Mots-clés suggérés' }}</label>
+                        <div class="small text-muted mb-2">Sélectionnez les mots-clés à associer au document :</div>
+                    </div>
+                    <div class="d-flex flex-column gap-2 max-height-300 overflow-auto">
+                        ${suggestions.map((kw,idx)=>{
+                            const badge = kw.exists ?
+                                '<span class="badge bg-success ms-2" title="Existe déjà">✓</span>' :
+                                '<span class="badge bg-warning ms-2" title="Sera créé">Nouveau</span>';
+                            const category = kw.category ? `<span class="badge bg-secondary ms-1">${kw.category}</span>` : '';
+                            return `<div class="form-check d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="kw_${idx}"
+                                       data-keyword-name="${(kw.name||'').replaceAll('"','&quot;')}"
+                                       data-keyword-exists="${kw.exists||false}"
+                                       data-keyword-id="${kw.keyword_id||''}"
+                                       ${kw.selected ? 'checked' : ''}>
+                                <label class="form-check-label flex-grow-1" for="kw_${idx}">
+                                    <strong>${kw.name||''}</strong>${category}${badge}
+                                </label>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <style>.max-height-300 { max-height: 300px; }</style>
+                `;
+                aiModalBody.innerHTML = ui;
+            }catch(e){
+                console.error('[AI] retryKeywordsExtraction error', e);
+                const errorMsg = e.message || 'Erreur d\'extraction des mots-clés';
+                let helpText = '';
+
+                if (errorMsg.includes('AI provider not available')) {
+                    helpText = `
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Vérifiez qu'Ollama est démarré : <code>ollama serve</code><br>
+                                Modèles disponibles : <code>ollama list</code>
+                            </small>
+                        </div>
+                    `;
+                }
+
+                aiModalBody.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Erreur :</strong> ${errorMsg}
+                        ${helpText}
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="retryKeywordsExtraction()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Réessayer
+                        </button>
+                    </div>
+                `;
+            }
+        };
     })();
 </script>
 @endpush

@@ -785,11 +785,28 @@ class AiRecordApplyController extends Controller
             $providerInstance = AiBridge::provider($provider);
             Log::info('Keywords AI Debug - Provider instance', [
                 'instance' => $providerInstance ? 'NOT NULL' : 'NULL',
-                'class' => $providerInstance ? get_class($providerInstance) : 'N/A'
+                'class' => $providerInstance ? get_class($providerInstance) : 'N/A',
+                'provider_name' => $provider
             ]);
 
+            if (!$providerInstance) {
+                Log::error('Keywords AI Debug - Provider instance is null after ensureConfigured', [
+                    'provider' => $provider,
+                    'all_providers' => $this->getAllAvailableProviders()
+                ]);
+
+                $errorMessage = "Le fournisseur IA Ollama n'est pas disponible. ";
+                $errorMessage .= "Vérifiez qu'Ollama est démarré avec 'ollama serve' ";
+                $errorMessage .= "et qu'au moins un modèle est disponible avec 'ollama list'.";
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $errorMessage
+                ], 422);
+            }
+
             // For debugging: try the exact same approach as the working method
-            $res = AiBridge::provider($provider)->chat($messages, [
+            $res = $providerInstance->chat($messages, [
                 'model' => $model,
                 'temperature' => 0.2,
                 'max_tokens' => 250,
@@ -820,6 +837,37 @@ class AiRecordApplyController extends Controller
                 'status' => 'error',
                 'message' => 'AI extraction failed: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Get all available providers for debugging
+     */
+    private function getAllAvailableProviders(): array
+    {
+        try {
+            // Try to get providers using reflection or other methods
+            $reflection = new \ReflectionClass('AiBridge\Facades\AiBridge');
+            $manager = $reflection->getProperty('manager');
+            $manager->setAccessible(true);
+            $instance = app('AiBridge\Facades\AiBridge');
+            $managerInstance = $manager->getValue($instance);
+
+            if (method_exists($managerInstance, 'getProviders')) {
+                return array_keys($managerInstance->getProviders());
+            }
+
+            // Fallback: try common provider names
+            $commonProviders = ['ollama', 'openai', 'gemini', 'claude', 'grok'];
+            $available = [];
+            foreach ($commonProviders as $p) {
+                if (AiBridge::provider($p)) {
+                    $available[] = $p;
+                }
+            }
+            return $available;
+        } catch (\Exception $e) {
+            return ['error_getting_providers' => $e->getMessage()];
         }
     }
 

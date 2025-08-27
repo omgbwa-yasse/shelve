@@ -4,6 +4,7 @@ namespace App\Services\AI;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
 use AiBridge\Facades\AiBridge;
 use AiBridge\Providers\OpenAIProvider;
 use AiBridge\Providers\GeminiProvider;
@@ -22,16 +23,26 @@ class ProviderRegistry
     {
         $providerName = $this->normalizeProviderName($providerName);
 
+        Log::info('ProviderRegistry: ensureConfigured called', [
+            'provider' => $providerName,
+            'context' => 'web_request'
+        ]);
+
         // Special-case: always (re)register 'ollama' to force the OpenAI-compatible implementation
         // This avoids the legacy provider that targets /api/chat with fixed 30s timeout
         if ($providerName === 'ollama') {
+            Log::info('ProviderRegistry: registering ollama provider');
             $this->registerOllamaCompat();
             return;
         }
 
         if (AiBridge::provider($providerName)) {
+            Log::info('ProviderRegistry: provider already exists', ['provider' => $providerName]);
             return;
         }
+
+        Log::info('ProviderRegistry: provider not found, attempting registration', ['provider' => $providerName]);
+
         $map = [
             'openai' => 'registerOpenai',
             'gemini' => 'registerGemini',
@@ -45,6 +56,9 @@ class ProviderRegistry
         ];
         if (isset($map[$providerName]) && method_exists($this, $map[$providerName])) {
             $this->{$map[$providerName]}();
+            Log::info('ProviderRegistry: provider registered successfully', ['provider' => $providerName]);
+        } else {
+            Log::warning('ProviderRegistry: no registration method found', ['provider' => $providerName]);
         }
         // Providers like 'ollama' are configured via package config/env; nothing to do otherwise
     }
@@ -69,13 +83,20 @@ class ProviderRegistry
      */
     private function registerOllamaCompat(): void
     {
+        Log::info('ProviderRegistry: registerOllamaCompat called');
+
         // Prefer DB setting if present, else env/config
         $baseUrl = (string) ($this->getSetting('ollama_base_url', '') ?? '');
         if ($baseUrl === '') {
             $baseUrl = rtrim(config('ollama-laravel.url', env('OLLAMA_URL', 'http://127.0.0.1:11434')), '/');
         }
+
+        Log::info('ProviderRegistry: ollama base URL', ['url' => $baseUrl]);
+
         // OpenAI compatible endpoint is under /v1
         $base = rtrim($baseUrl, '/') . '/v1';
+
+        Log::info('ProviderRegistry: ollama API base', ['base' => $base]);
 
         // Standard OpenAI-style endpoints
         $paths = [
@@ -97,6 +118,15 @@ class ProviderRegistry
             self::AUTH_PREFIX_BEARER, // standard prefix; final value will be empty if key is empty
             [] // extra headers
         ));
+
+        Log::info('ProviderRegistry: ollama provider registered with AiBridge');
+
+        // Verify the provider was registered
+        $providerInstance = AiBridge::provider('ollama');
+        Log::info('ProviderRegistry: ollama provider verification', [
+            'exists' => $providerInstance ? 'YES' : 'NO',
+            'class' => $providerInstance ? get_class($providerInstance) : 'N/A'
+        ]);
     }
 
     private function registerOpenai(): void
