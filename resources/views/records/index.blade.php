@@ -35,6 +35,13 @@
                         <i class="bi bi-grid-3x3-gap me-2"></i>Mosaïque
                     </button>
 
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="keywordFilter" class="form-control form-control-sm" placeholder="Filtrer par mot-clé..." style="width: 200px;">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearKeywordFilter()" title="Effacer le filtre">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+
 
 
                     </div>
@@ -155,8 +162,9 @@
                     $index = ($records->currentPage()-1)*$records->perPage() + $loop->iteration;
                     $year = $record->date_exact ?? ($record->date_start ? (Str::substr($record->date_start,0,4)) : '');
                     $authors = $record->authors->pluck('name')->join(', ');
+                    $keywords = $record->keywords->pluck('name')->implode(' ');
                 @endphp
-                <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}">
+                <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}" data-keywords="{{ $keywords }}">
                     <div class="d-flex align-items-start">
                         <div class="me-3" style="width:2.2rem;">
                             <div class="form-check">
@@ -210,6 +218,20 @@
                                     <span class="text-muted ms-2">{{ __('Containers:') }} {{ $record->containers->pluck('code')->join(', ') }}</span>
                                 @endif
                             </div>
+                            <!-- Keywords -->
+                            @if($record->keywords->isNotEmpty())
+                                <div class="small mb-2">
+                                    <span class="text-muted me-2">{{ __('Mots-clés:') }}</span>
+                                    @foreach($record->keywords as $keyword)
+                                        <span class="badge bg-secondary me-1 keyword-badge"
+                                              style="cursor: pointer;"
+                                              onclick="filterByKeyword('{{ $keyword->name }}')"
+                                              title="Cliquez pour filtrer par ce mot-clé">
+                                            {{ $keyword->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                             <!-- Actions row (none for now) -->
                             <div class="record-actions small d-flex flex-wrap gap-3"></div>
                         </div>
@@ -1299,6 +1321,39 @@
                         });
                 });
             });
+        });
+
+        // Fonctions de filtrage par mots-clés
+        function filterByKeyword(keyword) {
+            document.getElementById('keywordFilter').value = keyword;
+            filterRecordsByKeywords();
+        }
+
+        function filterRecordsByKeywords() {
+            const filterValue = document.getElementById('keywordFilter').value.toLowerCase();
+            const records = document.querySelectorAll('.record-entry');
+
+            records.forEach(record => {
+                const keywords = record.dataset.keywords.toLowerCase();
+                if (keywords.includes(filterValue) || filterValue === '') {
+                    record.style.display = 'block';
+                } else {
+                    record.style.display = 'none';
+                }
+            });
+        }
+
+        function clearKeywordFilter() {
+            document.getElementById('keywordFilter').value = '';
+            filterRecordsByKeywords();
+        }
+
+        // Ajouter l'événement de filtrage en temps réel
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterInput = document.getElementById('keywordFilter');
+            if (filterInput) {
+                filterInput.addEventListener('input', filterRecordsByKeywords);
+            }
         });
     </script>
 @endpush

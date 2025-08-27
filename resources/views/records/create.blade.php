@@ -159,6 +159,20 @@
                     </h2>
                     <div id="indexingCollapse" class="accordion-collapse collapse show" aria-labelledby="indexingHeader" data-bs-parent="">
                         <div class="accordion-body">
+                            <!-- Keywords Field -->
+                            <div class="mb-2">
+                                <label for="keywords" class="form-label small">Mots-clés</label>
+                                <input type="text"
+                                       id="keywords"
+                                       name="keywords"
+                                       class="form-control form-control-sm"
+                                       value="{{ old('keywords') }}"
+                                       placeholder="Entrez les mots-clés séparés par des points-virgules (;)">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Séparez les mots-clés par des points-virgules. Les nouveaux mots-clés seront créés automatiquement.
+                                </div>
+                            </div>
 
                             <div class="mb-2">
                                 <label class="form-label small" for="thesaurus-search">{{ __('thesaurus') }}</label>
@@ -732,11 +746,23 @@
             document.querySelectorAll('.accordion-collapse').forEach(panel => {
                 observer.observe(panel, { attributes: true });
             });
+
+            // Initialiser le gestionnaire de mots-clés
+            if (typeof KeywordManager !== 'undefined') {
+                new KeywordManager('#keywords', {
+                    searchUrl: '{{ route("keywords.search") }}',
+                    minChars: 2,
+                    debounceDelay: 300
+                });
+            }
         }
 
         // Appel direct depuis initRecordsManager dans records.js
         // La fonction initModals() est maintenant dans records.js
     </script>
+
+    <!-- Include keyword manager script -->
+    <script src="{{ asset('js/keyword-manager.js') }}"></script>
 @endsection
 
 

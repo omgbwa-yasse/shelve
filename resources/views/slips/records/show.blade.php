@@ -27,6 +27,20 @@
                                 <p><strong>Code :</strong> {{ $slipRecord->code }}</p>
                                 <p><strong>Intitulé :</strong> {{ $slipRecord->name }}</p>
                                 <p><strong>Description :</strong> {{ $slipRecord->content }}</p>
+                                <p><strong>Mots-clés :</strong>
+                                    @if($slipRecord->keywords->isNotEmpty())
+                                        @foreach($slipRecord->keywords as $keyword)
+                                            <span class="badge bg-secondary me-1 keyword-badge"
+                                                  style="cursor: pointer;"
+                                                  onclick="filterByKeyword('{{ $keyword->name }}')"
+                                                  title="Cliquez pour filtrer par ce mot-clé">
+                                                {{ $keyword->name }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <em class="text-muted">Aucun mot-clé</em>
+                                    @endif
+                                </p>
                                 <p><strong>Date :</strong>
                                     @if (is_null($slipRecord->date_exact) && is_null($slipRecord->date_end))
                                         {{ $slipRecord->date_start }}
@@ -239,7 +253,14 @@
                         console.error('Error:', error);
                         alert('Une erreur est survenue. Veuillez réessayer.');
                     });
-            });
+                    });
+        </script>
+
+        <script>
+        function filterByKeyword(keyword) {
+            // Rediriger vers la page d'index des enregistrements avec le filtre de mot-clé
+            window.location.href = '{{ route("slips.records.index", ["slip" => $slip->id]) }}?keyword=' + encodeURIComponent(keyword);
+        }
         </script>
 
 

@@ -22,6 +22,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
 use App\Http\Controllers\AuthorController;
+use App\Http\Controllers\KeywordController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\RecordAuthorController;
 use App\Http\Controllers\RecordAttachmentController;
@@ -544,6 +545,17 @@ Route::middleware(['auth'])->group(function () {
 
         // Route resource principale (génère automatiquement show, create, store, edit, update, destroy)
         Route::resource('records', RecordController::class);
+
+        // Routes pour les mots-clés
+        Route::prefix('keywords')->name('keywords.')->group(function () {
+            Route::get('/', [KeywordController::class, 'index'])->name('index');
+            Route::get('/manage', function() { return view('keywords.index'); })->name('manage');
+            Route::get('/search', [KeywordController::class, 'search'])->name('search');
+            Route::post('/', [KeywordController::class, 'store'])->name('store');
+            Route::post('/process', [KeywordController::class, 'processKeywords'])->name('process');
+            Route::put('/{keyword}', [KeywordController::class, 'update'])->name('update');
+            Route::delete('/{keyword}', [KeywordController::class, 'destroy'])->name('destroy');
+        });
 
         // Routes imbriquées
         Route::resource('records.attachments', RecordAttachmentController::class);

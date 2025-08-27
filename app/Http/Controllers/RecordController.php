@@ -116,7 +116,7 @@ class RecordController extends Controller
         // Pour l'instant, tous les utilisateurs ayant la permission records_view peuvent voir tous les records
         // Cette logique peut être ajustée plus tard si nécessaire
         $records = Record::with([
-            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments'
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
         ])->paginate(10);
 
         $slipStatuses = SlipStatus::all();
@@ -305,6 +305,12 @@ class RecordController extends Controller
             if (!empty($attachData)) {
                 $record->containers()->attach($attachData);
             }
+        }
+
+        // Traitement des mots-clés
+        if ($request->filled('keywords')) {
+            $keywords = \App\Models\Keyword::processKeywordsString($request->keywords);
+            $record->keywords()->attach($keywords->pluck('id'));
         }
 
         $record->load([
@@ -554,6 +560,14 @@ class RecordController extends Controller
             $record->containers()->sync($syncData);
         } else {
             $record->containers()->detach();
+        }
+
+        // Traitement des mots-clés
+        if ($request->filled('keywords')) {
+            $keywords = \App\Models\Keyword::processKeywordsString($request->keywords);
+            $record->keywords()->sync($keywords->pluck('id'));
+        } else {
+            $record->keywords()->detach();
         }
 
         return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');

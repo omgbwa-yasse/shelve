@@ -52,7 +52,7 @@ class Record extends Model
         'status_id',
         'support_id',
         'activity_id',
-    'parent_id',
+        'parent_id',
         'accession_id',
         'user_id',
         'organisation_id'
@@ -220,6 +220,23 @@ class Record extends Model
     public function secondaryThesaurusConcepts()
     {
         return $this->thesaurusConcepts()->wherePivot('weight', '<', 0.7);
+    }
+
+    /**
+     * Relation avec les mots-clés
+     */
+    public function keywords()
+    {
+        return $this->belongsToMany(Keyword::class, 'record_keyword')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Getter pour obtenir les mots-clés sous forme de chaîne séparée par des points-virgules
+     */
+    public function getKeywordsStringAttribute()
+    {
+        return $this->keywords->pluck('name')->implode(';');
     }
 
 }

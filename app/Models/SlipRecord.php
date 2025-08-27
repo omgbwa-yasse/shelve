@@ -77,5 +77,21 @@ class SlipRecord extends Model
         return $this->belongsToMany(Attachment::class, 'slip_record_attachments','slip_record_id','attachment_id');
     }
 
+    /**
+     * Relation avec les mots-clés
+     */
+    public function keywords()
+    {
+        return $this->belongsToMany(Keyword::class, 'slip_record_keyword')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Getter pour obtenir les mots-clés sous forme de chaîne séparée par des points-virgules
+     */
+    public function getKeywordsStringAttribute()
+    {
+        return $this->keywords->pluck('name')->implode(';');
+    }
 
 }

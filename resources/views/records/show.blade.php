@@ -185,6 +185,24 @@
 
                             <dt class="col-sm-2">{{ __('archivist_note') }}</dt>
                             <dd class="col-sm-10">{{ $record->archivist_note ?? 'N/A' }}</dd>
+
+                            <dt class="col-sm-2">
+                                <i class="fas fa-tags me-1"></i>Mots-clés
+                            </dt>
+                            <dd class="col-sm-10">
+                                @if($record->keywords->isNotEmpty())
+                                    @foreach($record->keywords as $keyword)
+                                        <span class="badge bg-secondary me-1 keyword-badge"
+                                              style="cursor: pointer;"
+                                              onclick="filterByKeyword('{{ $keyword->name }}')"
+                                              title="Cliquez pour filtrer par ce mot-clé">
+                                            {{ $keyword->name }}
+                                        </span>
+                                    @endforeach
+                                @else
+                                    <em class="text-muted">Aucun mot-clé</em>
+                                @endif
+                            </dd>
                         </dl>
                     </div>
 
@@ -1785,6 +1803,17 @@ function applyPreviewChanges() {
         showMcpNotification(`Erreur ${mode}: ${error.message}`, 'error');
         console.error(`Erreur ${mode}:`, error);
     });
+}
+
+/**
+ * Fonction pour filtrer les records par mot-clé
+ */
+function filterByKeyword(keyword) {
+    // Rediriger vers la page d'index avec le filtre par mot-clé
+    const searchParams = new URLSearchParams();
+    searchParams.set('keyword_filter', keyword);
+
+    window.location.href = '{{ route("records.index") }}?' + searchParams.toString();
 }
     </script>
 

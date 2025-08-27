@@ -78,6 +78,13 @@ class SlipRecordController extends Controller
         ];
 
         $slipRecord = SlipRecord::create($slipRecordData);
+
+        // Traitement des mots-clés
+        if ($request->filled('keywords')) {
+            $keywords = \App\Models\Keyword::processKeywordsString($request->keywords);
+            $slipRecord->keywords()->attach($keywords->pluck('id'));
+        }
+
         $slip = $slipRecord->slip;
         return view('slips.show', compact('slip'));
     }
@@ -159,6 +166,15 @@ class SlipRecordController extends Controller
 
         $slipRecord = slipRecord::findOrFail($record_id);
         $slipRecord->update($request->all());
+
+        // Traitement des mots-clés
+        if ($request->filled('keywords')) {
+            $keywords = \App\Models\Keyword::processKeywordsString($request->keywords);
+            $slipRecord->keywords()->sync($keywords->pluck('id'));
+        } else {
+            $slipRecord->keywords()->detach();
+        }
+
         $slip = $slipRecord->slip;
         return view('slips.records.show', compact('slip','slipRecord' ));
     }

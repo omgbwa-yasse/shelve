@@ -302,6 +302,23 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <!-- Keywords Field -->
+                    <div class="mb-3">
+                        <label for="keywords" class="form-label">
+                            <i class="fas fa-tags me-1"></i>Mots-clés
+                        </label>
+                        <input type="text"
+                               id="keywords"
+                               name="keywords"
+                               class="form-control form-control-sm"
+                               value="{{ old('keywords', $record->keywords_string ?? '') }}"
+                               placeholder="Entrez les mots-clés séparés par des points-virgules (;)">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            Séparez les mots-clés par des points-virgules. Les nouveaux mots-clés seront créés automatiquement.
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -1352,7 +1369,21 @@ document.addEventListener('DOMContentLoaded', function() {
         load('');
         render();
 });
+
+// Initialize keyword manager
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof KeywordManager !== 'undefined') {
+        new KeywordManager('#keywords', {
+            searchUrl: '{{ route("keywords.search") }}',
+            minChars: 2,
+            debounceDelay: 300
+        });
+    }
+});
 </script>
+
+<!-- Include keyword manager script -->
+<script src="{{ asset('js/keyword-manager.js') }}"></script>
 @endpush
 
 

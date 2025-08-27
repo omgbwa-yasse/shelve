@@ -88,10 +88,18 @@
 
 
                         <div class="mt-5">
-                            <h3 class="text-primary border-bottom pb-2 mb-3">Documents associés</h3>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3 class="text-primary border-bottom pb-2 mb-0">Documents associés</h3>
+                                <div class="d-flex gap-2">
+                                    <input type="text" id="keywordFilter" class="form-control" placeholder="Filtrer par mot-clé..." style="width: 250px;">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearFilter()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
                             @if($slip->records->isNotEmpty())
                                     @foreach($slip->records as $record)
-                                        <div class="d-flex align-items-center justify-content-between border p-3 mb-3">
+                                        <div class="d-flex align-items-center justify-content-between border p-3 mb-3 record-item" data-keywords="{{ $record->keywords->pluck('name')->implode(' ') }}">
 
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" id="record-{{ $record->id }}">
@@ -110,6 +118,19 @@
                                             </div>
                                             <div class="ms-3">
                                                 {{ $record->content }}
+                                                <div class="mt-2">
+                                                    @if($record->keywords->isNotEmpty())
+                                                        <strong>Mots-clés:</strong>
+                                                        @foreach($record->keywords as $keyword)
+                                                            <span class="badge bg-secondary me-1 keyword-badge"
+                                                                  style="cursor: pointer;"
+                                                                  onclick="filterRecordsByKeyword('{{ $keyword->name }}')"
+                                                                  title="Cliquez pour filtrer par ce mot-clé">
+                                                                {{ $keyword->name }}
+                                                            </span>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
                                             </div>
 
                                         </div>
@@ -202,6 +223,45 @@
             font-size: 0.9em;
         }
     </style>
+@endpush
+
+@push('scripts')
+<script>
+// Fonction pour filtrer les records par mot-clé
+function filterRecordsByKeyword(keyword) {
+    document.getElementById('keywordFilter').value = keyword;
+    filterRecords();
+}
+
+// Fonction pour filtrer les records en temps réel
+function filterRecords() {
+    const filterValue = document.getElementById('keywordFilter').value.toLowerCase();
+    const records = document.querySelectorAll('.record-item');
+
+    records.forEach(record => {
+        const keywords = record.dataset.keywords.toLowerCase();
+        if (keywords.includes(filterValue) || filterValue === '') {
+            record.style.display = 'flex';
+        } else {
+            record.style.display = 'none';
+        }
+    });
+}
+
+// Fonction pour vider le filtre
+function clearFilter() {
+    document.getElementById('keywordFilter').value = '';
+    filterRecords();
+}
+
+// Ajouter l'événement de filtrage en temps réel
+document.addEventListener('DOMContentLoaded', function() {
+    const filterInput = document.getElementById('keywordFilter');
+    if (filterInput) {
+        filterInput.addEventListener('input', filterRecords);
+    }
+});
+</script>
 @endpush
 
 @push('scripts')
