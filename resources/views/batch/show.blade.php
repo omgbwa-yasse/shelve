@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </div>
                                 <p class="mb-1">${mail.description || ''}</p>
                                 <small class="text-muted">
+                                    ${mail.direction ? `<span class="badge ${mail.direction === 'Émis' ? 'bg-success' : 'bg-primary'}">${mail.direction}</span> | ` : ''}
                                     Type: ${mail.type?.name || 'N/A'} |
                                     Priorité: ${mail.priority?.name || 'N/A'}
                                 </small>
@@ -396,7 +397,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('transferBoxError').classList.remove('d-none');
                 return;
             }
-            console.log(`Transferring batch ${batchId} to boxes`, selected);
             // Implement your AJAX logic for transfer here
             alert(`Logique de transfert vers les boîtes ${selected.join(', ')} à implémenter.`);
             transferToBoxModal.hide();
@@ -452,7 +452,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('transferDollyError').classList.remove('d-none');
                 return;
             }
-            console.log(`Transferring batch ${batchId} to dollies`, selected);
             // Implement your AJAX logic for transfer here
             alert(`Logique de transfert vers les chariots ${selected.join(', ')} à implémenter.`);
             transferToDollyModal.hide();

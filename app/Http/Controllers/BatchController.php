@@ -198,39 +198,59 @@ class BatchController extends Controller
         $query = $request->get('q', '');
 
         // Récupérer les IDs des courriers déjà dans ce batch
-        $existingMailIds = $batch->mails()->pluck('mails.id')->toArray();
+        $existingMailIds = $batch->mails()->pluck('id')->toArray();
 
         // Récupérer l'organisation de l'utilisateur actuel
-        $user = Auth::user();
-        $organisationId = $user->currentOrganisation->id ?? $user->organisation_id ?? null;
+        $organisationId = Auth::user()->currentOrganisation->id ?? null;
 
         // Rechercher les courriers disponibles pour l'organisation de l'utilisateur
         $mailsQuery = Mail::query();
 
         if ($organisationId) {
-            $mailsQuery->where('organisation_id', $organisationId);
+            // Récupérer les courriers reçus ET émis par l'organisation actuelle
+            $mailsQuery->where(function($q) use ($organisationId) {
+                $q->where('sender_organisation_id', $organisationId)      // Courriers émis
+                  ->orWhere('recipient_organisation_id', $organisationId); // Courriers reçus
+            });
         }
 
-        $mails = $mailsQuery->whereNotIn('id', $existingMailIds) // Exclure les courriers déjà dans le batch
-            ->where(function($q) use ($query) {
+        // Exclure les courriers déjà dans le batch seulement s'il y en a
+        if (!empty($existingMailIds)) {
+            $mailsQuery->whereNotIn('id', $existingMailIds);
+        }
+
+        // Appliquer la recherche par texte seulement si une requête est fournie
+        if (!empty($query)) {
+            $mailsQuery->where(function($q) use ($query) {
                 $q->where('code', 'LIKE', "%{$query}%")
                   ->orWhere('name', 'LIKE', "%{$query}%")
                   ->orWhere('description', 'LIKE', "%{$query}%");
-            })
-            ->with(['mailType', 'mailPriority', 'authors'])
+            });
+        }
+
+        $mails = $mailsQuery->with(['mailType', 'mailPriority', 'authors'])
             ->orderBy('created_at', 'desc')
-            ->limit(10)
+            ->limit(20)
             ->get();
 
         return response()->json([
             'success' => true,
-            'mails' => $mails->map(function($mail) {
+            'mails' => $mails->map(function($mail) use ($organisationId) {
+                // Déterminer le type de courrier (reçu ou émis)
+                $mailDirection = '';
+                if ($mail->sender_organisation_id == $organisationId) {
+                    $mailDirection = 'Émis';
+                } elseif ($mail->recipient_organisation_id == $organisationId) {
+                    $mailDirection = 'Reçu';
+                }
+
                 return [
                     'id' => $mail->id,
                     'code' => $mail->code,
                     'name' => $mail->name,
                     'description' => $mail->description,
                     'date' => $mail->date,
+                    'direction' => $mailDirection,
                     'type' => $mail->mailType,
                     'priority' => $mail->mailPriority,
                     'authors' => $mail->authors
