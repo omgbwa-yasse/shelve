@@ -48,6 +48,7 @@ class BatchController extends Controller
     public function show(INT $id)
     {
         $mailBatch = Batch::findOrFail($id);
+
         return view('batch.show', compact('mailBatch'));
     }
 
