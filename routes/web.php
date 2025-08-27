@@ -727,6 +727,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('dollies')->group(function () {
         Route::get('/', [DollyController::class, 'index']);
+        Route::get('list', [DollyController::class, 'apiList'])->name('dollies.list');
+        Route::post('store', [DollyController::class, 'apiCreate'])->name('dollies.store');
         Route::post('create-with-communications', [DollyController::class, 'createWithCommunications'])->name('dolly.createWithCommunications');
         Route::resource('dolly', DollyController::class)->names('dolly');
         Route::get('action', [DollyActionController::class, 'index'])->name('dollies.action');
