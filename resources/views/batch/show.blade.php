@@ -605,13 +605,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectAllTransferCheckbox = document.getElementById('selectAllMailsForTransfer');
     const selectedMailsCountSpan = document.getElementById('selectedMailsCount');
 
+    // Vérifier que les éléments existent
+    console.log('selectAllTransferCheckbox:', selectAllTransferCheckbox);
+    console.log('selectedMailsCountSpan:', selectedMailsCountSpan);
+
     function updateSelectedTransferCount() {
         const count = selectedTransferMailIds.size;
-        selectedMailsCountSpan.textContent = `${count} courrier(s) sélectionné(s) pour transfert`;
+        if (selectedMailsCountSpan) {
+            selectedMailsCountSpan.textContent = `${count} courrier(s) sélectionné(s) pour transfert`;
+        }
 
         // Mettre à jour l'état de la case "Sélectionner tout"
         const allTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox');
         const checkedTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox:checked');
+
+        console.log('Nombre total de checkboxes:', allTransferCheckboxes.length);
+        console.log('Nombre de checkboxes cochées:', checkedTransferCheckboxes.length);
+
+        if (!selectAllTransferCheckbox) return;
 
         if (allTransferCheckboxes.length === 0) {
             selectAllTransferCheckbox.checked = false;
@@ -631,6 +642,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Gestionnaire pour les cases à cocher individuelles
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('mail-transfer-checkbox')) {
+            console.log('Case individuelle changée:', e.target.value, e.target.checked);
             const mailId = parseInt(e.target.value);
             if (e.target.checked) {
                 selectedTransferMailIds.add(mailId);
@@ -643,9 +655,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Gestionnaire pour "Sélectionner tout"
     if (selectAllTransferCheckbox) {
-        selectAllTransferCheckbox.addEventListener('change', function() {
+        selectAllTransferCheckbox.addEventListener('change', function(e) {
+            console.log('Sélectionner tout changé:', this.checked);
             const checkboxes = document.querySelectorAll('.mail-transfer-checkbox');
-            checkboxes.forEach(checkbox => {
+            console.log('Nombre de checkboxes trouvées:', checkboxes.length);
+
+            checkboxes.forEach((checkbox, index) => {
+                console.log(`Checkbox ${index}:`, checkbox.value, 'sera définie à:', this.checked);
                 checkbox.checked = this.checked;
                 const mailId = parseInt(checkbox.value);
                 if (this.checked) {
@@ -656,6 +672,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             updateSelectedTransferCount();
         });
+    } else {
+        console.error('selectAllTransferCheckbox non trouvé!');
     }
 
     // Initialisation du compteur
