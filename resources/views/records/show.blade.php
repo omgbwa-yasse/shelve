@@ -229,7 +229,7 @@
             $aiPrompts = [];
             if (Schema::hasTable('prompts')) {
                 $promptQuery = DB::table('prompts')->select('id','title')
-                    ->whereIn('title', ['record_reformulate','record_summarize','assign_thesaurus','assign_activity']);
+                    ->whereIn('title', ['record_reformulate','record_summarize','record_keywords','assign_thesaurus','assign_activity']);
                 if (Schema::hasColumn('prompts', 'is_system')) {
                     $promptQuery->where('is_system', true);
                 }
@@ -256,6 +256,13 @@
                             data-prompt-id="{{ $aiPrompts['record_summarize'] ?? '' }}">
                         {{ __('summarize') ?? 'Résumer' }}
                     </button>
+
+                    <button type="button" class="btn btn-outline-secondary ai-action-btn"
+                            data-action="keywords"
+                            data-prompt-id="{{ $aiPrompts['record_keywords'] ?? '' }}">
+                        {{ __('keywords') ?? 'Extraire mots clés' }}
+                    </button>
+
                     <button type="button" class="btn btn-outline-success ai-action-btn"
                             data-action="assign_thesaurus"
                             data-prompt-id="{{ $aiPrompts['assign_thesaurus'] ?? '' }}">
@@ -770,6 +777,12 @@
                     `;
                     break;
                 }
+                case 'keywords': {
+                    currentAi.parsed = { keywords: [] };
+                    aiModalTitle.textContent = '{{ __('keywords') ?? 'Mots-clés' }}';
+                    html = `<div class="text-muted">Extraction des mots-clés en cours…</div>`;
+                    break;
+                }
                 case 'assign_thesaurus': {
                     // Parse categorized lines like: "- [M] Stage — synonymes : ..."
                     const lines = (output||'').replace(/\r/g,'').split(/\n+/).map(t=>t.trim()).filter(Boolean);
@@ -893,6 +906,65 @@
                     }
                 })();
             }
+            // For keywords, call AI and then render suggestions
+            if(action==='keywords'){
+                (async()=>{
+                    try{
+                        await ensureCsrfCookie();
+                        const url = `/api/records/${recordId}/ai/keywords/suggest`;
+                        const resp = await fetch(url, {
+                            method: 'POST',
+                            headers: buildAuthHeaders(),
+                            credentials: 'same-origin',
+                            body: JSON.stringify({})
+                        });
+                        const data = await resp.json();
+                        if(!resp.ok || data?.status!=='ok') throw new Error(data?.message||'Erreur extraction mots-clés');
+                        const suggestions = Array.isArray(data.suggestions) ? data.suggestions : [];
+                        currentAi.parsed = { keywords: suggestions };
+                        // Update output for success message
+                        currentAi.output = suggestions.length > 0 ?
+                            `${suggestions.length} mot${suggestions.length > 1 ? 's' : ''}-clé${suggestions.length > 1 ? 's' : ''} suggéré${suggestions.length > 1 ? 's' : ''} par l'IA.` :
+                            'Aucun mot-clé suggéré.';
+
+                        if(suggestions.length === 0){
+                            aiModalBody.innerHTML = '<div class="alert alert-warning">Aucun mot-clé trouvé.</div>';
+                            return;
+                        }
+
+                        // Build UI with checkboxes for each keyword
+                        const ui = `
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('suggested_keywords') ?? 'Mots-clés suggérés' }}</label>
+                                <div class="small text-muted mb-2">Sélectionnez les mots-clés à associer au document :</div>
+                            </div>
+                            <div class="d-flex flex-column gap-2 max-height-300 overflow-auto">
+                                ${suggestions.map((kw,idx)=>{
+                                    const badge = kw.exists ?
+                                        '<span class="badge bg-success ms-2" title="Existe déjà">✓</span>' :
+                                        '<span class="badge bg-warning ms-2" title="Sera créé">Nouveau</span>';
+                                    const category = kw.category ? `<span class="badge bg-secondary ms-1">${kw.category}</span>` : '';
+                                    return `<div class="form-check d-flex align-items-center">
+                                        <input class="form-check-input me-2" type="checkbox" id="kw_${idx}"
+                                               data-keyword-name="${(kw.name||'').replaceAll('"','&quot;')}"
+                                               data-keyword-exists="${kw.exists||false}"
+                                               data-keyword-id="${kw.keyword_id||''}"
+                                               ${kw.selected ? 'checked' : ''}>
+                                        <label class="form-check-label flex-grow-1" for="kw_${idx}">
+                                            <strong>${kw.name||''}</strong>${category}${badge}
+                                        </label>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                            <style>.max-height-300 { max-height: 300px; }</style>
+                        `;
+                        aiModalBody.innerHTML = ui;
+                    }catch(e){
+                        console.error('[AI] keywords suggest error', e);
+                        aiModalBody.innerHTML = `<div class="alert alert-danger">${e.message||'Erreur d\'extraction des mots-clés'}</div>`;
+                    }
+                })();
+            }
             try{ new bootstrap.Modal(aiModalEl).show(); }catch(e){ console.warn('Modal error', e); }
         }
 
@@ -938,6 +1010,19 @@
                     }
                     break;
                 }
+                case 'keywords': {
+                    // Collect selected keywords
+                    const checks = aiModalBody.querySelectorAll('input[type="checkbox"]:checked[data-keyword-name]');
+                    const keywords = Array.from(checks).map(c=>({
+                        name: c.getAttribute('data-keyword-name'),
+                        create: !c.getAttribute('data-keyword-exists') || c.getAttribute('data-keyword-exists') === 'false',
+                        selected: true
+                    }));
+                    if(keywords.length===0){ showError('Sélectionnez au moins un mot-clé'); return; }
+                    url = `/api/records/${recordId}/ai/keywords`;
+                    payload = { keywords };
+                    break;
+                }
                 default:
                     return;
             }
@@ -967,7 +1052,16 @@
                 }
                 // Close modal and show toast
                 try{ bootstrap.Modal.getInstance(aiModalEl)?.hide(); }catch(e){}
-                showResult(currentAi.output);
+
+                // Show action-specific success message
+                let successMessage = currentAi.output;
+                if(currentAi.action === 'keywords' && data?.attached) {
+                    const count = data.attached.length;
+                    successMessage = count > 0
+                        ? `${count} mot${count > 1 ? 's' : ''}-clé${count > 1 ? 's' : ''} associé${count > 1 ? 's' : ''} avec succès.`
+                        : 'Aucun mot-clé sélectionné.';
+                }
+                showResult(successMessage);
                 // Optionally refresh to show applied changes
                 setTimeout(()=>{ window.location.reload(); }, 800);
             }catch(e){
@@ -1045,16 +1139,25 @@
             }
         }
 
-        // Disable AI buttons if no prompt ids resolved
+        // Disable AI buttons if no prompt ids resolved (except keywords which handles prompts internally)
         (function initAIActions(){
-            const noPrompt = Array.from(buttons).every(b => !b.getAttribute('data-prompt-id'));
-            if(noPrompt){
-                buttons.forEach(b => { b.disabled = true; b.title = 'Prompts non disponibles'; });
+            const buttonsNeedingPrompts = Array.from(buttons).filter(b => b.getAttribute('data-action') !== 'keywords');
+            const noPrompt = buttonsNeedingPrompts.every(b => !b.getAttribute('data-prompt-id'));
+            if(noPrompt && buttonsNeedingPrompts.length > 0){
+                buttonsNeedingPrompts.forEach(b => { b.disabled = true; b.title = 'Prompts non disponibles'; });
                 showError('Prompts non disponibles. Vérifiez la base de données ou exécutez le seeder AI.');
                 console.warn('[AI] initAIActions: no prompts found on buttons');
             }
             console.log('[AI] initAIActions: binding click handlers', { count: buttons.length });
-            buttons.forEach(btn => btn.addEventListener('click', () => runAction(btn)));
+            buttons.forEach(btn => {
+                const action = btn.getAttribute('data-action');
+                if (action === 'keywords') {
+                    // Keywords uses direct modal opening instead of runAction
+                    btn.addEventListener('click', () => openAiReviewModal('keywords', ''));
+                } else {
+                    btn.addEventListener('click', () => runAction(btn));
+                }
+            });
         })();
 
         if(aiSaveBtn){

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Record;
 use App\Models\ThesaurusConcept;
+use App\Models\Keyword;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Prompt;
 use AiBridge\Facades\AiBridge;
 use App\Services\AI\ProviderRegistry;
+use App\Services\AttachmentTextExtractor;
+use App\Services\SettingService;
 
 class AiRecordApplyController extends Controller
 {
@@ -664,6 +667,355 @@ class AiRecordApplyController extends Controller
             $found = Activity::where('name', (string)$sel['name'])->first();
             if ($found) { return $found->id; }
         }
+        return null;
+    }
+
+    /**
+     * Save keywords to a record after user validation.
+     * Input: { keywords: [ { name, create?, selected? } ], raw_text?: string }
+     * Returns: { status: 'ok', record_id, attached: [...] }
+     */
+    public function saveKeywords(Request $request, Record $record)
+    {
+        Gate::authorize('records_edit');
+        $data = $request->validate([
+            'keywords' => 'nullable|array|min:1',
+            'keywords.*.name' => 'required|string|min:1|max:255',
+            'keywords.*.create' => 'nullable|boolean',
+            'keywords.*.selected' => 'nullable|boolean',
+            'raw_text' => self::RULE_RAW,
+        ]);
+
+        $attach = [];
+        if (!empty($data['keywords'])) {
+            foreach ($data['keywords'] as $keywordData) {
+                $name = trim($keywordData['name']);
+                $create = $keywordData['create'] ?? false;
+                $selected = $keywordData['selected'] ?? true;
+
+                if (!$selected || empty($name)) {
+                    continue;
+                }
+
+                // Find or create keyword if user approved creation
+                if ($create) {
+                    $keyword = Keyword::findOrCreate($name);
+                } else {
+                    $keyword = Keyword::where('name', $name)->first();
+                }
+
+                if ($keyword) {
+                    $attach[] = $keyword->id;
+                }
+            }
+        } elseif (!empty($data['raw_text'])) {
+            // Fallback: parse from raw text
+            $keywordNames = $this->parseKeywordLines($data['raw_text']);
+            foreach ($keywordNames as $name) {
+                $keyword = Keyword::findOrCreate($name);
+                if ($keyword) {
+                    $attach[] = $keyword->id;
+                }
+            }
+        } else {
+            return response()->json(['status' => 'error', 'message' => self::ERR_NO_DATA], 422);
+        }
+
+        if (!empty($attach)) {
+            $record->keywords()->syncWithoutDetaching($attach);
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'record_id' => $record->id,
+            'attached' => $attach
+        ]);
+    }
+
+    /**
+     * Suggest keywords from AI-extracted content including attachments.
+     * Input: { raw_text?: string }
+     * Returns: { suggestions: [ { name, exists, keyword_id? } ] }
+     */
+    public function suggestKeywords(Request $request, Record $record)
+    {
+        Log::info('Keywords AI Method Called', ['record_id' => $record->id]);
+
+        Gate::authorize('records_edit');
+        $data = $request->validate([
+            'raw_text' => self::RULE_RAW,
+        ]);
+
+        // 1) Build text from record and attachments
+        $text = $this->buildTextFromRecordWithAttachments($record);
+
+        // 2) Load keyword extraction prompt and call AI
+        $systemPrompt = Prompt::where('title', 'record_keywords')->first();
+        $messages = [];
+
+        if ($systemPrompt && $systemPrompt->content) {
+            $messages[] = ['role' => 'system', 'content' => $systemPrompt->content];
+        }
+
+        $userPrompt = "Analysez le contenu suivant et extractez les mots-clés pertinents. Retournez un JSON avec un tableau 'keywords' contenant des objets avec 'name' et optionnellement 'category':\n\n" . $text;
+        $messages[] = ['role' => 'user', 'content' => $userPrompt];
+
+        try {
+            // Get default provider and model settings (same pattern as working method)
+            $provider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+            $model = app(\App\Services\SettingService::class)->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
+
+            Log::info('Keywords AI Debug - Start', [
+                'provider' => $provider,
+                'model' => $model,
+                'provider_type' => gettype($provider),
+                'provider_length' => strlen($provider)
+            ]);
+
+            // Ensure provider is configured (exact same pattern as working method)
+            try {
+                app(ProviderRegistry::class)->ensureConfigured($provider);
+                Log::info('Keywords AI Debug - Provider ensureConfigured succeeded');
+            } catch (\Throwable $e) {
+                Log::error('Keywords AI Debug - ensureConfigured failed', ['error' => $e->getMessage()]);
+                return response()->json(['status' => 'error', 'message' => 'AI provider not configured: '.$provider], 422);
+            }
+
+            // Check provider availability
+            $providerInstance = AiBridge::provider($provider);
+            Log::info('Keywords AI Debug - Provider instance', [
+                'instance' => $providerInstance ? 'NOT NULL' : 'NULL',
+                'class' => $providerInstance ? get_class($providerInstance) : 'N/A'
+            ]);
+
+            // For debugging: try the exact same approach as the working method
+            $res = AiBridge::provider($provider)->chat($messages, [
+                'model' => $model,
+                'temperature' => 0.3,
+                'max_tokens' => 1000,
+                'timeout' => 40000,
+            ]);
+
+            $content = $this->extractText(is_array($res) ? $res : (array)$res);
+
+            // Parse AI response for keywords
+            $suggestions = $this->parseAiKeywordsResponse($content);
+
+            return response()->json([
+                'status' => 'ok',
+                'record_id' => $record->id,
+                'suggestions' => $suggestions,
+                'ai_output' => $content
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Keywords AI extraction failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'record_id' => $record->id,
+                'provider' => $provider ?? 'unknown',
+                'model' => $model ?? 'unknown'
+            ]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'AI extraction failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Extract text content from AI response array
+     */
+    private function extractText(array $res): string
+    {
+        $text = null;
+        if (!empty($res['content'])) {
+            $text = is_array($res['content']) ? implode("", $res['content']) : (string)$res['content'];
+        } elseif (!empty($res['message']['content'])) {
+            $text = (string)$res['message']['content'];
+        } elseif (!empty($res['choices'][0]['message']['content'])) {
+            $text = (string)$res['choices'][0]['message']['content'];
+        }
+        return $text !== null ? $text : json_encode($res);
+    }
+
+    /**
+     * Build text content from record and its attachments for AI analysis.
+     */
+    private function buildTextFromRecordWithAttachments(Record $record): string
+    {
+        $parts = [];
+
+        // Add record content
+        $name = trim((string)($record->name ?? ''));
+        if ($name !== '') {
+            $parts[] = 'Titre: ' . $name;
+        }
+
+        $content = trim((string)($record->content ?? ''));
+        if ($content !== '') {
+            $parts[] = 'Contenu: ' . mb_substr(preg_replace('/\s+/u', ' ', $content), 0, 1200);
+        }
+
+        $note = trim((string)($record->note ?? ''));
+        if ($note !== '') {
+            $parts[] = 'Note: ' . mb_substr(preg_replace('/\s+/u', ' ', $note), 0, 800);
+        }
+
+        $archivistNote = trim((string)($record->archivist_note ?? ''));
+        if ($archivistNote !== '') {
+            $parts[] = 'Note archiviste: ' . mb_substr(preg_replace('/\s+/u', ' ', $archivistNote), 0, 800);
+        }
+
+        // Add attachment content
+        if ($record->attachments->isNotEmpty()) {
+            $attachmentTexts = [];
+            $extractor = app(AttachmentTextExtractor::class);
+
+            foreach ($record->attachments->take(5) as $attachment) { // Limit to 5 attachments
+                if (!empty($attachment->content_text)) {
+                    // Use pre-extracted text
+                    $text = mb_substr(trim($attachment->content_text), 0, 1000);
+                    if ($text) {
+                        $attachmentTexts[] = "Pièce jointe ({$attachment->name}): " . $text;
+                    }
+                } elseif (!empty($attachment->path)) {
+                    // Try to extract text on demand
+                    $absolutePath = storage_path('app/' . ltrim($attachment->path, '/'));
+                    if (is_file($absolutePath)) {
+                        $extractedText = $extractor->extract($absolutePath, $attachment->mime_type, $attachment->name);
+                        if ($extractedText) {
+                            $text = mb_substr(trim($extractedText), 0, 1000);
+                            $attachmentTexts[] = "Pièce jointe ({$attachment->name}): " . $text;
+                        }
+                    }
+                }
+            }
+
+            if (!empty($attachmentTexts)) {
+                $parts[] = "Pièces jointes:\n" . implode("\n", $attachmentTexts);
+            }
+        }
+
+        return implode("\n\n", $parts);
+    }
+
+    /**
+     * Parse AI response to extract keywords with database matching.
+     */
+    private function parseAiKeywordsResponse(string $response): array
+    {
+        $suggestions = [];
+
+        // Try to parse JSON first
+        $jsonData = $this->tryParseJson($response);
+        if ($jsonData && isset($jsonData['keywords']) && is_array($jsonData['keywords'])) {
+            foreach ($jsonData['keywords'] as $item) {
+                if (is_array($item) && !empty($item['name'])) {
+                    $name = trim($item['name']);
+                    if ($name) {
+                        $suggestions[] = $this->buildKeywordSuggestion($name, $item['category'] ?? null);
+                    }
+                } elseif (is_string($item)) {
+                    $name = trim($item);
+                    if ($name) {
+                        $suggestions[] = $this->buildKeywordSuggestion($name);
+                    }
+                }
+            }
+        } else {
+            // Fallback: parse as lines
+            $lines = $this->parseKeywordLines($response);
+            foreach ($lines as $name) {
+                $suggestions[] = $this->buildKeywordSuggestion($name);
+            }
+        }
+
+        return array_slice($suggestions, 0, 20); // Limit to 20 suggestions
+    }
+
+    /**
+     * Build a keyword suggestion with database lookup.
+     */
+    private function buildKeywordSuggestion(string $name, ?string $category = null): array
+    {
+        $name = trim($name);
+        $existingKeyword = Keyword::where('name', $name)->first();
+
+        return [
+            'name' => $name,
+            'category' => $category,
+            'exists' => !is_null($existingKeyword),
+            'keyword_id' => $existingKeyword?->id,
+            'selected' => true, // Default to selected for user review
+        ];
+    }
+
+    /**
+     * Parse keyword lines from text output.
+     */
+    private function parseKeywordLines(string $text): array
+    {
+        $text = str_replace("\r", '', $text);
+        $lines = preg_split('/\n+/', $text) ?: [];
+        $out = [];
+        $seen = [];
+
+        foreach ($lines as $line) {
+            $t = trim($line);
+            if ($t === '') { continue; }
+
+            // Skip headers
+            if (preg_match('/^(résumé\s*:|mots[- ]clés|keywords)/i', $t)) { continue; }
+
+            // Remove leading bullets or numbering
+            $t = preg_replace('/^([\-\*•\d]+[\).\]]?)\s*/u', '', $t);
+
+            // Remove category tags like [P], [M], [En], etc.
+            $t = preg_replace('/^\[[^\]]+\]\s*/u', '', $t);
+
+            // Remove JSON syntax artifacts
+            $t = preg_replace('/^["\'{}\[\],]\s*/', '', $t);
+            $t = preg_replace('/["\'{}\[\],]\s*$/', '', $t);
+
+            // Split on common separators and clean
+            $parts = preg_split('/[,;]+/', $t);
+            foreach ($parts as $part) {
+                $keyword = trim($part, " \t\x0B\f\v.\x{2026}\"'");
+                if ($keyword === '' || mb_strlen($keyword) < 2) { continue; }
+
+                $k = mb_strtolower($keyword);
+                if (isset($seen[$k])) { continue; }
+                $seen[$k] = true;
+
+                $out[] = $keyword;
+                if (count($out) >= 30) { break 2; }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Try to parse JSON from AI response.
+     */
+    private function tryParseJson(string $response): ?array
+    {
+        // Look for JSON block in response
+        if (preg_match('/\{.*\}/s', $response, $matches)) {
+            $jsonStr = $matches[0];
+            $decoded = json_decode($jsonStr, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return $decoded;
+            }
+        }
+
+        // Try the full response as JSON
+        $decoded = json_decode($response, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
         return null;
     }
 }

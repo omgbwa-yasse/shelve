@@ -26,6 +26,7 @@ class AiSeeder extends Seeder
             $this->promptsReformulate($ex, $ex1),
             $this->promptsSummarize($fmt),
             $this->promptsAssignThesaurus($fmt),
+            $this->promptsKeywords(),
             [
                 [
                     'title' => 'assign_activity',
@@ -220,6 +221,40 @@ class AiSeeder extends Seeder
                     "- [Catégorie] Libellé — synonymes : s1; s2; s3\n\n" .
                     "Contenu :\n{{text}}",
                 'is_system' => false,
+            ],
+        ];
+    }
+
+    private function promptsKeywords(): array
+    {
+        return [
+            [
+                'title' => 'record_keywords',
+                'content' =>
+                    "Tu es un assistant archivistique spécialisé dans l'extraction de mots-clés.\n" .
+                    "À partir du contenu fourni (titre, description, notes, pièces jointes), extrais 5 à 15 mots-clés pertinents en français.\n" .
+                    "Instructions :\n" .
+                    "- Identifie les concepts clés, entités, sujets principaux\n" .
+                    "- Inclus les noms propres, lieux, organisations, personnes\n" .
+                    "- Ajoute les termes techniques ou spécialisés importants\n" .
+                    "- Évite les mots vides (articles, prépositions, etc.)\n" .
+                    "- Privilégie les termes d'indexation normalisés\n" .
+                    "- Retourne uniquement un JSON valide avec un tableau 'keywords'\n\n" .
+                    "Format de sortie :\n" .
+                    "{\n" .
+                    "  \"keywords\": [\n" .
+                    "    {\"name\": \"Mot-clé1\", \"category\": \"Personnalité\"},\n" .
+                    "    {\"name\": \"Mot-clé2\", \"category\": \"Matière\"},\n" .
+                    "    {\"name\": \"Mot-clé3\", \"category\": \"Énergie\"},\n" .
+                    "    {\"name\": \"Mot-clé4\", \"category\": \"Espace\"}\n" .
+                    "  ]\n" .
+                    "}\n\n" .
+                    "Catégories :\n" .
+                    "- Personnalité : personnes, entités principales, objets d'étude\n" .
+                    "- Matière : documents, objets, matériaux, supports\n" .
+                    "- Énergie : actions, processus, activités, fonctions\n" .
+                    "- Espace : lieux, géographie, localisation, bâtiments",
+                'is_system' => true,
             ],
         ];
     }

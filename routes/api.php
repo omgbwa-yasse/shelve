@@ -82,5 +82,7 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
     Route::post('thesaurus/suggest-json', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestThesaurusFromJson'])->name('thesaurus.suggest_json');
     Route::post('activity', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveActivity'])->name('activity');
     Route::post('activity/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestActivityCandidates'])->name('activity.suggest');
+        Route::post('keywords', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveKeywords'])->name('keywords');
+        Route::post('keywords/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestKeywords'])->name('keywords.suggest');
     });
 });
