@@ -71,7 +71,7 @@
                             Priority: {{ $mail->priority ? $mail->priority->name : 'N/A' }}
                             | Mail Type: {{ $mail->type ? $mail->type->name : 'N/A' }}
                             | Business Type: {{ $mail->typology ? $mail->typology->name : 'N/A' }}
-                            | Nature: {{ $mail->documentType ? $mail->documentType->name : 'N/A' }}
+                            | Nature: {{ $mail->document_type ?: 'N/A' }}
                         </small>
                     </p>
                 </div>
