@@ -71,18 +71,30 @@ class RecordController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
+        $keywordFilter = $request->input('keyword_filter');
+
+        $recordsQuery = Record::with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords']);
 
         if (!empty($query)) {
             // Recherche dans l'intitulé (name) et le code
-            $records = Record::where(function($q) use ($query) {
+            $recordsQuery->where(function($q) use ($query) {
                 $q->where('name', 'LIKE', '%' . $query . '%')
                     ->orWhere('code', 'LIKE', '%' . $query . '%');
-            })
-                ->with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments'])
-                ->paginate(10);
-        } else {
-            // Si pas de query, retourner une collection vide paginée
+            });
+        }
+
+        // Filtrage par mot-clé si fourni
+        if (!empty($keywordFilter)) {
+            $recordsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+        }
+
+        // Si ni query ni keyword_filter ne sont fournis, retourner une collection vide paginée
+        if (empty($query) && empty($keywordFilter)) {
             $records = Record::where('id', 0)->paginate(10);
+        } else {
+            $records = $recordsQuery->paginate(10);
         }
 
         // Charger les données nécessaires pour la vue index
@@ -113,11 +125,21 @@ class RecordController extends Controller
     {
         Gate::authorize('records_view');
 
-        // Pour l'instant, tous les utilisateurs ayant la permission records_view peuvent voir tous les records
-        // Cette logique peut être ajustée plus tard si nécessaire
-        $records = Record::with([
+        // Initialiser la query des records avec les relations
+        $query = Record::with([
             'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
-        ])->paginate(10);
+        ]);
+
+        // Filtrage par mot-clé si fourni
+        if ($request->filled('keyword_filter')) {
+            $keywordFilter = $request->input('keyword_filter');
+            $query->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+        }
+
+        // Pagination des résultats
+        $records = $query->paginate(10);
 
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();

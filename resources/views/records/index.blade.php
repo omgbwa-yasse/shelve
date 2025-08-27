@@ -1325,34 +1325,87 @@
 
         // Fonctions de filtrage par mots-clés
         function filterByKeyword(keyword) {
-            document.getElementById('keywordFilter').value = keyword;
-            filterRecordsByKeywords();
+            // Redirection vers la page avec le filtre de mots-clés
+            window.location.href = updateUrlParameter(window.location.href, 'keyword_filter', keyword);
         }
 
         function filterRecordsByKeywords() {
-            const filterValue = document.getElementById('keywordFilter').value.toLowerCase();
-            const records = document.querySelectorAll('.record-entry');
+            const filterValue = document.getElementById('keywordFilter').value.trim();
 
-            records.forEach(record => {
-                const keywords = record.dataset.keywords.toLowerCase();
-                if (keywords.includes(filterValue) || filterValue === '') {
-                    record.style.display = 'block';
-                } else {
-                    record.style.display = 'none';
-                }
-            });
+            // Si le champ est vide, supprimer le paramètre keyword_filter de l'URL
+            if (filterValue === '') {
+                window.location.href = removeUrlParameter(window.location.href, 'keyword_filter');
+            } else {
+                // Sinon, rediriger avec le nouveau filtre
+                window.location.href = updateUrlParameter(window.location.href, 'keyword_filter', filterValue);
+            }
         }
 
         function clearKeywordFilter() {
             document.getElementById('keywordFilter').value = '';
-            filterRecordsByKeywords();
+            // Supprimer le paramètre keyword_filter de l'URL
+            window.location.href = removeUrlParameter(window.location.href, 'keyword_filter');
         }
 
-        // Ajouter l'événement de filtrage en temps réel
+        // Fonctions utilitaires pour manipuler les paramètres d'URL
+        function updateUrlParameter(url, param, paramVal) {
+            let newAdditionalURL = "";
+            let tempArray = url.split("?");
+            let baseURL = tempArray[0];
+            let additionalURL = tempArray[1];
+            let temp = "";
+            if (additionalURL) {
+                tempArray = additionalURL.split("&");
+                for (let i = 0; i < tempArray.length; i++) {
+                    if (tempArray[i].split('=')[0] != param) {
+                        newAdditionalURL += temp + tempArray[i];
+                        temp = "&";
+                    }
+                }
+            }
+            let rowsTxt = temp + "" + param + "=" + paramVal;
+            return baseURL + "?" + newAdditionalURL + rowsTxt;
+        }
+
+        function removeUrlParameter(url, parameter) {
+            let urlparts = url.split('?');
+            if (urlparts.length >= 2) {
+                let prefix = encodeURIComponent(parameter) + '=';
+                let pars = urlparts[1].split(/[&;]/g);
+
+                for (let i = pars.length; i-- > 0;) {
+                    if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+                        pars.splice(i, 1);
+                    }
+                }
+
+                return urlparts[0] + (pars.length > 0 ? '?' + pars.join('&') : '');
+            }
+            return url;
+        }
+
+        // Initialiser le champ de filtre avec la valeur actuelle de l'URL
         document.addEventListener('DOMContentLoaded', function() {
             const filterInput = document.getElementById('keywordFilter');
             if (filterInput) {
-                filterInput.addEventListener('input', filterRecordsByKeywords);
+                // Récupérer la valeur actuelle du paramètre keyword_filter depuis l'URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentKeywordFilter = urlParams.get('keyword_filter');
+                if (currentKeywordFilter) {
+                    filterInput.value = currentKeywordFilter;
+                }
+
+                // Ajouter les événements pour le filtrage
+                filterInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        filterRecordsByKeywords();
+                    }
+                });
+
+                // Filtrer aussi quand l'utilisateur quitte le champ (blur)
+                filterInput.addEventListener('blur', function() {
+                    filterRecordsByKeywords();
+                });
             }
         });
     </script>
