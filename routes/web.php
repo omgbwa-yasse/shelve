@@ -76,7 +76,6 @@ use App\Http\Controllers\SearchMailController;
 use App\Http\Controllers\SearchReservationController;
 use App\Http\Controllers\SearchdollyController;
 use App\Http\Controllers\SearchRecordController;
-use App\Http\Controllers\BatchMailController;
 use App\Http\Controllers\BatchHandlerController;
 use App\Http\Controllers\MailPriorityController;
 use App\Http\Controllers\DollyController;
@@ -289,6 +288,8 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('mails')->group(function () {
+        // New route for searching mails
+        Route::get('/search', [\App\Http\Controllers\MailController::class, 'apiSearch'])->name('api.mails.search');
 
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
@@ -358,9 +359,19 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('file.attachment', MailAttachmentController::class)->names('mail-attachment');
         Route::get('archived', [MailArchiveController::class, 'archived'])->name('mails.archived');
         Route::resource('batch', BatchController::class)->names('batch');
-        Route::resource('batches.mail', BatchMailController::class)->names('batch.mail');
+
+        // Routes pour la gestion des mails dans les batches
+        Route::get('batches/{batch}/mail', [BatchController::class, 'indexMail'])->name('batch.mail.index');
+        Route::get('batches/{batch}/mail/create', [BatchController::class, 'createMail'])->name('batch.mail.create');
+        Route::post('batches/{batch}/mail', [BatchController::class, 'storeMail'])->name('batch.mail.store');
+        Route::get('batches/{batch}/mail/{batchMail}/edit', [BatchController::class, 'editMail'])->name('batch.mail.edit');
+        Route::put('batches/{batch}/mail/{batchMail}', [BatchController::class, 'updateMail'])->name('batch.mail.update');
+        Route::delete('batches/{batch}/mail/{id}', [BatchController::class, 'destroyMail'])->name('batch.mail.destroy');
+
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
+        Route::get('batch/{batch}/export/pdf', [BatchController::class, 'exportPdf'])->name('batch.export.pdf');
+
 
 
         Route::get('batch-received/logs', [BatchReceivedController::class, 'logs'] )->name('batch-received-log');
@@ -872,7 +883,6 @@ Route::prefix('public')->name('public.')->group(function () {
 });
 
 });
-
 
 // Routes API pour les records et thésaurus
 Route::middleware('auth:sanctum')->prefix('api')->group(function () {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mail;
 use App\Models\User;
+use App\Models\Batch;
 use App\Models\MailTypology;
 use App\Models\MailPriority;
 use App\Models\MailAction;
@@ -652,5 +653,24 @@ class MailController extends Controller
             'count' => $count,
             'status' => 'success'
         ]);
+    }
+
+    public function exportPdf(Batch $batch)
+    {
+        $mails = $batch->mails()->with([
+            'priority', 'action', 'typology', 'documentType',
+            'sender', 'senderOrganisation', 'externalSender', 'externalSenderOrganization',
+            'recipient', 'recipientOrganisation', 'externalRecipient', 'externalRecipientOrganization',
+            'containers', 'attachments'
+        ])->get();
+
+        $data = [
+            'mails' => $mails,
+            'totalCount' => $mails->count(),
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('mails.print.index', $data);
+        return $pdf->download('mail_batch_' . $batch->code . '.pdf');
     }
 }

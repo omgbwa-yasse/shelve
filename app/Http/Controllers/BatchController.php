@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
+use App\Models\BatchMail;
+use App\Models\Mail;
 use Illuminate\Http\Request;
 
 class BatchController extends Controller
@@ -82,6 +84,89 @@ class BatchController extends Controller
             return redirect()->route('batch.index')->with('success', 'Mail batch deleted successfully.');
         }
         return redirect()->route('batch.index')->with('error', 'Cannot delete mail batch with associated mails.');
+    }
+
+    public function exportPdf(Batch $batch)
+    {
+        $mails = $batch->mails()->with([
+            'priority', 'action', 'typology', 'documentType',
+            'sender', 'senderOrganisation', 'externalSender', 'externalSenderOrganization',
+            'recipient', 'recipientOrganisation', 'externalRecipient', 'externalRecipientOrganization',
+            'containers', 'attachments'
+        ])->get();
+
+        $data = [
+            'mails' => $mails,
+            'totalCount' => $mails->count(),
+            'generatedAt' => now()->format('d/m/Y H:i'),
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('mails.print.index', $data);
+        return $pdf->download('mail_batch_' . $batch->code . '.pdf');
+    }
+
+    // Méthodes pour la gestion des mails dans les batches
+    public function indexMail(Batch $batch)
+    {
+        $batchMails = BatchMail::where('batch_id', $batch->id)->get();
+        $batchMails->load('mail');
+
+        return view('batch.mail.index', compact('batchMails', 'batch'));
+    }
+
+    public function createMail(Batch $batch)
+    {
+        $mails = Mail::all();
+        return view('batch.mail.create', compact('batch', 'mails'));
+    }
+
+    public function storeMail(Request $request, Batch $batch)
+    {
+        $validatedData = $request->validate([
+            'mail_id' => 'required|exists:mails,id'
+        ]);
+
+        $batchMail = new BatchMail([
+            'mail_id' => $validatedData['mail_id'],
+            'insert_date' => now(),
+            'batch_id' => $batch->id,
+        ]);
+
+        $batchMail->save();
+
+        return redirect()->route('batch.show', $batch->id)
+            ->with('success', 'Courriel de lot créé avec succès.');
+    }
+
+    public function editMail(Batch $batch, BatchMail $batchMail)
+    {
+        $mails = Mail::all();
+        return view('batch.mail.edit', compact('batch', 'batchMail', 'mails'));
+    }
+
+    public function updateMail(Request $request, Batch $batch, BatchMail $batchMail)
+    {
+        $validatedData = $request->validate([
+            'mail_id' => 'required|exists:mails,id'
+        ]);
+
+        $validatedData['insert_date'] = now();
+        $batchMail->update($validatedData);
+
+        return redirect()->route('batch.mail.index', $batch)->with('success', 'Batch mail updated successfully.');
+    }
+
+    public function destroyMail(Batch $batch, int $id)
+    {
+        $mail = $batch->mails()->find($id);
+
+        if (!$mail) {
+            return redirect()->route('batch.show', ['batch' => $batch->id])->with('error', 'Mail not found in this batch.');
+        }
+
+        $batch->mails()->detach($id);
+
+        return redirect()->route('batch.show', ['batch' => $batch->id])->with('success', 'Mail and its attachments removed from batch successfully.');
     }
 
 

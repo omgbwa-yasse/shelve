@@ -77,13 +77,12 @@ class BatchMailController extends Controller
         $mail = $batch->mails()->find($id);
 
         if (!$mail) {
-            return redirect()->route('batch.show', $batch->id)->with('error', 'Mail not found in this batch.');
+            return redirect()->route('batch.show', ['batch' => $batch->id])->with('error', 'Mail not found in this batch.');
         }
 
 
         $batch->mails()->detach($id);
 
-        return redirect()->route('batch.show', $batch->id)->with('success', 'Mail and its attachments removed from batch successfully.');
+        return redirect()->route('batch.show', ['batch' => $batch->id])->with('success', 'Mail and its attachments removed from batch successfully.');
     }
-
 }

@@ -119,13 +119,16 @@ class DollyController extends Controller
 
 
 
-    public function apiList()
+    public function apiList(Request $request)
     {
-        $dollies = Dolly::whereHas('type', function($query){
-                $query->where('name', 'mail_transaction');
-            })
-            ->where('is_public', true )
-            ->orWhere('created_by', Auth::user()->getAuthIdentifier)->get();
+        $query = Dolly::where('category', 'mail')
+            ->where('owner_organisation_id', Auth::user()->current_organisation_id);
+
+        if ($request->has('q') && $request->q) {
+            $query->where('name', 'like', '%' . $request->q . '%');
+        }
+
+        $dollies = $query->get();
         return response()->json($dollies);
     }
 
@@ -137,20 +140,16 @@ class DollyController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category' => 'required|exists:category,id',
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['created_by'] = Auth::id();
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
+        $validatedData['category'] = 'mail';
 
         $dolly = Dolly::create($validatedData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Chariot créé avec succès',
-            'data' => $dolly
-        ]);
+        return response()->json($dolly);
     }
 
 

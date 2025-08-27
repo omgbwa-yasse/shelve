@@ -12,14 +12,22 @@
             </tr>
         </tbody>
     </table>
-    <a href="{{ route('batch.index') }}" class="btn btn-secondary mt-3">Back</a>
-    <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning mt-3">Edit</a>
-    <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="btn btn-danger mt-3" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
-    </form>
-    <a href="{{ route('batch.mail.create', $mailBatch) }}" class="btn btn-warning mt-3">Ajouter des courrier</a>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        <a href="{{ route('batch.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning">Edit</a>
+        <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
+        </form>
+        <a href="{{ route('batch.mail.create', $mailBatch) }}" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addMailModal">Ajouter des courrier</a>
+
+        <div class="ms-auto d-flex gap-2">
+            <a href="{{ route('batch.export.pdf', $mailBatch) }}" class="btn btn-info">Export (pdf)</a>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferToBoxModal">Tranfer vers boites</a>
+            <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#transferToDollyModal">Transfert vers un dolly</a>
+        </div>
+    </div>
 </div>
 @foreach ( $mailBatch->mails as $mail)
 
@@ -77,4 +85,341 @@
 
 @endforeach
 
+{{-- Modals --}}
+{{-- Add Mail Modal --}}
+<div class="modal fade" id="addMailModal" tabindex="-1" aria-labelledby="addMailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMailModalLabel">Ajouter un courrier au parapheur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addMailForm">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="mail_search" class="form-label">Rechercher un courrier</label>
+                        <input type="text" class="form-control" id="mail_search" placeholder="Entrez un code, un nom...">
+                        <div id="mail_search_results" class="mt-2"></div>
+                    </div>
+                    <input type="hidden" name="mail_id" id="selected_mail_id">
+                </form>
+                <div id="addMailError" class="alert alert-danger d-none"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="saveMailButton">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Transfer to Box Modal --}}
+<div class="modal fade" id="transferToBoxModal" tabindex="-1" aria-labelledby="transferToBoxModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferToBoxModalLabel">Transférer vers une ou plusieurs boîte(s)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="boxTab">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="select-box-tab" data-bs-toggle="tab" data-bs-target="#select-box" type="button" role="tab" aria-controls="select-box" aria-selected="true">Sélectionner</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="create-box-tab" data-bs-toggle="tab" data-bs-target="#create-box" type="button" role="tab" aria-controls="create-box" aria-selected="false">Créer</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="boxTabContent">
+                    <div class="tab-pane fade show active" id="select-box" role="tabpanel" aria-labelledby="select-box-tab">
+                        <div class="my-3">
+                            <input type="text" id="box-search" class="form-control" placeholder="Rechercher une boîte...">
+                        </div>
+                        <div id="box-list-container" style="max-height: 300px; overflow-y: auto;">
+                            <div class="text-center">
+                                <output class="spinner-border">
+                                    <span class="visually-hidden">Loading...</span>
+                                </output>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="create-box" role="tabpanel" aria-labelledby="create-box-tab">
+                        <form id="createBoxForm" class="mt-3">
+                            <div class="mb-3">
+                                <label for="new_box_code" class="form-label">Code</label>
+                                <input type="text" class="form-control" id="new_box_code" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_box_name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="new_box_name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="transferBoxError" class="alert alert-danger d-none mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="saveTransferToBoxButton">Transférer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Transfer to Dolly Modal --}}
+<div class="modal fade" id="transferToDollyModal" tabindex="-1" aria-labelledby="transferToDollyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transferToDollyModalLabel">Transférer vers un ou plusieurs chariot(s)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                 <ul class="nav nav-tabs" id="dollyTab">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="select-dolly-tab" data-bs-toggle="tab" data-bs-target="#select-dolly" type="button" role="tab" aria-controls="select-dolly" aria-selected="true">Sélectionner</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="create-dolly-tab" data-bs-toggle="tab" data-bs-target="#create-dolly" type="button" role="tab" aria-controls="create-dolly" aria-selected="false">Créer</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="dollyTabContent">
+                    <div class="tab-pane fade show active" id="select-dolly" role="tabpanel" aria-labelledby="select-dolly-tab">
+                        <div class="my-3">
+                            <input type="text" id="dolly-search" class="form-control" placeholder="Rechercher un chariot...">
+                        </div>
+                        <div id="dolly-list-container" style="max-height: 300px; overflow-y: auto;">
+                            <div class="text-center">
+                                <output class="spinner-border">
+                                    <span class="visually-hidden">Loading...</span>
+                                </output>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="create-dolly" role="tabpanel" aria-labelledby="create-dolly-tab">
+                        <form id="createDollyForm" class="mt-3">
+                            <div class="mb-3">
+                                <label for="new_dolly_code" class="form-label">Code</label>
+                                <input type="text" class="form-control" id="new_dolly_code" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_dolly_name" class="form-label">Nom</label>
+                                <input type="text" class="form-control" id="new_dolly_name" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
+                        </form>
+                    </div>
+                </div>
+                <div id="transferDollyError" class="alert alert-danger d-none mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-primary" id="saveTransferToDollyButton">Transférer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const batchId = {{ $mailBatch->id }};
+
+    // Helper to get CSRF token
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    }
+
+    // Modal Handlers
+    const addMailModal = new bootstrap.Modal(document.getElementById('addMailModal'));
+    const transferToBoxModal = new bootstrap.Modal(document.getElementById('transferToBoxModal'));
+    const transferToDollyModal = new bootstrap.Modal(document.getElementById('transferToDollyModal'));
+
+    // --- Add Mail Logic ---
+    const saveMailButton = document.getElementById('saveMailButton');
+    if(saveMailButton) {
+        saveMailButton.addEventListener('click', function() {
+            const mailId = document.getElementById('selected_mail_id').value;
+            if (!mailId) {
+                document.getElementById('addMailError').textContent = 'Veuillez sélectionner un courrier.';
+                document.getElementById('addMailError').classList.remove('d-none');
+                return;
+            }
+            document.getElementById('addMailError').classList.add('d-none');
+
+            fetch(`/batch/${batchId}/mails`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ mail_id: mailId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addMailModal.hide();
+                    location.reload(); // Reload to see the new mail
+                } else {
+                    document.getElementById('addMailError').textContent = data.message || 'Une erreur est survenue.';
+                    document.getElementById('addMailError').classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('addMailError').textContent = 'Une erreur réseau est survenue.';
+                document.getElementById('addMailError').classList.remove('d-none');
+            });
+        });
+    }
+
+    // --- Transfer to Box Logic ---
+    const transferToBoxModalEl = document.getElementById('transferToBoxModal');
+    if(transferToBoxModalEl) {
+        transferToBoxModalEl.addEventListener('show.bs.modal', function () {
+            loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
+        });
+
+        document.getElementById('box-search').addEventListener('keyup', function() {
+            loadSelectableList("{{ route('mail-container.list') }}?q=" + this.value, '#box-list-container', 'boxes');
+        });
+
+        document.getElementById('createBoxForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const code = document.getElementById('new_box_code').value;
+            const name = document.getElementById('new_box_name').value;
+            fetch("{{ route('mail-container.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ code: code, name: name })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    // Creation successful, reload the list and switch back to the select tab
+                    loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
+                    const tab = new bootstrap.Tab(document.getElementById('select-box-tab'));
+                    tab.show();
+                } else {
+                    // Handle error
+                    const errorDiv = document.getElementById('transferBoxError');
+                    errorDiv.textContent = data.message || 'Erreur lors de la création.';
+                    errorDiv.classList.remove('d-none');
+                }
+            });
+        });
+
+        document.getElementById('saveTransferToBoxButton').addEventListener('click', function() {
+            const selected = Array.from(document.querySelectorAll('#box-list-container input:checked')).map(el => el.value);
+            if (selected.length === 0) {
+                document.getElementById('transferBoxError').textContent = 'Veuillez sélectionner au moins une boîte.';
+                document.getElementById('transferBoxError').classList.remove('d-none');
+                return;
+            }
+            console.log(`Transferring batch ${batchId} to boxes`, selected);
+            // Implement your AJAX logic for transfer here
+            alert(`Logique de transfert vers les boîtes ${selected.join(', ')} à implémenter.`);
+            transferToBoxModal.hide();
+        });
+    }
+
+
+    // --- Transfer to Dolly Logic ---
+    const transferToDollyModalEl = document.getElementById('transferToDollyModal');
+    if(transferToDollyModalEl) {
+        transferToDollyModalEl.addEventListener('show.bs.modal', function () {
+            loadSelectableList('/api/dollies', '#dolly-list-container', 'dollies');
+        });
+
+        document.getElementById('dolly-search').addEventListener('keyup', function() {
+            loadSelectableList('/api/dollies?q=' + this.value, '#dolly-list-container', 'dollies');
+        });
+
+        document.getElementById('createDollyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('new_dolly_name').value;
+            const description = document.getElementById('new_dolly_description').value;
+            fetch("/api/dollies", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ name: name, description: description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    // Creation successful, reload the list and switch back to the select tab
+                    loadSelectableList('/api/dollies', '#dolly-list-container', 'dollies');
+                    const tab = new bootstrap.Tab(document.getElementById('select-dolly-tab'));
+                    tab.show();
+                    document.getElementById('createDollyForm').reset();
+                } else {
+                    // Handle error
+                    const errorDiv = document.getElementById('transferDollyError');
+                    errorDiv.textContent = data.message || 'Erreur lors de la création.';
+                    errorDiv.classList.remove('d-none');
+                }
+            });
+        });
+
+        document.getElementById('saveTransferToDollyButton').addEventListener('click', function() {
+            const selected = Array.from(document.querySelectorAll('#dolly-list-container input:checked')).map(el => el.value);
+            if (selected.length === 0) {
+                document.getElementById('transferDollyError').textContent = 'Veuillez sélectionner au moins un chariot.';
+                document.getElementById('transferDollyError').classList.remove('d-none');
+                return;
+            }
+            console.log(`Transferring batch ${batchId} to dollies`, selected);
+            // Implement your AJAX logic for transfer here
+            alert(`Logique de transfert vers les chariots ${selected.join(', ')} à implémenter.`);
+            transferToDollyModal.hide();
+        });
+    }
+
+    function loadSelectableList(url, containerSelector, type) {
+        const container = document.querySelector(containerSelector);
+        container.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+
+        fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let items = data; // API returns an array directly
+            let html = '<ul class="list-group">';
+            if (items.length > 0) {
+                items.forEach(item => {
+                    html += `
+                        <li class="list-group-item">
+                            <input class="form-check-input me-1" type="checkbox" value="${item.id}" id="${type}-${item.id}">
+                            <label class="form-check-label stretched-link" for="${type}-${item.id}">${item.code} - ${item.name || ''}</label>
+                        </li>`;
+                });
+            } else {
+                html += '<li class="list-group-item text-muted">Aucun élément trouvé.</li>';
+            }
+            html += '</ul>';
+            container.innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error loading list:', error);
+            container.innerHTML = '<div class="alert alert-danger">Erreur de chargement de la liste.</div>';
+        });
+    }
+});
+</script>
+@endpush
 @endsection

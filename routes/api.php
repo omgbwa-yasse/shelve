@@ -86,3 +86,4 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
         Route::post('keywords/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestKeywords'])->name('keywords.suggest');
     });
 });
+
