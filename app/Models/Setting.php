@@ -77,7 +77,27 @@ class Setting extends Model
      */
     public function getEffectiveValue()
     {
-        return $this->value !== null ? $this->value : $this->default_value;
+        $effectiveValue = $this->value !== null ? $this->value : $this->default_value;
+
+        // Si la valeur effective est encore une string JSON (notamment pour default_value),
+        // la décoder
+        if (is_string($effectiveValue) && $this->isJsonString($effectiveValue)) {
+            return json_decode($effectiveValue, true);
+        }
+
+        return $effectiveValue;
+    }
+
+    /**
+     * Vérifie si une string est du JSON valide
+     *
+     * @param string $string
+     * @return bool
+     */
+    private function isJsonString(string $string): bool
+    {
+        json_decode($string);
+        return json_last_error() === JSON_ERROR_NONE;
     }
 
     /**

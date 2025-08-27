@@ -13,6 +13,7 @@ use AiBridge\Providers\CustomOpenAIProvider;
 use AiBridge\Providers\OnnProvider;
 use AiBridge\Providers\GrokProvider;
 use AiBridge\Providers\OllamaTurboProvider;
+use App\Exceptions\AiProviderNotConfiguredException;
 
 class ProviderRegistry
 {
@@ -69,20 +70,43 @@ class ProviderRegistry
 
     /**
      * Register an Ollama provider using its OpenAI-compatible API.
-     * Falls back to http://127.0.0.1:11434/v1 if no setting is found.
+     * Only registers if Ollama is enabled in database settings.
      */
     private function registerOllamaCompat(): void
     {
         Log::info('ProviderRegistry: registerOllamaCompat called');
 
-        // Utiliser le service de valeurs par défaut pour obtenir l'URL Ollama
+        // Vérifier d'abord si Ollama est activé dans les paramètres
+        $isEnabled = $this->defaultValues->getEffectiveValue('ollama_enabled', null, false);
+
+        Log::info('ProviderRegistry: ollama enabled check', ['enabled' => $isEnabled]);
+
+        if (!$isEnabled) {
+            Log::warning('ProviderRegistry: Ollama provider is disabled in database settings');
+            throw new \App\Exceptions\AiProviderNotConfiguredException("Ollama provider is disabled. Please enable it in AI settings.");
+        }
+
+        // Utiliser le service de valeurs par défaut pour obtenir l'URL Ollama depuis la base de données
         $baseUrl = $this->defaultValues->getEffectiveValue(
             'ollama_base_url',
             null,
-            rtrim(config('ollama-laravel.url', env('OLLAMA_URL', 'http://127.0.0.1:11434')), '/')
+            'http://127.0.0.1:11434' // fallback simple, plus de config/env
         );
 
-        Log::info('ProviderRegistry: ollama base URL', ['url' => $baseUrl]);
+        // S'assurer que l'URL est une string valide
+        if (!is_string($baseUrl) || empty($baseUrl)) {
+            $baseUrl = 'http://127.0.0.1:11434';
+        }
+
+        $baseUrl = rtrim($baseUrl, '/');
+
+        Log::info('ProviderRegistry: ollama base URL from database', ['url' => $baseUrl]);
+
+        // Tester la connectivité à Ollama avant l'enregistrement
+        if (!$this->testOllamaConnectivity($baseUrl)) {
+            Log::warning('ProviderRegistry: Ollama service is not accessible', ['url' => $baseUrl]);
+            throw new AiProviderNotConfiguredException("Ollama service is not accessible at {$baseUrl}. Please ensure Ollama is running with 'ollama serve' command.");
+        }
 
         // OpenAI compatible endpoint is under /v1
         $base = rtrim($baseUrl, '/') . '/v1';
@@ -220,5 +244,35 @@ class ProviderRegistry
             'json' => is_string($val) ? (json_decode($val, true) ?? $default) : $val,
             default => $val,
         };
+    }
+
+    /**
+     * Test the connectivity to Ollama service
+     */
+    private function testOllamaConnectivity(string $baseUrl): bool
+    {
+        try {
+            // Tester l'endpoint de santé d'Ollama
+            $client = new \GuzzleHttp\Client([
+                'timeout' => 5,
+                'connect_timeout' => 3,
+            ]);
+
+            $response = $client->get($baseUrl . '/api/tags');
+
+            Log::info('ProviderRegistry: Ollama connectivity test', [
+                'url' => $baseUrl,
+                'status' => $response->getStatusCode(),
+                'success' => $response->getStatusCode() === 200
+            ]);
+
+            return $response->getStatusCode() === 200;
+        } catch (\Throwable $e) {
+            Log::warning('ProviderRegistry: Ollama connectivity test failed', [
+                'url' => $baseUrl,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
     }
 }
