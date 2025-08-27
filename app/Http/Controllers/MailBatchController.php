@@ -2,7 +2,7 @@
     public function exportPdf(MailBatch $mailBatch)
     {
         $mails = $mailBatch->mails()->with([
-            'priority', 'action', 'typology', 'documentType',
+            'priority', 'action', 'typology',
             'sender', 'senderOrganisation', 'externalSender', 'externalSenderOrganization',
             'recipient', 'recipientOrganisation', 'externalRecipient', 'externalRecipientOrganization',
             'containers', 'attachments'
