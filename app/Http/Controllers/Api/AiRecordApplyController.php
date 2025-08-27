@@ -791,8 +791,8 @@ class AiRecordApplyController extends Controller
             // For debugging: try the exact same approach as the working method
             $res = AiBridge::provider($provider)->chat($messages, [
                 'model' => $model,
-                'temperature' => 0.3,
-                'max_tokens' => 1000,
+                'temperature' => 0.2,
+                'max_tokens' => 250,
                 'timeout' => 40000,
             ]);
 

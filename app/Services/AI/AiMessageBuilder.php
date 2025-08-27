@@ -126,6 +126,7 @@ class AiMessageBuilder
             'assign_activity' => $options + ['max_tokens' => 180, 'temperature' => 0.1],
             'summarize' => $options + ['max_tokens' => 350, 'temperature' => 0.3],
             'reformulate_title' => $options + ['max_tokens' => 60, 'temperature' => 0.2],
+            'keywords' => $options + ['max_tokens' => 250, 'temperature' => 0.2],
             default => $options,
         };
     }

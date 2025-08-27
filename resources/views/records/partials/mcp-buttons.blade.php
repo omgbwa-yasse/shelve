@@ -1,4 +1,4 @@
-{{-- 
+{{--
     Boutons MCP pour les records
     Usage: @include('records.partials.mcp-buttons', ['record' => $record, 'style' => 'individual|batch'])
 --}}
@@ -13,46 +13,58 @@
     {{-- Boutons pour un record individuel --}}
     <div class="btn-group" role="group" aria-label="Actions MCP">
         {{-- Reformulation de titre --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-primary mcp-action-btn" 
-                data-action="title" 
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-primary mcp-action-btn"
+                data-action="title"
                 data-record-id="{{ $record->id }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
                 title="{{ __('Reformuler le titre selon les règles ISAD(G)') }}">
             <i class="bi bi-magic"></i>
             @if($showLabels) {{ __('reformulate_title') ?? 'Reformuler' }} @endif
         </button>
 
         {{-- Indexation thésaurus --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-success mcp-action-btn" 
-                data-action="thesaurus" 
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-success mcp-action-btn"
+                data-action="thesaurus"
                 data-record-id="{{ $record->id }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
                 title="{{ __('Indexation automatique avec le thésaurus') }}">
             <i class="bi bi-tags"></i>
             @if($showLabels) {{ __('index_thesaurus') ?? 'Indexer' }} @endif
         </button>
 
         {{-- Résumé ISAD(G) --}}
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-info mcp-action-btn" 
-                data-action="summary" 
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-info mcp-action-btn"
+                data-action="summary"
                 data-record-id="{{ $record->id }}"
-                data-bs-toggle="tooltip" 
-                data-bs-placement="top" 
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
                 title="{{ __('Générer le résumé ISAD(G) - Élément 3.3.1') }}">
             <i class="bi bi-file-text"></i>
             @if($showLabels) {{ __('generate_summary') ?? 'Résumé' }} @endif
         </button>
 
+        {{-- Extraction mots-clés --}}
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-warning mcp-action-btn"
+                data-action="keywords"
+                data-record-id="{{ $record->id }}"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="{{ __('Extraction automatique des mots-clés') }}">
+            <i class="bi bi-key"></i>
+            @if($showLabels) {{ __('keywords') ?? 'Mots-clés' }} @endif
+        </button>
+
         {{-- Traitement complet --}}
         <div class="btn-group" role="group">
-            <button type="button" 
-                    class="btn btn-{{ $size }} btn-outline-warning dropdown-toggle mcp-batch-btn" 
-                    data-bs-toggle="dropdown" 
+            <button type="button"
+                    class="btn btn-{{ $size }} btn-outline-warning dropdown-toggle mcp-batch-btn"
+                    data-bs-toggle="dropdown"
                     aria-expanded="false"
                     data-record-id="{{ $record->id }}">
                 <i class="bi bi-cpu"></i>
@@ -60,25 +72,25 @@
             </button>
             <ul class="dropdown-menu">
                 <li>
-                    <a class="dropdown-item mcp-action-btn" 
-                       href="#" 
-                       data-action="all-preview" 
+                    <a class="dropdown-item mcp-action-btn"
+                       href="#"
+                       data-action="all-preview"
                        data-record-id="{{ $record->id }}">
                         <i class="bi bi-eye me-2"></i>{{ __('preview_all') ?? 'Prévisualiser tout' }}
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item mcp-action-btn" 
-                       href="#" 
-                       data-action="all-apply" 
+                    <a class="dropdown-item mcp-action-btn"
+                       href="#"
+                       data-action="all-apply"
                        data-record-id="{{ $record->id }}">
                         <i class="bi bi-check-circle me-2"></i>{{ __('apply_all') ?? 'Appliquer tout' }}
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                    <a class="dropdown-item" 
-                       href="/admin/mcp" 
+                    <a class="dropdown-item"
+                       href="/admin/mcp"
                        target="_blank">
                         <i class="bi bi-gear me-2"></i>{{ __('mcp_settings') ?? 'Configuration MCP' }}
                     </a>
@@ -90,16 +102,16 @@
 @elseif($style === 'batch')
     {{-- Boutons pour traitement par lots --}}
     <div class="btn-group" role="group" aria-label="Actions MCP par lots">
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-primary" 
-                data-bs-toggle="modal" 
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-primary"
+                data-bs-toggle="modal"
                 data-bs-target="#mcpBatchModal">
             <i class="bi bi-layers"></i>
             @if($showLabels) {{ __('mcp_batch_process') ?? 'Traitement MCP par lots' }} @endif
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-info" 
+
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-info"
                 onclick="window.open('/admin/mcp', '_blank')">
             <i class="bi bi-speedometer2"></i>
             @if($showLabels) {{ __('mcp_dashboard') ?? 'Dashboard MCP' }} @endif
@@ -109,25 +121,32 @@
 @elseif($style === 'edit')
     {{-- Boutons pour la vue d'édition --}}
     <div class="d-flex gap-2 flex-wrap">
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-primary mcp-action-btn" 
-                data-action="title-preview" 
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-primary mcp-action-btn"
+                data-action="title-preview"
                 data-record-id="{{ $record->id ?? '' }}">
             <i class="bi bi-magic me-1"></i>{{ __('suggest_title') ?? 'Suggérer un titre' }}
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-success mcp-action-btn" 
-                data-action="thesaurus-suggest" 
+
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-success mcp-action-btn"
+                data-action="thesaurus-suggest"
                 data-record-id="{{ $record->id ?? '' }}">
             <i class="bi bi-tags me-1"></i>{{ __('suggest_keywords') ?? 'Suggérer des mots-clés' }}
         </button>
-        
-        <button type="button" 
-                class="btn btn-{{ $size }} btn-outline-info mcp-action-btn" 
-                data-action="summary-preview" 
+
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-info mcp-action-btn"
+                data-action="summary-preview"
                 data-record-id="{{ $record->id ?? '' }}">
             <i class="bi bi-file-text me-1"></i>{{ __('generate_content') ?? 'Générer le contenu' }}
+        </button>
+
+        <button type="button"
+                class="btn btn-{{ $size }} btn-outline-warning mcp-action-btn"
+                data-action="keywords"
+                data-record-id="{{ $record->id ?? '' }}">
+            <i class="bi bi-key me-1"></i>{{ __('keywords') ?? 'Extraire mots-clés' }}
         </button>
     </div>
 @endif
@@ -186,22 +205,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function handleMcpAction(event) {
     event.preventDefault();
-    
+
     const button = event.currentTarget;
     const action = button.dataset.action;
     const recordId = button.dataset.recordId;
-    
+
     if (!recordId) {
         showMcpNotification('Erreur: ID du record manquant', 'error');
         return;
     }
-    
+
     // Désactiver le bouton pendant le traitement
     setButtonState(button, 'processing');
-    
+
     // Déterminer l'endpoint selon l'action
     let endpoint, method = 'POST', isPreview = action.includes('preview');
-    
+
     switch(action) {
         case 'title':
         case 'title-preview':
@@ -226,7 +245,7 @@ function handleMcpAction(event) {
             showMcpNotification('Action inconnue: ' + action, 'error');
             return;
     }
-    
+
     // Effectuer la requête
     fetch(endpoint, {
         method: method,
@@ -244,10 +263,10 @@ function handleMcpAction(event) {
         if (data.error) {
             throw new Error(data.message || 'Erreur inconnue');
         }
-        
+
         setButtonState(button, 'success');
         showMcpNotification(data.message || 'Traitement réussi', 'success');
-        
+
         // Afficher les résultats selon le type d'action
         if (isPreview || action.startsWith('all-preview')) {
             showMcpPreview(data);
@@ -268,13 +287,13 @@ function handleMcpAction(event) {
 function setButtonState(button, state) {
     // Retirer toutes les classes d'état
     button.classList.remove('mcp-processing', 'mcp-success', 'mcp-error');
-    
+
     // Retirer les spinners existants
     const existingSpinner = button.querySelector('.spinner-border');
     if (existingSpinner) {
         existingSpinner.remove();
     }
-    
+
     switch(state) {
         case 'processing':
             button.classList.add('mcp-processing');
@@ -303,10 +322,10 @@ function setButtonState(button, state) {
 function showMcpNotification(message, type = 'info') {
     // Créer une notification toast
     const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    
+
     const toastId = 'toast-' + Date.now();
     const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
-    
+
     const toastHtml = `
         <div id="${toastId}" class="toast ${bgClass} text-white" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header ${bgClass} text-white border-0">
@@ -319,12 +338,12 @@ function showMcpNotification(message, type = 'info') {
             </div>
         </div>
     `;
-    
+
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
+
     const toast = new bootstrap.Toast(document.getElementById(toastId));
     toast.show();
-    
+
     // Supprimer le toast après fermeture
     document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
         this.remove();
@@ -346,10 +365,10 @@ function showMcpPreview(data) {
     if (!modal) {
         modal = createPreviewModal();
     }
-    
+
     const modalBody = modal.querySelector('.modal-body');
     let content = '<h6>Aperçu des modifications :</h6>';
-    
+
     if (data.previews) {
         Object.entries(data.previews).forEach(([feature, preview]) => {
             content += formatPreviewContent(feature, preview);
@@ -357,9 +376,9 @@ function showMcpPreview(data) {
     } else if (data.preview) {
         content += formatPreviewContent('single', data.preview);
     }
-    
+
     modalBody.innerHTML = content;
-    
+
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
 }
@@ -367,7 +386,7 @@ function showMcpPreview(data) {
 function formatPreviewContent(feature, preview) {
     let content = `<div class="mb-3 border rounded p-3">`;
     content += `<h6 class="text-primary">${feature.charAt(0).toUpperCase() + feature.slice(1)}</h6>`;
-    
+
     if (typeof preview === 'object') {
         if (preview.original_title && preview.suggested_title) {
             content += `
@@ -396,7 +415,7 @@ function formatPreviewContent(feature, preview) {
     } else {
         content += `<p class="bg-light p-2 rounded">${preview}</p>`;
     }
-    
+
     content += '</div>';
     return content;
 }
@@ -421,7 +440,7 @@ function createPreviewModal() {
             </div>
         </div>
     `;
-    
+
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     return document.getElementById('mcpPreviewModal');
 }

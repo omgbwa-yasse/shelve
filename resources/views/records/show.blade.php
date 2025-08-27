@@ -257,10 +257,11 @@
                         {{ __('summarize') ?? 'Résumer' }}
                     </button>
 
-                    <button type="button" class="btn btn-outline-secondary ai-action-btn"
+                    <button type="button" class="btn btn-outline-warning ai-action-btn"
                             data-action="keywords"
                             data-prompt-id="{{ $aiPrompts['record_keywords'] ?? '' }}">
-                        {{ __('keywords') ?? 'Extraire mots clés' }}
+                        <i class="bi bi-key"></i>
+                        @if($showLabels ?? true) {{ __('keywords') ?? 'Extraire mots clés' }} @endif
                     </button>
 
                     <button type="button" class="btn btn-outline-success ai-action-btn"
@@ -1314,6 +1315,10 @@ function handleMcpActionWithMode(event) {
         case 'summary-preview':
             endpoint = `${apiPrefix}/records/${recordId}/summary/preview`;
             break;
+        case 'keywords':
+        case 'keywords-preview':
+            endpoint = `${apiPrefix}/records/${recordId}/keywords/preview`;
+            break;
         case 'all-preview':
             endpoint = `${apiPrefix}/records/${recordId}/preview`;
             break;
@@ -1481,6 +1486,8 @@ function showMcpPreviewWithValidation(data, mode, action, recordId, apiPrefix) {
         content += formatThesaurusPreviewShow(data);
     } else if (action.includes('summary')) {
         content += formatSummaryPreviewShow(data);
+    } else if (action.includes('keywords')) {
+        content += formatKeywordsPreviewShow(data);
     } else if (data.previews) {
         Object.entries(data.previews).forEach(([feature, preview]) => {
             content += formatPreviewContent(feature, preview);
@@ -1551,6 +1558,46 @@ function formatSummaryPreviewShow(data) {
                             `;
     }
     return '<div class="alert alert-warning">Aucun résumé généré</div>';
+}
+
+// Formater l'aperçu spécifique pour les mots-clés (vue Show)
+function formatKeywordsPreviewShow(data) {
+    if (data.preview && data.preview.keywords && data.preview.keywords.length > 0) {
+        let content = `
+            <div class="mb-3 border rounded p-3 bg-light">
+                <h6 class="text-primary"><i class="bi bi-key me-2"></i>Extraction automatique des mots-clés</h6>
+                <p><strong>Mots-clés extraits :</strong> ${data.preview.keywords.length}</p>
+                <div class="mb-3">
+                    <strong>Mots-clés suggérés :</strong>
+                    <div class="mt-2 d-flex flex-wrap gap-2">
+        `;
+
+        data.preview.keywords.forEach(keyword => {
+            const badgeClass = keyword.exists ? 'bg-success' : 'bg-warning';
+            const icon = keyword.exists ? '✓' : '+';
+            const category = keyword.category ? `<span class="badge bg-secondary ms-1">${keyword.category}</span>` : '';
+            content += `
+                <span class="badge ${badgeClass} p-2">
+                    ${keyword.name} <small>${icon}</small>${category}
+                </span>
+            `;
+        });
+
+        content += `
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Légende :</strong>
+                    <span class="badge bg-success me-2">✓ Existe déjà</span>
+                    <span class="badge bg-warning">+ Sera créé</span>
+                </div>
+            </div>
+        `;
+
+        return content;
+    }
+    return '<div class="alert alert-warning">Aucun mot-clé extrait</div>';
 }
 
 // Formater l'aperçu spécifique pour l'indexation thésaurus (vue Show)
@@ -1673,6 +1720,21 @@ function formatPreviewContent(feature, preview) {
                         <span class="text-success">${preview.suggested_summary}</span>
                     </div>
                 </div>`;
+        } else if (preview.keywords && Array.isArray(preview.keywords)) {
+            content += `<p><strong>Mots-clés extraits :</strong> ${preview.keywords.length}</p>`;
+            if (preview.keywords.length > 0) {
+                content += '<p><strong>Mots-clés suggérés :</strong></p><div class="d-flex flex-wrap gap-2">';
+                preview.keywords.slice(0, 10).forEach(keyword => {
+                    const badgeClass = keyword.exists ? 'bg-success' : 'bg-warning';
+                    const icon = keyword.exists ? '✓' : '+';
+                    const category = keyword.category ? `<span class="badge bg-secondary ms-1">${keyword.category}</span>` : '';
+                    content += `<span class="badge ${badgeClass} p-2">${keyword.name} <small>${icon}</small>${category}</span>`;
+                });
+                content += '</div>';
+                if (preview.keywords.length > 10) {
+                    content += `<p class="text-muted">... et ${preview.keywords.length - 10} autres</p>`;
+                }
+            }
         } else {
             content += `<pre class="bg-light p-2 rounded">${JSON.stringify(preview, null, 2)}</pre>`;
         }
