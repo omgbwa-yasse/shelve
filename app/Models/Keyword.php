@@ -10,8 +10,7 @@ class Keyword extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'description'
+        'name'
     ];
 
     /**
@@ -43,8 +42,7 @@ class Keyword extends Model
         }
 
         return static::firstOrCreate(
-            ['name' => $name],
-            ['description' => null]
+            ['name' => $name]
         );
     }
 
