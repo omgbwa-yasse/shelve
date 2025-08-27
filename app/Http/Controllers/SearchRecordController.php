@@ -19,6 +19,7 @@ use App\Models\RecordSupport;
 use App\Models\User;
 use App\Models\RecordLevel;
 use App\Models\ThesaurusConcept;
+use App\Models\Keyword;
 use Illuminate\Support\Facades\Auth;
 
 class SearchRecordController extends Controller
@@ -43,6 +44,7 @@ class SearchRecordController extends Controller
             'creators' => User::select('id', 'name')->get(),
             'statues' => RecordStatus::select('id', 'name')->get(),
             'containers' => Container::select('id', 'code')->get(),
+            'keywords' => Keyword::select('id', 'name')->orderBy('name')->get(),
         ];
 
         return view('search.record.advanced', compact('data'));
@@ -87,6 +89,7 @@ class SearchRecordController extends Controller
                     case 'creator':
                     case 'container':
                     case 'status':
+                    case 'keyword':
                         $this->applyRelationSearch($query, $field, $operator, $value);
                         break;
 
@@ -267,7 +270,8 @@ class SearchRecordController extends Controller
             'term' => 'thesaurusConcepts',
             'author' => 'authors',
             'creator' => 'user',
-            'status' => 'status'
+            'status' => 'status',
+            'keyword' => 'keywords'
         ];
 
         return $relationMap[$field] ?? $field;
@@ -321,6 +325,13 @@ class SearchRecordController extends Controller
                     $q->where('containers.id', $containerId);
                 });
                 break;
+
+            case "keyword":
+                $keywordId = $request->input('id');
+                $query->whereHas('keywords', function ($q) use ($keywordId) {
+                    $q->where('keywords.id', $keywordId);
+                });
+                break;
             default:
                 break;
         }
@@ -333,7 +344,8 @@ class SearchRecordController extends Controller
             'containers',
             'user',
             'authors',
-            'thesaurusConcepts'
+            'thesaurusConcepts',
+            'keywords'
         ]);
 
         $records = $query->paginate(10);
@@ -349,7 +361,8 @@ class SearchRecordController extends Controller
             'activities' => Activity::all(),
             'containers' => Container::all(),
             'levels' => RecordLevel::all(),
-            'authors' => Author::with('authorType')->get()
+            'authors' => Author::with('authorType')->get(),
+            'keywords' => Keyword::select('id', 'name')->orderBy('name')->get()
         ];
 
         return view('records.index', $viewData);
@@ -396,12 +409,12 @@ class SearchRecordController extends Controller
     public function selectBuilding()
     {
         $buildings = Building::with(['floors.rooms.shelves.containers.records'])->get();
-        
+
         // Ajouter les statistiques pour chaque building
         $buildings->each(function ($building) {
             $containersCount = 0;
             $recordsCount = 0;
-            
+
             foreach ($building->floors as $floor) {
                 foreach ($floor->rooms as $room) {
                     foreach ($room->shelves as $shelf) {
@@ -412,11 +425,11 @@ class SearchRecordController extends Controller
                     }
                 }
             }
-            
+
             $building->containers_count = $containersCount;
             $building->records_count = $recordsCount;
         });
-        
+
         return view('search.record.buildingSearch', [
             'buildings' => $buildings
         ]);
@@ -427,12 +440,12 @@ class SearchRecordController extends Controller
         $floors = Floor::with(['rooms.shelves.containers.records'])
             ->where('building_id', $request->input('id'))
             ->get();
-        
+
         // Ajouter les statistiques pour chaque floor
         $floors->each(function ($floor) {
             $containersCount = 0;
             $recordsCount = 0;
-            
+
             foreach ($floor->rooms as $room) {
                 foreach ($room->shelves as $shelf) {
                     $containersCount += $shelf->containers->count();
@@ -441,11 +454,11 @@ class SearchRecordController extends Controller
                     }
                 }
             }
-            
+
             $floor->containers_count = $containersCount;
             $floor->records_count = $recordsCount;
         });
-        
+
         return view('search.record.floorSearch', [
             'floors' => $floors
         ]);
@@ -456,23 +469,23 @@ class SearchRecordController extends Controller
         $rooms = Room::with(['shelves.containers.records'])
             ->where('floor_id', $request->input('id'))
             ->get();
-        
+
         // Ajouter les statistiques pour chaque room
         $rooms->each(function ($room) {
             $containersCount = 0;
             $recordsCount = 0;
-            
+
             foreach ($room->shelves as $shelf) {
                 $containersCount += $shelf->containers->count();
                 foreach ($shelf->containers as $container) {
                     $recordsCount += $container->records->count();
                 }
             }
-            
+
             $room->containers_count = $containersCount;
             $room->records_count = $recordsCount;
         });
-        
+
         return view('search.record.roomSearch', [
             'rooms' => $rooms
         ]);
@@ -483,20 +496,20 @@ class SearchRecordController extends Controller
         $shelves = Shelf::with(['containers.records'])
             ->where('room_id', $request->input('id'))
             ->get();
-        
+
         // Ajouter les statistiques pour chaque shelf
         $shelves->each(function ($shelf) {
             $containersCount = $shelf->containers->count();
             $recordsCount = 0;
-            
+
             foreach ($shelf->containers as $container) {
                 $recordsCount += $container->records->count();
             }
-            
+
             $shelf->containers_count = $containersCount;
             $shelf->records_count = $recordsCount;
         });
-        
+
         return view('search.record.shelveSearch', [
             'shelves' => $shelves
         ]);
@@ -507,12 +520,12 @@ class SearchRecordController extends Controller
         $containers = Container::with(['records'])
             ->where('shelve_id', $request->input('id'))
             ->get();
-        
+
         // Ajouter les statistiques pour chaque container
         $containers->each(function ($container) {
             $container->records_count = $container->records->count();
         });
-        
+
         return view('search.record.containerSearch', [
             'containers' => $containers
         ]);
@@ -525,7 +538,7 @@ class SearchRecordController extends Controller
             ->withCount('records') // Compter les records de manière optimisée
             ->orderBy('records_count', 'desc') // Trier par nombre de records décroissant
             ->paginate(50);
-        
+
         return view('search.record.wordSearch', [
             'terms' => $terms
         ]);
@@ -534,13 +547,13 @@ class SearchRecordController extends Controller
     public function selectActivity()
     {
         $activities = Activity::with(['records', 'parent', 'children', 'organisations'])->get();
-        
+
         // Ajouter les statistiques pour chaque activité
         $activities->each(function ($activity) {
             $activity->records_count = $activity->records->count();
             $activity->children_count = $activity->children->count();
         });
-        
+
         return view('search.record.activitySearch', [
             'activities' => $activities
         ]);
