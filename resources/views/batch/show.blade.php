@@ -31,10 +31,27 @@
         </div>
     </div>
 </div>
+
+{{-- Section pour sélectionner les mails à transférer --}}
+<div class="mt-3 mb-3">
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="selectAllMailsForTransfer">
+        <label class="form-check-label" for="selectAllMailsForTransfer">
+            <strong>Sélectionner tous les courriers pour transfert</strong>
+        </label>
+    </div>
+    <div class="mt-2">
+        <span id="selectedMailsCount" class="text-muted">0 courrier(s) sélectionné(s) pour transfert</span>
+    </div>
+</div>
+
 @foreach ( $mailBatch->mails as $mail)
 
         <div class="card text-start mt-1">
             <div class="card-body d-flex justify-content-between align-items-start">
+                <div class="form-check me-3 mt-1">
+                    <input class="form-check-input mail-transfer-checkbox" type="checkbox" value="{{ $mail->id }}" id="transfer_mail_{{ $mail->id }}">
+                </div>
                 <div class="flex-grow-1">
                     <h4 class="card-title mb-2">
                         @php
@@ -157,6 +174,10 @@
                         </div>
                     </div>
                     <div class="tab-pane fade" id="create-box" role="tabpanel" aria-labelledby="create-box-tab">
+                        <!-- Formulaire de création de boîte à implémenter -->
+                    </div>
+                </div>
+                <div id="transferBoxError" class="alert alert-danger d-none mt-3"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -496,17 +517,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        document.getElementById('saveTransferToBoxButton').addEventListener('click', function() {
-            const selected = Array.from(document.querySelectorAll('#box-list-container input:checked')).map(el => el.value);
-            if (selected.length === 0) {
-                document.getElementById('transferBoxError').textContent = 'Veuillez sélectionner au moins une boîte.';
-                document.getElementById('transferBoxError').classList.remove('d-none');
-                return;
-            }
-            // Implement your AJAX logic for transfer here
-            alert(`Logique de transfert vers les boîtes ${selected.join(', ')} à implémenter.`);
-            transferToBoxModal.hide();
         });
+    }
+
+    // --- Transfer to Dolly Logic ---
     }
 
 
@@ -550,18 +564,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         });
-
-        document.getElementById('saveTransferToDollyButton').addEventListener('click', function() {
-            const selected = Array.from(document.querySelectorAll('#dolly-list-container input:checked')).map(el => el.value);
-            if (selected.length === 0) {
-                document.getElementById('transferDollyError').textContent = 'Veuillez sélectionner au moins un chariot.';
-                document.getElementById('transferDollyError').classList.remove('d-none');
-                return;
-            }
-            // Implement your AJAX logic for transfer here
-            alert(`Logique de transfert vers les chariots ${selected.join(', ')} à implémenter.`);
-            transferToDollyModal.hide();
-        });
     }
 
     function loadSelectableList(url, containerSelector, type) {
@@ -597,6 +599,106 @@ document.addEventListener('DOMContentLoaded', function () {
             container.innerHTML = '<div class="alert alert-danger">Erreur de chargement de la liste.</div>';
         });
     }
+
+    // --- Gestion des cases à cocher pour transfert ---
+    const selectedTransferMailIds = new Set();
+    const selectAllTransferCheckbox = document.getElementById('selectAllMailsForTransfer');
+    const selectedMailsCountSpan = document.getElementById('selectedMailsCount');
+
+    function updateSelectedTransferCount() {
+        const count = selectedTransferMailIds.size;
+        selectedMailsCountSpan.textContent = `${count} courrier(s) sélectionné(s) pour transfert`;
+
+        // Mettre à jour l'état de la case "Sélectionner tout"
+        const allTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox');
+        const checkedTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox:checked');
+
+        if (allTransferCheckboxes.length === 0) {
+            selectAllTransferCheckbox.checked = false;
+            selectAllTransferCheckbox.indeterminate = false;
+        } else if (checkedTransferCheckboxes.length === allTransferCheckboxes.length) {
+            selectAllTransferCheckbox.checked = true;
+            selectAllTransferCheckbox.indeterminate = false;
+        } else if (checkedTransferCheckboxes.length > 0) {
+            selectAllTransferCheckbox.checked = false;
+            selectAllTransferCheckbox.indeterminate = true;
+        } else {
+            selectAllTransferCheckbox.checked = false;
+            selectAllTransferCheckbox.indeterminate = false;
+        }
+    }
+
+    // Gestionnaire pour les cases à cocher individuelles
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('mail-transfer-checkbox')) {
+            const mailId = parseInt(e.target.value);
+            if (e.target.checked) {
+                selectedTransferMailIds.add(mailId);
+            } else {
+                selectedTransferMailIds.delete(mailId);
+            }
+            updateSelectedTransferCount();
+        }
+    });
+
+    // Gestionnaire pour "Sélectionner tout"
+    if (selectAllTransferCheckbox) {
+        selectAllTransferCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.mail-transfer-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+                const mailId = parseInt(checkbox.value);
+                if (this.checked) {
+                    selectedTransferMailIds.add(mailId);
+                } else {
+                    selectedTransferMailIds.delete(mailId);
+                }
+            });
+            updateSelectedTransferCount();
+        });
+    }
+
+    // Initialisation du compteur
+    updateSelectedTransferCount();
+
+    // Modifier les gestionnaires de transfert pour inclure la sélection
+    document.getElementById('saveTransferToBoxButton').addEventListener('click', function() {
+        const selectedBoxes = Array.from(document.querySelectorAll('#box-list-container input:checked')).map(el => el.value);
+        const selectedMails = Array.from(selectedTransferMailIds);
+
+        if (selectedBoxes.length === 0) {
+            document.getElementById('transferBoxError').textContent = 'Veuillez sélectionner au moins une boîte.';
+            document.getElementById('transferBoxError').classList.remove('d-none');
+            return;
+        }
+
+        if (selectedMails.length === 0) {
+            alert('Veuillez sélectionner au moins un courrier à transférer.');
+            return;
+        }
+
+        alert(`Logique de transfert de ${selectedMails.length} courrier(s) vers les boîtes ${selectedBoxes.join(', ')} à implémenter.`);
+        transferToBoxModal.hide();
+    });
+
+    document.getElementById('saveTransferToDollyButton').addEventListener('click', function() {
+        const selectedDollies = Array.from(document.querySelectorAll('#dolly-list-container input:checked')).map(el => el.value);
+        const selectedMails = Array.from(selectedTransferMailIds);
+
+        if (selectedDollies.length === 0) {
+            document.getElementById('transferDollyError').textContent = 'Veuillez sélectionner au moins un chariot.';
+            document.getElementById('transferDollyError').classList.remove('d-none');
+            return;
+        }
+
+        if (selectedMails.length === 0) {
+            alert('Veuillez sélectionner au moins un courrier à transférer.');
+            return;
+        }
+
+        alert(`Logique de transfert de ${selectedMails.length} courrier(s) vers les chariots ${selectedDollies.join(', ')} à implémenter.`);
+        transferToDollyModal.hide();
+    });
 });
 </script>
 @endpush
