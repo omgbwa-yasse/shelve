@@ -198,7 +198,7 @@ class BatchController extends Controller
         $query = $request->get('q', '');
 
         // Récupérer les IDs des courriers déjà dans ce batch
-        $existingMailIds = $batch->mails()->pluck('id')->toArray();
+        $existingMailIds = $batch->mails()->pluck('mails.id')->toArray();
 
         // Récupérer l'organisation de l'utilisateur actuel
         $organisationId = Auth::user()->currentOrganisation->id ?? null;
@@ -228,7 +228,7 @@ class BatchController extends Controller
             });
         }
 
-        $mails = $mailsQuery->with(['mailType', 'mailPriority', 'authors'])
+        $mails = $mailsQuery->with(['typology', 'priority', 'authors'])
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get();
@@ -251,8 +251,8 @@ class BatchController extends Controller
                     'description' => $mail->description,
                     'date' => $mail->date,
                     'direction' => $mailDirection,
-                    'type' => $mail->mailType,
-                    'priority' => $mail->mailPriority,
+                    'type' => $mail->typology,
+                    'priority' => $mail->priority,
                     'authors' => $mail->authors
                 ];
             })

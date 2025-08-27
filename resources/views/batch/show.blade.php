@@ -15,11 +15,13 @@
     <div class="d-flex flex-wrap gap-2 mt-3">
         <a href="{{ route('batch.index') }}" class="btn btn-secondary">Back</a>
         <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning">Edit</a>
+
         <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
             @csrf
             @method('DELETE')
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
         </form>
+
         <a href="{{ route('batch.mail.create', $mailBatch) }}" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addMailModal">Ajouter des courrier</a>
 
         <div class="ms-auto d-flex gap-2">

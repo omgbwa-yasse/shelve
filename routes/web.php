@@ -287,7 +287,7 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
 
-    Route::prefix('mails')->group(function () {
+    Route::prefix('mails')->middleware(['auth'])->group(function () {
         // New route for searching mails
         Route::get('/search', [\App\Http\Controllers\MailController::class, 'apiSearch'])->name('api.mails.search');
 
