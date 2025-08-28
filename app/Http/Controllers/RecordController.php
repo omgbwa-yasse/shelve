@@ -636,6 +636,12 @@ class RecordController extends Controller
                     return response($xml)
                         ->header('Content-Type', 'application/xml')
                         ->header('Content-Disposition', 'attachment; filename="records_export_ead2002.xml"');
+                case 'dublincore':
+                    $dc = new \App\Services\DublinCoreExportService();
+                    $xml = $dc->exportRecords($records);
+                    return response($xml)
+                        ->header('Content-Type', 'application/xml')
+                        ->header('Content-Disposition', 'attachment; filename="records_export_dublincore.xml"');
                 case 'seda':
                     return $this->exportSEDA($records,$slips);
                 case 'pdf':

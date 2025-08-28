@@ -52,7 +52,7 @@ class EAD2002ExportService
         $dsc->addAttribute('type', 'combined');
         foreach ($records as $record) {
             $c = $dsc->addChild('c');
-            $c->addAttribute('level', 'item');
+            $c->addAttribute('level', $record->level->name ?? 'item');
             $did = $c->addChild('did');
             $did->addChild('unittitle', htmlspecialchars($record->name, ENT_XML1, 'UTF-8'))->addAttribute('encodinganalog', '3.1.2');
             $did->addChild('unitid', htmlspecialchars($record->code ?: 'REC-' . $record->id, ENT_XML1, 'UTF-8'))->addAttribute('encodinganalog', '3.1.1');
@@ -82,16 +82,59 @@ class EAD2002ExportService
                     $language->addAttribute('langcode', $lang->code ?? 'und');
                 }
             }
-            foreach ($record->attachments as $attachment) {
-                $dao = $did->addChild('dao');
-                $dao->addAttribute('linktype', 'simple');
-                $dao->addAttribute('href', htmlspecialchars($attachment->path, ENT_XML1, 'UTF-8'));
-                $dao->addAttribute('role', 'reference');
-                $dao->addAttribute('actuate', 'onrequest');
-                $dao->addAttribute('show', 'embed');
-                if ($attachment->name) {
-                    $dao->addAttribute('label', htmlspecialchars($attachment->name, ENT_XML1, 'UTF-8'));
-                }
+            if ($record->extent) {
+                $did->addChild('extent', htmlspecialchars($record->extent, ENT_XML1, 'UTF-8'));
+            }
+            if ($record->archival_history) {
+                $c->addChild('bioghist', htmlspecialchars(strip_tags($record->archival_history), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->custodial_history) {
+                $c->addChild('custodhist', htmlspecialchars(strip_tags($record->custodial_history), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->acquisition_source) {
+                $c->addChild('acqinfo', htmlspecialchars(strip_tags($record->acquisition_source), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->appraisal) {
+                $c->addChild('appraisal', htmlspecialchars(strip_tags($record->appraisal), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->accruals) {
+                $c->addChild('accruals', htmlspecialchars(strip_tags($record->accruals), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->arrangement) {
+                $c->addChild('arrangement', htmlspecialchars(strip_tags($record->arrangement), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->legal_status) {
+                $archdesc->addAttribute('LEGALSTATUS', htmlspecialchars($record->legal_status, ENT_XML1, 'UTF-8'));
+            }
+            if ($record->status) {
+                $accessrestrict = $c->addChild('accessrestrict');
+                $accessrestrict->addAttribute('encodinganalog', '3.4.1');
+                $accessrestrict->addChild('p', htmlspecialchars($record->status->name, ENT_XML1, 'UTF-8'));
+            }
+            if ($record->copyright) {
+                $userestrict = $c->addChild('userestrict');
+                $userestrict->addChild('p', htmlspecialchars(strip_tags($record->copyright), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->physical_details) {
+                $c->addChild('physfacet', htmlspecialchars(strip_tags($record->physical_details), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->finding_aids) {
+                $c->addChild('otherfindaid', htmlspecialchars(strip_tags($record->finding_aids), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->originals_location) {
+                $c->addChild('originalsloc', htmlspecialchars(strip_tags($record->originals_location), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->copies_location) {
+                $c->addChild('altformavail', htmlspecialchars(strip_tags($record->copies_location), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->related_units) {
+                $c->addChild('relatedmaterial', htmlspecialchars(strip_tags($record->related_units), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->associated_material) {
+                $c->addChild('separatedmaterial', htmlspecialchars(strip_tags($record->associated_material), ENT_XML1, 'UTF-8'));
+            }
+            if ($record->bibliography) {
+                $c->addChild('bibliography', htmlspecialchars(strip_tags($record->bibliography), ENT_XML1, 'UTF-8'));
             }
             if ($record->authors && method_exists($record->authors, 'isNotEmpty') && $record->authors->isNotEmpty()) {
                 $origination = $did->addChild('origination');
@@ -106,18 +149,26 @@ class EAD2002ExportService
                 $scopecontent->addAttribute('encodinganalog', '3.3.1');
                 $scopecontent->addChild('p', htmlspecialchars(strip_tags($record->content), ENT_XML1, 'UTF-8'));
             }
-            if ($record->status) {
-                $accessrestrict = $c->addChild('accessrestrict');
-                $accessrestrict->addAttribute('encodinganalog', '3.4.1');
-                $accessrestrict->addChild('p', htmlspecialchars($record->status->name, ENT_XML1, 'UTF-8'));
+            if ($record->keywords && method_exists($record->keywords, 'isNotEmpty') && $record->keywords->isNotEmpty()) {
+                $odd = $c->addChild('odd');
+                $odd->addAttribute('type', 'keywords');
+                $odd->addChild('p', htmlspecialchars($record->keywords->pluck('name')->implode(', '), ENT_XML1, 'UTF-8'));
             }
-            $odd = $c->addChild('odd');
-            $odd->addAttribute('type', 'publicationStatus');
-            $odd->addChild('p', 'Published');
-            if ($record->status) {
-                $oddStatus = $c->addChild('odd');
-                $oddStatus->addAttribute('type', 'statusDescription');
-                $oddStatus->addChild('p', htmlspecialchars($record->status->name, ENT_XML1, 'UTF-8'));
+            if ($record->note) {
+                $odd = $c->addChild('odd');
+                $odd->addAttribute('type', 'note');
+                $odd->addChild('p', htmlspecialchars(strip_tags($record->note), ENT_XML1, 'UTF-8'));
+            }
+            foreach ($record->attachments as $attachment) {
+                $dao = $did->addChild('dao');
+                $dao->addAttribute('linktype', 'simple');
+                $dao->addAttribute('href', htmlspecialchars($attachment->path, ENT_XML1, 'UTF-8'));
+                $dao->addAttribute('role', 'reference');
+                $dao->addAttribute('actuate', 'onrequest');
+                $dao->addAttribute('show', 'embed');
+                if ($attachment->name) {
+                    $dao->addAttribute('label', htmlspecialchars($attachment->name, ENT_XML1, 'UTF-8'));
+                }
             }
             if ($record->containers && method_exists($record->containers, 'isNotEmpty') && $record->containers->isNotEmpty()) {
                 $originalsloc = $c->addChild('originalsloc');

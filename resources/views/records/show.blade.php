@@ -34,6 +34,11 @@
                                 <i class="bi bi-file-earmark-code text-secondary me-2"></i> EAD 2002 XML (Atom)
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.exportButton', ['records' => $record->id, 'format' => 'dublincore']) }}">
+                                <i class="bi bi-journal-text text-warning me-2"></i> Dublin Core XML
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="dropdown-header small text-muted">SEDA 2.1</li>
                         <li>

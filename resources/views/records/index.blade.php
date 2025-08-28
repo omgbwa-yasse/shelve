@@ -27,6 +27,7 @@
                             <option value="excel">Excel</option>
                             <option value="ead">EAD</option>
                             <option value="ead2002">EAD 2002 XML (Atom)</option>
+                            <option value="dublincore">Dublin Core XML</option>
                             <option value="seda">SEDA</option>
                             <option value="pdf">PDF</option>
                         </select>
