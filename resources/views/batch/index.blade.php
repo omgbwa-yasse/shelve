@@ -17,7 +17,7 @@
                 <button class="btn btn-light" data-bs-toggle="modal" data-bs-target="#filterModal">
                     <i class="bi bi-funnel me-1"></i> Filtrer
                 </button>
-                @can('create', App\Models\MailBatch::class)
+                @can('create', App\Models\Batch::class)
                     <a href="{{ route('batch.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i> Nouveau Parapheur
                     </a>
@@ -175,7 +175,7 @@
                                             <div class="flex-grow-1 ms-3">
                                                 <h6 class="mb-0">{{ $batch->name }}</h6>
                                                 <small class="text-muted">
-                                                    Créé le {{ $batch->created_at }}
+                                                    Créé le {{ optional($batch->created_at)->format('d/m/Y') }}
                                                 </small>
                                             </div>
                                         </div>
@@ -238,53 +238,19 @@
                                         }
                                     @endphp
 
-                                    <span class="badge bg-{{ $status['class'] }}-subtle text-{{ $status['class'] }} px-3 py-2">
+                                    <span class="badge bg-{{ $status['class'] }} px-3 py-2">
                                         {{ $status['text'] }}
                                     </span>
                                 </td>
 
                                 <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                            Actions
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('mails.sort') }}?categ=batch&id={{$batch->id}}">
-                                                    <i class="bi bi-eye me-2"></i> Voir le contenu
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('batch.show', $batch) }}">
-                                                    <i class="bi bi-info-circle me-2"></i> Détails
-                                                </a>
-                                            </li>
-
-                                            @php
-                                                $lastTransaction = $batch->transactions && $batch->transactions->count() > 0
-                                                    ? $batch->transactions->last()
-                                                    : null;
-
-                                                $canTransfer = $lastTransaction &&
-                                                    $lastTransaction->organisationReceived &&
-                                                    Auth()->user() &&
-                                                    Auth()->user()->current_organisation_id &&
-                                                    $lastTransaction->organisationReceived->id == Auth()->user()->current_organisation_id;
-                                            @endphp
-
-                                            @if($canTransfer)
-                                                <li>
-                                                    <a class="dropdown-item"
-                                                    href="#"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#transferModal"
-                                                    data-batch-id="{{ $batch->id }}">
-                                                        <i class="bi bi-send me-2"></i> Transférer
-                                                    </a>
-                                                </li>
-                                            @endif
-
-                                        </ul>
+                                    <div class="btn-group btn-group-sm" aria-label="Actions parapheur">
+                                        <a class="btn btn-outline-secondary" href="{{ route('mails.sort') }}?categ=batch&id={{ $batch->id }}" title="Voir le contenu">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a class="btn btn-outline-primary" href="{{ route('batch.show', $batch) }}" title="Détails">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -322,16 +288,16 @@
                 <div class="modal-body">
                     <form id="filterForm">
                         <div class="mb-3">
-                            <label class="form-label">Statut</label>
-                            <select class="form-select" name="status">
+                            <label class="form-label" for="filter_status">Statut</label>
+                            <select id="filter_status" class="form-select" name="status">
                                 <option value="">Tous</option>
                                 <option value="present">Présent</option>
                                 <option value="transit">En transit</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Période</label>
-                            <select class="form-select" name="period">
+                            <label class="form-label" for="filter_period">Période</label>
+                            <select id="filter_period" class="form-select" name="period">
                                 <option value="">Toutes les périodes</option>
                                 <option value="today">Aujourd'hui</option>
                                 <option value="week">Cette semaine</option>
@@ -348,36 +314,6 @@
         </div>
     </div>
 
-    <!-- Transfer Modal -->
-    <div class="modal fade" id="transferModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Transférer le parapheur</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="transferForm">
-                        <div class="mb-3">
-                            <label class="form-label">Organisation destinataire</label>
-                            <select class="form-select" name="organisation_id" required>
-                                <option value="">Sélectionner...</option>
-                                <!-- Add your organizations here -->
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Commentaire</label>
-                            <textarea class="form-control" name="comment" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary" onclick="transferBatch()">Transférer</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     @push('styles')
         <style>
@@ -548,40 +484,7 @@
                     }
                 }
 
-                // Handle batch transfer
-                window.transferBatch = function() {
-                    const form = document.getElementById('transferForm');
-                    const formData = new FormData(form);
-                    const batchId = document.querySelector('[data-batch-id]').dataset.batchId;
-
-                    // Show loading spinner
-                    showLoadingSpinner();
-
-                    fetch(`/batch/${batchId}/transfer`, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showNotification('success', 'Parapheur transféré avec succès');
-                                setTimeout(() => window.location.reload(), 1500);
-                            } else {
-                                showNotification('error', data.message || 'Une erreur est survenue');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showNotification('error', 'Une erreur est survenue lors du transfert');
-                        })
-                        .finally(() => {
-                            hideLoadingSpinner();
-                            bootstrap.Modal.getInstance(document.getElementById('transferModal')).hide();
-                        });
-                };
+                // Transfer modal removed; inline actions kept simple.
 
                 // Handle filters
                 window.applyFilters = function() {
@@ -649,19 +552,7 @@
                     // Add your date picker initialization here if needed
                 });
 
-                // Handle organization select dynamic loading
-                const organizationSelect = document.querySelector('select[name="organisation_id"]');
-                if (organizationSelect) {
-                    fetch('/api/organizations')
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(org => {
-                                const option = new Option(org.name, org.id);
-                                organizationSelect.add(option);
-                            });
-                        })
-                        .catch(error => console.error('Error loading organizations:', error));
-                }
+                // No dynamic organization loading required on this simplified index.
 
                 // Reset form on modal close
                 const modals = document.querySelectorAll('.modal');

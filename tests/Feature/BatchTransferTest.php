@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class BatchTransferTest extends TestCase
 {
-    // use RefreshDatabase; // Uncomment if database refresh is configured
+    use \Illuminate\Foundation\Testing\RefreshDatabase;
 
     public function test_transfer_to_boxes_validation_error_when_missing_payload(): void
     {
