@@ -1,7 +1,8 @@
 {
-    "current_version": "v1.5",
+    "current_version": "v2.0",
+    "release_name": "Eyenga deborah",
     "installed_at": "2025-08-28T00:00:00Z",
-    "updated_from": "v1.2",
+    "updated_from": "v1.5",
     "github_repo": "omgbwa-yasse\/shelve",
     "update_channel": "stable",
     "last_check": "2025-08-28T00:00:00Z",
