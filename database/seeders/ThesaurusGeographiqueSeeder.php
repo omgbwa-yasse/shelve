@@ -13,16 +13,23 @@ class ThesaurusGeographiqueSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer le schéma de thésaurus géographique
-        $schemeId = DB::table('thesaurus_schemes')->insertGetId([
-            'uri' => 'https://geo.cameroun.cm/thesaurus/geographique',
-            'identifier' => 'GEO-CMR-2025',
-            'title' => 'Thésaurus Géographique du Cameroun',
-            'description' => 'Classification hiérarchique des entités géographiques du Cameroun, depuis le niveau mondial jusqu\'aux villes et localités',
-            'language' => 'fr-fr',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // Créer ou récupérer le schéma de thésaurus géographique (idempotent)
+        $scheme = DB::table('thesaurus_schemes')
+            ->where('uri', 'https://geo.cameroun.cm/thesaurus/geographique')
+            ->first();
+        if ($scheme) {
+            $schemeId = $scheme->id;
+        } else {
+            $schemeId = DB::table('thesaurus_schemes')->insertGetId([
+                'uri' => 'https://geo.cameroun.cm/thesaurus/geographique',
+                'identifier' => 'GEO-CMR-2025',
+                'title' => 'Thésaurus Géographique du Cameroun',
+                'description' => 'Classification hiérarchique des entités géographiques du Cameroun, depuis le niveau mondial jusqu\'aux villes et localités',
+                'language' => 'fr-fr',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         // Structure hiérarchique des concepts géographiques
         $geoHierarchy = [
@@ -2229,7 +2236,8 @@ class ThesaurusGeographiqueSeeder extends Seeder
 
         // Insérer tous les concepts
         foreach ($allConcepts as $key => $concept) {
-            $conceptIds[$key] = DB::table('thesaurus_concepts')->insertGetId([
+            // Insérer si absent (clé unique: uri)
+            DB::table('thesaurus_concepts')->insertOrIgnore([
                 'scheme_id' => $schemeId,
                 'uri' => $concept['uri'],
                 'notation' => $concept['notation'],
@@ -2237,6 +2245,10 @@ class ThesaurusGeographiqueSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            // Récupérer l'ID du concept par son URI
+            $conceptRow = DB::table('thesaurus_concepts')->where('uri', $concept['uri'])->first();
+            if (!$conceptRow) { continue; }
+            $conceptIds[$key] = $conceptRow->id;
 
             // Ajouter le label préféré
             DB::table('thesaurus_labels')->insertOrIgnore([
@@ -2368,13 +2380,16 @@ class ThesaurusGeographiqueSeeder extends Seeder
         }
 
         // Ajouter l'organisation responsable
-        $orgId = DB::table('thesaurus_organizations')->insertGetId([
+        // Ajouter l'organisation responsable (idempotent sur le nom)
+        DB::table('thesaurus_organizations')->insertOrIgnore([
             'name' => 'Institut National de Cartographie du Cameroun',
             'homepage' => 'https://www.inc.cm',
             'email' => 'info@inc.cm',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        $org = DB::table('thesaurus_organizations')->where('name', 'Institut National de Cartographie du Cameroun')->first();
+        $orgId = $org ? $org->id : null;
 
         // Ajouter les namespaces
         DB::table('thesaurus_namespaces')->insertOrIgnore([

@@ -36,7 +36,7 @@ class SearchMailController extends Controller
 
     public function advanced(Request $request)
     {
-        $query = Mail::query();
+    $query = Mail::query()->excludeFactoryLike();
         $title = 'Recherche avancée';
         $filters = [];
 

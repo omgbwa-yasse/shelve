@@ -275,44 +275,44 @@ class ThesaurusTypologieSeeder extends Seeder
 
         // Insérer les concepts
         foreach ($concepts as $conceptData) {
-            // Vérifier si le concept existe déjà
-            $existingConcept = DB::table('thesaurus_concepts')
-                ->where('uri', $conceptData['uri'])
-                ->first();
+            // Insérer le concept si absent (clé: uri)
+            DB::table('thesaurus_concepts')->insertOrIgnore([
+                'scheme_id' => $schemeId,
+                'uri' => $conceptData['uri'],
+                'notation' => $conceptData['notation'],
+                'status' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-            if ($existingConcept) {
-                $conceptId = $existingConcept->id;
-            } else {
-                $conceptId = DB::table('thesaurus_concepts')->insertGetId([
-                    'scheme_id' => $schemeId,
-                    'uri' => $conceptData['uri'],
-                    'notation' => $conceptData['notation'],
-                    'status' => 1,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+            // Récupérer l'ID du concept
+            $concept = DB::table('thesaurus_concepts')->where('uri', $conceptData['uri'])->first();
+            if (!$concept) {
+                // Fallback improbable si insertOrIgnore a ignoré et non présent (concurrence)
+                continue;
+            }
+            $conceptId = $concept->id;
 
-                // Ajouter le label préféré
+            // Ajouter le label préféré (idempotent)
+            DB::table('thesaurus_labels')->insertOrIgnore([
+                'concept_id' => $conceptId,
+                'type' => 'prefLabel',
+                'literal_form' => $conceptData['label'],
+                'language' => 'fr-fr',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // Ajouter le label alternatif si présent (idempotent)
+            if (isset($conceptData['alt_label'])) {
                 DB::table('thesaurus_labels')->insertOrIgnore([
                     'concept_id' => $conceptId,
-                    'type' => 'prefLabel',
-                    'literal_form' => $conceptData['label'],
+                    'type' => 'altLabel',
+                    'literal_form' => $conceptData['alt_label'],
                     'language' => 'fr-fr',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-
-                // Ajouter le label alternatif si présent
-                if (isset($conceptData['alt_label'])) {
-                    DB::table('thesaurus_labels')->insertOrIgnore([
-                        'concept_id' => $conceptId,
-                        'type' => 'altLabel',
-                        'literal_form' => $conceptData['alt_label'],
-                        'language' => 'fr-fr',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
             }
         }
     }

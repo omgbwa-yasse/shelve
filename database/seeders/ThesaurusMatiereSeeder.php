@@ -2147,35 +2147,44 @@ class ThesaurusMatiereSeeder extends Seeder
                 'status' => 1,
             ];
 
-            // Créer le concept
-            $concept = ThesaurusConcept::create($conceptInfo);
+            // Créer ou récupérer le concept (idempotent par URI)
+            $concept = ThesaurusConcept::firstOrCreate(
+                [
+                    'uri' => $conceptInfo['uri'],
+                ],
+                [
+                    'scheme_id' => $conceptInfo['scheme_id'],
+                    'notation' => $conceptInfo['notation'],
+                    'status' => $conceptInfo['status'],
+                ]
+            );
 
             // Ajouter à la liste des objets créés
             $conceptObjects[] = $concept;
 
-            // Créer le label préféré
-            ThesaurusLabel::create([
+            // Créer le label préféré (idempotent)
+            ThesaurusLabel::firstOrCreate([
                 'concept_id' => $concept->id,
+                'type' => 'prefLabel',
                 'literal_form' => $conceptData['prefLabel'],
                 'language' => $scheme->language,
-                'type' => 'prefLabel',
             ]);
 
             // Créer les labels alternatifs si spécifiés
             if (isset($conceptData['altLabels'])) {
                 foreach ($conceptData['altLabels'] as $altLabel) {
-                    ThesaurusLabel::create([
+                    ThesaurusLabel::firstOrCreate([
                         'concept_id' => $concept->id,
+                        'type' => 'altLabel',
                         'literal_form' => $altLabel,
                         'language' => $scheme->language,
-                        'type' => 'altLabel',
                     ]);
                 }
             }
 
             // Créer les notes si spécifiées
             if (isset($conceptData['scopeNote'])) {
-                ThesaurusConceptNote::create([
+                ThesaurusConceptNote::firstOrCreate([
                     'concept_id' => $concept->id,
                     'type' => 'scopeNote',
                     'note' => $conceptData['scopeNote'],
@@ -2184,7 +2193,7 @@ class ThesaurusMatiereSeeder extends Seeder
             }
 
             if (isset($conceptData['definition'])) {
-                ThesaurusConceptNote::create([
+                ThesaurusConceptNote::firstOrCreate([
                     'concept_id' => $concept->id,
                     'type' => 'definition',
                     'note' => $conceptData['definition'],
@@ -2194,13 +2203,13 @@ class ThesaurusMatiereSeeder extends Seeder
 
             // Créer la relation hiérarchique avec le parent
             if ($parentConcept) {
-                ThesaurusConceptRelation::create([
+                ThesaurusConceptRelation::firstOrCreate([
                     'concept_id' => $concept->id,
                     'related_concept_id' => $parentConcept->id,
                     'relation_type' => 'broader',
                 ]);
 
-                ThesaurusConceptRelation::create([
+                ThesaurusConceptRelation::firstOrCreate([
                     'concept_id' => $parentConcept->id,
                     'related_concept_id' => $concept->id,
                     'relation_type' => 'narrower',

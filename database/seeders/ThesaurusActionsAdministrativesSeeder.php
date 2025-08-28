@@ -534,7 +534,8 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
 
         // Insérer tous les concepts principaux
         foreach ($concepts as $key => $concept) {
-            $conceptIds[$key] = DB::table('thesaurus_concepts')->insertGetId([
+            // Insérer si absent (clé: uri)
+            DB::table('thesaurus_concepts')->insertOrIgnore([
                 'scheme_id' => $schemeId,
                 'uri' => $concept['uri'],
                 'notation' => $concept['notation'],
@@ -542,6 +543,10 @@ class ThesaurusActionsAdministrativesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            // Récupérer l'ID du concept
+            $conceptRow = DB::table('thesaurus_concepts')->where('uri', $concept['uri'])->first();
+            if (!$conceptRow) { continue; }
+            $conceptIds[$key] = $conceptRow->id;
 
             // Ajouter le label préféré
             DB::table('thesaurus_labels')->insertOrIgnore([
