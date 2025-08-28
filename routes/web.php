@@ -460,11 +460,6 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('/batch-handler/add-items', [BatchHandlerController::class, 'addItems']);
             Route::delete('/batch-handler/remove-items', [BatchHandlerController::class, 'removeItems']);
             Route::delete('/batch-handler/{batch_id}', [BatchHandlerController::class, 'deleteBatch']);
-
-            // Route de test pour le système de parapheur
-            Route::get('/test-batch', function () {
-                return view('test-batch');
-            });
         });
 
 

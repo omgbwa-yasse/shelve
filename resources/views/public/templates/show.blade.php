@@ -64,7 +64,7 @@
                             <div class="col-12">
                                 <strong>Contenu:</strong>
                                 <div class="mt-2 p-3 bg-light rounded">
-                                    {!! $template->content !!}
+                                    {{ $template->content }}
                                 </div>
                             </div>
                         </div>

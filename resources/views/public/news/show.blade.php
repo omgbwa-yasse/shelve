@@ -34,7 +34,7 @@
                             @endif
                         </div>
                         <div class="news-content">
-                            {!! $news->content !!}
+                            {{ $news->content }}
                         </div>
                     </div>
 

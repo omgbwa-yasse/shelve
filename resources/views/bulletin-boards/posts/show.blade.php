@@ -79,7 +79,7 @@
                         <div class="col-md-12">
                             <h5>Description</h5>
                             <div class="border rounded p-3 bg-light">
-                                {!! $post->description !!}
+                                {{ $post->description }}
                             </div>
                         </div>
                     </div>

@@ -35,7 +35,13 @@
                                     <div class="card-body">
                                         <h4 class="card-title text-primary">Service versant</h4>
                                         <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->userOrganisation->id) }}">{{ $slip->userOrganisation->name }}</a></strong></p>
-                                        <p class="card-text">Intervenant: <strong>{!!  $slip->user ? '<a href="' . route('users.show', $slip->user->id) . '">' . $slip->user->name . '</a>' : 'Aucun' !!}</strong></p>
+                                        <p class="card-text">Intervenant: <strong>
+                                            @if($slip->user)
+                                                <a href="{{ route('users.show', $slip->user->id) }}">{{ $slip->user->name }}</a>
+                                            @else
+                                                Aucun
+                                            @endif
+                                        </strong></p>
                                     </div>
                                 </div>
                             </div>

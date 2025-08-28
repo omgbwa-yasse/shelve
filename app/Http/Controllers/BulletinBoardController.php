@@ -6,11 +6,14 @@ use App\Models\BulletinBoard;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class BulletinBoardController extends Controller
 {
     public function index()
     {
+        Gate::authorize('bulletinboards_view');
+
         $bulletinBoards = BulletinBoard::with(['creator', 'organisations'])
             ->whereHas('organisations', function($query) {
                 $query->where('organisations.id', Auth::currentOrganisationId());
@@ -23,6 +26,8 @@ class BulletinBoardController extends Controller
 
     public function create()
     {
+        Gate::authorize('bulletinboards_create');
+
         $organisations = Organisation::all();
         return view('bulletin-boards.create', compact('organisations'));
     }
@@ -32,6 +37,8 @@ class BulletinBoardController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('bulletinboards_create');
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -66,6 +73,8 @@ class BulletinBoardController extends Controller
 
     public function show(BulletinBoard $bulletinBoard)
     {
+        Gate::authorize('bulletinboards_view');
+
         $bulletinBoard->load(['creator', 'organisations', 'events', 'posts', 'users']);
         return view('bulletin-boards.show', compact('bulletinBoard'));
     }
@@ -75,6 +84,8 @@ class BulletinBoardController extends Controller
 
     public function edit(BulletinBoard $bulletinBoard)
     {
+        Gate::authorize('bulletinboards_update');
+
         $organisations = Organisation::all();
         return view('bulletin-boards.edit', compact('bulletinBoard', 'organisations'));
     }
@@ -83,6 +94,8 @@ class BulletinBoardController extends Controller
 
     public function update(Request $request, BulletinBoard $bulletinBoard)
     {
+        Gate::authorize('bulletinboards_update');
+
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -117,6 +130,8 @@ class BulletinBoardController extends Controller
 
     public function destroy(BulletinBoard $bulletinBoard)
     {
+        Gate::authorize('bulletinboards_delete');
+
         $bulletinBoard->load(['posts', 'events', 'organisations']);
 
         if ($bulletinBoard->posts->count() > 0 || $bulletinBoard->events->count() > 0) {

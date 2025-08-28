@@ -15,6 +15,7 @@ use App\Models\ExternalOrganization;
 use App\Enums\MailStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class MailReceivedController extends Controller
 {
@@ -90,6 +91,8 @@ class MailReceivedController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('mail_create');
+
         // Validation de base
         $baseValidation = [
             'code' => 'nullable|string|max:50',
@@ -299,11 +302,15 @@ class MailReceivedController extends Controller
 
     public function show(INT $mail_id)
     {
+        Gate::authorize('mail_view');
+
         return app(MailController::class)->show('received', $mail_id);
     }
 
     public function edit(Mail $received)
     {
+        Gate::authorize('mail_edit');
+
         $received->load([
             'action',
             'sender',
@@ -321,6 +328,8 @@ class MailReceivedController extends Controller
 
     public function update(Request $request, int $id)
     {
+        Gate::authorize('mail_edit');
+
         $mail = Mail::findOrFail($id);
 
         $validatedData = $request->validate([
@@ -402,6 +411,8 @@ class MailReceivedController extends Controller
 
     public function destroy($id)
     {
+        Gate::authorize('mail_delete');
+
         $mail = Mail::findOrFail($id);
         $mail->delete();
 

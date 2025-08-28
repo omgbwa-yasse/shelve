@@ -8,6 +8,7 @@ use App\Http\Middleware\EnsurePublicUserIsApproved;
 use App\Http\Middleware\CorsMiddleware;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Models\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,11 +20,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(LogUserAction::class);
+        $middleware->append(SecurityHeadersMiddleware::class);
         $middleware->alias([
             'public.approved' => EnsurePublicUserIsApproved::class,
             'cors' => CorsMiddleware::class,
             'permission' => CheckPermissionMiddleware::class,
             'rate.limit' => RateLimitMiddleware::class,
+            'security.headers' => SecurityHeadersMiddleware::class,
         ]);
         $middleware->api(prepend: [
             CorsMiddleware::class,

@@ -26,7 +26,7 @@
                             @endif
                         </div>
                         <div class="page-content">
-                            {!! $page->content !!}
+                            {{ $page->content }}
                         </div>
                     </div>
 

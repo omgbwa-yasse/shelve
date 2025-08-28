@@ -55,11 +55,17 @@ Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general
 
 // Secure public API routes with rate limiting
 Route::prefix('public')->name('api.secure.public.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
-    Route::apiResource('users', PublicUserApiController::class)->names('users');
+    // Only allow the store method for users (registration only)
+    Route::apiResource('users', PublicUserApiController::class)->only(['store'])->names('users');
+
+    // Only allow safe methods for document requests
     Route::apiResource('document-requests', PublicDocumentRequestApiController::class)
+        ->only(['store'])
         ->names("document-requests")
         ->middleware('rate.limit:document_request,20,60'); // 20 demandes de documents par heure
-    Route::apiResource('responses', PublicResponseApiController::class)->names("responses");
+
+    // Only allow safe methods for responses
+    Route::apiResource('responses', PublicResponseApiController::class)->only(['store'])->names("responses");
 });
 
 
