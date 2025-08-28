@@ -110,7 +110,7 @@ return new class extends Migration
         // Supprimer les tables dans l'ordre inverse de leur création
         Schema::dropIfExists('mail_author');
         Schema::dropIfExists('mail_attachment');
-        Schema::dropIfExists('mail_archiving');
+    Schema::dropIfExists('mail_archives');
         Schema::dropIfExists('mail_related');
         Schema::dropIfExists('mails');
         Schema::dropIfExists('mail_containers');

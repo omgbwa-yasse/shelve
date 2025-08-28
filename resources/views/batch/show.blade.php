@@ -2,32 +2,40 @@
 @section('content')
 <div class="container">
     <h1 class="mt-5">Parapheur : fiche</h1>
-    <table class="table">
-        <tbody>
-            <tr>
-                <td>Reference : {{ $mailBatch->code }}</td>
-            </tr>
-            <tr>
-                <td>Désignation : {{ $mailBatch->name }}</td>
-            </tr>
-        </tbody>
-    </table>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Champ</th>
+                    <th scope="col">Valeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row">Référence</th>
+                    <td>{{ $mailBatch->code }}</td>
+                </tr>
+                <tr>
+                    <th scope="row">Désignation</th>
+                    <td>{{ $mailBatch->name }}</td>
+                </tr>
+            </tbody>
+        </table>
     <div class="d-flex flex-wrap gap-2 mt-3">
-        <a href="{{ route('batch.index') }}" class="btn btn-secondary">Back</a>
-        <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning">Edit</a>
+        <a href="{{ route('batch.index') }}" class="btn btn-secondary">Retour</a>
+        <a href="{{ route('batch.edit', $mailBatch->id) }}" class="btn btn-warning">Modifier</a>
 
         <form action="{{ route('batch.destroy', $mailBatch->id) }}" method="POST" style="display: inline-block;">
             @csrf
             @method('DELETE')
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this mail batch?')">Delete</button>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer ce parapheur ?')">Supprimer</button>
         </form>
 
-        <a href="{{ route('batch.mail.create', $mailBatch) }}" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addMailModal">Ajouter des courrier</a>
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addMailModal">Ajouter des courriers</button>
 
         <div class="ms-auto d-flex gap-2">
             <a href="{{ route('batch.export.pdf', $mailBatch) }}" class="btn btn-info">Export (pdf)</a>
-            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferToBoxModal">Tranfer vers boites</a>
-            <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#transferToDollyModal">Transfert vers un dolly</a>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#transferToBoxModal">Transférer vers boîtes</a>
+            <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#transferToDollyModal">Transférer vers un chariot</a>
         </div>
     </div>
 </div>
@@ -97,7 +105,7 @@
                 <form action="{{ route('batch.mail.destroy', [$mailBatch, $mail->id]) }}" method="POST" style="display: inline-block;">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Are you sure you want to delete this batch mail?')">Retirer</button>
+                    <button type="submit" class="btn btn-danger btn-sm ms-2" onclick="return confirm('Voulez-vous vraiment retirer ce courrier du parapheur ?')">Retirer</button>
                 </form>
             </div>
         </div>
@@ -167,7 +175,7 @@
                         </div>
                         <div id="box-list-container" style="max-height: 300px; overflow-y: auto;">
                             <div class="text-center">
-                                <div class="spinner-border" role="status">
+                                    <div class="spinner-border" aria-hidden="true">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
@@ -187,7 +195,7 @@
                         </form>
                     </div>
                 </div>
-                <div id="transferBoxError" class="alert alert-danger d-none mt-3"></div>
+                <div id="transferBoxError" class="alert alert-danger d-none mt-3" role="alert"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -221,7 +229,7 @@
                         </div>
                         <div id="dolly-list-container" style="max-height: 300px; overflow-y: auto;">
                             <div class="text-center">
-                                <div class="spinner-border" role="status">
+                                    <div class="spinner-border" aria-hidden="true">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </div>
@@ -241,7 +249,7 @@
                         </form>
                     </div>
                 </div>
-                <div id="transferDollyError" class="alert alert-danger d-none mt-3"></div>
+                <div id="transferDollyError" class="alert alert-danger d-none mt-3" role="alert"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -254,7 +262,18 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Small utility: debounce
+    function debounce(fn, delay = 300) {
+        let t;
+        return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), delay);
+        };
+    }
     const batchId = {{ $mailBatch->id }};
+    // Backend endpoints (named routes)
+    const transferBoxesUrl = "{{ route('batch.transfer.boxes', $mailBatch) }}";
+    const transferDolliesUrl = "{{ route('batch.transfer.dollies', $mailBatch) }}";
 
     // Helper to get CSRF token
     function getCsrfToken() {
@@ -298,9 +317,19 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Show loading indicator
-        mailSearchResults.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Recherche...</span></div></div>';
-        paginationContainer.innerHTML = '';
+    // Show loading indicator (build via DOM to avoid innerHTML)
+    mailSearchResults.textContent = '';
+    paginationContainer.textContent = '';
+    const loadingWrap = document.createElement('div');
+    loadingWrap.className = 'text-center';
+    const loadingSpinner = document.createElement('div');
+    loadingSpinner.className = 'spinner-border spinner-border-sm';
+    const loadingSpan = document.createElement('span');
+    loadingSpan.className = 'visually-hidden';
+    loadingSpan.textContent = 'Recherche...';
+    loadingSpinner.appendChild(loadingSpan);
+    loadingWrap.appendChild(loadingSpinner);
+    mailSearchResults.appendChild(loadingWrap);
 
         const searchUrl = `/mails/batch/${batchId}/available-mails?q=${encodeURIComponent(query)}&page=${page}`;
 
@@ -314,33 +343,65 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             if (data.success && data.mails && data.mails.length > 0) {
-                let html = '<div class="list-group">';
+                mailSearchResults.textContent = '';
+                const listGroup = document.createElement('div');
+                listGroup.className = 'list-group';
                 data.mails.forEach(mail => {
                     const isSelected = selectedMailIds.has(mail.id);
-                    html += `
-                        <div class="list-group-item">
-                            <div class="d-flex align-items-start">
-                                <input class="form-check-input me-2 mail-checkbox" type="checkbox"
-                                       value="${mail.id}" id="mail_${mail.id}" ${isSelected ? 'checked' : ''}>
-                                <div class="flex-grow-1">
-                                    <label for="mail_${mail.id}" class="form-check-label w-100">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">${mail.code} - ${mail.name}</h6>
-                                            <small class="text-muted">${mail.date}</small>
-                                        </div>
-                                        <p class="mb-1">${mail.description || ''}</p>
-                                        <small class="text-muted">
-                                            ${mail.direction ? `<span class="badge ${mail.direction === 'Émis' ? 'bg-success' : 'bg-primary'}">${mail.direction}</span> | ` : ''}
-                                            Type: ${mail.type?.name || 'N/A'} |
-                                            Priorité: ${mail.priority?.name || 'N/A'}
-                                        </small>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>`;
+
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item';
+
+                    const row = document.createElement('div');
+                    row.className = 'd-flex align-items-start';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.className = 'form-check-input me-2 mail-checkbox';
+                    checkbox.value = String(mail.id);
+                    checkbox.id = `mail_${mail.id}`;
+                    checkbox.checked = !!isSelected;
+
+                    const content = document.createElement('div');
+                    content.className = 'flex-grow-1';
+                    const label = document.createElement('label');
+                    label.setAttribute('for', `mail_${mail.id}`);
+                    label.className = 'form-check-label w-100';
+
+                    const header = document.createElement('div');
+                    header.className = 'd-flex w-100 justify-content-between';
+                    const title = document.createElement('h6');
+                    title.className = 'mb-1';
+                    title.textContent = `${mail.code ?? ''} - ${mail.name ?? ''}`.trim();
+                    const smallDate = document.createElement('small');
+                    smallDate.className = 'text-muted';
+                    smallDate.textContent = mail.date ?? '';
+                    header.appendChild(title);
+                    header.appendChild(smallDate);
+
+                    const desc = document.createElement('p');
+                    desc.className = 'mb-1';
+                    desc.textContent = mail.description ?? '';
+
+                    const meta = document.createElement('small');
+                    meta.className = 'text-muted';
+                    const parts = [];
+                    if (mail.direction) parts.push(mail.direction);
+                    parts.push(`Type: ${mail.type?.name ?? 'N/A'}`);
+                    parts.push(`Priorité: ${mail.priority?.name ?? 'N/A'}`);
+                    meta.textContent = parts.join(' | ');
+
+                    label.appendChild(header);
+                    label.appendChild(desc);
+                    label.appendChild(meta);
+                    content.appendChild(label);
+
+                    row.appendChild(checkbox);
+                    row.appendChild(content);
+                    item.appendChild(row);
+                    listGroup.appendChild(item);
                 });
-                html += '</div>';
-                mailSearchResults.innerHTML = html;
+                mailSearchResults.appendChild(listGroup);
 
                 // Gérer la pagination
                 if (data.pagination) {
@@ -348,27 +409,37 @@ document.addEventListener('DOMContentLoaded', function () {
                     totalPages = data.pagination.last_page;
 
                     if (totalPages > 1) {
-                        let paginationHtml = '<nav><ul class="pagination pagination-sm justify-content-center">';
+                        paginationContainer.textContent = '';
+                        const nav = document.createElement('nav');
+                        const ul = document.createElement('ul');
+                        ul.className = 'pagination pagination-sm justify-content-center';
 
-                        // Bouton précédent
-                        if (currentPage > 1) {
-                            paginationHtml += `<li class="page-item"><button class="page-link" onclick="searchMails('${query}', ${currentPage - 1})">Précédent</button></li>`;
+                        const mkPageItem = (label, targetPage, disabled = false, active = false) => {
+                            const li = document.createElement('li');
+                            li.className = 'page-item';
+                            if (disabled) li.classList.add('disabled');
+                            if (active) li.classList.add('active');
+                            const btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'page-link';
+                            btn.textContent = label;
+                            if (!disabled && !active) {
+                                btn.addEventListener('click', () => searchMails(query, targetPage));
+                            }
+                            li.appendChild(btn);
+                            return li;
+                        };
+
+                        ul.appendChild(mkPageItem('Précédent', currentPage - 1, currentPage <= 1));
+                        const start = Math.max(1, currentPage - 2);
+                        const end = Math.min(totalPages, currentPage + 2);
+                        for (let i = start; i <= end; i++) {
+                            ul.appendChild(mkPageItem(String(i), i, false, i === currentPage));
                         }
+                        ul.appendChild(mkPageItem('Suivant', currentPage + 1, currentPage >= totalPages));
 
-                        // Numéros de pages
-                        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-                            paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                                <button class="page-link" onclick="searchMails('${query}', ${i})">${i}</button>
-                            </li>`;
-                        }
-
-                        // Bouton suivant
-                        if (currentPage < totalPages) {
-                            paginationHtml += `<li class="page-item"><button class="page-link" onclick="searchMails('${query}', ${currentPage + 1})">Suivant</button></li>`;
-                        }
-
-                        paginationHtml += '</ul></nav>';
-                        paginationContainer.innerHTML = paginationHtml;
+                        nav.appendChild(ul);
+                        paginationContainer.appendChild(nav);
                     }
                 }
 
@@ -397,22 +468,41 @@ document.addEventListener('DOMContentLoaded', function () {
                 selectAllCheckbox.indeterminate = checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length;
 
             } else {
-                mailSearchResults.innerHTML = '<div class="text-muted p-2">Aucun courrier trouvé ou tous les courriers sont déjà dans ce parapheur.</div>';
-                paginationContainer.innerHTML = '';
+                mailSearchResults.textContent = '';
+                const empty = document.createElement('div');
+                empty.className = 'text-muted p-2';
+                empty.textContent = 'Aucun courrier trouvé ou tous les courriers sont déjà dans ce parapheur.';
+                mailSearchResults.appendChild(empty);
+                paginationContainer.textContent = '';
             }
         })
         .catch(error => {
             console.error('Error searching mails:', error);
-            mailSearchResults.innerHTML = '<div class="text-danger p-2">Erreur lors de la recherche.</div>';
-            paginationContainer.innerHTML = '';
+            mailSearchResults.textContent = '';
+            const errDiv = document.createElement('div');
+            errDiv.className = 'text-danger p-2';
+            errDiv.textContent = 'Erreur lors de la recherche.';
+            mailSearchResults.appendChild(errDiv);
+            paginationContainer.textContent = '';
         });
     }
 
     if (mailSearchInput) {
-        mailSearchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            currentPage = 1; // Réinitialiser à la première page
-            searchMailsInternal(query, currentPage);
+            const onMailSearch = debounce(function() {
+                const query = mailSearchInput.value.trim();
+                currentPage = 1;
+                searchMailsInternal(query, currentPage);
+            }, 300);
+            mailSearchInput.addEventListener('input', onMailSearch);
+    }
+
+    // Charger une première page par défaut à l'ouverture du modal d'ajout
+    const addMailModalEl = document.getElementById('addMailModal');
+    if (addMailModalEl) {
+        addMailModalEl.addEventListener('show.bs.modal', function() {
+            document.getElementById('addMailError')?.classList.add('d-none');
+            searchMailsInternal('', 1);
+                setTimeout(() => { mailSearchInput?.focus(); }, 150);
         });
     }
 
@@ -491,11 +581,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const transferToBoxModalEl = document.getElementById('transferToBoxModal');
     if(transferToBoxModalEl) {
         transferToBoxModalEl.addEventListener('show.bs.modal', function () {
+            // reset erreurs
+            const err = document.getElementById('transferBoxError');
+            if (err) { err.textContent = ''; err.classList.add('d-none'); }
             loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
         });
 
         document.getElementById('box-search').addEventListener('keyup', function() {
             loadSelectableList("{{ route('mail-container.list') }}?q=" + this.value, '#box-list-container', 'boxes');
+            });
+            document.getElementById('createBoxForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const code = document.getElementById('new_box_code').value;
+                const name = document.getElementById('new_box_name').value;
+                fetch("{{ route('mail-container.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code, name: name })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        // Creation successful, reload the list and switch back to the select tab
+                        loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
+                        const tab = new bootstrap.Tab(document.getElementById('select-box-tab'));
+                        tab.show();
+                    } else {
+                        // Handle error
+                        const errorDiv = document.getElementById('transferBoxError');
+                        errorDiv.textContent = data.message || 'Erreur lors de la création.';
+                        errorDiv.classList.remove('d-none');
+                    }
+                });
         });
 
         document.getElementById('createBoxForm').addEventListener('submit', function(e) {
@@ -533,11 +654,43 @@ document.addEventListener('DOMContentLoaded', function () {
     const transferToDollyModalEl = document.getElementById('transferToDollyModal');
     if(transferToDollyModalEl) {
         transferToDollyModalEl.addEventListener('show.bs.modal', function () {
-            loadSelectableList('/api/dollies', '#dolly-list-container', 'dollies');
+            // reset erreurs
+            const err = document.getElementById('transferDollyError');
+            if (err) { err.textContent = ''; err.classList.add('d-none'); }
+            loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
         });
 
         document.getElementById('dolly-search').addEventListener('keyup', function() {
-            loadSelectableList('/api/dollies?q=' + this.value, '#dolly-list-container', 'dollies');
+            loadSelectableList("{{ route('dollies.list') }}?q=" + encodeURIComponent(this.value), '#dolly-list-container', 'dollies');
+            });
+            document.getElementById('createDollyForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const code = document.getElementById('new_dolly_code').value;
+                const name = document.getElementById('new_dolly_name').value;
+                fetch("{{ route('dollies.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ code: code, name: name })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        // Creation successful, reload the list and switch back to the select tab
+                        loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
+                        const tab = new bootstrap.Tab(document.getElementById('select-dolly-tab'));
+                        tab.show();
+                        document.getElementById('createDollyForm').reset();
+                    } else {
+                        // Handle error
+                        const errorDiv = document.getElementById('transferDollyError');
+                        errorDiv.textContent = data.message || 'Erreur lors de la création.';
+                        errorDiv.classList.remove('d-none');
+                    }
+                });
         });
 
         document.getElementById('createDollyForm').addEventListener('submit', function(e) {
@@ -555,10 +708,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({ code: code, name: name })
             })
             .then(response => response.json())
-            .then(data => {
+        .then(data => {
                 if (data.id) {
                     // Creation successful, reload the list and switch back to the select tab
-                    loadSelectableList('/api/dollies', '#dolly-list-container', 'dollies');
+            loadSelectableList("{{ route('dollies.list') }}", '#dolly-list-container', 'dollies');
                     const tab = new bootstrap.Tab(document.getElementById('select-dolly-tab'));
                     tab.show();
                     document.getElementById('createDollyForm').reset();
@@ -576,35 +729,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.querySelector(containerSelector);
 
         if (!container) {
-            console.error(`Conteneur non trouvé: ${containerSelector}`);
+        // Conteneur non trouvé, on arrête silencieusement
             return;
         }
 
-        container.innerHTML = `<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+    // Loading placeholder
+    container.textContent = '';
+    const spinnerWrap = document.createElement('div');
+    spinnerWrap.className = 'text-center';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-border';
+    const spinnerSpan = document.createElement('span');
+    spinnerSpan.className = 'visually-hidden';
+    spinnerSpan.textContent = 'Loading...';
+    spinner.appendChild(spinnerSpan);
+    spinnerWrap.appendChild(spinner);
+    container.appendChild(spinnerWrap);
 
-        // Utiliser une URL de repli si l'URL fournie est incorrecte
-        let fetchUrl = url;
-        if (url === '/api/dollies') {
-            console.warn('URL /api/dollies non valide, utilisation de route dollies.list');
-            fetchUrl = "{{ route('dollies.list') }}";
-            if (fetchUrl === "{{ route('dollies.list') }}") {
-                // La route n'est pas définie, utiliser une URL de secours
-                console.warn('La route dollies.list n\'existe pas, utilisation d\'une URL statique');
-                fetchUrl = "/dollies/list";
-            }
-        } else if (url === '/api/boxes') {
-            console.warn('URL /api/boxes non valide, utilisation de route mail-container.list');
-            fetchUrl = "{{ route('mail-container.list') }}";
-            if (fetchUrl === "{{ route('mail-container.list') }}") {
-                // La route n'est pas définie, utiliser une URL de secours
-                console.warn('La route mail-container.list n\'existe pas, utilisation d\'une URL statique');
-                fetchUrl = "/mail-containers/list";
-            }
-        }
-
-        console.log(`Chargement des données depuis: ${fetchUrl}`);
-
-        fetch(fetchUrl, {
+    // Utiliser directement l'URL fournie (déjà une route Laravel)
+    fetch(url, {
             headers: {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': getCsrfToken()
@@ -617,32 +760,48 @@ document.addEventListener('DOMContentLoaded', function () {
             return response.json();
         })
         .then(data => {
-            console.log(`Données reçues pour ${type}:`, data);
-
-            let items = Array.isArray(data) ? data : (data.data || []);
-            let html = '<ul class="list-group">';
+            const items = Array.isArray(data) ? data : (data.data || []);
+            container.textContent = '';
+            const ul = document.createElement('ul');
+            ul.className = 'list-group';
 
             if (items.length > 0) {
                 items.forEach(item => {
-                    html += `
-                        <li class="list-group-item">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="${item.id}" id="${type}-${item.id}">
-                                <label class="form-check-label" for="${type}-${item.id}">
-                                    ${item.code || ''} - ${item.name || ''}
-                                </label>
-                            </div>
-                        </li>`;
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    const checkWrap = document.createElement('div');
+                    checkWrap.className = 'form-check';
+
+                    const input = document.createElement('input');
+                    input.className = 'form-check-input';
+                    input.type = 'checkbox';
+                    input.value = String(item.id);
+                    input.id = `${type}-${item.id}`;
+
+                    const label = document.createElement('label');
+                    label.className = 'form-check-label';
+                    label.setAttribute('for', `${type}-${item.id}`);
+                    label.textContent = `${item.code || ''} - ${item.name || ''}`.trim();
+
+                    checkWrap.appendChild(input);
+                    checkWrap.appendChild(label);
+                    li.appendChild(checkWrap);
+                    ul.appendChild(li);
                 });
             } else {
-                html += '<li class="list-group-item text-muted">Aucun élément trouvé.</li>';
+                const li = document.createElement('li');
+                li.className = 'list-group-item text-muted';
+                li.textContent = 'Aucun élément trouvé.';
+                ul.appendChild(li);
             }
-            html += '</ul>';
-            container.innerHTML = html;
+            container.appendChild(ul);
         })
         .catch(error => {
-            console.error('Error loading list:', error);
-            container.innerHTML = `<div class="alert alert-danger">Erreur de chargement de la liste: ${error.message}</div>`;
+            container.textContent = '';
+            const err = document.createElement('div');
+            err.className = 'alert alert-danger';
+            err.textContent = `Erreur de chargement de la liste: ${error.message}`;
+            container.appendChild(err);
         });
     }
 
@@ -650,10 +809,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedTransferMailIds = new Set();
     const selectAllTransferCheckbox = document.getElementById('selectAllMailsForTransfer');
     const selectedMailsCountSpan = document.getElementById('selectedMailsCount');
-
-    // Vérifier que les éléments existent
-    console.log('selectAllTransferCheckbox:', selectAllTransferCheckbox);
-    console.log('selectedMailsCountSpan:', selectedMailsCountSpan);
 
     function updateSelectedTransferCount() {
         const count = selectedTransferMailIds.size;
@@ -664,9 +819,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Mettre à jour l'état de la case "Sélectionner tout"
         const allTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox');
         const checkedTransferCheckboxes = document.querySelectorAll('.mail-transfer-checkbox:checked');
-
-        console.log('Nombre total de checkboxes:', allTransferCheckboxes.length);
-        console.log('Nombre de checkboxes cochées:', checkedTransferCheckboxes.length);
 
         if (!selectAllTransferCheckbox) return;
 
@@ -688,7 +840,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Gestionnaire pour les cases à cocher individuelles
     document.addEventListener('change', function(e) {
         if (e.target.classList.contains('mail-transfer-checkbox')) {
-            console.log('Case individuelle changée:', e.target.value, e.target.checked);
             const mailId = parseInt(e.target.value);
             if (e.target.checked) {
                 selectedTransferMailIds.add(mailId);
@@ -701,30 +852,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Gestionnaire pour "Sélectionner tout" - Version améliorée
     if (selectAllTransferCheckbox) {
-        // Initialisation du sélecteur "tous"
-        setTimeout(function() {
-            // Vérifier l'état initial
-            const allCheckboxes = document.querySelectorAll('.mail-transfer-checkbox');
-            const checkedCheckboxes = document.querySelectorAll('.mail-transfer-checkbox:checked');
-            selectAllTransferCheckbox.checked = (allCheckboxes.length > 0 && allCheckboxes.length === checkedCheckboxes.length);
-            selectAllTransferCheckbox.indeterminate = (checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length);
-
-            console.log('Initialisation de selectAllTransferCheckbox:', {
-                checked: selectAllTransferCheckbox.checked,
-                indeterminate: selectAllTransferCheckbox.indeterminate,
-                totalCheckboxes: allCheckboxes.length,
-                checkedCheckboxes: checkedCheckboxes.length
-            });
-        }, 100);
+        // Initialisation immédiate du sélecteur "tous"
+        const allCheckboxes = document.querySelectorAll('.mail-transfer-checkbox');
+        const checkedCheckboxes = document.querySelectorAll('.mail-transfer-checkbox:checked');
+        // Synchroniser l'ensemble sélectionné avec l'état initial
+        selectedTransferMailIds.clear();
+        checkedCheckboxes.forEach(cb => selectedTransferMailIds.add(parseInt(cb.value)));
+        selectAllTransferCheckbox.checked = (allCheckboxes.length > 0 && allCheckboxes.length === checkedCheckboxes.length);
+        selectAllTransferCheckbox.indeterminate = (checkedCheckboxes.length > 0 && checkedCheckboxes.length < allCheckboxes.length);
 
         // Attacher l'événement click plutôt que change pour meilleure compatibilité
         selectAllTransferCheckbox.addEventListener('click', function() {
             const isChecked = this.checked;
-            console.log('Sélectionner tout cliqué, nouvel état:', isChecked);
 
             // Sélectionner/désélectionner toutes les cases
             const checkboxes = document.querySelectorAll('.mail-transfer-checkbox');
-            console.log('Nombre de checkboxes trouvées:', checkboxes.length);
 
             // Désactiver temporairement pour éviter des déclenchements multiples
             this.disabled = true;
@@ -747,8 +889,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             updateSelectedTransferCount();
         });
-    } else {
-        console.error('selectAllTransferCheckbox non trouvé!');
     }
 
     // Initialisation du compteur
@@ -756,12 +896,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Modifier les gestionnaires de transfert pour inclure la sélection
     document.getElementById('saveTransferToBoxButton').addEventListener('click', function() {
-        const selectedBoxes = Array.from(document.querySelectorAll('#box-list-container input:checked')).map(el => el.value);
-        const selectedMails = Array.from(selectedTransferMailIds);
+        const errorDiv = document.getElementById('transferBoxError');
+        errorDiv.textContent = '';
+        errorDiv.classList.add('d-none');
+
+        const selectedBoxes = Array.from(document.querySelectorAll('#box-list-container input:checked'))
+            .map(el => parseInt(el.value))
+            .filter(v => !Number.isNaN(v));
+        const selectedMails = Array.from(selectedTransferMailIds).map(v => parseInt(v));
 
         if (selectedBoxes.length === 0) {
-            document.getElementById('transferBoxError').textContent = 'Veuillez sélectionner au moins une boîte.';
-            document.getElementById('transferBoxError').classList.remove('d-none');
+            errorDiv.textContent = 'Veuillez sélectionner au moins une boîte.';
+            errorDiv.classList.remove('d-none');
             return;
         }
 
@@ -770,17 +916,55 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        alert(`Logique de transfert de ${selectedMails.length} courrier(s) vers les boîtes ${selectedBoxes.join(', ')} à implémenter.`);
-        transferToBoxModal.hide();
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Transfert...';
+
+        fetch(transferBoxesUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ mail_ids: selectedMails, box_ids: selectedBoxes })
+        })
+        .then(async (response) => {
+            const data = await response.json().catch(() => ({ success: false, message: 'Réponse invalide du serveur.' }));
+            if (!response.ok || !data.success) {
+                const msg = data.message || 'Le transfert a échoué.';
+                throw new Error(msg);
+            }
+            return data;
+        })
+        .then(() => {
+            transferToBoxModal.hide();
+            location.reload();
+        })
+        .catch(err => {
+            errorDiv.textContent = err.message || 'Une erreur est survenue lors du transfert.';
+            errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
     });
 
     document.getElementById('saveTransferToDollyButton').addEventListener('click', function() {
-        const selectedDollies = Array.from(document.querySelectorAll('#dolly-list-container input:checked')).map(el => el.value);
-        const selectedMails = Array.from(selectedTransferMailIds);
+        const errorDiv = document.getElementById('transferDollyError');
+        errorDiv.textContent = '';
+        errorDiv.classList.add('d-none');
+
+        const selectedDollies = Array.from(document.querySelectorAll('#dolly-list-container input:checked'))
+            .map(el => parseInt(el.value))
+            .filter(v => !Number.isNaN(v));
+        const selectedMails = Array.from(selectedTransferMailIds).map(v => parseInt(v));
 
         if (selectedDollies.length === 0) {
-            document.getElementById('transferDollyError').textContent = 'Veuillez sélectionner au moins un chariot.';
-            document.getElementById('transferDollyError').classList.remove('d-none');
+            errorDiv.textContent = 'Veuillez sélectionner au moins un chariot.';
+            errorDiv.classList.remove('d-none');
             return;
         }
 
@@ -789,8 +973,40 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        alert(`Logique de transfert de ${selectedMails.length} courrier(s) vers les chariots ${selectedDollies.join(', ')} à implémenter.`);
-        transferToDollyModal.hide();
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Transfert...';
+
+        fetch(transferDolliesUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ mail_ids: selectedMails, dolly_ids: selectedDollies })
+        })
+        .then(async (response) => {
+            const data = await response.json().catch(() => ({ success: false, message: 'Réponse invalide du serveur.' }));
+            if (!response.ok || !data.success) {
+                const msg = data.message || 'Le transfert a échoué.';
+                throw new Error(msg);
+            }
+            return data;
+        })
+        .then(() => {
+            transferToDollyModal.hide();
+            location.reload();
+        })
+        .catch(err => {
+            errorDiv.textContent = err.message || 'Une erreur est survenue lors du transfert.';
+            errorDiv.classList.remove('d-none');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        });
     });
 });
 </script>

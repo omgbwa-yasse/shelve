@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('code', 10)->nullable(false)->unique();
             $table->string('name', 250)->nullable(false);
-            $table->unsignedInteger('organisation_holder_id')->nullable(false);
-            $table->foreign('organisation_holder_id')->references('id')->on('batches')->onDelete('cascade');
+            $table->unsignedBigInteger('organisation_holder_id')->nullable(false);
+            $table->foreign('organisation_holder_id')->references('id')->on('organisations')->onDelete('cascade');
             $table->timestamps();
         });
 

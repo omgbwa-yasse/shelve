@@ -218,7 +218,8 @@ MAIL_ENCRYPTION=tls
 ### **Modules Principaux**
 - 📁 [Gestion d'Archives](docs/archives.md) - Documents, conteneurs, codes-barres
 - 📧 [Système de Courrier](docs/mail.md) - Workflows, assignation, archivage
-- 🔍 [Recherche Avancée](docs/search.md) - TNTSearch, filtres, thésaurus
+- � [Transferts de Courriers (Parapheur)](docs/batch_transfers.md) - Vers boîtes et chariots, limites et erreurs
+- �🔍 [Recherche Avancée](docs/search.md) - TNTSearch, filtres, thésaurus
 - 🤖 [Intelligence Artificielle](docs/ai.md) - Configuration, modèles, intégrations
 - 🌐 [Portail Public](docs/public.md) - Publication, demandes, chat
 - 📊 [Thésaurus](docs/thesaurus.md) - SKOS, import/export, API

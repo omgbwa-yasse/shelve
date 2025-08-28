@@ -58,6 +58,7 @@ use App\Http\Controllers\ThesaurusAssociativeRelationController;
 use App\Http\Controllers\ThesaurusTranslationController;
 use App\Http\Controllers\ThesaurusController;
 use App\Http\Controllers\ThesaurusSchemeController;
+use App\Http\Controllers\BatchTransferController;
 use App\Http\Controllers\ThesaurusSearchController;
 use App\Http\Controllers\ThesaurusExportImportController;
 use App\Http\Controllers\PublicSearchLogController;
@@ -368,6 +369,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::put('batches/{batch}/mail/{batchMail}', [BatchController::class, 'updateMail'])->name('batch.mail.update');
         Route::delete('batches/{batch}/mail/{id}', [BatchController::class, 'destroyMail'])->name('batch.mail.destroy');
         Route::get('batch/{batch}/available-mails', [BatchController::class, 'getAvailableMails'])->name('batch.available-mails');
+
+        // Transferts des courriers (Lot 2)
+        Route::post('batches/{batch}/transfer/boxes', [BatchTransferController::class, 'transferToBoxes'])
+            ->name('batch.transfer.boxes');
+        Route::post('batches/{batch}/transfer/dollies', [BatchTransferController::class, 'transferToDollies'])
+            ->name('batch.transfer.dollies');
 
         Route::resource('batch-received', BatchReceivedController::class)->names('batch-received');
         Route::resource('batch-send', BatchSendController::class)->names('batch-send');
