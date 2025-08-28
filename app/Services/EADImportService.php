@@ -61,8 +61,24 @@ class EADImportService
                         if (str_starts_with($p, 'MIME:')) { $mime = trim(substr($p, 5)); }
                     }
                     if ($href !== '') {
+                        // Download remote file if it's a URL
+                        $localPath = $href;
+                        if (filter_var($href, FILTER_VALIDATE_URL)) {
+                            try {
+                                $fileContents = @file_get_contents($href);
+                                if ($fileContents !== false) {
+                                    $filename = uniqid('imported_') . '_' . ($label ?: basename($href));
+                                    $storagePath = 'attachments/' . $filename;
+                                    \Storage::disk('public')->put($storagePath, $fileContents);
+                                    $localPath = 'storage/' . $storagePath;
+                                }
+                            } catch (\Exception $e) {
+                                // Log error, fallback to href
+                                \Log::error('Attachment download failed: ' . $href . ' - ' . $e->getMessage());
+                            }
+                        }
                         $att = Attachment::create([
-                            'path' => $href,
+                            'path' => $localPath,
                             'name' => $label ?: basename($href),
                             'creator_id' => Auth::id() ?? 1,
                             'type' => 'record',
@@ -138,8 +154,23 @@ class EADImportService
                             if (str_starts_with($p, 'MIME:')) { $mime = trim(substr($p, 5)); }
                         }
                         if ($href !== '') {
+                            // Download remote file if it's a URL
+                            $localPath = $href;
+                            if (filter_var($href, FILTER_VALIDATE_URL)) {
+                                try {
+                                    $fileContents = @file_get_contents($href);
+                                    if ($fileContents !== false) {
+                                        $filename = uniqid('imported_') . '_' . ($label ?: basename($href));
+                                        $storagePath = 'attachments/' . $filename;
+                                        \Storage::disk('public')->put($storagePath, $fileContents);
+                                        $localPath = 'storage/' . $storagePath;
+                                    }
+                                } catch (\Exception $e) {
+                                    \Log::error('Attachment download failed: ' . $href . ' - ' . $e->getMessage());
+                                }
+                            }
                             $att = Attachment::create([
-                                'path' => $href,
+                                'path' => $localPath,
                                 'name' => $label ?: basename($href),
                                 'creator_id' => Auth::id() ?? 1,
                                 'type' => 'slip_record',

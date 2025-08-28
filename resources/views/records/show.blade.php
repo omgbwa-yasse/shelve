@@ -29,6 +29,11 @@
                                 <i class="bi bi-code-slash me-2"></i> EAD
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('records.exportButton', ['records' => $record->id, 'format' => 'ead2002']) }}">
+                                <i class="bi bi-file-earmark-code text-secondary me-2"></i> EAD 2002 XML (Atom)
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         <li class="dropdown-header small text-muted">SEDA 2.1</li>
                         <li>

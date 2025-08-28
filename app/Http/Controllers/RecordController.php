@@ -630,6 +630,12 @@ class RecordController extends Controller
                     return response($xml)
                         ->header('Content-Type', 'application/xml')
                         ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
+                case 'ead2002':
+                    $ead2002 = new \App\Services\EAD2002ExportService();
+                    $xml = $ead2002->exportRecords($records);
+                    return response($xml)
+                        ->header('Content-Type', 'application/xml')
+                        ->header('Content-Disposition', 'attachment; filename="records_export_ead2002.xml"');
                 case 'seda':
                     return $this->exportSEDA($records,$slips);
                 case 'pdf':
