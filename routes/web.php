@@ -292,8 +292,10 @@ Route::group(['middleware' => 'auth'], function () {
         // New route for searching mails
         Route::get('/search', [\App\Http\Controllers\MailController::class, 'apiSearch'])->name('api.mails.search');
 
+
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
+        Route::get('containers/properties', [MailContainerController::class, 'getContainerProperties'])->name('mail-container.properties');
 
         // Routes pour les courriers entrants externes (spécifiques en premier)
         Route::prefix('received/external')->name('mails.received.external.')->group(function () {

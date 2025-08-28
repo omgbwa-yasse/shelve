@@ -191,6 +191,12 @@
                                 <label for="new_box_name" class="form-label">Nom</label>
                                 <input type="text" class="form-control" id="new_box_name" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="new_box_property_id" class="form-label">Propriété</label>
+                                <select class="form-select" id="new_box_property_id" required>
+                                    <option value="">Chargement...</option>
+                                </select>
+                            </div>
                             <button type="submit" class="btn btn-primary">Créer et sélectionner</button>
                         </form>
                     </div>
@@ -262,6 +268,19 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Charger dynamiquement les propriétés de boîte pour le select via la route Laravel
+    fetch("{{ route('mail-container.properties') }}")
+        .then(response => response.json())
+        .then(properties => {
+            const select = document.getElementById('new_box_property_id');
+            select.innerHTML = '<option value="">Choisir...</option>';
+            properties.forEach(prop => {
+                const opt = document.createElement('option');
+                opt.value = prop.id;
+                opt.textContent = prop.name;
+                select.appendChild(opt);
+            });
+        });
     // Small utility: debounce
     function debounce(fn, delay = 300) {
         let t;
@@ -594,6 +613,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.preventDefault();
                 const code = document.getElementById('new_box_code').value;
                 const name = document.getElementById('new_box_name').value;
+                const property_id = document.getElementById('new_box_property_id').value;
                 fetch("{{ route('mail-container.store') }}", {
                     method: 'POST',
                     headers: {
@@ -601,15 +621,22 @@ document.addEventListener('DOMContentLoaded', function () {
                         'X-CSRF-TOKEN': getCsrfToken(),
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ code: code, name: name })
+                    body: JSON.stringify({ code: code, name: name, property_id: property_id })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.id) {
-                        // Creation successful, reload the list and switch back to the select tab
+                        // Après création, recharger la liste et sélectionner la nouvelle boîte
                         loadSelectableList("{{ route('mail-container.list') }}", '#box-list-container', 'boxes');
                         const tab = new bootstrap.Tab(document.getElementById('select-box-tab'));
                         tab.show();
+                        // Attendre que la liste soit rechargée puis cocher la nouvelle boîte
+                        setTimeout(() => {
+                            const newBoxCheckbox = document.getElementById(`boxes-${data.id}`);
+                            if (newBoxCheckbox) {
+                                newBoxCheckbox.checked = true;
+                            }
+                        }, 500); // délai pour laisser le temps au DOM de se mettre à jour
                     } else {
                         // Handle error
                         const errorDiv = document.getElementById('transferBoxError');
@@ -617,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         errorDiv.classList.remove('d-none');
                     }
                 });
-        });
+            });
 
         document.getElementById('createBoxForm').addEventListener('submit', function(e) {
             e.preventDefault();

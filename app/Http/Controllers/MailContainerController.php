@@ -113,6 +113,10 @@ class MailContainerController extends Controller
     }
 
 
-
+    public function getContainerProperties()
+    {
+        $properties = ContainerProperty::select('id', 'name')->get();
+        return response()->json($properties);
+    }
 
 }
