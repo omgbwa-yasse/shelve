@@ -227,8 +227,7 @@ class Record extends Model
      */
     public function keywords()
     {
-        return $this->belongsToMany(Keyword::class, 'record_keyword')
-                    ->withTimestamps();
+    return $this->belongsToMany(Keyword::class, 'record_keyword');
     }
 
     /**
