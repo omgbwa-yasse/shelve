@@ -59,6 +59,9 @@
                                 <button type="button" class="btn btn-outline-primary" id="generateMailDescriptionBtn">
                                     <i class="bi bi-magic"></i> Générer la description
                                 </button>
+                                <button type="button" class="btn btn-success" id="saveMailDescriptionBtn" style="display:none;">
+                                    <i class="bi bi-floppy"></i> Enregistrer
+                                </button>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                             </div>
                         </div>
@@ -67,29 +70,80 @@
         <!-- Script AJAX génération description -->
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.getElementById('generateMailDescriptionBtn');
+            const generateBtn = document.getElementById('generateMailDescriptionBtn');
+            const saveBtn = document.getElementById('saveMailDescriptionBtn');
             const loading = document.getElementById('mail-description-loading');
             const content = document.getElementById('mail-description-content');
-            btn.addEventListener('click', function() {
-                btn.disabled = true;
+            let currentSummary = '';
+
+            generateBtn.addEventListener('click', function() {
+                generateBtn.disabled = true;
                 loading.style.display = 'block';
                 content.innerHTML = '';
+                saveBtn.style.display = 'none';
+
                 fetch(`{{ route('mail.summarize', $mail->id) }}`)
                     .then(response => response.json())
                     .then(data => {
                         loading.style.display = 'none';
-                        btn.disabled = false;
+                        generateBtn.disabled = false;
                         if(data.summary) {
+                            currentSummary = data.summary;
                             content.innerHTML = `<strong>Résumé :</strong><br>${data.summary}<hr><strong>Mots-clés :</strong><br>${data.keywords}`;
+                            saveBtn.style.display = 'inline-block';
                         } else {
                             content.innerHTML = '<span class="text-danger">Erreur lors de la génération.</span>';
                         }
                     })
                     .catch(() => {
                         loading.style.display = 'none';
-                        btn.disabled = false;
+                        generateBtn.disabled = false;
                         content.innerHTML = '<span class="text-danger">Erreur lors de la génération.</span>';
                     });
+            });
+
+            saveBtn.addEventListener('click', function() {
+                if (!currentSummary) {
+                    alert('Aucun résumé à sauvegarder');
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sauvegarde...';
+
+                fetch(`{{ route('mail.saveSummary', $mail->id) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        summary: currentSummary
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bi bi-floppy"></i> Enregistrer';
+
+                    if(data.success) {
+                        saveBtn.innerHTML = '<i class="bi bi-check-lg"></i> Sauvegardé';
+                        saveBtn.classList.remove('btn-success');
+                        saveBtn.classList.add('btn-outline-success');
+
+                        // Optionnel: recharger la page pour voir les changements
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert('Erreur lors de la sauvegarde');
+                    }
+                })
+                .catch(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="bi bi-floppy"></i> Enregistrer';
+                    alert('Erreur lors de la sauvegarde');
+                });
             });
         });
         </script>

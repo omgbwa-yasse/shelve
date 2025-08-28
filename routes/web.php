@@ -307,7 +307,6 @@ Route::group(['middleware' => 'auth'], function () {
             Route::put('/{id}', [MailReceivedExternalController::class, 'update'])->name('update');
             Route::patch('/{id}', [MailReceivedExternalController::class, 'update']);
             Route::delete('/{id}', [MailReceivedExternalController::class, 'destroy'])->name('destroy');
-               Route::get('/mail/{mail}/summarize', [App\Http\Controllers\MailController::class, 'summarize'])->name('mail.summarize');
         });
 
         // Routes pour les courriers sortants externes (spécifiques en premier)
@@ -345,6 +344,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::put('outgoing/{id}', [MailController::class, 'update'])->name('mails.outgoing.update');
         Route::patch('outgoing/{id}', [MailController::class, 'update']);
         Route::delete('outgoing/{id}', [MailController::class, 'destroy'])->name('mails.outgoing.destroy');
+
+        // Route pour le résumé AI des mails
+        Route::get('{mail}/summarize', [\App\Http\Controllers\Api\AiMailController::class, 'summarize'])->name('mail.summarize');
+        Route::post('{mail}/save-summary', [\App\Http\Controllers\Api\AiMailController::class, 'saveSummary'])->name('mail.saveSummary');
 
         Route::resource('received', MailReceivedController::class)->names('mail-received');
 
@@ -429,30 +432,30 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     // Gestion des chariots en AJAX, les routes
-    // Routes dolly-handler avec authentification
-Route::middleware(['auth'])->group(function () {
-    Route::post('/dolly-handler/create', [DollyHandlerController::class, 'addDolly']);
-    Route::get('/dolly-handler/list', [DollyHandlerController::class, 'list']);
-    Route::post('/dolly-handler/add-items', [DollyHandlerController::class, 'addItems']);
-    Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
-    Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);
-    Route::delete('/dolly-handler/{dolly_id}', [DollyHandlerController::class, 'deleteDolly']);
-});
+            // Routes dolly-handler avec authentification
+        Route::middleware(['auth'])->group(function () {
+            Route::post('/dolly-handler/create', [DollyHandlerController::class, 'addDolly']);
+            Route::get('/dolly-handler/list', [DollyHandlerController::class, 'list']);
+            Route::post('/dolly-handler/add-items', [DollyHandlerController::class, 'addItems']);
+            Route::delete('/dolly-handler/remove-items', [DollyHandlerController::class, 'removeItems']);
+            Route::delete('/dolly-handler/clean', [DollyHandlerController::class, 'clean']);
+            Route::delete('/dolly-handler/{dolly_id}', [DollyHandlerController::class, 'deleteDolly']);
+        });
 
-    // Gestion des parapheurs en AJAX, les routes
-    // Routes batch-handler avec authentification
-Route::middleware(['auth'])->group(function () {
-    Route::post('/batch-handler/create', [BatchHandlerController::class, 'create']);
-    Route::get('/batch-handler/list', [BatchHandlerController::class, 'list']);
-    Route::post('/batch-handler/add-items', [BatchHandlerController::class, 'addItems']);
-    Route::delete('/batch-handler/remove-items', [BatchHandlerController::class, 'removeItems']);
-    Route::delete('/batch-handler/{batch_id}', [BatchHandlerController::class, 'deleteBatch']);
+            // Gestion des parapheurs en AJAX, les routes
+            // Routes batch-handler avec authentification
+        Route::middleware(['auth'])->group(function () {
+            Route::post('/batch-handler/create', [BatchHandlerController::class, 'create']);
+            Route::get('/batch-handler/list', [BatchHandlerController::class, 'list']);
+            Route::post('/batch-handler/add-items', [BatchHandlerController::class, 'addItems']);
+            Route::delete('/batch-handler/remove-items', [BatchHandlerController::class, 'removeItems']);
+            Route::delete('/batch-handler/{batch_id}', [BatchHandlerController::class, 'deleteBatch']);
 
-    // Route de test pour le système de parapheur
-    Route::get('/test-batch', function () {
-        return view('test-batch');
-    });
-});
+            // Route de test pour le système de parapheur
+            Route::get('/test-batch', function () {
+                return view('test-batch');
+            });
+        });
 
 
 
@@ -544,22 +547,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
         // Routes spécifiques AVANT la route resource (pour éviter les conflits)
-    // Dedicated export/import controllers for records
-    Route::get('records/exportButton', [\App\Http\Controllers\RecordExportController::class, 'exportButton'])->name('records.exportButton');
-    Route::post('records/print', [\App\Http\Controllers\RecordExportController::class, 'printRecords'])->name('records.print');
-    Route::post('records/export', [\App\Http\Controllers\RecordExportController::class, 'export'])->name('records.export');
-    Route::get('records/export', [\App\Http\Controllers\RecordExportController::class, 'exportForm'])->name('records.export.form');
-    Route::get('records/import', [\App\Http\Controllers\RecordImportController::class, 'importForm'])->name('records.import.form');
-    Route::post('records/import', [\App\Http\Controllers\RecordImportController::class, 'import'])->name('records.import');
-    Route::post('records/analyze-file', [\App\Http\Controllers\RecordImportController::class, 'analyzeFile'])->name('records.analyze-file');
+        // Dedicated export/import controllers for records
+        Route::get('records/exportButton', [\App\Http\Controllers\RecordExportController::class, 'exportButton'])->name('records.exportButton');
+        Route::post('records/print', [\App\Http\Controllers\RecordExportController::class, 'printRecords'])->name('records.print');
+        Route::post('records/export', [\App\Http\Controllers\RecordExportController::class, 'export'])->name('records.export');
+        Route::get('records/export', [\App\Http\Controllers\RecordExportController::class, 'exportForm'])->name('records.export.form');
+        Route::get('records/import', [\App\Http\Controllers\RecordImportController::class, 'importForm'])->name('records.import.form');
+        Route::post('records/import', [\App\Http\Controllers\RecordImportController::class, 'import'])->name('records.import');
+        Route::post('records/analyze-file', [\App\Http\Controllers\RecordImportController::class, 'analyzeFile'])->name('records.analyze-file');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::get('records/{record}/attachments', [RecordController::class, 'getAttachments'])->name('records.attachments.list');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
         Route::get('records/{record}/full', [RecordController::class, 'showFull'])->name('records.showFull');
         Route::get('search', [RecordController::class, 'search'])->name('records.search');
 
-    // Export SEDA 2.1
-    Route::get('records/{record}/export/seda', [SEDAExportController::class, 'exportRecord'])->name('records.export.seda');
+        // Export SEDA 2.1
+        Route::get('records/{record}/export/seda', [SEDAExportController::class, 'exportRecord'])->name('records.export.seda');
 
         // Routes containers AVANT la route resource
         Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
@@ -648,21 +651,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('slips/approve', [SlipController::class, 'approve'])->name('slips.approve');
         Route::get('slips/integrate', [SlipController::class, 'integrate'])->name('slips.integrate');
         Route::resource('slips', SlipController::class);
-    // Export SEDA 2.1
-    Route::get('slips/{slip}/export/seda', [SEDAExportController::class, 'exportSlip'])->name('slips.export.seda');
-        Route::resource('slips.records', SlipRecordController::class);
-        Route::resource('slips.records.containers', SlipRecordContainerController::class);
-        Route::resource('containers', SlipContainerController::class)->names('slips.containers');
-        Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
-        Route::get('/slips/{slip}/print', [SlipController::class, 'print'])->name('slips.print');
-        Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
-        Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
-        Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
-        Route::post('slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
-        Route::delete('slips/{slip}/records/{record}/attachments/{id}', [SlipRecordAttachmentController::class, 'delete'])
-            ->name('slipRecordAttachment.delete');
 
-    });
+        // Export SEDA 2.1
+        Route::get('slips/{slip}/export/seda', [SEDAExportController::class, 'exportSlip'])->name('slips.export.seda');
+            Route::resource('slips.records', SlipRecordController::class);
+            Route::resource('slips.records.containers', SlipRecordContainerController::class);
+            Route::resource('containers', SlipContainerController::class)->names('slips.containers');
+            Route::get('slip/sort', [SearchSlipController::class, 'index'])->name('slips-sort');
+            Route::get('/slips/{slip}/print', [SlipController::class, 'print'])->name('slips.print');
+            Route::get('slip/select', [SearchSlipController::class, 'date'])->name('slips-select-date');
+            Route::get('organisation/select', [SearchSlipController::class, 'organisation'])->name('slips-select-organisation');
+            Route::post('slipRecordAttachment/upload', [SlipRecordAttachmentController::class, 'upload'])->name('slip-record-upload');
+            Route::post('slipRecordAttachment/show', [SlipRecordAttachmentController::class, 'show'])->name('slip-record-show');
+            Route::delete('slips/{slip}/records/{record}/attachments/{id}', [SlipRecordAttachmentController::class, 'delete'])
+                ->name('slipRecordAttachment.delete');
+
+        });
 
     Route::prefix('deposits')->group(function () {
         Route::get('/', [BuildingController::class, 'index']);
