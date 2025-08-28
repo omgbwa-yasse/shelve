@@ -47,16 +47,16 @@
         </div>
     </div>
 
-    @if($mailsToReturn->count() > 0)
+    @if($mails->count() > 0)
         <div class="mb-3">
             <p class="text-muted">
                 <i class="bi bi-info-circle"></i>
-                {{ $mailsToReturn->count() }} courrier(s) reçu(s) à retourner
+                {{ $mails->count() }} courrier(s) reçu(s) à retourner
             </p>
         </div>
 
         <div id="mailList" class="mb-4">
-            @foreach ($mailsToReturn as $mail)
+            @foreach ($mails as $mail)
                 <div class="card mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
                     <div class="card-header bg-light d-flex align-items-center py-2">
                         <div class="form-check me-3">

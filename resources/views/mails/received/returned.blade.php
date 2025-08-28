@@ -43,15 +43,15 @@
         </div>
     </div>
 
-    <!-- Section: Courriers émis à retourner -->
-    @if($sentToReturn->count() > 0)
+    <!-- Section: Courriers émis retournés -->
+    @if($mails->count() > 0)
         <div class="mb-5">
             <h3 class="text-xl font-bold text-gray-800 mb-3">
                 <i class="bi bi-send text-primary"></i>
-                Courriers émis en attente de retour ({{ $sentToReturn->count() }})
+                Courriers émis retournés ({{ $mails->count() }})
             </h3>
             <div id="sentMailList" class="mb-4">
-                @foreach ($sentToReturn as $mail)
+                @foreach ($mails as $mail)
                     <div class="card mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
                         <div class="card-header bg-light d-flex align-items-center py-2">
                             <div class="form-check me-3">
@@ -122,90 +122,11 @@
         </div>
     @endif
 
-    <!-- Section: Courriers reçus à retourner -->
-    @if($receivedToReturn->count() > 0)
-        <div class="mb-5">
-            <h3 class="text-xl font-bold text-gray-800 mb-3">
-                <i class="bi bi-inbox text-success"></i>
-                Courriers reçus à retourner ({{ $receivedToReturn->count() }})
-            </h3>
-            <div id="receivedMailList" class="mb-4">
-                @foreach ($receivedToReturn as $mail)
-                    <div class="card mb-3" style="transition: all 0.3s ease; transform: translateZ(0);">
-                        <div class="card-header bg-light d-flex align-items-center py-2">
-                            <div class="form-check me-3">
-                                <input class="form-check-input" type="checkbox" value="{{ $mail->id }}" id="mail_{{ $mail->id }}" name="selected_mail[]" />
-                            </div>
-
-                            <button class="btn btn-link btn-sm text-secondary text-decoration-none p-0 me-3 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $mail->id }}" aria-expanded="false" aria-controls="collapse{{ $mail->id }}">
-                                <i class="bi bi-chevron-down fs-5"></i>
-                            </button>
-
-                            <h4 class="card-title flex-grow-1 m-0" for="mail_{{ $mail->id }}">
-                                <a href="{{ route('mail-received.show', $mail) }}" class="text-decoration-none text-dark">
-                                    <span class="fs-5 fw-semibold">{{ $mail->code ?? 'N/A' }}</span>
-                                    <span class="fs-5"> - {{ $mail->name ?? 'N/A' }}</span>
-
-                                    @if($mail->action)
-                                        <span class="badge bg-warning ms-2">{{ $mail->action->name }}</span>
-                                    @endif
-
-                                    @if($mail->typology)
-                                        <span class="badge bg-info ms-2">{{ $mail->typology->name }}</span>
-                                    @endif
-                                </a>
-                            </h4>
-
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary">{{ $mail->status->label() }}</span>
-                                <span class="text-muted small">{{ $mail->date ? $mail->date->format('d/m/Y') : 'N/A' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="collapse" id="collapse{{ $mail->id }}">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p class="mb-1"><strong>Description:</strong> {{ $mail->description ?: 'Aucune description' }}</p>
-                                        <p class="mb-1"><strong>Expéditeur:</strong>
-                                            @if($mail->sender)
-                                                {{ $mail->sender->name }}
-                                            @elseif($mail->senderOrganisation)
-                                                {{ $mail->senderOrganisation->name }}
-                                            @else
-                                                Non défini
-                                            @endif
-                                        </p>
-                                        @if($mail->action)
-                                            <p class="mb-1"><strong>Action:</strong> {{ $mail->action->name }}</p>
-                                        @endif
-                                    </div>
-                                    <div class="col-md-6">
-                                        @if($mail->deadline)
-                                            <p class="mb-1"><strong>Échéance:</strong>
-                                                <span class="@if($mail->isOverdue()) text-danger @elseif($mail->isApproachingDeadline()) text-warning @endif">
-                                                    {{ $mail->deadline->format('d/m/Y H:i') }}
-                                                </span>
-                                            </p>
-                                        @endif
-                                        @if($mail->priority)
-                                            <p class="mb-1"><strong>Priorité:</strong> {{ $mail->priority->name }}</p>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
-
-    @if($sentToReturn->count() == 0 && $receivedToReturn->count() == 0)
+    @if($mails->count() == 0)
         <div class="text-center py-5">
             <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
-            <h4 class="text-muted mt-3">Aucun courrier à retourner</h4>
-            <p class="text-muted">Il n'y a actuellement aucun courrier nécessitant un retour.</p>
+            <h4 class="text-muted mt-3">Aucun courrier retourné</h4>
+            <p class="text-muted">Il n'y a actuellement aucun courrier qui vous a été retourné.</p>
         </div>
     @endif
 

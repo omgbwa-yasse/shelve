@@ -372,6 +372,34 @@ class MailReceivedController extends Controller
         ));
     }
 
+    public function returned()
+    {
+        $userId = Auth::id();
+
+        // Courriers émis par l'utilisateur qui ont été retournés
+        $mails = Mail::with(['action', 'recipient', 'recipientOrganisation', 'typology', 'priority'])
+                    ->where('sender_user_id', $userId)
+                    ->whereHas('action', function($query) {
+                        $query->where('to_return', true);
+                    })
+                    ->where('mail_type', Mail::TYPE_INTERNAL)
+                    ->where('is_archived', false)
+                    ->where('status', MailStatusEnum::TRANSMITTED)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+        $dollies = Dolly::all();
+        $categories = Dolly::categories();
+        $users = User::all();
+
+        return view('mails.received.returned', compact(
+            'mails',
+            'dollies',
+            'categories',
+            'users'
+        ));
+    }
+
     public function destroy($id)
     {
         $mail = Mail::findOrFail($id);
