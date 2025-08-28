@@ -194,6 +194,27 @@ class AiSeeder extends Seeder
                 'is_system' => true,
             ],
             [
+                'title' => 'action.mail_summarize.user',
+                'content' =>
+                    "À partir du courrier électronique suivant, fournis :\n" .
+                    "1) Une description synthétique et professionnelle en 3 à 5 phrases (FR), en mettant en avant le contexte, l'objet, les parties prenantes, la typologie et les points saillants.\n" .
+                    "2) 5 mots-clés, chacun avec 3 synonymes (FR).\n" .
+                    "   Catégorise chaque mot-clé parmi : Personnalité (P), Matière (M), Énergie (E), Espace (E).\n" .
+                    "   - P : essence/objet principal ; M : composants/éléments ; E (Énergie) : actions/processus/fonctions ; E (Espace) : localisation.\n" .
+                    "Contraintes : n'invente pas de faits ; reste fidèle au contenu du mail ; une ligne par mot-clé.\n\n" .
+                    $fmt .
+                    "Résumé : <ta description>\n" .
+                    "Mots-clés (5) :\n" .
+                    "- [Catégorie] Mot-clé — synonymes : s1; s2; s3\n\n" .
+                    "Mail :\n" .
+                    "De : {{from}}\n" .
+                    "À : {{to}}\n" .
+                    "Objet : {{subject}}\n" .
+                    "Date : {{date}}\n" .
+                    "Contenu :\n{{content}}",
+                'is_system' => false,
+            ],
+            [
                 'title' => 'action.summarize.user',
                 'content' =>
                     "À partir du texte suivant, fournis :\n" .
