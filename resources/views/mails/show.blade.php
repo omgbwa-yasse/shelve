@@ -27,6 +27,15 @@
                     @endif
                 </div>
             </div>
+            <div>
+                <form action="{{ route('mail-transaction.print') }}" method="POST" target="_blank" style="display:inline; margin-right: 1rem;">
+                    @csrf
+                    <input type="hidden" name="selectedIds[]" value="{{ $mail->id }}">
+                    <button type="submit" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-printer"></i> Imprimer PDF
+                    </button>
+                </form>
+            </div>
             <div class="btn-group">
                 {{-- Bouton retour dynamique selon le type --}}
                 @php
@@ -54,8 +63,9 @@
                     <i class="bi bi-pencil"></i> Modifier
                 </a>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                    <i class="bi bi-trash"></i>
+                    <i class="bi bi-trash"></i> Supprimer
                 </button>
+                </a>
             </div>
         </div>
 
@@ -283,8 +293,14 @@
                         ($mail->recipient && $mail->recipient->id == auth()->id()) ||
                         ($mail->recipientOrganisation && auth()->user()->currentOrganisation && $mail->recipientOrganisation->id == auth()->user()->currentOrganisation->id)
                     ))
-                        <a href="{{ route('mail-received.approve', $mail->id)}}" target="_blank" class="btn btn-success"> Approuver</a>
-                        <a href="{{ route('mail-received.reject', $mail->id)}}" target="_blank" class="btn btn-danger "> Rejecter</a>
+
+
+                    @if ($mail->status && $mail->status->value == 'in_progress')
+                        <div class="btn-group" role="group" aria-label="Actions">
+                            <a href="{{ route('mail-received.approve', $mail->id)}}" target="_blank" class="btn btn-success"> Approuver</a>
+                            <a href="{{ route('mail-received.reject', $mail->id)}}" target="_blank" class="btn btn-danger "> Rejecter</a>
+                        </div>
+                    @endif
 
                     @endif
                 </div>

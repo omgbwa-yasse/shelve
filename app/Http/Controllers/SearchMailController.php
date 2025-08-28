@@ -205,10 +205,9 @@ class SearchMailController extends Controller
      */
     private function handleBatchSearch($query, $request, &$filters)
     {
-        if ($request->filled('batch_id')) {
-            $batchId = $request->batch_id;
+        $batchId = $request->batch_id ?? $request->id;
+        if ($batchId) {
             $batch = Batch::find($batchId);
-
             if ($batch) {
                 $query->whereHas('batches', function ($q) use ($batchId) {
                     $q->where('batch_id', $batchId);

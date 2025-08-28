@@ -123,6 +123,11 @@ class Mail extends Model
                     ->withTimestamps();
     }
 
+    public function batches()
+    {
+        return $this->belongsToMany(Batch::class, 'batch_mail', 'mail_id', 'batch_id');
+    }
+
     public function dollies()
     {
         return $this->belongsToMany(Dolly::class, 'dolly_mails', 'mail_id', 'dolly_id')
@@ -155,40 +160,6 @@ class Mail extends Model
     {
         return $this->belongsTo(ExternalOrganization::class, 'external_recipient_organization_id');
     }
-
-    // Méthodes polymorphiques pour obtenir l'expéditeur et le destinataire réels basés sur le type
-    // TEMPORAIREMENT COMMENTÉES POUR ÉVITER LES CONFLITS
-    /*
-    public function getSenderAttribute()
-    {
-        if (!$this->sender_type) {
-            return null;
-        }
-
-        return match($this->sender_type) {
-            'user' => $this->sender_user_id ? $this->sender() : null,
-            'organisation' => $this->sender_organisation_id ? $this->senderOrganisation() : null,
-            'external_contact' => $this->external_sender_id ? $this->externalSender : null,
-            'external_organization' => $this->external_sender_organization_id ? $this->externalSenderOrganization : null,
-            default => null
-        };
-    }
-
-    public function getRecipientAttribute()
-    {
-        if (!$this->recipient_type) {
-            return null;
-        }
-
-        return match($this->recipient_type) {
-            'user' => $this->recipient_user_id ? $this->recipient() : null,
-            'organisation' => $this->recipient_organisation_id ? $this->recipientOrganisation() : null,
-            'external_contact' => $this->external_recipient_id ? $this->externalRecipient : null,
-            'external_organization' => $this->external_recipient_organization_id ? $this->externalRecipientOrganization : null,
-            default => null
-        };
-    }
-    */
 
     public function assignedOrganisation()
     {
