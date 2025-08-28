@@ -354,6 +354,16 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('received/{mail}/approve', [MailReceivedController::class, 'approve'])->name('mail-received.approve');
         Route::get('received/{mail}/reject', [MailReceivedController::class, 'reject'])->name('mail-received.reject');
 
+        // Route pour les courriers retournés
+        Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
+
+        // Route pour les courriers à retourner (filtre spécifique)
+        Route::get('to-return', [MailReceivedController::class, 'toReturn'])->name('mail-received.to-return');
+
+        // Route pour les courriers à retourner
+        Route::get('to-return', [MailReceivedController::class, 'toReturn'])->name('mail-received.toReturn');
+        // Route pour les courriers à retourner
+
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users;

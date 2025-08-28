@@ -25,6 +25,16 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.returned') }}">
+                    <i class="bi bi-arrow-return-left"></i> {{ __('returned') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('mail-received.toReturn') }}">
+                    <i class="bi bi-arrow-return-right"></i> {{ __('to_return') }}
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch.index') }}">
                     <i class="bi bi-bookmark"></i> Parapheurs
                 </a>

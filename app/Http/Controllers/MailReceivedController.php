@@ -341,6 +341,37 @@ class MailReceivedController extends Controller
                          ->with('success', 'Mail updated successfully');
     }
 
+    /**
+     * Affiche uniquement les courriers reçus qu'on doit retourner
+     * - Courriers reçus par l'utilisateur qui ont une action avec to_return = true
+     */
+    public function toReturn()
+    {
+        $userId = Auth::id();
+
+        // Courriers reçus par l'utilisateur qui doivent être retournés
+        $mails = Mail::with(['action', 'sender', 'senderOrganisation', 'typology', 'priority'])
+                    ->where('recipient_user_id', $userId)
+                    ->whereHas('action', function($query) {
+                        $query->where('to_return', true);
+                    })
+                    ->where('mail_type', Mail::TYPE_INTERNAL)
+                    ->where('is_archived', false)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+        $dollies = Dolly::all();
+        $categories = Dolly::categories();
+        $users = User::all();
+
+        return view('mails.received.toReturn', compact(
+            'mails',
+            'dollies',
+            'categories',
+            'users'
+        ));
+    }
+
     public function destroy($id)
     {
         $mail = Mail::findOrFail($id);
