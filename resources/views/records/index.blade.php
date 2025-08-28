@@ -26,6 +26,7 @@
                             <option value="">Choisir un format</option>
                             <option value="excel">Excel</option>
                             <option value="ead">EAD</option>
+                            <option value="ead2002">EAD 2002 XML (Atom)</option>
                             <option value="seda">SEDA</option>
                             <option value="pdf">PDF</option>
                         </select>
@@ -388,6 +389,18 @@
                                     <div>
                                         <div class="fw-semibold">EAD</div>
                                         <small class="text-muted">Export au format EAD (Encoded Archival Description)</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="form-check export-option">
+                            <input class="form-check-input" type="radio" name="exportFormat" id="formatEAD2002" value="ead2002">
+                            <label class="form-check-label w-100 p-3 border rounded-3 bg-light" for="formatEAD2002">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark-code text-secondary me-3 fs-4"></i>
+                                    <div>
+                                        <div class="fw-semibold">EAD 2002 XML (Atom)</div>
+                                        <small class="text-muted">Export compatible AtoM (EAD 2002 XML)</small>
                                     </div>
                                 </div>
                             </label>
