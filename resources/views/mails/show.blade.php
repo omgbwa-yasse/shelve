@@ -35,6 +35,64 @@
                         <i class="bi bi-printer"></i> Imprimer PDF
                     </button>
                 </form>
+                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#mailDetailsModal">
+                    <i class="bi bi-eye"></i> Générer une description
+                </button>
+                <!-- Modal Génération Description Courrier -->
+                <div class="modal fade" id="mailDetailsModal" tabindex="-1" aria-labelledby="mailDetailsModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="mailDetailsModalLabel">Générer une description du courrier</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="mail-description-result">
+                                    <div class="text-muted mb-2">Cliquez sur le bouton ci-dessous pour générer une description synthétique et professionnelle du courrier, avec mots-clés archivistiques.</div>
+                                    <div class="alert alert-info" id="mail-description-loading" style="display:none;">
+                                        <span class="spinner-border spinner-border-sm me-2"></span> Génération en cours...
+                                    </div>
+                                    <div id="mail-description-content" style="min-height:80px;"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-primary" id="generateMailDescriptionBtn">
+                                    <i class="bi bi-magic"></i> Générer la description
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        <!-- Script AJAX génération description -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('generateMailDescriptionBtn');
+            const loading = document.getElementById('mail-description-loading');
+            const content = document.getElementById('mail-description-content');
+            btn.addEventListener('click', function() {
+                btn.disabled = true;
+                loading.style.display = 'block';
+                content.innerHTML = '';
+                fetch(`{{ route('mail.summarize', $mail->id) }}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        loading.style.display = 'none';
+                        btn.disabled = false;
+                        if(data.summary) {
+                            content.innerHTML = `<strong>Résumé :</strong><br>${data.summary}<hr><strong>Mots-clés :</strong><br>${data.keywords}`;
+                        } else {
+                            content.innerHTML = '<span class="text-danger">Erreur lors de la génération.</span>';
+                        }
+                    })
+                    .catch(() => {
+                        loading.style.display = 'none';
+                        btn.disabled = false;
+                        content.innerHTML = '<span class="text-danger">Erreur lors de la génération.</span>';
+                    });
+            });
+        });
+        </script>
             </div>
             <div class="btn-group">
                 {{-- Bouton retour dynamique selon le type --}}

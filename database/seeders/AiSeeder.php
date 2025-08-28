@@ -177,6 +177,23 @@ class AiSeeder extends Seeder
                 'is_system' => true,
             ],
             [
+                'title' => 'mail_summarize',
+                'content' =>
+                    "Tu es un assistant archivistique.\n" .
+                    "1) Génère une description synthétique et professionnelle du courrier ci-dessous en 3 à 5 phrases (FR), en mettant en avant le contexte, l'objet, les parties prenantes, la typologie et les points saillants.\n" .
+                    "2) Puis extrais 5 mots-clés, chacun accompagné de 3 synonymes en français.\n" .
+                    "   Classe chaque mot-clé dans l'une des catégories suivantes : Personnalité (P), Matière (M), Énergie (E), Espace (E).\n" .
+                    "   - Personnalité (P) : l'objet principal d'étude, son essence\n" .
+                    "   - Matière (M) : composants, matériaux ou éléments constitutifs\n" .
+                    "   - Énergie (E) : actions, processus ou fonctions liés au sujet\n" .
+                    "   - Espace (E) : localisation géographique ou spatiale\n" .
+                    $fmt .
+                    "Résumé : <ta description>\n" .
+                    "Mots-clés (5) :\n" .
+                    "- [Catégorie] Mot-clé — synonymes : s1; s2; s3",
+                'is_system' => true,
+            ],
+            [
                 'title' => 'action.summarize.user',
                 'content' =>
                     "À partir du texte suivant, fournis :\n" .

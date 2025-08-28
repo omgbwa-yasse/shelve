@@ -7,14 +7,83 @@ use App\Models\Prompt;
 use App\Models\Record;
 use App\Models\Activity;
 
-class AiMessageBuilder
+class AiMessageContextBuilder
 {
     private AiRecordContextBuilder $records;
     private DefaultValueService $defaultValues;
 
     /**
-     * Build AI messages and options for a given prompt and request.
-     * @return array{0: array, 1: array}
+     * Prépare les messages et documents pour le résumé AI d'un mail
+     */
+    public function buildMailSummaryMessages($mail, string $systemPrompt = ''): array
+    {
+        $ATTACH_LABEL = "Pièce jointe: ";
+        $userContent = '';
+        $userContent .= "Expéditeur : " . ($mail->sender->name ?? $mail->externalSender->first_name ?? $mail->externalSenderOrganization->name ?? 'N/A') . "\n";
+        $userContent .= "Destinataire : " . ($mail->recipient->name ?? $mail->externalRecipient->first_name ?? $mail->externalRecipientOrganization->name ?? 'N/A') . "\n";
+        $userContent .= "Date : " . ($mail->date ? \Carbon\Carbon::parse($mail->date)->format('d/m/Y') : 'N/A') . "\n";
+        $userContent .= "Typologie : " . ($mail->typology->name ?? 'N/A') . "\n";
+        $userContent .= "Priorité : " . ($mail->priority->name ?? 'N/A') . "\n";
+        $userContent .= "Action : " . ($mail->action->name ?? 'N/A') . "\n";
+        $userContent .= "Objet : " . ($mail->name ?? $mail->code ?? 'N/A') . "\n";
+        $userContent .= "Description : " . ($mail->description ?? '') . "\n";
+
+        $documents = [];
+        $attachmentsContent = [];
+        foreach ($mail->attachments as $attachment) {
+            $mime = $attachment->mime_type ?? '';
+            $filePath = storage_path('app/' . $attachment->path);
+            $doc = [
+                'name' => $attachment->name,
+                'mime_type' => $mime,
+                'path' => $filePath,
+            ];
+            if (!empty($attachment->content_text)) {
+                $doc['content'] = $attachment->content_text;
+                $attachmentsContent[] = $ATTACH_LABEL . $attachment->name . "\nContenu extrait:\n" . mb_substr($attachment->content_text, 0, 2000);
+            } elseif (str_starts_with($mime, 'text/')) {
+                $text = @file_get_contents($filePath);
+                if ($text) {
+                    $doc['content'] = mb_substr($text, 0, 2000);
+                    $attachmentsContent[] = $ATTACH_LABEL . $attachment->name . "\nContenu:\n" . mb_substr($text, 0, 2000);
+                } else {
+                    $attachmentsContent[] = $ATTACH_LABEL . $attachment->name . " (texte non lisible)";
+                }
+            } elseif ($mime === 'application/pdf') {
+                $attachmentsContent[] = "Pièce jointe PDF: " . $attachment->name . " (extraction non implémentée)";
+            } else {
+                $attachmentsContent[] = $ATTACH_LABEL . $attachment->name;
+            }
+            $documents[] = $doc;
+        }
+        if (count($attachmentsContent)) {
+            $userContent .= "\n--- Pièces jointes ---\n" . implode("\n\n", $attachmentsContent);
+        }
+
+        return [
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userContent],
+            ['documents' => $documents],
+        ];
+    }
+    // ...existing code...
+
+    /**
+     * Options AI pour le résumé de mail (peut être utilisé par le controller)
+     */
+    public function buildMailSummaryOptions($provider, $model): array
+    {
+        return [
+            'provider' => $provider,
+            'model' => $model,
+            'max_tokens' => 350,
+            'temperature' => 0.3,
+            'timeout' => $this->defaultValues->getRequestTimeout() * 1000,
+        ];
+    }
+
+    /**
+     * Constructeur
      */
     public function __construct(?AiRecordContextBuilder $records = null, ?DefaultValueService $defaultValues = null)
     {
@@ -104,14 +173,7 @@ class AiMessageBuilder
         return $ctx;
     }
 
-    private function buildUserContent(string $effectiveAction, array $context): string
-    {
-        $tpl = Prompt::where('title', 'action.' . $effectiveAction . '.user')->first();
-        if ($tpl && !empty($tpl->content)) { return $this->renderActionTemplate($tpl->content, $effectiveAction, $context); }
-        return $this->fallbackUserPrompt($effectiveAction, $context);
-    }
-
-    private function buildActionOptions(string $effectiveAction, Request $request): array
+    public function buildActionOptions(string $effectiveAction, Request $request): array
     {
         $provRaw = $request->input('model_provider');
         $modRaw = $request->input('model');
@@ -127,6 +189,13 @@ class AiMessageBuilder
             'keywords' => $options + ['max_tokens' => 250, 'temperature' => 0.2],
             default => $options,
         };
+    }
+
+    private function buildUserContent(string $effectiveAction, array $context): string
+    {
+        $tpl = Prompt::where('title', 'action.' . $effectiveAction . '.user')->first();
+        if ($tpl && !empty($tpl->content)) { return $this->renderActionTemplate($tpl->content, $effectiveAction, $context); }
+        return $this->fallbackUserPrompt($effectiveAction, $context);
     }
 
     private function getTimeoutMs(): int
@@ -215,4 +284,5 @@ class AiMessageBuilder
     }
 
     // Delegated record helpers moved to AiRecordContextBuilder
+// ...existing code...
 }

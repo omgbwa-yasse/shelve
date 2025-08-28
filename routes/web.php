@@ -307,6 +307,7 @@ Route::group(['middleware' => 'auth'], function () {
             Route::put('/{id}', [MailReceivedExternalController::class, 'update'])->name('update');
             Route::patch('/{id}', [MailReceivedExternalController::class, 'update']);
             Route::delete('/{id}', [MailReceivedExternalController::class, 'destroy'])->name('destroy');
+               Route::get('/mail/{mail}/summarize', [App\Http\Controllers\MailController::class, 'summarize'])->name('mail.summarize');
         });
 
         // Routes pour les courriers sortants externes (spécifiques en premier)
