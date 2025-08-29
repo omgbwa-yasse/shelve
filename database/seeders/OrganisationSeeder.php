@@ -5,6 +5,14 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Organisation;
+use App\Models\Building;
+use App\Models\Floor;
+use App\Models\Room;
+use App\Models\Shelf;
+use App\Models\Container;
+use App\Models\ContainerProperty;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class OrganisationSeeder extends Seeder
 {
@@ -13,118 +21,158 @@ class OrganisationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Conserver les organisations existantes si nécessaire
-        // Puis ajouter les nouvelles directions et bureaux
+        DB::beginTransaction();
 
-        // Direction des Finances
-        $financeDir = Organisation::firstOrCreate(
-            ['code' => 'DF'],
-            [
+        try {
+            // Supprimer toute l'infrastructure physique existante
+            $this->command->info('🗑️ Suppression de l\'infrastructure physique existante...');
+            Container::query()->delete();
+            Shelf::query()->delete();
+            Room::query()->delete();
+            Floor::query()->delete();
+            Building::query()->delete();
+            ContainerProperty::query()->delete();
+
+            // Supprimer toutes les organisations existantes
+            $this->command->info('🗑️ Suppression des organisations existantes...');
+            Organisation::query()->delete();
+
+            // Créer la nouvelle structure organisationnelle
+            $this->command->info('🏢 Création de la nouvelle structure organisationnelle...');
+
+            // Direction Générale (DG) - Organisation racine
+            $directionGenerale = Organisation::create([
+                'code' => 'DG',
+                'name' => 'Direction Générale',
+                'description' => 'Direction générale de l\'organisation',
+                'parent_id' => null
+            ]);
+
+            // Direction des Finances (DF)
+            $directionFinances = Organisation::create([
+                'code' => 'DF',
                 'name' => 'Direction des Finances',
-                'description' => 'Direction responsable de la gestion financière de l\'organisation'
+                'description' => 'Direction responsable de la gestion financière',
+                'parent_id' => $directionGenerale->id
+            ]);
+
+            // Direction des Ressources Humaines (DRH)
+            $directionRH = Organisation::create([
+                'code' => 'DRH',
+                'name' => 'Direction des Ressources Humaines',
+                'description' => 'Direction responsable de la gestion des ressources humaines',
+                'parent_id' => $directionGenerale->id
+            ]);
+
+            // Direction des Archives et Documents Administratifs (DADA)
+            $directionArchives = Organisation::create([
+                'code' => 'DADA',
+                'name' => 'Direction des Archives et Documents Administratifs',
+                'description' => 'Direction responsable de la gestion des archives et documents administratifs',
+                'parent_id' => $directionGenerale->id
+            ]);
+
+            $this->command->info('✅ Structure organisationnelle créée');
+
+            // Créer l'infrastructure physique
+            $this->createPhysicalInfrastructure($directionFinances, $directionRH, $directionArchives);
+
+            DB::commit();
+            $this->command->info('✅ Infrastructure organisationnelle et physique créée avec succès');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->command->error('❌ Erreur lors de la création: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Créer l'infrastructure physique
+     */
+    private function createPhysicalInfrastructure($directionFinances, $directionRH, $directionArchives)
+    {
+        $this->command->info('🏗️ Création de l\'infrastructure physique...');
+
+        // Créer une propriété de boîte par défaut
+        $defaultProperty = ContainerProperty::firstOrCreate(
+            ['name' => 'Boîte Archive Standard'],
+            [
+                'name' => 'Boîte Archive Standard',
+                'width' => 35.0,  // 35 cm
+                'length' => 25.0, // 25 cm
+                'depth' => 12.0,  // 12 cm
+                'creator_id' => 999999 // Valeur temporaire, sera mise à jour par SuperAdminSeeder
             ]
         );
 
-        // Bureaux sous la Direction des Finances
-        Organisation::firstOrCreate(
-            ['code' => 'DF-BB'],
-            [
-                'name' => 'Bureau du Budget',
-                'description' => 'Responsable de la planification et gestion du budget',
-                'parent_id' => $financeDir->id
-            ]
-        );
+        // Créer le bâtiment principal
+        $building = Building::create([
+            'name' => 'Bâtiment Principal Archives',
+            'description' => 'Bâtiment principal pour le stockage des archives administratives',
+            'visibility' => 'public',
+            'creator_id' => 999999 // Valeur temporaire, sera mise à jour par SuperAdminSeeder
+        ]);
 
-        Organisation::firstOrCreate(
-            ['code' => 'DF-BC'],
-            [
-                'name' => 'Bureau de la Comptabilité',
-                'description' => 'Responsable de la tenue des comptes et des opérations financières',
-                'parent_id' => $financeDir->id
-            ]
-        );
+        $directions = [
+            ['org' => $directionFinances, 'floor_num' => 1, 'room_code' => 'SALLE-DF'],
+            ['org' => $directionRH, 'floor_num' => 2, 'room_code' => 'SALLE-DRH'],
+            ['org' => $directionArchives, 'floor_num' => 3, 'room_code' => 'SALLE-DADA']
+        ];
 
-        Organisation::firstOrCreate(
-            ['code' => 'DF-BMP'],
-            [
-                'name' => 'Bureau des Marchés Publics',
-                'description' => 'Responsable des procédures d\'appels d\'offres et d\'attribution des marchés',
-                'parent_id' => $financeDir->id
-            ]
-        );
+        foreach ($directions as $directionData) {
+            // Créer l'étage
+            $floor = Floor::create([
+                'name' => 'Étage ' . $directionData['floor_num'],
+                'description' => 'Étage dédié à la ' . $directionData['org']->name,
+                'building_id' => $building->id,
+                'creator_id' => 999999
+            ]);
 
-        // Direction des Ressources Mobilières et Immobilières
-        $resourcesDir = Organisation::firstOrCreate(
-            ['code' => 'DRMI'],
-            [
-                'name' => 'Direction des Ressources Mobilières et Immobilières',
-                'description' => 'Direction responsable de la gestion des biens mobiliers et immobiliers'
-            ]
-        );
+            // Créer la salle
+            $room = Room::create([
+                'code' => $directionData['room_code'],
+                'name' => 'Salle ' . $directionData['org']->code,
+                'description' => 'Salle d\'archives pour la ' . $directionData['org']->name,
+                'visibility' => 'public',
+                'type' => 'archives',
+                'floor_id' => $floor->id,
+                'creator_id' => 999999
+            ]);
 
-        // Bureaux sous la Direction des Ressources
-        Organisation::firstOrCreate(
-            ['code' => 'DRMI-BM'],
-            [
-                'name' => 'Service des Biens Mobiliers',
-                'description' => 'Responsable de la gestion du mobilier et équipements',
-                'parent_id' => $resourcesDir->id
-            ]
-        );
+            // Associer la salle à l'organisation
+            $room->organisations()->attach($directionData['org']->id);
 
-        Organisation::firstOrCreate(
-            ['code' => 'DRMI-BI'],
-            [
-                'name' => 'Service des Biens Immobiliers',
-                'description' => 'Responsable de la gestion des bâtiments et terrains',
-                'parent_id' => $resourcesDir->id
-            ]
-        );
+            // Créer 10 étagères dans la salle
+            for ($shelfNum = 1; $shelfNum <= 10; $shelfNum++) {
+                $shelf = Shelf::create([
+                    'code' => $directionData['room_code'] . '-ET' . str_pad($shelfNum, 2, '0', STR_PAD_LEFT),
+                    'observation' => 'Étagère ' . $shelfNum . ' de la salle ' . $directionData['org']->code,
+                    'face' => 1, // Face numérique au lieu de 'A'
+                    'ear' => 1,
+                    'shelf' => $shelfNum,
+                    'shelf_length' => 200, // 2 mètres
+                    'room_id' => $room->id,
+                    'creator_id' => 999999
+                ]);
 
-        Organisation::firstOrCreate(
-            ['code' => 'DRMI-MT'],
-            [
-                'name' => 'Service de la Maintenance',
-                'description' => 'Responsable de l\'entretien des biens mobiliers et immobiliers',
-                'parent_id' => $resourcesDir->id
-            ]
-        );
+                // Créer 10 boîtes d'archives sur chaque étagère
+                for ($boxNum = 1; $boxNum <= 10; $boxNum++) {
+                    Container::create([
+                        'code' => $shelf->code . '-B' . str_pad($boxNum, 2, '0', STR_PAD_LEFT),
+                        'shelve_id' => $shelf->id,
+                        'status_id' => 1, // Statut par défaut
+                        'property_id' => $defaultProperty->id, // Utiliser la propriété par défaut
+                        'creator_id' => 999999,
+                        'creator_organisation_id' => $directionData['org']->id
+                    ]);
+                }
+            }
 
-        // Direction de l'Information et de la Communication
-        $infoComDir = Organisation::firstOrCreate(
-            ['code' => 'DIC'],
-            [
-                'name' => 'Direction de l\'Information et de la Communication',
-                'description' => 'Direction responsable de la gestion de l\'information et des communications'
-            ]
-        );
+            $this->command->info('✅ Infrastructure créée pour ' . $directionData['org']->name . ' (Étage ' . $directionData['floor_num'] . ')');
+        }
 
-        // Bureaux sous la Direction de l'Information et de la Communication
-        Organisation::firstOrCreate(
-            ['code' => 'DIC-RP'],
-            [
-                'name' => 'Service des Relations Publiques',
-                'description' => 'Responsable des relations avec le public et les médias',
-                'parent_id' => $infoComDir->id
-            ]
-        );
-
-        Organisation::firstOrCreate(
-            ['code' => 'DIC-NUM'],
-            [
-                'name' => 'Service du Numérique',
-                'description' => 'Responsable des outils numériques et de la présence en ligne',
-                'parent_id' => $infoComDir->id
-            ]
-        );
-
-        Organisation::firstOrCreate(
-            ['code' => 'DIC-PUB'],
-            [
-                'name' => 'Service des Publications',
-                'description' => 'Responsable des publications et de la documentation',
-                'parent_id' => $infoComDir->id
-            ]
-        );
+        $this->command->info('✅ Infrastructure physique complète créée');
+        $this->command->info('📊 Résumé: 1 bâtiment, 3 étages, 3 salles, 30 étagères, 300 boîtes d\'archives');
     }
 }

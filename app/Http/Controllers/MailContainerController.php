@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\MailContainer;
 use App\Models\ContainerProperty;
+use App\Models\Activity;
+use App\Models\Organisation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -15,7 +17,16 @@ class MailContainerController extends Controller
                                       ->where('creator_organisation_id', Auth::user()->current_organisation_id) // Corrected field name
                                       ->paginate(10);
 
-        return view('mails.containers.index', compact('mailContainers'));
+        // Data for transfer modal
+        $activities = Activity::where('organisation_id', Auth::user()->current_organisation_id)
+                             ->orderBy('name')
+                             ->get();
+
+        $services = Organisation::where('id', '!=', Auth::user()->current_organisation_id)
+                                ->orderBy('name')
+                                ->get();
+
+        return view('mails.containers.index', compact('mailContainers', 'activities', 'services'));
     }
 
 

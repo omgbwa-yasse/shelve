@@ -200,6 +200,40 @@
                             <div class="invalid-feedback">Veuillez sélectionner un service</div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label">Numéro de transfert</label>
+                                <input type="text"
+                                       class="form-control"
+                                       name="transfer_number"
+                                       required
+                                       placeholder="Ex: TRANS-2024-001">
+                                <div class="invalid-feedback">Veuillez saisir un numéro de transfert</div>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label">Activité</label>
+                                <select class="form-select" name="activity_id" required>
+                                    <option value="">Sélectionner une activité...</option>
+                                    @foreach($activities ?? [] as $activity)
+                                        <option value="{{ $activity->id }}">{{ $activity->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback">Veuillez sélectionner une activité</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Étagère de destination</label>
+                            <select class="form-select" name="shelf_id" required disabled>
+                                <option value="">Sélectionnez d'abord un service...</option>
+                            </select>
+                            <div class="invalid-feedback">Veuillez sélectionner une étagère</div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Les étagères disponibles dépendent du service destinataire sélectionné
+                            </div>
+                        </div>
+
                         <div class="mb-4">
                             <label class="form-label">Description du transfert</label>
                             <textarea class="form-control"
@@ -245,6 +279,8 @@
                 const containerCheckboxes = document.querySelectorAll('.container-checkbox');
                 const selectedContainersDiv = document.getElementById('selectedContainers');
                 const transferForm = document.getElementById('transferForm');
+                const serviceSelect = transferForm.querySelector('select[name="service_id"]');
+                const shelfSelect = transferForm.querySelector('select[name="shelf_id"]');
                 const cartBtn = document.getElementById('cartBtn');
                 const exportBtn = document.getElementById('exportBtn');
                 const printBtn = document.getElementById('printBtn');
@@ -288,6 +324,49 @@
 
                         updateSelectedContainers();
                         updateActionButtons();
+                    });
+                });
+
+                // Service selection handler - Load shelves dynamically
+                serviceSelect.addEventListener('change', function() {
+                    const serviceId = this.value;
+
+                    if (!serviceId) {
+                        shelfSelect.disabled = true;
+                        shelfSelect.innerHTML = '<option value="">Sélectionnez d\'abord un service...</option>';
+                        return;
+                    }
+
+                    // Show loading state
+                    shelfSelect.disabled = true;
+                    shelfSelect.innerHTML = '<option value="">Chargement des étagères...</option>';
+
+                    // Fetch shelves for selected organization
+                    fetch(`{{ url('/mails/containers/shelves') }}/${serviceId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.shelves.length > 0) {
+                            let options = '<option value="">Sélectionner une étagère...</option>';
+                            data.shelves.forEach(shelf => {
+                                options += `<option value="${shelf.id}" title="${shelf.details}">${shelf.label}</option>`;
+                            });
+                            shelfSelect.innerHTML = options;
+                            shelfSelect.disabled = false;
+                        } else {
+                            shelfSelect.innerHTML = '<option value="">Aucune étagère disponible pour ce service</option>';
+                            showNotification('warning', `Aucune étagère trouvée pour ce service (${data.count || 0} étagères)`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des étagères:', error);
+                        shelfSelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
+                        showNotification('error', 'Erreur lors du chargement des étagères');
                     });
                 });
 
@@ -353,12 +432,15 @@
                     if (!validateForm()) return;
 
                     const formData = new FormData(transferForm);
-                    formData.append('containers', Array.from(selectedContainers));
+                    // Append container IDs as array
+                    Array.from(selectedContainers).forEach(containerId => {
+                        formData.append('containers[]', containerId);
+                    });
 
                     showLoadingSpinner();
 
-                    // Simulated API call - replace with actual endpoint
-                    fetch('/api/containers/transfer', {
+                    // API call to new transfer endpoint
+                    fetch('{{ route('mail-container.transfer') }}', {
                         method: 'POST',
                         body: formData,
                         headers: {
@@ -369,8 +451,17 @@
                         .then(data => {
                             hideLoadingSpinner();
                             if (data.success) {
-                                showNotification('success', 'Transfert effectué avec succès');
-                                setTimeout(() => window.location.reload(), 1500);
+                                showNotification('success', `Transfert créé avec succès. Bordereau ${data.slip_code} avec ${data.records_count} documents.`);
+                                // Reset form and close modal
+                                transferForm.reset();
+                                selectedContainers.clear();
+                                updateSelectedContainersDisplay();
+                                updateActionButtons();
+                                bootstrap.Modal.getInstance(document.getElementById('transferModal')).hide();
+                                // Optionally redirect to slip view
+                                setTimeout(() => {
+                                    window.location.href = `/slips/${data.slip_id}`;
+                                }, 2000);
                             } else {
                                 showNotification('error', data.message || 'Une erreur est survenue');
                             }

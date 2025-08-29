@@ -18,6 +18,7 @@ use App\Http\Controllers\MailReceivedExternalController;
 
 use App\Http\Controllers\MailAttachmentController;
 use App\Http\Controllers\MailContainerController;
+use App\Http\Controllers\MailContainerTransferController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BatchReceivedController;
 use App\Http\Controllers\BatchSendController;
@@ -296,6 +297,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('container', MailContainerController::class)->names('mail-container');
         Route::get('containers/list', [MailContainerController::class, 'getContainers'])->name('mail-container.list');
         Route::get('containers/properties', [MailContainerController::class, 'getContainerProperties'])->name('mail-container.properties');
+        Route::post('containers/transfer', [MailContainerTransferController::class, 'transfer'])->name('mail-container.transfer');
+        Route::get('containers/shelves/{organisation}', [MailContainerTransferController::class, 'getShelvesByOrganisation'])->name('mail-container.shelves');
 
         // Routes pour les courriers entrants externes (spécifiques en premier)
         Route::prefix('received/external')->name('mails.received.external.')->group(function () {
