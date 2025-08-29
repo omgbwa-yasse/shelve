@@ -317,7 +317,7 @@
                         @endcan
                         @can('module_mails_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'mails') active @endif position-relative" href="{{ route('mail-received.index') }}">
+                            <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif position-relative" href="{{ route('mail-received.index') }}">
                                 <i class="bi bi-envelope"></i>
                                 <span>{{ __('Mails') }}</span>
                             </a>
@@ -417,6 +417,7 @@
                                         @case('bulletin-boards')
                                             @include('submenu.bulletinboards')
                                             @break
+                                        @case('')
                                         @case('mails')
                                             @include('submenu.mails')
                                             @break
