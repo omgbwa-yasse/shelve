@@ -28,12 +28,21 @@ class MailContainerTransferController extends Controller
         $request->validate([
             'service_id' => 'required|exists:organisations,id',
             'description' => 'required|string|max:1000',
-            'transfer_number' => 'required|string|max:50|unique:slips,code,NULL,id,code,TRANS-' . $request->input('transfer_number'),
+            'transfer_number' => 'required|string|max:50',
             'activity_id' => 'required|exists:activities,id',
             'shelf_id' => 'required|exists:shelves,id',
             'containers' => 'required|array|min:1',
             'containers.*' => 'exists:mail_containers,id'
         ]);
+
+        // Validation manuelle de l'unicité du code de transfert
+        $slipCode = 'TRANS-' . $request->transfer_number;
+        if (Slip::where('code', $slipCode)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ce numéro de transfert existe déjà. Veuillez en choisir un autre.'
+            ], 422);
+        }
 
         try {
             DB::beginTransaction();
@@ -139,15 +148,16 @@ class MailContainerTransferController extends Controller
             $newContainer = $this->createContainerFromMailContainer($mailContainer, $slip, $shelfId);
 
             foreach ($mailContainer->mails as $mail) {
-                // Générer le code du SlipRecord : {slip_code}.{sequence}
-                $slipRecordCode = $slip->code . '.' . str_pad($sequenceNumber, 3, '0', STR_PAD_LEFT);
+                // Générer un code court unique pour le SlipRecord : TR{sequence}
+                // Limité à 10 caractères maximum selon la migration
+                $slipRecordCode = $this->generateUniqueSlipRecordCode();
 
                 // Créer le SlipRecord basé sur le mail
                 $slipRecord = SlipRecord::create([
                     'slip_id' => $slip->id,
                     'code' => $slipRecordCode,
                     'name' => $mail->name ?: $mail->description,
-                    'date_format' => 'exact',
+                    'date_format' => SlipRecord::DATE_FORMAT_DAY, // D = Day (AAAA/MM/DD) pour date exacte
                     'date_exact' => $mail->date,
                     'content' => $this->formatMailContent($mail, $mailContainer),
                     'level_id' => 1, // Niveau par défaut "Document"
@@ -222,7 +232,6 @@ class MailContainerTransferController extends Controller
 
         return Container::create([
             'code' => $containerCode,
-            'description' => "Contenant créé pour le transfert {$slip->code} - Origine: {$mailContainer->name}",
             'shelve_id' => $shelfId,
             'status_id' => $defaultStatus->id,
             'property_id' => $mailContainer->property_id ?? 1, // Utilise la propriété du MailContainer ou par défaut
@@ -388,5 +397,19 @@ class MailContainerTransferController extends Controller
         if (!empty($inaccessibleContainers)) {
             throw new InvalidArgumentException("Vous n'avez pas accès à certains contenants sélectionnés.");
         }
+    }
+
+    /**
+     * Générer un code unique pour SlipRecord (limité à 10 caractères)
+     */
+    private function generateUniqueSlipRecordCode(): string
+    {
+        $counter = 1;
+        do {
+            $code = 'TR' . str_pad($counter, 3, '0', STR_PAD_LEFT); // TR001, TR002, etc.
+            $counter++;
+        } while (SlipRecord::where('code', $code)->exists());
+
+        return $code;
     }
 }

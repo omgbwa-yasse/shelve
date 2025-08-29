@@ -13,6 +13,7 @@ use App\Models\SlipRecord;
 use App\Models\SlipRecordContainer;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SlipRecordController extends Controller
 {
@@ -114,13 +115,12 @@ class SlipRecordController extends Controller
     public function show(INT $id, INT $slipRecordId)
     {
         $slipRecord = SlipRecord::findOrFail($slipRecordId);
-
         $slip = Slip::findOrFail($id);
 
-        $containers = Container::where('creator_organisation_id', auth()->user()->current_organisation_id)
-            ->where('is_archived', false)->get();
+        // Charger les relations nécessaires pour l'affichage
+        $slipRecord->load(['containers.shelf', 'containers.status']);
 
-        return view('slips.records.show', compact('slip', 'slipRecord','containers'));
+        return view('slips.records.show', compact('slip', 'slipRecord'));
     }
 
 
@@ -161,11 +161,30 @@ class SlipRecordController extends Controller
             'width_description' => 'nullable|max:100',
             'support_id' => 'required|exists:record_supports,id',
             'activity_id' => 'required|exists:activities,id',
-            'container_id' => 'nullable|exists:containers,id',
+            'container_ids' => 'nullable|array',
+            'container_ids.*' => 'exists:containers,id',
         ]);
 
         $slipRecord = slipRecord::findOrFail($record_id);
-        $slipRecord->update($request->all());
+        $slipRecord->update($request->except(['container_ids']));
+
+        // Gestion des contenants via la table pivot
+        if ($request->has('container_ids') && !empty($request->container_ids)) {
+            // Synchroniser les contenants (ajouter les nouveaux, supprimer ceux non sélectionnés)
+            $containersData = [];
+            foreach ($request->container_ids as $containerId) {
+                $containersData[$containerId] = [
+                    'creator_id' => Auth::id(),
+                    'description' => "Association via édition SlipRecord - " . now()->format('Y-m-d H:i'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            $slipRecord->containers()->sync($containersData);
+        } else {
+            // Aucun contenant sélectionné, supprimer toutes les associations
+            $slipRecord->containers()->detach();
+        }
 
         // Traitement des mots-clés
         if ($request->filled('keywords')) {
@@ -185,7 +204,26 @@ class SlipRecordController extends Controller
     {
         $slipRecord = SlipRecord::where(['slip_id' => $slip_id, 'id' => $slipRecord_id])->firstOrFail();
         $slip = $slipRecord->slip;
+
+        // Vérifier s'il y a des attachements associés
+        $attachmentsCount = $slipRecord->attachments()->count();
+
+        if ($attachmentsCount > 0) {
+            // Supprimer d'abord les relations dans la table pivot slip_record_attachments
+            $slipRecord->attachments()->detach();
+
+            // Log de l'action pour traçabilité
+            Log::info("SlipRecord supprimé avec {$attachmentsCount} attachement(s)", [
+                'slip_record_id' => $slipRecord_id,
+                'slip_id' => $slip_id,
+                'user_id' => Auth::id(),
+                'attachments_removed' => $attachmentsCount
+            ]);
+        }
+
+        // Supprimer le SlipRecord
         $slipRecord->delete();
+
         return view('slips.show', compact('slip'));
     }
 

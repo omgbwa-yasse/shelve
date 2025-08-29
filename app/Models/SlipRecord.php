@@ -12,6 +12,11 @@ class SlipRecord extends Model
     use HasFactory;
 //    use Searchable;
 
+    // Date format constants
+    const DATE_FORMAT_YEAR = 'Y';   // Year only (AAAA)
+    const DATE_FORMAT_MONTH = 'M';  // Month (AAAA/MM)
+    const DATE_FORMAT_DAY = 'D';    // Day (AAAA/MM/DD)
+
     protected $fillable = [
         'slip_id',
         'code',

@@ -379,6 +379,14 @@ class SlipController extends Controller
 
     public function destroy(Slip $slip)
     {
+        // Vérifier s'il y a des slip_records associés
+        $slipRecordsCount = $slip->records()->count();
+
+        if ($slipRecordsCount > 0) {
+            return redirect()->route('slips.index')
+                ->with('error', "Impossible de supprimer le bordereau. Il contient {$slipRecordsCount} document(s). Veuillez vider le bordereau avant de le supprimer.");
+        }
+
         $slip->delete();
 
         return redirect()->route('slips.index')

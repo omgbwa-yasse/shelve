@@ -76,7 +76,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-8 mb-3">
                         <label for="activity_id" class="form-label">Activité</label>
                         <select class="form-select" id="activity_id" name="activity_id" required>
                             @foreach ($activities as $activity)
@@ -84,13 +84,50 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="container_id" class="form-label">Contenant</label>
-                        <select class="form-select" id="container_id" name="container_id">
-                            @foreach ($containers as $container)
-                                <option value="{{ $container->id }}"  {{ $container->id == $slipRecord->container_id ? 'selected' : '' }}>{{ $container->code }}</option>
-                            @endforeach
-                        </select>
+                </div>
+
+                <!-- Gestion des contenants -->
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-box me-1"></i>Contenants associés
+                        </label>
+
+                        <!-- Contenants actuellement associés -->
+                        <div id="current-containers" class="mb-3">
+                            @if($slipRecord->containers->isNotEmpty())
+                                <div class="alert alert-info">
+                                    <strong>Contenants actuels:</strong>
+                                    @foreach($slipRecord->containers as $container)
+                                        <span class="badge bg-primary me-1">{{ $container->code }}</span>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Aucun contenant associé
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Sélection de nouveaux contenants -->
+                        <div class="card border-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Associer à des contenants</h6>
+                                <select class="form-select" id="container_ids" name="container_ids[]" multiple>
+                                    @foreach ($containers as $container)
+                                        <option value="{{ $container->id }}"
+                                                {{ $slipRecord->containers->contains($container->id) ? 'selected' : '' }}>
+                                            {{ $container->code }} - {{ $container->description ?? 'Sans description' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Maintenez Ctrl (Cmd sur Mac) pour sélectionner plusieurs contenants.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

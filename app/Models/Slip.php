@@ -64,7 +64,7 @@ class Slip extends Model
 
     public function records()
     {
-        return $this->hasMany(slipRecord::class, 'slip_id');
+        return $this->hasMany(SlipRecord::class, 'slip_id');
     }
 
 

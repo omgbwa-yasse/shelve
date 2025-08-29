@@ -10,12 +10,12 @@ class Container extends Model
     use HasFactory;
     protected $fillable = [
         'code',
-        'description',
         'shelve_id',
         'status_id',
         'property_id',
         'creator_id',
-        'creator_organisation_id'
+        'creator_organisation_id',
+        'is_archived'
     ];
 
 

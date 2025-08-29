@@ -493,7 +493,7 @@
                                 bootstrap.Modal.getInstance(document.getElementById('transferModal')).hide();
                                 // Optionally redirect to slip view
                                 setTimeout(() => {
-                                    window.location.href = `/slips/${data.slip_id}`;
+                                    window.location.href = `{{ url('/transferrings/slips') }}/${data.slip_id}`;
                                 }, 2000);
                             } else {
                                 showNotification('error', data.message || 'Une erreur est survenue');
