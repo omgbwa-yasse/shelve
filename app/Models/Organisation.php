@@ -20,6 +20,16 @@ class Organisation extends Model
     {
         return $this->hasMany(Organisation::class, 'parent_id');
     }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'organisation_room', 'organisation_id', 'room_id');
+    }
+
+    public function activities()
+    {
+        return $this->belongsToMany(Activity::class, 'organisation_activity', 'organisation_id', 'activity_id');
+    }
 }
 
 

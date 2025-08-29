@@ -17,21 +17,13 @@ class MailContainerController extends Controller
                                       ->where('creator_organisation_id', Auth::user()->current_organisation_id) // Corrected field name
                                       ->paginate(10);
 
-        // Data for transfer modal
-        $activities = Activity::whereHas('organisations', function($query) {
-                                 $query->where('organisation_id', Auth::user()->current_organisation_id);
-                             })
-                             ->orderBy('name')
-                             ->get();
-
+        // Data for transfer modal - activities will be loaded via AJAX
         $services = Organisation::where('id', '!=', Auth::user()->current_organisation_id)
                                 ->orderBy('name')
                                 ->get();
 
-        return view('mails.containers.index', compact('mailContainers', 'activities', 'services'));
+        return view('mails.containers.index', compact('mailContainers', 'services'));
     }
-
-
     public function create()
     {
         $containerProperties = ContainerProperty::all();

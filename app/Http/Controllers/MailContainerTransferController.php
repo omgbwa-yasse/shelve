@@ -28,7 +28,7 @@ class MailContainerTransferController extends Controller
         $request->validate([
             'service_id' => 'required|exists:organisations,id',
             'description' => 'required|string|max:1000',
-            'transfer_number' => 'required|string|max:50',
+            'transfer_number' => 'required|string|max:50|unique:slips,code,NULL,id,code,TRANS-' . $request->input('transfer_number'),
             'activity_id' => 'required|exists:activities,id',
             'shelf_id' => 'required|exists:shelves,id',
             'containers' => 'required|array|min:1',
@@ -37,6 +37,9 @@ class MailContainerTransferController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Validations de sécurité supplémentaires
+            $this->validateSecurityConstraints($request);
 
             // 1. Récupérer les contenants avec leurs mails
             $containers = MailContainer::with(['mails.authors', 'mails.sender', 'mails.recipient', 'mails.externalSender', 'mails.externalRecipient'])
@@ -286,6 +289,104 @@ class MailContainerTransferController extends Controller
                 'message' => 'Erreur lors de la récupération des étagères : ' . $e->getMessage(),
                 'shelves' => []
             ], 500);
+        }
+    }
+
+    /**
+     * Récupérer les activités associées à une organisation (directement ou via parent)
+     */
+    public function getActivitiesByOrganisation($organisationId)
+    {
+        try {
+            // Récupérer les activités liées directement à l'organisation
+            $directActivities = Activity::whereHas('organisations', function ($query) use ($organisationId) {
+                $query->where('organisations.id', $organisationId);
+            })->get();
+
+            // Récupérer les activités dont le parent est lié à l'organisation
+            $childActivities = Activity::whereHas('parent.organisations', function ($query) use ($organisationId) {
+                $query->where('organisations.id', $organisationId);
+            })->get();
+
+            // Fusionner et dédoublonner les résultats
+            $allActivities = $directActivities->merge($childActivities)->unique('id');
+
+            $activities = $allActivities->map(function ($activity) {
+                $parentName = null;
+                if ($activity->parent) {
+                    $parentName = $activity->parent->name;
+                }
+
+                return [
+                    'id' => $activity->id,
+                    'code' => $activity->code,
+                    'name' => $activity->name,
+                    'parent_id' => $activity->parent_id,
+                    'parent_name' => $parentName,
+                    'description' => $activity->observation,
+                    'label' => $activity->code . ' - ' . $activity->name . ($parentName ? " (Sous-activité de: {$parentName})" : '')
+                ];
+            })->sortBy('name')->values();
+
+            return response()->json([
+                'success' => true,
+                'activities' => $activities,
+                'count' => $activities->count()
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des activités', [
+                'organisation_id' => $organisationId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des activités : ' . $e->getMessage(),
+                'activities' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Validations de sécurité pour s'assurer de la cohérence des données
+     */
+    private function validateSecurityConstraints(Request $request): void
+    {
+        // Vérifier que l'étagère appartient bien à l'organisation via organisation_room
+        $shelfBelongsToOrganisation = Shelf::whereHas('room', function ($query) use ($request) {
+            $query->whereHas('organisations', function ($subQuery) use ($request) {
+                $subQuery->where('organisations.id', $request->service_id);
+            });
+        })->where('id', $request->shelf_id)->exists();
+
+        if (!$shelfBelongsToOrganisation) {
+            throw new InvalidArgumentException("L'étagère sélectionnée n'appartient pas à l'organisation destinataire.");
+        }
+
+        // Vérifier que l'activité appartient bien à l'organisation (directement ou via parent)
+        $activityBelongsToOrganisation = Activity::where('id', $request->activity_id)
+            ->where(function ($query) use ($request) {
+                $query->whereHas('organisations', function ($subQuery) use ($request) {
+                    $subQuery->where('organisations.id', $request->service_id);
+                })->orWhereHas('parent.organisations', function ($subQuery) use ($request) {
+                    $subQuery->where('organisations.id', $request->service_id);
+                });
+            })->exists();
+
+        if (!$activityBelongsToOrganisation) {
+            throw new InvalidArgumentException("L'activité sélectionnée n'est pas associée à l'organisation destinataire.");
+        }
+
+        // Vérifier que l'utilisateur a accès aux contenants sélectionnés
+        $accessibleContainers = MailContainer::whereIn('id', $request->containers)
+            ->where('creator_organisation_id', Auth::user()->current_organisation_id)
+            ->pluck('id')
+            ->toArray();
+
+        $inaccessibleContainers = array_diff($request->containers, $accessibleContainers);
+        if (!empty($inaccessibleContainers)) {
+            throw new InvalidArgumentException("Vous n'avez pas accès à certains contenants sélectionnés.");
         }
     }
 }

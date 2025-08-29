@@ -33,13 +33,20 @@ class DatabaseSeeder extends Seeder
             // 5. ORGANISATIONS (Structure organisationnelle + Infrastructure physique)
             OrganisationSeeder::class, // Seeder pour les organisations et infrastructure
 
+            // 5bis. SERVICES ET BUREAUX (Dépendent des organisations principales)
+            OrganisationServicesSeeder::class, // Seeder pour créer les services et bureaux
+
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
 
-            // 7. ACTIVITÉS (Dépendent des organisations)
+            // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
+            OrganisationServicesSeeder::class, // Seeder pour créer services et bureaux
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
             ToolOrganisationSeeder::class, // Seeder pour les organisations et services
+
+            // 7bis. AFFECTATION SALLES AUX ORGANISATIONS
+            OrganisationRoomSeeder::class, // Seeder pour affecter les salles aux organisations
 
             // 8. PARAMÈTRES APPLICATIFS (Indépendants)
             SettingSeeder::class, // Paramètres et catégories de paramètres (idempotent)

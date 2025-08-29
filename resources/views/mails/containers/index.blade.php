@@ -212,11 +212,8 @@
                             </div>
                             <div class="col-md-6 mb-4">
                                 <label class="form-label">Activité</label>
-                                <select class="form-select" name="activity_id" required>
-                                    <option value="">Sélectionner une activité...</option>
-                                    @foreach($activities ?? [] as $activity)
-                                        <option value="{{ $activity->id }}">{{ $activity->name }}</option>
-                                    @endforeach
+                                <select class="form-select" name="activity_id" required disabled>
+                                    <option value="">Sélectionner d'abord un service...</option>
                                 </select>
                                 <div class="invalid-feedback">Veuillez sélectionner une activité</div>
                             </div>
@@ -281,6 +278,7 @@
                 const transferForm = document.getElementById('transferForm');
                 const serviceSelect = transferForm.querySelector('select[name="service_id"]');
                 const shelfSelect = transferForm.querySelector('select[name="shelf_id"]');
+                const activitySelect = transferForm.querySelector('select[name="activity_id"]');
                 const cartBtn = document.getElementById('cartBtn');
                 const exportBtn = document.getElementById('exportBtn');
                 const printBtn = document.getElementById('printBtn');
@@ -327,21 +325,25 @@
                     });
                 });
 
-                // Service selection handler - Load shelves dynamically
+                // Service selection handler - Load shelves and activities dynamically
                 serviceSelect.addEventListener('change', function() {
                     const serviceId = this.value;
 
                     if (!serviceId) {
                         shelfSelect.disabled = true;
                         shelfSelect.innerHTML = '<option value="">Sélectionnez d\'abord un service...</option>';
+                        activitySelect.disabled = true;
+                        activitySelect.innerHTML = '<option value="">Sélectionnez d\'abord un service...</option>';
                         return;
                     }
 
-                    // Show loading state
+                    // Show loading state for both selects
                     shelfSelect.disabled = true;
                     shelfSelect.innerHTML = '<option value="">Chargement des étagères...</option>';
+                    activitySelect.disabled = true;
+                    activitySelect.innerHTML = '<option value="">Chargement des activités...</option>';
 
-                    // Fetch shelves for selected organization
+                    // Load shelves
                     fetch(`{{ url('/mails/containers/shelves') }}/${serviceId}`, {
                         method: 'GET',
                         headers: {
@@ -367,6 +369,37 @@
                         console.error('Erreur lors du chargement des étagères:', error);
                         shelfSelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
                         showNotification('error', 'Erreur lors du chargement des étagères');
+                    });
+
+                    // Load activities
+                    fetch(`{{ url('/mails/containers/activities') }}/${serviceId}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.activities.length > 0) {
+                            let options = '<option value="">Sélectionner une activité...</option>';
+                            data.activities.forEach(activity => {
+                                const label = activity.parent_name
+                                    ? `${activity.parent_name} > ${activity.name}`
+                                    : activity.name;
+                                options += `<option value="${activity.id}" title="${activity.description || ''}">${label}</option>`;
+                            });
+                            activitySelect.innerHTML = options;
+                            activitySelect.disabled = false;
+                        } else {
+                            activitySelect.innerHTML = '<option value="">Aucune activité disponible pour ce service</option>';
+                            showNotification('warning', `Aucune activité trouvée pour ce service (${data.count || 0} activités)`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur lors du chargement des activités:', error);
+                        activitySelect.innerHTML = '<option value="">Erreur lors du chargement</option>';
+                        showNotification('error', 'Erreur lors du chargement des activités');
                     });
                 });
 
@@ -455,7 +488,7 @@
                                 // Reset form and close modal
                                 transferForm.reset();
                                 selectedContainers.clear();
-                                updateSelectedContainersDisplay();
+                                updateSelectedContainers();
                                 updateActionButtons();
                                 bootstrap.Modal.getInstance(document.getElementById('transferModal')).hide();
                                 // Optionally redirect to slip view

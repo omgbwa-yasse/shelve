@@ -299,6 +299,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('containers/properties', [MailContainerController::class, 'getContainerProperties'])->name('mail-container.properties');
         Route::post('containers/transfer', [MailContainerTransferController::class, 'transfer'])->name('mail-container.transfer');
         Route::get('containers/shelves/{organisation}', [MailContainerTransferController::class, 'getShelvesByOrganisation'])->name('mail-container.shelves');
+        Route::get('containers/activities/{organisation}', [MailContainerTransferController::class, 'getActivitiesByOrganisation'])->name('mail-container.activities');
 
         // Routes pour les courriers entrants externes (spécifiques en premier)
         Route::prefix('received/external')->name('mails.received.external.')->group(function () {
