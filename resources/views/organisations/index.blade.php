@@ -77,6 +77,27 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {{ $organisations->onFirstPage() ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ $organisations->previousPageUrl() }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        @foreach ($organisations->getUrlRange(1, $organisations->lastPage()) as $page => $url)
+                            <li class="page-item {{ $page == $organisations->currentPage() ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                            </li>
+                        @endforeach
+                        <li class="page-item {{ $organisations->hasMorePages() ? '' : 'disabled' }}">
+                            <a class="page-link" href="{{ $organisations->nextPageUrl() }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
 

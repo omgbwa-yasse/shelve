@@ -9,7 +9,7 @@ class BuildingController extends Controller
 
     public function index()
     {
-        $buildings = Building::all();
+        $buildings = Building::paginate(25);
         return view('buildings.index', compact('buildings'));
     }
 

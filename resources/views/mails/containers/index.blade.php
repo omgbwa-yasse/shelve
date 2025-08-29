@@ -165,12 +165,26 @@
                         @endforeach
                     </div>
 
-                    <!-- Pagination if needed -->
-                    @if($mailContainers instanceof \Illuminate\Pagination\LengthAwarePaginator && $mailContainers->hasPages())
-                        <div class="d-flex justify-content-end mt-4">
-                            {{ $mailContainers->links() }}
-                        </div>
-                    @endif
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {{ $mailContainers->onFirstPage() ? 'disabled' : '' }}">
+                                <a class="page-link" href="{{ $mailContainers->previousPageUrl() }}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            @foreach ($mailContainers->getUrlRange(1, $mailContainers->lastPage()) as $page => $url)
+                                <li class="page-item {{ $page == $mailContainers->currentPage() ? 'active' : '' }}">
+                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                </li>
+                            @endforeach
+                            <li class="page-item {{ $mailContainers->hasMorePages() ? '' : 'disabled' }}">
+                                <a class="page-link" href="{{ $mailContainers->nextPageUrl() }}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 @endif
             </div>
         </div>

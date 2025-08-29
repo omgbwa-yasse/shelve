@@ -26,5 +26,26 @@
                 @endforeach
             </tbody>
         </table>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ $communicabilities->onFirstPage() ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ $communicabilities->previousPageUrl() }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @foreach ($communicabilities->getUrlRange(1, $communicabilities->lastPage()) as $page => $url)
+                    <li class="page-item {{ $page == $communicabilities->currentPage() ? 'active' : '' }}">
+                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                    </li>
+                @endforeach
+                <li class="page-item {{ $communicabilities->hasMorePages() ? '' : 'disabled' }}">
+                    <a class="page-link" href="{{ $communicabilities->nextPageUrl() }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 @endsection

@@ -13,7 +13,9 @@ class ActivityController extends Controller
 {
     public function index()
     {
-        $activities = Activity::with('parent','communicability')->orderBy('code', 'asc')->get();
+        $activities = Activity::with('parent','communicability')
+            ->orderBy('code', 'asc')
+            ->paginate(25);
         return view('activities.index', compact('activities'));
     }
 

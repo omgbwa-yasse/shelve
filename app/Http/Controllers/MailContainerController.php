@@ -15,7 +15,7 @@ class MailContainerController extends Controller
     {
         $mailContainers = MailContainer::with(['containerProperty', 'creator', 'organisation']) // Changed containerType to containerProperty
                                       ->where('creator_organisation_id', Auth::user()->current_organisation_id) // Corrected field name
-                                      ->paginate(10);
+                                      ->paginate(25);
 
         // Data for transfer modal - activities will be loaded via AJAX
         $services = Organisation::where('id', '!=', Auth::user()->current_organisation_id)

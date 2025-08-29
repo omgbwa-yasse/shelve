@@ -54,7 +54,7 @@ class AuthorController extends Controller
 
     public function index()
     {
-        $authors = Author::with(['authorType', 'records', 'parent'])->get();
+        $authors = Author::with(['authorType', 'records', 'parent'])->paginate(25);
         $authorTypes = AuthorType::all();
         return view('authors.index', compact('authors', 'authorTypes'));
     }

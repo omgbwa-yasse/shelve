@@ -14,7 +14,7 @@ class OrganisationController extends Controller
 
     public function index()
     {
-        $organisations = Organisation::with('parent')->orderBy('code', 'asc')->get();
+        $organisations = Organisation::with('parent')->orderBy('code', 'asc')->paginate(25);
         $hierarchy = $this->buildHierarchy($organisations);
         return view('organisations.index', compact('organisations', 'hierarchy'));
     }

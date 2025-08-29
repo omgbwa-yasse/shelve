@@ -19,7 +19,7 @@ class DollyController extends Controller
     public function index()
     {
         $dollies = Dolly::where('owner_organisation_id', Auth::user()->current_organisation_id)
-            ->get();
+            ->paginate(25);
         return view('dollies.index', compact('dollies'));
     }
 

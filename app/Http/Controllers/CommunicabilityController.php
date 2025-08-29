@@ -11,7 +11,7 @@ class CommunicabilityController extends Controller
 
     public function index()
     {
-        $communicabilities = Communicability::all();
+        $communicabilities = Communicability::paginate(25);
 
         return view('communicabilities.index', compact('communicabilities'));
     }

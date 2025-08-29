@@ -21,7 +21,7 @@ class ContainerController extends Controller
             ->whereHas('shelf.room.organisations', function($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
             })
-            ->get();
+            ->paginate(25);
 
         return view('containers.index', compact('containers'));
     }

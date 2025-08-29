@@ -13,7 +13,7 @@ class ExternalOrganizationController extends Controller
      */
     public function index()
     {
-        $organizations = ExternalOrganization::orderBy('name')->paginate(10);
+        $organizations = ExternalOrganization::orderBy('name')->paginate(25);
         return view('external.organizations.index', compact('organizations'));
     }
 

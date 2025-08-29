@@ -45,5 +45,26 @@
                 </div>
             @endforeach
         </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item {{ $containers->onFirstPage() ? 'disabled' : '' }}">
+                    <a class="page-link" href="{{ $containers->previousPageUrl() }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @foreach ($containers->getUrlRange(1, $containers->lastPage()) as $page => $url)
+                    <li class="page-item {{ $page == $containers->currentPage() ? 'active' : '' }}">
+                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                    </li>
+                @endforeach
+                <li class="page-item {{ $containers->hasMorePages() ? '' : 'disabled' }}">
+                    <a class="page-link" href="{{ $containers->nextPageUrl() }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 @endsection

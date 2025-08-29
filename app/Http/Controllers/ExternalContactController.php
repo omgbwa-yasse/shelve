@@ -17,7 +17,7 @@ class ExternalContactController extends Controller
         $contacts = ExternalContact::with('organization')
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->paginate(15);
+            ->paginate(25);
 
         return view('external.contacts.index', compact('contacts'));
     }
