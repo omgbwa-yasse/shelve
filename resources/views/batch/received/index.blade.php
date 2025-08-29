@@ -4,6 +4,9 @@
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0">Parapheurs reçus</h1>
+        <a href="{{ route('batch-received.create') }}" class="btn btn-success">
+            <i class="bi bi-inbox me-2"></i>Recevoir un parapheur
+        </a>
     </div>
 
     <div id="batchTransactionList" class="mb-4">
@@ -34,6 +37,23 @@
                             <span class="fs-5"> - {{ $batchTransaction->batch->name ?? 'N/A' }}</span>
                         </a>
                     </h4>
+
+                    <div class="ms-auto d-flex gap-2">
+                        <a href="{{ route('batch-received.edit', $batchTransaction) }}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{{ route('batch-received.destroy', $batchTransaction) }}"
+                              method="POST"
+                              class="d-inline"
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce parapheur ?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="collapse" id="batch-{{ $batchTransaction->id }}">

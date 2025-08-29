@@ -41,7 +41,7 @@ class BatchSendController extends Controller
             ->where('organisation_send_id', auth()->user()->currentOrganisation->id)
             ->paginate(10);
 
-        return view('batch.received.index', compact('batchTransactions'));
+        return view('batch.send.index', compact('batchTransactions'));
     }
 
 

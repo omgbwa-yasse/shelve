@@ -5,8 +5,8 @@
     <div class="card">
         <div class="card-header bg-white border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">Détails du parapheur</h1>
-                <a href="{{ route('batch-received.index') }}" class="btn btn-outline-secondary btn-sm">
+                <h1 class="h3 mb-0">Détails du parapheur envoyé</h1>
+                <a href="{{ route('batch-send.index') }}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left me-1"></i>Retour
                 </a>
             </div>
@@ -25,6 +25,14 @@
                                 <label class="text-muted small">ID du parapheur</label>
                                 <p class="fw-semibold mb-0">{{ $batchTransaction->batch_id }}</p>
                             </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Code du parapheur</label>
+                                <p class="fw-semibold mb-0">{{ $batchTransaction->batch->code ?? 'N/A' }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Nom du parapheur</label>
+                                <p class="fw-semibold mb-0">{{ $batchTransaction->batch->name ?? 'N/A' }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -42,6 +50,27 @@
 
                                 <label class="text-muted small">Organisation d'arrivée</label>
                                 <p class="fw-semibold mb-0">{{ $batchTransaction->organisationReceived->name }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">
+                                <i class="bi bi-clock-history me-2 text-info"></i>
+                                Historique de l'envoi
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Date d'envoi</label>
+                                    <p class="fw-semibold mb-0">{{ $batchTransaction->created_at->format('d/m/Y à H:i') }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small">Dernière mise à jour</label>
+                                    <p class="fw-semibold mb-0">{{ $batchTransaction->updated_at->format('d/m/Y à H:i') }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -83,6 +112,14 @@
     background-color: #f8f9fa;
     border-color: #dee2e6;
     color: #2c3e50;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-info {
+    color: #17a2b8 !important;
 }
 </style>
 @endsection

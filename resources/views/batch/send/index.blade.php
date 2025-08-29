@@ -2,7 +2,12 @@
 
 @section('content')
     <div class="container">
-        <h1 class="mb-4">Parapheurs reçus</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">Parapheurs envoyés</h1>
+            <a href="{{ route('batch-send.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Envoyer un parapheur
+            </a>
+        </div>
 
         @if (session('success'))
             <div class="alert alert-success">
@@ -38,7 +43,7 @@
                         </button>
 
                         <h4 class="card-title flex-grow-1 m-0" for="batch_{{ $batchTransaction->id }}">
-                            <a href="{{ route('batch-received.show', $batchTransaction) }}"
+                            <a href="{{ route('batch-send.show', $batchTransaction) }}"
                                class="text-decoration-none text-dark">
                                 <span class="fs-5 fw-semibold">{{ $batchTransaction->batch->code ?? 'N/A' }}</span>
                                 <span class="fs-5"> - {{ $batchTransaction->batch->name ?? 'N/A' }}</span>
@@ -46,11 +51,11 @@
                         </h4>
 
                         <div class="ms-auto d-flex gap-2">
-                            <a href="{{ route('batch-received.edit', $batchTransaction) }}"
+                            <a href="{{ route('batch-send.edit', $batchTransaction) }}"
                                class="btn btn-sm btn-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form action="{{ route('batch-received.destroy', $batchTransaction) }}"
+                            <form action="{{ route('batch-send.destroy', $batchTransaction) }}"
                                   method="POST"
                                   class="d-inline"
                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce parapheur ?')">
