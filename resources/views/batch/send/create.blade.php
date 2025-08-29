@@ -103,11 +103,26 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="batchSearch" class="form-control mb-3" placeholder="Rechercher un parapheur...">
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Mode envoi :</strong> Parapheurs reçus et en votre possession
+                    </div>
+                    <input type="text" id="batchSearch" class="form-control mb-3" placeholder="Rechercher par code ou nom...">
                     <div id="batchList" class="list-group">
                         @foreach ($batches as $batch)
                             <a href="#" class="list-group-item list-group-item-action" data-id="{{ $batch->id }}" data-code="{{ $batch->code }}" data-name="{{ $batch->name }}">
-                                {{ $batch->code }} - {{ $batch->name }}
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ $batch->code }}</strong> - {{ $batch->name }}
+                                    </div>
+                                    <small class="text-muted">
+                                        @if($batch->organisation_holder_id == auth()->user()->currentOrganisation->id)
+                                            <span class="badge bg-primary">En possession</span>
+                                        @else
+                                            <span class="badge bg-success">Reçu</span>
+                                        @endif
+                                    </small>
+                                </div>
                             </a>
                         @endforeach
                     </div>

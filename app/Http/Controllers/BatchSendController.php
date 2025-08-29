@@ -60,15 +60,20 @@ class BatchSendController extends Controller
 
     public function create()
     {
-        $batches = Batch::whereHas('transactions', function($query) {
-            $query->where('organisation_send_id', auth()->user()->currentOrganisation->id)
-                  ->where('id', function($subQuery) {
-                      $subQuery->selectRaw('MAX(id)')
-                               ->from('batch_transactions')
-                               ->whereColumn('batch_id', 'batch_transactions.batch_id');
-                  });
-        })->get();
-
+        // Pour envoyer : parapheurs reçus + parapheurs en possession de l'organisation courante
+        $batches = Batch::with('organisationHolder')
+            ->where(function($query) {
+                $query->whereHas('transactions', function($subQuery) {
+                    $subQuery->where('organisation_received_id', auth()->user()->currentOrganisation->id)
+                          ->where('id', function($innerQuery) {
+                              $innerQuery->selectRaw('MAX(id)')
+                                       ->from('batch_transactions')
+                                       ->whereColumn('batch_id', 'batch_transactions.batch_id');
+                          });
+                })
+                ->orWhere('organisation_holder_id', auth()->user()->currentOrganisation->id);
+            })
+            ->get();
 
         $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
 
@@ -82,12 +87,12 @@ class BatchSendController extends Controller
         $validatedData = $request->validate([
             'batch_id' => 'required|integer',
             'organisation_received_id' => 'required|integer',
-            'user_received_id' => 'required|integer', // Assuming this is a required field
         ]);
 
         $validatedData['organisation_send_id'] = auth()->user()->currentOrganisation->id;
 
-        $batch = BatchTransaction::create($validatedData);
+        $batchTransaction = BatchTransaction::create($validatedData);
+        $batch = $batchTransaction->batch;
 
         $i = 1;
         foreach($batch->mails as $data){
@@ -97,7 +102,7 @@ class BatchSendController extends Controller
             $mail['mail_id'] = $data->id;
             $mail['user_send_id'] = auth()->user()->id;
             $mail['organisation_send_id'] = auth()->user()->currentOrganisation->id;
-            $mail['user_received_id'] = $validatedData['user_received_id'];
+            $mail['user_received_id'] = null; // Can be updated later
             $mail['organisation_received_id'] = $validatedData['organisation_received_id'];
             $mail['document_type_id'] = $data->document_type_id;
             $mail['action_id'] = NULL;

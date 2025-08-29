@@ -107,11 +107,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="batchSearch" class="form-control mb-3" placeholder="Rechercher un parapheur...">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Mode réception :</strong> Tous les parapheurs disponibles dans le système
+                    </div>
+                    <input type="text" id="batchSearch" class="form-control mb-3" placeholder="Rechercher par code ou nom...">
                     <div id="batchList" class="list-group">
                         @foreach ($batches as $batch)
                             <a href="#" class="list-group-item list-group-item-action" data-id="{{ $batch->id }}" data-code="{{ $batch->code }}" data-name="{{ $batch->name }}">
-                                {{ $batch->code }} - {{ $batch->name }}
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>{{ $batch->code }}</strong> - {{ $batch->name }}
+                                    </div>
+                                    <small class="text-muted">
+                                        Détenu par: {{ $batch->organisationHolder->name ?? 'N/A' }}
+                                    </small>
+                                </div>
                             </a>
                         @endforeach
                     </div>

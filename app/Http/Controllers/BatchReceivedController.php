@@ -43,15 +43,8 @@ class BatchReceivedController extends Controller
 
     public function create()
     {
-        $batches = Batch::whereHas('transactions', function($query) {
-            $query->where('organisation_received_id', auth()->user()->currentOrganisation->id)
-                  ->where('id', function($subQuery) {
-                      $subQuery->selectRaw('MAX(id)')
-                               ->from('batch_transactions')
-                               ->whereColumn('batch_id', 'batch_transactions.batch_id');
-                  });
-        })->get();
-
+        // Pour recevoir : afficher TOUS les parapheurs (recherche par code)
+        $batches = Batch::with('organisationHolder')->get();
 
         $organisations = Organisation::whereNot('id', auth()->user()->currentOrganisation->id)->get();
         return view('batch.received.create', compact('batches', 'organisations'));
@@ -84,8 +77,9 @@ class BatchReceivedController extends Controller
 
         $validatedData['organisation_received_id'] = auth()->user()->currentOrganisation->id;
 
+        $batchTransaction = BatchTransaction::create($validatedData);
+        $batch = $batchTransaction->batch;
 
-        $batch = BatchTransaction::create($validatedData);
         $i = 1;
         foreach($batch->mails as $data){
             $mail = [];
@@ -94,7 +88,7 @@ class BatchReceivedController extends Controller
             $mail['mail_id'] = $data->id;
             $mail['user_send_id'] = auth()->user()->id;
             $mail['organisation_send_id'] = auth()->user()->currentOrganisation->id;
-            $mail['user_received_id'] = $validatedData['user_received_id'];
+            $mail['user_received_id'] = null; // Can be updated later
             $mail['organisation_received_id'] = $validatedData['organisation_received_id'];
             $mail['document_type_id'] = $data->document_type_id;
             $mail['action_id'] = NULL;

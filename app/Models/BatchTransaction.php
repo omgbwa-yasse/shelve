@@ -31,7 +31,7 @@ class BatchTransaction extends Model
 
     public function mails()
     {
-        return $this->belongsToMany(Mail::class, 'batch_mail', 'mail_id', 'batch_id');
+        return $this->belongsToMany(Mail::class, 'batch_mail', 'batch_id', 'mail_id');
     }
 
 }
