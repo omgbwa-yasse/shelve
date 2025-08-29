@@ -18,7 +18,9 @@ class MailContainerController extends Controller
                                       ->paginate(10);
 
         // Data for transfer modal
-        $activities = Activity::where('organisation_id', Auth::user()->current_organisation_id)
+        $activities = Activity::whereHas('organisations', function($query) {
+                                 $query->where('organisation_id', Auth::user()->current_organisation_id);
+                             })
                              ->orderBy('name')
                              ->get();
 
