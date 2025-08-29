@@ -68,25 +68,12 @@ class RoomController extends Controller
 
     public function show(Room $room)
     {
-        $currentOrganisationId = Auth::user()->current_organisation_id;
-
-        // Vérifier que la room appartient à l'organisation courante
-        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
-            abort(403, self::ACCESS_DENIED_MESSAGE);
-        }
-
         $room->load('floor');
         return view('rooms.show', compact('room'));
     }
 
     public function edit(Room $room)
     {
-        $currentOrganisationId = Auth::user()->current_organisation_id;
-
-        // Vérifier que la room appartient à l'organisation courante
-        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
-            abort(403, self::ACCESS_DENIED_MESSAGE);
-        }
 
         $floors = Floor::all();
         $visibilityOptions = [
@@ -103,13 +90,6 @@ class RoomController extends Controller
 
     public function update(Request $request, Room $room)
     {
-        $currentOrganisationId = Auth::user()->current_organisation_id;
-
-        // Vérifier que la room appartient à l'organisation courante
-        if (!$room->organisations()->where('organisation_id', $currentOrganisationId)->exists()) {
-            abort(403, self::ACCESS_DENIED_MESSAGE);
-        }
-
         $request->validate([
             'code' => 'required|max:10',
             'name' => 'required|max:100',
