@@ -79,6 +79,13 @@
                 </a>
             </div>
             @endcan
+            @can('create', App\Models\Record::class)
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.drag-drop') }}">
+                    <i class="bi bi-cloud-upload"></i> Drag & Drop
+                </a>
+            </div>
+            @endcan
         </div>
     </div>
     @endif

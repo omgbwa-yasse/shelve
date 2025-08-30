@@ -6,6 +6,8 @@ use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
+use App\Services\AttachmentTextExtractor;
+use AiBridge\Facades\AiBridge;
 use App\Models\RecordAttachment;
 use App\Models\SlipStatus;
 use App\Models\Attachment;
@@ -23,6 +25,7 @@ use App\Models\Accession;
 use App\Models\Author;
 use App\Models\AuthorType;
 use App\Models\RecordLevel;
+use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1220,5 +1223,402 @@ class RecordController extends Controller
                 ];
             })
         ]);
+    }
+
+    /**
+     * Afficher le formulaire Drag & Drop
+     */
+    public function dragDropForm()
+    {
+        Gate::authorize('records_create');
+        return view('records.drag-drop');
+    }
+
+    /**
+     * Traiter les fichiers uploadés via Drag & Drop avec IA
+     */
+    public function processDragDrop(Request $request)
+    {
+        Gate::authorize('records_create');
+
+        Log::info('Début processDragDrop', [
+            'files_count' => count($request->file('files', [])),
+            'user_id' => Auth::id()
+        ]);
+
+        // Validation des fichiers
+        $request->validate([
+            'files' => 'required|array|min:1|max:10',
+            'files.*' => 'file|mimes:pdf,txt,docx,doc,rtf,odt,jpg,jpeg,png,gif|max:51200', // 50MB max
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // 1. Créer un record temporaire
+            Log::info('Création du record temporaire');
+            $record = $this->createTemporaryRecord();
+            Log::info('Record temporaire créé', ['record_id' => $record->id]);
+
+            // 2. Traiter les fichiers uploadés
+            Log::info('Traitement des fichiers uploadés');
+            $attachments = $this->handleDragDropFiles($request->file('files'));
+            Log::info('Fichiers traités', ['attachments_count' => $attachments->count()]);
+
+            // 3. Associer les attachments au record
+            Log::info('Association des attachments au record');
+            $record->attachments()->attach($attachments->pluck('id'));
+
+            // 4. Traiter avec l'IA
+            Log::info('Début du traitement IA');
+            $aiResponse = $this->processWithAI($record, $attachments);
+            Log::info('Traitement IA terminé', ['response_preview' => substr(json_encode($aiResponse), 0, 200)]);
+
+            // 5. Mettre à jour le record avec les suggestions IA
+            Log::info('Application des suggestions IA');
+            $this->applyAiSuggestions($record, $aiResponse);
+
+            DB::commit();
+            Log::info('Transaction commitée avec succès');
+
+            return response()->json([
+                'success' => true,
+                'record_id' => $record->id,
+                'ai_suggestions' => $aiResponse,
+                'message' => 'Record créé avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Erreur Drag & Drop: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du traitement: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Créer un record temporaire
+     */
+    private function createTemporaryRecord(): Record
+    {
+        return Record::create([
+            'code' => 'T' . substr(uniqid(), -8), // T + 8 chars = 9 chars total (within 10 char limit)
+            'name' => 'Document en cours de traitement...',
+            'date_format' => 'Y', // Format par défaut, sera mis à jour par l'IA
+            'level_id' => RecordLevel::first()->id ?? 1,
+            'status_id' => RecordStatus::first()->id ?? 1,
+            'support_id' => RecordSupport::first()->id ?? 1,
+            'activity_id' => Activity::first()->id ?? 1,
+            'user_id' => Auth::id(),
+            'content' => 'Record créé via Drag & Drop - En attente de traitement IA'
+        ]);
+    }
+
+    /**
+     * Traiter les fichiers uploadés
+     */
+    private function handleDragDropFiles(array $files): \Illuminate\Database\Eloquent\Collection
+    {
+        $attachmentIds = [];
+
+        foreach ($files as $file) {
+            // Stocker le fichier
+            $path = $file->store('attachments/drag-drop');
+
+            // Créer l'attachment
+            $attachment = Attachment::create([
+                'path' => $path,
+                'name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'type' => $this->determineAttachmentType($file->getMimeType()),
+                'creator_id' => Auth::id(),
+                'crypt' => hash_file('md5', $file->getRealPath()),
+                'crypt_sha512' => hash_file('sha512', $file->getRealPath()),
+                'thumbnail_path' => '', // Pas de thumbnail pour les fichiers drag & drop
+            ]);
+
+            $attachmentIds[] = $attachment->id;
+        }
+
+        // Retourner une vraie Eloquent Collection
+        return Attachment::whereIn('id', $attachmentIds)->get();
+    }
+
+    /**
+     * Déterminer le type d'attachment basé sur le MIME type
+     * Les valeurs possibles sont: 'mail','record','communication','transferting','bulletinboardpost','bulletinboard','bulletinboardevent'
+     */
+    private function determineAttachmentType(string $mimeType): string
+    {
+        // Pour les attachments créés via drag & drop, ils sont toujours liés aux records
+        return 'record';
+    }
+
+    /**
+     * Traiter avec l'IA
+     */
+    private function processWithAI(Record $record, \Illuminate\Database\Eloquent\Collection $attachments): array
+    {
+        try {
+            // Préparer les chemins de fichiers pour AiBridge
+            $filePaths = [];
+            foreach ($attachments as $attachment) {
+                $filePath = storage_path('app/' . $attachment->path);
+                if (file_exists($filePath)) {
+                    $filePaths[] = $filePath;
+                }
+            }
+
+            if (empty($filePaths)) {
+                throw new \Exception('Aucun fichier valide trouvé pour l\'analyse IA');
+            }
+
+            // Construire le prompt pour l'IA
+            $prompt = $this->buildDragDropPromptWithFiles();
+
+            // Appeler l'IA avec les fichiers
+            $provider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
+            $model = app(\App\Services\SettingService::class)->get('ai_default_model', 'gemma2:2b');
+
+            // S'assurer que le provider est configuré
+            app(\App\Services\AI\ProviderRegistry::class)->ensureConfigured($provider);
+
+            Log::info('Envoi à l\'IA avec fichiers', [
+                'provider' => $provider,
+                'model' => $model,
+                'files_count' => count($filePaths),
+                'files' => array_map(function($path) {
+                    return [
+                        'path' => $path,
+                        'name' => basename($path),
+                        'size' => file_exists($path) ? filesize($path) : 0,
+                        'exists' => file_exists($path)
+                    ];
+                }, $filePaths)
+            ]);
+
+            // Utiliser AiBridge avec l'option 'files' pour envoyer les fichiers
+            $aiResponse = AiBridge::provider($provider)->chat([
+                ['role' => 'user', 'content' => $prompt]
+            ], [
+                'model' => $model,
+                'temperature' => 0.3,
+                'max_tokens' => 1000,
+                'timeout' => 120000, // 2 minutes pour traiter les fichiers
+                'files' => $filePaths // AiBridge attend un tableau de chemins de fichiers
+            ]);
+
+            // Parser la réponse
+            $content = $this->extractText(is_array($aiResponse) ? $aiResponse : (array)$aiResponse);
+
+            Log::info('Réponse IA reçue', [
+                'content_length' => strlen($content),
+                'response_preview' => substr($content, 0, 200)
+            ]);
+
+            return $this->parseAiDragDropResponse($content);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur traitement IA Drag & Drop: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Retourner une réponse par défaut
+            return [
+                'title' => 'Document importé le ' . now()->format('d/m/Y'),
+                'content' => 'Document créé automatiquement via Drag & Drop.',
+                'keywords' => [],
+                'activity_suggestion' => null,
+                'confidence' => 0.0
+            ];
+        }
+    }
+
+    /**
+     * Construire le prompt pour l'IA avec fichiers
+     */
+    private function buildDragDropPromptWithFiles(): string
+    {
+        return "Tu es un assistant spécialisé en archivage. Je vais te transmettre des fichiers uploadés via un système de drag & drop. Analyse le contenu de tous les fichiers et propose une description structurée pour créer un record archivistique.
+
+INSTRUCTIONS:
+1. Analyse le contenu de TOUS les fichiers fournis
+2. Propose un titre pertinent et concis (max 100 caractères) qui résume l'ensemble
+3. Rédige une description/résumé du contenu de tous les fichiers (max 500 mots)
+4. Suggère 3-5 mots-clés pertinents basés sur le contenu
+5. Identifie les dates dans le contenu (date_start, date_end si période, ou date_exact si date précise)
+6. Évalue le niveau de confiance de tes suggestions (0-1)
+
+RÉPONSE ATTENDUE (JSON strict):
+{
+  \"title\": \"Titre proposé basé sur tous les fichiers\",
+  \"content\": \"Description détaillée du contenu analysé\",
+  \"keywords\": [\"mot1\", \"mot2\", \"mot3\"],
+  \"date_start\": \"YYYY-MM-DD ou YYYY ou YYYY-MM\",
+  \"date_end\": \"YYYY-MM-DD ou YYYY ou YYYY-MM\",
+  \"date_exact\": \"YYYY-MM-DD\",
+  \"confidence\": 0.85,
+  \"summary\": \"Résumé en une phrase de l'ensemble des documents\"
+}
+
+NOTES SUR LES DATES:
+- Si tu trouves une date précise, utilise \"date_exact\"
+- Si tu trouves une période, utilise \"date_start\" et \"date_end\"
+- Si tu trouves seulement une année, utilise le format \"YYYY\"
+- Si tu trouves année-mois, utilise le format \"YYYY-MM\"
+- Laisse null les champs de date si aucune date n'est identifiable
+
+Réponds UNIQUEMENT en JSON valide, sans texte additionnel.";
+    }
+
+    /**
+     * Construire le prompt pour l'IA (version legacy avec extraction de texte)
+     */
+    private function buildDragDropPrompt(array $contents): string
+    {
+        $contentText = '';
+        foreach ($contents as $content) {
+            $contentText .= "=== Fichier: {$content['filename']} ({$content['type']}) ===\n";
+            $contentText .= $content['content'] . "\n\n";
+        }
+
+        return "Tu es un assistant spécialisé en archivage. Analyse le contenu suivant et propose une description structurée pour créer un record archivistique.
+
+CONTENU À ANALYSER:
+{$contentText}
+
+INSTRUCTIONS:
+1. Propose un titre pertinent et concis (max 100 caractères)
+2. Rédige une description/résumé du contenu (max 500 mots)
+3. Suggère 3-5 mots-clés pertinents
+4. Identifie les dates dans le contenu (date_start, date_end si période, ou date_exact si date précise)
+5. Évalue le niveau de confiance de tes suggestions (0-1)
+
+RÉPONSE ATTENDUE (JSON strict):
+{
+  \"title\": \"Titre proposé\",
+  \"content\": \"Description détaillée\",
+  \"keywords\": [\"mot1\", \"mot2\", \"mot3\"],
+  \"date_start\": \"YYYY-MM-DD ou YYYY ou YYYY-MM\",
+  \"date_end\": \"YYYY-MM-DD ou YYYY ou YYYY-MM\",
+  \"date_exact\": \"YYYY-MM-DD\",
+  \"confidence\": 0.85,
+  \"summary\": \"Résumé en une phrase\"
+}
+
+NOTES SUR LES DATES:
+- Si tu trouves une date précise, utilise \"date_exact\"
+- Si tu trouves une période, utilise \"date_start\" et \"date_end\"
+- Si tu trouves seulement une année, utilise le format \"YYYY\"
+- Si tu trouves année-mois, utilise le format \"YYYY-MM\"
+- Laisse null les champs de date si aucune date n'est identifiable
+
+Réponds UNIQUEMENT en JSON valide, sans texte additionnel.";
+    }
+
+    /**
+     * Parser la réponse de l'IA
+     */
+    private function parseAiDragDropResponse(string $response): array
+    {
+        try {
+            // Nettoyer la réponse
+            $cleaned = trim($response);
+            $cleaned = preg_replace('/^```json\s*/', '', $cleaned);
+            $cleaned = preg_replace('/\s*```$/', '', $cleaned);
+
+            $data = json_decode($cleaned, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception('JSON invalide: ' . json_last_error_msg());
+            }
+
+            return [
+                'title' => $data['title'] ?? 'Document sans titre',
+                'content' => $data['content'] ?? '',
+                'keywords' => $data['keywords'] ?? [],
+                'confidence' => $data['confidence'] ?? 0.5,
+                'summary' => $data['summary'] ?? '',
+                'date_start' => $data['date_start'] ?? null,
+                'date_end' => $data['date_end'] ?? null,
+                'date_exact' => $data['date_exact'] ?? null
+            ];
+
+        } catch (\Exception $e) {
+            Log::warning('Erreur parsing réponse IA: ' . $e->getMessage(), [
+                'response' => $response
+            ]);
+
+            return [
+                'title' => 'Document importé',
+                'content' => 'Contenu extrait automatiquement.',
+                'keywords' => [],
+                'confidence' => 0.0,
+                'summary' => '',
+                'date_start' => null,
+                'date_end' => null,
+                'date_exact' => null
+            ];
+        }
+    }    /**
+     * Appliquer les suggestions de l'IA au record
+     */
+    private function applyAiSuggestions(Record $record, array $aiResponse): void
+    {
+        // Préparer les données de mise à jour
+        $updateData = [
+            'name' => $aiResponse['title'] ?? $record->name,
+            'content' => $aiResponse['content'] ?? $record->content,
+            'code' => 'DD' . now()->format('md') . sprintf('%03d', $record->id), // DD + MMDD + ID padded = max 10 chars
+        ];
+
+        // Traitement des dates suggérées par l'IA
+        if (!empty($aiResponse['date_exact'])) {
+            // Date exacte fournie
+            $updateData['date_exact'] = $aiResponse['date_exact'];
+            $updateData['date_format'] = 'D'; // Format complet AAAA/MM/DD
+        } elseif (!empty($aiResponse['date_start']) || !empty($aiResponse['date_end'])) {
+            // Période fournie
+            $dateStart = $aiResponse['date_start'] ?? null;
+            $dateEnd = $aiResponse['date_end'] ?? null;
+
+            if ($dateStart) $updateData['date_start'] = $dateStart;
+            if ($dateEnd) $updateData['date_end'] = $dateEnd;
+
+            // Utiliser la méthode existante pour déterminer le format
+            $updateData['date_format'] = $this->getDateFormat($dateStart, $dateEnd);
+        }
+        // Si aucune date n'est fournie, garder le format 'Y' par défaut
+
+        // Mettre à jour le record
+        $record->update($updateData);
+
+        // Traiter les mots-clés si fournis
+        if (!empty($aiResponse['keywords'])) {
+            $keywords = \App\Models\Keyword::processKeywordsString(implode(', ', $aiResponse['keywords']));
+            $record->keywords()->attach($keywords->pluck('id'));
+        }
+    }
+
+    /**
+     * Extraire le texte de la réponse IA (réutilise la méthode existante)
+     */
+    private function extractText($response): string
+    {
+        if (is_string($response)) {
+            return $response;
+        }
+
+        if (is_array($response)) {
+            return $response['content'] ?? $response['message'] ?? $response['text'] ?? json_encode($response);
+        }
+
+        return (string) $response;
     }
 }

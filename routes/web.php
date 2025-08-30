@@ -577,6 +577,10 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
         Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
 
+        // Routes Drag & Drop AVANT la route resource
+        Route::get('records/drag-drop', [RecordController::class, 'dragDropForm'])->name('records.drag-drop');
+        Route::post('records/drag-drop', [RecordController::class, 'processDragDrop'])->name('records.drag-drop.process');
+
         // Route resource principale (génère automatiquement show, create, store, edit, update, destroy)
         Route::resource('records', RecordController::class);
 
