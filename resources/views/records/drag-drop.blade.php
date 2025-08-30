@@ -88,7 +88,7 @@
                                         <i class="bi bi-x-lg me-2"></i>Rejeter
                                     </button>
                                     <button type="button" id="accept-suggestions" class="btn btn-success">
-                                        <i class="bi bi-check-lg me-2"></i>Créer le record
+                                        <i class="bi bi-check-lg me-2"></i>Ouvrir le record
                                     </button>
                                 </div>
                             </div>
@@ -177,6 +177,9 @@ document.addEventListener('DOMContentLoaded', function() {
         'application/rtf',
         'application/vnd.oasis.opendocument.text'
     ];
+    const ALLOWED_EXTENSIONS = [
+        'pdf','jpg','jpeg','png','gif','doc','docx','txt','rtf','odt'
+    ];
 
     // Elements DOM
     const dropZone = document.getElementById('drop-zone');
@@ -247,7 +250,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
 
-            if (!ALLOWED_TYPES.includes(file.type)) {
+            // Vérifier le type MIME OU l'extension en fallback (certains navigateurs ne renseignent pas correctement file.type)
+            const hasValidMime = file.type && ALLOWED_TYPES.includes(file.type);
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            const hasValidExt = ALLOWED_EXTENSIONS.includes(ext);
+            if (!hasValidMime && !hasValidExt) {
                 showAlert('error', `Type de fichier non supporté: "${file.name}"`);
                 return false;
             }
@@ -320,7 +327,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const formData = new FormData();
             selectedFiles.forEach((file, index) => {
-                formData.append(`files[${index}]`, file);
+                // Utiliser files[] pour une compatibilité maximale côté PHP
+                formData.append('files[]', file);
             });
 
             // Ajouter le token CSRF
