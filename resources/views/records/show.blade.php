@@ -741,12 +741,13 @@
             resultWrap.classList.add('d-none');
 
             try {
-                const response = await fetch('/mcp/ai/prompt', {
+                const response = await fetch(`/api/prompts/${promptId}/actions`, {
                     method: 'POST',
                     headers: buildAuthHeaders(),
                     body: JSON.stringify({
-                        prompt_id: promptId,
-                        context: contextBase,
+                        action: action,
+                        entity: 'record',
+                        entity_ids: [{{ $record->id }}],
                         stream: false
                     })
                 });
@@ -757,7 +758,7 @@
                 }
 
                 const result = await response.json();
-                const output = result.response;
+                const output = result.output;
 
                 if (action === 'keywords') {
                     openAiReviewModal(action, output);
