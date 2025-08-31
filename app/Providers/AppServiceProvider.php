@@ -9,6 +9,7 @@ use App\Services\SettingService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Vite;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -54,6 +55,14 @@ class AppServiceProvider extends ServiceProvider
         Auth::macro('currentOrganisationId', function () {
             return Auth::check() ? Auth::user()->current_organisation_id : null;
         });
+
+        // Verrouillage des assets: ignorer le serveur Vite en prod ou si forcé
+        if (config('assets.force_build', false) || $this->app->environment('production')) {
+            // Pointez vers un hot file inexistant pour désactiver le mode hot
+            Vite::useHotFile(storage_path('framework/disable-vite-hot'));
+            // Assurez-vous d'utiliser le répertoire de build par défaut
+            Vite::useBuildDirectory('build');
+        }
 
     }
     protected function handleLocale(): void
