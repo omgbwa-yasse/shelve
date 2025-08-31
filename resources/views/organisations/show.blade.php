@@ -14,7 +14,8 @@
             <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this organisation?')">Delete</button>
         </form>
 
-        <a href="{{ route('organisations.rooms.create', $organisation) }}" class="btn btn-secondary mt-6">Associer un local</a>
+    <a href="{{ route('organisations.rooms.create', $organisation) }}" class="btn btn-secondary mt-6">Associer un local</a>
+    <a href="{{ route('organisations.contacts.create', $organisation) }}" class="btn btn-success mt-2">Ajouter un contact</a>
 
 
         <ul class="list-group">
@@ -53,6 +54,34 @@
                 @endforeach
             @endif
         </ul>
+
+        <h3 class="mt-4">Contacts associés</h3>
+        @if($organisation->contacts && $organisation->contacts->count())
+            <ul class="list-group">
+                @foreach($organisation->contacts as $contact)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="text-break">
+                            <span class="badge bg-secondary me-2">{{ $contact->type }}</span>
+                            {{ $contact->value }}
+                            @if($contact->label)
+                                <small class="text-muted">— {{ $contact->label }}</small>
+                            @endif
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <a href="{{ route('organisations.contacts.show', [$organisation, $contact]) }}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                            <a href="{{ route('organisations.contacts.edit', [$organisation, $contact]) }}" class="btn btn-sm btn-outline-primary">Modifier</a>
+                            <form action="{{ route('organisations.contacts.destroy', [$organisation, $contact]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer ce contact ?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <div class="text-muted">Aucun contact associé.</div>
+        @endif
 
     </div>
 @endsection

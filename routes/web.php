@@ -786,6 +786,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::resource('activities.communicabilities', activityCommunicabilityController::class);
         Route::resource('organisations.rooms', OrganisationRoomController::class);
         Route::resource('organisations.activities', OrganisationActivityController::class);
+        Route::resource('organisations.contacts', \App\Http\Controllers\OrganisationContactController::class)
+            ->names('organisations.contacts');
 
         // Routes pour la gestion des organisations dans tools
         Route::get('organisations/export/excel', [OrganisationController::class, 'exportExcel'])->name('organisations.export.excel');
