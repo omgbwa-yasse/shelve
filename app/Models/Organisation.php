@@ -30,6 +30,11 @@ class Organisation extends Model
     {
         return $this->belongsToMany(Activity::class, 'organisation_activity', 'organisation_id', 'activity_id');
     }
+
+    public function contacts()
+    {
+        return $this->belongsToMany(Contact::class, 'organisation_contact', 'organisation_id', 'contact_id');
+    }
 }
 
 

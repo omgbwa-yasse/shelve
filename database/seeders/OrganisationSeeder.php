@@ -11,6 +11,7 @@ use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\Container;
 use App\Models\ContainerProperty;
+use App\Models\Contact;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -32,6 +33,10 @@ class OrganisationSeeder extends Seeder
             Floor::query()->delete();
             Building::query()->delete();
             ContainerProperty::query()->delete();
+
+            // Supprimer tous les contacts et liaisons existants
+            $this->command->info('🗑️ Suppression des contacts existants...');
+            Contact::query()->delete();
 
             // Supprimer toutes les organisations existantes
             $this->command->info('🗑️ Suppression des organisations existantes...');
@@ -73,6 +78,11 @@ class OrganisationSeeder extends Seeder
             ]);
 
             $this->command->info('✅ Structure organisationnelle créée');
+
+            // Associer des contacts par défaut à chaque organisation
+            foreach ([$directionGenerale, $directionFinances, $directionRH, $directionArchives] as $org) {
+                $this->addDefaultContacts($org);
+            }
 
             // Créer l'infrastructure physique
             $this->createPhysicalInfrastructure($directionFinances, $directionRH, $directionArchives);
@@ -174,5 +184,45 @@ class OrganisationSeeder extends Seeder
 
         $this->command->info('✅ Infrastructure physique complète créée');
         $this->command->info('📊 Résumé: 1 bâtiment, 3 étages, 3 salles, 30 étagères, 300 boîtes d\'archives');
+    }
+
+    /**
+     * Ajouter des contacts par défaut à une organisation
+     */
+    private function addDefaultContacts(Organisation $org): void
+    {
+        $code = strtolower($org->code);
+
+        $contacts = [
+            [
+                'type' => 'email',
+                'value' => $code . '@example.com',
+                'label' => 'Email principal',
+                'notes' => null,
+            ],
+            [
+                'type' => 'telephone',
+                'value' => '+237 650000000',
+                'label' => 'Standard',
+                'notes' => null,
+            ],
+            [
+                'type' => 'adresse',
+                'value' => 'Adresse de la ' . $org->name,
+                'label' => 'Siège',
+                'notes' => null,
+            ],
+            [
+                'type' => 'code_postal',
+                'value' => 'BP 12345',
+                'label' => null,
+                'notes' => null,
+            ],
+        ];
+
+        foreach ($contacts as $data) {
+            $contact = Contact::create($data);
+            $org->contacts()->attach($contact->id);
+        }
     }
 }
