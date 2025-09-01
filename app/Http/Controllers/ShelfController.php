@@ -15,11 +15,20 @@ class ShelfController extends Controller
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        $shelves = Shelf::with('room')
+        $shelves = Shelf::with(['room.floor.building', 'containers.status', 'containers.property'])
             ->whereHas('room.organisations', function($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
             })
             ->get();
+
+        // Calculate statistics for each shelf
+        $shelves->each(function($shelf) {
+            $shelf->total_capacity = $shelf->face * $shelf->ear * $shelf->shelf;
+            $shelf->occupied_spots = $shelf->containers->count();
+            $shelf->available_spots = max(0, $shelf->total_capacity - $shelf->occupied_spots);
+            $shelf->occupancy_percentage = $shelf->total_capacity > 0 ? round(($shelf->occupied_spots / $shelf->total_capacity) * 100, 1) : 0;
+            $shelf->volumetry_ml = ($shelf->face * $shelf->ear * $shelf->shelf * $shelf->shelf_length) / 100;
+        });
 
         return view('shelves.index', compact('shelves'));
     }
@@ -72,7 +81,48 @@ class ShelfController extends Controller
             abort(403, self::ACCESS_DENIED_MESSAGE);
         }
 
-        return view('shelves.show', compact('shelf'));
+        // Load shelf with all related data
+        $shelf = Shelf::with([
+            'room.floor.building',
+            'containers.status',
+            'containers.property',
+            'containers' => function($query) use ($currentOrganisationId) {
+                $query->where('creator_organisation_id', $currentOrganisationId)
+                      ->orderBy('created_at', 'desc');
+            }
+        ])->find($shelf->id);
+
+        // Calculate shelf statistics
+        $shelf->total_capacity = $shelf->face * $shelf->ear * $shelf->shelf;
+        $shelf->occupied_spots = $shelf->containers->count();
+        $shelf->available_spots = max(0, $shelf->total_capacity - $shelf->occupied_spots);
+        $shelf->occupancy_percentage = $shelf->total_capacity > 0 ? round(($shelf->occupied_spots / $shelf->total_capacity) * 100, 1) : 0;
+        $shelf->volumetry_ml = ($shelf->face * $shelf->ear * $shelf->shelf * $shelf->shelf_length) / 100;
+
+        // Create 3D grid for visualization
+        $shelfGrid = [];
+        for ($face = 1; $face <= $shelf->face; $face++) {
+            for ($ear = 1; $ear <= $shelf->ear; $ear++) {
+                for ($shelfLevel = 1; $shelfLevel <= $shelf->shelf; $shelfLevel++) {
+                    $shelfGrid[$face][$ear][$shelfLevel] = null; // Empty by default
+                }
+            }
+        }
+
+        // Map containers to grid positions (simplified - containers fill positions sequentially)
+        $containerIndex = 0;
+        foreach ($shelf->containers as $container) {
+            if ($containerIndex < $shelf->total_capacity) {
+                $face = floor($containerIndex / ($shelf->ear * $shelf->shelf)) + 1;
+                $ear = floor(($containerIndex % ($shelf->ear * $shelf->shelf)) / $shelf->shelf) + 1;
+                $shelfLevel = ($containerIndex % $shelf->shelf) + 1;
+                
+                $shelfGrid[$face][$ear][$shelfLevel] = $container;
+            }
+            $containerIndex++;
+        }
+
+        return view('shelves.show', compact('shelf', 'shelfGrid'));
     }
 
     public function edit(Shelf $shelf)

@@ -171,7 +171,7 @@
 
             // Construire le diagramme Mermaid
             function buildMermaidDiagram() {
-                const activities = @json($activities);
+                const activities = @json($activities->items());
                 let mermaidCode = 'graph TD\n';
 
                 // Style des nœuds

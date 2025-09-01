@@ -130,7 +130,7 @@
                 });
 
                 function buildMermaidDiagram() {
-                    const organisations = @json($organisations);
+                    const organisations = @json($organisations->items());
                     let mermaidCode = 'graph TD\n';
 
                     mermaidCode += 'classDef root fill:#0d6efd,stroke:#0d6efd,color:white,stroke-width:2px\n';

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(/C:\\c\\wamp64\\www\\ICA/**)"
+      "Read(/C:\\c\\wamp64\\www\\ICA/**)",
+      "Bash(php:*)"
     ],
     "deny": [],
     "ask": []

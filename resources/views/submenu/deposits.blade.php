@@ -1,6 +1,7 @@
 <div class="submenu-container py-2">
     <!-- Styles partagés via _submenu.scss -->
 
+
     <!-- Search Section -->
     <div class="submenu-section">
         <div class="submenu-heading" >
@@ -77,3 +78,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+</style>
