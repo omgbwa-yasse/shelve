@@ -1,141 +1,373 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
-    .building-preview {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        border-radius: 8px;
-        padding: 12px;
-        margin: 8px 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+/* Design System Harmonisé */
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    --info-color: #0891b2;
+    --light-bg: #f8fafc;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --radius: 0.5rem;
+    --transition: all 0.2s ease-in-out;
+}
+
+/* Layout optimisé */
+.compact-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Header harmonisé */
+.page-header {
+    background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.page-subtitle {
+    color: var(--secondary-color);
+    margin: 0.5rem 0 0 0;
+    font-size: 0.95rem;
+}
+
+/* Breadcrumb moderne */
+.modern-breadcrumb {
+    background: #ffffff;
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumb-item {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.breadcrumb-item:hover {
+    color: var(--primary-color);
+}
+
+.breadcrumb-item.active {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+/* Search bar améliorée */
+.search-container {
+    position: relative;
+    max-width: 400px;
+}
+
+.search-input {
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    background: #ffffff;
+}
+
+.search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+    outline: none;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+    z-index: 10;
+}
+
+/* Stats cards compactes */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--secondary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Cards harmonisées */
+.building-card {
+    background: #ffffff;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    height: 100%;
+    overflow: hidden;
+}
+
+.building-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-footer {
+    background: #f8fafc;
+    border-top: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+}
+
+/* Building preview */
+.building-preview {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin: 0.75rem 0;
+    border: 1px solid #bfdbfe;
+}
+
+.floors-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: 0.5rem;
+}
+
+.floor-bar {
+    width: 16px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 1px;
+}
+
+/* Badges modernes */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+/* Boutons harmonisés */
+.btn-modern {
+    border-radius: var(--radius);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Actions compactes */
+.actions-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.action-btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    transition: var(--transition);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
     
-    .floors-indicator {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        margin-left: 8px;
+    .page-header {
+        padding: 1rem;
     }
     
-    .floor-bar {
-        width: 20px;
-        height: 4px;
-        background: #1976d2;
-        border-radius: 2px;
+    .page-title {
+        font-size: 1.5rem;
     }
-    
-    .search-container {
-        position: relative;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
-    
-    .search-results-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-top: none;
-        border-radius: 0 0 0.375rem 0.375rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        z-index: 1000;
-        max-height: 300px;
-        overflow-y: auto;
-        display: none;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
-    
-    .search-result-item {
-        cursor: pointer;
-        transition: background-color 0.2s;
-        padding: 8px 12px;
-        border-bottom: 1px solid #f8f9fa;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Search results */
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+.search-result-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.search-result-item:hover {
+    background: var(--light-bg);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* Highlight animation */
+.highlight-building {
+    animation: highlight-pulse 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); 
     }
-    
-    .search-result-item:hover {
-        background-color: #f8f9fa;
+    50% { 
+        box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); 
     }
-    
-    .highlight-building {
-        animation: highlight-pulse 3s ease-in-out;
-        transform: scale(1.02);
-    }
-    
-    @keyframes highlight-pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4); }
-        50% { box-shadow: 0 0 0 10px rgba(25, 118, 210, 0); }
-    }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container-fluid">
-    <!-- Enhanced Breadcrumb with Search -->
-    <div class="enhanced-breadcrumb-container mb-4">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb bg-light p-3 rounded mb-0">
-                        <li class="breadcrumb-item active" aria-current="page">
-                            <i class="bi bi-building text-primary"></i> Bâtiments
-                        </li>
-                    </ol>
-                </nav>
+<div class="compact-container">
+    <!-- Header moderne -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-building text-primary"></i>
+                    Gestion des Bâtiments
+                </h1>
+                <p class="page-subtitle">Vue d'ensemble de vos infrastructures</p>
             </div>
-            <div class="col-md-6">
+            <div class="d-flex gap-2">
                 <div class="search-container">
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" class="form-control" id="globalBuildingSearch" 
-                               placeholder="Rechercher un bâtiment...">
-                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-funnel"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><h6 class="dropdown-header">Filtrer par</h6></li>
-                            <li><a class="dropdown-item" href="#" data-filter="all">
-                                <i class="bi bi-check-all"></i> Tout afficher
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" data-filter="public">
-                                <i class="bi bi-globe"></i> Public
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="private">
-                                <i class="bi bi-lock"></i> Privé
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" data-filter="floors">
-                                <i class="bi bi-layers"></i> Multi-niveaux
-                            </a></li>
-                        </ul>
-                    </div>
-                    <div class="search-results-dropdown" id="searchResults">
-                        <!-- Search results will appear here -->
-                    </div>
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="form-control search-input" id="globalBuildingSearch" 
+                           placeholder="Rechercher un bâtiment...">
+                    <div class="search-results-dropdown" id="searchResults"></div>
                 </div>
+                <a href="{{ route('buildings.create') }}" class="btn btn-primary btn-modern">
+                    <i class="bi bi-plus-circle me-2"></i>Nouveau
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Header with Statistics -->
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <h1 class="h2 mb-0"><i class="bi bi-building"></i> Gestion des Bâtiments</h1>
-            <p class="text-muted">Vue d'ensemble de vos infrastructures</p>
-        </div>
-        <div class="col-lg-4 text-lg-end">
-            <a href="{{ route('buildings.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Nouveau Bâtiment
-            </a>
-        </div>
-    </div>
+    <!-- Breadcrumb moderne -->
+    <nav class="modern-breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ route('report.dashboard') }}" class="breadcrumb-item">
+                    <i class="bi bi-house me-1"></i>Accueil
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="bi bi-building me-1"></i>Bâtiments
+            </li>
+        </ol>
+    </nav>
 
-    <!-- Summary Statistics -->
-    <div class="row mb-4">
+    <!-- Statistiques compactes -->
+    <div class="stats-grid">
         @php
             $totalBuildings = $buildings->total();
             $publicBuildings = $buildings->where('visibility', 'public')->count();
@@ -143,66 +375,50 @@
             $floorsCount = $buildings->sum(function($building) { return $building->floors->count(); });
         @endphp
         
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm bg-gradient-to-r from-blue-50 to-blue-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-blue-600 mb-2">{{ $totalBuildings }}</div>
-                    <div class="text-muted fw-bold">Bâtiments Total</div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-number text-primary">{{ $totalBuildings }}</div>
+            <div class="stat-label">Bâtiments Total</div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm bg-gradient-to-r from-green-50 to-green-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-green-600 mb-2">{{ $publicBuildings }}</div>
-                    <div class="text-muted fw-bold">Public</div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-number text-success">{{ $publicBuildings }}</div>
+            <div class="stat-label">Public</div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm bg-gradient-to-r from-red-50 to-red-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-red-600 mb-2">{{ $privateBuildings }}</div>
-                    <div class="text-muted fw-bold">Privé</div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-number text-danger">{{ $privateBuildings }}</div>
+            <div class="stat-label">Privé</div>
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card border-0 shadow-sm bg-gradient-to-r from-purple-50 to-purple-100">
-                <div class="card-body text-center">
-                    <div class="display-4 text-purple-600 mb-2">{{ $floorsCount }}</div>
-                    <div class="text-muted fw-bold">Étages Total</div>
-                </div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-number text-info">{{ $floorsCount }}</div>
+            <div class="stat-label">Étages Total</div>
         </div>
     </div>
 
-    <!-- Buildings Grid -->
-    <div class="row" id="buildingList">
+    <!-- Grille des bâtiments -->
+    <div class="row g-3" id="buildingList">
         @forelse ($buildings as $building)
-            <div class="col-xxl-4 col-xl-6 col-lg-6 mb-4">
-                <div class="card shadow-sm border-0 h-100 hover:shadow-lg transition-shadow duration-200">
-                    <!-- Header with Building Info -->
-                    <div class="card-header bg-white border-bottom">
+            <div class="col-xxl-4 col-xl-6 col-lg-6 col-md-12 fade-in-up">
+                <div class="building-card">
+                    <!-- Header -->
+                    <div class="card-header">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="card-title mb-1 font-weight-bold text-gray-800">
-                                    <i class="bi bi-building text-primary me-2"></i>
+                            <div class="flex-grow-1">
+                                <h5 class="card-title">
+                                    <i class="bi bi-building text-primary"></i>
                                     {{ $building->name ?? 'N/A' }}
                                 </h5>
                                 <small class="text-muted">
-                                    ID: {{ $building->id }} • 
-                                    {{ $building->floors->count() }} étage(s)
+                                    ID: {{ $building->id }} • {{ $building->floors->count() }} étage(s)
                                 </small>
                             </div>
-                            <span class="badge bg-{{ $building->visibility == 'public' ? 'success' : ($building->visibility == 'private' ? 'danger' : 'warning') }} fs-6">
+                            <span class="status-badge bg-{{ $building->visibility == 'public' ? 'success' : ($building->visibility == 'private' ? 'danger' : 'warning') }}">
                                 {{ ucfirst($building->visibility ?? 'N/A') }}
                             </span>
                         </div>
                     </div>
 
+                    <!-- Body -->
                     <div class="card-body">
-                        <!-- Building Preview Visualization -->
+                        <!-- Aperçu du bâtiment -->
                         <div class="building-preview">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-building display-6 text-primary me-3"></i>
@@ -214,27 +430,25 @@
                                         <small class="text-muted mt-1">+{{ $building->floors->count() - 5 }}</small>
                                     @endif
                                 </div>
-                                <div class="ms-auto">
-                                    <div class="text-center">
-                                        <div class="fw-bold text-primary">{{ $building->floors->count() }}</div>
-                                        <small class="text-muted">Étages</small>
-                                    </div>
+                                <div class="ms-auto text-center">
+                                    <div class="fw-bold text-primary">{{ $building->floors->count() }}</div>
+                                    <small class="text-muted">Étages</small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Building Details -->
+                        <!-- Description -->
                         @if($building->description)
                             <div class="mt-3">
-                                <div class="text-muted">
+                                <small class="text-muted">
                                     <i class="bi bi-info-circle me-1"></i>
                                     {{ Str::limit($building->description, 80) }}
-                                </div>
+                                </small>
                             </div>
                         @endif
 
-                        <!-- Quick Stats -->
-                        <div class="row g-2 mt-2">
+                        <!-- Stats rapides -->
+                        <div class="row g-2 mt-3">
                             <div class="col-6">
                                 <div class="text-center p-2 bg-light rounded">
                                     <div class="fw-bold text-info">{{ $building->floors->sum(function($floor) { return $floor->rooms->count(); }) }}</div>
@@ -250,20 +464,20 @@
                         </div>
                     </div>
 
-                    <!-- Actions -->
-                    <div class="card-footer bg-white border-top-0">
+                    <!-- Footer -->
+                    <div class="card-footer">
                         <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('buildings.show', $building->id) }}" class="btn btn-sm btn-outline-primary" title="Vue détaillée">
+                            <div class="actions-group">
+                                <a href="{{ route('buildings.show', $building->id) }}" class="btn btn-outline-primary action-btn" title="Vue détaillée">
                                     <i class="bi bi-eye"></i> Voir
                                 </a>
-                                <a href="{{ route('buildings.edit', $building->id) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
+                                <a href="{{ route('buildings.edit', $building->id) }}" class="btn btn-outline-secondary action-btn" title="Modifier">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             </div>
                             
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-outline-secondary action-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -292,12 +506,12 @@
             </div>
         @empty
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
+                <div class="building-card">
                     <div class="card-body text-center py-5">
                         <i class="bi bi-building display-1 text-muted mb-3"></i>
                         <h5 class="text-muted">Aucun bâtiment trouvé</h5>
                         <p class="text-muted">Commencez par créer votre premier bâtiment</p>
-                        <a href="{{ route('buildings.create') }}" class="btn btn-primary">
+                        <a href="{{ route('buildings.create') }}" class="btn btn-primary btn-modern">
                             <i class="bi bi-plus-circle me-2"></i>Créer un bâtiment
                         </a>
                     </div>
@@ -305,13 +519,38 @@
             </div>
         @endforelse
     </div>
+
+    <!-- Pagination compacte -->
+    @if($buildings->hasPages())
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item {{ $buildings->onFirstPage() ? 'disabled' : '' }}">
+                        <a class="page-link" href="{{ $buildings->previousPageUrl() }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    @foreach ($buildings->getUrlRange(1, $buildings->lastPage()) as $page => $url)
+                        <li class="page-item {{ $page == $buildings->currentPage() ? 'active' : '' }}">
+                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                        </li>
+                    @endforeach
+                    <li class="page-item {{ $buildings->hasMorePages() ? '' : 'disabled' }}">
+                        <a class="page-link" href="{{ $buildings->nextPageUrl() }}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    @endif
 </div>
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
-    initializeFilters();
+    initializeAnimations();
 });
 
 function initializeSearch() {
@@ -335,7 +574,7 @@ function initializeSearch() {
         }, 300);
     });
 
-    // Close search results when clicking outside
+    // Fermer les résultats en cliquant à l'extérieur
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.search-container')) {
             searchResults.style.display = 'none';
@@ -346,17 +585,17 @@ function initializeSearch() {
 function performSearch(query) {
     const searchResults = document.getElementById('searchResults');
     
-    // Show loading
+    // Afficher le chargement
     searchResults.innerHTML = '<div class="p-3 text-center"><i class="bi bi-arrow-clockwise spin"></i> Recherche...</div>';
     searchResults.style.display = 'block';
 
-    // Search in buildings
+    // Rechercher dans les bâtiments
     const buildings = document.querySelectorAll('#buildingList .col-xxl-4');
     const results = [];
     let hasVisibleResults = false;
 
     buildings.forEach(building => {
-        const buildingCard = building.querySelector('.card');
+        const buildingCard = building.querySelector('.building-card');
         const buildingName = buildingCard.querySelector('.card-title').textContent;
         const buildingDesc = buildingCard.querySelector('.text-muted').textContent;
         const isMatch = buildingName.toLowerCase().includes(query.toLowerCase()) ||
@@ -376,7 +615,7 @@ function performSearch(query) {
         }
     });
 
-    // Show search results dropdown
+    // Afficher les résultats
     displaySearchResults(results, query);
     
     if (!hasVisibleResults) {
@@ -429,7 +668,7 @@ function scrollToBuilding(buildingName) {
             buildingCard.classList.add('highlight-building');
             setTimeout(() => {
                 buildingCard.classList.remove('highlight-building');
-            }, 3000);
+            }, 2000);
         }
     });
     document.getElementById('searchResults').style.display = 'none';
@@ -443,48 +682,29 @@ function showAllBuildings() {
 }
 
 function showNoResults() {
-    // Add no results message if needed
+    // Gérer l'affichage quand aucun résultat
 }
 
-function initializeFilters() {
-    document.querySelectorAll('[data-filter]').forEach(filterBtn => {
-        filterBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const filterType = this.dataset.filter;
-            applyFilter(filterType);
+function initializeAnimations() {
+    // Animation d'apparition des cartes
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
         });
     });
-}
 
-function applyFilter(filterType) {
-    const buildings = document.querySelectorAll('#buildingList .col-xxl-4');
-    
-    buildings.forEach(building => {
-        let shouldShow = true;
-        
-        switch(filterType) {
-            case 'all':
-                shouldShow = true;
-                break;
-            case 'public':
-                const publicBadge = building.querySelector('.badge');
-                shouldShow = publicBadge && publicBadge.textContent.toLowerCase().includes('public');
-                break;
-            case 'private':
-                const privateBadge = building.querySelector('.badge');
-                shouldShow = privateBadge && privateBadge.textContent.toLowerCase().includes('private');
-                break;
-            case 'floors':
-                const floorsCount = building.querySelector('.floors-indicator .floor-bar');
-                shouldShow = floorsCount !== null;
-                break;
-        }
-        
-        building.style.display = shouldShow ? 'block' : 'none';
+    document.querySelectorAll('.fade-in-up').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        observer.observe(el);
     });
 }
 
-// CSS for spin animation
+// CSS pour l'animation de rotation
 const style = document.createElement('style');
 style.textContent = `
     .spin {
@@ -499,26 +719,4 @@ style.textContent = `
 document.head.appendChild(style);
 </script>
 @endpush
-
-        <!-- Pagination -->
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item {{ $buildings->onFirstPage() ? 'disabled' : '' }}">
-                    <a class="page-link" href="{{ $buildings->previousPageUrl() }}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                @foreach ($buildings->getUrlRange(1, $buildings->lastPage()) as $page => $url)
-                    <li class="page-item {{ $page == $buildings->currentPage() ? 'active' : '' }}">
-                        <a class="page-link" href="{{ $url }}">{{ $page }}</a>
-                    </li>
-                @endforeach
-                <li class="page-item {{ $buildings->hasMorePages() ? '' : 'disabled' }}">
-                    <a class="page-link" href="{{ $buildings->nextPageUrl() }}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
 @endsection
