@@ -42,13 +42,13 @@ class FloorController extends Controller
         return view('buildings.floors.show', compact('building','floor'));
     }
 
-    public function edit(Floor $floor)
+    public function edit(Building $building, Floor $floor)
     {
         $buildings = Building::all();
-        return view('buildings.floors.edit', compact('floor', 'buildings'));
+        return view('buildings.floors.edit', compact('building', 'floor', 'buildings'));
     }
 
-    public function update(Request $request, Floor $floor)
+    public function update(Request $request, Building $building, Floor $floor)
     {
         $request->validate([
             'name' => 'required|max:100',
@@ -62,12 +62,12 @@ class FloorController extends Controller
             'building_id' => $request->building_id,
         ]);
 
-        return redirect()->route('buildings.index')->with('success', 'Floor updated successfully.');
+        return redirect()->route('buildings.show', $building)->with('success', 'Floor updated successfully.');
     }
 
-    public function destroy(Floor $floor)
+    public function destroy(Building $building, Floor $floor)
     {
         $floor->delete();
-        return redirect()->route('buildings.index')->with('success', 'Floor deleted successfully.');
+        return redirect()->route('buildings.show', $building)->with('success', 'Floor deleted successfully.');
     }
 }

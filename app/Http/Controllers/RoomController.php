@@ -21,6 +21,12 @@ class RoomController extends Controller
             })
             ->get();
 
+        // Calculer les statistiques pour chaque room
+        $rooms->each(function($room) {
+            $room->shelves_count = $room->shelves()->count();
+            $room->is_visible = $room->visibility === 'public';
+        });
+
         return view('rooms.index', compact('rooms'));
     }
 

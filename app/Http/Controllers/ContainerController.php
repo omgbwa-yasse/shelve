@@ -17,7 +17,7 @@ class ContainerController extends Controller
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        $containers = Container::with('shelf', 'status', 'property')
+        $containers = Container::with(['shelf.room.floor.building', 'status', 'property'])
             ->whereHas('shelf.room.organisations', function($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
             })

@@ -6,60 +6,63 @@
             <div class="">
                 <h2 class="mb-0">Créer un contenant d'archives</h2>
             </div>
-            <div class="card-body">
-                <form action="{{ route('containers.store') }}" method="POST">
+            <!-- Formulaire - Plus large -->
+            <div class="form-card fade-in-up">
+                <form action="{{ route('containers.store') }}" method="POST" id="containerForm">
                     @csrf
-                    <div class="mb-3">
-                        <label for="code" class="form-label">Code</label>
-                        <input type="text" class="form-control" id="code" name="code" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="shelve_id" class="form-label">Shelf</label>
-                        <div class="select-with-search">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search shelf...">
-                            </div>
-                            <select class="form-select mt-2" id="shelve_id" name="shelve_id" required>
-                                <option value="">Select a shelf</option>
-                                @foreach ($shelves as $shelf)
-                                    <option value="{{ $shelf->id }}">{{ $shelf->code }}</option>
-                                @endforeach
-                            </select>
+                    <div class="form-body">
+                        <div class="mb-3">
+                            <label for="code" class="form-label">Code</label>
+                            <input type="text" class="form-control" id="code" name="code" required>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="status_id" class="form-label">Status</label>
-                        <div class="select-with-search">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search status...">
+                        <div class="mb-3">
+                            <label for="shelve_id" class="form-label">Shelf</label>
+                            <div class="select-with-search">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control search-input" placeholder="Search shelf...">
+                                </div>
+                                <select class="form-select mt-2" id="shelve_id" name="shelve_id" required>
+                                    <option value="">Select a shelf</option>
+                                    @foreach ($shelves as $shelf)
+                                        <option value="{{ $shelf->id }}">{{ $shelf->code }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <select class="form-select mt-2" id="status_id" name="status_id" required>
-                                <option value="">Select a status</option>
-                                @foreach ($statuses as $status)
-                                    <option value="{{ $status->id }}">{{ $status->name }}</option>
-                                @endforeach
-                            </select>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="property_id" class="form-label">Property</label>
-                        <div class="select-with-search">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control search-input" placeholder="Search property...">
+                        <div class="mb-3">
+                            <label for="status_id" class="form-label">Status</label>
+                            <div class="select-with-search">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control search-input" placeholder="Search status...">
+                                </div>
+                                <select class="form-select mt-2" id="status_id" name="status_id" required>
+                                    <option value="">Select a status</option>
+                                    @foreach ($statuses as $status)
+                                        <option value="{{ $status->id }}">{{ $status->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <select class="form-select mt-2" id="property_id" name="property_id" required>
-                                <option value="">Select a property</option>
-                                @foreach ($properties as $property)
-                                    <option value="{{ $property->id }}">{{ $property->name }}</option>
-                                @endforeach
-                            </select>
                         </div>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Create Container</button>
+                        <div class="mb-3">
+                            <label for="property_id" class="form-label">Property</label>
+                            <div class="select-with-search">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control search-input" placeholder="Search property...">
+                                </div>
+                                <select class="form-select mt-2" id="property_id" name="property_id" required>
+                                    <option value="">Select a property</option>
+                                    @foreach ($properties as $property)
+                                        <option value="{{ $property->id }}">{{ $property->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Create Container</button>
+                        </div>
                     </div>
                 </form>
             </div>

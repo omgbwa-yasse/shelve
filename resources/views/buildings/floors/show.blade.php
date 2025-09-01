@@ -19,11 +19,12 @@
     --transition: all 0.2s ease-in-out;
 }
 
-/* Layout optimisé */
+/* Layout optimisé - Utilise toute la largeur et hauteur */
 .compact-container {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
+    min-height: calc(100vh - 100px);
 }
 
 /* Header harmonisé */
@@ -177,13 +178,16 @@
     font-size: 0.875rem;
 }
 
-/* Rooms section */
+/* Rooms section - Utilise toute la hauteur disponible */
 .rooms-section {
     background: #ffffff;
     border-radius: var(--radius);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+    height: calc(100vh - 250px);
+    display: flex;
+    flex-direction: column;
 }
 
 .rooms-header {
@@ -193,6 +197,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .rooms-count {
@@ -201,6 +206,13 @@
     border-radius: 1rem;
     font-size: 0.875rem;
     font-weight: 600;
+}
+
+/* Rooms container avec scroll */
+.rooms-container {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 300px);
 }
 
 /* Room items */
@@ -293,6 +305,11 @@
     text-align: center;
     padding: 2rem 1rem;
     color: var(--secondary-color);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .empty-state i {
@@ -318,6 +335,15 @@
     
     .room-actions {
         justify-content: flex-end;
+    }
+    
+    .rooms-section {
+        height: auto;
+        max-height: none;
+    }
+    
+    .rooms-container {
+        max-height: none;
     }
 }
 
@@ -355,7 +381,7 @@
                 </p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('floors.edit', $floor->id) }}" class="btn btn-warning btn-modern">
+                <a href="{{ route('floors.edit', [$building, $floor]) }}" class="btn btn-warning btn-modern">
                     <i class="bi bi-pencil me-1"></i>{{ __('Modifier') }}
                 </a>
                 <a href="{{ route('buildings.show', $building) }}" class="btn btn-outline-secondary btn-modern">
@@ -464,64 +490,66 @@
                     <span class="rooms-count">{{ $floor->rooms->count() ?? 0 }} salle(s)</span>
                 </div>
                 
-                @forelse($floor->rooms ?? [] as $index => $room)
-                    <div class="room-item">
-                        <div class="room-content">
-                            <div class="room-info">
-                                <div class="room-title">
-                                    <i class="bi bi-house-door text-info"></i>
-                                    <strong>{{ $room->name ?? 'Sans nom' }}</strong>
+                <div class="rooms-container">
+                    @forelse($floor->rooms ?? [] as $index => $room)
+                        <div class="room-item">
+                            <div class="room-content">
+                                <div class="room-info">
+                                    <div class="room-title">
+                                        <i class="bi bi-house-door text-info"></i>
+                                        <strong>{{ $room->name ?? 'Sans nom' }}</strong>
+                                    </div>
+                                    
+                                    @if($room->description)
+                                        <div class="room-description">{{ $room->description }}</div>
+                                    @endif
+                                    
+                                    <div class="room-stats">
+                                        <div class="stat-item">
+                                            <i class="bi bi-bookshelf text-success"></i>
+                                            <span>{{ $room->shelves->count() ?? 0 }} étagère(s)</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="bi bi-archive text-primary"></i>
+                                            <span>{{ $room->shelves->sum(function($shelf) { return $shelf->containers->count(); }) ?? 0 }} contenant(s)</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="bi bi-eye text-warning"></i>
+                                            <span>{{ ucfirst($room->visibility ?? 'N/A') }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                @if($room->description)
-                                    <div class="room-description">{{ $room->description }}</div>
-                                @endif
-                                
-                                <div class="room-stats">
-                                    <div class="stat-item">
-                                        <i class="bi bi-bookshelf text-success"></i>
-                                        <span>{{ $room->shelves->count() ?? 0 }} étagère(s)</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <i class="bi bi-archive text-primary"></i>
-                                        <span>{{ $room->shelves->sum(function($shelf) { return $shelf->containers->count(); }) ?? 0 }} contenant(s)</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <i class="bi bi-eye text-warning"></i>
-                                        <span>{{ ucfirst($room->visibility ?? 'N/A') }}</span>
-                                    </div>
+                                <div class="room-actions">
+                                    <a href="{{ route('rooms.show', $room) }}" 
+                                       class="btn btn-outline-primary action-btn" 
+                                       title="{{ __('Voir les détails') }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('rooms.edit', $room) }}" 
+                                       class="btn btn-outline-warning action-btn" 
+                                       title="{{ __('Modifier') }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{{ route('shelves.index') }}?room_id={{ $room->id }}" 
+                                       class="btn btn-outline-success action-btn" 
+                                       title="{{ __('Voir les étagères') }}">
+                                        <i class="bi bi-bookshelf"></i>
+                                    </a>
                                 </div>
-                            </div>
-                            
-                            <div class="room-actions">
-                                <a href="{{ route('rooms.show', $room) }}" 
-                                   class="btn btn-outline-primary action-btn" 
-                                   title="{{ __('Voir les détails') }}">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('rooms.edit', $room) }}" 
-                                   class="btn btn-outline-warning action-btn" 
-                                   title="{{ __('Modifier') }}">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{{ route('shelves.index') }}?room_id={{ $room->id }}" 
-                                   class="btn btn-outline-success action-btn" 
-                                   title="{{ __('Voir les étagères') }}">
-                                    <i class="bi bi-bookshelf"></i>
-                                </a>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="empty-state">
-                        <i class="bi bi-house-door"></i>
-                        <h5>{{ __('Aucune salle') }}</h5>
-                        <p>{{ __('Ce niveau ne contient encore aucune salle.') }}</p>
-                        <a href="{{ route('rooms.create') }}?floor_id={{ $floor->id }}" class="btn btn-primary btn-modern">
-                            <i class="bi bi-plus-circle me-1"></i>{{ __('Créer la première salle') }}
-                        </a>
-                    </div>
-                @endforelse
+                    @empty
+                        <div class="empty-state">
+                            <i class="bi bi-house-door"></i>
+                            <h5>{{ __('Aucune salle') }}</h5>
+                            <p>{{ __('Ce niveau ne contient encore aucune salle.') }}</p>
+                            <a href="{{ route('rooms.create') }}?floor_id={{ $floor->id }}" class="btn btn-primary btn-modern">
+                                <i class="bi bi-plus-circle me-1"></i>{{ __('Créer la première salle') }}
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>

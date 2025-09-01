@@ -19,9 +19,9 @@
     --transition: all 0.2s ease-in-out;
 }
 
-/* Layout optimisé */
+/* Layout optimisé - Utilise toute la largeur */
 .compact-container {
-    max-width: 1400px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
 }
@@ -30,36 +30,36 @@
 .page-header {
     background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
     border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
 .page-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #1e293b;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .page-subtitle {
     color: var(--secondary-color);
-    margin: 0.5rem 0 0 0;
-    font-size: 0.95rem;
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
 }
 
 /* Breadcrumb moderne */
 .modern-breadcrumb {
     background: #ffffff;
     border-radius: var(--radius);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .breadcrumb-item {
@@ -67,6 +67,7 @@
     text-decoration: none;
     font-weight: 500;
     transition: var(--transition);
+    font-size: 0.875rem;
 }
 
 .breadcrumb-item:hover {
@@ -87,8 +88,8 @@
 .search-input {
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    font-size: 0.875rem;
     transition: var(--transition);
     background: #ffffff;
 }
@@ -101,7 +102,7 @@
 
 .search-icon {
     position: absolute;
-    left: 0.75rem;
+    left: 0.5rem;
     top: 50%;
     transform: translateY(-50%);
     color: var(--secondary-color);
@@ -112,14 +113,14 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
 }
 
 .stat-card {
     background: #ffffff;
     border-radius: var(--radius);
-    padding: 1.25rem;
+    padding: 1rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
@@ -132,7 +133,7 @@
 }
 
 .stat-number {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 0.25rem;
 }
@@ -163,11 +164,11 @@
 .card-header {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border-bottom: 1px solid var(--border-color);
-    padding: 1rem;
+    padding: 0.75rem;
 }
 
 .card-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #1e293b;
     margin: 0;
@@ -177,26 +178,26 @@
 }
 
 .card-body {
-    padding: 1rem;
+    padding: 0.75rem;
 }
 
 .card-footer {
     background: #f8fafc;
     border-top: 1px solid var(--border-color);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
 }
 
 /* Container preview */
 .container-preview {
     background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
     border-radius: var(--radius);
-    padding: 1rem;
-    margin: 0.75rem 0;
+    padding: 0.75rem;
+    margin: 0.5rem 0;
     border: 1px solid #fbbf24;
 }
 
 .container-visual {
-    height: 100px;
+    height: 80px;
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
     border: 2px dashed #f39c12;
     border-radius: var(--radius);
@@ -213,7 +214,7 @@
 
 /* Badges modernes */
 .status-badge {
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 1rem;
     font-size: 0.75rem;
     font-weight: 600;
@@ -225,9 +226,10 @@
 .btn-modern {
     border-radius: var(--radius);
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 0.75rem;
     transition: var(--transition);
     border: 1px solid transparent;
+    font-size: 0.875rem;
 }
 
 .btn-modern:hover {
@@ -238,14 +240,14 @@
 /* Actions compactes */
 .actions-group {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.375rem;
     align-items: center;
 }
 
 .action-btn {
-    padding: 0.375rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     border-radius: var(--radius);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     transition: var(--transition);
 }
 
@@ -256,11 +258,11 @@
     }
     
     .page-header {
-        padding: 1rem;
+        padding: 0.75rem;
     }
     
     .page-title {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 }
 
@@ -298,7 +300,7 @@
 }
 
 .search-result-item {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     transition: var(--transition);
@@ -330,13 +332,13 @@
 .info-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+    gap: 0.375rem;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
 }
 
 .info-item i {
-    width: 16px;
+    width: 14px;
     text-align: center;
 }
 
@@ -344,8 +346,8 @@
 .position-info {
     background: var(--light-bg);
     border-radius: var(--radius);
-    padding: 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.375rem;
+    font-size: 0.625rem;
     color: var(--secondary-color);
 }
 </style>
@@ -526,27 +528,9 @@
     </div>
 
     <!-- Pagination compacte -->
-    @if($containers->hasPages())
+    @if(method_exists($containers, 'hasPages') && $containers->hasPages())
         <div class="d-flex justify-content-center mt-4">
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    <li class="page-item {{ $containers->onFirstPage() ? 'disabled' : '' }}">
-                        <a class="page-link" href="{{ $containers->previousPageUrl() }}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    @foreach ($containers->getUrlRange(1, $containers->lastPage()) as $page => $url)
-                        <li class="page-item {{ $page == $containers->currentPage() ? 'active' : '' }}">
-                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
-                        </li>
-                    @endforeach
-                    <li class="page-item {{ $containers->hasMorePages() ? '' : 'disabled' }}">
-                        <a class="page-link" href="{{ $containers->nextPageUrl() }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            {{ $containers->links() }}
         </div>
     @endif
 </div>
@@ -560,15 +544,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                {{ __('Êtes-vous sûr de vouloir supprimer ce contenant ? Cette action ne peut pas être annulée.') }}
+                <p>{{ __('Êtes-vous sûr de vouloir supprimer ce contenant ?') }}</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Annuler') }}</button>
-                <form id="deleteForm" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">{{ __('Supprimer') }}</button>
-                </form>
+                <button type="button" class="btn btn-danger" id="confirmDelete">{{ __('Supprimer') }}</button>
             </div>
         </div>
     </div>
@@ -613,13 +593,32 @@ function initializeSearch() {
 
 function filterContainers(query) {
     containerCards.forEach(card => {
-        const searchText = card.getAttribute('data-search');
-        if (searchText.includes(query)) {
+        const searchData = card.dataset.search;
+        if (searchData && searchData.includes(query)) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
         }
     });
+}
+
+function showSearchResults(query) {
+    const visibleCards = Array.from(containerCards).filter(card => 
+        card.style.display !== 'none'
+    );
+
+    if (visibleCards.length === 0) {
+        searchResults.innerHTML = '<div class="p-3 text-center text-muted">Aucun résultat trouvé</div>';
+    } else {
+        let html = '';
+        visibleCards.slice(0, 5).forEach(card => {
+            const code = card.querySelector('.card-title').textContent.trim();
+            html += `<div class="search-result-item" onclick="scrollToContainer('${code}')">${code}</div>`;
+        });
+        searchResults.innerHTML = html;
+    }
+    
+    searchResults.style.display = 'block';
 }
 
 function showAllContainers() {
@@ -628,28 +627,37 @@ function showAllContainers() {
     });
 }
 
-function showSearchResults(query) {
-    const visibleCards = Array.from(containerCards).filter(card => card.style.display !== 'none');
+function scrollToContainer(code) {
+    containerCards.forEach(card => {
+        const cardCode = card.querySelector('.card-title').textContent.trim();
+        if (cardCode === code) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('highlight-container');
+            setTimeout(() => {
+                card.classList.remove('highlight-container');
+            }, 2000);
+        }
+    });
     
-    if (visibleCards.length === 0) {
-        searchResults.innerHTML = '<div class="p-3 text-muted">Aucun résultat trouvé</div>';
-    } else {
-        const results = visibleCards.slice(0, 5).map(card => {
-            const title = card.querySelector('.card-title').textContent.trim();
-            const containerId = card.querySelector('a[href*="containers"]').href.split('/').pop();
-            return `<a href="{{ url('containers') }}/${containerId}" class="dropdown-item"><i class="bi bi-archive me-2"></i>${title}</a>`;
-        }).join('');
-        
-        searchResults.innerHTML = results + 
-            (visibleCards.length > 5 ? '<div class="p-2 text-muted small text-center">Et ' + (visibleCards.length - 5) + ' autres...</div>' : '');
-    }
-    
-    searchResults.style.display = 'block';
+    searchResults.style.display = 'none';
+    searchInput.value = '';
 }
 
 function deleteContainer(containerId) {
-    const form = document.getElementById('deleteForm');
-    form.action = `{{ url('containers') }}/${containerId}`;
+    document.getElementById('confirmDelete').onclick = function() {
+        fetch(`/containers/${containerId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    };
+    
     new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
 

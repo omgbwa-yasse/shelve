@@ -399,6 +399,13 @@
             </div>
         @endforelse
     </div>
+
+    <!-- Pagination compacte -->
+    @if(method_exists($shelves, 'hasPages') && $shelves->hasPages())
+        <div class="d-flex justify-content-center mt-4">
+            {{ $shelves->links() }}
+        </div>
+    @endif
 </div>
 
 @push('scripts')
@@ -681,10 +688,3 @@ document.head.appendChild(style);
 </script>
 @endpush
 @endsection
-
-/* Layout optimisé */
-.compact-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
-}

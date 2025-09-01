@@ -19,47 +19,47 @@
     --transition: all 0.2s ease-in-out;
 }
 
-/* Layout optimisé */
+/* Layout optimisé - Plus large */
 .compact-container {
-    max-width: 800px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 1rem;
 }
 
-/* Header harmonisé */
+/* Header harmonisé - Plus compact */
 .page-header {
     background: linear-gradient(135deg, var(--light-bg) 0%, #ffffff 100%);
     border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
 .page-title {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #1e293b;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .page-subtitle {
     color: var(--secondary-color);
-    margin: 0.5rem 0 0 0;
-    font-size: 0.95rem;
+    margin: 0.125rem 0 0 0;
+    font-size: 0.875rem;
 }
 
-/* Breadcrumb moderne */
+/* Breadcrumb moderne - Plus compact */
 .modern-breadcrumb {
     background: #ffffff;
     border-radius: var(--radius);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .breadcrumb-item {
@@ -67,6 +67,7 @@
     text-decoration: none;
     font-weight: 500;
     transition: var(--transition);
+    font-size: 0.875rem;
 }
 
 .breadcrumb-item:hover {
@@ -78,7 +79,7 @@
     font-weight: 600;
 }
 
-/* Form card */
+/* Form card - Plus large */
 .form-card {
     background: #ffffff;
     border-radius: var(--radius);
@@ -87,41 +88,30 @@
     overflow: hidden;
 }
 
-.form-header {
-    background: linear-gradient(135deg, var(--info-color) 0%, #0ea5e9 100%);
-    color: white;
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.form-header i {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
 .form-body {
-    padding: 2rem;
+    padding: 1rem;
 }
 
-/* Form groups */
+/* Form groups - Plus compact */
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .form-label {
     font-weight: 600;
     color: #1e293b;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    font-size: 0.875rem;
 }
 
 .form-control, .form-select {
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
     transition: var(--transition);
     background: #ffffff;
 }
@@ -138,7 +128,7 @@
 
 .invalid-feedback {
     color: var(--danger-color);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     margin-top: 0.25rem;
 }
 
@@ -156,9 +146,10 @@
     background: #ffffff;
     border: 2px solid var(--primary-color);
     border-radius: var(--radius);
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     z-index: 10;
     display: none;
+    font-size: 0.875rem;
 }
 
 .select-search:focus {
@@ -177,16 +168,17 @@
     border-radius: 0 0 var(--radius) var(--radius);
     box-shadow: var(--shadow-lg);
     z-index: 20;
-    max-height: 200px;
+    max-height: 150px;
     overflow-y: auto;
     display: none;
 }
 
 .select-option {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0.75rem;
     cursor: pointer;
     transition: var(--transition);
     border-bottom: 1px solid var(--border-color);
+    font-size: 0.875rem;
 }
 
 .select-option:hover {
@@ -206,9 +198,9 @@
 .form-actions {
     background: #f8fafc;
     border-top: 1px solid var(--border-color);
-    padding: 1.5rem;
+    padding: 0.75rem;
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     justify-content: flex-end;
 }
 
@@ -216,10 +208,10 @@
 .btn-modern {
     border-radius: var(--radius);
     font-weight: 500;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
     transition: var(--transition);
     border: 1px solid transparent;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
 }
 
 .btn-modern:hover {
@@ -230,15 +222,15 @@
 /* Responsive */
 @media (max-width: 768px) {
     .page-header {
-        padding: 1rem;
+        padding: 0.5rem;
     }
     
     .page-title {
-        font-size: 1.5rem;
+        font-size: 1.125rem;
     }
     
     .form-body {
-        padding: 1.5rem;
+        padding: 0.75rem;
     }
     
     .form-actions {
@@ -264,7 +256,7 @@
 
 /* Help text */
 .help-text {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--secondary-color);
     margin-top: 0.25rem;
 }
@@ -279,14 +271,14 @@
 
 @section('content')
 <div class="compact-container">
-    <!-- Header moderne -->
+    <!-- Header moderne - Plus compact -->
     <div class="page-header">
         <div class="text-center">
             <h1 class="page-title">
                 <i class="bi bi-plus-circle text-info"></i>
-                {{ __('Créer une nouvelle salle') }}
+                {{ __('Nouvelle salle') }}
             </h1>
-            <p class="page-subtitle">Ajoutez une nouvelle salle à votre infrastructure</p>
+            <p class="page-subtitle">Créez une salle pour organiser vos étagères</p>
         </div>
     </div>
 
@@ -309,18 +301,13 @@
         </ol>
     </nav>
 
-    <!-- Formulaire -->
+    <!-- Formulaire - Plus large -->
     <div class="form-card fade-in-up">
-        <div class="form-header">
-            <i class="bi bi-house-door"></i>
-            <h3 class="mb-0">{{ __('Informations de la salle') }}</h3>
-        </div>
-        
         <form action="{{ route('rooms.store') }}" method="POST" id="roomForm">
             @csrf
             <div class="form-body">
                 <div class="row g-3">
-                    <!-- Code -->
+                    <!-- Code et Nom -->
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="code" class="form-label">
@@ -332,20 +319,18 @@
                                    id="code" 
                                    name="code" 
                                    value="{{ old('code') }}"
-                                   placeholder="Ex: SALLE-001"
+                                   placeholder="SALLE-001"
                                    required>
                             @error('code')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="help-text">{{ __('Code unique pour identifier la salle') }}</div>
                         </div>
                     </div>
 
-                    <!-- Nom -->
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="name" class="form-label">
-                                <i class="bi bi-tag text-success"></i>
+                                <i class="bi bi-house-door text-success"></i>
                                 {{ __('Nom') }}<span class="required">*</span>
                             </label>
                             <input type="text" 
@@ -353,115 +338,103 @@
                                    id="name" 
                                    name="name" 
                                    value="{{ old('name') }}"
-                                   placeholder="Ex: Salle d'archives principale"
+                                   placeholder="Salle des archives"
                                    required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="help-text">{{ __('Nom descriptif de la salle') }}</div>
                         </div>
                     </div>
 
-                    <!-- Type de salle -->
+                    <!-- Étage et Type -->
                     <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="type" class="form-label">
-                                <i class="bi bi-gear text-warning"></i>
-                                {{ __('Type de salle') }}<span class="required">*</span>
-                            </label>
-                            <select class="form-select @error('type') is-invalid @enderror" 
-                                    id="type" 
-                                    name="type" 
-                                    required>
-                                <option value="">{{ __('Sélectionner un type') }}</option>
-                                @foreach($typeOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="help-text">{{ __('Définit l\'usage principal de la salle') }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Visibilité -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="visibility" class="form-label">
-                                <i class="bi bi-eye text-info"></i>
-                                {{ __('Visibilité') }}<span class="required">*</span>
-                            </label>
-                            <select class="form-select @error('visibility') is-invalid @enderror" 
-                                    id="visibility" 
-                                    name="visibility" 
-                                    required>
-                                <option value="">{{ __('Sélectionner la visibilité') }}</option>
-                                @foreach($visibilityOptions as $value => $label)
-                                    <option value="{{ $value }}" {{ old('visibility') == $value ? 'selected' : '' }}>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('visibility')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="help-text">{{ __('Contrôle l\'accès à la salle') }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Niveau -->
-                    <div class="col-12">
                         <div class="form-group">
                             <label for="floor_id" class="form-label">
-                                <i class="bi bi-layers text-danger"></i>
-                                {{ __('Niveau') }}<span class="required">*</span>
+                                <i class="bi bi-layers text-warning"></i>
+                                {{ __('Étage') }}<span class="required">*</span>
                             </label>
                             <div class="enhanced-select">
                                 <select class="form-select @error('floor_id') is-invalid @enderror" 
                                         id="floor_id" 
                                         name="floor_id" 
                                         required>
-                                    <option value="">{{ __('Sélectionner un niveau') }}</option>
+                                    <option value="">{{ __('Choisir un étage') }}</option>
                                     @foreach ($floors as $floor)
                                         <option value="{{ $floor->id }}" 
                                                 data-building="{{ $floor->building->name }}"
                                                 {{ old('floor_id') == $floor->id ? 'selected' : '' }}>
-                                            {{ $floor->name }} ({{ $floor->building->name }})
+                                            {{ $floor->name }} - {{ $floor->building->name }}
                                         </option>
                                     @endforeach
                                 </select>
                                 <input type="text" 
                                        class="select-search" 
-                                       placeholder="Rechercher un niveau ou bâtiment..."
+                                       placeholder="Rechercher..."
                                        style="display: none;">
                                 <div class="select-options"></div>
                             </div>
                             @error('floor_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="help-text">{{ __('Niveau et bâtiment où se trouve la salle') }}</div>
                         </div>
                     </div>
 
-                    <!-- Description -->
-                    <div class="col-12">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="type" class="form-label">
+                                <i class="bi bi-tag text-info"></i>
+                                {{ __('Type') }}<span class="required">*</span>
+                            </label>
+                            <select class="form-select @error('type') is-invalid @enderror" 
+                                    id="type" 
+                                    name="type" 
+                                    required>
+                                <option value="">{{ __('Choisir un type') }}</option>
+                                <option value="archives" {{ old('type') == 'archives' ? 'selected' : '' }}>Archives</option>
+                                <option value="producer" {{ old('type') == 'producer' ? 'selected' : '' }}>Local tampon</option>
+                            </select>
+                            @error('type')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Visibilité et Description -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="visibility" class="form-label">
+                                <i class="bi bi-eye text-secondary"></i>
+                                {{ __('Visibilité') }}<span class="required">*</span>
+                            </label>
+                            <select class="form-select @error('visibility') is-invalid @enderror" 
+                                    id="visibility" 
+                                    name="visibility" 
+                                    required>
+                                <option value="">{{ __('Choisir la visibilité') }}</option>
+                                <option value="public" {{ old('visibility') == 'public' ? 'selected' : '' }}>Public</option>
+                                <option value="private" {{ old('visibility') == 'private' ? 'selected' : '' }}>Privé</option>
+                                <option value="inherit" {{ old('visibility') == 'inherit' ? 'selected' : '' }}>Hériter</option>
+                            </select>
+                            @error('visibility')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label for="description" class="form-label">
-                                <i class="bi bi-file-text text-secondary"></i>
+                                <i class="bi bi-chat-text text-secondary"></i>
                                 {{ __('Description') }}
                             </label>
                             <textarea class="form-control @error('description') is-invalid @enderror" 
                                       id="description" 
                                       name="description" 
-                                      rows="4"
-                                      placeholder="Description détaillée de la salle (optionnel)">{{ old('description') }}</textarea>
+                                      rows="2"
+                                      placeholder="Description optionnelle...">{{ old('description') }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="help-text">{{ __('Description optionnelle de la salle') }}</div>
                         </div>
                     </div>
                 </div>
@@ -470,10 +443,10 @@
             <!-- Actions -->
             <div class="form-actions">
                 <a href="{{ route('rooms.index') }}" class="btn btn-outline-secondary btn-modern">
-                    <i class="bi bi-arrow-left me-2"></i>{{ __('Annuler') }}
+                    <i class="bi bi-arrow-left me-1"></i>{{ __('Annuler') }}
                 </a>
-                <button type="submit" class="btn btn-primary btn-modern">
-                    <i class="bi bi-check-circle me-2"></i>{{ __('Créer la salle') }}
+                <button type="submit" class="btn btn-info btn-modern">
+                    <i class="bi bi-check-circle me-1"></i>{{ __('Créer') }}
                 </button>
             </div>
         </form>
@@ -493,22 +466,19 @@ function initializeEnhancedSelect() {
     const select = enhancedSelect.querySelector('select');
     const searchInput = enhancedSelect.querySelector('.select-search');
     const optionsContainer = enhancedSelect.querySelector('.select-options');
-    const options = Array.from(select.options).slice(1); // Exclude placeholder
+    const options = Array.from(select.options).slice(1);
 
-    // Show search on focus
     select.addEventListener('focus', function() {
         searchInput.style.display = 'block';
         searchInput.focus();
         showOptions();
     });
 
-    // Search functionality
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         filterOptions(searchTerm);
     });
 
-    // Hide search on blur
     searchInput.addEventListener('blur', function() {
         setTimeout(() => {
             searchInput.style.display = 'none';
@@ -542,9 +512,7 @@ function initializeEnhancedSelect() {
 
         optionElements.forEach(element => {
             const text = element.textContent.toLowerCase();
-            const building = element.textContent.match(/\((.*?)\)/)?.[1]?.toLowerCase() || '';
-            
-            if (text.includes(searchTerm) || building.includes(searchTerm)) {
+            if (text.includes(searchTerm)) {
                 element.style.display = 'block';
                 hasVisibleOptions = true;
             } else {
@@ -555,7 +523,7 @@ function initializeEnhancedSelect() {
         if (!hasVisibleOptions) {
             const noResults = document.createElement('div');
             noResults.className = 'select-option';
-            noResults.textContent = 'Aucun résultat trouvé';
+            noResults.textContent = 'Aucun résultat';
             noResults.style.color = 'var(--secondary-color)';
             noResults.style.fontStyle = 'italic';
             optionsContainer.appendChild(noResults);
@@ -589,7 +557,6 @@ function initializeFormValidation() {
 
         if (!isValid) {
             e.preventDefault();
-            // Scroll to first error
             const firstError = form.querySelector('.is-invalid');
             if (firstError) {
                 firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
