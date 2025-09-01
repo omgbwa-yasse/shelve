@@ -9,17 +9,17 @@
     <div class="submenu-section mb-3">
         <div class="submenu-heading" data-toggle="collapse" data-target="#organizationsSubmenu">
             <i class="bi bi-building"></i>
-            Organisations externes
+            {{ __('Organisations externes') }}
         </div>
         <div class="submenu-content" id="organizationsSubmenu">
             <div class="submenu-item">
                 <a class="submenu-link {{ Request::routeIs('external.organizations.index') ? 'active' : '' }}" href="{{ route('external.organizations.index') }}">
-                    <i class="bi bi-list"></i> Liste des organisations
+                    <i class="bi bi-list"></i> {{ __('Liste des organisations') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link {{ Request::routeIs('external.organizations.create') ? 'active' : '' }}" href="{{ route('external.organizations.create') }}">
-                    <i class="bi bi-plus-circle"></i> Nouvelle organisation
+                    <i class="bi bi-plus-circle"></i> {{ __('Nouvelle organisation') }}
                 </a>
             </div>
         </div>
@@ -29,17 +29,17 @@
     <div class="submenu-section mb-3">
         <div class="submenu-heading" data-toggle="collapse" data-target="#contactsSubmenu">
             <i class="bi bi-person"></i>
-            Contacts externes
+            {{ __('Contacts externes') }}
         </div>
         <div class="submenu-content" id="contactsSubmenu">
             <div class="submenu-item">
                 <a class="submenu-link {{ Request::routeIs('external.contacts.index') ? 'active' : '' }}" href="{{ route('external.contacts.index') }}">
-                    <i class="bi bi-list"></i> Liste des contacts
+                    <i class="bi bi-list"></i> {{ __('Liste des contacts') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link {{ Request::routeIs('external.contacts.create') ? 'active' : '' }}" href="{{ route('external.contacts.create') }}">
-                    <i class="bi bi-plus-circle"></i> Nouveau contact
+                    <i class="bi bi-plus-circle"></i> {{ __('Nouveau contact') }}
                 </a>
             </div>
         </div>
@@ -50,7 +50,7 @@
         <div class="submenu-content">
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ url('/') }}">
-                    <i class="bi bi-arrow-left"></i> Retour à l'accueil
+                    <i class="bi bi-arrow-left"></i> {{ __('Retour à l\'accueil') }}
                 </a>
             </div>
         </div>

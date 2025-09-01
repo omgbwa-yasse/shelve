@@ -9,19 +9,19 @@
 
     <div class="submenu-section">
         <div class="submenu-heading">
-            <i class="bi bi-search"></i> Consultations
+            <i class="bi bi-search"></i> {{ __('Consultations') }}
         </div>
         <div class="submenu-content" id="consultationMenu">
 
-            <div class="submenu-category-title">Courrier interne</div>
+            <div class="submenu-category-title">{{ __('Courrier interne') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.index') }}">
-                    <i class="bi bi-inbox"></i> Reçus
+                    <i class="bi bi-inbox"></i> {{ __('Reçus') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-send.index') }}">
-                    <i class="bi bi-envelope"></i> Envoyés
+                    <i class="bi bi-envelope"></i> {{ __('Envoyés') }}
                 </a>
             </div>
             <div class="submenu-item">
@@ -36,38 +36,38 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch.index') }}">
-                    <i class="bi bi-bookmark"></i> Parapheurs
+                    <i class="bi bi-bookmark"></i> {{ __('Parapheurs') }}
                 </a>
             </div>
 
             <div class="submenu-divider"></div>
-            <div class="submenu-category-title">Courrier externe</div>
+            <div class="submenu-category-title">{{ __('Courrier externe') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.send.external.index') }}">
-                    <i class="bi bi-send"></i> Envoyer
+                    <i class="bi bi-send"></i> {{ __('Envoyer') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.received.external.index') }}">
-                    <i class="bi bi-inbox"></i> Recevoir
+                    <i class="bi bi-inbox"></i> {{ __('Recevoir') }}
                 </a>
             </div>
 
             <div class="submenu-divider"></div>
-            <div class="submenu-category-title">Archives</div>
+            <div class="submenu-category-title">{{ __('Archives') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.archived') }}">
-                    <i class="bi bi-folder"></i> Courrier
+                    <i class="bi bi-folder"></i> {{ __('Courrier') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-container.index') }}">
-                    <i class="bi bi-archive"></i> Boîtes
+                    <i class="bi bi-archive"></i> {{ __('Boîtes') }}
                 </a>
             </div>
 
             <div class="submenu-divider"></div>
-            <div class="submenu-category-title">Recherche avancée</div>
+            <div class="submenu-category-title">{{ __('Recherche avancée') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-select-typologies') }}">
                     <i class="bi bi-tags"></i> {{ __('typologies') }}
@@ -80,7 +80,7 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.advanced.form') }}">
-                    <i class="bi bi-search"></i> Recherche avancée
+                    <i class="bi bi-search"></i> {{ __('Recherche avancée') }}
                 </a>
             </div>
 
@@ -91,31 +91,31 @@
     <!-- Création Section -->
     <div class="submenu-section add-section">
         <div class="submenu-heading">
-            <i class="bi bi-plus-circle"></i> Création
+            <i class="bi bi-plus-circle"></i> {{ __('Création') }}
         </div>
         <div class="submenu-content" id="creationMenu">
-            <div class="submenu-category-title">Courrier interne</div>
+            <div class="submenu-category-title">{{ __('Courrier interne') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-received.create') }}">
-                    <i class="bi bi-plus-square"></i> Reçu
+                    <i class="bi bi-plus-square"></i> {{ __('Reçus') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-send.create') }}">
-                    <i class="bi bi-plus-square"></i> Envoyé
+                    <i class="bi bi-plus-square"></i> {{ __('Envoyés') }}
                 </a>
             </div>
 
             <div class="submenu-divider"></div>
-            <div class="submenu-category-title">Courrier externe</div>
+            <div class="submenu-category-title">{{ __('Courrier externe') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.send.external.create') }}">
-                    <i class="bi bi-plus-square"></i> Sortant
+                    <i class="bi bi-plus-square"></i> {{ __('Sortant') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mails.received.external.create') }}">
-                    <i class="bi bi-plus-square"></i> Entrant
+                    <i class="bi bi-plus-square"></i> {{ __('Entrant') }}
                 </a>
             </div>
 
@@ -128,11 +128,11 @@
 
     <div class="submenu-section">
         <div class="submenu-heading">
-            <i class="bi bi-gear"></i> Administration
+            <i class="bi bi-gear"></i> {{ __('Administration') }}
         </div>
         <div class="submenu-content" id="adminMenu">
 
-            <div class="submenu-category-title">Parapheurs</div>
+            <div class="submenu-category-title">{{ __('Parapheurs') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch.create') }}">
                     <i class="bi bi-bookmark-check"></i> {{ __('parapher') }}
@@ -140,17 +140,17 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch-send.create') }}">
-                    <i class="bi bi-arrow-right-square"></i> {{ __('send') }} parapheur
+                    <i class="bi bi-arrow-right-square"></i> {{ __('send') }} {{ __('parapheur') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('batch-received.create') }}">
-                    <i class="bi bi-arrow-left-square"></i> {{ __('receive') }} parapheur
+                    <i class="bi bi-arrow-left-square"></i> {{ __('receive') }} {{ __('parapheur') }}
                 </a>
             </div>
 
             <div class="submenu-divider"></div>
-            <div class="submenu-category-title">Contenants</div>
+            <div class="submenu-category-title">{{ __('Contenants') }}</div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('mail-container.create') }}">
                     <i class="bi bi-archive"></i> {{ __('box_chrono') }}
