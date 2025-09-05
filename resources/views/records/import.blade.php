@@ -3,8 +3,11 @@
 @section('content')
     <div class="container">
         <div class="card shadow-sm">
-            <div class="card-header bg-light">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <h2><i class="bi bi-file-earmark-arrow-down"></i> {{ __('Import Records') }}</h2>
+                <a href="{{ asset('docs/import_format.md') }}" target="_blank" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-question-circle me-1"></i>{{ __('Format Guide') }}
+                </a>
             </div>
             <div class="card-body">
                 @if(session('success'))
@@ -28,6 +31,31 @@
                         </ul>
                     </div>
                 @endif
+
+                <!-- Aide sur les champs requis -->
+                <div class="alert alert-info mb-4">
+                    <h5><i class="bi bi-info-circle me-2"></i>Champs requis pour l'import</h5>
+                    <p class="mb-2">Pour qu'un record soit importé avec succès, les champs suivants sont <strong>obligatoires</strong> :</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="mb-0">
+                                <li><strong>code</strong> - Code unique du record <span class="badge bg-success">Auto-générable</span></li>
+                                <li><strong>name</strong> - Nom/titre du record</li>
+                                <li><strong>level</strong> - Niveau hiérarchique (fonds, série, etc.)</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="mb-0">
+                                <li><strong>status</strong> - Statut du record (actif, inactif, etc.)</li>
+                                <li><strong>support</strong> - Support matériel (papier, numérique, etc.)</li>
+                                <li><strong>activity</strong> - Activité/domaine (administration, culture, etc.)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="mb-2"><i class="bi bi-lightbulb text-warning me-1"></i><strong>Note :</strong> Si le champ <code>code</code> est vide ou manquant dans votre fichier, des codes uniques seront automatiquement générés pour chaque record.</p>
+                    </div>
+                </div>
 
                 <!-- Étape 1: Upload du fichier -->
                 <div id="upload-step" class="import-step">
@@ -61,6 +89,15 @@
                                         <label class="form-check-label" for="update_existing">
                                             {{ __('Update existing records') }}
                                         </label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" name="auto_generate_codes" id="auto_generate_codes" value="1" checked>
+                                        <label class="form-check-label" for="auto_generate_codes">
+                                            <i class="bi bi-magic text-success me-1"></i>{{ __('Auto-generate codes for empty fields') }}
+                                        </label>
+                                        <small class="form-text text-muted">
+                                            {{ __('Automatically create unique codes when the code field is empty or missing') }}
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -278,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function createMappingInterface(headers) {
         const container = document.getElementById('mapping-container');
         const dbFields = {
-            'code': { label: 'Code', required: true, description: "Identifiant unique de l'enregistrement" },
+            'code': { label: 'Code', required: false, description: "Identifiant unique (généré automatiquement si vide)" },
             'name': { label: 'Nom/Titre', required: true, description: 'Nom ou titre' },
             'date_format': { label: 'Format de date', required: false, description: 'Format de la date (Y/M/D)' },
             'start_date': { label: 'Date de début', required: false, description: 'YYYY-MM-DD' },
@@ -383,21 +420,71 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('mapping', JSON.stringify(mapping));
         formData.append('has_headers', document.getElementById('has_headers').checked ? '1' : '0');
         formData.append('update_existing', document.getElementById('update_existing').checked ? '1' : '0');
+        formData.append('auto_generate_codes', document.getElementById('auto_generate_codes').checked ? '1' : '0');
         formData.append('_token', document.querySelector('input[name="_token"]').value);
 
         fetch('{{ route("records.import") }}', { method: 'POST', body: formData })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('import-status').innerHTML = '<div class="alert alert-success">Import terminé avec succès!<\/div>';
+                    let statusHtml = '<div class="alert alert-success">' + data.message + '</div>';
+                    
+                    if (data.summary) {
+                        statusHtml += '<div class="mt-3"><h5>Détails de l\'import :</h5>';
+                        statusHtml += '<ul class="list-group list-group-flush">';
+                        statusHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                        statusHtml += 'Enregistrements importés <span class="badge bg-success rounded-pill">' + data.summary.imported + '</span>';
+                        statusHtml += '</li>';
+                        if (data.summary.auto_generated_codes > 0) {
+                            statusHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                            statusHtml += 'Codes générés automatiquement <span class="badge bg-info rounded-pill">' + data.summary.auto_generated_codes + '</span>';
+                            statusHtml += '</li>';
+                        }
+                        if (data.summary.skipped > 0) {
+                            statusHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                            statusHtml += 'Lignes ignorées <span class="badge bg-warning rounded-pill">' + data.summary.skipped + '</span>';
+                            statusHtml += '</li>';
+                        }
+                        if (data.summary.errors > 0) {
+                            statusHtml += '<li class="list-group-item d-flex justify-content-between align-items-center">';
+                            statusHtml += 'Erreurs <span class="badge bg-danger rounded-pill">' + data.summary.errors + '</span>';
+                            statusHtml += '</li>';
+                        }
+                        statusHtml += '</ul></div>';
+                        
+                        if (data.summary.skipped > 0 && data.summary.skipped_rows && data.summary.skipped_rows.length > 0) {
+                            statusHtml += '<div class="mt-3"><h6>Lignes ignorées (premières 5) :</h6>';
+                            statusHtml += '<div class="table-responsive"><table class="table table-sm table-bordered">';
+                            statusHtml += '<thead><tr><th>Ligne</th><th>Champs manquants</th><th>Données</th></tr></thead><tbody>';
+                            
+                            data.summary.skipped_rows.slice(0, 5).forEach(row => {
+                                statusHtml += '<tr>';
+                                statusHtml += '<td>' + row.row + '</td>';
+                                statusHtml += '<td><span class="badge bg-warning">' + row.missing_fields.join(', ') + '</span></td>';
+                                statusHtml += '<td><small>' + JSON.stringify(row.data).substring(0, 100) + '...</small></td>';
+                                statusHtml += '</tr>';
+                            });
+                            
+                            if (data.summary.skipped_rows.length > 5) {
+                                statusHtml += '<tr><td colspan="3" class="text-center text-muted">... et ' + (data.summary.skipped_rows.length - 5) + ' autres lignes</td></tr>';
+                            }
+                            
+                            statusHtml += '</tbody></table></div></div>';
+                        }
+                    }
+                    
+                    document.getElementById('import-status').innerHTML = statusHtml;
                     document.getElementById('import-progress').style.width = '100%';
-                    setTimeout(() => { window.location.href = '{{ route("records.index") }}'; }, 2000);
+                    
+                    if (data.summary && data.summary.imported > 0) {
+                        setTimeout(() => { window.location.href = '{{ route("records.index") }}'; }, 5000);
+                    }
                 } else {
-                    document.getElementById('import-status').innerHTML = '<div class="alert alert-danger">Erreur: ' + data.message + '<\/div>';
+                    document.getElementById('import-status').innerHTML = '<div class="alert alert-danger">Erreur: ' + data.message + '</div>';
                 }
             })
             .catch(() => {
-                document.getElementById('import-status').innerHTML = '<div class="alert alert-danger">Erreur lors de l\'import<\/div>';
+                document.getElementById('import-status').innerHTML = '<div class="alert alert-danger">Erreur lors de l\'import</div>';
             });
     }
 

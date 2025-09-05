@@ -741,6 +741,7 @@ class RecordController extends Controller
                 $mapping = json_decode($request->input('mapping'), true);
                 $hasHeaders = (bool) $request->input('has_headers', false);
                 $updateExisting = (bool) $request->input('update_existing', false);
+                $autoGenerateCodes = (bool) $request->input('auto_generate_codes', true);
 
                 // Créer un nouveau Dolly pour cet import
                 $dolly = Dolly::create([
@@ -753,14 +754,30 @@ class RecordController extends Controller
                 ]);
 
                 // Lancer l'import
-                $import = new RecordsImport($dolly, $mapping, $hasHeaders, $updateExisting);
+                $import = new RecordsImport($dolly, $mapping, $hasHeaders, $updateExisting, $autoGenerateCodes);
                 Excel::import($import, $file);
+
+                $summary = $import->getImportSummary();
+                
+                $message = "Import terminé avec succès. ";
+                if ($summary['imported'] > 0) {
+                    $message .= "{$summary['imported']} enregistrement(s) importé(s). ";
+                }
+                if ($summary['auto_generated_codes'] > 0) {
+                    $message .= "{$summary['auto_generated_codes']} code(s) généré(s) automatiquement. ";
+                }
+                if ($summary['skipped'] > 0) {
+                    $message .= "{$summary['skipped']} ligne(s) ignorée(s) (champs requis manquants). ";
+                }
+                if ($summary['errors'] > 0) {
+                    $message .= "{$summary['errors']} erreur(s) rencontrée(s).";
+                }
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Import terminé avec succès',
+                    'message' => $message,
                     'dolly_id' => $dolly->id,
-                    'records_count' => method_exists($import, 'getImportedCount') ? $import->getImportedCount() : null,
+                    'summary' => $summary,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Erreur lors de l\'import remappé: ' . $e->getMessage());
@@ -793,8 +810,25 @@ class RecordController extends Controller
         try {
             switch ($format) {
                 case 'excel':
-                    Excel::import(new RecordsImport($dolly, []), $file);
-                    break;
+                    $import = new RecordsImport($dolly, [], true, false, true);
+                    Excel::import($import, $file);
+                    $summary = $import->getImportSummary();
+                    
+                    $message = "Import terminé avec succès. ";
+                    if ($summary['imported'] > 0) {
+                        $message .= "{$summary['imported']} enregistrement(s) importé(s). ";
+                    }
+                    if ($summary['auto_generated_codes'] > 0) {
+                        $message .= "{$summary['auto_generated_codes']} code(s) généré(s) automatiquement. ";
+                    }
+                    if ($summary['skipped'] > 0) {
+                        $message .= "{$summary['skipped']} ligne(s) ignorée(s) (champs requis manquants). ";
+                    }
+                    if ($summary['errors'] > 0) {
+                        $message .= "{$summary['errors']} erreur(s) rencontrée(s).";
+                    }
+                    
+                    return redirect()->route('records.index')->with('success', $message);
                 case 'ead':
                     $service = new EADImportService();
                     $service->importRecordsFromString(file_get_contents($file->getPathname()), $dolly);
