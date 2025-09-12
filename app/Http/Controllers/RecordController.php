@@ -758,7 +758,7 @@ class RecordController extends Controller
                 Excel::import($import, $file);
 
                 $summary = $import->getImportSummary();
-                
+
                 $message = "Import terminé avec succès. ";
                 if ($summary['imported'] > 0) {
                     $message .= "{$summary['imported']} enregistrement(s) importé(s). ";
@@ -813,7 +813,7 @@ class RecordController extends Controller
                     $import = new RecordsImport($dolly, [], true, false, true);
                     Excel::import($import, $file);
                     $summary = $import->getImportSummary();
-                    
+
                     $message = "Import terminé avec succès. ";
                     if ($summary['imported'] > 0) {
                         $message .= "{$summary['imported']} enregistrement(s) importé(s). ";
@@ -827,7 +827,7 @@ class RecordController extends Controller
                     if ($summary['errors'] > 0) {
                         $message .= "{$summary['errors']} erreur(s) rencontrée(s).";
                     }
-                    
+
                     return redirect()->route('records.index')->with('success', $message);
                 case 'ead':
                     $service = new EADImportService();
@@ -1400,52 +1400,62 @@ class RecordController extends Controller
     private function processWithAI(Record $record, \Illuminate\Database\Eloquent\Collection $attachments): array
     {
         try {
-            // Préparer les chemins de fichiers pour AiBridge
-            $filePaths = [];
+            // Extraire le texte de chaque attachment au lieu d'envoyer les fichiers binaires
+            $contents = [];
             foreach ($attachments as $attachment) {
                 $filePath = storage_path('app/' . $attachment->path);
-                if (file_exists($filePath)) {
-                    $filePaths[] = $filePath;
+                if (!file_exists($filePath)) {
+                    Log::warning('Fichier introuvable pour extraction', [
+                        'attachment_id' => $attachment->id ?? null,
+                        'path' => $attachment->path,
+                    ]);
+                    continue;
                 }
+
+                $contents[] = $this->extractAttachmentContent($attachment, $filePath);
             }
 
-            if (empty($filePaths)) {
-                throw new \Exception('Aucun fichier valide trouvé pour l\'analyse IA');
+            // Filtrer les extractions vides et tronquer pour éviter les prompts trop volumineux
+            $contents = array_values(array_filter($contents, function ($c) {
+                return !empty(trim($c['content'] ?? ''));
+            }));
+
+            if (empty($contents)) {
+                throw new \Exception('Aucun contenu texte extrait des fichiers');
             }
 
-            // Construire le prompt pour l'IA
-            $prompt = $this->buildDragDropPromptWithFiles();
+            // Appliquer une limite globale de caractères pour éviter les payloads trop gros
+            $maxTotalChars = (int) (app(\App\Services\SettingService::class)->get('ai_max_total_chars', 40000));
+            $contents = $this->limitAggregateContents($contents, $maxTotalChars);
 
-            // Appeler l'IA avec les fichiers
+            // Construire le prompt pour l'IA avec le texte extrait (potentiellement tronqué)
+            $prompt = $this->buildDragDropPrompt($contents);
+
+            // Appeler l'IA SANS envoyer les fichiers
             $provider = app(\App\Services\SettingService::class)->get('ai_default_provider', 'ollama');
-            $model = app(\App\Services\SettingService::class)->get('ai_default_model', 'gemma2:2b');
+            $model = app(\App\Services\SettingService::class)->get('ai_default_model', 'gemma3:4b');
 
             // S'assurer que le provider est configuré
             app(\App\Services\AI\ProviderRegistry::class)->ensureConfigured($provider);
 
-            Log::info('Envoi à l\'IA avec fichiers', [
+            Log::info('Envoi à l\'IA avec texte extrait (sans fichiers)', [
                 'provider' => $provider,
                 'model' => $model,
-                'files_count' => count($filePaths),
-                'files' => array_map(function($path) {
-                    return [
-                        'path' => $path,
-                        'name' => basename($path),
-                        'size' => file_exists($path) ? filesize($path) : 0,
-                        'exists' => file_exists($path)
-                    ];
-                }, $filePaths)
+                'documents' => array_map(function ($c) { return [
+                    'filename' => $c['filename'] ?? 'unknown',
+                    'type' => $c['type'] ?? 'unknown',
+                    'chars' => strlen($c['content'] ?? ''),
+                ]; }, $contents),
             ]);
 
-            // Utiliser AiBridge avec l'option 'files' pour envoyer les fichiers
+            // Utiliser AiBridge uniquement avec le prompt textuel
             $aiResponse = AiBridge::provider($provider)->chat([
                 ['role' => 'user', 'content' => $prompt]
             ], [
                 'model' => $model,
                 'temperature' => 0.3,
                 'max_tokens' => 1000,
-                'timeout' => 120000, // 2 minutes pour traiter les fichiers
-                'files' => $filePaths // AiBridge attend un tableau de chemins de fichiers
+                'timeout' => 120000 // 2 minutes pour traiter le contenu
             ]);
 
             // Parser la réponse
@@ -1472,6 +1482,252 @@ class RecordController extends Controller
                 'confidence' => 0.0
             ];
         }
+    }
+
+    /**
+     * Extraire le contenu texte d'un attachment selon son type MIME
+     * Retourne un tableau: [filename, type, content]
+     */
+    private function extractAttachmentContent($attachment, string $absolutePath): array
+    {
+        $filename = isset($attachment->name) ? (string) $attachment->name : basename($absolutePath);
+        $mime = isset($attachment->mime_type) ? (string) $attachment->mime_type : mime_content_type($absolutePath);
+
+        $type = 'unknown';
+        $text = '';
+
+        try {
+            if (stripos($mime, 'pdf') !== false) {
+                $type = 'pdf';
+                $text = $this->extractTextFromPdf($absolutePath);
+            } elseif (stripos($mime, 'text/plain') !== false || stripos($mime, 'csv') !== false) {
+                $type = 'text';
+                $text = @file_get_contents($absolutePath) ?: '';
+            } elseif (stripos($mime, 'wordprocessingml') !== false || stripos($mime, 'officedocument') !== false || stripos($mime, 'vnd.oasis.opendocument.text') !== false || stripos($mime, 'rtf') !== false) {
+                // DOCX / ODT / RTF
+                $type = 'word';
+                $text = $this->extractTextFromWordLike($absolutePath);
+            } elseif (stripos($mime, 'msword') !== false) {
+                // Ancien .doc - souvent non supporté en lecture; tentative via PhpWord, sinon vide
+                $type = 'msword';
+                $text = $this->extractTextFromWordLike($absolutePath);
+            } elseif (stripos($mime, 'image/') === 0) {
+                $type = 'image';
+                $text = $this->extractTextFromImage($absolutePath);
+            } else {
+                // Fallback basique: tenter lecture en texte
+                $type = 'binary';
+                $raw = @file_get_contents($absolutePath) ?: '';
+                // Ne pas envoyer du binaire; tronquer et filtrer
+                $text = $this->sanitizeToText($raw);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Erreur extraction de texte', [
+                'filename' => $filename,
+                'mime' => $mime,
+                'error' => $e->getMessage(),
+            ]);
+            $text = '';
+        }
+
+        // Nettoyage et troncature pour limiter la taille envoyée à l'IA
+        $text = $this->normalizeWhitespace($text);
+        $text = $this->truncateMiddle($text, 20000); // max 20k chars par document
+
+        return [
+            'filename' => $filename,
+            'type' => $type,
+            'content' => $text,
+        ];
+    }
+
+    /**
+     * Extraction texte depuis PDF (texte natif), fallback OCR si nécessaire si Imagick + Tesseract dispos
+     */
+    private function extractTextFromPdf(string $path): string
+    {
+        $text = '';
+        try {
+            if (class_exists(\Smalot\PdfParser\Parser::class)) {
+                $parser = new \Smalot\PdfParser\Parser();
+                $pdf = $parser->parseFile($path);
+                $text = $pdf->getText();
+            }
+        } catch (\Throwable $e) {
+            Log::info('PDFParser a échoué, tentative OCR si possible', ['error' => $e->getMessage()]);
+        }
+
+        // Si texte quasi vide, tenter OCR basique page par page si Imagick et Tesseract disponibles
+    if (mb_strlen(trim($text)) < 30 && extension_loaded('imagick') && class_exists('Imagick') && class_exists(\thiagoalessio\TesseractOCR\TesseractOCR::class)) {
+            try {
+                $imClass = '\\Imagick';
+                $imagick = new $imClass();
+                // Résolution plus élevée pour de meilleurs résultats OCR
+                $imagick->setResolution(300, 300);
+                $imagick->readImage($path);
+                $ocrText = '';
+                foreach ($imagick as $i => $page) {
+                    // Prétraitement: niveaux de gris, contraste, sharpen
+                    $imagickClass = '\\Imagick';
+                    $page->setImageColorspace($imagickClass::COLORSPACE_GRAY);
+                    $page->enhanceImage();
+                    $page->contrastStretchImage(0.1, 0.9);
+                    $page->unsharpMaskImage(0.5, 0.5, 0.7, 0.0);
+                    $page->setImageFormat('png');
+                    $tmp = tempnam(sys_get_temp_dir(), 'pdfpg_') . '.png';
+                    $page->writeImage($tmp);
+                    try {
+                        $ocr = new \thiagoalessio\TesseractOCR\TesseractOCR($tmp);
+                        // Essayer FR puis EN
+                        $ocr->lang('fra', 'eng');
+                        // Améliorer la qualité d'extraction: OEM LSTM, PSM 3 (auto)
+                        $ocr->oem(1)->psm(3);
+                        $ocrText .= "\n" . $ocr->run();
+                    } catch (\Throwable $e) {
+                        Log::debug('OCR tesseract erreur page', ['page' => $i, 'error' => $e->getMessage()]);
+                    } finally {
+                        @unlink($tmp);
+                    }
+                }
+                $text = trim($ocrText) ?: $text;
+            } catch (\Throwable $e) {
+                Log::debug('OCR PDF fallback échoué', ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $text;
+    }
+
+    /**
+     * Extraction texte depuis images via Tesseract (si dispo)
+     */
+    private function extractTextFromImage(string $path): string
+    {
+        if (!class_exists(\thiagoalessio\TesseractOCR\TesseractOCR::class)) {
+            return '';
+        }
+        try {
+            $ocr = new \thiagoalessio\TesseractOCR\TesseractOCR($path);
+            $ocr->lang('fra', 'eng');
+            return $ocr->run();
+        } catch (\Throwable $e) {
+            Log::debug('OCR image échoué', ['error' => $e->getMessage()]);
+            return '';
+        }
+    }
+
+    /**
+     * Extraction texte depuis DOCX/ODT/RTF (via PhpWord si disponible)
+     */
+    private function extractTextFromWordLike(string $path): string
+    {
+        if (!class_exists(\PhpOffice\PhpWord\IOFactory::class)) {
+            return '';
+        }
+        try {
+            $phpWord = \PhpOffice\PhpWord\IOFactory::load($path);
+            $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'HTML');
+            $stream = fopen('php://temp', 'r+');
+            $writer->save($stream);
+            rewind($stream);
+            $html = stream_get_contents($stream);
+            fclose($stream);
+            // Nettoyer le HTML en texte brut
+            $text = strip_tags($html);
+            return $text;
+        } catch (\Throwable $e) {
+            Log::debug('Extraction WordLike échouée', ['error' => $e->getMessage()]);
+            return '';
+        }
+    }
+
+    /**
+     * Remplacer le binaire par un texte sûr (enlevant les null bytes, non-UTF8)
+     */
+    private function sanitizeToText(string $raw): string
+    {
+        // Forcer en UTF-8
+        $utf8 = @mb_convert_encoding($raw, 'UTF-8', 'auto');
+        $utf8 = is_string($utf8) ? $utf8 : $raw;
+        // Retirer les caractères de contrôle
+        $utf8 = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', ' ', $utf8);
+        return $utf8 ?? '';
+    }
+
+    /**
+     * Normaliser les espaces/blancs
+     */
+    private function normalizeWhitespace(string $text): string
+    {
+        // Unifier les fins de ligne et compresser les espaces répétés
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/\x{FEFF}/u', '', $text); // BOM
+        // Limiter les suites d'espaces
+        $text = preg_replace('/[\t ]{2,}/', ' ', $text);
+        // Limiter les lignes vides consécutives
+        $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        return trim($text);
+    }
+
+    /**
+     * Tronquer une longue chaîne en conservant le début et la fin
+     */
+    private function truncateMiddle(string $text, int $maxLen): string
+    {
+        $len = mb_strlen($text);
+        if ($len <= $maxLen) return $text;
+        $keep = (int) floor($maxLen / 2);
+        return mb_substr($text, 0, $keep) . "\n...\n" . mb_substr($text, -$keep);
+    }
+
+    /**
+     * Limiter le volume total de texte agrégé envoyé à l'IA.
+     * - maxTotalChars: budget global (ex. 40k)
+     * - On réserve un peu pour l'en-tête par document, puis on répartit le budget de contenu.
+     */
+    private function limitAggregateContents(array $contents, int $maxTotalChars): array
+    {
+        // Estimations: en-tête par doc ~120 chars
+        $headerPerDoc = 120;
+        $docCount = max(1, count($contents));
+        $reserved = $headerPerDoc * $docCount;
+        $budget = max(1000, $maxTotalChars - $reserved); // garder un minimum
+
+        // Calculer le total actuel
+        $total = 0;
+        foreach ($contents as $c) {
+            $total += mb_strlen($c['content'] ?? '');
+        }
+        if ($total <= $budget) return $contents; // rien à faire
+
+        // Répartir le budget proportionnellement
+        $result = [];
+        foreach ($contents as $c) {
+            $text = $c['content'] ?? '';
+            $len = max(1, mb_strlen($text));
+            $share = (int) floor($budget * ($len / $total));
+            $share = max(500, $share); // au moins un peu de contexte
+            $c['content'] = $this->truncateMiddle($text, $share);
+            $result[] = $c;
+        }
+        // Double check: ne pas dépasser le budget à cause des arrondis et du min.
+        $used = 0; foreach ($result as $r) { $used += mb_strlen($r['content'] ?? ''); }
+        while ($used > $budget) {
+            $delta = $used - $budget;
+            // Trouver l'index du doc le plus long
+            $maxIdx = 0; $maxLen = -1;
+            foreach ($result as $idx => $r) {
+                $l = mb_strlen($r['content'] ?? '');
+                if ($l > $maxLen) { $maxLen = $l; $maxIdx = $idx; }
+            }
+            if ($maxLen <= 600) { break; } // éviter de trop réduire
+            $reduce = min($delta, max(100, (int) floor($maxLen * 0.1))); // réduire par pas raisonnables
+            $newLen = max(500, $maxLen - $reduce);
+            $result[$maxIdx]['content'] = $this->truncateMiddle($result[$maxIdx]['content'], $newLen);
+            // recalculer 'used'
+            $used = 0; foreach ($result as $r) { $used += mb_strlen($r['content'] ?? ''); }
+        }
+        return $result;
     }
 
     /**
