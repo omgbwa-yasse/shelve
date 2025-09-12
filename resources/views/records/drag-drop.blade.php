@@ -62,9 +62,15 @@
 
                     <!-- Boutons d'action -->
                     <div id="action-buttons" class="d-flex justify-content-between" style="display: none;">
-                        <button type="button" id="clear-files" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle me-2"></i>Effacer tout
-                        </button>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="input-group input-group-sm" title="Nombre maximum de caractères à garder par fichier avant envoi à l'IA">
+                                <span class="input-group-text">Max caractères/fichier</span>
+                                <input type="number" id="per-file-char-limit" class="form-control" min="200" max="100000" step="500" value="200">
+                            </div>
+                            <button type="button" id="clear-files" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Effacer tout
+                            </button>
+                        </div>
                         <button type="button" id="process-files" class="btn btn-primary btn-lg">
                             <i class="bi bi-magic me-2"></i>Traiter avec l'IA
                         </button>
@@ -330,6 +336,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Utiliser files[] pour une compatibilité maximale côté PHP
                 formData.append('files[]', file);
             });
+            // Ajouter l'option de limite par fichier si précisée
+            const perFileLimitInput = document.getElementById('per-file-char-limit');
+            if (perFileLimitInput && perFileLimitInput.value) {
+                formData.append('per_file_char_limit', perFileLimitInput.value);
+            }
 
             // Ajouter le token CSRF
             const token = document.querySelector('meta[name="csrf-token"]')?.content;

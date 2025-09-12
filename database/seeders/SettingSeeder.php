@@ -155,6 +155,31 @@ class SettingSeeder extends Seeder
             ]
         );
 
+        // Limites de taille pour les prompts AI
+        Setting::updateOrCreate(
+            ['name' => 'ai_max_chars_per_file'],
+            [
+                'category_id' => $aiCategory->id,
+                'type' => 'integer',
+                'default_value' => json_encode(200),
+                'description' => 'Nombre maximum de caractères à conserver par fichier avant envoi à l\'IA (Drag & Drop).',
+                'is_system' => false,
+                'constraints' => json_encode(['min' => 200, 'max' => 100000, 'step' => 500]),
+            ]
+        );
+
+        Setting::updateOrCreate(
+            ['name' => 'ai_max_total_chars'],
+            [
+                'category_id' => $aiCategory->id,
+                'type' => 'integer',
+                'default_value' => json_encode(40000),
+                'description' => 'Budget global maximum de caractères envoyés à l\'IA (après agrégation de tous les fichiers).',
+                'is_system' => false,
+                'constraints' => json_encode(['min' => 5000, 'max' => 200000, 'step' => 1000]),
+            ]
+        );
+
         Setting::updateOrCreate(
             ['name' => 'ai_request_timeout'],
             [
