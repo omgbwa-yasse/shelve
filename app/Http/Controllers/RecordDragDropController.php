@@ -14,6 +14,7 @@ use App\Models\Record;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
+use App\Models\AuthorType;
 use App\Services\AI\ProviderRegistry;
 use App\Services\AttachmentTextExtractor;
 use App\Services\SettingService;
@@ -50,17 +51,30 @@ class RecordDragDropController extends Controller
             $parsed = $this->callAiAndParse($messages);
             $record = $this->persistRecord($parsed, $processed['attachments']);
 
-            $activitySuggestion = $this->topActivityCandidate($parsed['activity_candidates'] ?? []);
-            if ($activitySuggestion && isset($activitySuggestion['code'])) {
-                $db = Activity::where('code', $activitySuggestion['code'])->first();
-                if ($db) {
-                    $activitySuggestion['id'] = $db->id;
-                    $activitySuggestion['name'] = $db->name;
-                } elseif (!empty($activitySuggestion['name'])) {
-                    $dbn = Activity::where('name', $activitySuggestion['name'])->first();
-                    if ($dbn) { $activitySuggestion['id'] = $dbn->id; }
+                $activitySuggestion = $this->topActivityCandidate($parsed['activity_candidates'] ?? []);
+                if ($activitySuggestion && isset($activitySuggestion['code'])) {
+                    $orgId = optional(Auth::user())->current_organisation_id;
+                    $db = Activity::where('code', $activitySuggestion['code'])
+                        ->when($orgId, function ($q) use ($orgId) {
+                            $q->whereHas('organisations', function ($q2) use ($orgId) {
+                                $q2->where('organisations.id', $orgId);
+                            });
+                        })
+                        ->first();
+                    if ($db) {
+                        $activitySuggestion['id'] = $db->id;
+                        $activitySuggestion['name'] = $db->name;
+                    } elseif (!empty($activitySuggestion['name'])) {
+                        $dbn = Activity::where('name', $activitySuggestion['name'])
+                            ->when($orgId, function ($q) use ($orgId) {
+                                $q->whereHas('organisations', function ($q2) use ($orgId) {
+                                    $q2->where('organisations.id', $orgId);
+                                });
+                            })
+                            ->first();
+                        if ($dbn) { $activitySuggestion['id'] = $dbn->id; }
+                    }
                 }
-            }
 
             return response()->json([
                 'success' => true,
@@ -245,8 +259,56 @@ class RecordDragDropController extends Controller
     private function buildAiMessages(array $snippets): array
     {
         $joined = implode("\n\n---\n\n", $snippets);
-        $system = 'Tu es un assistant d\'archives. En te basant uniquement sur le texte fourni, propose un titre court, un résumé factuel (2-4 phrases),\nainsi que 3 à 8 mots-clés. Propose aussi des activités candidates (code et nom) à partir d\'un plan de classement administratif typique.\nRéponds STRICTEMENT en JSON valide, sans aucun texte avant ni après.';
-        $userText = "Voici le contenu extrait des fichiers (tronqué au besoin) :\n\n".$joined."\n\nExigeance de sortie JSON stricte (UTF-8) suivant ce modèle exact :\n{\n  \"title\": \"...\",\n  \"content\": \"...\",\n  \"keywords\": [\"mot1\", \"mot2\", \"mot3\"],\n  \"activity_candidates\": [ { \"code\": \"DF-01110\", \"name\": \"COLLECTE DES PRÉVISIONS BUDGÉTAIRES\", \"confidence\": 0.85 } ],\n  \"authors\": [\"Nom Auteur\"]\n}";
+
+        // Restreindre aux activités de l'organisation courante
+        $orgId = optional(Auth::user())->current_organisation_id;
+        $allowedActivities = [];
+        if ($orgId) {
+            $allowedActivities = Activity::query()
+                ->select(['code', 'name'])
+                ->whereHas('organisations', function ($q) use ($orgId) {
+                    $q->where('organisations.id', $orgId);
+                })
+                ->orderBy('code')
+                ->limit(300)
+                ->get()
+                ->map(fn($a) => ['code' => (string)$a->code, 'name' => (string)$a->name])
+                ->values()
+                ->all();
+        }
+        $allowedJson = json_encode($allowedActivities, JSON_UNESCAPED_UNICODE);
+        if ($allowedJson === false) { $allowedJson = '[]'; }
+
+    // Préparer les types d'auteurs autorisés (liste courte par nom)
+    $authorTypes = AuthorType::query()->orderBy('id')->limit(20)->pluck('name', 'id');
+    $authorTypesArray = $authorTypes->map(fn($name, $id) => ['id' => (int)$id, 'name' => (string)$name])->values()->all();
+    $authorTypesJson = json_encode($authorTypesArray, JSON_UNESCAPED_UNICODE);
+    if ($authorTypesJson === false) { $authorTypesJson = '[]'; }
+
+    $system = "Tu es un assistant d'archives. En te basant uniquement sur le texte fourni, propose un titre court, un résumé factuel (2-4 phrases),\nainsi que 3 à 8 mots-clés. Pour les activités candidates, tu DOIS choisir exclusivement dans la liste d'activités autorisées fournie.\nPour chaque auteur proposé, indique aussi le type en choisissant STRICTEMENT dans la liste de types d'auteurs autorisée fournie.\nRéponds STRICTEMENT en JSON valide, sans aucun texte avant ni après.";
+
+        $userText = <<<TXT
+Voici le contenu extrait des fichiers (tronqué au besoin) :
+
+$joined
+
+Liste des activités autorisées (NE PROPOSE QUE celles-ci) :
+$allowedJson
+
+        Liste des types d'auteurs autorisés (NE CHOISIR QUE ceux-ci) :
+        $authorTypesJson
+
+Exigeance de sortie JSON stricte (UTF-8) suivant ce modèle exact :
+{
+  "title": "...",
+  "content": "...",
+  "keywords": ["mot1", "mot2", "mot3"],
+            "activity_candidates": [ { "code": "DF-01110", "name": "COLLECTE DES PRÉVISIONS BUDGÉTAIRES", "confidence": 0.85 } ],
+            "authors": [ { "name": "Nom Auteur", "type_id": 1 } ]
+}
+
+Règle: Si la liste des activités autorisées est vide, renvoie "activity_candidates" vide.
+TXT;
         return [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => $userText],
@@ -306,7 +368,6 @@ class RecordDragDropController extends Controller
                 'support_id' => $supportId,
                 'activity_id' => $activityId,
                 'user_id' => Auth::id(),
-                'organisation_id' => Auth::user()->current_organisation_id ?? null,
                 'content' => $content,
             ]);
 
@@ -342,15 +403,61 @@ class RecordDragDropController extends Controller
 
     private function attachAuthors(Record $record, array $parsed): void
     {
-        $authors = array_values(array_filter(array_map('trim', (array)($parsed['authors'] ?? []))));
-        if (empty($authors)) {
-            $fallback = trim((string) (Auth::user()->name ?? 'Inconnu'));
-            $authors = [$fallback];
+        $authors = $this->normalizeAuthorsPayload($parsed['authors'] ?? []);
+        if (empty($authors)) { $authors = $this->defaultAuthorsFromUser(); }
+
+        $defaultTypeId = $this->defaultAuthorTypeId();
+        foreach ($authors as $a) {
+            $this->upsertAndAttachAuthor($record, $a, $defaultTypeId);
         }
-        foreach ($authors as $aname) {
-            $author = Author::firstOrCreate(['name' => mb_substr($aname, 0, 255)]);
-            $record->authors()->syncWithoutDetaching([$author->id]);
+    }
+
+    private function normalizeAuthorsPayload($raw): array
+    {
+        $raw = (array)$raw;
+        $out = [];
+        foreach ($raw as $item) {
+            if (is_string($item)) {
+                $name = trim($item);
+                if ($name !== '') { $out[] = ['name' => $name]; }
+                continue;
+            }
+            if (is_array($item)) {
+                $name = trim((string)($item['name'] ?? ''));
+                if ($name === '') { continue; }
+                $typeId = isset($item['type_id']) && is_numeric($item['type_id']) ? (int)$item['type_id'] : null;
+                $out[] = ['name' => $name, 'type_id' => $typeId];
+            }
         }
+        return $out;
+    }
+
+    private function defaultAuthorsFromUser(): array
+    {
+        $fallback = trim((string) (Auth::user()->name ?? 'Inconnu'));
+        return $fallback !== '' ? [['name' => $fallback]] : [];
+    }
+
+    private function defaultAuthorTypeId(): ?int
+    {
+        $id = AuthorType::query()->value('id');
+        return $id ? (int)$id : null;
+    }
+
+    private function upsertAndAttachAuthor(Record $record, array $a, ?int $defaultTypeId): void
+    {
+        $name = mb_substr((string)($a['name'] ?? ''), 0, 255);
+        if ($name === '') { return; }
+        $typeId = isset($a['type_id']) && is_numeric($a['type_id']) ? (int)$a['type_id'] : null;
+        if (!$typeId) { $typeId = $defaultTypeId; }
+        if (!$typeId) { return; } // pas de type disponible
+
+        $author = Author::firstOrCreate(['name' => $name], ['type_id' => $typeId]);
+        if (!$author->type_id) {
+            $author->type_id = $typeId;
+            $author->save();
+        }
+        $record->authors()->syncWithoutDetaching([$author->id]);
     }
 
     private function attachKeywords(Record $record, array $parsed): void
