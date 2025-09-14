@@ -33,10 +33,12 @@ class RecordDragDropController extends Controller
     public function dragDropForm()
     {
         Gate::authorize('records_create');
+        $appUploadMaxMb = (int) app(SettingService::class)->get('upload_max_file_size_mb', 50);
         return view('records.drag-drop', [
             'server_post_max' => ini_get('post_max_size'),
             'server_upload_max_filesize' => ini_get('upload_max_filesize'),
             'server_max_file_uploads' => ini_get('max_file_uploads'),
+            'app_upload_max_file_size_mb' => $appUploadMaxMb,
         ]);
     }
 
@@ -190,9 +192,11 @@ class RecordDragDropController extends Controller
 
     private function validateAndGetFiles(Request $request): array
     {
+        $appUploadMaxMb = (int) app(SettingService::class)->get('upload_max_file_size_mb', 50);
+        $maxKilobytes = max(1, $appUploadMaxMb) * 1024; // Laravel rule expects KB
         $request->validate([
             'files' => 'required',
-            'files.*' => 'file|max:51200|mimes:pdf,jpeg,jpg,png,gif,doc,docx,txt,rtf,odt',
+            'files.*' => 'file|max:' . $maxKilobytes . '|mimes:pdf,jpeg,jpg,png,gif,doc,docx,txt,rtf,odt',
             'per_file_char_limit' => 'nullable|integer|min:200|max:100000',
             'pdf_page_count' => 'nullable|integer|min:1|max:2000',
         ]);

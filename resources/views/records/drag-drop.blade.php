@@ -71,6 +71,9 @@
                                 <span class="input-group-text">Pages PDF</span>
                                 <input type="number" id="pdf-page-count" class="form-control" min="1" max="2000" step="1" placeholder="Toutes">
                             </div>
+                            <span class="text-muted small" title="Limite applicative par fichier">
+                                Max fichier: {{ (int)($app_upload_max_file_size_mb ?? 50) }} Mo
+                            </span>
                             <button type="button" id="clear-files" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Effacer tout
                             </button>
@@ -174,7 +177,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const MAX_FILES = 10;
-    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    const MAX_FILE_SIZE = ({{ (int)($app_upload_max_file_size_mb ?? 50) }}) * 1024 * 1024; // MB from app setting
     // Server limits (used for preflight check)
     const SERVER_POST_MAX = `{{ $server_post_max ?? '' }}`;
     const SERVER_UPLOAD_MAX = `{{ $server_upload_max_filesize ?? '' }}`;
