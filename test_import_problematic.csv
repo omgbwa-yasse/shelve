@@ -1,7 +1,0 @@
-code,name,level,status,support,activity,content,start_date,end_date,authors,terms
-F001,Fonds normal,fonds,actif,papier,administration,Contenu normal,1900-01-01,2000-12-31,"Auteur normal","terme normal"
-"F002","Fonds avec guillemets","fonds","actif","papier","administration","Contenu avec guillemets","1950-01-01","1990-12-31","Auteur avec guillemets","terme avec guillemets"
-F003,Fonds avec espaces  ,  fonds  ,  actif  ,  papier  ,  administration  ,  Contenu avec espaces  ,  1960-01-01  ,  2010-12-31  ,  Auteur avec espaces  ,  terme avec espaces  
-F004,Fonds avec caractères spéciaux,fonds,actif,papier,administration,Contenu avec éàçù,1920-01-01,1980-12-31,Auteur avec éàçù,terme avec éàçù
-F005,Fonds avec dates variées,fonds,actif,papier,administration,Contenu avec dates,01/01/1900,31/12/2000,Auteur avec dates,terme avec dates
-F006,Fonds avec nombres,fonds,actif,papier,administration,Contenu avec 123,1900,2000,Auteur avec 123,terme avec 123

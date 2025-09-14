@@ -1,8 +1,0 @@
-code,name,level,status,support,activity,content,start_date,end_date,authors,terms
-F001,Fonds de la mairie,fonds,actif,papier,administration,Documents administratifs de la mairie,1900-01-01,2000-12-31,"Mairie de Paris","administration,collectivité"
-S001,Série des délibérations,série,actif,papier,administration,Procès-verbaux des délibérations du conseil municipal,1950-01-01,1990-12-31,"Conseil municipal","délibération,conseil"
-,,,actif,papier,administration,Ligne avec code et name manquants,1900-01-01,2000-12-31,"Test","test"
-S002,Série des permis de construire,,actif,papier,urbanisme,Ligne avec level manquant,1960-01-01,2010-12-31,"Service urbanisme","permis,construction,urbanisme"
-S003,Série des registres d'inscription,série,,papier,éducation,Ligne avec status manquant,1920-01-01,1980-12-31,"Directeur d'école","élèves,inscription"
-S004,Série des archives,série,actif,,éducation,Ligne avec support manquant,1920-01-01,1980-12-31,"Archiviste","archives"
-S005,Série des documents,série,actif,papier,,Ligne avec activity manquant,1920-01-01,1980-12-31,"Documentaliste","documents"
