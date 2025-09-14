@@ -1,5 +1,34 @@
 # Changelog
 
+## [v2.2] - 2025-09-14
+
+### Nouvelles fonctionnalités
+
+- Import par Glisser-Déposer (Drag & Drop) pour la création et le dépôt d'archives avec traitement IA intégré
+- Limite de taille d'upload côté application avec messages explicites dans l'interface
+- Option de comptage de pages PDF et affichage des limites serveur dans l'interface de dépôt
+- Suggestion d'activités et meilleure gestion de l'auteur lors du dépôt par glisser-déposer
+- Module Contacts Organisations : modèle Contact, migration, contrôleur et vues CRUD
+
+### Améliorations
+
+- Extraction des pièces jointes et logique de traitement IA plus robuste (gestion d'erreurs, résilience)
+- Refonte/renforcement du traitement des fichiers en glisser-déposer (extensions supportées, libellés)
+- Mise en place de Vite pour la gestion des assets et amélioration du layout (stacking de styles)
+- Optimisations et corrections sur le module de dépôts (cohérence des compteurs/éléments)
+
+### Corrections
+
+- Corrections diverses sur le module de dépôts (bugs d'affichage et de comptage)
+- Ajustements d'import et correctifs mineurs divers
+
+### Technique
+
+- Ajout d'exceptions personnalisées pour les traitements IA
+- Configuration Vite initiale pour bundling des assets
+
+---
+
 ## [v2.1] - 2025-01-15
 
 ### Nouvelles fonctionnalités

@@ -1,12 +1,12 @@
 {
-    "current_version": "v2.0",
-    "release_name": "Eyenga deborah",
+    "current_version": "v2.2",
+    "release_name": "",
     "installed_at": "2025-08-28T00:00:00Z",
-    "updated_from": "v1.5",
+    "updated_from": "v2.1",
     "github_repo": "omgbwa-yasse\/shelve",
     "update_channel": "stable",
-    "last_check": "2025-08-28T00:00:00Z",
-    "build_number": "20250828",
+    "last_check": "2025-09-14T00:00:00Z",
+    "build_number": "20250914",
     "php_version": "8.2",
     "laravel_version": "12.0"
 }
