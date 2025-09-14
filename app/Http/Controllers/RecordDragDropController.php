@@ -33,7 +33,11 @@ class RecordDragDropController extends Controller
     public function dragDropForm()
     {
         Gate::authorize('records_create');
-        return view('records.drag-drop');
+        return view('records.drag-drop', [
+            'server_post_max' => ini_get('post_max_size'),
+            'server_upload_max_filesize' => ini_get('upload_max_filesize'),
+            'server_max_file_uploads' => ini_get('max_file_uploads'),
+        ]);
     }
 
     /**
@@ -45,8 +49,9 @@ class RecordDragDropController extends Controller
         try {
             $files = $this->validateAndGetFiles($request);
             $charLimit = (int)($request->input('per_file_char_limit', 200));
+            $pdfPageCount = (int)($request->input('pdf_page_count', 0));
 
-            $processed = $this->storeAndExtractAttachments($files, $charLimit);
+            $processed = $this->storeAndExtractAttachments($files, $charLimit, $pdfPageCount);
             $messages = $this->buildAiMessages($processed['snippets']);
             $parsed = $this->callAiAndParse($messages);
             $record = $this->persistRecord($parsed, $processed['attachments']);
@@ -186,9 +191,10 @@ class RecordDragDropController extends Controller
     private function validateAndGetFiles(Request $request): array
     {
         $request->validate([
-            'files' => 'required|array|min:1|max:10',
-            'files.*' => 'file|max:51200|mimetypes:application/pdf,image/jpeg,image/png,image/gif,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/rtf,application/vnd.oasis.opendocument.text',
+            'files' => 'required',
+            'files.*' => 'file|max:51200|mimes:pdf,jpeg,jpg,png,gif,doc,docx,txt,rtf,odt',
             'per_file_char_limit' => 'nullable|integer|min:200|max:100000',
+            'pdf_page_count' => 'nullable|integer|min:1|max:2000',
         ]);
 
         $files = $request->file('files', []);
@@ -199,7 +205,7 @@ class RecordDragDropController extends Controller
         return (array)$files;
     }
 
-    private function storeAndExtractAttachments(array $files, int $charLimit): array
+    private function storeAndExtractAttachments(array $files, int $charLimit, int $pdfPageCount = 0): array
     {
         $extractor = app(AttachmentTextExtractor::class);
         $attachments = [];
@@ -209,7 +215,7 @@ class RecordDragDropController extends Controller
             $attachment = $this->storeSingleAttachment($uploaded);
             if (!$attachment) { continue; }
             $attachments[] = $attachment;
-            $snippet = $this->extractSnippetForAttachment($extractor, $attachment, $charLimit);
+            $snippet = $this->extractSnippetForAttachment($extractor, $attachment, $charLimit, $pdfPageCount);
             if ($snippet !== null) { $snippets[] = $snippet; }
         }
 
@@ -239,13 +245,18 @@ class RecordDragDropController extends Controller
         ]);
     }
 
-    private function extractSnippetForAttachment(AttachmentTextExtractor $extractor, Attachment $attachment, int $charLimit): ?string
+    private function extractSnippetForAttachment(AttachmentTextExtractor $extractor, Attachment $attachment, int $charLimit, int $pdfPageCount = 0): ?string
     {
         $abs = storage_path('app/' . ltrim($attachment->path, '/'));
         $text = null;
         if (is_file($abs)) {
             try {
-                $text = $extractor->extract($abs, $attachment->mime_type, $attachment->name);
+                $options = [];
+                if ($pdfPageCount > 0) {
+                    $options['pdf_page_start'] = 1; // always start at first page for now
+                    $options['pdf_page_count'] = $pdfPageCount;
+                }
+                $text = $extractor->extract($abs, $attachment->mime_type, $attachment->name, $options);
             } catch (\Throwable $e) {
                 Log::warning('DragDrop: extraction échouée', ['att_id' => $attachment->id, 'err' => $e->getMessage()]);
             }

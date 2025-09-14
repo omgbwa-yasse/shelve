@@ -67,6 +67,10 @@
                                 <span class="input-group-text">Max caractères/fichier</span>
                                 <input type="number" id="per-file-char-limit" class="form-control" min="200" max="100000" step="500" value="200">
                             </div>
+                            <div class="input-group input-group-sm" title="Nombre de pages de PDF à prendre en compte (depuis la première page)">
+                                <span class="input-group-text">Pages PDF</span>
+                                <input type="number" id="pdf-page-count" class="form-control" min="1" max="2000" step="1" placeholder="Toutes">
+                            </div>
                             <button type="button" id="clear-files" class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-2"></i>Effacer tout
                             </button>
@@ -171,6 +175,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const MAX_FILES = 10;
     const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    // Server limits (used for preflight check)
+    const SERVER_POST_MAX = `{{ $server_post_max ?? '' }}`;
+    const SERVER_UPLOAD_MAX = `{{ $server_upload_max_filesize ?? '' }}`;
+    const SERVER_MAX_FILE_UPLOADS = `{{ $server_max_file_uploads ?? '' }}`;
+
+    function parseSizeToBytes(v) {
+        if (!v) return 0;
+        const m = String(v).trim().match(/^(\d+)([KMG])?$/i);
+        if (!m) return parseInt(v, 10) || 0;
+        const n = parseInt(m[1], 10);
+        const unit = (m[2] || '').toUpperCase();
+        if (unit === 'K') return n * 1024;
+        if (unit === 'M') return n * 1024 * 1024;
+        if (unit === 'G') return n * 1024 * 1024 * 1024;
+        return n;
+    }
     const ALLOWED_TYPES = [
         'application/pdf',
         'image/jpeg',
@@ -270,6 +290,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Ajouter les fichiers valides
         selectedFiles.push(...validFiles);
+        // Préflight: estimer la taille POST totale (fichiers + overhead)
+        try {
+            const totalBytes = selectedFiles.reduce((s, f) => s + (f.size || 0), 0);
+            // overhead approximatif pour multipart; conservateur
+            const overhead = selectedFiles.length * 1024;
+            const estimatedPost = totalBytes + overhead;
+            const postMax = parseSizeToBytes(SERVER_POST_MAX);
+            const uploadMax = parseSizeToBytes(SERVER_UPLOAD_MAX);
+            const maxUploads = parseInt(SERVER_MAX_FILE_UPLOADS || '20', 10);
+            if (maxUploads && selectedFiles.length > maxUploads) {
+                showAlert('warning', `Vous avez sélectionné ${selectedFiles.length} fichiers, au-delà de la limite serveur (${maxUploads}).`);
+            }
+            if (uploadMax && selectedFiles.some(f => f.size > uploadMax)) {
+                showAlert('warning', `Au moins un fichier dépasse la limite serveur upload_max_filesize (${SERVER_UPLOAD_MAX}).`);
+            }
+            if (postMax && estimatedPost > postMax) {
+                showAlert('warning', `La taille totale estimée (${formatFileSize(estimatedPost)}) dépasse post_max_size serveur (${SERVER_POST_MAX}). Le téléversement risque d'échouer. Réduisez le nombre ou la taille des fichiers.`);
+            }
+        } catch (e) {}
         updateFilesDisplay();
     }
 
@@ -341,6 +380,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (perFileLimitInput && perFileLimitInput.value) {
                 formData.append('per_file_char_limit', perFileLimitInput.value);
             }
+            // Ajouter l'option de nombre de pages PDF à traiter
+            const pdfPageCountInput = document.getElementById('pdf-page-count');
+            if (pdfPageCountInput && pdfPageCountInput.value) {
+                formData.append('pdf_page_count', pdfPageCountInput.value);
+            }
 
             // Ajouter le token CSRF
             const token = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -363,6 +407,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
 
             if (!response.ok || !result.success) {
+                if (response.status === 422 && result.errors) {
+                    const messages = [];
+                    Object.keys(result.errors).forEach(key => {
+                        const arr = result.errors[key];
+                        if (Array.isArray(arr)) {
+                            arr.forEach(m => messages.push(m));
+                        } else if (arr) {
+                            messages.push(String(arr));
+                        }
+                    });
+                    showAlert('error', messages.join('<br>') || (result.message || 'Validation des fichiers échouée'));
+                    hideProgress();
+                    return;
+                }
                 throw new Error(result.message || 'Erreur lors du traitement');
             }
 

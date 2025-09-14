@@ -12,7 +12,7 @@ class AttachmentTextExtractor
     /**
      * Extract plain text from a file by mimetype or extension.
      */
-    public function extract(string $absolutePath, ?string $mime = null, ?string $name = null): ?string
+    public function extract(string $absolutePath, ?string $mime = null, ?string $name = null, array $options = []): ?string
     {
         $detectedMime = $mime ?: $this->guessMime($absolutePath);
         $ext = strtolower(pathinfo($name ?: $absolutePath, PATHINFO_EXTENSION));
@@ -24,10 +24,10 @@ class AttachmentTextExtractor
 
             $result = null;
             if ((is_string($detectedMime) && str_contains($detectedMime, 'pdf')) || $ext === 'pdf') {
-                $result = $this->fromPdf($absolutePath);
+                $result = $this->fromPdf($absolutePath, $options);
                 // If PDF is likely scanned (empty text), try OCR fallback when enabled
                 if (!$result && $this->isTesseractEnabled()) {
-                    $ocr = $this->fromPdfWithTesseract($absolutePath);
+                    $ocr = $this->fromPdfWithTesseract($absolutePath, $options);
                     if ($ocr) {
                         $result = $ocr;
                     }
@@ -66,11 +66,35 @@ class AttachmentTextExtractor
         return null;
     }
 
-    protected function fromPdf(string $path): ?string
+    protected function fromPdf(string $path, array $options = []): ?string
     {
         $parser = new PdfParser();
         $pdf = $parser->parseFile($path);
-        return trim($pdf->getText());
+        // Page range selection
+        $pageStart = isset($options['pdf_page_start']) && (int)$options['pdf_page_start'] > 0
+            ? (int)$options['pdf_page_start'] : 1; // 1-based
+        $pageCount = isset($options['pdf_page_count']) && (int)$options['pdf_page_count'] > 0
+            ? (int)$options['pdf_page_count'] : null;
+
+        $pages = $pdf->getPages();
+        if (!is_array($pages)) {
+            return trim($pdf->getText());
+        }
+
+        $startIndex = max(0, $pageStart - 1);
+        $slice = array_slice($pages, $startIndex, $pageCount ?: null);
+        if (empty($slice)) {
+            return null;
+        }
+        $texts = [];
+        foreach ($slice as $p) {
+            try {
+                $texts[] = $p->getText();
+            } catch (\Throwable $e) {
+                // ignore page errors
+            }
+        }
+        return $texts ? trim(implode("\n\n", $texts)) : null;
     }
 
     protected function fromDocx(string $path): ?string
@@ -150,7 +174,7 @@ class AttachmentTextExtractor
         }
     }
 
-    protected function fromPdfWithTesseract(string $path): ?string
+    protected function fromPdfWithTesseract(string $path, array $options = []): ?string
     {
         $tessBin = (string) config('services.tesseract.bin');
         $pdftoppm = (string) (config('services.tesseract.pdftoppm_bin') ?? 'pdftoppm');
@@ -162,7 +186,17 @@ class AttachmentTextExtractor
 
         // Convert PDF to images using pdftoppm (Poppler)
         $tmpBase = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'pdfocr_' . uniqid();
-        $code = $this->runCommand([$pdftoppm, '-png', '-r', '200', $path, $tmpBase], 180);
+        $cmd = [$pdftoppm, '-png', '-r', '200'];
+        $pageStart = isset($options['pdf_page_start']) && (int)$options['pdf_page_start'] > 0
+            ? (int)$options['pdf_page_start'] : 1; // 1-based
+        $pageCount = isset($options['pdf_page_count']) && (int)$options['pdf_page_count'] > 0
+            ? (int)$options['pdf_page_count'] : null;
+        $first = $pageStart;
+        $last = $pageCount ? ($pageStart + $pageCount - 1) : null;
+        if ($first) { $cmd[] = '-f'; $cmd[] = (string)$first; }
+        if ($last)  { $cmd[] = '-l'; $cmd[] = (string)$last; }
+        $cmd[] = $path; $cmd[] = $tmpBase;
+        $code = $this->runCommand($cmd, 180);
         if ($code !== 0) {
             Log::info('pdftoppm failed or not available; skipping PDF OCR', ['path' => $path, 'code' => $code]);
             return $result;
