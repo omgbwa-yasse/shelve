@@ -179,6 +179,111 @@
             color: white;
             font-weight: 500;
         }
+
+        /* Styles pour le bouton AI */
+        .header-ai-button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            margin-left: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-ai-button:hover {
+            background-color: #0056b3;
+        }
+
+        .header-ai-button i {
+            font-size: 16px;
+        }
+
+        /* Styles pour le modal AI */
+        .ai-chat-modal {
+            max-width: 600px;
+        }
+
+        .ai-chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .ai-message, .user-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 85%;
+        }
+
+        .ai-message {
+            background-color: #e3f2fd;
+            margin-right: auto;
+        }
+
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .search-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-type-btn {
+            padding: 8px 16px;
+            border: 2px solid #dee2e6;
+            background-color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .search-type-btn:hover {
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .search-type-btn.active {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .ai-chat-input-group {
+            margin-top: 15px;
+        }
+
+        .result-link {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin: 2px;
+            font-size: 12px;
+        }
+
+        .result-link:hover {
+            background-color: #218838;
+            color: white;
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -259,6 +364,9 @@
                                 </select>
                                 <button class="header-search-button" type="submit">
                                     <i class="bi bi-search"></i>
+                                </button>
+                                <button type="button" class="header-ai-button" onclick="openAiSearchModal()">
+                                    <i class="bi bi-robot"></i>
                                 </button>
                             </form>
                         </div>
@@ -464,6 +572,55 @@
         </main>
     </div>
 
+    <!-- Modal pour l'assistant IA de recherche -->
+    <div class="modal fade" id="aiSearchModal" tabindex="-1" role="dialog" aria-labelledby="aiSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog ai-chat-modal" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiSearchModalLabel">
+                        <i class="bi bi-robot me-2"></i>{{ __('AI Search Assistant') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Sélecteur du type de recherche -->
+                    <div class="search-type-selector">
+                        <button class="search-type-btn active" data-type="records">
+                            <i class="bi bi-folder me-1"></i>{{ __('Records') }}
+                        </button>
+                        <button class="search-type-btn" data-type="mails">
+                            <i class="bi bi-envelope me-1"></i>{{ __('Mails') }}
+                        </button>
+                        <button class="search-type-btn" data-type="communications">
+                            <i class="bi bi-chat-dots me-1"></i>{{ __('Communications') }}
+                        </button>
+                        <button class="search-type-btn" data-type="slips">
+                            <i class="bi bi-arrow-left-right me-1"></i>{{ __('Transfers') }}
+                        </button>
+                    </div>
+
+                    <!-- Zone des messages -->
+                    <div class="ai-chat-messages" id="aiChatMessages">
+                        <div class="ai-message">
+                            <i class="bi bi-robot me-2"></i>
+                            {{ __('Hello! I\'m your search assistant. Tell me what you\'re looking for and I\'ll help you find it.') }}
+                        </div>
+                    </div>
+
+                    <!-- Zone de saisie -->
+                    <div class="ai-chat-input-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="aiChatInput"
+                                   placeholder="{{ __('Ask me what you\'re looking for...') }}">
+                            <button class="btn btn-primary" type="button" onclick="sendAiMessage()">
+                                <i class="bi bi-send"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endauth
 
@@ -598,7 +755,100 @@
             setTimeout(initializeLayoutScripts, 200);
         });
 
+        // Variables globales pour l'assistant IA
+        let aiCurrentSearchType = 'records';
 
+        // Fonction pour ouvrir le modal de l'assistant IA
+        function openAiSearchModal() {
+            try {
+                if (window.bootstrap && bootstrap.Modal) {
+                    var modalElement = document.getElementById('aiSearchModal');
+                    var modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modalInstance.show();
+                    return;
+                }
+            } catch (e) {}
+
+            if (typeof $ !== 'undefined' && typeof $('#aiSearchModal').modal === 'function') {
+                $('#aiSearchModal').modal('show');
+            }
+        }
+
+        // Gestion des boutons de type de recherche
+        $(document).on('click', '.search-type-btn', function() {
+            $('.search-type-btn').removeClass('active');
+            $(this).addClass('active');
+            aiCurrentSearchType = $(this).data('type');
+        });
+
+        // Envoi d'un message à l'assistant IA
+        function sendAiMessage() {
+            const input = $('#aiChatInput');
+            const message = input.val().trim();
+
+            if (!message) return;
+
+            // Ajouter le message de l'utilisateur
+            addChatMessage(message, true);
+            input.val('');
+
+            // Envoyer la requête à l'API
+            fetch('/ai-search/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    message: message,
+                    search_type: aiCurrentSearchType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addChatMessage(data.response, false, data.results);
+                } else {
+                    addChatMessage('{{ __("Sorry, an error occurred. Please try again.") }}', false);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addChatMessage('{{ __("Sorry, an error occurred. Please try again.") }}', false);
+            });
+        }
+
+        // Ajouter un message au chat
+        function addChatMessage(message, isUser, results = null) {
+            const chatContainer = $('#aiChatMessages');
+            const messageClass = isUser ? 'user-message' : 'ai-message';
+            const icon = isUser ? '' : '<i class="bi bi-robot me-2"></i>';
+
+            let messageHtml = `<div class="${messageClass}">${icon}${message}`;
+
+            // Ajouter les liens vers les résultats si disponibles
+            if (results && results.length > 0) {
+                messageHtml += '<div class="mt-2">';
+                results.forEach(result => {
+                    messageHtml += `<a href="${result.url}" class="result-link" target="_blank">
+                        <i class="${result.icon} me-1"></i>${result.title}
+                    </a>`;
+                });
+                messageHtml += '</div>';
+            }
+
+            messageHtml += '</div>';
+
+            chatContainer.append(messageHtml);
+            chatContainer.scrollTop(chatContainer[0].scrollHeight);
+        }
+
+        // Envoyer le message avec Entrée
+        $(document).on('keypress', '#aiChatInput', function(e) {
+            if (e.which === 13) {
+                sendAiMessage();
+            }
+        });
 
     </script>
 </body>

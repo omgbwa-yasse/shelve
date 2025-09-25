@@ -57,5 +57,11 @@ return [
     'less_than_or_equal' => '<=',
     'between' => 'entre',
     'with' => 'avec',
-    'without' => 'sauf'
+    'without' => 'sauf',
+
+    // Assistant IA
+    'AI Search Assistant' => 'Assistant IA de Recherche',
+    'Hello! I\'m your search assistant. Tell me what you\'re looking for and I\'ll help you find it.' => 'Bonjour ! Je suis votre assistant de recherche. Dites-moi ce que vous cherchez et je vous aiderai à le trouver.',
+    'Ask me what you\'re looking for...' => 'Demandez-moi ce que vous cherchez...',
+    'Sorry, an error occurred. Please try again.' => 'Désolé, une erreur s\'est produite. Veuillez réessayer.'
 ];

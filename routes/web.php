@@ -917,6 +917,11 @@ Route::prefix('public')->name('public.')->group(function () {
 
 });
 
+// Routes pour l'assistant IA de recherche (hors API)
+Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(function () {
+    Route::post('/chat', [\App\Http\Controllers\AiSearchController::class, 'chat'])->name('chat');
+});
+
 // Routes API pour les records et thésaurus
 Route::middleware('auth:sanctum')->prefix('api')->group(function () {
     Route::post('thesaurus/search', [ThesaurusController::class, 'searchApi'])->name('api.thesaurus.search');
