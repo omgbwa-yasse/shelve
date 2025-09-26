@@ -58,6 +58,7 @@ class ProviderRegistry
             'ollama' => 'registerOllamaCompat',
             'ollama_turbo' => 'registerOllamaTurbo',
             'openai_custom' => 'registerOpenaiCustom',
+            'mistral' => 'registerMistral',
         ];
         if (isset($map[$providerName]) && method_exists($this, $map[$providerName])) {
             $this->{$map[$providerName]}();
@@ -193,6 +194,29 @@ class ProviderRegistry
     {
         $key = $this->defaultValues->getEffectiveValue('grok_api_key', null, '');
         if ($key) { AiBridge::registerProvider('grok', new GrokProvider($key)); }
+    }
+
+    private function registerMistral(): void
+    {
+        $key = $this->defaultValues->getEffectiveValue('mistral_api_key', null, '');
+        if (!$key) { return; }
+        
+        $base = $this->defaultValues->getEffectiveValue('mistral_base_url', null, 'https://api.mistral.ai/v1');
+        
+        AiBridge::registerProvider('mistral', new CustomOpenAIProvider(
+            $key,
+            $base,
+            [
+                'chat' => '/chat/completions',
+                'embeddings' => '/embeddings',
+                'image' => '/images/generations',
+                'tts' => '/audio/speech',
+                'stt' => '/audio/transcriptions',
+            ],
+            self::AUTH_HEADER,
+            self::AUTH_PREFIX_BEARER,
+            []
+        ));
     }
 
     private function registerOllamaTurbo(): void

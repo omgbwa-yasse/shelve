@@ -15,6 +15,9 @@ class AiSearchController extends Controller
     {
         $message = $request->input('message');
         $searchType = $request->input('search_type', 'records');
+        
+        // Auto-détection du type de recherche basé sur le contenu
+        $searchType = $this->detectSearchType($message, $searchType);
 
         if (empty($message)) {
             return response()->json([
@@ -217,5 +220,48 @@ class AiSearchController extends Controller
             'message' => $response,
             'links' => $results
         ];
+    }
+
+    /**
+     * Détecte automatiquement le type de recherche basé sur le contenu de la requête
+     */
+    private function detectSearchType(string $message, string $defaultType): string
+    {
+        $messageLower = strtolower($message);
+        
+        // Détection des mots-clés pour les auteurs
+        $authorKeywords = ['auteur', 'auteurs', 'écrivain', 'rédacteur'];
+        foreach ($authorKeywords as $keyword) {
+            if (strpos($messageLower, $keyword) !== false) {
+                return 'authors';
+            }
+        }
+        
+        // Détection des mots-clés pour les mails
+        $mailKeywords = ['mail', 'email', 'courrier', 'correspondance', 'message'];
+        foreach ($mailKeywords as $keyword) {
+            if (strpos($messageLower, $keyword) !== false) {
+                return 'mails';
+            }
+        }
+        
+        // Détection des mots-clés pour les communications
+        $commKeywords = ['communication', 'échange', 'dialogue'];
+        foreach ($commKeywords as $keyword) {
+            if (strpos($messageLower, $keyword) !== false) {
+                return 'communications';
+            }
+        }
+        
+        // Détection des mots-clés pour les bordereaux/transferts
+        $slipKeywords = ['bordereau', 'transfert', 'borderaux', 'slip', 'envoi'];
+        foreach ($slipKeywords as $keyword) {
+            if (strpos($messageLower, $keyword) !== false) {
+                return 'slips';
+            }
+        }
+        
+        // Si aucun mot-clé spécifique trouvé, retourner le type par défaut
+        return $defaultType;
     }
 }
