@@ -365,9 +365,9 @@
                                 <button class="header-search-button" type="submit">
                                     <i class="bi bi-search"></i>
                                 </button>
-                                <button type="button" class="header-ai-button" onclick="openAiSearchModal()">
+                                <a href="{{ route('ai-search.index') }}" class="header-ai-button" style="text-decoration: none;">
                                     <i class="bi bi-robot"></i>
-                                </button>
+                                </a>
                             </form>
                         </div>
 
@@ -555,6 +555,9 @@
                                             @break
                                         @case('dollies')
                                             @include('submenu.dollies')
+                                            @break
+                                        @case('ai-search')
+                                            @include('submenu.ai-search')
                                             @break
                                     @endswitch
                                 </div>
@@ -752,14 +755,32 @@
         // Initialiser les scripts quand le DOM est prêt et que Vite a chargé les dépendances
         document.addEventListener('DOMContentLoaded', function() {
             // Attendre un peu que Vite charge jQuery
-            setTimeout(initializeLayoutScripts, 200);
+            setTimeout(function() {
+                initializeLayoutScripts();
+                initSearchTypeButtons(); // Initialiser les boutons de type
+            }, 200);
         });
+
+        // Ne plus réinitialiser à l'ouverture du modal pour éviter les doublons
 
         // Variables globales pour l'assistant IA
         let aiCurrentSearchType = 'records';
 
         // Fonction pour ouvrir le modal de l'assistant IA
         function openAiSearchModal() {
+            // Réinitialiser les boutons à l'ouverture du modal (JavaScript vanilla)
+            setTimeout(function() {
+                const buttons = document.querySelectorAll('.search-type-btn');
+                buttons.forEach(btn => btn.classList.remove('active'));
+
+                const recordsBtn = document.querySelector('.search-type-btn[data-type="records"]');
+                if (recordsBtn) {
+                    recordsBtn.classList.add('active');
+                }
+                aiCurrentSearchType = 'records';
+                // Ne PAS réinitialiser les event listeners à chaque ouverture
+            }, 100);
+
             try {
                 if (window.bootstrap && bootstrap.Modal) {
                     var modalElement = document.getElementById('aiSearchModal');
@@ -774,12 +795,56 @@
             }
         }
 
-        // Gestion des boutons de type de recherche
-        $(document).on('click', '.search-type-btn', function() {
-            $('.search-type-btn').removeClass('active');
-            $(this).addClass('active');
-            aiCurrentSearchType = $(this).data('type');
-        });
+        // Variable pour éviter les doublons d'event listeners
+        let searchTypeButtonsInitialized = false;
+
+        // Gestion des boutons de type de recherche (JavaScript vanilla)
+        function initSearchTypeButtons() {
+            if (searchTypeButtonsInitialized) {
+                return; // Éviter les doublons
+            }
+
+            const buttons = document.querySelectorAll('.search-type-btn');
+
+            buttons.forEach(button => {
+                button.addEventListener('click', handleSearchTypeClick);
+            });
+
+            searchTypeButtonsInitialized = true;
+        }
+
+        function handleSearchTypeClick(e) {
+            e.preventDefault();
+            console.log('Button clicked:', this.dataset.type);
+
+            const buttons = document.querySelectorAll('.search-type-btn');
+
+            // Retirer la classe active de tous les boutons
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Ajouter la classe active au bouton cliqué
+            this.classList.add('active');
+            aiCurrentSearchType = this.dataset.type;
+
+            // Ajouter un message pour confirmer le changement SEULEMENT si c'est différent
+            const typeNames = {
+                'records': 'Documents/Records',
+                'mails': 'Mails',
+                'communications': 'Communications',
+                'slips': 'Transferts'
+            };
+            const typeName = typeNames[aiCurrentSearchType] || aiCurrentSearchType;
+
+            // Ne pas répéter le message si c'est le même type
+            const lastMessage = document.querySelector('#aiChatMessages .ai-message:last-child');
+            const expectedMessage = `Recherche maintenant dans : ${typeName}`;
+
+            if (!lastMessage || !lastMessage.textContent.includes(expectedMessage)) {
+                addChatMessage(`Recherche maintenant dans : ${typeName}`, false);
+            }
+        }
 
         // Envoi d'un message à l'assistant IA
         function sendAiMessage() {

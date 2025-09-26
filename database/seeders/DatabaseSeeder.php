@@ -55,6 +55,9 @@ class DatabaseSeeder extends Seeder
             // 9. IA ET PROMPTS (Indépendants)
             AiSeeder::class,
             AiProvidersSeeder::class, // Paramètres des providers IA (settings)
+
+            // 10. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
+            RecordSeederSimple::class, // Exemples de documents d'archives
         ]);
     }
 }

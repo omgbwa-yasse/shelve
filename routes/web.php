@@ -919,7 +919,13 @@ Route::prefix('public')->name('public.')->group(function () {
 
 // Routes pour l'assistant IA de recherche (hors API)
 Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\AiSearchController::class, 'index'])->name('index');
     Route::post('/chat', [\App\Http\Controllers\AiSearchController::class, 'chat'])->name('chat');
+
+    // Routes de test
+    Route::get('/tests', [\App\Http\Controllers\AiSearchTestController::class, 'runTests'])->name('tests');
+    Route::get('/test/{testName}', [\App\Http\Controllers\AiSearchTestController::class, 'runTest'])->name('test.single');
+    Route::get('/test-interface', [\App\Http\Controllers\AiSearchTestController::class, 'testInterface'])->name('test.interface');
 });
 
 // Routes API pour les records et thésaurus

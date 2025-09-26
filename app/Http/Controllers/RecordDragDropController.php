@@ -116,17 +116,9 @@ class RecordDragDropController extends Controller
      | Helpers internes       |
      ======================== */
 
-    private function extractAiText(array $res): string
+    private function extractAiText($res): string
     {
-        $text = null;
-        if (!empty($res['content'])) {
-            $text = is_array($res['content']) ? implode("", $res['content']) : (string)$res['content'];
-        } elseif (!empty($res['message']['content'])) {
-            $text = (string)$res['message']['content'];
-        } elseif (!empty($res['choices'][0]['message']['content'])) {
-            $text = (string)$res['choices'][0]['message']['content'];
-        }
-        return $text !== null ? $text : json_encode($res);
+        return \App\Services\AI\ResponseTextExtractor::extract($res);
     }
 
     private function tryParseJson(?string $text): ?array
