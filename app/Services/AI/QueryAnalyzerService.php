@@ -131,6 +131,11 @@ FILTRES: slip_status (reçu/approuvé/intégré), officer (agent), user (utilisa
          officer_organisation, user_organisation, container, record (référence archive)
 DATES: created_at, received_date, approved_date, integrated_date
 
+👤 POUR \"authors\" (Auteurs):
+CHAMPS: id, name, parallel_name, other_name, lifespan, locations, created_at, updated_at
+FILTRES: name (nom de l'auteur), type (type d'auteur), parent (auteur parent)
+DATES: created_at, updated_at
+
 ═══ EXEMPLES COMPLETS PAR TYPE ═══
 
 📋 RECORDS:
@@ -150,6 +155,11 @@ DATES: created_at, received_date, approved_date, integrated_date
 📋 SLIPS:
 \"bordereaux approuvés par Admin\" → {\"action\":\"filter\",\"filters\":{\"slip_status\":\"approuvé\",\"approved_by\":\"Admin\"},\"table\":\"slips\"}
 \"transferts intégrés cette semaine\" → {\"action\":\"filter\",\"filters\":{\"slip_status\":\"intégré\",\"date_from\":\"2025-09-20\",\"date_to\":\"2025-09-26\"},\"table\":\"slips\"}
+
+👤 AUTHORS:
+\"liste des auteurs\" → {\"action\":\"list\",\"table\":\"authors\",\"order\":\"asc\",\"order_by\":\"name\"}
+\"auteurs par nom\" → {\"action\":\"filter\",\"filters\":{\"name\":\"Martin\"},\"table\":\"authors\"}
+\"tous les auteurs\" → {\"action\":\"list\",\"table\":\"authors\",\"limit\":50}
 
 GESTION INTELLIGENTE DES DATES:
 - \"aujourd'hui\" = 2025-09-26

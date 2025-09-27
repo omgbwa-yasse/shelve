@@ -145,10 +145,13 @@ class QueryExecutorService
 
         $query = $this->getTableQuery($table);
 
+        $tablePrefix = $this->getTablePrefix($table);
+        $orderColumn = $instructions['order_by'] ?? 'created_at';
+
         if ($order === 'desc') {
-            $query->orderBy('records.created_at', 'desc');
+            $query->orderBy("{$tablePrefix}.{$orderColumn}", 'desc');
         } else {
-            $query->orderBy('records.created_at', 'asc');
+            $query->orderBy("{$tablePrefix}.{$orderColumn}", 'asc');
         }
 
         $results = $query->limit($limit)->get();
@@ -279,6 +282,14 @@ class QueryExecutorService
                         'slip_users.name as user_name'
                     );
 
+            case 'authors':
+                return DB::table('authors')
+                    ->leftJoin('author_types', 'authors.type_id', '=', 'author_types.id')
+                    ->select(
+                        'authors.*',
+                        'author_types.name as type_name'
+                    );
+
             default:
                 return DB::table($table);
         }
@@ -333,14 +344,10 @@ class QueryExecutorService
                     if ($table === 'records') {
                         $query->whereExists(function ($q) use ($value) {
                             $q->select(DB::raw(1))
-                              ->from('record_authors')
-                              ->whereColumn('record_authors.record_id', 'records.id')
-                              ->join('authors', 'record_authors.author_id', '=', 'authors.id')
-                              ->where(function ($subQuery) use ($value) {
-                                  $subQuery->where('authors.name', 'LIKE', "%{$value}%")
-                                           ->orWhere('authors.first_name', 'LIKE', "%{$value}%")
-                                           ->orWhere('authors.last_name', 'LIKE', "%{$value}%");
-                              });
+                              ->from('record_author')
+                              ->whereColumn('record_author.record_id', 'records.id')
+                              ->join('authors', 'record_author.author_id', '=', 'authors.id')
+                              ->where('authors.name', 'LIKE', "%{$value}%");
                         });
                     }
                     break;
@@ -352,24 +359,17 @@ class QueryExecutorService
                     break;
 
                 case 'term':
-                    if ($table === 'records') {
-                        $query->whereExists(function ($q) use ($value) {
-                            $q->select(DB::raw(1))
-                              ->from('record_terms')
-                              ->whereColumn('record_terms.record_id', 'records.id')
-                              ->join('terms', 'record_terms.term_id', '=', 'terms.id')
-                              ->where('terms.name', 'LIKE', "%{$value}%");
-                        });
-                    }
+                    // Terms relationship has been removed from the system
+                    // This filter is no longer supported
                     break;
 
                 case 'container':
                     if ($table === 'records') {
                         $query->whereExists(function ($q) use ($value) {
                             $q->select(DB::raw(1))
-                              ->from('record_containers')
-                              ->whereColumn('record_containers.record_id', 'records.id')
-                              ->join('containers', 'record_containers.container_id', '=', 'containers.id')
+                              ->from('record_container')
+                              ->whereColumn('record_container.record_id', 'records.id')
+                              ->join('containers', 'record_container.container_id', '=', 'containers.id')
                               ->where(function ($subQuery) use ($value) {
                                   $subQuery->where('containers.name', 'LIKE', "%{$value}%")
                                            ->orWhere('containers.code', 'LIKE', "%{$value}%");
