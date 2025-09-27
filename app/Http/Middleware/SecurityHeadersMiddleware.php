@@ -40,7 +40,13 @@ class SecurityHeadersMiddleware
         $response->headers->set('Content-Security-Policy', $csp);
 
         // Protection contre les attaques de permissions
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+        // Autoriser le microphone uniquement sur les pages AI Search
+        $microphonePolicy = 'microphone=()'; // Par défaut : bloquer
+        if ($request->is('ai-search*')) {
+            $microphonePolicy = 'microphone=(self)'; // Autoriser sur AI Search
+        }
+
+        $response->headers->set('Permissions-Policy', "camera=(), {$microphonePolicy}, geolocation=()");
 
         return $response;
     }
