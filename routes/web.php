@@ -922,6 +922,9 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
     Route::get('/', [\App\Http\Controllers\AiSearchController::class, 'index'])->name('index');
     Route::post('/chat', [\App\Http\Controllers\AiSearchController::class, 'chat'])->name('chat');
 
+    // Documentation de l'IA
+    Route::get('/documentation', [\App\Http\Controllers\AiSearchController::class, 'documentation'])->name('documentation');
+
     // Routes de test
     Route::get('/tests', [\App\Http\Controllers\AiSearchTestController::class, 'runTests'])->name('tests');
     Route::get('/test/{testName}', [\App\Http\Controllers\AiSearchTestController::class, 'runTest'])->name('test.single');

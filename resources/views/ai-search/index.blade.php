@@ -41,6 +41,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="text-end">
+                                <a href="{{ route('ai-search.documentation') }}" class="btn btn-outline-info me-2" target="_blank">
+                                    <i class="bi bi-book me-1"></i>{{ __('Documentation') }}
+                                </a>
                                 <button class="btn btn-outline-secondary" id="clearChat">
                                     <i class="bi bi-trash me-1"></i>{{ __('Clear Chat') }}
                                 </button>

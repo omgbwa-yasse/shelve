@@ -29,6 +29,11 @@ class AiSearchController extends Controller
         return view('ai-search.index');
     }
 
+    public function documentation()
+    {
+        return view('ai-search.documentation');
+    }
+
     public function chat(Request $request)
     {
         $message = $request->input('message');

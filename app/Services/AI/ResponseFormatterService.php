@@ -27,6 +27,7 @@ class ResponseFormatterService
 
             case 'filter':
             case 'list':
+            case 'date_range':
                 return $this->formatListResponse($data, $count, $searchType, $action);
 
             case 'show':

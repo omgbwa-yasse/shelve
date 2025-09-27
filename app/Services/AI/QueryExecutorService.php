@@ -313,19 +313,19 @@ class QueryExecutorService
             switch ($key) {
                 // Filtres de dates communs
                 case 'year':
-                    $query->whereYear("{$tablePrefix}.created_at", $value);
+                    $this->applyYearFilter($query, $table, $value);
                     break;
 
                 case 'month':
-                    $query->whereMonth("{$tablePrefix}.created_at", $value);
+                    $this->applyMonthFilter($query, $table, $value);
                     break;
 
                 case 'date_from':
-                    $query->whereDate("{$tablePrefix}.created_at", '>=', $value);
+                    $this->applyDateFromFilter($query, $table, $value);
                     break;
 
                 case 'date_to':
-                    $query->whereDate("{$tablePrefix}.created_at", '<=', $value);
+                    $this->applyDateToFilter($query, $table, $value);
                     break;
 
                 // Filtres spécifiques aux RECORDS
@@ -545,5 +545,69 @@ class QueryExecutorService
         ];
 
         return $defaultFields[$table] ?? ['name'];
+    }
+
+    private function applyYearFilter(Builder $query, string $table, $year): void
+    {
+        if ($table === 'records') {
+            // Pour les records, rechercher dans date_start, date_end, ou date_exact
+            $query->where(function ($q) use ($year) {
+                $q->whereYear('records.date_start', $year)
+                  ->orWhereYear('records.date_end', $year)
+                  ->orWhereYear('records.date_exact', $year);
+            });
+        } else {
+            // Pour les autres tables, utiliser created_at
+            $tablePrefix = $this->getTablePrefix($table);
+            $query->whereYear("{$tablePrefix}.created_at", $year);
+        }
+    }
+
+    private function applyMonthFilter(Builder $query, string $table, $month): void
+    {
+        if ($table === 'records') {
+            // Pour les records, rechercher dans date_start, date_end, ou date_exact
+            $query->where(function ($q) use ($month) {
+                $q->whereMonth('records.date_start', $month)
+                  ->orWhereMonth('records.date_end', $month)
+                  ->orWhereMonth('records.date_exact', $month);
+            });
+        } else {
+            // Pour les autres tables, utiliser created_at
+            $tablePrefix = $this->getTablePrefix($table);
+            $query->whereMonth("{$tablePrefix}.created_at", $month);
+        }
+    }
+
+    private function applyDateFromFilter(Builder $query, string $table, $dateFrom): void
+    {
+        if ($table === 'records') {
+            // Pour les records, chercher dans les dates de début, fin ou exacte
+            $query->where(function ($q) use ($dateFrom) {
+                $q->whereDate('records.date_start', '>=', $dateFrom)
+                  ->orWhereDate('records.date_end', '>=', $dateFrom)
+                  ->orWhereDate('records.date_exact', '>=', $dateFrom);
+            });
+        } else {
+            // Pour les autres tables, utiliser created_at
+            $tablePrefix = $this->getTablePrefix($table);
+            $query->whereDate("{$tablePrefix}.created_at", '>=', $dateFrom);
+        }
+    }
+
+    private function applyDateToFilter(Builder $query, string $table, $dateTo): void
+    {
+        if ($table === 'records') {
+            // Pour les records, chercher dans les dates de début, fin ou exacte
+            $query->where(function ($q) use ($dateTo) {
+                $q->whereDate('records.date_start', '<=', $dateTo)
+                  ->orWhereDate('records.date_end', '<=', $dateTo)
+                  ->orWhereDate('records.date_exact', '<=', $dateTo);
+            });
+        } else {
+            // Pour les autres tables, utiliser created_at
+            $tablePrefix = $this->getTablePrefix($table);
+            $query->whereDate("{$tablePrefix}.created_at", '<=', $dateTo);
+        }
     }
 }

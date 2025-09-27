@@ -16,7 +16,15 @@ class QueryAnalyzerService
 
     public function analyzeQuery(string $userQuery, string $searchType = 'records'): array
     {
-        $this->registry->ensureConfigured('claude');
+        // Utiliser le provider par défaut depuis les paramètres
+        $defaultProvider = $this->registry->getSetting('ai_default_provider', 'mistral');
+        if (is_string($defaultProvider)) {
+            $providerName = json_decode($defaultProvider, true) ?: $defaultProvider;
+        } else {
+            $providerName = $defaultProvider;
+        }
+
+        $this->registry->ensureConfigured($providerName);
 
         $analysisPrompt = $this->getAnalysisPrompt($searchType);
 
@@ -26,8 +34,11 @@ class QueryAnalyzerService
         ];
 
         try {
-            $response = AiBridge::provider('claude')->chat($messages, [
-                'model' => 'claude-3-5-sonnet-20241022'
+            // Obtenir le modèle par défaut pour le provider
+            $defaultModel = $this->getDefaultModelForProvider($providerName);
+
+            $response = AiBridge::provider($providerName)->chat($messages, [
+                'model' => $defaultModel
             ]);
 
             $aiResponse = $this->extractAIResponse($response);
@@ -42,18 +53,33 @@ class QueryAnalyzerService
         }
     }
 
+    private function getDefaultModelForProvider(string $providerName): string
+    {
+        return match($providerName) {
+            'mistral' => $this->registry->getSetting('mistral_default_model', 'mistral-large-latest'),
+            'claude' => 'claude-3-5-sonnet-20241022',
+            'openai' => 'gpt-4',
+            'ollama' => $this->registry->getSetting('ollama_default_model', 'llama3.1'),
+            default => 'mistral-large-latest'
+        };
+    }
+
     private function getAnalysisPrompt(string $searchType): string
     {
         return "Tu es un analyseur de requêtes intelligent spécialisé dans les archives. Tu analyses les demandes utilisateur et retournes des instructions JSON précises pour Laravel.
 
 TYPES D'ACTIONS DISPONIBLES:
 1. \"search\" - Recherche par mots-clés dans le contenu
-2. \"count\" - Compter des éléments avec filtres optionnels
-3. \"filter\" - Filtrer par critères spécifiques (année, mois, auteur, type, etc.)
+2. \"count\" - Compter des éléments UNIQUEMENT si l'utilisateur demande explicitement \"combien\"
+3. \"filter\" - Filtrer par critères spécifiques (année, mois, auteur, type, etc.) ET AFFICHER LA LISTE
 4. \"list\" - Lister les éléments récents ou tous
 5. \"show\" - Afficher un élément spécifique par ID
-6. \"date_range\" - Recherche dans une plage de dates spécifique
+6. \"date_range\" - Recherche dans une plage de dates spécifique ET AFFICHER LA LISTE
 7. \"advanced\" - Recherche avancée avec critères complexes multiples
+
+RÈGLE IMPORTANTE:
+- Utilisez \"count\" SEULEMENT si l'utilisateur demande explicitement \"combien\" sans vouloir voir la liste
+- Dans TOUS LES AUTRES CAS, utilisez \"filter\" ou \"date_range\" pour montrer les résultats à l'utilisateur
 
 FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
@@ -141,12 +167,18 @@ FILTRES INTELLIGENTS:
 - \"Martin\" → author: \"Martin\" (cherche nom/prénom)
 - \"conteneur A123\" → container: \"A123\"
 
+EXEMPLES DE DISTINCTION COUNT VS FILTER:
+\"combien d'éléments en 2024\" → {\"action\":\"count\",\"filters\":{\"year\":2024}}
+\"éléments de 2024\" → {\"action\":\"filter\",\"filters\":{\"year\":2024}}
+\"montrez-moi les documents de 2024\" → {\"action\":\"filter\",\"filters\":{\"year\":2024}}
+\"liste des archives de janvier\" → {\"action\":\"filter\",\"filters\":{\"month\":1}}
+
 IMPORTANT:
 - Retourne UNIQUEMENT du JSON valide
 - Adapte les filtres selon le type ($searchType)
 - Utilise les bons noms de champs pour chaque table
 - Gère les relations complexes (auteur, organisations, etc.)
-- Pour les comptages, utilise TOUJOURS l'action \"count\"
+- \"count\" = nombre seulement, \"filter\"/\"date_range\" = liste des résultats
 - Limite par défaut: 10 pour search/filter, 20 pour date_range";
     }
 
