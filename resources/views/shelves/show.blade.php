@@ -323,8 +323,7 @@ const shelfData = {
     shelf: {{ $shelf->shelf }},
     total_capacity: {{ $shelf->total_capacity }},
     occupied_spots: {{ $shelf->occupied_spots }},
-    containers: @json($shelf->containers->toArray()),
-    shelfGrid: @json($shelfGrid)
+    containers: @json($shelf->containers->toArray())
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -366,19 +365,20 @@ function initializeTooltips() {
 }
 
 function locateContainer(containerCode) {
-    // Highlight container in 3D view
-    const slots = document.querySelectorAll('.container-slot');
-    slots.forEach(slot => {
-        if (slot.textContent.includes(containerCode.substring(0, 4))) {
-            slot.style.animation = 'pulse 2s infinite';
+    // Highlight container in the list
+    const containers = document.querySelectorAll('.container-item[data-container-code]');
+    containers.forEach(container => {
+        if (container.dataset.containerCode === containerCode) {
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            container.style.animation = 'pulse 2s infinite';
             setTimeout(() => {
-                slot.style.animation = '';
+                container.style.animation = '';
             }, 4000);
         }
     });
-    
+
     // Show toast notification
-    showToast(`Container ${containerCode} localisé`, 'success');
+    showToast(`Container ${containerCode} localisé dans la liste`, 'success');
 }
 
 function showContainerDetails(container) {
@@ -387,158 +387,7 @@ function showContainerDetails(container) {
     console.log('Show details for container:', container);
 }
 
-function showAddContainerDialog(face, ear, shelfLevel) {
-    // Show a modal for quick container creation
-    const modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.innerHTML = `
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-plus-circle text-primary"></i>
-                        Ajouter un conteneur
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info">
-                        <i class="bi bi-geo-alt"></i>
-                        <strong>Position :</strong> Face ${face}, Travée ${ear}, Niveau ${shelfLevel}
-                        <br><small>Étagère : {{ $shelf->code }}</small>
-                    </div>
-                    
-                    <form id="quickContainerForm">
-                        <div class="mb-3">
-                            <label class="form-label">Code du conteneur *</label>
-                            <input type="text" class="form-control" id="containerCode" required 
-                                   placeholder="Ex: BOX${face}${ear}${shelfLevel}-001">
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-6">
-                                <label class="form-label">Type</label>
-                                <select class="form-select" id="containerType">
-                                    <option value="standard">Standard</option>
-                                    <option value="large">Grande</option>
-                                    <option value="small">Petite</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label">Statut</label>
-                                <select class="form-select" id="containerStatus">
-                                    <option value="available">Disponible</option>
-                                    <option value="occupied">Occupé</option>
-                                    <option value="reserved">Réservé</option>
-                                </select>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Annuler
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="createQuickContainer(${face}, ${ear}, ${shelfLevel})">
-                        <i class="bi bi-check-circle"></i>
-                        Créer le conteneur
-                    </button>
-                    <a href="{{ route('containers.create') }}?shelf_id={{ $shelf->id }}&position=${face}-${ear}-${shelfLevel}" 
-                       class="btn btn-primary">
-                        <i class="bi bi-gear"></i>
-                        Création avancée
-                    </a>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    const bootstrapModal = new bootstrap.Modal(modal);
-    bootstrapModal.show();
-    
-    // Auto-focus on code input
-    modal.addEventListener('shown.bs.modal', function() {
-        document.getElementById('containerCode').focus();
-    });
-    
-    // Remove modal from DOM when closed
-    modal.addEventListener('hidden.bs.modal', function() {
-        document.body.removeChild(modal);
-    });
-}
 
-function createQuickContainer(face, ear, shelfLevel) {
-    const code = document.getElementById('containerCode').value.trim();
-    const type = document.getElementById('containerType').value;
-    const status = document.getElementById('containerStatus').value;
-    
-    if (!code) {
-        showToast('Le code du conteneur est requis', 'warning');
-        return;
-    }
-    
-    // Show loading
-    const createButton = event.target;
-    const originalText = createButton.innerHTML;
-    createButton.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Création...';
-    createButton.disabled = true;
-    
-    // Simulate API call (replace with actual AJAX call)
-    setTimeout(() => {
-        // Add to visual grid (simulation)
-        const newContainer = {
-            id: Date.now(),
-            code: code,
-            status: status,
-            type: type
-        };
-        
-        // Update the shelf grid data
-        if (!shelfData.shelfGrid[face]) shelfData.shelfGrid[face] = {};
-        if (!shelfData.shelfGrid[face][ear]) shelfData.shelfGrid[face][ear] = {};
-        shelfData.shelfGrid[face][ear][shelfLevel] = newContainer;
-        
-        // Re-render the 3D view
-        initializeShelf3D();
-        
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.querySelector('.modal'));
-        modal.hide();
-        
-        showToast(`Conteneur ${code} créé avec succès à la position Face ${face}, Travée ${ear}, Niveau ${shelfLevel}`, 'success');
-        
-        // In real implementation, you would make an AJAX call like this:
-        /*
-        fetch('{{ route("containers.store") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                code: code,
-                shelf_id: {{ $shelf->id }},
-                position_face: face,
-                position_ear: ear,
-                position_shelf: shelfLevel,
-                type: type,
-                status: status
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update the visual representation
-                // Reload the page or update the data
-                location.reload();
-            } else {
-                showToast('Erreur lors de la création: ' + data.message, 'error');
-            }
-        });
-        */
-    }, 1000);
-}
 
 function optimizeShelf() {
     showToast('Fonctionnalité d\'optimisation en développement', 'info');

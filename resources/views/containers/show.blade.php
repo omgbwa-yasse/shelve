@@ -137,38 +137,22 @@
                 <div class="col-lg-6">
                     <div class="card h-100">
                         <div class="card-header bg-success text-white">
-                            <h5 class="mb-0"><i class="bi bi-geo-alt"></i> {{ __('Position et actions') }}</h5>
+                            <h5 class="mb-0"><i class="bi bi-gear"></i> {{ __('Emplacement et actions') }}</h5>
                         </div>
                         <div class="card-body">
                             @if($container->shelf)
-                                <div class="position-info mb-4">
-                                    <h6><i class="bi bi-crosshair"></i> {{ __('Position dans l\'\u00e9tagère') }}</h6>
-                                    <div class="position-display p-3 bg-light rounded">
-                                        <div class="row text-center">
-                                            <div class="col-4">
-                                                <div class="position-coord">
-                                                    <strong>X</strong>
-                                                    <div class="coord-value">{{ $container->x_position ?? '?' }}</div>
-                                                </div>
+                                <div class="shelf-info mb-4">
+                                    <h6><i class="bi bi-bookshelf"></i> {{ __('Emplacement sur l\'\u00e9tagère') }}</h6>
+                                    <div class="shelf-display p-3 bg-light rounded">
+                                        <div class="text-center">
+                                            <div class="shelf-name mb-2">
+                                                <strong>{{ $container->shelf->code }}</strong>
                                             </div>
-                                            <div class="col-4">
-                                                <div class="position-coord">
-                                                    <strong>Y</strong>
-                                                    <div class="coord-value">{{ $container->y_position ?? '?' }}</div>
-                                                </div>
+                                            <div class="shelf-capacity">
+                                                <small class="text-muted">
+                                                    Capacité: {{ $container->shelf->face ?? 0 }}F × {{ $container->shelf->ear ?? 0 }}T × {{ $container->shelf->shelf ?? 0 }}N
+                                                </small>
                                             </div>
-                                            <div class="col-4">
-                                                <div class="position-coord">
-                                                    <strong>Z</strong>
-                                                    <div class="coord-value">{{ $container->z_position ?? '?' }}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-center mt-2">
-                                            <small class="text-muted">
-                                                {{ __('Position') }}: 
-                                                ({{ $container->x_position ?? '?' }}, {{ $container->y_position ?? '?' }}, {{ $container->z_position ?? '?' }})
-                                            </small>
                                         </div>
                                     </div>
                                 </div>
@@ -279,19 +263,14 @@ function moveContainer() {
     transform: translateY(-2px);
 }
 
-.position-coord {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    margin: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.shelf-display {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
 }
 
-.coord-value {
+.shelf-name {
     font-size: 1.2em;
-    font-weight: bold;
     color: #007bff;
-    margin-top: 5px;
 }
 
 .info-item {
@@ -307,9 +286,5 @@ function moveContainer() {
     justify-content: flex-start;
 }
 
-.position-display {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-}
 </style>
 @endsection

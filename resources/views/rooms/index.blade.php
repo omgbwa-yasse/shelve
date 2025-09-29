@@ -21,9 +21,7 @@
 
 /* Layout optimisé - Utilise toute la largeur */
 .compact-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
+  
 }
 
 /* Header harmonisé */
