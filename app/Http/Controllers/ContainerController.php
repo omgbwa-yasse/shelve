@@ -38,9 +38,19 @@ class ContainerController extends Controller
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        $shelves = Shelf::whereHas('room.organisations', function($query) use ($currentOrganisationId) {
-            $query->where('organisation_id', $currentOrganisationId);
-        })->get();
+        $shelves = Shelf::with(['room.floor.building', 'containers'])
+            ->whereHas('room.organisations', function($query) use ($currentOrganisationId) {
+                $query->where('organisation_id', $currentOrganisationId);
+            })
+            ->get();
+
+        // Calculate statistics for each shelf
+        $shelves->each(function($shelf) {
+            $shelf->total_capacity = $shelf->face * $shelf->ear * $shelf->shelf;
+            $shelf->occupied_spots = $shelf->containers->count();
+            $shelf->available_spots = max(0, $shelf->total_capacity - $shelf->occupied_spots);
+            $shelf->occupancy_percentage = $shelf->total_capacity > 0 ? round(($shelf->occupied_spots / $shelf->total_capacity) * 100, 1) : 0;
+        });
 
         $statuses = ContainerStatus::all();
         $properties = ContainerProperty::all();
