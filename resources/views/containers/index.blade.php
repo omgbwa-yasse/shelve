@@ -19,12 +19,6 @@
     --transition: all 0.2s ease-in-out;
 }
 
-/* Layout optimisé - Utilise toute la largeur */
-.compact-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
-}
 
 /* Header harmonisé */
 .page-header {
@@ -354,7 +348,7 @@
 @endpush
 
 @section('content')
-<div class="compact-container">
+<div>
     <!-- Header moderne -->
     <div class="page-header">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">

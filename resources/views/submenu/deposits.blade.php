@@ -13,7 +13,7 @@
                     <i class="bi bi-building"></i> {{ __('building') }}
                 </a>
             </div>
-            <div class="submenu-item">
+            {{-- <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('rooms.index') }}">
                     <i class="bi bi-house"></i> {{ __('room') }}
                 </a>
@@ -27,7 +27,7 @@
                 <a class="submenu-link" href="{{ route('containers.index') }}">
                     <i class="bi bi-box"></i> {{ __('archive_container') }}
                 </a>
-            </div>
+            </div> --}}
         </div>
     </div>
 

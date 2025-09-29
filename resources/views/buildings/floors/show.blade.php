@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@push('styles')
+
 <style>
 /* Design System Harmonisé */
 :root {
@@ -21,10 +21,8 @@
 
 /* Layout optimisé - Utilise toute la largeur et hauteur */
 .compact-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 1rem;
-    min-height: calc(100vh - 100px);
+   
+    /* min-height: calc(100vh - 100px); */
 }
 
 /* Header harmonisé */
@@ -363,7 +361,6 @@
     animation: fadeInUp 0.3s ease-out;
 }
 </style>
-@endpush
 
 @section('content')
 <div class="compact-container">

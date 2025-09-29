@@ -13,15 +13,21 @@ class ContainerController extends Controller
 {
     private const ACCESS_DENIED_MESSAGE = 'Access denied to this container.';
 
-    public function index()
+    public function index(Request $request)
     {
         $currentOrganisationId = Auth::user()->current_organisation_id;
 
-        $containers = Container::with(['shelf.room.floor.building', 'status', 'property'])
+        $query = Container::with(['shelf.room.floor.building', 'status', 'property'])
             ->whereHas('shelf.room.organisations', function($query) use ($currentOrganisationId) {
                 $query->where('organisation_id', $currentOrganisationId);
-            })
-            ->paginate(25);
+            });
+
+        // Filter by shelf_id if provided
+        if ($request->has('shelf_id') && $request->shelf_id) {
+            $query->where('shelve_id', $request->shelf_id);
+        }
+
+        $containers = $query->paginate(25);
 
         return view('containers.index', compact('containers'));
     }

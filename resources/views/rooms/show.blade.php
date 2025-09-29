@@ -4,12 +4,12 @@
 <style>
 /* Design System Harmonisé */
 :root {
-    --primary-color: #2563eb;
+    --primary-color: #000000;
     --secondary-color: #64748b;
-    --success-color: #059669;
+    --success-color: #effffa;
     --warning-color: #d97706;
     --danger-color: #dc2626;
-    --info-color: #0891b2;
+    --info-color: #c0f2ff;
     --light-bg: #f8fafc;
     --border-color: #e2e8f0;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -21,9 +21,7 @@
 
 /* Layout optimisé */
 .compact-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 1rem;
+
 }
 
 /* Header harmonisé */
@@ -139,11 +137,13 @@
 
 /* Badges modernes */
 .status-badge {
+    color: #ffffff !important;
+    /* color: #e3f2fd */
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     letter-spacing: 0.025em;
 }
 
@@ -224,7 +224,7 @@
 }
 
 .shelves-header {
-    background: linear-gradient(135deg, var(--info-color) 0%, #0ea5e9 100%);
+    background: linear-gradient(135deg, var(--info-color) 0%, #ffffff 100%);
     color: white;
     padding: 1rem;
     display: flex;
@@ -233,7 +233,7 @@
 }
 
 .shelves-count {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(45, 43, 43, 0.8);
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
     font-size: 0.875rem;
@@ -439,7 +439,7 @@
                     <!-- Aperçu visuel de la salle -->
                     <div class="room-preview">
                         <i class="bi bi-house-door display-4 text-info mb-3"></i>
-                        <div class="room-type-badge">
+                        <div class="badge">
                             @if($room->type === 'archives')
                                 <span class="status-badge bg-primary">Salle d'archives</span>
                             @elseif($room->type === 'producer')
@@ -622,11 +622,11 @@
                                    title="{{ __('Modifier') }}">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a href="{{ route('containers.index') }}?shelf_id={{ $shelf->id }}" 
+                                {{-- <a href="{{ route('containers.index') }}?shelf_id={{ $shelf->id }}" 
                                    class="btn btn-outline-info action-btn" 
                                    title="{{ __('Voir les contenants') }}">
                                     <i class="bi bi-archive"></i>
-                                </a>
+                                </a> --}}
                             </div>
                         </div>
                     </div>
