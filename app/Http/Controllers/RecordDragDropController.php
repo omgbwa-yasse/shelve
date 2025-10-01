@@ -314,10 +314,10 @@ TXT;
     {
         $provider = app(SettingService::class)->get('ai_default_provider', 'ollama');
         $model = app(SettingService::class)->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
-        
+
         // Récupérer le timeout depuis l'env (en secondes), défaut 300s = 5 minutes
         $timeout = (int) env('AI_REQUEST_TIMEOUT', 300);
-        
+
         try {
             app(ProviderRegistry::class)->ensureConfigured($provider);
         } catch (\Throwable $e) {
