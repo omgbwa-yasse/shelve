@@ -33,12 +33,20 @@ class RecordDragDropController extends Controller
     public function dragDropForm()
     {
         Gate::authorize('records_create');
-        $appUploadMaxMb = (int) app(SettingService::class)->get('upload_max_file_size_mb', 50);
+        $settingService = app(SettingService::class);
+        $appUploadMaxMb = (int) $settingService->get('upload_max_file_size_mb', 50);
+
+        // Récupérer le provider et le modèle depuis la base de données
+        $provider = $settingService->get('ai_default_provider', 'ollama');
+        $model = $settingService->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
+
         return view('records.drag-drop', [
             'server_post_max' => ini_get('post_max_size'),
             'server_upload_max_filesize' => ini_get('upload_max_filesize'),
             'server_max_file_uploads' => ini_get('max_file_uploads'),
             'app_upload_max_file_size_mb' => $appUploadMaxMb,
+            'ai_provider' => $provider,
+            'ai_model' => $model,
         ]);
     }
 
@@ -59,6 +67,8 @@ class RecordDragDropController extends Controller
             $record = $this->persistRecord($parsed, $processed['attachments']);
 
                 $activitySuggestion = $this->topActivityCandidate($parsed['activity_candidates'] ?? []);
+                $isDefaultActivity = false;
+
                 if ($activitySuggestion && isset($activitySuggestion['code'])) {
                     $orgId = optional(Auth::user())->current_organisation_id;
                     $db = Activity::where('code', $activitySuggestion['code'])
@@ -83,6 +93,37 @@ class RecordDragDropController extends Controller
                     }
                 }
 
+                // Si aucune activité n'a été suggérée ou trouvée, utiliser l'activité par défaut de l'organisation
+                if (!$activitySuggestion || empty($activitySuggestion['id'])) {
+                    $orgId = optional(Auth::user())->current_organisation_id;
+                    $defaultActivity = null;
+
+                    if ($orgId) {
+                        // Chercher la première activité de l'organisation
+                        $defaultActivity = Activity::query()
+                            ->whereHas('organisations', function ($q) use ($orgId) {
+                                $q->where('organisations.id', $orgId);
+                            })
+                            ->orderBy('code')
+                            ->first();
+                    }
+
+                    // Si pas d'activité dans l'organisation, prendre n'importe quelle activité
+                    if (!$defaultActivity) {
+                        $defaultActivity = Activity::query()->orderBy('code')->first();
+                    }
+
+                    if ($defaultActivity) {
+                        $activitySuggestion = [
+                            'id' => $defaultActivity->id,
+                            'code' => $defaultActivity->code,
+                            'name' => $defaultActivity->name,
+                            'confidence' => 0,
+                        ];
+                        $isDefaultActivity = true;
+                    }
+                }
+
             return response()->json([
                 'success' => true,
                 'record_id' => $record->id,
@@ -91,6 +132,7 @@ class RecordDragDropController extends Controller
                     'content' => (string)($parsed['content'] ?? ''),
                     'keywords' => array_values(array_filter(array_map('strval', (array)($parsed['keywords'] ?? [])))) ,
                     'activity_suggestion' => $activitySuggestion,
+                    'is_default_activity' => $isDefaultActivity,
                 ],
                 'attachments' => collect($processed['attachments'])->map(fn($a) => [
                     'id' => $a->id,
@@ -357,7 +399,7 @@ TXT;
         return DB::transaction(function () use ($parsed, $attachments) {
             [$statusId, $supportId, $levelId] = $this->resolveDefaultIds();
             $activityId = $this->resolveActivityIdFromCandidates($parsed['activity_candidates'] ?? [])
-                ?: (int) Activity::query()->value('id');
+                ?: $this->getDefaultActivityId();
             [$title, $content] = $this->normalizeTitleAndContent($parsed);
 
             $record = Record::create([
@@ -532,5 +574,31 @@ TXT;
         }
 
         return array_unique($allIds);
+    }
+
+    /**
+     * Récupère l'ID de l'activité par défaut pour l'utilisateur connecté
+     * Priorité : 1) Activité de l'organisation, 2) N'importe quelle activité
+     */
+    private function getDefaultActivityId(): int
+    {
+        $orgId = optional(Auth::user())->current_organisation_id;
+
+        if ($orgId) {
+            // Chercher la première activité de l'organisation
+            $activityId = Activity::query()
+                ->whereHas('organisations', function ($q) use ($orgId) {
+                    $q->where('organisations.id', $orgId);
+                })
+                ->orderBy('code')
+                ->value('id');
+
+            if ($activityId) {
+                return (int) $activityId;
+            }
+        }
+
+        // Fallback : première activité disponible
+        return (int) Activity::query()->orderBy('code')->value('id');
     }
 }

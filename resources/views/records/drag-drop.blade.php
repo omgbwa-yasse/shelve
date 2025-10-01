@@ -10,6 +10,14 @@
                         <i class="bi bi-cloud-upload me-2"></i>
                         {{ __('Drag & Drop - Création automatique de records') }}
                     </h4>
+                    <div class="mt-2">
+                        <small class="badge bg-light text-dark">
+                            <i class="bi bi-robot me-1"></i>Provider: <strong>{{ $ai_provider ?? 'ollama' }}</strong>
+                        </small>
+                        <small class="badge bg-light text-dark ms-2">
+                            <i class="bi bi-cpu me-1"></i>Modèle: <strong>{{ $ai_model ?? 'gemma3:4b' }}</strong>
+                        </small>
+                    </div>
                 </div>
 
                 <div class="card-body">
@@ -175,6 +183,12 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Configuration IA depuis la base de données
+    const AI_PROVIDER = '{{ $ai_provider ?? "ollama" }}';
+    const AI_MODEL = '{{ $ai_model ?? "gemma3:4b" }}';
+
+    console.log('Configuration IA active:', { provider: AI_PROVIDER, model: AI_MODEL });
+
     // Configuration
     const MAX_FILES = 10;
     const MAX_FILE_SIZE = ({{ (int)($app_upload_max_file_size_mb ?? 50) }}) * 1024 * 1024; // MB from app setting
@@ -372,6 +386,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         showProgress('Préparation des fichiers...', 10);
 
+        console.log(`Traitement avec ${AI_PROVIDER} / ${AI_MODEL}`);
+
         try {
             const formData = new FormData();
             selectedFiles.forEach((file, index) => {
@@ -405,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            showProgress('Traitement par l\'IA...', 70);
+            showProgress(`Traitement par l'IA (${AI_PROVIDER} / ${AI_MODEL})...`, 70);
 
             const result = await response.json();
 
@@ -444,6 +460,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayAiResults(result) {
         currentAiResponse = result;
         const suggestions = result.ai_suggestions || {};
+        const isDefaultActivity = suggestions.is_default_activity || false;
 
         aiSuggestions.innerHTML = `
             <div class="row">
@@ -454,11 +471,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="ai-suggestion p-3 rounded mb-3">
-                        <h6><i class="bi bi-briefcase me-2"></i>Activité suggérée</h6>
-                        <p class="mb-0">${suggestions.activity_suggestion?.name || 'Non définie'}</p>
-                        ${suggestions.activity_suggestion?.confidence ?
-                            `<div class="confidence-bar mt-2" style="width: ${suggestions.activity_suggestion.confidence * 100}%"></div>` : ''
+                    <div class="ai-suggestion p-3 rounded mb-3 ${isDefaultActivity ? 'border border-warning' : ''}">
+                        <h6>
+                            <i class="bi bi-briefcase me-2"></i>Activité suggérée
+                            ${isDefaultActivity ? '<i class="bi bi-exclamation-triangle text-warning ms-2" title="Activité par défaut utilisée"></i>' : ''}
+                        </h6>
+                        <p class="mb-0">
+                            ${suggestions.activity_suggestion?.name || 'Non définie'}
+                            ${suggestions.activity_suggestion?.code ? `<br><small class="text-muted">(${suggestions.activity_suggestion.code})</small>` : ''}
+                        </p>
+                        ${isDefaultActivity ?
+                            `<small class="text-warning d-block mt-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                L'IA n'a pas trouvé d'activité correspondante dans les activités de votre organisation.
+                                L'activité ci-dessus sera utilisée par défaut. Vous pourrez la modifier après création.
+                            </small>` : ''
+                        }
+                        ${suggestions.activity_suggestion?.confidence && !isDefaultActivity ?
+                            `<div class="mt-2">
+                                <small class="text-muted">Confiance: ${Math.round(suggestions.activity_suggestion.confidence * 100)}%</small>
+                                <div class="confidence-bar" style="width: ${suggestions.activity_suggestion.confidence * 100}%"></div>
+                            </div>` : ''
                         }
                     </div>
                 </div>
