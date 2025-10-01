@@ -300,7 +300,7 @@
         });
 
         document.getElementById('slipForm').addEventListener('submit', function(e) {
-            const requiredFields = ['user_organisation_id', 'slip_status_id'];
+            const requiredFields = ['user_organisation_id'];
             let isValid = true;
 
             requiredFields.forEach(field => {

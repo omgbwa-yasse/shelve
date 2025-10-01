@@ -103,12 +103,24 @@ class SlipController extends Controller
         ]);
 
         // Ajouter automatiquement l'organisation courante de l'utilisateur et l'officer_id
-        $request->merge([
-            'officer_id' => Auth::id(),
-            'officer_organisation_id' => Auth::user()->current_organisation_id,
-        ]);
+        $defaultStatus = \App\Models\SlipStatus::where('name', 'Projects')->first();
+        $defaultStatusId = $defaultStatus ? $defaultStatus->id : 1;
 
-        Slip::create($request->all());
+        // Créer le slip avec toutes les données requises
+        $slip = Slip::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'user_organisation_id' => $request->user_organisation_id,
+            'user_id' => $request->user_id,
+            'officer_id' => Auth::user()->id,
+            'officer_organisation_id' => Auth::user()->organisation_id,
+            'slip_status_id' => $defaultStatusId,
+            'is_received' => $request->is_received ?? false,
+            'received_date' => $request->received_date,
+            'is_approved' => $request->is_approved ?? false,
+            'approved_date' => $request->approved_date,
+        ]);
 
         return redirect()->route('slips.index')
             ->with('success', 'Slip created successfully.');
@@ -125,15 +137,22 @@ class SlipController extends Controller
             'mail_containers' => 'required|array',
         ]);
 
-    $request->merge(['officer_id' => Auth::id()]);
-        $request->merge(['organisation_id' => Auth::user()->current_organisation_id]);
-        $request->merge(['slip_status_id' => 1]);
-    $request->merge(['is_received' => false]);
-        $request->merge(['received_date' => null]);
-    $request->merge(['is_approved' => false]);
-    $request->merge(['approved_date' => null]);
+        $defaultStatus = \App\Models\SlipStatus::where('name', 'Projects')->first();
+        $defaultStatusId = $defaultStatus ? $defaultStatus->id : 1;
 
-        $slip = Slip::create($request->all());
+        $slip = Slip::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'officer_id' => Auth::id(),
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
+            'user_organisation_id' => Auth::user()->current_organisation_id,
+            'slip_status_id' => $defaultStatusId,
+            'is_received' => false,
+            'received_date' => null,
+            'is_approved' => false,
+            'approved_date' => null,
+        ]);
 
         $selectedMailContainers = $request->input('mail_containers');
         $containers = MailContainer::findOrFail($selectedMailContainers)->with('mails')->get();
@@ -178,13 +197,23 @@ class SlipController extends Controller
             'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
-            'slip_status_id' => 'required|exists:slip_statuses,id',
+            'slip_status_id' => 'nullable|exists:slip_statuses,id',
             'selected_records' => 'required|array',
         ]);
 
-    $request->merge(['officer_id' => Auth::id()]);
+        $defaultStatus = \App\Models\SlipStatus::where('name', 'Projects')->first();
+        $defaultStatusId = $defaultStatus ? $defaultStatus->id : 1;
 
-        $slip = Slip::create($request->all());
+        $slip = Slip::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'officer_organisation_id' => $request->officer_organisation_id,
+            'officer_id' => Auth::id(),
+            'user_organisation_id' => $request->user_organisation_id,
+            'user_id' => $request->user_id,
+            'slip_status_id' => $request->slip_status_id ?? $defaultStatusId,
+        ]);
 
         foreach ($request->input('selected_records') as $recordId) {
             $record = Record::findOrFail($recordId);
