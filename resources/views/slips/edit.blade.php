@@ -43,14 +43,6 @@
                     @endforeach
                 </select>
             </div>
-            <div class="mb-3">
-                <label for="slip_status_id" class="form-label">Transferring Status</label>
-                <select class="form-select" id="slip_status_id" name="slip_status_id" required>
-                    @foreach ($transferringStatuses as $status)
-                        <option value="{{ $status->id }}" {{ $status->id == $slip->slip_status_id ? 'selected' : '' }}>{{ $status->name }}</option>
-                    @endforeach
-                </select>
-            </div>
             <button type="submit" class="btn btn-primary">Update</button>
             <button type="reset" class="btn btn-danger">Update</button>
         </form>

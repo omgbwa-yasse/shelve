@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             RecordSupportSeeder::class, // Seeder pour les supports physiques
             ContainerStatusSeeder::class, // Seeder pour les statuts des contenants
             SortSeeder::class, // Seeder pour les sorts finaux (E, T, C)
+            SlipStatusSeeder::class, // Seeder pour les statuts de bordereaux
 
             // 5. ORGANISATIONS (Structure organisationnelle + Infrastructure physique)
             OrganisationSeeder::class, // Seeder pour les organisations et infrastructure

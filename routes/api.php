@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\PublicChatParticipantApiController;
 use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\PromptController;
+use App\Http\Controllers\Api\ContainerSearchController;
 
 // Public API routes with rate limiting
 Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general,100,60')->group(function () {
@@ -91,5 +92,8 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
         Route::post('keywords', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'saveKeywords'])->name('keywords');
         Route::post('keywords/suggest', [\App\Http\Controllers\Api\AiRecordApplyController::class, 'suggestKeywords'])->name('keywords.suggest');
     });
+
+    // Recherche de containers pour les slips
+    Route::get('containers/search', [ContainerSearchController::class, 'search'])->name('api.containers.search');
 });
 

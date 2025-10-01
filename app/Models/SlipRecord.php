@@ -31,7 +31,6 @@ class SlipRecord extends Model
         'width_description',
         'support_id',
         'activity_id',
-        'container_id',
         'creator_id',
     ];
 

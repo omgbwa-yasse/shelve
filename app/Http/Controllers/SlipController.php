@@ -94,9 +94,8 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'user_organisation_id' => 'required|exists:organisations,id',  // Supprimer et merge
-            'user_id' => 'nullable|exists:users,id', // Supprimer et merge
-            'slip_status_id' => 'required|exists:slip_statuses,id',
+            'user_organisation_id' => 'required|exists:organisations,id',
+            'user_id' => 'nullable|exists:users,id',
             'is_received' => 'nullable|boolean',
             'received_date' => 'nullable|date',
             'is_approved' => 'nullable|boolean',
@@ -106,7 +105,7 @@ class SlipController extends Controller
         // Ajouter automatiquement l'organisation courante de l'utilisateur et l'officer_id
         $request->merge([
             'officer_id' => Auth::id(),
-            'officer_organisation_id' => Auth::user()->current_organisation_id
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
         ]);
 
         Slip::create($request->all());
@@ -261,8 +260,6 @@ class SlipController extends Controller
                 },
             ],
         ]);
-
-
 
         $slip = Slip::findOrFail($request->input('id'));
 

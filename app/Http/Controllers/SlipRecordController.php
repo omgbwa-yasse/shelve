@@ -21,10 +21,9 @@ class SlipRecordController extends Controller
     {
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $containers = Container::where('user_organisation_id', auth()->user()->current_organisation_id);
         $users = User::all();
         $levels = RecordLevel::all();
-        return view('slips.records.create', compact('slip','levels', 'supports', 'activities', 'containers', 'users'));
+        return view('slips.records.create', compact('slip','levels', 'supports', 'activities', 'users'));
     }
 
 
@@ -74,11 +73,18 @@ class SlipRecordController extends Controller
             'width_description' => $request->input('width_description'),
             'support_id' => $request->input('support_id'),
             'activity_id' => $request->input('activity_id'),
-            'container_id' => $request->input('container_id'),
             'creator_id' => $request->input('creator_id'),
         ];
 
         $slipRecord = SlipRecord::create($slipRecordData);
+
+        // Attacher le container via la relation many-to-many si fourni
+        if ($request->filled('container_id')) {
+            $slipRecord->containers()->attach($request->input('container_id'), [
+                'creator_id' => Auth::id(),
+                'description' => $request->input('name') // ou une autre description appropriée
+            ]);
+        }
 
         // Traitement des mots-clés
         if ($request->filled('keywords')) {

@@ -83,12 +83,15 @@
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
-                    <label for="container_id" class="form-label">Contenant</label>
-                    <select class="form-select" id="container_id" name="container_id">
-                        @foreach ($containers as $container)
-                            <option value="{{ $container->id }}">{{ $container->code }}</option>
-                        @endforeach
-                    </select>
+                    <label for="container_search" class="form-label">Contenant</label>
+                    <input type="text"
+                           class="form-control"
+                           id="container_search"
+                           placeholder="Saisissez le code du contenant..."
+                           autocomplete="off">
+                    <input type="hidden" id="container_id" name="container_id">
+                    <div id="container_results" class="list-group mt-1" style="position: absolute; z-index: 1000; max-height: 300px; overflow-y: auto; display: none;"></div>
+                    <small class="text-muted" id="container_selected_info"></small>
                 </div>
             </div>
 
@@ -125,6 +128,92 @@
                     minChars: 2,
                     debounceDelay: 300
                 });
+            }
+        });
+
+        // Recherche dynamique de containers
+        let searchTimeout;
+        const containerSearchInput = document.getElementById('container_search');
+        const containerResults = document.getElementById('container_results');
+        const containerIdInput = document.getElementById('container_id');
+        const containerSelectedInfo = document.getElementById('container_selected_info');
+
+        containerSearchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const query = this.value.trim();
+
+            if (query.length < 1) {
+                containerResults.style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => {
+                searchContainers(query);
+            }, 300);
+        });
+
+        function searchContainers(query) {
+            console.log('Recherche de containers avec query:', query);
+            fetch(`/api/containers/search?query=${encodeURIComponent(query)}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => {
+                console.log('Réponse reçue:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Données reçues:', data);
+                displayContainerResults(data);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la recherche:', error);
+            });
+        }
+
+        function displayContainerResults(containers) {
+            if (containers.length === 0) {
+                containerResults.innerHTML = '<div class="list-group-item">Aucun contenant trouvé</div>';
+                containerResults.style.display = 'block';
+                return;
+            }
+
+            containerResults.innerHTML = containers.map(container => `
+                <a href="#" class="list-group-item list-group-item-action" data-container-id="${container.id}" data-container-code="${container.code}" data-shelf="${container.shelf_code}" data-room="${container.room_name}">
+                    <strong>${container.code}</strong><br>
+                    <small class="text-muted">Étagère: ${container.shelf_code} | Salle: ${container.room_name}</small>
+                </a>
+            `).join('');
+
+            containerResults.style.display = 'block';
+
+            // Ajouter les événements de clic
+            containerResults.querySelectorAll('.list-group-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    selectContainer(this);
+                });
+            });
+        }
+
+        function selectContainer(element) {
+            const containerId = element.dataset.containerId;
+            const containerCode = element.dataset.containerCode;
+            const shelf = element.dataset.shelf;
+            const room = element.dataset.room;
+
+            containerIdInput.value = containerId;
+            containerSearchInput.value = containerCode;
+            containerSelectedInfo.textContent = `Étagère: ${shelf} | Salle: ${room}`;
+            containerResults.style.display = 'none';
+        }
+
+        // Masquer les résultats quand on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!containerSearchInput.contains(e.target) && !containerResults.contains(e.target)) {
+                containerResults.style.display = 'none';
             }
         });
     </script>

@@ -13,7 +13,7 @@ return [
 
     'base_url' => env('OLLAMA_URL', 'http://127.0.0.1:11434'),
     
-    'timeout' => env('OLLAMA_CONNECTION_TIMEOUT', 300),
+    'timeout' => env('AI_REQUEST_TIMEOUT', env('OLLAMA_CONNECTION_TIMEOUT', 300)),
     
     'models' => [
         'title_reformulation' => env('OLLAMA_MCP_TITLE_MODEL', 'gemma3:4b'),

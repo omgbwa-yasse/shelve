@@ -52,15 +52,6 @@
                 </div>
             </div>
             <div class="mb-3">
-                <label for="slip_status_id" class="form-label">Statut</label>
-                <select class="form-control" id="slip_status_id" name="slip_status_id" required>
-                    <option value="">Sélectionner un statut</option>
-                    @foreach($slipStatuses as $status)
-                        <option value="{{ $status->id }}">{{ $status->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="mb-3">
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="is_received" name="is_received" value="1">
                     <label class="form-check-label" for="is_received">Reçu</label>

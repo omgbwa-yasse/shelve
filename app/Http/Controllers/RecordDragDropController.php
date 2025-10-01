@@ -267,22 +267,10 @@ class RecordDragDropController extends Controller
     {
         $joined = implode("\n\n---\n\n", $snippets);
 
-        // Restreindre aux activités de l'organisation courante
+        // Restreindre aux activités de l'organisation courante (parents + enfants récursifs)
         $orgId = optional(Auth::user())->current_organisation_id;
-        $allowedActivities = [];
-        if ($orgId) {
-            $allowedActivities = Activity::query()
-                ->select(['code', 'name'])
-                ->whereHas('organisations', function ($q) use ($orgId) {
-                    $q->where('organisations.id', $orgId);
-                })
-                ->orderBy('code')
-                ->limit(300)
-                ->get()
-                ->map(fn($a) => ['code' => (string)$a->code, 'name' => (string)$a->name])
-                ->values()
-                ->all();
-        }
+        $allowedActivities = $this->getOrganisationActivitiesWithDescendants($orgId);
+
         $allowedJson = json_encode($allowedActivities, JSON_UNESCAPED_UNICODE);
         if ($allowedJson === false) { $allowedJson = '[]'; }
 
@@ -326,6 +314,10 @@ TXT;
     {
         $provider = app(SettingService::class)->get('ai_default_provider', 'ollama');
         $model = app(SettingService::class)->get('ai_default_model', config('ollama-laravel.model', 'gemma3:4b'));
+        
+        // Récupérer le timeout depuis l'env (en secondes), défaut 300s = 5 minutes
+        $timeout = (int) env('AI_REQUEST_TIMEOUT', 300);
+        
         try {
             app(ProviderRegistry::class)->ensureConfigured($provider);
         } catch (\Throwable $e) {
@@ -333,11 +325,13 @@ TXT;
         }
 
         try {
+            // Utiliser le timeout configuré pour les modèles lents
             $res = AiBridge::provider($provider)->chat($messages, [
                 'model' => $model,
                 'temperature' => 0.2,
                 'max_tokens' => 800,
-                'timeout' => 60000,
+                'timeout' => $timeout,
+                'connect_timeout' => 10,
             ]);
             $content = $this->extractAiText(is_array($res) ? $res : (array)$res);
         } catch (\Throwable $e) {
@@ -477,5 +471,66 @@ TXT;
             if ($keyword) { $kw[] = $keyword->id; }
         }
         if (!empty($kw)) { $record->keywords()->syncWithoutDetaching($kw); }
+    }
+
+    /**
+     * Récupère toutes les activités (parents + enfants récursifs)
+     * de l'organisation courante de l'utilisateur
+     */
+    private function getOrganisationActivitiesWithDescendants(?int $orgId): array
+    {
+        if (!$orgId) {
+            return [];
+        }
+
+        // Récupérer les activités directement associées à l'organisation
+        $parentActivities = Activity::query()
+            ->whereHas('organisations', function ($q) use ($orgId) {
+                $q->where('organisations.id', $orgId);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($parentActivities)) {
+            return [];
+        }
+
+        // Récupérer tous les descendants récursifs
+        $allActivityIds = $this->getAllDescendantActivityIds($parentActivities);
+
+        // Récupérer les activités complètes avec code et nom
+        return Activity::query()
+            ->select(['id', 'code', 'name'])
+            ->whereIn('id', $allActivityIds)
+            ->orderBy('code')
+            ->get()
+            ->map(fn($a) => ['code' => (string)$a->code, 'name' => (string)$a->name])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Récupère récursivement tous les IDs des activités descendantes
+     */
+    private function getAllDescendantActivityIds(array $parentIds): array
+    {
+        $allIds = $parentIds;
+        $currentParents = $parentIds;
+
+        while (!empty($currentParents)) {
+            $children = Activity::query()
+                ->whereIn('parent_id', $currentParents)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($children)) {
+                break;
+            }
+
+            $allIds = array_merge($allIds, $children);
+            $currentParents = $children;
+        }
+
+        return array_unique($allIds);
     }
 }

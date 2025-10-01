@@ -529,7 +529,13 @@
                 <div class="list-group mb-3">
                     @foreach ($record->recordContainers as $recordContainer)
                         <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>{{ $recordContainer->container->code }} - {{ $recordContainer->description }}</span>
+                            <span>
+                                @if($recordContainer->container)
+                                    {{ $recordContainer->container->code }} - {{ $recordContainer->description }}
+                                @else
+                                    <em class="text-muted">Contenant supprimé</em> - {{ $recordContainer->description }}
+                                @endif
+                            </span>
                             <form action="{{ route('record-container-remove')}}?r_id={{ $recordContainer->record_id }}&c_id={{ $recordContainer->container_id }}"
                                   method="post" class="d-inline">
                                 @csrf
