@@ -154,6 +154,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
             return $organisation->users()->orderBy('name')->get(['id', 'name', 'email']);
         });
+        Route::get('/records/search', [\App\Http\Controllers\Api\RecordSearchController::class, 'search'])->name('api.records.search');
         Route::get('/containers', function() {
             $q = request('q');
             $orgId = Auth::user()->current_organisation_id ?? null;
@@ -543,7 +544,15 @@ Route::group(['middleware' => 'auth'], function () {
                 Route::get('date-selection', [SearchReservationController::class, 'date'])->name('date-selection');
             });
 
-            Route::resource('records', ReservationRecordController::class)->names('records');
+            Route::prefix('{reservation}/records')->name('records.')->group(function () {
+                Route::get('/', [ReservationRecordController::class, 'index'])->name('index');
+                Route::get('/create', [ReservationRecordController::class, 'create'])->name('create');
+                Route::post('/', [ReservationRecordController::class, 'store'])->name('store');
+                Route::get('/{reservationRecord}', [ReservationRecordController::class, 'show'])->name('show');
+                Route::get('/{reservationRecord}/edit', [ReservationRecordController::class, 'edit'])->name('edit');
+                Route::put('/{reservationRecord}', [ReservationRecordController::class, 'update'])->name('update');
+                Route::delete('/{reservationRecord}', [ReservationRecordController::class, 'destroy'])->name('destroy');
+            });
         });
     });
 

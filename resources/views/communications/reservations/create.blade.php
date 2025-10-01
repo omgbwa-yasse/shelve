@@ -142,7 +142,6 @@
             // Validation du formulaire
             document.querySelector('form').addEventListener('submit', function(e) {
                 const requiredFields = {
-                    'code': 'Code',
                     'name': 'Objet',
                     'user_organisation_id': 'Organisation utilisateur',
                     'user_id': 'Utilisateur'

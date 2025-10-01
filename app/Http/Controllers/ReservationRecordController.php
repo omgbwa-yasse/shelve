@@ -12,9 +12,8 @@ use Illuminate\Http\Request;
 
 class ReservationRecordController extends Controller
 {
-    public function index(INT $id)
+    public function index(Reservation $reservation)
     {
-        $reservation = Reservation ::findOrFail($id);
         $reservationRecords = ReservationRecord::where('reservation_id', $reservation->id)->get();
         $reservationRecords->load('reservation', 'record','communication');
 
@@ -24,22 +23,18 @@ class ReservationRecordController extends Controller
 
 
 
-    public function create(INT $id)
+    public function create(Reservation $reservation)
     {
-        $reservation = Reservation::findOrFail($id);
-        $records = Record::all();
-        $users = User::all();
-        return view('communications.reservations.records.create', compact('reservation', 'records', 'users'));
+        // Ne pas charger tous les records, la recherche se fera via AJAX
+        return view('communications.reservations.records.create', compact('reservation'));
     }
 
 
 
 
-    public function show(INT $id, INT $idRecord)
+    public function show(Reservation $reservation, ReservationRecord $reservationRecord)
     {
-        $reservationRecord = ReservationRecord::findOrFail($idRecord);
         $reservationRecord->load('record','reservation');
-        $reservation = Reservation::findOrFail($id);
         return view('communications.reservations.records.show', compact('reservationRecord', 'reservation'));
     }
 
@@ -49,15 +44,17 @@ class ReservationRecordController extends Controller
 
     public function edit(Reservation $reservation, ReservationRecord $reservationRecord)
     {
-        $records = Record::all();
-        $users = User::all();
-        return view('communications.reservations.records.edit', compact('reservationRecord', 'reservation', 'records', 'users'));
+        $records = Record::select('id', 'code', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return view('communications.reservations.records.edit', compact('reservationRecord', 'reservation', 'records'));
     }
 
 
 
 
-    public function store(Request $request, INT $id)
+    public function store(Request $request, Reservation $reservation)
     {
         $request->validate([
             'record_id' => 'required|exists:records,id',
@@ -65,9 +62,7 @@ class ReservationRecordController extends Controller
             'reservation_date' => 'required|date',
         ]);
 
-        $reservation = Reservation::findOrFail($id);
-
-        $ReservationRecord = ReservationRecord::create([
+        ReservationRecord::create([
             'reservation_id' => $reservation->id,
             'record_id' => $request->record_id,
             'is_original' => $request->is_original,
@@ -75,13 +70,13 @@ class ReservationRecordController extends Controller
             'operator_id' => Auth::id(),
         ]);
 
-        return redirect()->route('communications.reservations.records.index', $reservation )->with('success', 'Reservation created successfully.');
+        return redirect()->route('communications.reservations.records.index', $reservation)->with('success', 'Reservation created successfully.');
     }
 
 
 
 
-    public function update(Request $request, ReservationRecord $ReservationRecord)
+    public function update(Request $request, Reservation $reservation, ReservationRecord $reservationRecord)
     {
         $request->validate([
             'record_id' => 'required|exists:records,id',
@@ -89,18 +84,18 @@ class ReservationRecordController extends Controller
             'reservation_date' => 'required|date',
         ]);
 
-        $ReservationRecord->update($request->all());
+        $reservationRecord->update($request->all());
 
-        return redirect()->route('communications.reservations.records.index')->with('success', 'Reservation updated successfully.');
+        return redirect()->route('communications.reservations.records.index', $reservation)->with('success', 'Reservation updated successfully.');
     }
 
 
 
 
-    public function destroy(INT $id, ReservationRecord $ReservationRecord)
+    public function destroy(Reservation $reservation, ReservationRecord $reservationRecord)
     {
-        $ReservationRecord->delete();
-        return redirect()->route('communications.reservations.records.index', $id)->with('success', 'Reservation record deleted successfully.');
+        $reservationRecord->delete();
+        return redirect()->route('communications.reservations.records.index', $reservation)->with('success', 'Reservation record deleted successfully.');
     }
 }
 

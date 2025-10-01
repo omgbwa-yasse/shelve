@@ -35,6 +35,11 @@ class Organisation extends Model
     {
         return $this->belongsToMany(Contact::class, 'organisation_contact', 'organisation_id', 'contact_id');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_organisation_role', 'organisation_id', 'user_id');
+    }
 }
 
 
