@@ -73,6 +73,14 @@ class SuperAdminSeeder extends Seeder
         // Synchroniser les permissions du rôle
         $superadminRole->permissions()->sync($permissionIds);
 
+        // Vérification que toutes les permissions sont bien attribuées
+        $assignedPermissions = $superadminRole->permissions()->count();
+        if ($assignedPermissions !== $allPermissions->count()) {
+            $this->command->error('❌ Erreur: Toutes les permissions ne sont pas attribuées au rôle superadmin');
+            $this->command->error('Permissions totales: ' . $allPermissions->count() . ', Permissions attribuées: ' . $assignedPermissions);
+            return;
+        }
+
         $this->command->info('✅ Toutes les permissions (' . $allPermissions->count() . ') attribuées au rôle superadmin');
 
         // 5. Créer l'utilisateur superadmin principal
@@ -94,6 +102,45 @@ class SuperAdminSeeder extends Seeder
 
         // 6. Attribuer le rôle à l'utilisateur avec système natif
         $superadminUser->assignRole('superadmin');
+
+        // Vérification que l'utilisateur a bien le rôle
+        if (!$superadminUser->hasRole('superadmin')) {
+            $this->command->error('❌ Erreur: Le rôle superadmin n\'a pas été correctement attribué à l\'utilisateur');
+            return;
+        }
+
+        // Vérification de toutes les permissions de modules
+        $modulePermissions = Permission::where('name', 'like', 'module_%_access')->get();
+        $missingPermissions = [];
+
+        foreach ($modulePermissions as $permission) {
+            if (!$superadminUser->hasPermissionTo($permission->name)) {
+                $missingPermissions[] = $permission->name;
+            }
+        }
+
+        if (!empty($missingPermissions)) {
+            $this->command->error('❌ Erreur: Permissions de modules manquantes: ' . implode(', ', $missingPermissions));
+        } else {
+            $this->command->info('✅ Toutes les permissions de modules vérifiées pour le superadmin (' . $modulePermissions->count() . ' modules)');
+        }
+
+        // Vérification de quelques permissions critiques supplémentaires
+        $criticalPermissions = [
+            'settings_manage',
+            'users_manage',
+            'records_view',
+            'records_create',
+            'system_maintenance'
+        ];        foreach ($criticalPermissions as $permission) {
+            if (!$superadminUser->hasPermissionTo($permission)) {
+                $missingPermissions[] = $permission;
+            }
+        }
+
+        if (empty($missingPermissions)) {
+            $this->command->info('✅ Rôle et permissions critiques vérifiés pour le superadmin');
+        }
 
         // 7. Affecter le superadmin à toutes les organisations
         $allOrganisations = [$directionGenerale, $directionFinances, $directionRH, $directionArchives];
@@ -234,6 +281,15 @@ class SuperAdminSeeder extends Seeder
         $this->command->line('Organisation principale: ' . $organisation->name);
         $this->command->line('Rôle: superadmin (Système natif)');
         $this->command->line('Permissions: ' . $permissionCount . ' permissions attribuées');
+
+        // Afficher tous les modules disponibles
+        $modulePermissions = Permission::where('name', 'like', 'module_%_access')->pluck('name');
+        $this->command->line('');
+        $this->command->info('✅ Modules accessibles :');
+        foreach ($modulePermissions as $modulePerm) {
+            $moduleName = str_replace(['module_', '_access'], '', $modulePerm);
+            $this->command->line('   - ' . ucfirst(str_replace('_', ' ', $moduleName)));
+        }
         $this->command->line('');
         $this->command->line('✅ Infrastructure créée :');
         $this->command->line('   - 4 Organisations (DG, DF, DRH, DADA)');
