@@ -325,7 +325,7 @@
                                             <i class="fas fa-tachometer-alt me-2"></i> {{ __('Dashboard') }}
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{{ route('opac.reservations.index') }}">
+                                        <li><a class="dropdown-item" href="{{ route('opac.reservations') }}">
                                             <i class="fas fa-bookmark me-2"></i> {{ __('My Reservations') }}
                                         </a></li>
                                         <li><a class="dropdown-item" href="{{ route('opac.document-requests.index') }}">

@@ -9,6 +9,7 @@ use App\Http\Middleware\CorsMiddleware;
 use App\Http\Middleware\CheckPermissionMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
+use App\Http\Middleware\HandleOpacErrors;
 use App\Models\Log;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => CheckPermissionMiddleware::class,
             'rate.limit' => RateLimitMiddleware::class,
             'security.headers' => SecurityHeadersMiddleware::class,
+            'opac.errors' => HandleOpacErrors::class,
         ]);
         $middleware->api(prepend: [
             CorsMiddleware::class,

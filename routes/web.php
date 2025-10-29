@@ -977,7 +977,7 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
 });
 
 // Routes OPAC (Online Public Access Catalog) - Accès public sans authentification
-Route::prefix('opac')->name('opac.')->group(function () {
+Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function () {
     // Page d'accueil OPAC
     Route::get('/', [\App\Http\Controllers\OPACController::class, 'index'])->name('index');
 

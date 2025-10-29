@@ -43,6 +43,40 @@
     </div>
 
 
+    <!-- Configuration OPAC Section -->
+    <div class="submenu-section opac-config-section">
+        <div class="submenu-heading">
+            <i class="bi bi-gear-fill"></i> {{ __('OPAC Configuration') }}
+        </div>
+        <div class="submenu-content" id="opacConfigMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('admin.opac.configurations.index') }}">
+                    <i class="bi bi-sliders"></i> {{ __('General Configuration') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('admin.opac.pages.index') }}">
+                    <i class="bi bi-file-earmark-text"></i> {{ __('OPAC Pages') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('admin.opac.users.index') }}">
+                    <i class="bi bi-people"></i> {{ __('OPAC Users') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('public.opac-templates.index') }}">
+                    <i class="bi bi-palette"></i> {{ __('OPAC Templates') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('opac.index') }}" target="_blank">
+                    <i class="bi bi-globe"></i> {{ __('View OPAC Portal') }}
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Contenu Public Section -->
 
     <div class="submenu-section public-content-section">
@@ -63,11 +97,6 @@
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.templates.index') }}">
                     <i class="bi bi-layout-text-window"></i> {{ __('templates') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('public.opac-templates.index') }}">
-                    <i class="bi bi-palette"></i> Templates OPAC
                 </a>
             </div>
             <div class="submenu-item">
