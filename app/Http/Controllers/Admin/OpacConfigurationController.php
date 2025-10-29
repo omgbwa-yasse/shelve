@@ -38,7 +38,7 @@ class OpacConfigurationController extends Controller
             }
         }
 
-        return view('admin.opac.configurations.index', compact(
+        return view('public.admin.opac.configurations.index', compact(
             'categories',
             'organisations',
             'selectedOrganisationId',
@@ -101,7 +101,7 @@ class OpacConfigurationController extends Controller
     {
         $configuration->load('category', 'values.organisation', 'values.modifiedBy');
 
-        return view('admin.opac.configurations.show', compact('configuration'));
+        return view('public.admin.opac.configurations.show', compact('configuration'));
     }
 
     /**

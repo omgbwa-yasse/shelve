@@ -37,7 +37,7 @@ class OpacPageController extends Controller
 
         $pages = $query->paginate(15)->appends($request->all());
 
-        return view('admin.opac.pages.index', compact('pages'));
+        return view('public.admin.opac.pages.index', compact('pages'));
     }
 
     /**
@@ -45,7 +45,7 @@ class OpacPageController extends Controller
      */
     public function create()
     {
-        return view('admin.opac.pages.create');
+        return view('public.admin.opac.pages.create');
     }
 
     /**
@@ -76,7 +76,7 @@ class OpacPageController extends Controller
      */
     public function show(PublicPage $page)
     {
-        return view('admin.opac.pages.show', compact('page'));
+        return view('public.admin.opac.pages.show', compact('page'));
     }
 
     /**
@@ -84,7 +84,7 @@ class OpacPageController extends Controller
      */
     public function edit(PublicPage $page)
     {
-        return view('admin.opac.pages.edit', compact('page'));
+        return view('public.admin.opac.pages.edit', compact('page'));
     }
 
     /**

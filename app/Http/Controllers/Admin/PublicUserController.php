@@ -47,7 +47,7 @@ class PublicUserController extends Controller
         ->orderBy('created_at', 'desc')
         ->paginate(20);
 
-        return view('admin.opac.users.index', compact('users'));
+        return view('public.admin.opac.users.index', compact('users'));
     }
 
     /**
@@ -55,7 +55,7 @@ class PublicUserController extends Controller
      */
     public function create()
     {
-        return view('admin.opac.users.create');
+        return view('public.admin.opac.users.create');
     }
 
     /**
@@ -102,7 +102,7 @@ class PublicUserController extends Controller
             }
         ]);
 
-        return view('admin.opac.users.show', compact('user'));
+        return view('public.admin.opac.users.show', compact('user'));
     }
 
     /**
@@ -110,7 +110,7 @@ class PublicUserController extends Controller
      */
     public function edit(PublicUser $user)
     {
-        return view('admin.opac.users.edit', compact('user'));
+        return view('public.admin.opac.users.edit', compact('user'));
     }
 
     /**

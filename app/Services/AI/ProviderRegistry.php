@@ -200,9 +200,9 @@ class ProviderRegistry
     {
         $key = $this->defaultValues->getEffectiveValue('mistral_api_key', null, '');
         if (!$key) { return; }
-        
+
         $base = $this->defaultValues->getEffectiveValue('mistral_base_url', null, 'https://api.mistral.ai/v1');
-        
+
         AiBridge::registerProvider('mistral', new CustomOpenAIProvider(
             $key,
             $base,
@@ -254,20 +254,7 @@ class ProviderRegistry
 
     public function getSetting(string $key, $default = null)
     {
-        $row = DB::table('ai_global_settings')->where('setting_key', $key)->first(['setting_value', 'setting_type', 'is_encrypted']);
-        if (!$row) { return $default; }
-        $val = $row->setting_value;
-        $type = $row->setting_type ?? 'string';
-        $encrypted = (bool) ($row->is_encrypted ?? false);
-        if ($encrypted && is_string($val) && $val !== '') {
-            try { $val = Crypt::decryptString($val); } catch (\Throwable) { /* ignore */ }
-        }
-        return match ($type) {
-            'integer' => (int) $val,
-            'boolean' => filter_var($val, FILTER_VALIDATE_BOOLEAN),
-            'json' => is_string($val) ? (json_decode($val, true) ?? $default) : $val,
-            default => $val,
-        };
+        return app(\App\Services\SettingService::class)->get($key, $default);
     }
 
     /**

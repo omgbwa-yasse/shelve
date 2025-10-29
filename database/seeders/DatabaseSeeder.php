@@ -54,7 +54,6 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class, // Paramètres et catégories de paramètres (idempotent)
 
             // 9. IA ET PROMPTS (Indépendants)
-            AiSeeder::class,
             AiProvidersSeeder::class, // Paramètres des providers IA (settings)
 
             // 10. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)

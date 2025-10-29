@@ -14,7 +14,7 @@ class RateLimitController extends Controller
 
         $userStats = $rateLimitService->getStats(Auth::id());
 
-        return view('admin.rate-limit-dashboard', compact('userStats'));
+        return view('public.admin.rate-limit-dashboard', compact('userStats'));
     }
 
     public function userStats(Request $request, RateLimitService $rateLimitService)

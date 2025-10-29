@@ -39,7 +39,7 @@ class OPACConfigController extends Controller
             ]);
         }
 
-        return view('admin.opac.index', compact('config'));
+        return view('public.admin.opac.index', compact('config'));
     }
 
     /**

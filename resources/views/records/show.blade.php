@@ -2035,7 +2035,7 @@ function applyPreviewChanges() {
 
     const previewData = JSON.parse(modal.dataset.previewData || '{}');
     const mode = modal.dataset.mode || 'MCP';
-    const apiPrefix = mode === 'Mistral' ? '/api/mistral-test' : '/api/mcp';
+    const apiPrefix = '/api/mcp';
 
     // Récupérer l'ID du record depuis les boutons de la page
     const recordId = document.querySelector('.mcp-action-btn')?.dataset.recordId;

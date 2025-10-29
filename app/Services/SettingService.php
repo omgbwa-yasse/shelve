@@ -68,21 +68,7 @@ class SettingService
                 return $setting->getEffectiveValue();
             }
 
-            // Fallback bridge: allow reading legacy ai_global_settings for AI defaults
-            // Only for known keys and when the legacy table exists
-            if (Schema::hasTable('ai_global_settings')) {
-                $legacyKey = match ($name) {
-                    'ai_default_provider' => 'default_provider',
-                    'ai_default_model' => 'default_model',
-                    default => null,
-                };
-                if ($legacyKey) {
-                    $row = DB::table('ai_global_settings')->where('setting_key', $legacyKey)->first(['setting_value']);
-                    if ($row && isset($row->setting_value) && $row->setting_value !== '') {
-                        return $row->setting_value;
-                    }
-                }
-            }
+
 
             return $default;
         });
