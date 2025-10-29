@@ -1,4 +1,4 @@
-@extends('layouts.opac')
+@extends('opac.layouts.app')
 
 @section('title', __('Send Feedback'))
 

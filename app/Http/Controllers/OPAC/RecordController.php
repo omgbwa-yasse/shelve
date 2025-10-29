@@ -18,29 +18,27 @@ class RecordController extends Controller
     public function index(Request $request)
     {
         $query = PublicRecord::query()
-            ->where('is_public', true)
-            ->where('status', 'active');
+            ->available()
+            ->with('record');
 
         // Search functionality
         if ($request->filled('q')) {
             $search = $request->get('q');
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                  ->orWhere('description', 'like', '%' . $search . '%')
-                  ->orWhere('content', 'like', '%' . $search . '%')
-                  ->orWhere('author', 'like', '%' . $search . '%')
-                  ->orWhere('keywords', 'like', '%' . $search . '%');
+            $query->searchContent($search);
+        }
+
+        // Filter by category (via record relation)
+        if ($request->filled('category')) {
+            $query->whereHas('record', function($q) use ($request) {
+                $q->where('category', $request->get('category'));
             });
         }
 
-        // Filter by category
-        if ($request->filled('category')) {
-            $query->where('category', $request->get('category'));
-        }
-
-        // Filter by type
+        // Filter by type (via record relation)
         if ($request->filled('type')) {
-            $query->where('type', $request->get('type'));
+            $query->whereHas('record', function($q) use ($request) {
+                $q->where('type', $request->get('type'));
+            });
         }
 
         // Filter by date range
@@ -55,18 +53,26 @@ class RecordController extends Controller
                         ->paginate(20)
                         ->appends($request->query());
 
-        // Get available categories and types for filters
-        $categories = PublicRecord::where('is_public', true)
-            ->distinct()
-            ->pluck('category')
-            ->filter()
-            ->sort();
+        // Get available categories and types for filters from published records
+        $publicRecords = PublicRecord::available()->with('record')->get();
 
-        $types = PublicRecord::where('is_public', true)
-            ->distinct()
-            ->pluck('type')
+        $categories = $publicRecords
+            ->map(function($publicRecord) {
+                return $publicRecord->record->category ?? null;
+            })
             ->filter()
-            ->sort();
+            ->unique()
+            ->sort()
+            ->values();
+
+        $types = $publicRecords
+            ->map(function($publicRecord) {
+                return $publicRecord->record->type ?? null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
 
         return view('opac.records.index', compact('records', 'categories', 'types'));
     }
@@ -76,8 +82,8 @@ class RecordController extends Controller
      */
     public function show($id)
     {
-        $record = PublicRecord::where('is_public', true)
-            ->where('status', 'active')
+        $record = PublicRecord::available()
+            ->with('record')
             ->findOrFail($id);
 
         // Log search/view if user is authenticated
@@ -86,15 +92,15 @@ class RecordController extends Controller
         }
 
         // Get related records
-        $relatedRecords = PublicRecord::where('is_public', true)
-            ->where('status', 'active')
+        $relatedRecords = PublicRecord::available()
+            ->with('record')
             ->where('id', '!=', $record->id)
-            ->where(function($q) use ($record) {
-                if ($record->category) {
-                    $q->where('category', $record->category);
+            ->whereHas('record', function($q) use ($record) {
+                if ($record->record->category ?? null) {
+                    $q->where('category', $record->record->category);
                 }
-                if ($record->type) {
-                    $q->orWhere('type', $record->type);
+                if ($record->record->type ?? null) {
+                    $q->orWhere('type', $record->record->type);
                 }
             })
             ->limit(5)
@@ -108,17 +114,25 @@ class RecordController extends Controller
      */
     public function search()
     {
-        $categories = PublicRecord::where('is_public', true)
-            ->distinct()
-            ->pluck('category')
-            ->filter()
-            ->sort();
+        $publicRecords = PublicRecord::available()->with('record')->get();
 
-        $types = PublicRecord::where('is_public', true)
-            ->distinct()
-            ->pluck('type')
+        $categories = $publicRecords
+            ->map(function($publicRecord) {
+                return $publicRecord->record->category ?? null;
+            })
             ->filter()
-            ->sort();
+            ->unique()
+            ->sort()
+            ->values();
+
+        $types = $publicRecords
+            ->map(function($publicRecord) {
+                return $publicRecord->record->type ?? null;
+            })
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
 
         return view('opac.records.search', compact('categories', 'types'));
     }
@@ -134,22 +148,17 @@ class RecordController extends Controller
 
         $term = $request->get('term');
 
-        $suggestions = PublicRecord::where('is_public', true)
-            ->where('status', 'active')
-            ->where(function($q) use ($term) {
-                $q->where('title', 'like', '%' . $term . '%')
-                  ->orWhere('author', 'like', '%' . $term . '%')
-                  ->orWhere('keywords', 'like', '%' . $term . '%');
-            })
-            ->select('id', 'title', 'author')
+        $suggestions = PublicRecord::available()
+            ->with('record')
+            ->searchContent($term)
             ->limit(10)
             ->get();
 
-        return response()->json($suggestions->map(function($record) {
+        return response()->json($suggestions->map(function($publicRecord) {
             return [
-                'id' => $record->id,
-                'value' => $record->title,
-                'label' => $record->title . ($record->author ? ' - ' . $record->author : ''),
+                'id' => $publicRecord->id,
+                'value' => $publicRecord->title,
+                'label' => $publicRecord->title . ($publicRecord->record->author ?? '' ? ' - ' . ($publicRecord->record->author ?? '') : ''),
             ];
         }));
     }
