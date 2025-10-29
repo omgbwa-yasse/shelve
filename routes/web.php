@@ -901,6 +901,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('users/{user}/approve', [AdminPublicUserController::class, 'approve'])->name('users.approve');
         Route::post('users/{user}/disapprove', [AdminPublicUserController::class, 'disapprove'])->name('users.disapprove');
 
+        // OPAC Pages Administration
+        Route::resource('pages', \App\Http\Controllers\Admin\OpacPageController::class);
+        Route::post('pages/bulk-publish', [\App\Http\Controllers\Admin\OpacPageController::class, 'bulkPublish'])->name('pages.bulk-publish');
+
         // OPAC Templates Administration - Moved to Public Module
     });
 });
