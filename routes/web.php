@@ -1062,6 +1062,8 @@ Route::prefix('opac')->name('opac.')->group(function () {
 
         // Search history
         Route::get('/search/history', [\App\Http\Controllers\OPAC\SearchController::class, 'history'])->name('search.history');
+        Route::delete('/search/history/{searchId}', [\App\Http\Controllers\OPAC\SearchController::class, 'deleteSearch'])->name('search.history.delete');
+        Route::post('/search/history/clear', [\App\Http\Controllers\OPAC\SearchController::class, 'clearHistory'])->name('search.history.clear');
         Route::post('/search/save', [\App\Http\Controllers\OPAC\SearchController::class, 'saveSearch'])->name('search.save');
 
         // Legacy routes (keeping for compatibility)

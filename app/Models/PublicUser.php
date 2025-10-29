@@ -21,6 +21,7 @@ class PublicUser extends Model
         'email',
         'password',
         'is_approved',
+        'preferences',
     ];
 
     protected $hidden = [
@@ -31,6 +32,7 @@ class PublicUser extends Model
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_approved' => 'boolean',
+        'preferences' => 'array',
     ];
 
     public function news()

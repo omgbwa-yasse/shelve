@@ -46,17 +46,17 @@ class SearchController extends Controller
             'sort' => 'nullable|in:relevance,title,author,date_asc,date_desc',
         ]);
 
-        // Log search if user is authenticated
-        if (Auth::guard('public')->check()) {
-            $this->logSearch($validated);
-        }
-
         // Perform search logic here
         $results = collect(); // Placeholder for search results
         $totalResults = 0;
 
         // In a real implementation, this would search through records
         // using Elasticsearch, database full-text search, or similar
+
+        // Log search if user is authenticated (after getting results)
+        if (Auth::guard('public')->check()) {
+            $this->logSearch($validated, $totalResults);
+        }
 
         return view('opac.search.results', compact('results', 'totalResults', 'validated'));
     }
@@ -147,22 +147,82 @@ class SearchController extends Controller
     }
 
     /**
-     * Log search query for statistics and history
+     * Delete a specific search from history
      */
-    private function logSearch(array $searchData)
+    public function deleteSearch($searchId)
     {
         $user = Auth::guard('public')->user();
 
-        // Implementation for logging searches
-        // Could be stored in a search_logs table
+        if (!$user) {
+            return response()->json(['error' => 'Authentication required'], 401);
+        }
 
-        // Example:
-        // PublicSearchLog::create([
-        //     'public_user_id' => $user->id,
-        //     'query' => json_encode($searchData),
-        //     'ip_address' => request()->ip(),
-        //     'user_agent' => request()->userAgent(),
-        //     'created_at' => now(),
-        // ]);
+        $search = PublicSearchLog::where('id', $searchId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$search) {
+            return response()->json(['error' => 'Search not found'], 404);
+        }
+
+        $search->delete();
+
+        return response()->json(['success' => true, 'message' => 'Recherche supprimée avec succès']);
+    }
+
+    /**
+     * Clear entire search history for the user
+     */
+    public function clearHistory()
+    {
+        $user = Auth::guard('public')->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Authentication required'], 401);
+        }
+
+        $deletedCount = PublicSearchLog::where('user_id', $user->id)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Historique supprimé avec succès ({$deletedCount} recherche(s) supprimée(s))"
+        ]);
+    }
+
+    /**
+     * Log search query for statistics and history
+     */
+    private function logSearch(array $searchData, int $resultCount = 0)
+    {
+        $user = Auth::guard('public')->user();
+
+        if (!$user) {
+            return;
+        }
+
+        // Construire le terme de recherche principal
+        $searchTerm = $searchData['q'] ?? '';
+        if (empty($searchTerm) && !empty($searchData['title'])) {
+            $searchTerm = $searchData['title'];
+        }
+        if (empty($searchTerm) && !empty($searchData['author'])) {
+            $searchTerm = $searchData['author'];
+        }
+        if (empty($searchTerm)) {
+            $searchTerm = 'Recherche avancée';
+        }
+
+        // Filtrer les données de recherche pour les filtres
+        $filters = array_filter($searchData, function($value, $key) {
+            return !empty($value) && $key !== 'q';
+        }, ARRAY_FILTER_USE_BOTH);
+
+        // Créer l'entrée dans l'historique
+        PublicSearchLog::create([
+            'user_id' => $user->id,
+            'search_term' => $searchTerm,
+            'filters' => !empty($filters) ? json_encode($filters) : null,
+            'results_count' => $resultCount,
+        ]);
     }
 }

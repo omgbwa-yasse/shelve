@@ -101,32 +101,41 @@ class DashboardController extends Controller
      */
     public function preferences()
     {
-        $user = Auth::guard('public')->user();
+        $user = auth('public')->user();
 
         return view('opac.dashboard.preferences', compact('user'));
     }
 
-    /**
-     * Update user preferences
-     */
     public function updatePreferences(Request $request)
     {
-        $user = Auth::guard('public')->user();
+        $user = auth('public')->user();
 
         $validated = $request->validate([
             'email_notifications' => 'boolean',
             'sms_notifications' => 'boolean',
             'newsletter_subscription' => 'boolean',
-            'language' => 'nullable|string|in:en,fr',
-            'timezone' => 'nullable|string',
-            'theme' => 'nullable|string|in:light,dark,auto',
+            'event_reminders' => 'boolean',
+            'language' => 'in:fr,en',
+            'theme' => 'in:auto,light,dark',
+            'timezone' => 'string',
+            'items_per_page' => 'in:10,20,50,100',
+            'save_search_history' => 'boolean',
+            'auto_suggestions' => 'boolean',
+            'default_sort' => 'in:relevance,title,date_desc,date_asc',
+            'search_results_view' => 'in:list,grid,compact',
+            'profile_public' => 'boolean',
+            'show_activity' => 'boolean',
+            'two_factor_auth' => 'boolean'
         ]);
 
-        // Update user preferences
-        // This would typically be stored in a user_preferences table
-        // or as JSON in the user table
+        // Merge with existing preferences
+        $preferences = array_merge($user->preferences ?? [], $validated);
+
+        $user->update(['preferences' => $preferences]);
 
         return redirect()->route('opac.dashboard.preferences')
-            ->with('success', __('Your preferences have been updated successfully.'));
+                        ->with('success', __('Your preferences have been updated successfully.'));
     }
+
+
 }
