@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\OPAC;
 
 use App\Http\Controllers\Controller;
+use App\Models\PublicSearchLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -91,13 +92,36 @@ class SearchController extends Controller
         $user = Auth::guard('public')->user();
 
         if (!$user) {
-            return redirect()->route('opac.login');
+            return redirect()->route('opac.login')
+                ->with('message', 'Vous devez être connecté pour accéder à votre historique de recherche.');
         }
 
-        // Get user's search history
-        $searchHistory = collect(); // Placeholder
+        // Get user's search history ordered by most recent
+        $searchHistory = PublicSearchLog::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-        return view('opac.search.history', compact('searchHistory'));
+        // Get search statistics
+        $totalSearches = PublicSearchLog::where('user_id', $user->id)->count();
+        $recentSearches = PublicSearchLog::where('user_id', $user->id)
+            ->where('created_at', '>=', now()->subDays(7))
+            ->count();
+
+        // Get popular search terms
+        $popularTerms = PublicSearchLog::where('user_id', $user->id)
+            ->select('search_term')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('search_term')
+            ->orderBy('count', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('opac.search.history', compact(
+            'searchHistory',
+            'totalSearches',
+            'recentSearches',
+            'popularTerms'
+        ));
     }
 
     /**

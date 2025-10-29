@@ -19,7 +19,12 @@ class RecordController extends Controller
     {
         $query = PublicRecord::query()
             ->available()
-            ->with('record');
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ]);
 
         // Search functionality
         if ($request->filled('q')) {
@@ -54,7 +59,14 @@ class RecordController extends Controller
                         ->appends($request->query());
 
         // Get available categories and types for filters from published records
-        $publicRecords = PublicRecord::available()->with('record')->get();
+        $publicRecords = PublicRecord::available()
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ])
+            ->get();
 
         $categories = $publicRecords
             ->map(function($publicRecord) {
@@ -83,7 +95,12 @@ class RecordController extends Controller
     public function show($id)
     {
         $record = PublicRecord::available()
-            ->with('record')
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ])
             ->findOrFail($id);
 
         // Log search/view if user is authenticated
@@ -93,7 +110,12 @@ class RecordController extends Controller
 
         // Get related records
         $relatedRecords = PublicRecord::available()
-            ->with('record')
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ])
             ->where('id', '!=', $record->id)
             ->whereHas('record', function($q) use ($record) {
                 if ($record->record->category ?? null) {
@@ -114,7 +136,14 @@ class RecordController extends Controller
      */
     public function search()
     {
-        $publicRecords = PublicRecord::available()->with('record')->get();
+        $publicRecords = PublicRecord::available()
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ])
+            ->get();
 
         $categories = $publicRecords
             ->map(function($publicRecord) {
@@ -149,7 +178,12 @@ class RecordController extends Controller
         $term = $request->get('term');
 
         $suggestions = PublicRecord::available()
-            ->with('record')
+            ->with([
+                'record.authors',
+                'record.thesaurusConcepts',
+                'record.attachments',
+                'publisher'
+            ])
             ->searchContent($term)
             ->limit(10)
             ->get();
@@ -158,7 +192,7 @@ class RecordController extends Controller
             return [
                 'id' => $publicRecord->id,
                 'value' => $publicRecord->title,
-                'label' => $publicRecord->title . ($publicRecord->record->author ?? '' ? ' - ' . ($publicRecord->record->author ?? '') : ''),
+                'label' => $publicRecord->title . ($publicRecord->authors ? ' - ' . $publicRecord->authors : ''),
             ];
         }));
     }

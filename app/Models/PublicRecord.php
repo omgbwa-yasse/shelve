@@ -161,6 +161,87 @@ class PublicRecord extends Model
     }
 
     /**
+     * Get the authors from the associated record
+     */
+    public function getAuthorsAttribute()
+    {
+        if (!$this->record) {
+            return '';
+        }
+
+        return $this->record->authors->pluck('name')->implode(', ');
+    }
+
+    /**
+     * Get the publisher name from the publisher relation
+     */
+    public function getPublisherNameAttribute()
+    {
+        return $this->publisher?->name ?? 'Inconnu';
+    }
+
+    /**
+     * Get the publication year from the record dates
+     */
+    public function getPublicationYearAttribute()
+    {
+        if ($this->record?->date_exact) {
+            return date('Y', strtotime($this->record->date_exact));
+        }
+        if ($this->record?->date_start) {
+            return date('Y', strtotime($this->record->date_start));
+        }
+        return '';
+    }
+
+    /**
+     * Get the description (alias for content)
+     */
+    public function getDescriptionAttribute()
+    {
+        return $this->content;
+    }
+
+    /**
+     * Get subjects from thesaurus concepts
+     */
+    public function getSubjectsAttribute()
+    {
+        if (!$this->record) {
+            return '';
+        }
+
+        return $this->record->thesaurusConcepts->pluck('term')->implode(', ');
+    }
+
+    /**
+     * Get cover image from attachments
+     */
+    public function getCoverImageAttribute()
+    {
+        if (!$this->record) {
+            return null;
+        }
+
+        $imageAttachment = $this->record->attachments()
+            ->where('type', 'image')
+            ->orWhere('mime_type', 'like', 'image/%')
+            ->first();
+
+        return $imageAttachment?->path;
+    }
+
+    /**
+     * Check availability based on current status
+     */
+    public function getAvailabilityAttribute()
+    {
+        // For now, assume all public records are available
+        // This can be extended based on business logic
+        return $this->is_available;
+    }
+
+    /**
      * Get essential record data as array for easy manipulation
      */
     public function getEssentialDataAttribute()
@@ -170,6 +251,13 @@ class PublicRecord extends Model
             'title' => $this->title,
             'code' => $this->code,
             'content' => $this->content,
+            'authors' => $this->authors,
+            'publisher_name' => $this->publisher_name,
+            'publication_year' => $this->publication_year,
+            'description' => $this->description,
+            'subjects' => $this->subjects,
+            'cover_image' => $this->cover_image,
+            'availability' => $this->availability,
             'date_start' => $this->date_start,
             'date_end' => $this->date_end,
             'date_exact' => $this->date_exact,
@@ -182,7 +270,6 @@ class PublicRecord extends Model
             'publication_notes' => $this->publication_notes,
             'is_expired' => $this->is_expired,
             'is_available' => $this->is_available,
-            'publisher_name' => $this->publisher?->name ?? 'Inconnu',
         ];
     }
 

@@ -221,9 +221,9 @@
                                                 <strong>{{ __('Year:') }}</strong> {{ $record->publication_year }}
                                             </p>
                                         @endif
-                                        @if($record->publisher)
+                                        @if($record->publisher_name)
                                             <p class="text-muted mb-1">
-                                                <strong>{{ __('Publisher:') }}</strong> {{ $record->publisher }}
+                                                <strong>{{ __('Publisher:') }}</strong> {{ $record->publisher_name }}
                                             </p>
                                         @endif
                                         @if($record->description)
