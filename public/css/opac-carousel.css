@@ -1,0 +1,236 @@
+/* Carousel de documents OPAC */
+.opac-carousel-card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.opac-carousel-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-img-top-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.opac-carousel-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.opac-carousel-card:hover .opac-carousel-img {
+    transform: scale(1.05);
+}
+
+.opac-carousel-img-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.card-img-overlay-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+}
+
+.opac-carousel-card .card-body {
+    padding: 1.25rem;
+}
+
+.opac-carousel-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+}
+
+.opac-carousel-card .card-title a {
+    color: #2c3e50;
+    transition: color 0.3s ease;
+}
+
+.opac-carousel-card:hover .card-title a {
+    color: #3498db;
+}
+
+.opac-carousel-card .card-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #6c757d;
+}
+
+/* Style des contrôles du carousel */
+.carousel-controls .btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #3498db;
+    color: #3498db;
+    transition: all 0.3s ease;
+}
+
+.carousel-controls .btn:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+/* Style des indicateurs du carousel */
+#documentsCarousel .carousel-indicators {
+    position: relative;
+    bottom: auto;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+#documentsCarousel .carousel-indicators [data-bs-target] {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background-color: #dee2e6;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+#documentsCarousel .carousel-indicators [data-bs-target].active {
+    background-color: #3498db;
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Navigation arrows */
+#documentsCarousel .carousel-control-prev,
+#documentsCarousel .carousel-control-next {
+    width: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#documentsCarousel:hover .carousel-control-prev,
+#documentsCarousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+#documentsCarousel .carousel-control-prev {
+    left: -25px;
+}
+
+#documentsCarousel .carousel-control-next {
+    right: -25px;
+}
+
+#documentsCarousel .carousel-control-prev-icon,
+#documentsCarousel .carousel-control-next-icon {
+    background-size: 20px 20px;
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(190deg) brightness(86%) contrast(83%);
+}
+
+/* Titre de section */
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 2px;
+}
+
+/* Animation d'apparition */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.carousel-item {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .opac-carousel-card {
+        margin-bottom: 1rem;
+    }
+
+    .carousel-controls {
+        display: none !important;
+    }
+
+    #documentsCarousel .carousel-control-prev,
+    #documentsCarousel .carousel-control-next {
+        display: none;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-img-top-container,
+    .opac-carousel-img,
+    .opac-carousel-img-placeholder {
+        height: 150px;
+    }
+
+    .opac-carousel-card .card-body {
+        padding: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+    }
+}
+
+/* Effet de loading pour les images */
+.opac-carousel-img[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.opac-carousel-img[loading="lazy"].loaded {
+    opacity: 1;
+}
+
+/* Style pour les métadonnées */
+.opac-carousel-card .text-muted.small {
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.opac-carousel-card .text-muted.small i {
+    width: 12px;
+    color: #95a5a6;
+}

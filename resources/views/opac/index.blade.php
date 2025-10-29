@@ -29,6 +29,122 @@
     </div>
 </section>
 
+<!-- Documents Carousel Section -->
+@if($config->enable_carousel && $carouselRecords->isNotEmpty())
+<section class="container-fluid my-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">{{ $config->carousel_title ?? __('Featured Documents') }}</h2>
+            <div class="carousel-controls d-none d-md-flex">
+                <button class="btn btn-outline-primary btn-sm me-2" type="button" data-bs-target="#documentsCarousel" data-bs-slide="prev">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-primary btn-sm" type="button" data-bs-target="#documentsCarousel" data-bs-slide="next">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="documentsCarousel" class="carousel slide" data-bs-ride="{{ $config->carousel_auto_slide ? 'carousel' : 'false' }}"
+             @if($config->carousel_auto_slide) data-bs-interval="{{ $config->carousel_slide_interval ?? 5000 }}" @endif>
+
+            <div class="carousel-inner">
+                @php
+                    $chunks = $carouselRecords->chunk(3); // Afficher 3 documents par slide
+                @endphp
+
+                @foreach($chunks as $index => $recordsChunk)
+                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                    <div class="row">
+                        @foreach($recordsChunk as $record)
+                        <div class="col-md-4 mb-3">
+                            <div class="card opac-carousel-card h-100">
+                                @if($record->attachments->where('type', 'image')->first())
+                                    <div class="card-img-top-container">
+                                        <img src="{{ asset('storage/' . $record->attachments->where('type', 'image')->first()->path) }}"
+                                             class="card-img-top opac-carousel-img"
+                                             alt="{{ $record->name }}"
+                                             loading="lazy">
+                                        <div class="card-img-overlay-gradient"></div>
+                                    </div>
+                                @else
+                                    <div class="card-img-top opac-carousel-img-placeholder d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-file-alt fa-3x text-muted"></i>
+                                    </div>
+                                @endif
+
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <a href="{{ route('opac.show', $record->id) }}" class="text-decoration-none text-dark stretched-link">
+                                            {{ Str::limit($record->name, 50) }}
+                                        </a>
+                                    </h5>
+
+                                    @if($config->carousel_show_metadata)
+                                        @if($record->activity)
+                                            <p class="text-muted small mb-1">
+                                                <i class="fas fa-folder me-1"></i>{{ $record->activity->name }}
+                                            </p>
+                                        @endif
+
+                                        @if($record->date_exact)
+                                            <p class="text-muted small mb-1">
+                                                <i class="fas fa-calendar me-1"></i>{{ $record->date_exact->format('Y-m-d') }}
+                                            </p>
+                                        @endif
+
+                                        @if($record->authors->isNotEmpty())
+                                            <p class="text-muted small mb-2">
+                                                <i class="fas fa-user me-1"></i>{{ $record->authors->pluck('name')->implode(', ') }}
+                                            </p>
+                                        @endif
+                                    @endif
+
+                                    <p class="card-text flex-grow-1">
+                                        {{ Str::limit($record->content ?: $record->description ?: 'Aucune description disponible', 80) }}
+                                    </p>
+
+                                    <div class="mt-auto">
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye me-1"></i>{{ __('View Details') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <!-- Indicators -->
+            @if($chunks->count() > 1)
+            <div class="carousel-indicators">
+                @foreach($chunks as $index => $chunk)
+                    <button type="button" data-bs-target="#documentsCarousel" data-bs-slide-to="{{ $index }}"
+                            class="{{ $index === 0 ? 'active' : '' }}" aria-current="{{ $index === 0 ? 'true' : 'false' }}"
+                            aria-label="Slide {{ $index + 1 }}"></button>
+                @endforeach
+            </div>
+            @endif
+
+            <!-- Navigation Arrows -->
+            @if($chunks->count() > 1)
+            <button class="carousel-control-prev" type="button" data-bs-target="#documentsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">{{ __('Previous') }}</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#documentsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">{{ __('Next') }}</span>
+            </button>
+            @endif
+        </div>
+    </div>
+</section>
+@endif
+
 <!-- Statistics Section -->
 @if($config->show_statistics && !empty($stats))
 <section class="container my-5">

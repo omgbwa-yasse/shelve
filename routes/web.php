@@ -1014,8 +1014,9 @@ Route::prefix('opac')->name('opac.')->group(function () {
     Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
 
-    // Advanced Search routes
-    Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
+    // Search routes - Primary search interface
+    Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search');
+    Route::get('/search/advanced', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
     Route::post('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'search'])->name('search.results');
     Route::get('/search/suggestions', [\App\Http\Controllers\OPAC\SearchController::class, 'suggestions'])->name('search.suggestions');
     Route::get('/api/search', [\App\Http\Controllers\OPACController::class, 'searchApi'])->name('api.search');

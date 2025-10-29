@@ -49,7 +49,13 @@ class OPACController extends Controller
                 ->get();
         }
 
-        return view('opac.index', compact('stats', 'recentRecords', 'config'));
+        // Documents pour le carousel selon la configuration
+        $carouselRecords = collect();
+        if ($config->enable_carousel) {
+            $carouselRecords = $this->getCarouselRecords($config);
+        }
+
+        return view('opac.index', compact('stats', 'recentRecords', 'carouselRecords', 'config'));
     }
 
     /**
@@ -408,5 +414,48 @@ class OPACController extends Controller
         $config->require_registration = false;
 
         return $config;
+    }
+
+    /**
+     * Récupérer les documents pour le carousel selon la configuration
+     */
+    private function getCarouselRecords($config)
+    {
+        $count = $config->carousel_items_count ?? 6;
+        $selectionMethod = $config->carousel_selection_method ?? 'recent';
+
+        $queryBuilder = Record::with(['activity', 'authors', 'attachments'])
+            ->whereHas('activity.organisations', function($query) use ($config) {
+                $query->whereIn('organisations.id', $config->visible_organisations ?? []);
+            });
+
+        switch ($selectionMethod) {
+            case 'recent':
+                return $queryBuilder->orderBy('created_at', 'desc')
+                    ->limit($count)
+                    ->get();
+
+            case 'featured':
+                // Documents mis en avant (on peut ajouter un champ 'is_featured' plus tard)
+                return $queryBuilder->orderBy('updated_at', 'desc')
+                    ->limit($count)
+                    ->get();
+
+            case 'popular':
+                // Documents populaires (basé sur les vues si on implémente un système de comptage)
+                return $queryBuilder->orderBy('created_at', 'desc')
+                    ->limit($count)
+                    ->get();
+
+            case 'random':
+                return $queryBuilder->inRandomOrder()
+                    ->limit($count)
+                    ->get();
+
+            default:
+                return $queryBuilder->orderBy('created_at', 'desc')
+                    ->limit($count)
+                    ->get();
+        }
     }
 }
