@@ -513,6 +513,11 @@
                                     <i class="bi bi-people me-2"></i>Utilisateurs
                                 </a></li>
                                 @endcan
+                                @can('admin.opac.pages')
+                                <li><a class="dropdown-item" href="{{ route('admin.opac.pages.index') }}">
+                                    <i class="bi bi-file-text me-2"></i>Pages
+                                </a></li>
+                                @endcan
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ route('opac.index') }}" target="_blank">
                                     <i class="bi bi-box-arrow-up-right me-2"></i>Voir le portail public
