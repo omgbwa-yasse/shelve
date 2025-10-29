@@ -243,11 +243,6 @@
 
                     <div class="collapse navbar-collapse" id="opacNavbar">
                         <ul class="navbar-nav me-auto">
-                            <li class="nav-item">
-                                <a class="nav-link opac-nav-link" href="{{ route('opac.dashboard') }}">
-                                    <i class="fas fa-home me-1"></i> {{ __('Dashboard') }}
-                                </a>
-                            </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link opac-nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="fas fa-search me-1"></i> {{ __('Search') }}
@@ -320,9 +315,6 @@
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" href="{{ route('opac.profile') }}">
                                             <i class="fas fa-user-edit me-2"></i> {{ __('My Profile') }}
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="{{ route('opac.dashboard') }}">
-                                            <i class="fas fa-tachometer-alt me-2"></i> {{ __('Dashboard') }}
                                         </a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="{{ route('opac.reservations') }}">
