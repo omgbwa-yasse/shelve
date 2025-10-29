@@ -25,6 +25,7 @@ class PermissionCategorySeeder extends Seeder
         $this->createBackupsPermissions();
         $this->createWorkflowPermissions();
         $this->createAdditionalPermissions();
+        $this->createPublicPermissions();
 
         $this->command->info('Permissions avec catégories créées avec succès!');
     }
@@ -800,9 +801,52 @@ class PermissionCategorySeeder extends Seeder
         $this->insertPermissions($permissions);
     }
 
+    private function createPublicPermissions()
+    {
+        $permissions = [
+            // Public Events permissions
+            [
+                'id' => 403,
+                'name' => 'public.events.manage',
+                'category' => 'public',
+                'description' => 'Gérer les événements publics dans l\'OPAC'
+            ],
+        ];
+
+        $this->insertPermissionsWithIds($permissions);
+    }
+
     private function insertPermissions(array $permissions)
     {
         foreach ($permissions as $permission) {
+            DB::table('permissions')->updateOrInsert(
+                ['name' => $permission['name']],
+                array_merge($permission, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
+        }
+    }
+
+    private function insertPermissionsWithIds(array $permissions)
+    {
+        foreach ($permissions as $permission) {
+            // Check if permission already exists with this ID
+            $existingById = DB::table('permissions')->where('id', $permission['id'])->first();
+            $existingByName = DB::table('permissions')->where('name', $permission['name'])->first();
+
+            if ($existingById && $existingById->name !== $permission['name']) {
+                $this->command->error("Permission ID {$permission['id']} already exists with name '{$existingById->name}', not '{$permission['name']}'");
+                continue;
+            }
+
+            if ($existingByName && $existingByName->id != $permission['id']) {
+                $this->command->error("Permission name '{$permission['name']}' already exists with ID {$existingByName->id}, not {$permission['id']}");
+                continue;
+            }
+
+            // Insert or update with specific ID
             DB::table('permissions')->updateOrInsert(
                 ['name' => $permission['name']],
                 array_merge($permission, [
