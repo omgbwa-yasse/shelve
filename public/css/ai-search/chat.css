@@ -1,0 +1,161 @@
+/* Styles pour le module AI Search */
+
+.chat-container {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.ai-message, .user-message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    animation: messageSlideIn 0.4s ease-out;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.message-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-right: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: transform 0.2s ease;
+}
+
+.message-avatar:hover {
+    transform: scale(1.05);
+}
+
+.ai-message .message-avatar {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+}
+
+.user-message .message-avatar {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+    margin-left: 16px;
+    margin-right: 0;
+    order: 2;
+}
+
+.message-content {
+    max-width: 75%;
+    min-width: 120px;
+    animation: contentFadeIn 0.5s ease-out 0.1s both;
+}
+
+.user-message .message-content {
+    text-align: right;
+}
+
+.message-text {
+    background-color: white;
+    padding: 14px 18px;
+    border-radius: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    margin-bottom: 6px;
+    position: relative;
+    line-height: 1.5;
+    word-wrap: break-word;
+    border: 1px solid #f1f3f4;
+    transition: box-shadow 0.2s ease;
+}
+
+.message-text:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.ai-message .message-text::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 16px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid white;
+}
+
+.user-message .message-text {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border-color: #0056b3;
+}
+
+.user-message .message-text::before {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 16px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 8px solid #007bff;
+}
+
+.message-time {
+    font-size: 11px;
+    color: #8e9297;
+    padding: 0 10px;
+    font-weight: 500;
+}
+
+.user-message .message-time {
+    text-align: right;
+}
+
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes contentFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.chat-input-container {
+    border-top: 1px solid #dee2e6;
+    padding-top: 15px;
+}
+
+.search-type-selector .btn-group {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.input-group .btn {
+    border-left: 1px solid #ced4da;
+}

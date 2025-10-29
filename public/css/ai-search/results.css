@@ -1,0 +1,74 @@
+/* Styles pour les résultats de recherche */
+
+.result-cards {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.result-card {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.result-card:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+    transform: translateY(-1px);
+}
+
+.result-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.result-header {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: #333;
+}
+
+.result-title {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.result-actions {
+    text-align: right;
+    font-size: 11px;
+}
+
+.result-card:hover .result-actions {
+    color: #007bff !important;
+}
+
+/* Styles pour les anciens liens (compatibilité) */
+.result-links {
+    margin-top: 10px;
+}
+
+.result-link {
+    display: inline-block;
+    background-color: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    text-decoration: none;
+    margin: 2px;
+    font-size: 12px;
+    transition: background-color 0.3s;
+}
+
+.result-link:hover {
+    background-color: #218838;
+    color: white;
+    text-decoration: none;
+}

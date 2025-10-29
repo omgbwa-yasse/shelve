@@ -1,0 +1,71 @@
+/* Styles pour la documentation AI Search */
+
+.documentation-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.list-group-item-action {
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 2px;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item-action.active {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #007bff;
+    border: 1px solid #e9ecef;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+section {
+    scroll-margin-top: 100px;
+}
+
+.table code {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    font-size: 0.85em;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e3f2fd;
+}
+
+.sticky-top {
+    z-index: 1020;
+}
+
+@media (max-width: 768px) {
+    .documentation-content {
+        max-height: none;
+    }
+
+    .sticky-top {
+        position: relative !important;
+        top: auto !important;
+    }
+}
