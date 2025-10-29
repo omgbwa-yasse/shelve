@@ -331,6 +331,15 @@ class OPACController extends Controller
         $config->public_access = true;
         $config->require_registration = false;
 
+        // Valeurs par défaut pour le carousel
+        $config->enable_carousel = true;
+        $config->carousel_items_count = 6;
+        $config->carousel_auto_slide = true;
+        $config->carousel_slide_interval = 5000;
+        $config->carousel_selection_method = 'recent';
+        $config->carousel_show_metadata = true;
+        $config->carousel_title = 'Documents à découvrir';
+
         // Appliquer les configurations spécifiques si elles existent
         foreach ($configurations as $categoryName => $categoryConfigs) {
             foreach ($categoryConfigs as $configuration) {
@@ -380,6 +389,28 @@ class OPACController extends Controller
                         if (is_array($value) && !empty($value)) {
                             $config->visible_organisations = array_merge([$organisationId], $value);
                         }
+                        break;
+                    // Configurations du carousel
+                    case 'enable_carousel':
+                        $config->enable_carousel = (bool) $value;
+                        break;
+                    case 'carousel_items_count':
+                        $config->carousel_items_count = (int) $value;
+                        break;
+                    case 'carousel_auto_slide':
+                        $config->carousel_auto_slide = (bool) $value;
+                        break;
+                    case 'carousel_slide_interval':
+                        $config->carousel_slide_interval = (int) $value;
+                        break;
+                    case 'carousel_selection_method':
+                        $config->carousel_selection_method = $value;
+                        break;
+                    case 'carousel_show_metadata':
+                        $config->carousel_show_metadata = (bool) $value;
+                        break;
+                    case 'carousel_title':
+                        $config->carousel_title = $value;
                         break;
                 }
             }
