@@ -18,12 +18,18 @@ class PublicTemplate extends Model
         'type',
         'content',
         'variables',
+        'parameters',
+        'values',
         'status',
+        'is_active',
         'author_id',
     ];
 
     protected $casts = [
         'variables' => 'array',
+        'parameters' => 'array',
+        'values' => 'array',
+        'is_active' => 'boolean',
     ];
 
     public function author()

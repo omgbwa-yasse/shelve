@@ -23,6 +23,10 @@ class PublicEvent extends Model
         'location',
         'is_online',
         'online_link',
+        'max_participants',
+        'registration_required',
+        'registration_deadline',
+        'image_path',
     ];
 
     /**
@@ -33,7 +37,9 @@ class PublicEvent extends Model
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'registration_deadline' => 'datetime',
         'is_online' => 'boolean',
+        'registration_required' => 'boolean',
     ];
 
     /**

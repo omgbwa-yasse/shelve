@@ -66,6 +66,11 @@
                 </a>
             </div>
             <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('public.opac-templates.index') }}">
+                    <i class="bi bi-palette"></i> Templates OPAC
+                </a>
+            </div>
+            <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('public.events.index') }}">
                     <i class="bi bi-calendar-event"></i> {{ __('events') }}
                 </a>

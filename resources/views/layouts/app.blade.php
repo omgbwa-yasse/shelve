@@ -498,6 +498,45 @@
                             </a>
                         </div>
                         @endcan
+                        @auth
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle @if (Request::segment(1) == 'admin' && Request::segment(2) == 'opac') active @endif" href="#" id="opacDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-globe"></i>
+                                <span>{{ __('OPAC') }}</span>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="opacDropdown">
+                                <li><a class="dropdown-item" href="{{ route('admin.opac.configurations.index') }}">
+                                    <i class="bi bi-gear me-2"></i>Configuration
+                                </a></li>
+                                @can('admin.opac.users')
+                                <li><a class="dropdown-item" href="{{ route('admin.opac.users.index') }}">
+                                    <i class="bi bi-people me-2"></i>Utilisateurs
+                                </a></li>
+                                @endcan
+                                @can('admin.opac.pages')
+                                <li><a class="dropdown-item" href="{{ route('admin.opac.pages.index') }}">
+                                    <i class="bi bi-file-text me-2"></i>Pages
+                                </a></li>
+                                @endcan
+                                @can('admin.opac.events')
+                                <li><a class="dropdown-item" href="{{ route('admin.opac.events.index') }}">
+                                    <i class="bi bi-calendar-event me-2"></i>Événements
+                                </a></li>
+                                @endcan
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ route('opac.index') }}" target="_blank">
+                                    <i class="bi bi-box-arrow-up-right me-2"></i>Voir le portail public
+                                </a></li>
+                            </ul>
+                        </div>
+                        @endauth
+                        <!-- Module AI -->
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'ai-search') active @endif" href="{{ route('ai-search.index') }}">
+                                <i class="bi bi-robot"></i>
+                                <span>{{ __('AI') }}</span>
+                            </a>
+                        </div>
                         @can('module_settings_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">

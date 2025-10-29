@@ -14,6 +14,7 @@ class PublicPage extends Model
 
     protected $fillable = [
         'title',
+        'name',
         'slug',
         'content',
         'meta_description',
@@ -21,6 +22,9 @@ class PublicPage extends Model
         'status',
         'featured_image_path',
         'author_id',
+        'order',
+        'parent_id',
+        'is_published',
     ];
 
     protected $casts = [
@@ -30,5 +34,15 @@ class PublicPage extends Model
     public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(PublicPage::class, 'parent_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(PublicPage::class, 'parent_id');
     }
 }

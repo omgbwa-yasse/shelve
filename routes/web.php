@@ -2,6 +2,8 @@
 
 // MCP/AI routes retirées
 
+use App\Http\Controllers\Admin\OpacConfigurationController;
+use App\Http\Controllers\Admin\PublicUserController as AdminPublicUserController;
 use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PhantomController;
@@ -878,11 +880,29 @@ Route::group(['middleware' => 'auth'], function () {
 
     // Le module Workflow a été supprimé
 
-// Routes d'administration du Rate Limiting
+// Routes d'administration du Rate Limiting et OPAC
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Rate Limiting Administration
     Route::get('rate-limit/dashboard', [RateLimitController::class, 'dashboard'])->name('rate-limit.dashboard');
     Route::get('rate-limit/user-stats', [RateLimitController::class, 'userStats'])->name('rate-limit.user-stats');
     Route::post('rate-limit/clear', [RateLimitController::class, 'clearLimits'])->name('rate-limit.clear');
+
+    // OPAC Configuration Administration
+    Route::prefix('opac')->name('opac.')->group(function () {
+        Route::get('configurations', [OpacConfigurationController::class, 'index'])->name('configurations.index');
+        Route::post('configurations', [OpacConfigurationController::class, 'update'])->name('configurations.update');
+        Route::get('configurations/{configuration}', [OpacConfigurationController::class, 'show'])->name('configurations.show');
+        Route::post('configurations/{configuration}/reset', [OpacConfigurationController::class, 'reset'])->name('configurations.reset');
+        Route::post('configurations/export', [OpacConfigurationController::class, 'export'])->name('configurations.export');
+        Route::post('configurations/import', [OpacConfigurationController::class, 'import'])->name('configurations.import');
+
+        // OPAC Users Administration
+        Route::resource('users', AdminPublicUserController::class);
+        Route::post('users/{user}/approve', [AdminPublicUserController::class, 'approve'])->name('users.approve');
+        Route::post('users/{user}/disapprove', [AdminPublicUserController::class, 'disapprove'])->name('users.disapprove');
+
+        // OPAC Templates Administration - Moved to Public Module
+    });
 });
 
 // Routes publics de administration du module public
@@ -898,12 +918,24 @@ Route::prefix('public')->name('public.')->group(function () {
 
     // Gestion des événements publics
     Route::resource('events', PublicEventController::class)->names('events');
+    Route::post('events/bulk-action', [PublicEventController::class, 'bulkAction'])->name('events.bulk-action');
+    Route::get('events/{event}/registrations', [PublicEventController::class, 'registrations'])->name('events.registrations');
+    Route::get('events/{event}/export-registrations', [PublicEventController::class, 'exportRegistrations'])->name('events.export-registrations');
+    Route::post('events/{event}/registrations/{registration}/status', [PublicEventController::class, 'updateRegistrationStatus'])->name('events.registrations.status');
     Route::resource('event-registrations', PublicEventRegistrationController::class)->names('event-registrations');
 
     // Gestion du contenu public
     Route::resource('news', PublicNewsController::class)->names('news');
     Route::resource('pages', PublicPageController::class)->names('pages');
+    Route::post('pages/bulk-action', [PublicPageController::class, 'bulkAction'])->name('pages.bulk-action');
+    Route::post('pages/reorder', [PublicPageController::class, 'reorder'])->name('pages.reorder');
     Route::resource('templates', PublicTemplateController::class)->names('templates');
+
+    // OPAC Templates Management - Portail Administration
+    Route::resource('opac-templates', \App\Http\Controllers\Public\OpacTemplateController::class)->names('opac-templates');
+    Route::get('opac-templates/{template}/preview', [\App\Http\Controllers\Public\OpacTemplateController::class, 'preview'])->name('opac-templates.preview');
+    Route::post('opac-templates/{template}/duplicate', [\App\Http\Controllers\Public\OpacTemplateController::class, 'duplicate'])->name('opac-templates.duplicate');
+    Route::get('opac-templates/{template}/export', [\App\Http\Controllers\Public\OpacTemplateController::class, 'export'])->name('opac-templates.export');
 
     // Gestion des demandes de documents
     Route::resource('document-requests', PublicDocumentRequestController::class)->names('document-requests');
@@ -938,6 +970,111 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
     Route::get('/tests', [\App\Http\Controllers\AiSearchTestController::class, 'runTests'])->name('tests');
     Route::get('/test/{testName}', [\App\Http\Controllers\AiSearchTestController::class, 'runTest'])->name('test.single');
     Route::get('/test-interface', [\App\Http\Controllers\AiSearchTestController::class, 'testInterface'])->name('test.interface');
+});
+
+// Routes OPAC (Online Public Access Catalog) - Accès public sans authentification
+Route::prefix('opac')->name('opac.')->group(function () {
+    // Page d'accueil OPAC
+    Route::get('/', [\App\Http\Controllers\OPACController::class, 'index'])->name('index');
+
+    // Navigation par catégories
+    Route::get('/browse', [\App\Http\Controllers\OPACController::class, 'browse'])->name('browse');
+
+    // Affichage d'un document (legacy)
+    Route::get('/record/{id}', [\App\Http\Controllers\OPACController::class, 'show'])->name('show');
+
+    // Téléchargement de fichiers (si autorisé)
+    Route::get('/record/{recordId}/attachment/{attachmentId}/download', [\App\Http\Controllers\OPACController::class, 'downloadAttachment'])->name('download');
+
+    // Page d'aide
+    Route::get('/help', [\App\Http\Controllers\OPACController::class, 'help'])->name('help');
+
+    // Authentication routes for public users
+    Route::get('/login', [\App\Http\Controllers\OPAC\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\OPAC\AuthController::class, 'login']);
+    Route::get('/register', [\App\Http\Controllers\OPAC\AuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\OPAC\AuthController::class, 'register']);
+    Route::post('/logout', [\App\Http\Controllers\OPAC\AuthController::class, 'logout'])->name('logout');
+
+    // News routes
+    Route::get('/news', [\App\Http\Controllers\OPAC\NewsController::class, 'index'])->name('news.index');
+    Route::get('/news/{news}', [\App\Http\Controllers\OPAC\NewsController::class, 'show'])->name('news.show');
+
+    // Pages routes
+    Route::get('/pages', [\App\Http\Controllers\OPAC\PageController::class, 'index'])->name('pages.index');
+    Route::get('/pages/{page}', [\App\Http\Controllers\OPAC\PageController::class, 'show'])->name('pages.show');
+
+    // Events routes
+    Route::get('/events', [\App\Http\Controllers\OPAC\EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [\App\Http\Controllers\OPAC\EventController::class, 'show'])->name('events.show');
+
+    // Records and Search routes (public access)
+    Route::get('/records', [\App\Http\Controllers\OPAC\RecordController::class, 'index'])->name('records.index');
+    Route::get('/records/search', [\App\Http\Controllers\OPAC\RecordController::class, 'search'])->name('records.search');
+    Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
+    Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
+
+    // Advanced Search routes
+    Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
+    Route::post('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'search'])->name('search.results');
+    Route::get('/search/suggestions', [\App\Http\Controllers\OPAC\SearchController::class, 'suggestions'])->name('search.suggestions');
+    Route::get('/api/search', [\App\Http\Controllers\OPACController::class, 'searchApi'])->name('api.search');
+
+    // Feedback routes (mixed access)
+    Route::get('/feedback', [\App\Http\Controllers\OPAC\FeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [\App\Http\Controllers\OPAC\FeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/feedback/success', [\App\Http\Controllers\OPAC\FeedbackController::class, 'success'])->name('feedback.success');
+
+    // Protected routes for authenticated public users
+    Route::middleware('auth:public')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [\App\Http\Controllers\OPAC\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/activity', [\App\Http\Controllers\OPAC\DashboardController::class, 'activity'])->name('dashboard.activity');
+        Route::get('/dashboard/quick-actions', [\App\Http\Controllers\OPAC\DashboardController::class, 'quickActions'])->name('dashboard.quick-actions');
+        Route::get('/dashboard/preferences', [\App\Http\Controllers\OPAC\DashboardController::class, 'preferences'])->name('dashboard.preferences');
+        Route::put('/dashboard/preferences', [\App\Http\Controllers\OPAC\DashboardController::class, 'updatePreferences'])->name('dashboard.preferences.update');
+
+        // Profile management
+        Route::get('/profile', [\App\Http\Controllers\OPAC\ProfileController::class, 'show'])->name('profile');
+        Route::put('/profile', [\App\Http\Controllers\OPAC\ProfileController::class, 'update'])->name('profile.update');
+
+        // Reservations
+        Route::get('/reservations', [\App\Http\Controllers\OPAC\ReservationController::class, 'index'])->name('reservations');
+        Route::post('/reservations', [\App\Http\Controllers\OPAC\ReservationController::class, 'store'])->name('reservations.store');
+
+        // Document Requests
+        Route::get('/document-requests', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'index'])->name('document-requests.index');
+        Route::get('/document-requests/create', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'create'])->name('document-requests.create');
+        Route::post('/document-requests', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'store'])->name('document-requests.store');
+        Route::get('/document-requests/{documentRequest}', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'show'])->name('document-requests.show');
+        Route::get('/document-requests/{documentRequest}/edit', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'edit'])->name('document-requests.edit');
+        Route::put('/document-requests/{documentRequest}', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'update'])->name('document-requests.update');
+        Route::post('/document-requests/{documentRequest}/cancel', [\App\Http\Controllers\OPAC\DocumentRequestController::class, 'cancel'])->name('document-requests.cancel');
+
+        // User feedback management
+        Route::get('/my-feedback', [\App\Http\Controllers\OPAC\FeedbackController::class, 'myFeedback'])->name('feedback.my-feedback');
+        Route::get('/my-feedback/{id}', [\App\Http\Controllers\OPAC\FeedbackController::class, 'show'])->name('feedback.show');
+
+        // Search history
+        Route::get('/search/history', [\App\Http\Controllers\OPAC\SearchController::class, 'history'])->name('search.history');
+        Route::post('/search/save', [\App\Http\Controllers\OPAC\SearchController::class, 'saveSearch'])->name('search.save');
+
+        // Legacy routes (keeping for compatibility)
+        Route::get('/requests', [\App\Http\Controllers\OPAC\RequestController::class, 'index'])->name('requests');
+        Route::post('/requests', [\App\Http\Controllers\OPAC\RequestController::class, 'store'])->name('requests.store');
+    });
+
+    // Template management (public access for viewing)
+    Route::get('/templates', [\App\Http\Controllers\OPAC\TemplateController::class, 'index'])->name('templates.index');
+    Route::get('/templates/{template}', [\App\Http\Controllers\OPAC\TemplateController::class, 'show'])->name('templates.show');
+    Route::get('/templates/{template}/preview', [\App\Http\Controllers\OPAC\TemplateController::class, 'preview'])->name('templates.preview');
+
+    // Template customization (requires authentication)
+    Route::middleware('auth:public')->group(function () {
+        Route::get('/templates/{template}/customize', [\App\Http\Controllers\OPAC\TemplateController::class, 'customize'])->name('templates.customize');
+        Route::post('/templates/apply', [\App\Http\Controllers\OPAC\TemplateController::class, 'apply'])->name('templates.apply');
+        Route::post('/templates/save-customization', [\App\Http\Controllers\OPAC\TemplateController::class, 'saveCustomization'])->name('templates.save-customization');
+    });
 });
 
 // Routes API pour les records et thésaurus
