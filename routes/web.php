@@ -997,21 +997,12 @@ Route::middleware(['auth'])->prefix('ai-search')->name('ai-search.')->group(func
 });
 
 // Routes OPAC (Online Public Access Catalog) - Accès public sans authentification
+// New modular OPAC architecture with specialized controllers
 Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function () {
-    // Page d'accueil OPAC
-    Route::get('/', [\App\Http\Controllers\OPACController::class, 'index'])->name('index');
-
-    // Navigation par catégories
-    Route::get('/browse', [\App\Http\Controllers\OPACController::class, 'browse'])->name('browse');
-
-    // Affichage d'un document (legacy)
-    Route::get('/record/{id}', [\App\Http\Controllers\OPACController::class, 'show'])->name('show');
-
-    // Téléchargement de fichiers (si autorisé)
-    Route::get('/record/{recordId}/attachment/{attachmentId}/download', [\App\Http\Controllers\OPACController::class, 'downloadAttachment'])->name('download');
-
-    // Page d'aide
-    Route::get('/help', [\App\Http\Controllers\OPACController::class, 'help'])->name('help');
+    // Home page - redirect to search
+    Route::get('/', function() {
+        return redirect()->route('opac.search');
+    })->name('index');
 
     // Authentication routes for public users
     Route::get('/login', [\App\Http\Controllers\OPAC\AuthController::class, 'showLoginForm'])->name('login');
@@ -1043,7 +1034,7 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     Route::get('/search/advanced', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
     Route::post('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'search'])->name('search.results');
     Route::get('/search/suggestions', [\App\Http\Controllers\OPAC\SearchController::class, 'suggestions'])->name('search.suggestions');
-    Route::get('/api/search', [\App\Http\Controllers\OPACController::class, 'searchApi'])->name('api.search');
+    Route::get('/api/search', [\App\Http\Controllers\OPAC\SearchController::class, 'apiSearch'])->name('api.search');
 
     // Feedback routes (mixed access)
     Route::get('/feedback', [\App\Http\Controllers\OPAC\FeedbackController::class, 'create'])->name('feedback.create');

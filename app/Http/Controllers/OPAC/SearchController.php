@@ -190,6 +190,24 @@ class SearchController extends Controller
     }
 
     /**
+     * API search for AJAX autocomplete
+     */
+    public function apiSearch(Request $request)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        // Get limited results for autocomplete
+        $results = collect(); // Placeholder - in real implementation would search records
+
+        // For now, return empty results until proper search implementation
+        return response()->json($results);
+    }
+
+    /**
      * Log search query for statistics and history
      */
     private function logSearch(array $searchData, int $resultCount = 0)
