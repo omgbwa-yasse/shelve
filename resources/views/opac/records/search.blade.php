@@ -1,6 +1,6 @@
 @extends('opac.layouts.app')
 
-@section('title', __('Search') . ' - OPAC')
+@section('title', __('Search Records') . ' - OPAC')
 
 @push('styles')
 <style>
@@ -62,28 +62,29 @@
         box-shadow: 0 0 0 0.2rem rgba(0, 74, 153, 0.15);
     }
 
-    /* Quick Access Cards */
-    .opac-card.text-center .card-body {
-        padding: 2rem 1.5rem;
+    /* Filter Pills */
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 50px;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
 
-    .opac-card.text-center .fa-3x {
-        opacity: 0.9;
+    .filter-pill:hover {
+        background: var(--opac-primary);
+        color: white;
+        border-color: var(--opac-primary);
     }
 
-    .opac-card.text-center:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-
-    .opac-card.text-center:hover .fa-3x {
-        transform: scale(1.1);
-        transition: transform 0.3s ease;
-    }
-
-    /* Search Tips */
-    .text-warning {
-        color: #ffc107 !important;
+    .filter-pill.active {
+        background: var(--opac-primary);
+        color: white;
+        border-color: var(--opac-primary);
     }
 
     /* Responsive Adjustments */
@@ -115,12 +116,12 @@
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
                 <div class="text-center mb-4">
-                    <h1 class="display-5 fw-bold mb-3" style="font-family: 'Lora', Georgia, serif;">{{ __('Search Our Collections') }}</h1>
-                    <p class="lead opacity-90">{{ __('Explore thousands of documents, books, and digital resources') }}</p>
+                    <h1 class="display-5 fw-bold mb-3" style="font-family: 'Lora', Georgia, serif;">{{ __('Search Records') }}</h1>
+                    <p class="lead opacity-90">{{ __('Find documents in our catalog') }}</p>
                 </div>
 
                 <!-- Quick Search Form -->
-                <form method="GET" action="{{ route('opac.search.results') }}" id="quickSearchForm">
+                <form method="GET" action="{{ route('opac.records.index') }}" id="quickSearchForm">
                     <div class="d-flex gap-2">
                         <div class="flex-grow-1 position-relative">
                             <i class="fas fa-search opac-search-icon"></i>
@@ -164,7 +165,7 @@
                         {{ __('Advanced Search') }}
                     </div>
                     <div class="card-body opac-card-body">
-                        <form method="GET" action="{{ route('opac.search.results') }}" id="advancedSearchForm">
+                        <form method="GET" action="{{ route('opac.records.index') }}" id="advancedSearchForm">
                             <div class="row g-3">
                                 <!-- Title -->
                                 <div class="col-md-6">
@@ -201,22 +202,23 @@
 
                                 <!-- ISBN / Identifier -->
                                 <div class="col-md-6">
-                                    <label for="isbn" class="form-label fw-semibold">{{ __('ISBN / Identifier') }}</label>
+                                    <label for="code" class="form-label fw-semibold">{{ __('Record Code / Identifier') }}</label>
                                     <input type="text"
                                            class="form-control"
-                                           id="isbn"
-                                           name="isbn"
-                                           value="{{ request('isbn') }}"
-                                           placeholder="{{ __('ISBN, ISSN, or other identifier...') }}">
+                                           id="code"
+                                           name="code"
+                                           value="{{ request('code') }}"
+                                           placeholder="{{ __('Enter record code or identifier...') }}">
                                 </div>
 
                                 <!-- Date Range -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold">{{ __('Publication Date Range') }}</label>
+                                    <label for="date_from" class="form-label fw-semibold">{{ __('Date Range') }}</label>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <input type="date"
                                                    class="form-control"
+                                                   id="date_from"
                                                    name="date_from"
                                                    value="{{ request('date_from') }}"
                                                    placeholder="{{ __('From') }}">
@@ -231,44 +233,43 @@
                                     </div>
                                 </div>
 
-                                <!-- Language -->
+                                <!-- Category -->
+                                @if(isset($categories) && $categories->isNotEmpty())
                                 <div class="col-md-6">
-                                    <label for="language" class="form-label fw-semibold">{{ __('Language') }}</label>
-                                    <select class="form-select" id="language" name="language">
-                                        <option value="">{{ __('Any language') }}</option>
-                                        <option value="fr" {{ request('language') == 'fr' ? 'selected' : '' }}>{{ __('French') }}</option>
-                                        <option value="en" {{ request('language') == 'en' ? 'selected' : '' }}>{{ __('English') }}</option>
-                                        <option value="es" {{ request('language') == 'es' ? 'selected' : '' }}>{{ __('Spanish') }}</option>
-                                        <option value="de" {{ request('language') == 'de' ? 'selected' : '' }}>{{ __('German') }}</option>
-                                        <option value="ar" {{ request('language') == 'ar' ? 'selected' : '' }}>{{ __('Arabic') }}</option>
-                                        <option value="pt" {{ request('language') == 'pt' ? 'selected' : '' }}>{{ __('Portuguese') }}</option>
+                                    <label for="category" class="form-label fw-semibold">{{ __('Category') }}</label>
+                                    <select class="form-select" id="category" name="category">
+                                        <option value="">{{ __('All categories') }}</option>
+                                        @foreach($categories as $category)
+                                        <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
+                                            {{ $category }}
+                                        </option>
+                                        @endforeach
                                     </select>
                                 </div>
+                                @endif
 
-                                <!-- Document Type -->
+                                <!-- Record Type -->
+                                @if(isset($types) && $types->isNotEmpty())
                                 <div class="col-md-6">
-                                    <label for="type" class="form-label fw-semibold">{{ __('Document Type') }}</label>
+                                    <label for="type" class="form-label fw-semibold">{{ __('Record Type') }}</label>
                                     <select class="form-select" id="type" name="type">
                                         <option value="">{{ __('All types') }}</option>
-                                        <option value="book" {{ request('type') == 'book' ? 'selected' : '' }}>{{ __('Book') }}</option>
-                                        <option value="article" {{ request('type') == 'article' ? 'selected' : '' }}>{{ __('Article') }}</option>
-                                        <option value="journal" {{ request('type') == 'journal' ? 'selected' : '' }}>{{ __('Journal') }}</option>
-                                        <option value="report" {{ request('type') == 'report' ? 'selected' : '' }}>{{ __('Report') }}</option>
-                                        <option value="thesis" {{ request('type') == 'thesis' ? 'selected' : '' }}>{{ __('Thesis') }}</option>
-                                        <option value="manuscript" {{ request('type') == 'manuscript' ? 'selected' : '' }}>{{ __('Manuscript') }}</option>
-                                        <option value="multimedia" {{ request('type') == 'multimedia' ? 'selected' : '' }}>{{ __('Multimedia') }}</option>
-                                        <option value="archive" {{ request('type') == 'archive' ? 'selected' : '' }}>{{ __('Archive') }}</option>
+                                        @foreach($types as $type)
+                                        <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>
+                                            {{ $type }}
+                                        </option>
+                                        @endforeach
                                     </select>
                                 </div>
+                                @endif
 
                                 <!-- Sort By -->
                                 <div class="col-md-6">
                                     <label for="sort" class="form-label fw-semibold">{{ __('Sort Results By') }}</label>
                                     <select class="form-select" id="sort" name="sort">
                                         <option value="relevance" {{ request('sort') == 'relevance' ? 'selected' : '' }}>{{ __('Relevance') }}</option>
-                                        <option value="title_asc" {{ request('sort') == 'title_asc' ? 'selected' : '' }}>{{ __('Title (A-Z)') }}</option>
-                                        <option value="title_desc" {{ request('sort') == 'title_desc' ? 'selected' : '' }}>{{ __('Title (Z-A)') }}</option>
-                                        <option value="author_asc" {{ request('sort') == 'author_asc' ? 'selected' : '' }}>{{ __('Author (A-Z)') }}</option>
+                                        <option value="name_asc" {{ request('sort') == 'name_asc' ? 'selected' : '' }}>{{ __('Name (A-Z)') }}</option>
+                                        <option value="name_desc" {{ request('sort') == 'name_desc' ? 'selected' : '' }}>{{ __('Name (Z-A)') }}</option>
                                         <option value="date_desc" {{ request('sort') == 'date_desc' ? 'selected' : '' }}>{{ __('Date (Newest First)') }}</option>
                                         <option value="date_asc" {{ request('sort') == 'date_asc' ? 'selected' : '' }}>{{ __('Date (Oldest First)') }}</option>
                                     </select>
@@ -326,37 +327,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Search History for Authenticated Users -->
-            @auth('public')
-            @if(isset($searchHistory) && $searchHistory->isNotEmpty())
-            <div class="opac-card mt-4">
-                <div class="opac-card-header">
-                    <i class="fas fa-history me-2"></i>{{ __('Recent Searches') }}
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        @foreach($searchHistory->take(6) as $search)
-                        <div class="col-md-6 col-lg-4 mb-2">
-                            <a href="#" class="text-decoration-none">
-                                <small class="text-muted d-block">
-                                    <i class="fas fa-clock me-1"></i>
-                                    {{ $search->created_at->diffForHumans() }}
-                                </small>
-                                <div class="fw-medium">{{ Str::limit($search->search_term, 30) }}</div>
-                            </a>
-                        </div>
-                        @endforeach
-                    </div>
-                    <div class="text-center mt-3">
-                        <a href="{{ route('opac.search.history') }}" class="btn btn-sm btn-outline-primary">
-                            {{ __('View All Search History') }}
-                        </a>
-                    </div>
-                </div>
-            </div>
-            @endif
-            @endauth
 
             <!-- Quick Access -->
             <div class="row mt-5">
@@ -427,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fetchSuggestions(term) {
-    fetch(`{{ route('opac.search.suggestions') }}?term=${encodeURIComponent(term)}`)
+    fetch(`{{ route('opac.records.autocomplete') }}?term=${encodeURIComponent(term)}`)
         .then(response => response.json())
         .then(data => {
             // Handle suggestions display
