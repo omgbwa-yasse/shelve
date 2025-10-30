@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\PublicTemplate;
+use App\Services\OPAC\OpacConfigurationService;
+use App\Services\OPAC\TemplateEngineService;
+use App\Services\OPAC\ThemeManagerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 /**
  * Contrôleur pour la gestion des templates OPAC depuis le module portail
+ * Version améliorée avec intégration des services OPAC
  */
 class OpacTemplateController extends Controller
 {
@@ -66,7 +70,7 @@ class OpacTemplateController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = $this->validateTemplate($request);
+        $validator = $this->validateTemplateData($request);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -128,7 +132,7 @@ class OpacTemplateController extends Controller
             abort(404);
         }
 
-        $validator = $this->validateTemplate($request, $template->id);
+        $validator = $this->validateTemplateData($request, $template->id);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -175,8 +179,22 @@ class OpacTemplateController extends Controller
                         ->with('success', "Template '{$templateName}' supprimé avec succès.");
     }
 
+    private TemplateEngineService $templateEngine;
+    private ThemeManagerService $themeManager;
+    private OpacConfigurationService $configService;
+
+    public function __construct(
+        TemplateEngineService $templateEngine,
+        ThemeManagerService $themeManager,
+        OpacConfigurationService $configService
+    ) {
+        $this->templateEngine = $templateEngine;
+        $this->themeManager = $themeManager;
+        $this->configService = $configService;
+    }
+
     /**
-     * Aperçu d'un template
+     * Aperçu d'un template avec le nouveau système de rendu
      */
     public function preview(PublicTemplate $template, Request $request)
     {
@@ -184,46 +202,164 @@ class OpacTemplateController extends Controller
             abort(404);
         }
 
-        // Variables par défaut
-        $variables = $template->variables ?? [];
-
-        // Surcharge avec les variables de personnalisation si présentes
-        if ($request->has('customize')) {
-            $customVars = $request->only([
-                'primary_color', 'secondary_color', 'accent_color',
-                'background_color', 'text_color'
-            ]);
-            $variables = array_merge($variables, array_filter($customVars));
-        }
-
-        // Variables globales pour le rendu
-        $globalVars = [
-            'library_name' => config('app.name', 'Bibliothèque'),
-            'locale' => app()->getLocale(),
-            'current_date' => now()->format('Y'),
-            'total_records' => 1250, // Exemple
+        // Données d'exemple pour l'aperçu
+        $sampleData = [
+            'documents' => $this->getSampleDocuments(),
+            'pagination' => $this->getSamplePagination(),
+            'searchQuery' => 'architecture moderne',
+            'totalResults' => 1250,
+            'filters' => [
+                'type' => 'book',
+                'language' => 'fr',
+                'year_from' => 2020
+            ]
         ];
 
-        $allVars = array_merge($variables, $globalVars);
+        // Paramètres de thème temporaires si fournis
+        if ($request->has('theme_preview')) {
+            $themeSettings = $request->only([
+                'primary_color', 'secondary_color', 'accent_color',
+                'background_color', 'text_color', 'font_family', 'custom_css'
+            ]);
 
-        // Traitement du contenu HTML
-        $processedContent = $template->content;
-        foreach ($allVars as $key => $value) {
-            $processedContent = str_replace("{{{$key}}}", $value, $processedContent);
+            $previewData = $this->themeManager->previewTheme($themeSettings, $template->id);
+            $sampleData['preview_css'] = $previewData['css'];
+            $sampleData['preview_variables'] = $previewData['variables'];
         }
 
-        // Traitement du CSS
-        $processedCss = $variables['custom_css'] ?? '';
-        foreach ($allVars as $key => $value) {
-            $processedCss = str_replace("{{{$key}}}", $value, $processedCss);
+        // Rendu du template avec le nouveau moteur
+        try {
+            $renderedContent = $this->templateEngine->render($template, $sampleData);
+        } catch (\Exception $e) {
+            return view('public.opac-templates.preview-error', [
+                'template' => $template,
+                'error' => $e->getMessage(),
+                'sampleData' => $sampleData
+            ]);
         }
 
         return view('public.opac-templates.preview', [
             'template' => $template,
-            'processedContent' => $processedContent,
-            'processedCss' => $processedCss,
-            'libraryName' => $globalVars['library_name']
+            'renderedContent' => $renderedContent,
+            'sampleData' => $sampleData,
+            'themeVariables' => $this->themeManager->getThemeVariables($template->id)
         ]);
+    }
+
+    /**
+     * Validation AJAX de template avec le nouveau système
+     */
+    public function ajaxValidate(Request $request)
+    {
+        $content = $request->input('content', '');
+
+        // Validation avec le moteur de templates
+        $validation = $this->templateEngine->validateTemplate($content);
+
+        // Validation des paramètres de thème si fournis
+        $themeValidation = ['valid' => true, 'errors' => [], 'warnings' => []];
+        if ($request->has('theme_settings')) {
+            $themeSettings = $request->input('theme_settings', []);
+            $themeValidation = $this->themeManager->validateThemeSettings($themeSettings);
+        }
+
+        return response()->json([
+            'template' => $validation,
+            'theme' => $themeValidation,
+            'overall_valid' => $validation['valid'] && $themeValidation['valid']
+        ]);
+    }
+
+    /**
+     * Compilation et sauvegarde des assets d'un template
+     */
+    public function compile(PublicTemplate $template)
+    {
+        if ($template->type !== 'opac') {
+            abort(404);
+        }
+
+        try {
+            // Compiler le thème CSS
+            $cssUrl = $this->themeManager->compileTheme($template->id);
+
+            // Nettoyer le cache du template
+            $this->templateEngine->clearTemplateCache($template->id);
+
+            return response()->json([
+                'success' => true,
+                'css_url' => $cssUrl,
+                'message' => 'Template compilé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtenir des documents d'exemple pour l'aperçu
+     */
+    private function getSampleDocuments()
+    {
+        return [
+            (object) [
+                'id' => 1,
+                'title' => 'Architecture moderne et urbanisme durable',
+                'author' => 'Marie Dubois',
+                'description' => 'Une exploration complète des tendances architecturales contemporaines et de leur impact sur le développement urbain durable.',
+                'type' => 'book',
+                'language' => 'fr',
+                'publication_date' => now()->subYears(2),
+                'thumbnail_url' => null,
+                'downloadable' => true,
+                'availability_status' => 'available'
+            ],
+            (object) [
+                'id' => 2,
+                'title' => 'Digital Transformation in Libraries',
+                'author' => 'John Smith',
+                'description' => 'A comprehensive guide to implementing digital solutions in modern library systems.',
+                'type' => 'article',
+                'language' => 'en',
+                'publication_date' => now()->subMonths(6),
+                'thumbnail_url' => null,
+                'downloadable' => false,
+                'availability_status' => 'borrowed'
+            ],
+            (object) [
+                'id' => 3,
+                'title' => 'Histoire des bibliothèques françaises',
+                'author' => 'Pierre Martin',
+                'description' => 'Documentaire retraçant l\'évolution des bibliothèques en France depuis le Moyen Âge.',
+                'type' => 'multimedia',
+                'language' => 'fr',
+                'publication_date' => now()->subYears(1),
+                'thumbnail_url' => '/images/sample-video-thumb.jpg',
+                'downloadable' => true,
+                'availability_status' => 'reserved'
+            ]
+        ];
+    }
+
+    /**
+     * Obtenir des données de pagination d'exemple
+     */
+    private function getSamplePagination()
+    {
+        return (object) [
+            'currentPage' => 2,
+            'lastPage' => 25,
+            'total' => 1250,
+            'perPage' => 20,
+            'from' => 21,
+            'to' => 40,
+            'hasPages' => true,
+            'onFirstPage' => false,
+            'hasMorePages' => true
+        ];
     }
 
     /**
@@ -278,19 +414,21 @@ class OpacTemplateController extends Controller
     /**
      * Validation des données du template
      */
-    private function validateTemplate(Request $request, $templateId = null)
+    private function validateTemplateData(Request $request, $templateId = null)
     {
+        $colorRegex = 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/';
+
         $rules = [
             'name' => 'required|string|max:255|unique:public_templates,name,' . $templateId,
             'description' => 'nullable|string|max:1000',
             'content' => 'required|string',
             'status' => 'required|in:active,inactive',
             'variables' => 'nullable|array',
-            'variables.primary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'variables.secondary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'variables.accent_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'variables.background_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
-            'variables.text_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'variables.primary_color' => $colorRegex,
+            'variables.secondary_color' => $colorRegex,
+            'variables.accent_color' => $colorRegex,
+            'variables.background_color' => $colorRegex,
+            'variables.text_color' => $colorRegex,
             'variables.custom_css' => 'nullable|string|max:10000',
         ];
 

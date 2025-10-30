@@ -37,7 +37,12 @@ class OpacPageController extends Controller
 
         $pages = $query->paginate(15)->appends($request->all());
 
-        return view('public.admin.opac.pages.index', compact('pages'));
+        // Statistics for the dashboard
+        $totalPages = PublicPage::count();
+        $publishedPages = PublicPage::where('is_published', true)->count();
+        $draftPages = PublicPage::where('is_published', false)->count();
+
+        return view('admin.opac.pages.index', compact('pages', 'totalPages', 'publishedPages', 'draftPages'));
     }
 
     /**

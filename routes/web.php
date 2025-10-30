@@ -941,6 +941,26 @@ Route::prefix('public')->name('public.')->group(function () {
     Route::post('opac-templates/{template}/duplicate', [\App\Http\Controllers\Public\OpacTemplateController::class, 'duplicate'])->name('opac-templates.duplicate');
     Route::get('opac-templates/{template}/export', [\App\Http\Controllers\Public\OpacTemplateController::class, 'export'])->name('opac-templates.export');
 
+    // OPAC Pages Management
+    Route::prefix('opac')->name('opac.')->group(function () {
+        Route::resource('pages', PublicPageController::class)->names('pages');
+        Route::post('pages/bulk-action', [PublicPageController::class, 'bulkPublish'])->name('pages.bulk-action');
+        Route::post('pages/reorder', [PublicPageController::class, 'reorder'])->name('pages.reorder');
+    });
+
+    // OPAC Templates API - Fonctionnalités Éditeur Avancé
+    Route::prefix('api/opac-templates')->name('api.opac-templates.')
+        ->middleware([\App\Http\Middleware\OpacTemplateSecurityMiddleware::class])
+        ->group(function () {
+            Route::post('auto-save', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'autoSave'])->name('auto-save');
+            Route::post('preview', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'generatePreview'])->name('preview');
+            Route::post('validate', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'validateTemplate'])->name('validate');
+            Route::get('predefined/{templateType}', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'loadPredefined'])->name('predefined');
+            Route::post('import', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'import'])->name('import');
+            Route::get('{template}/components', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'getComponents'])->name('components');
+            Route::post('render-component', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'renderComponent'])->name('render-component');
+        });
+
     // Gestion des demandes de documents
     Route::resource('document-requests', PublicDocumentRequestController::class)->names('document-requests');
     Route::get('records/autocomplete', [PublicRecordController::class, 'autocomplete'])->name('records.autocomplete');

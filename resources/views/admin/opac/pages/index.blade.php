@@ -272,7 +272,7 @@
                                                            class="btn btn-sm btn-outline-primary" title="{{ __('Edit') }}">
                                                             <i class="mdi mdi-pencil"></i>
                                                         </a>
-                                                        <a href="{{ route('opac.pages.show', $page) }}" target="_blank"
+                                                        <a href="{{ route('public.opac.pages.show', $page) }}" target="_blank"
                                                            class="btn btn-sm btn-outline-success" title="{{ __('View Public') }}">
                                                             <i class="mdi mdi-open-in-new"></i>
                                                         </a>

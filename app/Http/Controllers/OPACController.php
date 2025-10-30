@@ -311,25 +311,31 @@ class OPACController extends Controller
         // Convertir en objet pour maintenir la compatibilité avec l'ancien code
         $config = new \stdClass();
 
-        // Valeurs par défaut
-        $config->visible_organisations = [$organisationId]; // Seulement l'organisation courante
-        $config->show_statistics = true;
-        $config->show_recent_records = true;
-        $config->allow_downloads = false;
-        $config->records_per_page = 15;
-        $config->allowed_file_types = ['pdf', 'jpg', 'jpeg', 'png'];
-        $config->show_full_record_details = true;
-        $config->show_attachments = false;
-        $config->opac_title = 'Catalogue en ligne';
+        // Appliquer les configurations (qui sont déjà des valeurs, pas des objets)
+        $config->visible_organisations = $configurations['visible_organisations'] ?? [$organisationId];
+        $config->show_statistics = $configurations['show_statistics'] ?? true;
+        $config->show_recent_records = $configurations['show_recent_records'] ?? true;
+        $config->allow_downloads = $configurations['allow_downloads'] ?? false;
+        $config->records_per_page = $configurations['records_per_page'] ?? 15;
+        $config->allowed_file_types = $configurations['allowed_file_types'] ?? ['pdf', 'jpg', 'jpeg', 'png'];
+        $config->show_full_record_details = $configurations['show_full_record_details'] ?? true;
+        $config->show_attachments = $configurations['show_attachments'] ?? false;
+        $config->opac_title = $configurations['opac_title'] ?? 'Catalogue en ligne';
         $config->opac_subtitle = 'Recherchez dans nos collections';
-        $config->contact_email = '';
+        $config->contact_email = $configurations['contact_email'] ?? '';
         $config->enable_help = true;
         $config->enable_advanced_search = true;
         $config->searchable_fields = ['code', 'name', 'biographical_history', 'note'];
         $config->min_search_length = 3;
-        $config->theme_color = 'primary';
+        $config->theme_color = $configurations['primary_color'] ?? '#007bff';
+        $config->primary_color = $configurations['primary_color'] ?? '#007bff';
+        $config->secondary_color = $configurations['secondary_color'] ?? '#6c757d';
         $config->public_access = true;
         $config->require_registration = false;
+        $config->logo_url = $configurations['logo_url'] ?? '';
+        $config->footer_text = $configurations['footer_text'] ?? '';
+        $config->help_url = $configurations['help_url'] ?? '';
+        $config->theme = $configurations['theme'] ?? 'default';
 
         // Valeurs par défaut pour le carousel
         $config->enable_carousel = true;
@@ -339,82 +345,6 @@ class OPACController extends Controller
         $config->carousel_selection_method = 'recent';
         $config->carousel_show_metadata = true;
         $config->carousel_title = 'Documents à découvrir';
-
-        // Appliquer les configurations spécifiques si elles existent
-        foreach ($configurations as $categoryName => $categoryConfigs) {
-            foreach ($categoryConfigs as $configuration) {
-                $value = $configuration->getValueForOrganisation($organisationId);
-
-                // Mapper les clés de configuration vers les propriétés de l'ancien objet config
-                switch ($configuration->key) {
-                    case 'opac_title':
-                        $config->opac_title = $value;
-                        break;
-                    case 'opac_subtitle':
-                        $config->opac_subtitle = $value;
-                        break;
-                    case 'contact_email':
-                        $config->contact_email = $value;
-                        break;
-                    case 'enable_help':
-                        $config->enable_help = (bool) $value;
-                        break;
-                    case 'records_per_page':
-                        $config->records_per_page = (int) $value;
-                        break;
-                    case 'show_record_details':
-                        if (is_array($value)) {
-                            $config->show_full_record_details = in_array('biographical_history', $value);
-                        }
-                        break;
-                    case 'theme_color':
-                        $config->theme_color = $value;
-                        break;
-                    case 'enable_advanced_search':
-                        $config->enable_advanced_search = (bool) $value;
-                        break;
-                    case 'searchable_fields':
-                        $config->searchable_fields = is_array($value) ? $value : ['name'];
-                        break;
-                    case 'min_search_length':
-                        $config->min_search_length = (int) $value;
-                        break;
-                    case 'public_access':
-                        $config->public_access = (bool) $value;
-                        break;
-                    case 'require_registration':
-                        $config->require_registration = (bool) $value;
-                        break;
-                    case 'allowed_organisations':
-                        if (is_array($value) && !empty($value)) {
-                            $config->visible_organisations = array_merge([$organisationId], $value);
-                        }
-                        break;
-                    // Configurations du carousel
-                    case 'enable_carousel':
-                        $config->enable_carousel = (bool) $value;
-                        break;
-                    case 'carousel_items_count':
-                        $config->carousel_items_count = (int) $value;
-                        break;
-                    case 'carousel_auto_slide':
-                        $config->carousel_auto_slide = (bool) $value;
-                        break;
-                    case 'carousel_slide_interval':
-                        $config->carousel_slide_interval = (int) $value;
-                        break;
-                    case 'carousel_selection_method':
-                        $config->carousel_selection_method = $value;
-                        break;
-                    case 'carousel_show_metadata':
-                        $config->carousel_show_metadata = (bool) $value;
-                        break;
-                    case 'carousel_title':
-                        $config->carousel_title = $value;
-                        break;
-                }
-            }
-        }
 
         return $config;
     }
