@@ -26,14 +26,14 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="description">Description</label>
-                            <textarea class="form-control @error('description') is-invalid @enderror"
-                                      id="description" name="description" rows="3">{{ old('description', $event->description) }}</textarea>
-                            @error('description')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-textarea-editor
+                                name="description"
+                                id="description"
+                                :value="old('description', $event->description ?? '')"
+                                :rows="8"
+                                placeholder="Décrivez votre événement ici..."
+                                :required="false"
+                            />
                         </div>
 
                         <div class="form-group mb-3">

@@ -935,6 +935,11 @@ Route::prefix('public')->name('public.')->group(function () {
     Route::post('pages/reorder', [PublicPageController::class, 'reorder'])->name('pages.reorder');
     Route::resource('templates', PublicTemplateController::class)->names('templates');
 
+    // Route de test des éditeurs WYSIWYG
+    Route::get('test-editors', function () {
+        return view('public.test-editors');
+    })->name('test-editors');
+
     // OPAC Templates Management - Portail Administration
     Route::resource('opac-templates', \App\Http\Controllers\Public\OpacTemplateController::class)->names('opac-templates');
     Route::get('opac-templates/{template}/preview', [\App\Http\Controllers\Public\OpacTemplateController::class, 'preview'])->name('opac-templates.preview');

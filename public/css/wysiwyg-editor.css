@@ -1,0 +1,241 @@
+/* TinyMCE WYSIWYG Editor Custom Styles */
+
+/* Conteneur principal de l'éditeur */
+.tox.tox-tinymce {
+    border-radius: 0.375rem !important;
+    border: 1px solid #ced4da !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.tox.tox-tinymce:focus-within {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Barre d'outils */
+.tox .tox-toolbar-overlord {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border-bottom: 1px solid #dee2e6 !important;
+    border-radius: 0.375rem 0.375rem 0 0 !important;
+}
+
+.tox .tox-toolbar__group {
+    border-radius: 0.25rem !important;
+    margin: 2px !important;
+}
+
+.tox .tox-tbtn {
+    border-radius: 0.25rem !important;
+    margin: 1px !important;
+    transition: all 0.2s ease !important;
+}
+
+.tox .tox-tbtn:hover {
+    background-color: #e9ecef !important;
+    transform: translateY(-1px) !important;
+}
+
+.tox .tox-tbtn--enabled {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+/* Zone d'édition */
+.tox .tox-edit-area {
+    border-radius: 0 0 0.375rem 0.375rem !important;
+}
+
+.tox .tox-edit-area iframe {
+    border-radius: 0 0 0.375rem 0.375rem !important;
+}
+
+/* Menu contextuel */
+.tox .tox-menu {
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.tox .tox-collection__item {
+    border-radius: 0.25rem !important;
+    margin: 2px 4px !important;
+}
+
+.tox .tox-collection__item:hover {
+    background-color: #f8f9fa !important;
+}
+
+/* Boutons de dialogue */
+.tox .tox-dialog {
+    border-radius: 0.5rem !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+}
+
+.tox .tox-dialog__header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+    color: white !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+.tox .tox-dialog__footer {
+    border-radius: 0 0 0.5rem 0.5rem !important;
+}
+
+.tox .tox-button {
+    border-radius: 0.375rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.tox .tox-button:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Indicateur de chargement */
+.editor-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.editor-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0, 123, 255, 0.2),
+        transparent
+    );
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* États d'erreur */
+.is-invalid + .tox.tox-tinymce {
+    border-color: #dc3545 !important;
+}
+
+.is-invalid + .tox.tox-tinymce:focus-within {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Responsivité */
+@media (max-width: 768px) {
+    .tox .tox-toolbar-overlord {
+        padding: 4px !important;
+    }
+
+    .tox .tox-tbtn {
+        margin: 0.5px !important;
+    }
+
+    .tox .tox-toolbar__group {
+        margin: 1px !important;
+    }
+}
+
+/* Animation d'apparition de l'éditeur */
+.wysiwyg-editor {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.wysiwyg-editor.loaded {
+    opacity: 1;
+}
+
+/* Styles pour le contenu de l'éditeur */
+.tox-editor-container .mce-content-body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    line-height: 1.6 !important;
+    font-size: 14px !important;
+}
+
+.tox-editor-container .mce-content-body h1,
+.tox-editor-container .mce-content-body h2,
+.tox-editor-container .mce-content-body h3,
+.tox-editor-container .mce-content-body h4,
+.tox-editor-container .mce-content-body h5,
+.tox-editor-container .mce-content-body h6 {
+    margin-top: 1.5rem !important;
+    margin-bottom: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+.tox-editor-container .mce-content-body p {
+    margin-bottom: 1rem !important;
+}
+
+.tox-editor-container .mce-content-body img {
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 0.375rem !important;
+}
+
+.tox-editor-container .mce-content-body blockquote {
+    border-left: 4px solid #007bff !important;
+    padding-left: 1rem !important;
+    margin: 1rem 0 !important;
+    font-style: italic !important;
+    background-color: #f8f9fa !important;
+    padding: 1rem !important;
+    border-radius: 0.375rem !important;
+}
+
+/* Mode sombre (si nécessaire) */
+@media (prefers-color-scheme: dark) {
+    .tox .tox-toolbar-overlord {
+        background: linear-gradient(135deg, #343a40 0%, #495057 100%) !important;
+    }
+
+    .tox .tox-tbtn:hover {
+        background-color: #495057 !important;
+    }
+
+    .tox.tox-tinymce {
+        border-color: #495057 !important;
+    }
+}
+
+/* Amélioration de l'accessibilité */
+.tox .tox-tbtn:focus {
+    outline: 2px solid #007bff !important;
+    outline-offset: 2px !important;
+}
+
+/* Animation de focus */
+.tox.tox-tinymce {
+    position: relative;
+}
+
+.tox.tox-tinymce::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 0.5rem;
+    background: linear-gradient(45deg, #007bff, #6f42c1, #e83e8c, #fd7e14, #20c997, #0dcaf0);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.tox.tox-tinymce:focus-within::before {
+    opacity: 0.1;
+}

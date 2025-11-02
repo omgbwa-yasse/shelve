@@ -37,14 +37,14 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="content">Contenu</label>
-                            <textarea class="form-control @error('content') is-invalid @enderror"
-                                      id="content" name="content" rows="15" required>{{ old('content') }}</textarea>
-                            @error('content')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-textarea-editor
+                                name="content"
+                                id="content"
+                                :value="old('content')"
+                                :rows="15"
+                                placeholder="Rédigez le contenu de votre page ici..."
+                                :required="true"
+                            />
                         </div>
 
                         <div class="form-group mb-3">

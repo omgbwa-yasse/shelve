@@ -38,14 +38,14 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="content">Contenu</label>
-                            <textarea class="form-control @error('content') is-invalid @enderror"
-                                      id="content" name="content" rows="15" required>{{ old('content', $page->content) }}</textarea>
-                            @error('content')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-textarea-editor
+                                name="content"
+                                id="content"
+                                :value="old('content', $page->content)"
+                                :rows="15"
+                                placeholder="Rédigez le contenu de votre page ici..."
+                                :required="true"
+                            />
                         </div>
 
                         <div class="form-group mb-3">
@@ -80,21 +80,7 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js"></script>
 <script>
-    tinymce.init({
-        selector: '#content',
-        height: 500,
-        plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                alignleft aligncenter alignright alignjustify | \
-                bullist numlist outdent indent | removeformat | help'
-    });
-
     // Auto-generate slug from title
     document.getElementById('title').addEventListener('input', function() {
         let slug = this.value

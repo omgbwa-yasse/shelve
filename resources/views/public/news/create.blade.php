@@ -25,14 +25,14 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="content">Contenu</label>
-                            <textarea class="form-control @error('content') is-invalid @enderror"
-                                      id="content" name="content" rows="10" required>{{ old('content') }}</textarea>
-                            @error('content')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <x-textarea-editor
+                                name="content"
+                                id="content"
+                                :value="old('content')"
+                                :rows="12"
+                                placeholder="Rédigez votre actualité ici..."
+                                :required="true"
+                            />
                         </div>
 
                         <div class="form-group mb-3">
@@ -77,21 +77,5 @@
     </div>
 </div>
 
-@push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js"></script>
-<script>
-    tinymce.init({
-        selector: '#content',
-        height: 400,
-        plugins: [
-            'advlist autolink lists link image charmap print preview anchor',
-            'searchreplace visualblocks code fullscreen',
-            'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-                alignleft aligncenter alignright alignjustify | \
-                bullist numlist outdent indent | removeformat | help'
-    });
-</script>
-@endpush
+
 @endsection

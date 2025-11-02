@@ -803,17 +803,484 @@ class PermissionCategorySeeder extends Seeder
 
     private function createPublicPermissions()
     {
+        $this->createPublicGeneralPermissions();
+        $this->createPublicPagesPermissions();
+        $this->createPublicNewsPermissions();
+        $this->createPublicEventsPermissions();
+        $this->createPublicUsersPermissions();
+        $this->createPublicTemplatesPermissions();
+        $this->createPublicDocumentPermissions();
+        $this->createPublicChatPermissions();
+        $this->createPublicOpacConfigPermissions();
+    }
+
+    private function createPublicGeneralPermissions()
+    {
         $permissions = [
-            // Public Events permissions
             [
-                'id' => 403,
-                'name' => 'public.events.manage',
+                'name' => 'public.access',
                 'category' => 'public',
-                'description' => 'Gérer les événements publics dans l\'OPAC'
+                'description' => 'Accès au module public/OPAC'
             ],
         ];
 
-        $this->insertPermissionsWithIds($permissions);
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicPagesPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.pages.view',
+                'category' => 'public',
+                'description' => 'Voir les pages publiques'
+            ],
+            [
+                'name' => 'public.pages.create',
+                'category' => 'public',
+                'description' => 'Créer des pages publiques'
+            ],
+            [
+                'name' => 'public.pages.edit',
+                'category' => 'public',
+                'description' => 'Modifier des pages publiques'
+            ],
+            [
+                'name' => 'public.pages.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des pages publiques'
+            ],
+            [
+                'name' => 'public.pages.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les pages publiques'
+            ],
+            [
+                'name' => 'public.pages.bulk_action',
+                'category' => 'public',
+                'description' => 'Actions en lot sur les pages publiques'
+            ],
+            [
+                'name' => 'public.pages.reorder',
+                'category' => 'public',
+                'description' => 'Réorganiser l\'ordre des pages publiques'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicNewsPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.news.view',
+                'category' => 'public',
+                'description' => 'Voir les actualités publiques'
+            ],
+            [
+                'name' => 'public.news.create',
+                'category' => 'public',
+                'description' => 'Créer des actualités publiques'
+            ],
+            [
+                'name' => 'public.news.edit',
+                'category' => 'public',
+                'description' => 'Modifier des actualités publiques'
+            ],
+            [
+                'name' => 'public.news.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des actualités publiques'
+            ],
+            [
+                'name' => 'public.news.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les actualités publiques'
+            ],
+            [
+                'name' => 'public.news.publish',
+                'category' => 'public',
+                'description' => 'Publier/Dépublier des actualités'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicEventsPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.events.view',
+                'category' => 'public',
+                'description' => 'Voir les événements publics'
+            ],
+            [
+                'name' => 'public.events.create',
+                'category' => 'public',
+                'description' => 'Créer des événements publics'
+            ],
+            [
+                'name' => 'public.events.edit',
+                'category' => 'public',
+                'description' => 'Modifier des événements publics'
+            ],
+            [
+                'name' => 'public.events.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des événements publics'
+            ],
+            [
+                'name' => 'public.events.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les événements publics'
+            ],
+            [
+                'name' => 'public.events.registrations',
+                'category' => 'public',
+                'description' => 'Gérer les inscriptions aux événements'
+            ],
+            [
+                'name' => 'public.events.bulk_action',
+                'category' => 'public',
+                'description' => 'Actions en lot sur les événements'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicUsersPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.users.view',
+                'category' => 'public',
+                'description' => 'Voir les utilisateurs publics'
+            ],
+            [
+                'name' => 'public.users.create',
+                'category' => 'public',
+                'description' => 'Créer des utilisateurs publics'
+            ],
+            [
+                'name' => 'public.users.edit',
+                'category' => 'public',
+                'description' => 'Modifier des utilisateurs publics'
+            ],
+            [
+                'name' => 'public.users.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des utilisateurs publics'
+            ],
+            [
+                'name' => 'public.users.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les utilisateurs publics'
+            ],
+            [
+                'name' => 'public.users.activate',
+                'category' => 'public',
+                'description' => 'Activer/Désactiver des utilisateurs publics'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicTemplatesPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.templates.view',
+                'category' => 'public',
+                'description' => 'Voir les templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.create',
+                'category' => 'public',
+                'description' => 'Créer des templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.edit',
+                'category' => 'public',
+                'description' => 'Modifier des templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.preview',
+                'category' => 'public',
+                'description' => 'Prévisualiser les templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.duplicate',
+                'category' => 'public',
+                'description' => 'Dupliquer des templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.export',
+                'category' => 'public',
+                'description' => 'Exporter des templates OPAC'
+            ],
+            [
+                'name' => 'public.templates.import',
+                'category' => 'public',
+                'description' => 'Importer des templates OPAC'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicDocumentPermissions()
+    {
+        $permissions = [
+            // Document Requests
+            [
+                'name' => 'public.document_requests.view',
+                'category' => 'public',
+                'description' => 'Voir les demandes de documents'
+            ],
+            [
+                'name' => 'public.document_requests.create',
+                'category' => 'public',
+                'description' => 'Créer des demandes de documents'
+            ],
+            [
+                'name' => 'public.document_requests.edit',
+                'category' => 'public',
+                'description' => 'Modifier des demandes de documents'
+            ],
+            [
+                'name' => 'public.document_requests.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des demandes de documents'
+            ],
+            [
+                'name' => 'public.document_requests.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les demandes de documents'
+            ],
+            // Records
+            [
+                'name' => 'public.records.view',
+                'category' => 'public',
+                'description' => 'Voir les documents publics'
+            ],
+            [
+                'name' => 'public.records.create',
+                'category' => 'public',
+                'description' => 'Créer des documents publics'
+            ],
+            [
+                'name' => 'public.records.edit',
+                'category' => 'public',
+                'description' => 'Modifier des documents publics'
+            ],
+            [
+                'name' => 'public.records.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des documents publics'
+            ],
+            [
+                'name' => 'public.records.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les documents publics'
+            ],
+            [
+                'name' => 'public.records.autocomplete',
+                'category' => 'public',
+                'description' => 'Accès à l\'autocomplétion des documents'
+            ],
+            // Responses
+            [
+                'name' => 'public.responses.view',
+                'category' => 'public',
+                'description' => 'Voir les réponses publiques'
+            ],
+            [
+                'name' => 'public.responses.create',
+                'category' => 'public',
+                'description' => 'Créer des réponses publiques'
+            ],
+            [
+                'name' => 'public.responses.edit',
+                'category' => 'public',
+                'description' => 'Modifier des réponses publiques'
+            ],
+            [
+                'name' => 'public.responses.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des réponses publiques'
+            ],
+            [
+                'name' => 'public.responses.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les réponses publiques'
+            ],
+            // Response Attachments
+            [
+                'name' => 'public.response_attachments.view',
+                'category' => 'public',
+                'description' => 'Voir les pièces jointes des réponses'
+            ],
+            [
+                'name' => 'public.response_attachments.create',
+                'category' => 'public',
+                'description' => 'Créer des pièces jointes des réponses'
+            ],
+            [
+                'name' => 'public.response_attachments.edit',
+                'category' => 'public',
+                'description' => 'Modifier des pièces jointes des réponses'
+            ],
+            [
+                'name' => 'public.response_attachments.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des pièces jointes des réponses'
+            ],
+            [
+                'name' => 'public.response_attachments.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les pièces jointes des réponses'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicChatPermissions()
+    {
+        $permissions = [
+            // Chats
+            [
+                'name' => 'public.chats.view',
+                'category' => 'public',
+                'description' => 'Voir les discussions publiques'
+            ],
+            [
+                'name' => 'public.chats.create',
+                'category' => 'public',
+                'description' => 'Créer des discussions publiques'
+            ],
+            [
+                'name' => 'public.chats.edit',
+                'category' => 'public',
+                'description' => 'Modifier des discussions publiques'
+            ],
+            [
+                'name' => 'public.chats.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des discussions publiques'
+            ],
+            [
+                'name' => 'public.chats.manage',
+                'category' => 'public',
+                'description' => 'Gérer toutes les discussions publiques'
+            ],
+            // Chat Messages
+            [
+                'name' => 'public.chat_messages.view',
+                'category' => 'public',
+                'description' => 'Voir les messages de discussion'
+            ],
+            [
+                'name' => 'public.chat_messages.create',
+                'category' => 'public',
+                'description' => 'Créer des messages de discussion'
+            ],
+            [
+                'name' => 'public.chat_messages.edit',
+                'category' => 'public',
+                'description' => 'Modifier des messages de discussion'
+            ],
+            [
+                'name' => 'public.chat_messages.delete',
+                'category' => 'public',
+                'description' => 'Supprimer des messages de discussion'
+            ],
+            [
+                'name' => 'public.chat_messages.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les messages de discussion'
+            ],
+            // Chat Participants
+            [
+                'name' => 'public.chat_participants.view',
+                'category' => 'public',
+                'description' => 'Voir les participants des discussions'
+            ],
+            [
+                'name' => 'public.chat_participants.create',
+                'category' => 'public',
+                'description' => 'Ajouter des participants aux discussions'
+            ],
+            [
+                'name' => 'public.chat_participants.edit',
+                'category' => 'public',
+                'description' => 'Modifier les participants des discussions'
+            ],
+            [
+                'name' => 'public.chat_participants.delete',
+                'category' => 'public',
+                'description' => 'Retirer des participants des discussions'
+            ],
+            [
+                'name' => 'public.chat_participants.manage',
+                'category' => 'public',
+                'description' => 'Gérer tous les participants des discussions'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createPublicOpacConfigPermissions()
+    {
+        $permissions = [
+            [
+                'name' => 'public.opac.config.view',
+                'category' => 'public',
+                'description' => 'Voir la configuration OPAC'
+            ],
+            [
+                'name' => 'public.opac.config.edit',
+                'category' => 'public',
+                'description' => 'Modifier la configuration OPAC'
+            ],
+            [
+                'name' => 'public.opac.config.manage',
+                'category' => 'public',
+                'description' => 'Gérer complètement la configuration OPAC'
+            ],
+            [
+                'name' => 'public.opac.config.export',
+                'category' => 'public',
+                'description' => 'Exporter la configuration OPAC'
+            ],
+            [
+                'name' => 'public.opac.config.import',
+                'category' => 'public',
+                'description' => 'Importer la configuration OPAC'
+            ],
+            [
+                'name' => 'public.opac.config.reset',
+                'category' => 'public',
+                'description' => 'Réinitialiser la configuration OPAC'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
     }
 
     private function insertPermissions(array $permissions)
@@ -829,31 +1296,5 @@ class PermissionCategorySeeder extends Seeder
         }
     }
 
-    private function insertPermissionsWithIds(array $permissions)
-    {
-        foreach ($permissions as $permission) {
-            // Check if permission already exists with this ID
-            $existingById = DB::table('permissions')->where('id', $permission['id'])->first();
-            $existingByName = DB::table('permissions')->where('name', $permission['name'])->first();
 
-            if ($existingById && $existingById->name !== $permission['name']) {
-                $this->command->error("Permission ID {$permission['id']} already exists with name '{$existingById->name}', not '{$permission['name']}'");
-                continue;
-            }
-
-            if ($existingByName && $existingByName->id != $permission['id']) {
-                $this->command->error("Permission name '{$permission['name']}' already exists with ID {$existingByName->id}, not {$permission['id']}");
-                continue;
-            }
-
-            // Insert or update with specific ID
-            DB::table('permissions')->updateOrInsert(
-                ['name' => $permission['name']],
-                array_merge($permission, [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ])
-            );
-        }
-    }
 }
