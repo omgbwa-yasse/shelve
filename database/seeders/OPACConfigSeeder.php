@@ -1,7 +1,9 @@
 <?php
 
+namespace Database\Seeders;
+
 use Illuminate\Database\Seeder;
-use App\Models\OPACConfig;
+use App\Models\OpacConfiguration;
 use App\Models\Organisation;
 
 class OPACConfigSeeder extends Seeder
@@ -11,10 +13,10 @@ class OPACConfigSeeder extends Seeder
      */
     public function run(): void
     {
-        $config = OPACConfig::first();
+        $config = OpacConfiguration::first();
 
         if (!$config) {
-            OPACConfig::create([
+            OpacConfiguration::create([
                 'visible_organisations' => Organisation::pluck('id')->toArray(),
                 'show_statistics' => true,
                 'show_recent_records' => true,

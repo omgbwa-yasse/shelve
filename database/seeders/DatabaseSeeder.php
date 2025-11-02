@@ -39,11 +39,10 @@ class DatabaseSeeder extends Seeder
             OrganisationServicesSeeder::class, // Seeder pour créer les services et bureaux
 
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
-            SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
+            SuperadminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
 
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
-            OrganisationServicesSeeder::class, // Seeder pour créer services et bureaux
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
             ToolOrganisationSeeder::class, // Seeder pour les organisations et services
 
@@ -55,8 +54,13 @@ class DatabaseSeeder extends Seeder
 
             // 9. IA ET PROMPTS (Indépendants)
             AiProvidersSeeder::class, // Paramètres des providers IA (settings)
+            PromptSeeder::class, // Prompts système pour l'IA
 
-            // 10. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
+            // 10. CONFIGURATION OPAC (Dépend des organisations)
+            OpacConfigurationSeeder::class, // Configuration OPAC par organisation
+            // OpacTemplatesSeeder::class, // Templates OPAC disponibles (problème avec le champ type)
+
+            // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
             RecordSeederSimple::class, // Exemples de documents d'archives
         ]);
     }
