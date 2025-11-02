@@ -1,5 +1,34 @@
 # Changelog
 
+## [v2.3] - 2025-11-02
+
+### Nouvelles fonctionnalités
+
+- **Éditeurs WYSIWYG multiples** : Intégration de 5 types d'éditeurs pour la rédaction de contenu
+  - CKEditor 5 (moderne et complet)
+  - Summernote (simple et efficace)
+  - Quill (moderne et léger)
+  - Éditeur simple (personnalisé avec toolbar)
+  - Textarea simple (style email)
+- **Composants Blade réutilisables** : Création de composants d'éditeurs modulaires
+- **Page de test des éditeurs** : Interface de comparaison des différents éditeurs disponibles
+
+### Améliorations
+
+- **Formulaires de contenu public** : Remplacement des textareas basiques par des éditeurs riches
+  - Pages (création/édition)
+  - Actualités/News (création/édition)
+  - Événements (création/édition)
+- **Interface utilisateur** : Style cohérent avec les formulaires d'emails existants
+- **Validation Laravel** : Intégration complète avec le système de validation
+- **Gestion d'erreurs** : Affichage des erreurs de validation dans tous les éditeurs
+
+### Corrections
+
+- Résolution des problèmes de rendu des éditeurs WYSIWYG complexes
+- Optimisation de la performance des composants d'édition
+- Amélioration de la compatibilité avec Bootstrap 5
+
 ## [v2.2] - 2025-09-14
 
 ### Nouvelles fonctionnalités

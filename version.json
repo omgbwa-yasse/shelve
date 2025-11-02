@@ -1,12 +1,12 @@
 {
-    "current_version": "v2.2",
-    "release_name": "",
-    "installed_at": "2025-08-28T00:00:00Z",
-    "updated_from": "v2.1",
+    "current_version": "v2.3",
+    "release_name": "Enhanced Content Management",
+    "installed_at": "2025-11-02T00:00:00Z",
+    "updated_from": "v2.2",
     "github_repo": "omgbwa-yasse\/shelve",
     "update_channel": "stable",
-    "last_check": "2025-09-14T00:00:00Z",
-    "build_number": "20250914",
+    "last_check": "2025-11-02T00:00:00Z",
+    "build_number": "20251102",
     "php_version": "8.2",
     "laravel_version": "12.0"
 }
