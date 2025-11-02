@@ -58,10 +58,13 @@ class DatabaseSeeder extends Seeder
 
             // 10. CONFIGURATION OPAC (Dépend des organisations)
             OpacConfigurationSeeder::class, // Configuration OPAC par organisation
-            // OpacTemplatesSeeder::class, // Templates OPAC disponibles (problème avec le champ type)
+            OpacTemplateSeeder::class, // Templates OPAC disponibles
 
             // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
             RecordSeederSimple::class, // Exemples de documents d'archives
+
+            // 12. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
+            OpacSeeder::class, // Seeder complet pour l'OPAC
         ]);
     }
 }
