@@ -25,6 +25,8 @@ class PermissionCategorySeeder extends Seeder
         $this->createBackupsPermissions();
         $this->createWorkflowPermissions();
         $this->createAdditionalPermissions();
+        $this->createLibraryPermissions();
+        $this->createMuseumPermissions();
         $this->createPublicPermissions();
 
         $this->command->info('Permissions avec catégories créées avec succès!');
@@ -812,6 +814,424 @@ class PermissionCategorySeeder extends Seeder
         $this->createPublicDocumentPermissions();
         $this->createPublicChatPermissions();
         $this->createPublicOpacConfigPermissions();
+    }
+
+    private function createLibraryPermissions()
+    {
+        $permissions = [
+            // Library Module Access
+            [
+                'name' => 'library_access',
+                'category' => 'library',
+                'description' => 'Accès au module Library'
+            ],
+
+            // Books Permissions
+            [
+                'name' => 'books_view',
+                'category' => 'library',
+                'description' => 'Voir les livres'
+            ],
+            [
+                'name' => 'books_create',
+                'category' => 'library',
+                'description' => 'Créer des livres'
+            ],
+            [
+                'name' => 'books_update',
+                'category' => 'library',
+                'description' => 'Modifier des livres'
+            ],
+            [
+                'name' => 'books_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des livres'
+            ],
+            [
+                'name' => 'books_import',
+                'category' => 'library',
+                'description' => 'Importer des livres'
+            ],
+            [
+                'name' => 'books_export',
+                'category' => 'library',
+                'description' => 'Exporter des livres'
+            ],
+            [
+                'name' => 'books_search',
+                'category' => 'library',
+                'description' => 'Rechercher des livres'
+            ],
+
+            // Book Copies Permissions
+            [
+                'name' => 'book_copies_view',
+                'category' => 'library',
+                'description' => 'Voir les exemplaires de livres'
+            ],
+            [
+                'name' => 'book_copies_create',
+                'category' => 'library',
+                'description' => 'Créer des exemplaires de livres'
+            ],
+            [
+                'name' => 'book_copies_update',
+                'category' => 'library',
+                'description' => 'Modifier des exemplaires de livres'
+            ],
+            [
+                'name' => 'book_copies_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des exemplaires de livres'
+            ],
+            [
+                'name' => 'book_copies_manage',
+                'category' => 'library',
+                'description' => 'Gérer tous les exemplaires'
+            ],
+
+            // Book Loans Permissions
+            [
+                'name' => 'book_loans_view',
+                'category' => 'library',
+                'description' => 'Voir les prêts de livres'
+            ],
+            [
+                'name' => 'book_loans_create',
+                'category' => 'library',
+                'description' => 'Créer des prêts de livres'
+            ],
+            [
+                'name' => 'book_loans_update',
+                'category' => 'library',
+                'description' => 'Modifier des prêts de livres'
+            ],
+            [
+                'name' => 'book_loans_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des prêts de livres'
+            ],
+            [
+                'name' => 'book_loans_manage',
+                'category' => 'library',
+                'description' => 'Gérer tous les prêts'
+            ],
+            [
+                'name' => 'book_loans_renew',
+                'category' => 'library',
+                'description' => 'Renouveler des prêts'
+            ],
+            [
+                'name' => 'book_loans_return',
+                'category' => 'library',
+                'description' => 'Enregistrer les retours de prêts'
+            ],
+
+            // Book Reservations Permissions
+            [
+                'name' => 'book_reservations_view',
+                'category' => 'library',
+                'description' => 'Voir les réservations de livres'
+            ],
+            [
+                'name' => 'book_reservations_create',
+                'category' => 'library',
+                'description' => 'Créer des réservations de livres'
+            ],
+            [
+                'name' => 'book_reservations_update',
+                'category' => 'library',
+                'description' => 'Modifier des réservations de livres'
+            ],
+            [
+                'name' => 'book_reservations_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des réservations de livres'
+            ],
+            [
+                'name' => 'book_reservations_manage',
+                'category' => 'library',
+                'description' => 'Gérer toutes les réservations'
+            ],
+            [
+                'name' => 'book_reservations_fulfill',
+                'category' => 'library',
+                'description' => 'Honorer des réservations'
+            ],
+
+            // Periodicals Permissions
+            [
+                'name' => 'periodics_view',
+                'category' => 'library',
+                'description' => 'Voir les publications périodiques'
+            ],
+            [
+                'name' => 'periodics_create',
+                'category' => 'library',
+                'description' => 'Créer des publications périodiques'
+            ],
+            [
+                'name' => 'periodics_update',
+                'category' => 'library',
+                'description' => 'Modifier des publications périodiques'
+            ],
+            [
+                'name' => 'periodics_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des publications périodiques'
+            ],
+
+            // Periodic Issues Permissions
+            [
+                'name' => 'periodic_issues_view',
+                'category' => 'library',
+                'description' => 'Voir les numéros de périodiques'
+            ],
+            [
+                'name' => 'periodic_issues_create',
+                'category' => 'library',
+                'description' => 'Créer des numéros de périodiques'
+            ],
+            [
+                'name' => 'periodic_issues_update',
+                'category' => 'library',
+                'description' => 'Modifier des numéros de périodiques'
+            ],
+            [
+                'name' => 'periodic_issues_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des numéros de périodiques'
+            ],
+
+            // Periodic Articles Permissions
+            [
+                'name' => 'periodic_articles_view',
+                'category' => 'library',
+                'description' => 'Voir les articles de périodiques'
+            ],
+            [
+                'name' => 'periodic_articles_create',
+                'category' => 'library',
+                'description' => 'Créer des articles de périodiques'
+            ],
+            [
+                'name' => 'periodic_articles_update',
+                'category' => 'library',
+                'description' => 'Modifier des articles de périodiques'
+            ],
+            [
+                'name' => 'periodic_articles_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des articles de périodiques'
+            ],
+
+            // Periodic Subscriptions Permissions
+            [
+                'name' => 'periodic_subscriptions_view',
+                'category' => 'library',
+                'description' => 'Voir les abonnements aux périodiques'
+            ],
+            [
+                'name' => 'periodic_subscriptions_create',
+                'category' => 'library',
+                'description' => 'Créer des abonnements aux périodiques'
+            ],
+            [
+                'name' => 'periodic_subscriptions_update',
+                'category' => 'library',
+                'description' => 'Modifier des abonnements aux périodiques'
+            ],
+            [
+                'name' => 'periodic_subscriptions_delete',
+                'category' => 'library',
+                'description' => 'Supprimer des abonnements aux périodiques'
+            ],
+
+            // Library Reports & Statistics
+            [
+                'name' => 'library_reports_view',
+                'category' => 'library',
+                'description' => 'Voir les rapports de bibliothèque'
+            ],
+            [
+                'name' => 'library_statistics_view',
+                'category' => 'library',
+                'description' => 'Voir les statistiques de bibliothèque'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createMuseumPermissions()
+    {
+        $permissions = [
+            // Museum Module Access
+            [
+                'name' => 'museum_access',
+                'category' => 'museum',
+                'description' => 'Accès au module Museum'
+            ],
+
+            // Artifacts Permissions
+            [
+                'name' => 'artifacts_view',
+                'category' => 'museum',
+                'description' => 'Voir les objets de musée'
+            ],
+            [
+                'name' => 'artifacts_create',
+                'category' => 'museum',
+                'description' => 'Créer des objets de musée'
+            ],
+            [
+                'name' => 'artifacts_update',
+                'category' => 'museum',
+                'description' => 'Modifier des objets de musée'
+            ],
+            [
+                'name' => 'artifacts_delete',
+                'category' => 'museum',
+                'description' => 'Supprimer des objets de musée'
+            ],
+            [
+                'name' => 'artifacts_search',
+                'category' => 'museum',
+                'description' => 'Rechercher des objets de musée'
+            ],
+            [
+                'name' => 'artifacts_import',
+                'category' => 'museum',
+                'description' => 'Importer des objets de musée'
+            ],
+            [
+                'name' => 'artifacts_export',
+                'category' => 'museum',
+                'description' => 'Exporter des objets de musée'
+            ],
+
+            // Artifact Exhibitions Permissions
+            [
+                'name' => 'artifact_exhibitions_view',
+                'category' => 'museum',
+                'description' => 'Voir les expositions'
+            ],
+            [
+                'name' => 'artifact_exhibitions_create',
+                'category' => 'museum',
+                'description' => 'Créer des expositions'
+            ],
+            [
+                'name' => 'artifact_exhibitions_update',
+                'category' => 'museum',
+                'description' => 'Modifier des expositions'
+            ],
+            [
+                'name' => 'artifact_exhibitions_delete',
+                'category' => 'museum',
+                'description' => 'Supprimer des expositions'
+            ],
+            [
+                'name' => 'artifact_exhibitions_manage',
+                'category' => 'museum',
+                'description' => 'Gérer toutes les expositions'
+            ],
+
+            // Artifact Loans Permissions
+            [
+                'name' => 'artifact_loans_view',
+                'category' => 'museum',
+                'description' => 'Voir les prêts d\'objets'
+            ],
+            [
+                'name' => 'artifact_loans_create',
+                'category' => 'museum',
+                'description' => 'Créer des prêts d\'objets'
+            ],
+            [
+                'name' => 'artifact_loans_update',
+                'category' => 'museum',
+                'description' => 'Modifier des prêts d\'objets'
+            ],
+            [
+                'name' => 'artifact_loans_delete',
+                'category' => 'museum',
+                'description' => 'Supprimer des prêts d\'objets'
+            ],
+            [
+                'name' => 'artifact_loans_manage',
+                'category' => 'museum',
+                'description' => 'Gérer tous les prêts d\'objets'
+            ],
+            [
+                'name' => 'artifact_loans_return',
+                'category' => 'museum',
+                'description' => 'Enregistrer les retours de prêts'
+            ],
+
+            // Artifact Condition Reports Permissions
+            [
+                'name' => 'artifact_condition_reports_view',
+                'category' => 'museum',
+                'description' => 'Voir les rapports de conservation'
+            ],
+            [
+                'name' => 'artifact_condition_reports_create',
+                'category' => 'museum',
+                'description' => 'Créer des rapports de conservation'
+            ],
+            [
+                'name' => 'artifact_condition_reports_update',
+                'category' => 'museum',
+                'description' => 'Modifier des rapports de conservation'
+            ],
+            [
+                'name' => 'artifact_condition_reports_delete',
+                'category' => 'museum',
+                'description' => 'Supprimer des rapports de conservation'
+            ],
+            [
+                'name' => 'artifact_condition_reports_manage',
+                'category' => 'museum',
+                'description' => 'Gérer tous les rapports de conservation'
+            ],
+
+            // Artifact Status Management
+            [
+                'name' => 'artifacts_status_change',
+                'category' => 'museum',
+                'description' => 'Changer le statut des objets'
+            ],
+            [
+                'name' => 'artifacts_location_change',
+                'category' => 'museum',
+                'description' => 'Changer l\'emplacement des objets'
+            ],
+            [
+                'name' => 'artifacts_restoration',
+                'category' => 'museum',
+                'description' => 'Gérer la restauration des objets'
+            ],
+
+            // Museum Reports & Statistics
+            [
+                'name' => 'museum_reports_view',
+                'category' => 'museum',
+                'description' => 'Voir les rapports du musée'
+            ],
+            [
+                'name' => 'museum_statistics_view',
+                'category' => 'museum',
+                'description' => 'Voir les statistiques du musée'
+            ],
+            [
+                'name' => 'museum_inventory',
+                'category' => 'museum',
+                'description' => 'Gérer l\'inventaire du musée'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
     }
 
     private function createPublicGeneralPermissions()

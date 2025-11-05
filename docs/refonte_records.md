@@ -165,12 +165,1280 @@ ADD INDEX idx_extension (file_extension);
 | Type | Tables BDD | Modèles | Migrations | Services | Tests | Statut |
 |------|------------|---------|------------|----------|-------|--------|
 | RecordArtifact | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
-| RecordDigitalFolder | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
-| RecordDigitalDocument | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
+| RecordDigitalFolder + Types | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
+| RecordDigitalDocument + Types | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
 | RecordBook | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
 | RecordPeriodic | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 0% | 🔴 NON DÉMARRÉ |
 
-#### A) RecordArtifact (Objets de Musée) | 🔴 NON DÉMARRÉ
+**NOUVEAUTÉ : Système de Types pour Dossiers et Documents Numériques**
+
+Pour RecordDigitalFolder et RecordDigitalDocument, nous ajoutons un système de **types personnalisés** qui permettent de définir des catégories avec des champs de saisie spécifiques via le système de métadonnées :
+
+- **RecordDigitalFolderType** : Types de dossiers (Contrats, RH, Projets, etc.)
+- **RecordDigitalDocumentType** : Types de documents (Factures, Devis, Rapports, etc.)
+
+Chaque type est lié à un **MetadataTemplate** qui définit les champs de saisie personnalisés.
+
+---
+
+### 2.3.1 Tables des Types Personnalisés | 🔴 NON DÉMARRÉ
+
+**Checklist d'implémentation** :
+- [ ] Table `record_digital_folder_types` créée
+- [ ] Table `record_digital_document_types` créée
+- [ ] Relation avec `metadata_templates`
+- [ ] Modèles et relations configurés
+- [ ] Tests unitaires écrits
+
+#### A) Table record_digital_folder_types
+
+```sql
+CREATE TABLE record_digital_folder_types (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE COMMENT 'Code technique : CONTRACTS, HR, PROJECTS',
+    name VARCHAR(200) NOT NULL COMMENT 'Nom du type : Contrats, RH, Projets',
+    description TEXT COMMENT 'Description du type de dossier',
+    
+    -- Apparence visuelle
+    icon VARCHAR(50) DEFAULT 'folder' COMMENT 'Icône FontAwesome',
+    color VARCHAR(7) DEFAULT '#0066cc' COMMENT 'Couleur hexa',
+    thumbnail_path VARCHAR(500) COMMENT 'Miniature illustrative',
+    
+    -- Template de métadonnées lié
+    metadata_template_id BIGINT UNSIGNED COMMENT 'FK → metadata_templates',
+    
+    -- Configuration du type
+    is_system BOOLEAN DEFAULT FALSE COMMENT 'Type système non supprimable',
+    is_active BOOLEAN DEFAULT TRUE,
+    requires_approval BOOLEAN DEFAULT FALSE COMMENT 'Création nécessite approbation',
+    default_access_level ENUM('public', 'internal', 'restricted', 'confidential') DEFAULT 'internal',
+    
+    -- Nomenclature automatique
+    auto_generate_code BOOLEAN DEFAULT TRUE COMMENT 'Générer code automatiquement',
+    code_prefix VARCHAR(10) COMMENT 'Préfixe pour codes : CTR, HR, PRJ',
+    code_pattern VARCHAR(100) COMMENT 'Pattern : {{PREFIX}}-{{YEAR}}-{{SEQ}}',
+    
+    -- Règles de gestion
+    max_depth INTEGER DEFAULT 10 COMMENT 'Profondeur max arborescence',
+    allowed_document_types JSON COMMENT '["pdf", "docx", "xlsx"] - Types fichiers autorisés',
+    mandatory_metadata JSON COMMENT '["field_code1", "field_code2"] - Métadonnées obligatoires',
+    
+    -- Workflow
+    workflow_id BIGINT UNSIGNED COMMENT 'FK → workflows si module existe',
+    notification_rules JSON COMMENT 'Règles notifications',
+    
+    -- Portée
+    organisation_id BIGINT UNSIGNED COMMENT 'NULL = global',
+    
+    -- Statistiques
+    usage_count INTEGER DEFAULT 0 COMMENT 'Nombre de dossiers de ce type',
+    
+    -- Ordre affichage
+    display_order INTEGER DEFAULT 0,
+    
+    -- Audit
+    created_by BIGINT UNSIGNED,
+    updated_by BIGINT UNSIGNED,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
+    FOREIGN KEY (metadata_template_id) REFERENCES metadata_templates(id) ON DELETE SET NULL,
+    FOREIGN KEY (organisation_id) REFERENCES organisations(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    INDEX idx_code (code),
+    INDEX idx_active (is_active),
+    INDEX idx_organisation (organisation_id),
+    INDEX idx_template (metadata_template_id),
+    INDEX idx_display (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+#### B) Table record_digital_document_types
+
+```sql
+CREATE TABLE record_digital_document_types (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE COMMENT 'Code technique : INVOICE, QUOTE, REPORT',
+    name VARCHAR(200) NOT NULL COMMENT 'Nom du type : Facture, Devis, Rapport',
+    description TEXT COMMENT 'Description du type de document',
+    
+    -- Apparence visuelle
+    icon VARCHAR(50) DEFAULT 'file-text' COMMENT 'Icône FontAwesome',
+    color VARCHAR(7) DEFAULT '#28a745' COMMENT 'Couleur hexa',
+    thumbnail_path VARCHAR(500) COMMENT 'Miniature illustrative',
+    
+    -- Template de métadonnées lié
+    metadata_template_id BIGINT UNSIGNED COMMENT 'FK → metadata_templates',
+    
+    -- Configuration du type
+    is_system BOOLEAN DEFAULT FALSE COMMENT 'Type système non supprimable',
+    is_active BOOLEAN DEFAULT TRUE,
+    requires_approval BOOLEAN DEFAULT FALSE COMMENT 'Création nécessite approbation',
+    default_access_level ENUM('public', 'internal', 'restricted', 'confidential') DEFAULT 'internal',
+    
+    -- Nomenclature automatique
+    auto_generate_code BOOLEAN DEFAULT TRUE COMMENT 'Générer code automatiquement',
+    code_prefix VARCHAR(10) COMMENT 'Préfixe pour codes : INV, QUO, RPT',
+    code_pattern VARCHAR(100) COMMENT 'Pattern : {{PREFIX}}-{{YEAR}}-{{SEQ}}',
+    
+    -- Règles de gestion
+    allowed_file_types JSON COMMENT '["pdf", "docx", "xlsx"] - Extensions autorisées',
+    max_file_size BIGINT COMMENT 'Taille max en octets',
+    require_signature BOOLEAN DEFAULT FALSE COMMENT 'Signature électronique requise',
+    require_encryption BOOLEAN DEFAULT FALSE COMMENT 'Chiffrement requis',
+    mandatory_metadata JSON COMMENT '["field_code1", "field_code2"] - Métadonnées obligatoires',
+    
+    -- Versioning
+    enable_versioning BOOLEAN DEFAULT TRUE,
+    keep_all_versions BOOLEAN DEFAULT TRUE,
+    max_versions INTEGER COMMENT 'Nombre max de versions (NULL = illimité)',
+    
+    -- Workflow et cycle de vie
+    workflow_id BIGINT UNSIGNED COMMENT 'FK → workflows si module existe',
+    default_status ENUM('draft', 'review', 'validated', 'published', 'archived') DEFAULT 'draft',
+    retention_period_days INTEGER COMMENT 'Durée conservation en jours',
+    auto_archive_days INTEGER COMMENT 'Archivage auto après X jours',
+    notification_rules JSON COMMENT 'Règles notifications',
+    
+    -- Extraction et traitement automatique
+    enable_ocr BOOLEAN DEFAULT FALSE COMMENT 'Activer OCR automatique',
+    enable_metadata_extraction BOOLEAN DEFAULT FALSE COMMENT 'Extraction métadonnées IA',
+    extraction_config JSON COMMENT 'Config extraction automatique',
+    
+    -- Portée
+    organisation_id BIGINT UNSIGNED COMMENT 'NULL = global',
+    restrict_to_folder_types JSON COMMENT '[1, 3, 5] - IDs folder_types autorisés',
+    
+    -- Statistiques
+    usage_count INTEGER DEFAULT 0 COMMENT 'Nombre de documents de ce type',
+    
+    -- Ordre affichage
+    display_order INTEGER DEFAULT 0,
+    
+    -- Audit
+    created_by BIGINT UNSIGNED,
+    updated_by BIGINT UNSIGNED,
+    created_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
+    
+    FOREIGN KEY (metadata_template_id) REFERENCES metadata_templates(id) ON DELETE SET NULL,
+    FOREIGN KEY (organisation_id) REFERENCES organisations(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL,
+    
+    INDEX idx_code (code),
+    INDEX idx_active (is_active),
+    INDEX idx_organisation (organisation_id),
+    INDEX idx_template (metadata_template_id),
+    INDEX idx_display (display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+#### C) Modification des tables record_digital_folders et record_digital_documents
+
+Ajouter les colonnes de référence aux types :
+
+```sql
+-- Ajouter à record_digital_folders
+ALTER TABLE record_digital_folders
+ADD COLUMN folder_type_id BIGINT UNSIGNED AFTER folder_type,
+ADD FOREIGN KEY (folder_type_id) REFERENCES record_digital_folder_types(id) ON DELETE SET NULL,
+ADD INDEX idx_folder_type_id (folder_type_id);
+
+-- Ajouter à record_digital_documents
+ALTER TABLE record_digital_documents
+ADD COLUMN document_type_id BIGINT UNSIGNED AFTER document_type,
+ADD FOREIGN KEY (document_type_id) REFERENCES record_digital_document_types(id) ON DELETE SET NULL,
+ADD INDEX idx_document_type_id (document_type_id);
+```
+
+#### D) Seeders de types par défaut
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\RecordDigitalFolderType;
+use App\Models\RecordDigitalDocumentType;
+use App\Models\MetadataTemplate;
+
+class DigitalTypesSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // ==========================================
+        // TYPES DE DOSSIERS (Folder Types)
+        // ==========================================
+        
+        // 1. Dossier Contrats
+        $contractTemplate = MetadataTemplate::where('code', 'CONTRACT_FOLDER')->first();
+        RecordDigitalFolderType::create([
+            'code' => 'CONTRACTS',
+            'name' => 'Contrats',
+            'description' => 'Dossiers de gestion des contrats commerciaux et juridiques',
+            'icon' => 'file-contract',
+            'color' => '#dc3545',
+            'metadata_template_id' => $contractTemplate?->id,
+            'code_prefix' => 'CTR',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'restricted',
+            'requires_approval' => true,
+            'mandatory_metadata' => ['contract_number', 'contractor', 'contract_date'],
+            'is_system' => true,
+            'display_order' => 1,
+        ]);
+        
+        // 2. Dossier RH
+        $hrTemplate = MetadataTemplate::where('code', 'HR_FOLDER')->first();
+        RecordDigitalFolderType::create([
+            'code' => 'HUMAN_RESOURCES',
+            'name' => 'Ressources Humaines',
+            'description' => 'Dossiers du personnel et gestion RH',
+            'icon' => 'people',
+            'color' => '#6f42c1',
+            'metadata_template_id' => $hrTemplate?->id,
+            'code_prefix' => 'HR',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'confidential',
+            'requires_approval' => true,
+            'mandatory_metadata' => ['employee_id', 'department'],
+            'is_system' => true,
+            'display_order' => 2,
+        ]);
+        
+        // 3. Dossier Projets
+        $projectTemplate = MetadataTemplate::where('code', 'PROJECT_FOLDER')->first();
+        RecordDigitalFolderType::create([
+            'code' => 'PROJECTS',
+            'name' => 'Projets',
+            'description' => 'Dossiers de gestion de projets',
+            'icon' => 'diagram-3',
+            'color' => '#0dcaf0',
+            'metadata_template_id' => $projectTemplate?->id,
+            'code_prefix' => 'PRJ',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'internal',
+            'mandatory_metadata' => ['project_code', 'project_manager', 'start_date'],
+            'is_system' => true,
+            'display_order' => 3,
+        ]);
+        
+        // 4. Dossier Comptabilité
+        $accountingTemplate = MetadataTemplate::where('code', 'ACCOUNTING_FOLDER')->first();
+        RecordDigitalFolderType::create([
+            'code' => 'ACCOUNTING',
+            'name' => 'Comptabilité',
+            'description' => 'Dossiers comptables et financiers',
+            'icon' => 'calculator',
+            'color' => '#198754',
+            'metadata_template_id' => $accountingTemplate?->id,
+            'code_prefix' => 'ACC',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'restricted',
+            'mandatory_metadata' => ['fiscal_year', 'account_number'],
+            'is_system' => true,
+            'display_order' => 4,
+        ]);
+        
+        // 5. Dossier Clients
+        RecordDigitalFolderType::create([
+            'code' => 'CLIENTS',
+            'name' => 'Clients',
+            'description' => 'Dossiers clients et relations commerciales',
+            'icon' => 'briefcase',
+            'color' => '#fd7e14',
+            'code_prefix' => 'CLI',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'internal',
+            'mandatory_metadata' => ['client_id', 'client_name'],
+            'is_system' => false,
+            'display_order' => 5,
+        ]);
+        
+        // ==========================================
+        // TYPES DE DOCUMENTS (Document Types)
+        // ==========================================
+        
+        // 1. Facture
+        $invoiceTemplate = MetadataTemplate::where('code', 'INVOICE_DOC')->first();
+        RecordDigitalDocumentType::create([
+            'code' => 'INVOICE',
+            'name' => 'Facture',
+            'description' => 'Factures clients et fournisseurs',
+            'icon' => 'receipt',
+            'color' => '#dc3545',
+            'metadata_template_id' => $invoiceTemplate?->id,
+            'code_prefix' => 'INV',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'restricted',
+            'allowed_file_types' => ['pdf', 'xml'],
+            'max_file_size' => 10485760, // 10 MB
+            'require_signature' => true,
+            'mandatory_metadata' => ['invoice_number', 'invoice_date', 'amount', 'currency'],
+            'enable_metadata_extraction' => true,
+            'retention_period_days' => 3650, // 10 ans
+            'is_system' => true,
+            'display_order' => 1,
+        ]);
+        
+        // 2. Devis
+        $quoteTemplate = MetadataTemplate::where('code', 'QUOTE_DOC')->first();
+        RecordDigitalDocumentType::create([
+            'code' => 'QUOTE',
+            'name' => 'Devis',
+            'description' => 'Devis commerciaux',
+            'icon' => 'file-earmark-text',
+            'color' => '#0dcaf0',
+            'metadata_template_id' => $quoteTemplate?->id,
+            'code_prefix' => 'QUO',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'internal',
+            'allowed_file_types' => ['pdf', 'docx'],
+            'mandatory_metadata' => ['quote_number', 'quote_date', 'client', 'validity_days'],
+            'enable_versioning' => true,
+            'max_versions' => 10,
+            'is_system' => true,
+            'display_order' => 2,
+        ]);
+        
+        // 3. Contrat
+        $contractDocTemplate = MetadataTemplate::where('code', 'CONTRACT_DOC')->first();
+        RecordDigitalDocumentType::create([
+            'code' => 'CONTRACT',
+            'name' => 'Contrat',
+            'description' => 'Contrats juridiques et commerciaux',
+            'icon' => 'file-contract',
+            'color' => '#6f42c1',
+            'metadata_template_id' => $contractDocTemplate?->id,
+            'code_prefix' => 'CNT',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'confidential',
+            'allowed_file_types' => ['pdf'],
+            'require_signature' => true,
+            'require_encryption' => true,
+            'mandatory_metadata' => ['contract_number', 'parties', 'start_date', 'end_date'],
+            'enable_versioning' => true,
+            'keep_all_versions' => true,
+            'retention_period_days' => 7300, // 20 ans
+            'is_system' => true,
+            'display_order' => 3,
+        ]);
+        
+        // 4. Rapport
+        RecordDigitalDocumentType::create([
+            'code' => 'REPORT',
+            'name' => 'Rapport',
+            'description' => 'Rapports d\'activité et études',
+            'icon' => 'file-earmark-bar-graph',
+            'color' => '#198754',
+            'code_prefix' => 'RPT',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'internal',
+            'allowed_file_types' => ['pdf', 'docx', 'xlsx'],
+            'mandatory_metadata' => ['report_date', 'author', 'period'],
+            'enable_versioning' => true,
+            'default_status' => 'draft',
+            'is_system' => false,
+            'display_order' => 4,
+        ]);
+        
+        // 5. Bon de Commande
+        RecordDigitalDocumentType::create([
+            'code' => 'PURCHASE_ORDER',
+            'name' => 'Bon de Commande',
+            'description' => 'Bons de commande fournisseurs',
+            'icon' => 'cart-check',
+            'color' => '#fd7e14',
+            'code_prefix' => 'PO',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'internal',
+            'allowed_file_types' => ['pdf', 'xlsx'],
+            'mandatory_metadata' => ['po_number', 'supplier', 'order_date', 'amount'],
+            'enable_versioning' => true,
+            'is_system' => false,
+            'display_order' => 5,
+        ]);
+        
+        // 6. Note de Frais
+        RecordDigitalDocumentType::create([
+            'code' => 'EXPENSE_REPORT',
+            'name' => 'Note de Frais',
+            'description' => 'Notes de frais et remboursements',
+            'icon' => 'wallet2',
+            'color' => '#ffc107',
+            'code_prefix' => 'EXP',
+            'code_pattern' => '{{PREFIX}}-{{YEAR}}-{{SEQ}}',
+            'default_access_level' => 'restricted',
+            'allowed_file_types' => ['pdf', 'jpg', 'png'],
+            'mandatory_metadata' => ['employee', 'expense_date', 'amount', 'category'],
+            'enable_metadata_extraction' => true,
+            'is_system' => false,
+            'display_order' => 6,
+        ]);
+        
+        $this->command->info('✓ Types de dossiers et documents créés avec succès');
+    }
+}
+```
+
+---
+
+#### E) Utilisation et Bénéfices
+
+**Avantages du système de types** :
+
+1. **Flexibilité** : Chaque organisation peut créer ses propres types avec des champs personnalisés
+2. **Contrôle** : Règles de validation, formats autorisés, métadonnées obligatoires par type
+3. **Automatisation** : Génération de codes, extraction de métadonnées, workflows
+4. **Cohérence** : Templates garantissent la cohérence des données
+5. **Évolutivité** : Nouveaux types ajoutables sans modifier le code
+
+**Exemples d'utilisation** :
+
+```php
+// Créer un dossier de type "Contrats"
+$contractType = RecordDigitalFolderType::where('code', 'CONTRACTS')->first();
+$folder = RecordDigitalFolder::create([
+    'name' => 'Contrats Client XYZ',
+    'folder_type_id' => $contractType->id,
+    'metadata_template_id' => $contractType->metadata_template_id,
+]);
+
+// Les métadonnées obligatoires du type seront validées
+$folder->setMetadata('contract_number', 'CTR-2025-0042');
+$folder->setMetadata('contractor', 'Société XYZ');
+$folder->setMetadata('contract_date', '2025-11-05');
+
+// Créer un document de type "Facture"
+$invoiceType = RecordDigitalDocumentType::where('code', 'INVOICE')->first();
+$document = RecordDigitalDocument::create([
+    'name' => 'Facture Client ABC',
+    'parent_folder_id' => $folder->id,
+    'document_type_id' => $invoiceType->id,
+    'metadata_template_id' => $invoiceType->metadata_template_id,
+]);
+
+// Les métadonnées seront extraites automatiquement si enable_metadata_extraction = true
+$document->setMetadata('invoice_number', 'INV-2025-1234');
+$document->setMetadata('invoice_date', '2025-11-05');
+$document->setMetadata('amount', 1500.00);
+$document->setMetadata('currency', 'EUR');
+```
+
+---
+
+### 2.3.2 Intégration avec le système Folders/Documents existant | 🔴 NON DÉMARRÉ
+
+**Checklist d'implémentation** :
+- [ ] Tables `folders` et `documents` analysées
+- [ ] Tables pivot pour attachments créées
+- [ ] Relations avec `attachments` configurées
+- [ ] Migration de compatibilité créée
+- [ ] Modèles Folder et Document mis à jour
+- [ ] Tests d'intégration écrits
+
+**IMPORTANT** : Votre application possède déjà un système de gestion de dossiers et documents (tables `folders` et `documents` du Module_02_Folders.sql). Ce système doit être transformé et intégré dans les nouvelles tables `record_digital_folders` et `record_digital_documents` avec la table `attachments` pour gérer tous les fichiers numériques.
+
+#### A) Transformation des Tables Existantes
+
+##### Table `record_digital_folders` (anciennement `folders`)
+
+```sql
+-- Renommer la table existante
+RENAME TABLE `folders` TO `record_digital_folders`;
+
+-- Structure de la table record_digital_folders
+CREATE TABLE IF NOT EXISTS `record_digital_folders` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(50) UNIQUE COMMENT 'Code unique : DF-YYYY-NNNN',
+    `name` VARCHAR(190) NOT NULL,
+    `description` TEXT,
+    `parent_id` BIGINT UNSIGNED COMMENT 'Auto-référence pour hiérarchie, NULL pour racine',
+    `folder_type` VARCHAR(50) COMMENT 'Type de dossier',
+    `color` VARCHAR(7) COMMENT 'Couleur hexa pour UI',
+    `icon` VARCHAR(50) COMMENT 'Icône FontAwesome',
+    `access_level` ENUM('public', 'internal', 'restricted', 'confidential') DEFAULT 'internal',
+    `is_locked` BOOLEAN DEFAULT FALSE,
+    `locked_by` BIGINT UNSIGNED,
+    `locked_at` TIMESTAMP NULL,
+    `metadata_template_id` BIGINT UNSIGNED,
+    `organisation_id` BIGINT UNSIGNED,
+    `created_by` BIGINT NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_by` BIGINT,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_by` BIGINT,
+    `deleted_at` TIMESTAMP NULL,
+    `version` INT NOT NULL DEFAULT 1,
+    `activity_id` BIGINT UNSIGNED NULL,
+    PRIMARY KEY (`id`),
+    INDEX `idx_code` (`code`),
+    INDEX `idx_parent` (`parent_id`),
+    INDEX `idx_type` (`folder_type`),
+    INDEX `idx_created` (`created_by`),
+    INDEX `idx_activity` (`activity_id`),
+    INDEX `idx_locked` (`is_locked`),
+    INDEX `idx_organisation` (`organisation_id`),
+    FOREIGN KEY (`parent_id`) REFERENCES `record_digital_folders`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`deleted_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`locked_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`activity_id`) REFERENCES `activities`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`metadata_template_id`) REFERENCES `metadata_templates`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`organisation_id`) REFERENCES `organisations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+##### Table `record_digital_documents` (anciennement `documents`)
+
+```sql
+-- Renommer la table existante
+RENAME TABLE `documents` TO `record_digital_documents`;
+
+-- Structure de la table record_digital_documents
+CREATE TABLE IF NOT EXISTS `record_digital_documents` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `code` VARCHAR(50) UNIQUE COMMENT 'Code unique : DD-YYYY-NNNN',
+    `name` VARCHAR(190) NOT NULL,
+    `description` TEXT,
+    `parent_folder_id` BIGINT UNSIGNED NOT NULL COMMENT 'FK → record_digital_folders',
+    `document_type` VARCHAR(50) COMMENT 'Type de document',
+    `document_date` DATE COMMENT 'Date du document',
+    `document_author` VARCHAR(200) COMMENT 'Auteur du document',
+    `file_checksum` VARCHAR(190) COMMENT 'Redondant avec attachments.crypt_sha512',
+    `mime_type` VARCHAR(100) NOT NULL COMMENT 'Redondant avec attachments.mime_type',
+    `size` BIGINT NOT NULL COMMENT 'Redondant avec attachments.size',
+    `access_level` ENUM('public', 'internal', 'restricted', 'confidential') DEFAULT 'internal',
+    `is_locked` BOOLEAN DEFAULT FALSE,
+    `locked_by` BIGINT UNSIGNED,
+    `locked_at` TIMESTAMP NULL,
+    `checkout_by` BIGINT UNSIGNED COMMENT 'Utilisateur ayant emprunté le document',
+    `checkout_at` TIMESTAMP NULL,
+    `is_signed` BOOLEAN DEFAULT FALSE,
+    `signature_date` TIMESTAMP NULL,
+    `is_encrypted` BOOLEAN DEFAULT FALSE,
+    `download_count` INTEGER DEFAULT 0,
+    `view_count` INTEGER DEFAULT 0,
+    `last_accessed_at` TIMESTAMP NULL,
+    `status` ENUM('draft', 'review', 'validated', 'published', 'archived') DEFAULT 'draft',
+    `metadata_template_id` BIGINT UNSIGNED,
+    `organisation_id` BIGINT UNSIGNED,
+    `owner_id` BIGINT UNSIGNED NOT NULL,
+    `created_by` BIGINT UNSIGNED NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_by` BIGINT UNSIGNED,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_by` BIGINT UNSIGNED,
+    `deleted_at` TIMESTAMP NULL,
+    `version` INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (`id`),
+    INDEX `idx_code` (`code`),
+    INDEX `idx_parent_folder` (`parent_folder_id`),
+    INDEX `idx_type` (`document_type`),
+    INDEX `idx_owner` (`owner_id`),
+    INDEX `idx_created` (`created_by`),
+    INDEX `idx_updated` (`updated_by`),
+    INDEX `idx_deleted` (`deleted_by`),
+    INDEX `idx_locked` (`is_locked`),
+    INDEX `idx_checkout` (`checkout_by`),
+    INDEX `idx_status` (`status`),
+    INDEX `idx_organisation` (`organisation_id`),
+    FOREIGN KEY (`parent_folder_id`) REFERENCES `record_digital_folders`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`deleted_by`) REFERENCES `users`(`id`),
+    FOREIGN KEY (`locked_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`checkout_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`metadata_template_id`) REFERENCES `metadata_templates`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`organisation_id`) REFERENCES `organisations`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Note sur la redondance** : Les champs `file_checksum`, `mime_type` et `size` dans `record_digital_documents` sont redondants avec ceux de `attachments`. Ils peuvent être conservés pour la compatibilité et les performances (éviter les JOINs), mais doivent être synchronisés automatiquement via triggers ou observateurs Laravel.
+
+#### B) Tables Pivot pour Attachments
+
+##### Table `record_digital_folder_attachments` (NOUVELLE)
+
+```sql
+-- Pivot entre record_digital_folders et attachments
+-- Permet d'attacher des icônes, miniatures, documents annexes aux dossiers
+CREATE TABLE `record_digital_folder_attachments` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `folder_id` BIGINT UNSIGNED NOT NULL,
+    `attachment_id` BIGINT UNSIGNED NOT NULL,
+    `attachment_role` ENUM('icon', 'thumbnail', 'banner', 'document', 'other') DEFAULT 'document',
+    `title` VARCHAR(200) COMMENT 'Titre de la pièce jointe',
+    `description` TEXT COMMENT 'Description de la pièce jointe',
+    `is_primary` BOOLEAN DEFAULT FALSE COMMENT 'Image principale du dossier',
+    `display_order` INTEGER DEFAULT 0,
+    `created_by` BIGINT UNSIGNED,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (`folder_id`) REFERENCES `record_digital_folders`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`attachment_id`) REFERENCES `attachments`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+    
+    UNIQUE KEY `uk_folder_attachment` (`folder_id`, `attachment_id`),
+    INDEX `idx_folder` (`folder_id`),
+    INDEX `idx_attachment` (`attachment_id`),
+    INDEX `idx_role` (`attachment_role`),
+    INDEX `idx_primary` (`is_primary`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+##### Table `record_digital_document_attachments` (NOUVELLE)
+
+```sql
+-- Pivot entre record_digital_documents et attachments
+-- Gère fichier principal, annexes, versions, aperçus
+CREATE TABLE `record_digital_document_attachments` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `document_id` BIGINT UNSIGNED NOT NULL,
+    `attachment_id` BIGINT UNSIGNED NOT NULL,
+    `attachment_role` ENUM('primary', 'annex', 'version', 'thumbnail', 'preview', 'signature', 'certificate', 'converted') DEFAULT 'primary',
+    `is_primary` BOOLEAN DEFAULT FALSE COMMENT 'UN SEUL primary par document',
+    `version_number` INTEGER DEFAULT 1 COMMENT 'Numéro de version',
+    `title` VARCHAR(200) COMMENT 'Titre de la pièce jointe',
+    `description` TEXT COMMENT 'Description de la pièce jointe',
+    `display_order` INTEGER DEFAULT 0,
+    `created_by` BIGINT UNSIGNED,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (`document_id`) REFERENCES `record_digital_documents`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`attachment_id`) REFERENCES `attachments`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+    
+    UNIQUE KEY `uk_document_attachment` (`document_id`, `attachment_id`),
+    INDEX `idx_document` (`document_id`),
+    INDEX `idx_attachment` (`attachment_id`),
+    INDEX `idx_role` (`attachment_role`),
+    INDEX `idx_primary` (`document_id`, `is_primary`),
+    INDEX `idx_version` (`document_id`, `version_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+##### Trigger pour garantir un seul fichier principal
+
+```sql
+-- Trigger MySQL pour garantir qu'un document n'a qu'un seul attachment primary
+DELIMITER $$
+
+CREATE TRIGGER before_record_digital_document_attachment_primary_insert
+BEFORE INSERT ON record_digital_document_attachments
+FOR EACH ROW
+BEGIN
+    IF NEW.is_primary = TRUE THEN
+        -- Désactiver l'ancien primary s'il existe
+        UPDATE record_digital_document_attachments 
+        SET is_primary = FALSE 
+        WHERE document_id = NEW.document_id 
+        AND is_primary = TRUE 
+        AND id != NEW.id;
+    END IF;
+END$$
+
+CREATE TRIGGER before_record_digital_document_attachment_primary_update
+BEFORE UPDATE ON record_digital_document_attachments
+FOR EACH ROW
+BEGIN
+    IF NEW.is_primary = TRUE AND (OLD.is_primary IS NULL OR OLD.is_primary = FALSE) THEN
+        -- Désactiver l'ancien primary s'il existe
+        UPDATE record_digital_document_attachments 
+        SET is_primary = FALSE 
+        WHERE document_id = NEW.document_id 
+        AND is_primary = TRUE 
+        AND id != NEW.id;
+    END IF;
+END$$
+
+DELIMITER ;
+```
+
+#### C) Migration de Compatibilité
+
+##### Étendre la table `attachments` pour supporter folders/documents
+
+```sql
+-- Ajouter les nouveaux types pour folders et documents
+ALTER TABLE `attachments` 
+MODIFY COLUMN `type` ENUM(
+    'mail',
+    'record',
+    'communication',
+    'transferring',
+    'bulletinboardpost',
+    'bulletinboard',
+    'bulletinboardevent',
+    'digital_folder',      -- NOUVEAU : fichier attaché à un dossier numérique
+    'digital_document',    -- NOUVEAU : fichier attaché à un document numérique
+    'artifact',            -- NOUVEAU : photo/scan d'objet musée
+    'book',                -- NOUVEAU : couverture/extrait de livre
+    'periodic'             -- NOUVEAU : couverture/article de périodique
+) NOT NULL;
+```
+
+##### Migration des données existantes (si nécessaire)
+
+```sql
+-- Si vous aviez déjà des données dans folders/documents, 
+-- cette migration permet de les transformer
+-- Migration de folders → record_digital_folders (déjà fait via RENAME TABLE)
+-- Migration de documents → record_digital_documents (déjà fait via RENAME TABLE)
+
+-- Générer les codes pour les dossiers existants sans code
+UPDATE record_digital_folders 
+SET code = CONCAT('DF-', YEAR(created_at), '-', LPAD(id, 4, '0'))
+WHERE code IS NULL OR code = '';
+
+-- Générer les codes pour les documents existants sans code
+UPDATE record_digital_documents 
+SET code = CONCAT('DD-', YEAR(created_at), '-', LPAD(id, 4, '0'))
+WHERE code IS NULL OR code = '';
+```
+
+#### D) Synchronisation Automatique via Triggers
+
+```sql
+-- Trigger pour synchroniser record_digital_documents avec attachment
+DELIMITER $$
+
+CREATE TRIGGER after_record_digital_document_attachment_insert
+AFTER INSERT ON record_digital_document_attachments
+FOR EACH ROW
+BEGIN
+    IF NEW.is_primary = TRUE THEN
+        UPDATE record_digital_documents d
+        INNER JOIN attachments a ON a.id = NEW.attachment_id
+        SET 
+            d.file_checksum = a.crypt_sha512,
+            d.mime_type = a.mime_type,
+            d.size = a.size
+        WHERE d.id = NEW.document_id;
+    END IF;
+END$$
+
+CREATE TRIGGER after_record_digital_document_attachment_update
+AFTER UPDATE ON record_digital_document_attachments
+FOR EACH ROW
+BEGIN
+    IF NEW.is_primary = TRUE THEN
+        UPDATE record_digital_documents d
+        INNER JOIN attachments a ON a.id = NEW.attachment_id
+        SET 
+            d.file_checksum = a.crypt_sha512,
+            d.mime_type = a.mime_type,
+            d.size = a.size
+        WHERE d.id = NEW.document_id;
+    END IF;
+END$$
+
+DELIMITER ;
+```
+
+#### E) Modèle Laravel `RecordDigitalFolder` Enrichi
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class RecordDigitalFolder extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'code', 'name', 'description', 'parent_id',
+        'folder_type', 'color', 'icon', 'access_level', 'is_locked',
+        'locked_by', 'locked_at', 'version', 'activity_id',
+        'metadata_template_id', 'organisation_id',
+        'created_by', 'updated_by', 'deleted_by'
+    ];
+
+    protected $casts = [
+        'is_locked' => 'boolean',
+        'locked_at' => 'datetime',
+        'deleted_at' => 'datetime',
+        'version' => 'integer',
+    ];
+
+    // Relations hiérarchiques
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(RecordDigitalFolder::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(RecordDigitalFolder::class, 'parent_id');
+    }
+
+    // Relations avec documents
+    public function documents(): HasMany
+    {
+        return $this->hasMany(RecordDigitalDocument::class, 'parent_folder_id');
+    }
+
+    // Relations avec attachments via pivot
+    public function attachments(): BelongsToMany
+    {
+        return $this->belongsToMany(Attachment::class, 'record_digital_folder_attachments')
+                    ->withPivot([
+                        'attachment_role', 'title', 'description', 
+                        'is_primary', 'display_order'
+                    ])
+                    ->withTimestamps()
+                    ->orderBy('display_order');
+    }
+
+    // Attachment principal (icône ou bannière)
+    public function primaryAttachment(): BelongsToMany
+    {
+        return $this->attachments()
+                    ->wherePivot('is_primary', true);
+    }
+
+    // Relations avec metadata
+    public function metadata(): HasMany
+    {
+        return $this->hasMany(RecordDigitalFolderMetadata::class, 'folder_id');
+    }
+
+    public function metadataTemplate(): BelongsTo
+    {
+        return $this->belongsTo(MetadataTemplate::class, 'metadata_template_id');
+    }
+
+    // Relations utilisateurs
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function lockedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    // Relations organisation
+    public function organisation(): BelongsTo
+    {
+        return $this->belongsTo(Organisation::class);
+    }
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class);
+    }
+
+    // Méthodes utilitaires
+    public function lock(User $user): bool
+    {
+        $this->is_locked = true;
+        $this->locked_by = $user->id;
+        $this->locked_at = now();
+        return $this->save();
+    }
+
+    public function unlock(): bool
+    {
+        $this->is_locked = false;
+        $this->locked_by = null;
+        $this->locked_at = null;
+        return $this->save();
+    }
+
+    // Méthode pour attacher un fichier au dossier
+    public function attachFile(Attachment $attachment, array $pivotData = []): void
+    {
+        $defaults = [
+            'attachment_role' => 'document',
+            'is_primary' => false,
+            'display_order' => 0,
+            'created_by' => auth()->id(),
+        ];
+
+        $this->attachments()->attach($attachment->id, array_merge($defaults, $pivotData));
+    }
+
+    // Observer boot
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($folder) {
+            // Générer le code automatiquement
+            if (empty($folder->code)) {
+                $folder->code = self::generateCode();
+            }
+        });
+    }
+
+    protected static function generateCode(): string
+    {
+        $year = date('Y');
+        $lastCode = self::where('code', 'LIKE', "DF-{$year}-%")
+                        ->orderBy('code', 'desc')
+                        ->value('code');
+
+        if ($lastCode) {
+            $lastNumber = (int) substr($lastCode, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return sprintf('DF-%s-%04d', $year, $newNumber);
+    }
+}
+```
+
+#### F) Modèle Laravel `RecordDigitalDocument` Enrichi
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class RecordDigitalDocument extends Model
+{
+    use SoftDeletes;
+
+    protected $table = 'record_digital_documents';
+
+    protected $fillable = [
+        'code', 'name', 'description', 'parent_folder_id', 'owner_id',
+        'document_type', 'document_date', 'document_author',
+        'file_checksum', 'mime_type', 'size',
+        'access_level', 'is_locked', 'locked_by', 'locked_at',
+        'checkout_by', 'checkout_at',
+        'is_signed', 'signature_date', 'is_encrypted',
+        'download_count', 'view_count', 'last_accessed_at',
+        'status', 'version', 'metadata_template_id', 'organisation_id',
+        'created_by', 'updated_by', 'deleted_by'
+    ];
+
+    protected $casts = [
+        'document_date' => 'date',
+        'is_locked' => 'boolean',
+        'locked_at' => 'datetime',
+        'checkout_at' => 'datetime',
+        'is_signed' => 'boolean',
+        'signature_date' => 'datetime',
+        'is_encrypted' => 'boolean',
+        'last_accessed_at' => 'datetime',
+        'deleted_at' => 'datetime',
+        'download_count' => 'integer',
+        'view_count' => 'integer',
+        'version' => 'integer',
+        'size' => 'integer',
+    ];
+
+    // Relations
+    public function folder(): BelongsTo
+    {
+        return $this->belongsTo(RecordDigitalFolder::class, 'parent_folder_id');
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function lockedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    public function checkedOutByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checkout_by');
+    }
+
+    // Relations avec attachments via pivot
+    public function attachments(): BelongsToMany
+    {
+        return $this->belongsToMany(Attachment::class, 'record_digital_document_attachments')
+                    ->withPivot([
+                        'attachment_role', 'is_primary', 'version_number',
+                        'title', 'description', 'display_order'
+                    ])
+                    ->withTimestamps()
+                    ->orderBy('display_order');
+    }
+
+    // Fichier principal
+    public function primaryAttachment(): BelongsToMany
+    {
+        return $this->attachments()
+                    ->wherePivot('is_primary', true);
+    }
+
+    // Fichiers annexes
+    public function annexAttachments(): BelongsToMany
+    {
+        return $this->attachments()
+                    ->wherePivot('attachment_role', 'annex')
+                    ->orderBy('display_order');
+    }
+
+    // Versions
+    public function versions(): HasMany
+    {
+        return $this->hasMany(RecordDigitalDocumentVersion::class, 'document_id')
+                    ->orderBy('version_number', 'desc');
+    }
+
+    // Métadonnées
+    public function metadata(): HasMany
+    {
+        return $this->hasMany(RecordDigitalDocumentMetadata::class, 'document_id');
+    }
+
+    public function metadataTemplate(): BelongsTo
+    {
+        return $this->belongsTo(MetadataTemplate::class, 'metadata_template_id');
+    }
+
+    public function organisation(): BelongsTo
+    {
+        return $this->belongsTo(Organisation::class);
+    }
+
+    // Méthodes utilitaires
+    public function lock(User $user): bool
+    {
+        $this->is_locked = true;
+        $this->locked_by = $user->id;
+        $this->locked_at = now();
+        return $this->save();
+    }
+
+    public function unlock(): bool
+    {
+        $this->is_locked = false;
+        $this->locked_by = null;
+        $this->locked_at = null;
+        return $this->save();
+    }
+
+    public function checkout(User $user): bool
+    {
+        if ($this->checkout_by) {
+            throw new \Exception('Document already checked out');
+        }
+
+        $this->checkout_by = $user->id;
+        $this->checkout_at = now();
+        return $this->save();
+    }
+
+    public function checkin(): bool
+    {
+        $this->checkout_by = null;
+        $this->checkout_at = null;
+        return $this->save();
+    }
+
+    public function incrementDownloadCount(): void
+    {
+        $this->increment('download_count');
+        $this->last_accessed_at = now();
+        $this->save();
+    }
+
+    public function incrementViewCount(): void
+    {
+        $this->increment('view_count');
+        $this->last_accessed_at = now();
+        $this->save();
+    }
+
+    // Attacher un fichier au document
+    public function attachFile(Attachment $attachment, array $pivotData = []): void
+    {
+        $defaults = [
+            'attachment_role' => 'primary',
+            'is_primary' => false,
+            'version_number' => $this->version,
+            'display_order' => 0,
+            'created_by' => auth()->id(),
+        ];
+
+        $this->attachments()->attach($attachment->id, array_merge($defaults, $pivotData));
+
+        // Synchroniser les champs redondants si c'est le fichier principal
+        if ($pivotData['is_primary'] ?? false) {
+            $this->file_checksum = $attachment->crypt_sha512;
+            $this->mime_type = $attachment->mime_type;
+            $this->size = $attachment->size;
+            $this->save();
+        }
+    }
+
+    // Observer boot
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($document) {
+            // Générer le code automatiquement
+            if (empty($document->code)) {
+                $document->code = self::generateCode();
+            }
+        });
+    }
+
+    protected static function generateCode(): string
+    {
+        $year = date('Y');
+        $lastCode = self::where('code', 'LIKE', "DD-{$year}-%")
+                        ->orderBy('code', 'desc')
+                        ->value('code');
+
+        if ($lastCode) {
+            $lastNumber = (int) substr($lastCode, -4);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return sprintf('DD-%s-%04d', $year, $newNumber);
+    }
+}
+```
+
+#### G) Exemple d'Utilisation
+
+```php
+// Créer un dossier numérique
+$folder = RecordDigitalFolder::create([
+    'name' => 'Contrats 2025',
+    'description' => 'Dossier des contrats commerciaux',
+    'folder_type' => 'contracts',
+    'color' => '#dc3545',
+    'icon' => 'file-contract',
+    'access_level' => 'restricted',
+    'created_by' => auth()->id(),
+]);
+
+// Créer un attachment (icône personnalisée)
+$iconAttachment = Attachment::create([
+    'name' => 'contract-icon.png',
+    'path' => 'icons/',
+    'crypt' => 'abc123def456',
+    'type' => 'digital_folder',
+    'mime_type' => 'image/png',
+    'size' => 5120,
+    'creator_id' => auth()->id(),
+]);
+
+// Attacher l'icône au dossier
+$folder->attachFile($iconAttachment, [
+    'attachment_role' => 'icon',
+    'is_primary' => true,
+    'title' => 'Icône du dossier Contrats',
+]);
+
+// Créer un document dans le dossier
+$document = RecordDigitalDocument::create([
+    'name' => 'Contrat Client ABC.pdf',
+    'parent_folder_id' => $folder->id,
+    'owner_id' => auth()->id(),
+    'document_type' => 'contract',
+    'document_date' => now(),
+    'access_level' => 'restricted',
+    'status' => 'validated',
+    'created_by' => auth()->id(),
+]);
+
+// Créer l'attachment du fichier PDF
+$pdfAttachment = Attachment::create([
+    'name' => 'Contrat Client ABC.pdf',
+    'path' => 'documents/2025/contracts/',
+    'crypt' => 'xyz789ghi012',
+    'type' => 'digital_document',
+    'mime_type' => 'application/pdf',
+    'size' => 2048576,
+    'crypt_sha512' => hash('sha512', 'file_content_here'),
+    'creator_id' => auth()->id(),
+]);
+
+// Attacher le PDF comme fichier principal
+$document->attachFile($pdfAttachment, [
+    'attachment_role' => 'primary',
+    'is_primary' => true,
+    'title' => 'Contrat principal',
+]);
+
+// Ajouter une annexe
+$annexAttachment = Attachment::create([
+    'name' => 'Annexe 1 - Conditions générales.pdf',
+    'path' => 'documents/2025/contracts/',
+    'crypt' => 'jkl345mno678',
+    'type' => 'digital_document',
+    'mime_type' => 'application/pdf',
+    'size' => 512000,
+    'creator_id' => auth()->id(),
+]);
+
+$document->attachFile($annexAttachment, [
+    'attachment_role' => 'annex',
+    'is_primary' => false,
+    'title' => 'Conditions générales',
+    'display_order' => 1,
+]);
+
+// Récupérer le fichier principal
+$primaryFile = $document->primaryAttachment()->first();
+echo $primaryFile->name; // "Contrat Client ABC.pdf"
+
+// Récupérer toutes les annexes
+$annexes = $document->annexAttachments;
+foreach ($annexes as $annex) {
+    echo $annex->pivot->title; // "Conditions générales"
+}
+
+// Verrouiller le document
+$document->lock(auth()->user());
+
+// Emprunter le document (checkout)
+$document->checkout(auth()->user());
+
+// Incrémenter le compteur de téléchargements
+$document->incrementDownloadCount();
+```
+
+---
+
+### 2.4 RecordArtifact (Objets Musée) | 🔴 NON DÉMARRÉ
 
 **Checklist d'implémentation** :
 - [ ] Table `record_artifacts` créée
@@ -241,9 +1509,9 @@ sqlrecord_artifacts:
 - deleted_at (soft delete)
 Relations spécifiques :
 sql-- Photos via attachments (type='artifact')
--- Utiliser record_artifact_attachment pivot avec des métadonnées supplémentaires
+-- Utiliser record_artifact_attachments pivot avec des métadonnées supplémentaires
 
-artifact_attachments (pivot enrichi):
+record_artifact_attachments (pivot enrichi):
 - id
 - artifact_id (FK → record_artifacts)
 - attachment_id (FK → attachments)
@@ -255,9 +1523,9 @@ artifact_attachments (pivot enrichi):
 - display_order INTEGER
 - created_at, updated_at
 
-artifact_exhibitions:
+record_artifact_exhibitions:
 - id
-- artifact_id (FK)
+- artifact_id (FK → record_artifacts)
 - exhibition_name VARCHAR(300)
 - location VARCHAR(200)
 - start_date DATE
@@ -267,9 +1535,9 @@ artifact_exhibitions:
 - notes TEXT
 - created_at, updated_at
 
-artifact_loans:
+record_artifact_loans:
 - id
-- artifact_id (FK)
+- artifact_id (FK → record_artifacts)
 - borrower_institution VARCHAR(300)
 - contact_person VARCHAR(200)
 - loan_purpose TEXT
@@ -282,9 +1550,9 @@ artifact_loans:
 - status ENUM('requested', 'approved', 'active', 'returned', 'overdue', 'cancelled')
 - created_at, updated_at
 
-artifact_condition_reports:
+record_artifact_condition_reports:
 - id
-- artifact_id (FK)
+- artifact_id (FK → record_artifacts)
 - report_date DATE
 - examined_by VARCHAR(200)
 - condition_state ENUM('excellent', 'good', 'fair', 'poor', 'critical')
@@ -501,7 +1769,7 @@ Validation : document ne peut être son propre parent de version
 
 **Checklist d'implémentation** :
 - [ ] Table `record_books` créée
-- [ ] Tables associées (book_authors, book_copies, book_loans, book_reservations)
+- [ ] Tables associées (record_book_authors, record_book_copies, record_book_loans, record_book_reservations)
 - [ ] Modèle RecordBook implémenté
 - [ ] Service BookService créé
 - [ ] Gestion prêts/retours
@@ -616,7 +1884,7 @@ INDEX idx_publication_year (publication_year)
 INDEX idx_dewey (dewey_decimal)
 INDEX idx_status (status)
 Tables associées :
-sqlbook_authors (many-to-many):
+sqlrecord_book_authors (many-to-many):
 - id
 - book_id (FK → record_books)
 - author_id (FK → authors)
@@ -626,7 +1894,7 @@ sqlbook_authors (many-to-many):
 
 UNIQUE KEY unique_book_author_role (book_id, author_id, author_role)
 
-book_copies (exemplaires physiques):
+record_book_copies (exemplaires physiques):
 - id
 - book_id (FK → record_books)
 - copy_number INTEGER
@@ -648,9 +1916,9 @@ INDEX idx_barcode (barcode)
 INDEX idx_status (status)
 INDEX idx_location (room_id, shelf_id)
 
-book_loans:
+record_book_loans:
 - id
-- copy_id (FK → book_copies)
+- copy_id (FK → record_book_copies)
 - user_id (FK → users)
 - loan_date DATE
 - due_date DATE
@@ -671,7 +1939,7 @@ INDEX idx_user_status (user_id, status)
 INDEX idx_due_date (due_date)
 INDEX idx_overdue (is_overdue)
 
-book_reservations:
+record_book_reservations:
 - id
 - book_id (FK → record_books)
 - user_id (FK → users)
@@ -686,9 +1954,9 @@ book_reservations:
 INDEX idx_user_status (user_id, status)
 INDEX idx_book_status (book_id, status)
 Relations via attachments :
-sqlbook_attachments (pivot):
+sqlrecord_book_attachments (pivot):
 - id
-- book_id (FK)
+- book_id (FK → record_books)
 - attachment_id (FK → attachments) -- type='book'
 - attachment_type ENUM('cover_front', 'cover_back', 'spine', 'dust_jacket', 'title_page', 'excerpt', 'review', 'author_photo', 'illustration', 'other')
 - is_main_cover BOOLEAN DEFAULT FALSE
@@ -2136,23 +3404,23 @@ class RecordArtifact extends Model
     
     public function exhibitions()
     {
-        return $this->hasMany(ArtifactExhibition::class, 'artifact_id');
+        return $this->hasMany(RecordArtifactExhibition::class, 'artifact_id');
     }
     
     public function loans()
     {
-        return $this->hasMany(ArtifactLoan::class, 'artifact_id');
+        return $this->hasMany(RecordArtifactLoan::class, 'artifact_id');
     }
     
     public function conditionReports()
     {
-        return $this->hasMany(ArtifactConditionReport::class, 'artifact_id')
+        return $this->hasMany(RecordArtifactConditionReport::class, 'artifact_id')
             ->orderBy('report_date', 'desc');
     }
     
     public function photos()
     {
-        return $this->belongsToMany(Attachment::class, 'artifact_attachments')
+        return $this->belongsToMany(Attachment::class, 'record_artifact_attachments')
             ->wherePivot('attachment_type', '!=', '3d_model')
             ->withPivot(['view_type', 'is_main_image', 'caption', 'photographer', 'photo_date', 'display_order'])
             ->orderByPivot('display_order');
@@ -2165,7 +3433,7 @@ class RecordArtifact extends Model
     
     public function model3D()
     {
-        return $this->belongsToMany(Attachment::class, 'artifact_attachments')
+        return $this->belongsToMany(Attachment::class, 'record_artifact_attachments')
             ->wherePivot('attachment_type', '3d_model')
             ->first();
     }
@@ -2183,7 +3451,7 @@ class RecordArtifact extends Model
      */
     protected function getAttachmentPivotTable(): string
     {
-        return 'artifact_attachments';
+        return 'record_artifact_attachments';
     }
     
     protected function getAttachmentPivotColumns(): array
@@ -2269,7 +3537,7 @@ class RecordDigitalFolder extends Model
     
     protected $fillable = [
         'code', 'name', 'description', 'parent_id', 'path', 'depth',
-        'children_count', 'total_size', 'folder_type', 'color', 'icon',
+        'children_count', 'total_size', 'folder_type', 'folder_type_id', 'color', 'icon',
         'access_level', 'access_password', 'is_locked', 'locked_by', 'locked_at',
         'is_archived', 'archived_at', 'archived_by',
         'order_criteria', 'display_mode', 'metadata_template_id',
@@ -2301,6 +3569,16 @@ class RecordDigitalFolder extends Model
     {
         parent::boot();
         
+        static::creating(function ($folder) {
+            // Si un type est défini, appliquer son template
+            if ($folder->folder_type_id && !$folder->metadata_template_id) {
+                $folderType = RecordDigitalFolderType::find($folder->folder_type_id);
+                if ($folderType && $folderType->metadata_template_id) {
+                    $folder->metadata_template_id = $folderType->metadata_template_id;
+                }
+            }
+        });
+        
         static::saving(function ($folder) {
             $folder->updatePath();
             $folder->updateDepth();
@@ -2308,6 +3586,12 @@ class RecordDigitalFolder extends Model
         
         static::saved(function ($folder) {
             $folder->updateParentCounts();
+            
+            // Incrémenter usage_count du type
+            if ($folder->folder_type_id) {
+                RecordDigitalFolderType::where('id', $folder->folder_type_id)
+                    ->increment('usage_count');
+            }
         });
         
         static::deleting(function ($folder) {
@@ -2318,11 +3602,24 @@ class RecordDigitalFolder extends Model
                 throw new \Exception("Cannot delete folder with subfolders. Delete subfolders first.");
             }
         });
+        
+        static::deleted(function ($folder) {
+            // Décrémenter usage_count du type
+            if ($folder->folder_type_id) {
+                RecordDigitalFolderType::where('id', $folder->folder_type_id)
+                    ->decrement('usage_count');
+            }
+        });
     }
     
     /**
      * Relations
      */
+    public function folderType()
+    {
+        return $this->belongsTo(RecordDigitalFolderType::class, 'folder_type_id');
+    }
+    
     public function parent()
     {
         return $this->belongsTo(RecordDigitalFolder::class, 'parent_id');
@@ -2548,7 +3845,7 @@ class RecordDigitalDocument extends Model
     
     protected $fillable = [
         'code', 'parent_folder_id', 'name', 'description',
-        'document_type', 'document_date', 'document_author',
+        'document_type', 'document_type_id', 'document_date', 'document_author',
         'version_number', 'is_current_version', 'version_parent_id', 'version_note',
         'access_level', 'is_signed', 'signature_date', 'signature_certificate', 'signature_algorithm',
         'is_encrypted', 'encryption_algorithm',
@@ -2590,6 +3887,26 @@ class RecordDigitalDocument extends Model
                 throw new \Exception("Document must belong to a folder (parent_folder_id required)");
             }
             
+            // Si un type est défini, appliquer son template et ses règles
+            if ($document->document_type_id && !$document->metadata_template_id) {
+                $documentType = RecordDigitalDocumentType::find($document->document_type_id);
+                if ($documentType) {
+                    if ($documentType->metadata_template_id) {
+                        $document->metadata_template_id = $documentType->metadata_template_id;
+                    }
+                    
+                    // Appliquer access_level par défaut du type
+                    if (!$document->access_level && $documentType->default_access_level) {
+                        $document->access_level = $documentType->default_access_level;
+                    }
+                    
+                    // Appliquer status par défaut du type
+                    if (!$document->status && $documentType->default_status) {
+                        $document->status = $documentType->default_status;
+                    }
+                }
+            }
+            
             // Définir version 1 si nouveau
             if (!$document->version_number) {
                 $document->version_number = 1;
@@ -2599,12 +3916,31 @@ class RecordDigitalDocument extends Model
         
         static::saved(function ($document) {
             $document->parentFolder->updateParentCounts();
+            
+            // Incrémenter usage_count du type
+            if ($document->document_type_id && $document->wasRecentlyCreated) {
+                RecordDigitalDocumentType::where('id', $document->document_type_id)
+                    ->increment('usage_count');
+            }
+        });
+        
+        static::deleted(function ($document) {
+            // Décrémenter usage_count du type
+            if ($document->document_type_id) {
+                RecordDigitalDocumentType::where('id', $document->document_type_id)
+                    ->decrement('usage_count');
+            }
         });
     }
     
     /**
      * Relations
      */
+    public function documentType()
+    {
+        return $this->belongsTo(RecordDigitalDocumentType::class, 'document_type_id');
+    }
+    
     public function parentFolder()
     {
         return $this->belongsTo(RecordDigitalFolder::class, 'parent_folder_id');
@@ -2963,14 +4299,14 @@ class RecordBook extends Model
      */
     public function bookAuthors()
     {
-        return $this->belongsToMany(Author::class, 'book_authors')
+        return $this->belongsToMany(Author::class, 'record_book_authors')
             ->withPivot(['author_role', 'author_order'])
             ->orderByPivot('author_order');
     }
     
     public function copies()
     {
-        return $this->hasMany(BookCopy::class, 'book_id');
+        return $this->hasMany(RecordBookCopy::class, 'book_id');
     }
     
     public function availableCopies()
@@ -2980,7 +4316,7 @@ class RecordBook extends Model
     
     public function loans()
     {
-        return $this->hasManyThrough(BookLoan::class, BookCopy::class);
+        return $this->hasManyThrough(RecordBookLoan::class, RecordBookCopy::class);
     }
     
     public function activeLoans()
@@ -2990,7 +4326,7 @@ class RecordBook extends Model
     
     public function reservations()
     {
-        return $this->hasMany(BookReservation::class, 'book_id')
+        return $this->hasMany(RecordBookReservation::class, 'book_id')
             ->orderBy('reservation_date');
     }
     
@@ -3702,7 +5038,7 @@ return new class extends Migration
         });
         
         // Table pivot enrichie
-        Schema::create('artifact_attachments', function (Blueprint $table) {
+        Schema::create('record_artifact_attachments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->unsignedBigInteger('attachment_id');
@@ -3727,7 +5063,7 @@ return new class extends Migration
         });
         
         // Tables associées
-        Schema::create('artifact_exhibitions', function (Blueprint $table) {
+        Schema::create('record_artifact_exhibitions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->string('exhibition_name', 300);
@@ -3743,7 +5079,7 @@ return new class extends Migration
             $table->index(['artifact_id', 'start_date']);
         });
         
-        Schema::create('artifact_loans', function (Blueprint $table) {
+        Schema::create('record_artifact_loans', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->string('borrower_institution', 300);
@@ -3764,7 +5100,7 @@ return new class extends Migration
             $table->index(['artifact_id', 'status']);
         });
         
-        Schema::create('artifact_condition_reports', function (Blueprint $table) {
+        Schema::create('record_artifact_condition_reports', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->date('report_date');
@@ -3783,7 +5119,7 @@ return new class extends Migration
         });
         
         // Tables pivot communes
-        Schema::create('artifact_author', function (Blueprint $table) {
+        Schema::create('record_artifact_author', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->unsignedBigInteger('author_id');
@@ -3794,7 +5130,7 @@ return new class extends Migration
             $table->unique(['artifact_id', 'author_id']);
         });
         
-        Schema::create('artifact_keyword', function (Blueprint $table) {
+        Schema::create('record_artifact_keyword', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->unsignedBigInteger('keyword_id');
@@ -3805,7 +5141,7 @@ return new class extends Migration
             $table->unique(['artifact_id', 'keyword_id']);
         });
         
-        Schema::create('artifact_thesaurus_concept', function (Blueprint $table) {
+        Schema::create('record_artifact_thesaurus_concept', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('artifact_id');
             $table->unsignedBigInteger('thesaurus_concept_id');
@@ -3822,13 +5158,13 @@ return new class extends Migration
     
     public function down(): void
     {
-        Schema::dropIfExists('artifact_thesaurus_concept');
-        Schema::dropIfExists('artifact_keyword');
-        Schema::dropIfExists('artifact_author');
-        Schema::dropIfExists('artifact_condition_reports');
-        Schema::dropIfExists('artifact_loans');
-        Schema::dropIfExists('artifact_exhibitions');
-        Schema::dropIfExists('artifact_attachments');
+        Schema::dropIfExists('record_artifact_thesaurus_concept');
+        Schema::dropIfExists('record_artifact_keyword');
+        Schema::dropIfExists('record_artifact_author');
+        Schema::dropIfExists('record_artifact_condition_reports');
+        Schema::dropIfExists('record_artifact_loans');
+        Schema::dropIfExists('record_artifact_exhibitions');
+        Schema::dropIfExists('record_artifact_attachments');
         Schema::dropIfExists('record_artifacts');
     }
 };
@@ -4422,8 +5758,8 @@ namespace App\Http\Controllers\Library;
 use App\Http\Controllers\Controller;
 use App\Models\RecordBook;
 use App\Models\RecordPeriodic;
-use App\Models\BookLoan;
-use App\Models\BookReservation;
+use App\Models\RecordBookLoan;
+use App\Models\RecordBookReservation;
 use Illuminate\Http\Request;
 
 class LibraryController extends Controller
@@ -4436,17 +5772,17 @@ class LibraryController extends Controller
         $stats = [
             'total_books' => RecordBook::count(),
             'total_periodicals' => RecordPeriodic::count(),
-            'active_loans' => BookLoan::where('status', 'active')->count(),
-            'pending_reservations' => BookReservation::where('status', 'pending')->count(),
-            'overdue_loans' => BookLoan::where('status', 'active')
+            'active_loans' => RecordBookLoan::where('status', 'active')->count(),
+            'pending_reservations' => RecordBookReservation::where('status', 'pending')->count(),
+            'overdue_loans' => RecordBookLoan::where('status', 'active')
                 ->where('return_date', '<', now())
                 ->count(),
-            'available_copies' => \DB::table('book_copies')
+            'available_copies' => \DB::table('record_book_copies')
                 ->where('status', 'available')
                 ->count(),
         ];
         
-        $recent_loans = BookLoan::with(['copy.book', 'user'])
+        $recent_loans = RecordBookLoan::with(['copy.book', 'user'])
             ->latest()
             ->limit(10)
             ->get();
@@ -4597,9 +5933,9 @@ namespace App\Http\Controllers\Museum;
 
 use App\Http\Controllers\Controller;
 use App\Models\RecordArtifact;
-use App\Models\ArtifactExhibition;
-use App\Models\ArtifactLoan;
-use App\Models\ArtifactConditionReport;
+use App\Models\RecordArtifactExhibition;
+use App\Models\RecordArtifactLoan;
+use App\Models\RecordArtifactConditionReport;
 use Illuminate\Http\Request;
 
 class MuseumController extends Controller
@@ -4611,16 +5947,16 @@ class MuseumController extends Controller
     {
         $stats = [
             'total_artifacts' => RecordArtifact::count(),
-            'active_exhibitions' => ArtifactExhibition::where('status', 'active')->count(),
-            'active_loans' => ArtifactLoan::where('status', 'active')->count(),
-            'artifacts_on_display' => \DB::table('artifact_exhibition_item')
-                ->join('artifact_exhibitions', 'artifact_exhibition_item.exhibition_id', '=', 'artifact_exhibitions.id')
-                ->where('artifact_exhibitions.status', 'active')
-                ->distinct('artifact_exhibition_item.artifact_id')
+            'active_exhibitions' => RecordArtifactExhibition::where('status', 'active')->count(),
+            'active_loans' => RecordArtifactLoan::where('status', 'active')->count(),
+            'artifacts_on_display' => \DB::table('record_artifact_exhibition_item')
+                ->join('record_artifact_exhibitions', 'record_artifact_exhibition_item.exhibition_id', '=', 'record_artifact_exhibitions.id')
+                ->where('record_artifact_exhibitions.status', 'active')
+                ->distinct('record_artifact_exhibition_item.artifact_id')
                 ->count(),
-            'recent_condition_reports' => ArtifactConditionReport::where('created_at', '>=', now()->subMonths(3))
+            'recent_condition_reports' => RecordArtifactConditionReport::where('created_at', '>=', now()->subMonths(3))
                 ->count(),
-            'artifacts_need_restoration' => ArtifactConditionReport::where('condition', 'poor')
+            'artifacts_need_restoration' => RecordArtifactConditionReport::where('condition', 'poor')
                 ->where('restoration_required', true)
                 ->count(),
         ];
@@ -4629,11 +5965,11 @@ class MuseumController extends Controller
             ->limit(10)
             ->get();
             
-        $active_exhibitions = ArtifactExhibition::where('status', 'active')
+        $active_exhibitions = RecordArtifactExhibition::where('status', 'active')
             ->with(['items.artifact'])
             ->get();
             
-        $urgent_reports = ArtifactConditionReport::where('condition', 'poor')
+        $urgent_reports = RecordArtifactConditionReport::where('condition', 'poor')
             ->where('restoration_required', true)
             ->latest()
             ->limit(5)
