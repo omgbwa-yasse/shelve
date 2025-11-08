@@ -189,8 +189,7 @@ class DocumentController extends Controller
             'checkedOutUser',
             'signer',
             'approver',
-            'lastViewer',
-            'attachments'
+            'lastViewer'
         ]);
 
         // Récupérer toutes les versions du document

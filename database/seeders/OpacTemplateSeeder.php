@@ -14,9 +14,10 @@ class OpacTemplateSeeder extends Seeder
     public function run(): void
     {
         // Template Modern Academic
-        Template::create([
+        Template::firstOrCreate(
+            ['slug' => 'modern-academic'],
+            [
             'name' => 'Modern Academic',
-            'slug' => 'modern-academic',
             'description' => 'Template moderne et élégant pour les institutions académiques',
             'type' => 'opac',
             'status' => 'active',
@@ -48,9 +49,10 @@ class OpacTemplateSeeder extends Seeder
         ]);
 
         // Template Classic Library
-        Template::create([
+        Template::firstOrCreate(
+            ['slug' => 'classic-library'],
+            [
             'name' => 'Classic Library',
-            'slug' => 'classic-library',
             'description' => 'Template classique inspiré des bibliothèques traditionnelles',
             'type' => 'opac',
             'status' => 'active',
@@ -81,9 +83,10 @@ class OpacTemplateSeeder extends Seeder
         ]);
 
         // Template Corporate Clean
-        Template::create([
+        Template::firstOrCreate(
+            ['slug' => 'corporate-clean'],
+            [
             'name' => 'Corporate Clean',
-            'slug' => 'corporate-clean',
             'description' => 'Template épuré pour les environnements corporatifs',
             'type' => 'opac',
             'status' => 'active',

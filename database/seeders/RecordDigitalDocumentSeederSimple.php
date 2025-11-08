@@ -157,7 +157,18 @@ class RecordDigitalDocumentSeederSimple extends Seeder
 
     private function createDocument(array $data, $keywords, $concepts)
     {
-        $document = RecordDigitalDocument::create($data);
+        // Utiliser firstOrCreate pour éviter les doublons
+        $code = $data['code'];
+        unset($data['code']);
+
+        $document = RecordDigitalDocument::firstOrCreate(
+            ['code' => $code],
+            $data
+        );
+
+        // Nettoyer les relations existantes
+        $document->keywords()->detach();
+        $document->thesaurusConcepts()->detach();
 
         // Attach random keywords
         if ($keywords->isNotEmpty()) {

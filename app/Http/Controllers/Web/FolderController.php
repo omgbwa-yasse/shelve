@@ -142,8 +142,7 @@ class FolderController extends Controller
             'creator',
             'organisation',
             'assignedUser',
-            'approver',
-            'attachments'
+            'approver'
         ]);
 
         $folder->loadCount(['children', 'documents']);

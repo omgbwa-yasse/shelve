@@ -524,12 +524,17 @@
                         </div>
 
                         <!-- Module Museum -->
+                        @php
+                            $museumRouteExists = Route::has('museum.artifacts.index');
+                        @endphp
+                        @if($museumRouteExists)
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.artifacts.index') }}">
                                 <i class="bi bi-bank"></i>
                                 <span>{{ __('Museum') }}</span>
                             </a>
                         </div>
+                        @endif
 
                         @can('module_settings_access')
                         <div class="nav-item">

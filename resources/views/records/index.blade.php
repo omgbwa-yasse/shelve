@@ -341,7 +341,14 @@
         <div id="mosaicView" class="d-none mb-4">
             <div class="row g-3" id="mosaicGrid">
                 @foreach($records as $record)
-                    @foreach($record->attachments->take(12) as $attachment)
+                    @php
+                        // Récupérer les attachments selon le type de record
+                        $attachments = collect();
+                        if (method_exists($record, 'attachments') && $record->relationLoaded('attachments')) {
+                            $attachments = $record->attachments;
+                        }
+                    @endphp
+                    @foreach($attachments->take(12) as $attachment)
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                             <a href="{{ route('records.show',$record) }}" class="text-decoration-none d-block mosaic-item border rounded overflow-hidden bg-white h-100">
                                 @php

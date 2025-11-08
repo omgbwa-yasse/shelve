@@ -220,15 +220,15 @@ class RecordController extends Controller
 
         // Initialiser les queries pour les 3 types de records
         $physicalQuery = RecordPhysical::with([
-            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'keywords'
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'level', 'status', 'activity', 'authors', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'keywords', 'thesaurusConcepts'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'level', 'status', 'activity', 'versions', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'folder', 'keywords', 'thesaurusConcepts'
         ]);
 
         // Filtrage par mot-clé si fourni (appliqué aux 3 types)

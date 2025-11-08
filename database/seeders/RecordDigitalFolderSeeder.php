@@ -149,7 +149,18 @@ class RecordDigitalFolderSeeder extends Seeder
 
     private function createFolder(array $data, $keywords, $concepts)
     {
-        $folder = RecordDigitalFolder::create($data);
+        // Utiliser firstOrCreate pour éviter les doublons
+        $code = $data['code'];
+        unset($data['code']);
+        
+        $folder = RecordDigitalFolder::firstOrCreate(
+            ['code' => $code],
+            $data
+        );
+
+        // Nettoyer les relations existantes
+        $folder->keywords()->detach();
+        $folder->thesaurusConcepts()->detach();
 
         // Attach random keywords
         if ($keywords->isNotEmpty()) {
