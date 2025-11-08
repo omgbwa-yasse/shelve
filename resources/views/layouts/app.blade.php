@@ -515,6 +515,22 @@
                             </a>
                         </div>
 
+                        <!-- Module Library -->
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'library') active @endif" href="{{ route('library.books.index') }}">
+                                <i class="bi bi-book"></i>
+                                <span>{{ __('Library') }}</span>
+                            </a>
+                        </div>
+
+                        <!-- Module Museum -->
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.artifacts.index') }}">
+                                <i class="bi bi-bank"></i>
+                                <span>{{ __('Museum') }}</span>
+                            </a>
+                        </div>
+
                         @can('module_settings_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
@@ -575,6 +591,12 @@
                                             @break
                                         @case('ai-search')
                                             @include('submenu.ai-search')
+                                            @break
+                                        @case('library')
+                                            @include('submenu.library')
+                                            @break
+                                        @case('museum')
+                                            @include('submenu.museum')
                                             @break
                                     @endswitch
                                 </div>
