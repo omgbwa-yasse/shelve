@@ -62,6 +62,9 @@ class DatabaseSeeder extends Seeder
 
             // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
             // RecordSeederSimple::class, // Exemples de documents d'archives - Nécessite la table 'records'
+            KeywordSeeder::class, // Mots-clés pour les dossiers/documents numériques
+            RecordDigitalFolderSeeder::class, // Exemples de dossiers numériques (Phase 3)
+            RecordDigitalDocumentSeederSimple::class, // Exemples de documents numériques (Phase 3)
 
             // 12. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
             // OpacSeeder::class, // Seeder complet pour l'OPAC - Nécessite les tables OPAC

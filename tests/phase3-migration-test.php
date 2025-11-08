@@ -205,7 +205,7 @@ try {
     }
 
     if ($hasFolders) {
-        $folders = RecordDigitalFolder::with(['level', 'status', 'keywords'])
+        $folders = RecordDigitalFolder::with(['type', 'organisation', 'keywords'])
             ->take(2)
             ->get()
             ->map(function($f) {
@@ -217,7 +217,7 @@ try {
     }
 
     if ($hasDocuments) {
-        $documents = RecordDigitalDocument::with(['level', 'status', 'keywords'])
+        $documents = RecordDigitalDocument::with(['type', 'organisation', 'keywords'])
             ->take(2)
             ->get()
             ->map(function($d) {
