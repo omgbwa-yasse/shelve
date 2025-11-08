@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Attachment;
 use App\Models\Dolly;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use Illuminate\Support\Facades\Auth;
@@ -175,7 +175,7 @@ class SedaImportService
         return $map;
     }
 
-    private function createRecordFromUnit($unit): Record
+    private function createRecordFromUnit($unit): RecordPhysical
     {
         $content = $unit->Content ?? null;
         $title = (string) ($content->Title ?? 'Unité documentaire');
@@ -184,7 +184,7 @@ class SedaImportService
         $end = (string) ($content->EndDate ?? '');
         $desc = (string) ($content->Description ?? '');
 
-        return Record::create([
+        return RecordPhysical::create([
             'code' => $code ?: null,
             'name' => $title,
             'date_start' => $start ?: null,

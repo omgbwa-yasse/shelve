@@ -3,7 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 
 class RecordSupport extends Model
 {
@@ -14,6 +14,6 @@ class RecordSupport extends Model
 
     public function records()
     {
-        return $this->hasMany(Record::class);
+        return $this->hasMany(RecordPhysical::class);
     }
 }

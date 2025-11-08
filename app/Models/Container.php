@@ -51,7 +51,7 @@ class Container extends Model
 
     public function records()
     {
-        return $this->belongsToMany(Record::class, 'record_container')
+        return $this->belongsToMany(RecordPhysical::class, 'record_container')
             ->withPivot(['description', 'creator_id']);
     }
 

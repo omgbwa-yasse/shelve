@@ -10,7 +10,7 @@ use App\Models\Activity;
 use App\Models\Attachment;
 use App\Models\Author;
 use App\Models\Keyword;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
@@ -217,7 +217,7 @@ class RecordDragDropController extends Controller
         // 10 chars max (migration constraint)
         for ($i=0; $i<5; $i++) {
             $code = strtoupper(substr('AI'.bin2hex(random_bytes(4)), 0, 10));
-            if (!Record::where('code', $code)->exists()) {
+            if (!RecordPhysical::where('code', $code)->exists()) {
                 return $code;
             }
         }
@@ -394,7 +394,7 @@ TXT;
         return $parsed;
     }
 
-    private function persistRecord(array $parsed, array $attachments): Record
+    private function persistRecord(array $parsed, array $attachments): RecordPhysical
     {
         return DB::transaction(function () use ($parsed, $attachments) {
             [$statusId, $supportId, $levelId] = $this->resolveDefaultIds();
@@ -402,7 +402,7 @@ TXT;
                 ?: $this->getDefaultActivityId();
             [$title, $content] = $this->normalizeTitleAndContent($parsed);
 
-            $record = Record::create([
+            $record = RecordPhysical::create([
                 'code' => $this->generateCode(),
                 'name' => mb_substr($title, 0, 255),
                 'date_format' => 'Y',
@@ -444,7 +444,7 @@ TXT;
         return [$title, $content];
     }
 
-    private function attachAuthors(Record $record, array $parsed): void
+    private function attachAuthors(RecordPhysical $record, array $parsed): void
     {
         $authors = $this->normalizeAuthorsPayload($parsed['authors'] ?? []);
         if (empty($authors)) { $authors = $this->defaultAuthorsFromUser(); }
@@ -487,7 +487,7 @@ TXT;
         return $id ? (int)$id : null;
     }
 
-    private function upsertAndAttachAuthor(Record $record, array $a, ?int $defaultTypeId): void
+    private function upsertAndAttachAuthor(RecordPhysical $record, array $a, ?int $defaultTypeId): void
     {
         $name = mb_substr((string)($a['name'] ?? ''), 0, 255);
         if ($name === '') { return; }
@@ -503,7 +503,7 @@ TXT;
         $record->authors()->syncWithoutDetaching([$author->id]);
     }
 
-    private function attachKeywords(Record $record, array $parsed): void
+    private function attachKeywords(RecordPhysical $record, array $parsed): void
     {
         $kw = [];
         foreach ((array)($parsed['keywords'] ?? []) as $k) {

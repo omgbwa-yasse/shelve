@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ReservationRecord;
 use App\Models\Reservation;
 use App\Models\Organisation;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ class ReservationRecordController extends Controller
 {
     public function index(Reservation $reservation)
     {
-        $reservationRecords = ReservationRecord::where('reservation_id', $reservation->id)->get();
+        $reservationRecords = ReservationRecordPhysical::where('reservation_id', $reservation->id)->get();
         $reservationRecords->load('reservation', 'record','communication');
 
         return view('communications.reservations.records.index', compact('reservationRecords','reservation'));
@@ -44,7 +44,7 @@ class ReservationRecordController extends Controller
 
     public function edit(Reservation $reservation, ReservationRecord $reservationRecord)
     {
-        $records = Record::select('id', 'code', 'name')
+        $records = RecordPhysical::select('id', 'code', 'name')
             ->orderBy('name')
             ->get();
 
@@ -62,7 +62,7 @@ class ReservationRecordController extends Controller
             'reservation_date' => 'required|date',
         ]);
 
-        ReservationRecord::create([
+        ReservationRecordPhysical::create([
             'reservation_id' => $reservation->id,
             'record_id' => $request->record_id,
             'is_original' => $request->is_original,

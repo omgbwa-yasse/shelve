@@ -3,7 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 
 class RecordDocument extends Model
 {
@@ -12,6 +12,6 @@ class RecordDocument extends Model
 
     public function record()
     {
-        return $this->belongsTo(Record::class);
+        return $this->belongsTo(RecordPhysical::class);
     }
 }

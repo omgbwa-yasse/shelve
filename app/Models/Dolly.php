@@ -45,7 +45,7 @@ class Dolly extends Model
 
     public function slipRecords()
     {
-        return $this->belongsToMany(Record::class, 'dolly_slip_records', 'dolly_id', 'record_id');
+        return $this->belongsToMany(RecordPhysical::class, 'dolly_slip_records', 'dolly_id', 'record_id');
     }
 
     public function buildings()

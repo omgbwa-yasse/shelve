@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PublicRecord;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\User;
 use App\Models\ThesaurusConcept;
 use App\Models\RecordLevel;
@@ -284,7 +284,7 @@ class PublicRecordApiController extends Controller
     public function getRecordsFunds(): JsonResponse
     {
         // Récupérer tous les records avec level_id = 1 (fonds) dans des rooms publiques
-        $fondsRecords = Record::where('level_id', 1)
+        $fondsRecords = RecordPhysical::where('level_id', 1)
             ->whereHas('containers.shelf.room', function ($roomQuery) {
                 $roomQuery->where(function ($q) {
                     // Room est publique
@@ -329,7 +329,7 @@ class PublicRecordApiController extends Controller
     /**
      * Construire l'arbre hiérarchique des enfants pour un record donné
      */
-    private function buildChildrenTree(Record $record): array
+    private function buildChildrenTree(RecordPhysical $record): array
     {
         $children = $record->children()->with(['level'])->get();
         $childrenTree = [];
@@ -375,7 +375,7 @@ class PublicRecordApiController extends Controller
     /**
      * Collecter récursivement tous les enfants d'un record
      */
-    private function collectChildrenRecursively(Record $record, &$funds): void
+    private function collectChildrenRecursively(RecordPhysical $record, &$funds): void
     {
         $children = $record->children()->with(['level'])->get();
 
@@ -402,7 +402,7 @@ class PublicRecordApiController extends Controller
     /**
      * Collecter récursivement tous les parents d'un record
      */
-    private function collectParentsRecursively(Record $record, &$funds): void
+    private function collectParentsRecursively(RecordPhysical $record, &$funds): void
     {
         $parent = $record->parent()->with(['level'])->first();
 
@@ -703,7 +703,7 @@ class PublicRecordApiController extends Controller
      */
     private function getAvailableFilters(): array
     {
-        $languages = Record::whereNotNull('language_material')
+        $languages = RecordPhysical::whereNotNull('language_material')
             ->distinct('language_material')
             ->pluck('language_material')
             ->filter()
@@ -805,7 +805,7 @@ class PublicRecordApiController extends Controller
     /**
      * Vérifier si un record est dans une room publique
      */
-    private function isRecordInPublicRoom(Record $record): bool
+    private function isRecordInPublicRoom(RecordPhysical $record): bool
     {
         return $record->containers()
             ->whereHas('shelf.room', function ($roomQuery) {

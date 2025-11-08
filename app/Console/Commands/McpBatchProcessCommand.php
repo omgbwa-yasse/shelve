@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Services\MCP\McpManagerService;
 use App\Services\MCP\McpContentSummarizationService;
 
@@ -81,7 +81,7 @@ class McpBatchProcessCommand extends Command
      */
     private function buildQuery()
     {
-        $query = Record::query();
+        $query = RecordPhysical::query();
         
         if ($organisationId = $this->option('organisation_id')) {
             $query->where('organisation_id', $organisationId);
@@ -112,7 +112,7 @@ class McpBatchProcessCommand extends Command
         $progressBar->start();
         
         foreach ($recordIds as $recordId) {
-            $record = Record::find($recordId);
+            $record = RecordPhysical::find($recordId);
             if ($record) {
                 \App\Jobs\ProcessRecordWithMcp::dispatch($record, $features);
             }
@@ -144,7 +144,7 @@ class McpBatchProcessCommand extends Command
         
         foreach ($recordIds as $recordId) {
             try {
-                $record = Record::find($recordId);
+                $record = RecordPhysical::find($recordId);
                 if ($record) {
                     $results[$recordId] = $mcpManager->processRecord($record, $features);
                 }

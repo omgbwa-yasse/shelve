@@ -1,12 +1,20 @@
 {
-    "current_version": "v2.3",
-    "release_name": "Enhanced Content Management",
-    "installed_at": "2025-11-02T00:00:00Z",
-    "updated_from": "v2.2",
+    "current_version": "v2.5-phase5",
+    "release_name": "Library Management System",
+    "installed_at": "2025-11-07T00:00:00Z",
+    "updated_from": "v2.4-phase4",
     "github_repo": "omgbwa-yasse\/shelve",
-    "update_channel": "stable",
-    "last_check": "2025-11-02T00:00:00Z",
-    "build_number": "20251102",
+    "update_channel": "development",
+    "last_check": "2025-11-07T00:00:00Z",
+    "build_number": "20251107-phase5",
     "php_version": "8.2",
-    "laravel_version": "12.0"
+    "laravel_version": "12.0",
+    "phases_completed": {
+        "phase1": "Attachments Extension",
+        "phase2": "Records to RecordPhysicals",
+        "phase3": "Digital Types System",
+        "phase4": "Artifacts System",
+        "phase5": "Library Management System"
+    },
+    "last_migration": "2025_11_08_000007_create_record_book_related_tables"
 }

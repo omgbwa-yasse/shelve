@@ -7,7 +7,7 @@ use App\Exports\SlipExport;
 use App\Exports\SEDAExport;
 use App\Exports\EADExport;
 use App\Models\Dolly;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;

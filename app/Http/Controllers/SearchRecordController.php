@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Activity;
 use App\Models\Author;
 use App\Models\Building;
@@ -56,7 +56,7 @@ class SearchRecordController extends Controller
         $operators = $request->input('operator');
         $values = $request->input('value');
 
-        $query = Record::query();
+        $query = RecordPhysical::query();
 
         if ($fields && $operators && $values) {
             foreach ($fields as $index => $field) {
@@ -279,7 +279,7 @@ class SearchRecordController extends Controller
 
     public function sort(Request $request)
     {
-        $query = Record::query();
+        $query = RecordPhysical::query();
 
     switch ($request->input('categ')) {
             case "dates":
@@ -370,7 +370,7 @@ class SearchRecordController extends Controller
 
     public function selectLast()
     {
-        $query = Record::with([
+        $query = RecordPhysical::with([
             'status',
             'support',
             'level',

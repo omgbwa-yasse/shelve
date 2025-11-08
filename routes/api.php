@@ -20,6 +20,10 @@ use App\Http\Controllers\Api\PublicChatMessageApiController;
 use App\Http\Controllers\Api\PublicEventRegistrationApiController;
 use App\Http\Controllers\PromptController;
 use App\Http\Controllers\Api\ContainerSearchController;
+use App\Http\Controllers\Api\RecordDigitalFolderApiController;
+use App\Http\Controllers\Api\RecordDigitalDocumentApiController;
+use App\Http\Controllers\Api\RecordArtifactApiController;
+use App\Http\Controllers\Api\RecordPeriodicApiController;
 
 // Public API routes with rate limiting
 Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general,100,60')->group(function () {
@@ -97,3 +101,46 @@ Route::middleware(['web', 'auth', 'rate.limit:ai,30,60'])->group(function () {
     Route::get('containers/search', [ContainerSearchController::class, 'search'])->name('api.containers.search');
 });
 
+// Phase 9: Digital Records Management API (v1)
+Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:api_general,200,60'])->group(function () {
+
+    // Digital Folders API
+    Route::apiResource('digital-folders', RecordDigitalFolderApiController::class);
+    Route::get('digital-folders-tree', [RecordDigitalFolderApiController::class, 'tree'])->name('digital-folders.tree');
+    Route::get('digital-folders-roots', [RecordDigitalFolderApiController::class, 'roots'])->name('digital-folders.roots');
+    Route::post('digital-folders/{id}/move', [RecordDigitalFolderApiController::class, 'move'])->name('digital-folders.move');
+    Route::get('digital-folders/{id}/statistics', [RecordDigitalFolderApiController::class, 'statistics'])->name('digital-folders.statistics');
+    Route::get('digital-folders/{id}/ancestors', [RecordDigitalFolderApiController::class, 'ancestors'])->name('digital-folders.ancestors');
+
+    // Digital Documents API
+    Route::apiResource('digital-documents', RecordDigitalDocumentApiController::class);
+    Route::post('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'createVersion'])->name('digital-documents.create-version');
+    Route::post('digital-documents/{id}/submit', [RecordDigitalDocumentApiController::class, 'submitForApproval'])->name('digital-documents.submit');
+    Route::post('digital-documents/{id}/approve', [RecordDigitalDocumentApiController::class, 'approve'])->name('digital-documents.approve');
+    Route::post('digital-documents/{id}/reject', [RecordDigitalDocumentApiController::class, 'reject'])->name('digital-documents.reject');
+    Route::get('digital-documents/{id}/download', [RecordDigitalDocumentApiController::class, 'download'])->name('digital-documents.download');
+    Route::get('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'versions'])->name('digital-documents.versions');
+    Route::get('digital-documents-search', [RecordDigitalDocumentApiController::class, 'search'])->name('digital-documents.search');
+
+    // Museum Artifacts API
+    Route::apiResource('artifacts', RecordArtifactApiController::class);
+    Route::post('artifacts/{id}/exhibitions', [RecordArtifactApiController::class, 'addToExhibition'])->name('artifacts.add-exhibition');
+    Route::post('artifacts/{id}/loans', [RecordArtifactApiController::class, 'loan'])->name('artifacts.loan');
+    Route::post('artifacts/{id}/return', [RecordArtifactApiController::class, 'returnFromLoan'])->name('artifacts.return');
+    Route::post('artifacts/{id}/condition-reports', [RecordArtifactApiController::class, 'addConditionReport'])->name('artifacts.condition-report');
+    Route::post('artifacts/{id}/valuation', [RecordArtifactApiController::class, 'updateValuation'])->name('artifacts.valuation');
+    Route::get('artifacts-search', [RecordArtifactApiController::class, 'search'])->name('artifacts.search');
+    Route::get('artifacts-statistics', [RecordArtifactApiController::class, 'statistics'])->name('artifacts.statistics');
+
+    // Scientific Periodicals API
+    Route::apiResource('periodics', RecordPeriodicApiController::class);
+    Route::post('periodics/{id}/issues', [RecordPeriodicApiController::class, 'addIssue'])->name('periodics.add-issue');
+    Route::post('issues/{issueId}/articles', [RecordPeriodicApiController::class, 'addArticle'])->name('periodics.add-article');
+    Route::post('periodics/{id}/subscriptions', [RecordPeriodicApiController::class, 'createSubscription'])->name('periodics.subscription');
+    Route::get('periodics-search', [RecordPeriodicApiController::class, 'searchPeriodics'])->name('periodics.search');
+    Route::get('issues-search', [RecordPeriodicApiController::class, 'searchIssues'])->name('issues.search');
+    Route::get('articles-search', [RecordPeriodicApiController::class, 'searchArticles'])->name('articles.search');
+    Route::get('subscriptions-expiring', [RecordPeriodicApiController::class, 'expiringSoonSubscriptions'])->name('subscriptions.expiring');
+    Route::get('issues-missing', [RecordPeriodicApiController::class, 'missingIssues'])->name('issues.missing');
+    Route::get('periodics-statistics', [RecordPeriodicApiController::class, 'statistics'])->name('periodics.statistics');
+});

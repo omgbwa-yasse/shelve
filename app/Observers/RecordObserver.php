@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Jobs\ProcessRecordWithMcp;
 use Illuminate\Support\Facades\Log;
 
@@ -11,7 +11,7 @@ class RecordObserver
     /**
      * Handle the Record "created" event.
      */
-    public function created(Record $record): void
+    public function created(RecordPhysical $record): void
     {
         // Traitement automatique à la création si activé
         if (config('ollama-mcp.auto_processing.enabled_on_create', false)) {
@@ -22,7 +22,7 @@ class RecordObserver
     /**
      * Handle the Record "updated" event.
      */
-    public function updated(Record $record): void
+    public function updated(RecordPhysical $record): void
     {
         // Traitement automatique à la mise à jour si activé et si des champs importants ont changé
         if (config('ollama-mcp.auto_processing.enabled_on_update', false)) {
@@ -47,7 +47,7 @@ class RecordObserver
     /**
      * Handle the Record "deleted" event.
      */
-    public function deleted(Record $record): void
+    public function deleted(RecordPhysical $record): void
     {
         // Optionnel : nettoyer les données MCP associées
         if (config('ollama-mcp.auto_processing.cleanup_on_delete', false)) {
@@ -58,7 +58,7 @@ class RecordObserver
     /**
      * Handle the Record "restored" event.
      */
-    public function restored(Record $record): void
+    public function restored(RecordPhysical $record): void
     {
         // Retraiter automatiquement après restauration si configuré
         if (config('ollama-mcp.auto_processing.enabled_on_restore', false)) {
@@ -69,7 +69,7 @@ class RecordObserver
     /**
      * Handle the Record "force deleted" event.
      */
-    public function forceDeleted(Record $record): void
+    public function forceDeleted(RecordPhysical $record): void
     {
         // Nettoyage définitif des données MCP
         $this->cleanupMcpData($record);
@@ -78,7 +78,7 @@ class RecordObserver
     /**
      * Déclenche le traitement automatique MCP
      */
-    private function autoProcess(Record $record, string $event): void
+    private function autoProcess(RecordPhysical $record, string $event): void
     {
         try {
             // Vérifier si le record peut être traité
@@ -125,7 +125,7 @@ class RecordObserver
     /**
      * Vérifie si le record peut être traité automatiquement
      */
-    private function canProcessRecord(Record $record): bool
+    private function canProcessRecord(RecordPhysical $record): bool
     {
         // Vérifications de base
         if (empty($record->name) || strlen($record->name) < 3) {
@@ -173,7 +173,7 @@ class RecordObserver
     /**
      * Nettoie les données MCP associées à un record supprimé
      */
-    private function cleanupMcpData(Record $record): void
+    private function cleanupMcpData(RecordPhysical $record): void
     {
         try {
             // Supprimer les associations thésaurus automatiques

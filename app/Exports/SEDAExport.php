@@ -3,7 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Slip;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\SlipRecord;
 use App\Models\Attachment;
 use SimpleXMLElement;

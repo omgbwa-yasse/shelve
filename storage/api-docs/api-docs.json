@@ -1,0 +1,2264 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SpecKit Digital Records API",
+        "description": "RESTful API for managing digital records, documents, artifacts, and periodicals",
+        "contact": {
+            "name": "SpecKit Support",
+            "email": "support@speckit.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "API v1"
+        }
+    ],
+    "paths": {
+        "/api/v1/artifacts": {
+            "get": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "List all artifacts with filters",
+                "operationId": "19e8b53073df061488f69d74e4caa2ff",
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Create a new artifact",
+                "operationId": "b7a89cf4a7bea68d94367092a870133a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "organisation_id",
+                                    "category"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "organisation_id": {
+                                        "type": "integer"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "artist": {
+                                        "type": "string"
+                                    },
+                                    "creation_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "acquisition_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "estimated_value": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "insurance_value": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "dimensions": {
+                                        "type": "object"
+                                    },
+                                    "materials": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Artifact created successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}": {
+            "get": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Get a specific artifact",
+                "operationId": "77f11c9c459f967c7d6115566bd1edc3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Update an existing artifact",
+                "operationId": "af6b6b9a7c2914be72caae4f6b3de6dd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "artist": {
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "type": "string"
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Artifact updated successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Delete an artifact",
+                "operationId": "9c7bf6093f0eef88c73d5c709db89993",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artifact deleted successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}/exhibitions": {
+            "post": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Add artifact to an exhibition",
+                "operationId": "4fb4473bffca1023475db363d9e85b4c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "exhibition_name": {
+                                        "type": "string"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "location": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Added to exhibition successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}/loan": {
+            "post": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Loan an artifact",
+                "operationId": "c41d10f31cc71cc1e6dcb625b2927cc2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "borrower": {
+                                        "type": "string"
+                                    },
+                                    "loan_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "due_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Loan created successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}/return": {
+            "post": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Return artifact from loan",
+                "operationId": "62dc020ca1f32136974af5cd3865cd8c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artifact returned successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}/condition-report": {
+            "post": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Add condition report for artifact",
+                "operationId": "15a462da29046e0464303b8055678d72",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "condition": {
+                                        "type": "string",
+                                        "enum": [
+                                            "excellent",
+                                            "good",
+                                            "fair",
+                                            "poor"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": "string"
+                                    },
+                                    "report_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Condition report added successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/{id}/valuation": {
+            "put": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Update artifact valuation",
+                "operationId": "df62f1beb21e151527e45c5e2e3d3120",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "estimated_value": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "insurance_value": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "valuation_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Valuation updated successfully"
+                    },
+                    "404": {
+                        "description": "Artifact not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/artifacts/search": {
+            "get": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Advanced search for artifacts",
+                "operationId": "a977859d2dd79d1673d4c29eb8e8b9f4",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "artist",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "organisation_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/artifacts/statistics": {
+            "get": {
+                "tags": [
+                    "Artifacts"
+                ],
+                "summary": "Get artifact statistics",
+                "operationId": "10d5f7a79881b20fc1aa4266f90651c9",
+                "parameters": [
+                    {
+                        "name": "organisation_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/api/v1/digital-documents": {
+            "get": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "List all digital documents with filters",
+                "description": "Get all documents with filtering and pagination",
+                "operationId": "71b0c088ccaecdabe6a4fa887d6894bc",
+                "parameters": [
+                    {
+                        "name": "folder_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "pending",
+                                "approved",
+                                "archived"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_current_version",
+                        "in": "query",
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Create a new digital document",
+                "description": "Create a new document",
+                "operationId": "adc505deb5fad034bd8cacdf377cc859",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type_id",
+                                    "folder_id",
+                                    "organisation_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "type_id": {
+                                        "type": "integer"
+                                    },
+                                    "folder_id": {
+                                        "type": "integer"
+                                    },
+                                    "organisation_id": {
+                                        "type": "integer"
+                                    },
+                                    "file": {
+                                        "description": "File upload (max 50MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "access_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "internal",
+                                            "confidential",
+                                            "secret"
+                                        ]
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "pending_approval",
+                                            "approved",
+                                            "rejected",
+                                            "archived"
+                                        ]
+                                    },
+                                    "assigned_to": {
+                                        "type": "integer"
+                                    },
+                                    "document_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Document created successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/{id}": {
+            "get": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Get a specific digital document",
+                "description": "Get a specific document",
+                "operationId": "08e0fa3c8ca0494657fd092b7d060cc1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Update an existing digital document",
+                "description": "Update a document",
+                "operationId": "67bb1f4801a817b507c69dc587b64338",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "draft",
+                                            "pending_approval",
+                                            "approved",
+                                            "rejected",
+                                            "archived"
+                                        ]
+                                    },
+                                    "access_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "internal",
+                                            "confidential",
+                                            "secret"
+                                        ]
+                                    },
+                                    "assigned_to": {
+                                        "type": "integer"
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Document updated successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Delete a digital document (soft delete)",
+                "description": "Delete a document",
+                "operationId": "9eb772abd9093bb905dd5ac750231676",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document deleted successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/{id}/versions": {
+            "get": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Get all versions of a document",
+                "description": "Get document versions",
+                "operationId": "68f358cddab08a0d37edc163982a1f1e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Versions retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Create a new version of a document",
+                "description": "Create a new version of a document",
+                "operationId": "857cba25650b1fcc26c46d935138ef1f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "New version file (max 50MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "version_notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Version created successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/{id}/submit": {
+            "post": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Submit document for approval",
+                "description": "Submit document for approval",
+                "operationId": "4627d25a3afa5b5d92ab6dede4115845",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document submitted for approval"
+                    },
+                    "400": {
+                        "description": "Only draft documents can be submitted"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/{id}/approve": {
+            "post": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Approve a document",
+                "description": "Approve a document",
+                "operationId": "055fddc383ba7745d60069ea680e78b9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "approval_notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Document approved successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/{id}/reject": {
+            "post": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Reject a document",
+                "description": "Reject a document",
+                "operationId": "33d0ce339847776d79a8a36959010acd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "rejection_notes"
+                                ],
+                                "properties": {
+                                    "rejection_notes": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Document rejected successfully"
+                    },
+                    "404": {
+                        "description": "Document not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-documents/search": {
+            "get": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Advanced search for documents",
+                "description": "Search documents",
+                "operationId": "29ea528465b95d50fb4c8da2bd37e7d3",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "code",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "folder_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "creator_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "organisation_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/digital-documents/{id}/download": {
+            "get": {
+                "tags": [
+                    "Digital Documents"
+                ],
+                "summary": "Download document file",
+                "description": "Download a document file",
+                "operationId": "f885994c4d293f8a8e9f57bf84daf7d9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File download started"
+                    },
+                    "404": {
+                        "description": "Document or file not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-folders": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "List all digital folders",
+                "operationId": "abf4311de5bdde5d4a692ab2944730ee",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "parent_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Create a new digital folder",
+                "operationId": "04df2421067b96a7d2802066ab1e2677",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "type_id",
+                                    "organisation_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "type_id": {
+                                        "type": "integer"
+                                    },
+                                    "parent_id": {
+                                        "type": "integer"
+                                    },
+                                    "organisation_id": {
+                                        "type": "integer"
+                                    },
+                                    "access_level": {
+                                        "type": "string",
+                                        "enum": [
+                                            "public",
+                                            "internal",
+                                            "confidential",
+                                            "secret"
+                                        ]
+                                    },
+                                    "assigned_to": {
+                                        "type": "integer"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Folder created successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-folders/{id}": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Get a specific digital folder",
+                "operationId": "10c18fbd07f4feea8438dc7a4d325e49",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Update an existing digital folder",
+                "description": "Update a folder",
+                "operationId": "c052e4481c5a24947e8f882b8ec39ff8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "active",
+                                            "archived",
+                                            "deleted"
+                                        ]
+                                    },
+                                    "metadata": {
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Folder updated successfully"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Delete a digital folder",
+                "description": "Delete a folder",
+                "operationId": "b0b13416d05658315b2a7d42157db1e2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder deleted successfully"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    },
+                    "500": {
+                        "description": "Error deleting folder"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-folders/{id}/tree": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Get folder tree structure",
+                "description": "Get folder tree structure",
+                "operationId": "c6a22a4e3c31847b2fbaa43c8ceb92bc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Folder ID to get tree for, or omit to get all root folders",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "parent_id",
+                        "in": "query",
+                        "description": "Alternative way to specify parent folder",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tree structure returned successfully"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/digital-folders/{id}/move": {
+            "post": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Move folder to a new parent",
+                "description": "Move folder to new parent",
+                "operationId": "e285a1c906cf63a74f528eec79ba2b6e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "parent_id": {
+                                        "description": "New parent folder ID, or null to move to root",
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Folder moved successfully"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/digital-folders/{id}/statistics": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Get folder statistics (size, document count, etc.)",
+                "description": "Get folder statistics",
+                "operationId": "31605adb0866a23af6d9762ac7316e3b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_size": {
+                                                    "type": "integer"
+                                                },
+                                                "document_count": {
+                                                    "type": "integer"
+                                                },
+                                                "subfolder_count": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/digital-folders/{id}/ancestors": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Get folder ancestors (breadcrumb trail)",
+                "description": "Get folder ancestors (breadcrumb)",
+                "operationId": "d6dcf56577f8a5e9f4452ba4da86125d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ancestors retrieved successfully"
+                    },
+                    "404": {
+                        "description": "Folder not found"
+                    }
+                }
+            }
+        },
+        "/api/v1/digital-folders/roots": {
+            "get": {
+                "tags": [
+                    "Digital Folders"
+                ],
+                "summary": "Get all root-level folders",
+                "description": "Get root folders",
+                "operationId": "d26981334a7489161fb079b0d5002e4c",
+                "responses": {
+                    "200": {
+                        "description": "Root folders retrieved successfully"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "List all periodicals with filters",
+                "operationId": "356de26729052c9f1552250d969b3846",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "journal",
+                                "magazine",
+                                "newspaper",
+                                "bulletin"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Create a new periodical",
+                "operationId": "4af05a9015454e43a6894553497783f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "organisation_id",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "organisation_id": {
+                                        "type": "integer"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "journal",
+                                            "magazine",
+                                            "newspaper",
+                                            "bulletin"
+                                        ]
+                                    },
+                                    "issn": {
+                                        "type": "string"
+                                    },
+                                    "publisher": {
+                                        "type": "string"
+                                    },
+                                    "frequency": {
+                                        "type": "string",
+                                        "enum": [
+                                            "daily",
+                                            "weekly",
+                                            "monthly",
+                                            "quarterly",
+                                            "annual"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Periodical created successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/periodicals/{id}": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Get a specific periodical",
+                "operationId": "6b681331aa39620db67773e955311946",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Periodical not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Update an existing periodical",
+                "operationId": "b1b292337ceeece1884f47bc8bd99da6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "publisher": {
+                                        "type": "string"
+                                    },
+                                    "frequency": {
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Periodical updated successfully"
+                    },
+                    "404": {
+                        "description": "Periodical not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Delete a periodical",
+                "operationId": "eb05666bb672b2367901aa42461ded91",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Periodical deleted successfully"
+                    },
+                    "404": {
+                        "description": "Periodical not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/periodicals/{id}/issues": {
+            "post": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Add an issue to a periodical",
+                "operationId": "c663ac483cd702a1d609c8d1ecd5a18e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "issue_number": {
+                                        "type": "string"
+                                    },
+                                    "volume": {
+                                        "type": "string"
+                                    },
+                                    "publication_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "pages": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Issue added successfully"
+                    },
+                    "404": {
+                        "description": "Periodical not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/periodicals/issues/{issueId}/articles": {
+            "post": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Add an article to an issue",
+                "operationId": "2f4545ace70989bd047725436a9f0744",
+                "parameters": [
+                    {
+                        "name": "issueId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string"
+                                    },
+                                    "author": {
+                                        "type": "string"
+                                    },
+                                    "pages": {
+                                        "type": "string"
+                                    },
+                                    "abstract": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Article added successfully"
+                    },
+                    "404": {
+                        "description": "Issue not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/periodicals/{id}/subscriptions": {
+            "post": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Create a subscription to a periodical",
+                "operationId": "de922c6a9ffba91b9f44a05bc49f0012",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "description": "User ID (optional, defaults to authenticated user)",
+                                        "type": "integer"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "cost": {
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscription created successfully"
+                    },
+                    "404": {
+                        "description": "Periodical not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/periodicals/search": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Search periodicals",
+                "operationId": "fb2759bc15f97571c3b02e2a67ed9796",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "issn",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "publisher",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals/issues/search": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Search issues",
+                "operationId": "d2c5b9026b31a78942645c6a579c6f85",
+                "parameters": [
+                    {
+                        "name": "periodical_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "issue_number",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "volume",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "date_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "date_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals/articles/search": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Search articles",
+                "operationId": "b7b9024e030fa1587dc34df06fdbcf5f",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "author",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "issue_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals/subscriptions/expiring": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Get subscriptions expiring soon",
+                "operationId": "060c69687afe8c85e2c447ff6c3c9bc8",
+                "parameters": [
+                    {
+                        "name": "days",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 30
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Expiring subscriptions returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals/issues/missing": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Get list of missing issues",
+                "operationId": "2a0ac98b7de68d17517d2b620717fbbb",
+                "responses": {
+                    "200": {
+                        "description": "Missing issues returned"
+                    }
+                }
+            }
+        },
+        "/api/v1/periodicals/statistics": {
+            "get": {
+                "tags": [
+                    "Periodicals"
+                ],
+                "summary": "Get periodical statistics",
+                "operationId": "2f58d375d9edbb0bd6ec915111c58510",
+                "parameters": [
+                    {
+                        "name": "organisation_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistics retrieved successfully"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Laravel Sanctum authentication token",
+                "bearerFormat": "token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Artifacts",
+            "description": "Endpoints for managing artifacts and museum collections"
+        },
+        {
+            "name": "Digital Documents",
+            "description": "Endpoints for managing digital documents"
+        },
+        {
+            "name": "Digital Folders",
+            "description": "Endpoints for managing digital folders"
+        },
+        {
+            "name": "Periodicals",
+            "description": "Endpoints for managing periodicals, journals, magazines, and newspapers"
+        }
+    ]
+}

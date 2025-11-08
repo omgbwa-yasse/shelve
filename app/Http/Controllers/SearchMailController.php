@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mail;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Batch;
 use App\Models\MailPriority;
 use App\Models\MailTypology;

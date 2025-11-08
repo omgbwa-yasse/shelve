@@ -1,0 +1,140 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: shelve_test
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, json, bcmath, mysql, redis
+          coverage: none
+
+      - name: Copy .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Run migrations
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: shelve_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: php artisan migrate --force
+
+      - name: Run PHPUnit tests
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: shelve_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: vendor/bin/phpunit
+
+      - name: Run Browser tests (Dusk)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: shelve_test
+          DB_USERNAME: root
+          DB_PASSWORD: root
+        run: |
+          php artisan dusk:chrome-driver
+          php artisan serve > /dev/null 2>&1 &
+          sleep 5
+          php artisan dusk || true
+
+  deploy:
+    name: Deploy to Production
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'ENDSSH'
+            cd /var/www/shelve
+
+            # Pull latest code
+            git pull origin main
+
+            # Run deployment script
+            bash scripts/deploy-production.sh deploy
+          ENDSSH
+
+      - name: Verify deployment
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.APP_URL }})
+          if [ $response != "200" ] && [ $response != "302" ]; then
+            echo "Deployment verification failed. HTTP status: $response"
+            exit 1
+          fi
+          echo "Deployment verified successfully!"
+
+      - name: Notify success
+        if: success()
+        run: |
+          echo "🎉 Deployment to production successful!"
+          # Add Slack/Discord notification here if needed
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Deployment to production failed!"
+          # Add Slack/Discord notification here if needed

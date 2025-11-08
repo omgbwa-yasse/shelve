@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Attachment;
 use App\Models\Dolly;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Slip;
 use App\Models\SlipRecord;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +37,7 @@ class EADImportService
             [$dateStart, $dateEnd] = $this->extractDates($did);
             $content = $this->stringOrNull(($c->scopecontent?->p) ?? null);
 
-            $record = Record::create([
+            $record = RecordPhysical::create([
                 'code' => $code ?: null,
                 'name' => $name ?: ($code ?: 'Unité documentaire'),
                 'date_start' => $dateStart,

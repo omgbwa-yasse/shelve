@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CommunicationRecord;
 use App\Models\Communication;
 use App\Models\Organisation;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +14,7 @@ class CommunicationRecordController extends Controller
 {
     public function index(Communication $communication)
     {
-        $communicationRecords = CommunicationRecord::where('communication_id', $communication->id)->get();
+        $communicationRecords = CommunicationRecordPhysical::where('communication_id', $communication->id)->get();
         $communicationRecords->load('communication', 'record');
 
         return view('communications.records.index', compact('communicationRecords', 'communication'));
@@ -38,7 +38,7 @@ class CommunicationRecordController extends Controller
 
     public function edit(Communication $communication, CommunicationRecord $communicationRecord)
     {
-        $records = Record::all();
+        $records = RecordPhysical::all();
         $users = User::all();
         return view('communications.records.edit', compact('communicationRecord', 'communication', 'records', 'users'));
     }
@@ -62,7 +62,7 @@ class CommunicationRecordController extends Controller
             }
         }
 
-        $communicationRecord = CommunicationRecord::create([
+        $communicationRecord = CommunicationRecordPhysical::create([
             'communication_id' => $communication->id,
             'content' => $request->input('content'),
             'record_id' => $request->record_id,
@@ -87,7 +87,7 @@ class CommunicationRecordController extends Controller
 
     public function returnEffective(Request $request)
     {
-        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
+        $communicationRecord = CommunicationRecordPhysical::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => now(), 'operator_id' => auth()->user()->id]);
         $communication = $communicationRecord->communication;
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');
@@ -95,7 +95,7 @@ class CommunicationRecordController extends Controller
 
     public function returnCancel(Request $request)
     {
-        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
+        $communicationRecord = CommunicationRecordPhysical::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => null]);
         $communication = $communicationRecord->communication;
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');
@@ -117,7 +117,7 @@ class CommunicationRecordController extends Controller
         }
 
         // Rechercher les archives par nom ou code, limiter à 5 résultats
-        $records = Record::where('name', 'LIKE', '%' . $query . '%')
+        $records = RecordPhysical::where('name', 'LIKE', '%' . $query . '%')
             ->orWhere('code', 'LIKE', '%' . $query . '%')
             ->select('id', 'name', 'code')
             ->limit(5)

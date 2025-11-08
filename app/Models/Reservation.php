@@ -42,7 +42,7 @@ class Reservation extends Model
 
     public function records()
     {
-        return $this->belongsToMany(Record::class,'reservation_record','reservation_id');
+        return $this->belongsToMany(RecordPhysical::class,'reservation_record','reservation_id');
     }
 
     public function userOrganisation()

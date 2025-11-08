@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -22,7 +22,7 @@ class PublicAutocompleteController extends Controller
         $limit = $request->get('limit', 5);
 
         // Recherche dans les records par nom et code
-        $records = Record::where(function($q) use ($query) {
+        $records = RecordPhysical::where(function($q) use ($query) {
             $q->where('name', 'LIKE', '%' . $query . '%')
               ->orWhere('code', 'LIKE', '%' . $query . '%');
         })

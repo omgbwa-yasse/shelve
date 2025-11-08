@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +22,7 @@ class RecordPolicy extends BasePolicy
      * Determine whether the user can view the model.
      * Supports guest users with optional type-hint.
      */
-    public function view(?User $user, Record $record): bool|Response
+    public function view(?User $user, RecordPhysical $record): bool|Response
     {
         return $this->canView($user, $record, 'records_view');
     }
@@ -40,7 +40,7 @@ class RecordPolicy extends BasePolicy
      * Determine whether the user can update the model.
      * Supports guest users with optional type-hint.
      */
-    public function update(?User $user, Record $record): bool|Response
+    public function update(?User $user, RecordPhysical $record): bool|Response
     {
         if (!$user) {
             return $this->deny('Vous devez être connecté pour modifier ce record.');
@@ -58,7 +58,7 @@ class RecordPolicy extends BasePolicy
      * Determine whether the user can delete the model.
      * Supports guest users with optional type-hint.
      */
-    public function delete(?User $user, Record $record): bool|Response
+    public function delete(?User $user, RecordPhysical $record): bool|Response
     {
         if (!$user) {
             return $this->deny('Vous devez être connecté pour supprimer ce record.');
@@ -76,7 +76,7 @@ class RecordPolicy extends BasePolicy
      * Determine whether the user can restore the model.
      * Supports guest users with optional type-hint.
      */
-    public function restore(?User $user, Record $record): bool|Response
+    public function restore(?User $user, RecordPhysical $record): bool|Response
     {
         return $this->canUpdate($user, $record, 'records_update');
     }
@@ -85,7 +85,7 @@ class RecordPolicy extends BasePolicy
      * Determine whether the user can permanently delete the model.
      * Supports guest users with optional type-hint.
      */
-    public function forceDelete(?User $user, Record $record): bool|Response
+    public function forceDelete(?User $user, RecordPhysical $record): bool|Response
     {
         if (!$user) {
             return $this->deny('Vous devez être connecté pour supprimer définitivement ce record.');
@@ -104,7 +104,7 @@ class RecordPolicy extends BasePolicy
      * Méthode custom pour l'archivage des records
      * Supports guest users with optional type-hint.
      */
-    public function archive(?User $user, Record $record): bool|Response
+    public function archive(?User $user, RecordPhysical $record): bool|Response
     {
         if (!$user) {
             return $this->deny('Vous devez être connecté pour archiver ce record.');

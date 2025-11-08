@@ -47,7 +47,7 @@ class Author extends Model
 
     public function records()
     {
-        return $this->belongsToMany(Record::class, 'record_author', 'author_id', 'record_id');
+        return $this->belongsToMany(RecordPhysical::class, 'record_author', 'author_id', 'record_id');
     }
 
 }

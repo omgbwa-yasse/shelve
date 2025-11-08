@@ -26,7 +26,7 @@ class RecordContainer extends Model
 
     public function record()
     {
-        return $this->belongsTo(Record::class, 'record_id');
+        return $this->belongsTo(RecordPhysical::class, 'record_id');
     }
 
 

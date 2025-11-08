@@ -18,7 +18,7 @@ class Keyword extends Model
      */
     public function records()
     {
-        return $this->belongsToMany(Record::class, 'record_keyword')
+        return $this->belongsToMany(RecordPhysical::class, 'record_keyword')
                     ->withTimestamps();
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Slip;
 use SimpleXMLElement;
 

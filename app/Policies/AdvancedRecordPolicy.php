@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Auth\Access\Response;
 
 class AdvancedRecordPolicy extends BasePolicy
@@ -27,7 +27,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(?User $user, Record $record): bool|Response
+    public function view(?User $user, RecordPhysical $record): bool|Response
     {
         $basicCheck = $this->canView($user, $record, 'record_view');
         if ($basicCheck !== true) {
@@ -55,7 +55,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(?User $user, Record $record): bool|Response
+    public function update(?User $user, RecordPhysical $record): bool|Response
     {
         $basicCheck = $this->canUpdate($user, $record, 'record_update');
         if ($basicCheck !== true) {
@@ -69,7 +69,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(?User $user, Record $record): bool|Response
+    public function delete(?User $user, RecordPhysical $record): bool|Response
     {
         $basicCheck = $this->canDelete($user, $record, 'record_delete');
         if ($basicCheck !== true) {
@@ -83,7 +83,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(?User $user, Record $record): bool|Response
+    public function forceDelete(?User $user, RecordPhysical $record): bool|Response
     {
         return $this->canForceDelete($user, $record, 'record_force_delete');
     }
@@ -91,7 +91,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Determine if user can archive/unarchive records.
      */
-    public function archive(?User $user, Record $record): bool|Response
+    public function archive(?User $user, RecordPhysical $record): bool|Response
     {
         $result = $this->canUpdate($user, $record, 'record_archive');
         if (!is_bool($result)) {
@@ -120,7 +120,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Check record-specific visibility rules.
      */
-    private function checkRecordVisibilityRules(User $user, Record $record): bool|Response
+    private function checkRecordVisibilityRules(User $user, RecordPhysical $record): bool|Response
     {
         // Check if record is confidential and user has appropriate clearance
         if ($record->confidentiality_level === 'confidential' && !$user->hasRole('archivist')) {
@@ -147,7 +147,7 @@ class AdvancedRecordPolicy extends BasePolicy
         // Check if user has reached their daily creation limit
         $dailyLimit = $user->organisation->settings['daily_record_creation_limit'] ?? null;
         if ($dailyLimit) {
-            $todayCount = Record::where('created_by', $user->id)
+            $todayCount = RecordPhysical::where('created_by', $user->id)
                 ->whereDate('created_at', today())
                 ->count();
 
@@ -162,7 +162,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Check record update business rules.
      */
-    private function checkRecordUpdateRules(User $user, Record $record): bool|Response
+    private function checkRecordUpdateRules(User $user, RecordPhysical $record): bool|Response
     {
         // Check if record is locked for editing
         if ($record->is_locked && !$user->hasRole('super-admin')) {
@@ -181,7 +181,7 @@ class AdvancedRecordPolicy extends BasePolicy
     /**
      * Check record deletion business rules.
      */
-    private function checkRecordDeletionRules(User $user, Record $record): bool|Response
+    private function checkRecordDeletionRules(User $user, RecordPhysical $record): bool|Response
     {
         // Check if record has active loans
         if ($record->loans()->active()->exists()) {

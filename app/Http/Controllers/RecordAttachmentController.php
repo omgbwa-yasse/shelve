@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\RecordAttachment;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Attachment;
 use Intervention\Image\Image;
 use FFMpeg\FFMpeg;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RecordAttachmentController extends Controller
 {
-    public function index(Record $record)
+    public function index(RecordPhysical $record)
     {
         $attachments = $record->attachments;
         return view('records.attachments.index', compact('record', 'attachments'));
@@ -25,7 +25,7 @@ class RecordAttachmentController extends Controller
 
     public function create($id)
     {
-        $record = Record::findOrFail($id);
+        $record = RecordPhysical::findOrFail($id);
         return view('records.attachments.create', compact('record'));
     }
 
@@ -41,7 +41,7 @@ class RecordAttachmentController extends Controller
                 'thumbnail' => 'nullable|string',
             ]);
 
-            $record = Record::findOrFail($id);
+            $record = RecordPhysical::findOrFail($id);
             $file = $request->file('file');
             
             // Vérifier que le fichier est valide
@@ -164,12 +164,12 @@ class RecordAttachmentController extends Controller
         return $thumbnailPath;
     }
 
-    public function edit(Record $record, Attachment $attachment)
+    public function edit(RecordPhysical $record, Attachment $attachment)
     {
         return view('records.attachments.edit', compact('record', 'attachment'));
     }
 
-    public function update(Request $request, Record $record, Attachment $attachment)
+    public function update(Request $request, RecordPhysical $record, Attachment $attachment)
     {
         $request->validate([
             'file_path' => 'required|string',
@@ -181,14 +181,14 @@ class RecordAttachmentController extends Controller
         return redirect()->route('records.attachments.index', $record);
     }
 
-    public function destroy(Record $record, Attachment $attachment)
+    public function destroy(RecordPhysical $record, Attachment $attachment)
     {
         $attachment->delete();
 
         return redirect()->route('records.attachments.index', $record);
     }
 
-    public function show(Record $record, Attachment $attachment)
+    public function show(RecordPhysical $record, Attachment $attachment)
     {
         return view('records.attachments.show', compact('record', 'attachment'));
     }

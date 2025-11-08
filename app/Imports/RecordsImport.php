@@ -4,7 +4,7 @@ namespace App\Imports;
 
 use App\Models\Container;
 use App\Models\Dolly;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
 use App\Models\RecordSupport;
@@ -433,17 +433,17 @@ class RecordsImport implements ToModel, WithBatchInserts, WithChunkReading
         ];
 
         if ($this->updateExisting && !empty($data['code'])) {
-            $existing = Record::where('code', $code)->first();
+            $existing = RecordPhysical::where('code', $code)->first();
             if ($existing) {
                 $existing->update($recordData);
                 return $existing;
             }
         }
 
-        return Record::create($recordData);
+        return RecordPhysical::create($recordData);
     }
 
-    protected function processAuthors(Record $record, array $data): void
+    protected function processAuthors(RecordPhysical $record, array $data): void
     {
         $authorsValue = $this->ensureString($data['authors'] ?? null);
         if (empty($authorsValue)) {
@@ -462,7 +462,7 @@ class RecordsImport implements ToModel, WithBatchInserts, WithChunkReading
         }
     }
 
-    protected function processTerms(Record $record, array $data): void
+    protected function processTerms(RecordPhysical $record, array $data): void
     {
         $termsValue = $this->ensureString($data['terms'] ?? null);
         if (empty($termsValue)) {

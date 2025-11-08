@@ -171,7 +171,7 @@ class SlipRecordController extends Controller
             'container_ids.*' => 'exists:containers,id',
         ]);
 
-        $slipRecord = slipRecord::findOrFail($record_id);
+        $slipRecord = slipRecordPhysical::findOrFail($record_id);
         $slipRecord->update($request->except(['container_ids']));
 
         // Gestion des contenants via la table pivot

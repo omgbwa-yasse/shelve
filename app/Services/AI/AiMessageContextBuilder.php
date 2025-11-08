@@ -4,7 +4,7 @@ namespace App\Services\AI;
 
 use Illuminate\Http\Request;
 use App\Models\Prompt;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Activity;
 
 class AiMessageContextBuilder
@@ -158,7 +158,7 @@ class AiMessageContextBuilder
         if ($action === 'reformulate_title' && empty($ctx['title']) && $entity === 'record') {
             $ids = array_values(array_filter(array_map('intval', (array)$request->input('entity_ids', [])), fn($v) => $v > 0));
             if (!empty($ids)) {
-                $rec = Record::query()->where('id', $ids[0])->first(['id','name']);
+                $rec = RecordPhysical::query()->where('id', $ids[0])->first(['id','name']);
                 if ($rec && !empty($rec->name)) { $ctx['title'] = (string) $rec->name; }
             }
         }

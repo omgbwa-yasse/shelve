@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\SEDAExport;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Slip;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +30,7 @@ class SEDAExportController extends Controller
         ]);
     }
 
-    public function exportRecord(Request $request, Record $record): Response
+    public function exportRecord(Request $request, RecordPhysical $record): Response
     {
         $record->load(['attachments', 'containers', 'level', 'parent', 'thesaurusConcepts']);
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Helpers\FileHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

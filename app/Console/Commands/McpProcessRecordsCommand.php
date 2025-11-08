@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Services\MCP\McpManagerService;
 
 class McpProcessRecordsCommand extends Command
@@ -32,7 +32,7 @@ class McpProcessRecordsCommand extends Command
         $preview = $this->option('preview');
         
         try {
-            $record = Record::findOrFail($recordId);
+            $record = RecordPhysical::findOrFail($recordId);
             
             $this->info("Traitement du record ID: {$recordId}");
             $this->info("Titre: {$record->name}");

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Exports\SEDAExport;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Slip;
 use Illuminate\Support\Facades\Log;
 use ZipArchive;
@@ -16,7 +16,7 @@ class SedaZipBuilder
     {
     }
 
-    public function buildForRecord(Record $record): array
+    public function buildForRecord(RecordPhysical $record): array
     {
         $record->loadMissing(['attachments', 'containers', 'level', 'parent', 'thesaurusConcepts']);
         $xml = $this->exporter->exportRecords(collect([$record]));

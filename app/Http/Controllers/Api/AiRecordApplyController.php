@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\ThesaurusConcept;
 use App\Models\Keyword;
 use Illuminate\Http\Request;
@@ -22,7 +22,7 @@ class AiRecordApplyController extends Controller
     private const RULE_RAW = 'nullable|string|min:1';
     private const ERR_NO_DATA = 'No data provided';
 
-    public function saveTitle(Request $request, Record $record)
+    public function saveTitle(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -39,7 +39,7 @@ class AiRecordApplyController extends Controller
         return response()->json(['status' => 'ok', 'record_id' => $record->id, 'name' => $record->name]);
     }
 
-    public function saveSummary(Request $request, Record $record)
+    public function saveSummary(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -55,7 +55,7 @@ class AiRecordApplyController extends Controller
         return response()->json(['status' => 'ok', 'record_id' => $record->id]);
     }
 
-    public function saveThesaurus(Request $request, Record $record)
+    public function saveThesaurus(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -87,7 +87,7 @@ class AiRecordApplyController extends Controller
      * or a summary block that includes such a section.
      * Returns: { suggestions: [ { label, category, synonyms[], concept_id?, matches: [ {concept_id, label, type} ] } ] }
      */
-    public function suggestThesaurus(Request $request, Record $record)
+    public function suggestThesaurus(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -122,7 +122,7 @@ class AiRecordApplyController extends Controller
      * Suggest from client-provided JSON array of items: [{label, category, synonyms[]}]
      * This supports your “je veux les données en JSON … et la recherche” use case directly.
      */
-    public function suggestThesaurusFromJson(Request $request, Record $record)
+    public function suggestThesaurusFromJson(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -157,7 +157,7 @@ class AiRecordApplyController extends Controller
     /**
      * End-to-end: build record text, call AI summarization prompt, extract keyword lines, match concepts, return suggestions.
      */
-    public function autoSuggestThesaurus(Request $request, Record $record)
+    public function autoSuggestThesaurus(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
 
@@ -212,7 +212,7 @@ class AiRecordApplyController extends Controller
         ]);
     }
 
-    public function saveActivity(Request $request, Record $record)
+    public function saveActivity(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -257,7 +257,7 @@ class AiRecordApplyController extends Controller
      * Input: { raw_text?: string }
      * Returns: { candidates: [ { id, code, name, score } ] }
      */
-    public function suggestActivityCandidates(Request $request, Record $record)
+    public function suggestActivityCandidates(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -494,7 +494,7 @@ class AiRecordApplyController extends Controller
     /**
      * Build a concise text from a record to drive AI summarization/keyword extraction.
      */
-    private function buildTextFromRecord(Record $record): string
+    private function buildTextFromRecord(RecordPhysical $record): string
     {
         $parts = [];
         $name = trim((string)($record->name ?? ''));
@@ -675,7 +675,7 @@ class AiRecordApplyController extends Controller
      * Input: { keywords: [ { name, create?, selected? } ], raw_text?: string }
      * Returns: { status: 'ok', record_id, attached: [...] }
      */
-    public function saveKeywords(Request $request, Record $record)
+    public function saveKeywords(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_edit');
         $data = $request->validate([
@@ -737,7 +737,7 @@ class AiRecordApplyController extends Controller
      * Input: { raw_text?: string }
      * Returns: { suggestions: [ { name, exists, keyword_id? } ] }
      */
-    public function suggestKeywords(Request $request, Record $record)
+    public function suggestKeywords(Request $request, RecordPhysical $record)
     {
         Log::info('Keywords AI Method Called', ['record_id' => $record->id]);
 
@@ -882,7 +882,7 @@ class AiRecordApplyController extends Controller
     /**
      * Build text content from record and its attachments for AI analysis.
      */
-    private function buildTextFromRecordWithAttachments(Record $record): string
+    private function buildTextFromRecordWithAttachments(RecordPhysical $record): string
     {
         $parts = [];
 

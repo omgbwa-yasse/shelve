@@ -13,7 +13,7 @@ use App\Models\SlipStatus;
 use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
@@ -76,7 +76,7 @@ class RecordController extends Controller
         $query = $request->input('query');
         $keywordFilter = $request->input('keyword_filter');
 
-        $recordsQuery = Record::with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords']);
+        $recordsQuery = RecordPhysical::with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords']);
 
         if (!empty($query)) {
             // Recherche dans l'intitulé (name) et le code
@@ -95,7 +95,7 @@ class RecordController extends Controller
 
         // Si ni query ni keyword_filter ne sont fournis, retourner une collection vide paginée
         if (empty($query) && empty($keywordFilter)) {
-            $records = Record::where('id', 0)->paginate(10);
+            $records = RecordPhysical::where('id', 0)->paginate(10);
         } else {
             $records = $recordsQuery->paginate(10);
         }
@@ -129,7 +129,7 @@ class RecordController extends Controller
         Gate::authorize('records_view');
 
         // Initialiser la query des records avec les relations
-        $query = Record::with([
+        $query = RecordPhysical::with([
             'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
         ]);
 
@@ -173,11 +173,11 @@ class RecordController extends Controller
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $parents = Record::all();
+        $parents = RecordPhysical::all();
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $records = Record::all();
+        $records = RecordPhysical::all();
         $authors = Author::with('authorType')->get();
         $terms = []; // Removed ThesaurusConcept::all() since we use AJAX
         $authorTypes = AuthorType::all();
@@ -192,11 +192,11 @@ class RecordController extends Controller
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $parents = Record::all();
+        $parents = RecordPhysical::all();
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $records = Record::all();
+        $records = RecordPhysical::all();
         $authors = Author::with('authorType')->get();
         $terms = []; // Removed ThesaurusConcept::all() since we use AJAX
         $authorTypes = AuthorType::all();
@@ -275,7 +275,7 @@ class RecordController extends Controller
         $recordData = $validatedData;
 
         try {
-            $record = Record::create($recordData);
+            $record = RecordPhysical::create($recordData);
         } catch (\Exception $e) {
             Log::error('Error creating record: ' . $e->getMessage(), [
                 'request_data' => $request->all(),
@@ -354,7 +354,7 @@ class RecordController extends Controller
         Log::info('About to redirect after record creation', [
             'record_id' => $record->id,
             'route_url' => route('records.show', $record->id),
-            'record_exists' => Record::where('id', $record->id)->exists()
+            'record_exists' => RecordPhysical::where('id', $record->id)->exists()
         ]);
 
         return redirect()->route('records.show', $record->id)->with('success', 'Record created successfully.');
@@ -386,7 +386,7 @@ class RecordController extends Controller
         }
     }
 
-    public function show(Record $record, Request $request)
+    public function show(RecordPhysical $record, Request $request)
     {
 
         Gate::authorize('records_view');
@@ -422,7 +422,7 @@ class RecordController extends Controller
         return view('records.show', compact('record', 'prevId', 'nextId'));
     }
 
-    public function showFull(Record $record, Request $request)
+    public function showFull(RecordPhysical $record, Request $request)
     {
         Gate::authorize('records_view');
 
@@ -462,7 +462,7 @@ class RecordController extends Controller
         return view('records.showFull', compact('record', 'prevId', 'nextId'));
     }
 
-    public function edit(Record $record, Request $request)
+    public function edit(RecordPhysical $record, Request $request)
     {
         Gate::authorize('records_update');
 
@@ -476,7 +476,7 @@ class RecordController extends Controller
         $statuses = RecordStatus::all();
         $supports = RecordSupport::all();
         $activities = Activity::all();
-        $parents = Record::all();
+        $parents = RecordPhysical::all();
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
@@ -493,7 +493,7 @@ class RecordController extends Controller
             'term_ids', 'suggestedTitle'));
     }
 
-    public function update(Request $request, Record $record)
+    public function update(Request $request, RecordPhysical $record)
     {
         Gate::authorize('records_update');
 
@@ -598,7 +598,7 @@ class RecordController extends Controller
         return redirect()->route('records.show', $record->id)->with('success', 'Record updated successfully.');
     }
 
-    public function destroy(Record $record)
+    public function destroy(RecordPhysical $record)
     {
         Gate::authorize('records_delete');
 
@@ -616,7 +616,7 @@ class RecordController extends Controller
         $recordIds = explode(',', $request->query('records'));
         $format = $request->query('format', 'excel');
         // Eager-load relations for richer exports (EAD/PDF)
-        $records = Record::with([
+        $records = RecordPhysical::with([
             'level','status','support','activity','organisation',
             'containers','recordContainers.container','authors','thesaurusConcepts','attachments',
             'children'
@@ -649,7 +649,7 @@ class RecordController extends Controller
                     return $this->exportSEDA($records,$slips);
                 case 'pdf':
                     // Charger les relations nécessaires et conserver l'ordre de sélection
-                    $recordsForPdf = Record::with([
+                    $recordsForPdf = RecordPhysical::with([
                         'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
                     ])->whereIn('id', $recordIds)->get();
 
@@ -685,7 +685,7 @@ class RecordController extends Controller
             ])->get();
             $slips = $dolly->slips;
         } else {
-            $records = Record::with([
+            $records = RecordPhysical::with([
                 'level','status','support','activity','organisation',
                 'containers','recordContainers.container','authors','thesaurusConcepts','attachments','children'
             ])->get();
@@ -956,7 +956,7 @@ class RecordController extends Controller
                 // Map other fields as needed
             ];
 
-            $newRecord = Record::create($data);
+            $newRecord = RecordPhysical::create($data);
             $dolly->records()->attach($newRecord->id);
         }
     }
@@ -984,7 +984,7 @@ class RecordController extends Controller
                     // Map other fields as needed
                 ];
 
-                $newRecord = Record::create($data);
+                $newRecord = RecordPhysical::create($data);
                 $dolly->records()->attach($newRecord->id);
                 // Import attachments
                 $attachments = $record->xpath('Document/Attachment');
@@ -1157,7 +1157,7 @@ class RecordController extends Controller
         }
 
         // Eager loading des relations utilisées dans la vue d'impression
-        $records = Record::with([
+        $records = RecordPhysical::with([
             'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
         ])->whereIn('id', $recordIds)->get();
 
@@ -1235,7 +1235,7 @@ class RecordController extends Controller
     /**
      * Récupérer les attachments d'un record pour l'affichage en modal
      */
-    public function getAttachments(Record $record)
+    public function getAttachments(RecordPhysical $record)
     {
         Gate::authorize('records_view');
 

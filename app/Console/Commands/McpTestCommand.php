@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\MCP\McpManagerService;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Cloudstudio\Ollama\Facades\Ollama;
 
 class McpTestCommand extends Command
@@ -135,7 +135,7 @@ class McpTestCommand extends Command
     private function testDatabase(): bool
     {
         try {
-            $recordCount = Record::count();
+            $recordCount = RecordPhysical::count();
             $this->line("   ✓ Records disponibles: {$recordCount}");
 
             if (class_exists(\App\Models\ThesaurusConcept::class)) {
@@ -154,7 +154,7 @@ class McpTestCommand extends Command
     private function getOrCreateSampleRecord(): ?Record
     {
         // Chercher un record existant
-        $record = Record::whereNotNull('name')
+        $record = RecordPhysical::whereNotNull('name')
             ->where('name', '!=', '')
             ->first();
 
@@ -167,7 +167,7 @@ class McpTestCommand extends Command
         // Créer un record d'exemple si autorisé
         if ($this->option('create-sample')) {
             try {
-                $record = Record::create([
+                $record = RecordPhysical::create([
                     'name' => 'Documents municipaux test MCP',
                     'content' => 'Documents relatifs à l\'administration municipale pour les tests du système MCP.',
                     'date_start' => '1950',
@@ -187,7 +187,7 @@ class McpTestCommand extends Command
         return null;
     }
 
-    private function testMcpServices(McpManagerService $mcpManager, Record $record): bool
+    private function testMcpServices(McpManagerService $mcpManager, RecordPhysical $record): bool
     {
         try {
             // Test prévisualisation (ne modifie pas les données)

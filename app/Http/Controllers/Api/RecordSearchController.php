@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -38,7 +38,7 @@ class RecordSearchController extends Controller
         }
 
         // Recherche des records
-        $records = Record::query()
+        $records = RecordPhysical::query()
             ->whereIn('activity_id', $allActivityIds)
             ->where(function($q) use ($query) {
                 $q->where('code', 'like', "%{$query}%")

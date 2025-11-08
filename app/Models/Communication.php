@@ -3,7 +3,7 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\User;
 
 use Laravel\Scout\Searchable;
@@ -39,7 +39,7 @@ class Communication extends Model
 
     public function records()
     {
-        return $this->belongsToMany(Record::class, 'communication_record')
+        return $this->belongsToMany(RecordPhysical::class, 'communication_record')
                     ->withPivot('content', 'is_original', 'return_date', 'return_effective', 'operator_id')
                     ->withTimestamps();
     }

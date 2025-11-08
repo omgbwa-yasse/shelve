@@ -3,7 +3,7 @@
 namespace App\Services\AI;
 
 use App\Models\Activity;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 
 class AiRecordContextBuilder
 {
@@ -17,7 +17,7 @@ class AiRecordContextBuilder
     {
         $ids = array_values(array_filter(array_map('intval', $ids), fn($v) => $v > 0));
         if (empty($ids)) { return ''; }
-        $recs = Record::query()->whereIn('id', $ids)->get(['id','name','content','activity_id']);
+        $recs = RecordPhysical::query()->whereIn('id', $ids)->get(['id','name','content','activity_id']);
         return $recs->map(function ($r) {
             $name = trim((string)($r->name ?? ''));
             $content = trim((string)($r->content ?? ''));
@@ -41,7 +41,7 @@ class AiRecordContextBuilder
 
     public function fetchRecordsForSummary(array $ids)
     {
-        return Record::query()
+        return RecordPhysical::query()
             ->with([
                 'activity:id,name', 'level:id,name', 'support:id,name', 'status:id,name', 'authors:id,name',
                 'thesaurusConcepts' => function ($q) {
@@ -156,7 +156,7 @@ class AiRecordContextBuilder
 
     public function fetchRecordsForThesaurus(array $ids)
     {
-        return Record::query()
+        return RecordPhysical::query()
             ->with([
                 'authors:id,name',
                 'thesaurusConcepts' => function ($q) { $q->with(['labels' => function ($q2) { $q2->where('type', 'prefLabel')->where('language', 'fr-fr'); }]); },

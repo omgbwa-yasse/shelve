@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Support\Collection;
 
 class EAD2002ExportService

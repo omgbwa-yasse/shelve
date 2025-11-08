@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Organisation;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
@@ -104,7 +104,7 @@ class LifeCycleController extends Controller
      */
     private function getRetentionBaseQuery()
     {
-        return Record::join('activities', 'records.activity_id', '=', 'activities.id')
+        return RecordPhysical::join('activities', 'records.activity_id', '=', 'activities.id')
             ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
             ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
             ->join('sorts', 'retentions.sort_id', '=', 'sorts.id');
@@ -155,7 +155,7 @@ class LifeCycleController extends Controller
         $title = "à transférer aux archives historiques - communicabilité écoulée";
 
         $records = $this->addDateOrderBy(
-            Record::join('activities', 'records.activity_id', '=', 'activities.id')
+            RecordPhysical::join('activities', 'records.activity_id', '=', 'activities.id')
                 ->join('communicabilities', 'activities.communicability_id', '=', 'communicabilities.id')
                 ->whereRaw($this->getCommunicabilityExpiredCondition())
                 ->select(self::RECORDS_SELECT)
@@ -259,7 +259,7 @@ class LifeCycleController extends Controller
 
     /**
      * Calcule les données du cycle de vie pour un enregistrement donné
-     * @param Record $record
+     * @param RecordPhysical $record
      * @return array
      */
     public function getLifecycleData($record)

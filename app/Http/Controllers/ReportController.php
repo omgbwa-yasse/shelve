@@ -20,7 +20,7 @@ use App\Models\MailAttachment;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Organisation;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordAttachment;
 use App\Models\RecordLevel;
 use App\Models\RecordStatus;
@@ -209,26 +209,26 @@ class ReportController extends Controller
     public function statisticsRepositories()
     {
         // Statistiques générales
-        $totalRecords = Record::count();
-        $recordsWithContainer = Record::whereHas('containers')->count();
+        $totalRecords = RecordPhysical::count();
+        $recordsWithContainer = RecordPhysical::whereHas('containers')->count();
         $recordsWithoutContainer = $totalRecords - $recordsWithContainer;
 
         // Records par niveau de description
-        $recordsByLevel = Record::select('level_id', DB::raw('count(*) as count'))
+        $recordsByLevel = RecordPhysical::select('level_id', DB::raw('count(*) as count'))
             ->groupBy('level_id')
             ->get()
             ->pluck('count', 'level_id')
             ->toArray();
 
         // Records par support
-        $recordsBySupport = Record::select('support_id', DB::raw('count(*) as count'))
+        $recordsBySupport = RecordPhysical::select('support_id', DB::raw('count(*) as count'))
             ->groupBy('support_id')
             ->get()
             ->pluck('count', 'support_id')
             ->toArray();
 
         // Évolution du nombre de records
-        $recordsEvolution = Record::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
+        $recordsEvolution = RecordPhysical::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as count'))
             ->groupBy(DB::raw('DATE(created_at)'))
             ->orderBy('date')
             ->get();
@@ -236,14 +236,14 @@ class ReportController extends Controller
         $recordsEvolutionData = $recordsEvolution->pluck('count');
 
         // Top 5 des activités liées aux records
-        $topActivities = Record::select('activity_id', DB::raw('count(*) as count'))
+        $topActivities = RecordPhysical::select('activity_id', DB::raw('count(*) as count'))
             ->groupBy('activity_id')
             ->orderByDesc('count')
             ->limit(5)
             ->get();
 
         // Distribution des records par statut
-        $recordsByStatus = Record::select('status_id', DB::raw('count(*) as count'))
+        $recordsByStatus = RecordPhysical::select('status_id', DB::raw('count(*) as count'))
             ->groupBy('status_id')
             ->get()
             ->pluck('count', 'status_id')
@@ -263,7 +263,7 @@ class ReportController extends Controller
             ->toArray();
 
         // Distribution mensuelle des records
-        $monthlyDistribution = Record::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
+        $monthlyDistribution = RecordPhysical::select(DB::raw('MONTH(created_at) as month'), DB::raw('count(*) as count'))
             ->groupBy(DB::raw('MONTH(created_at)'))
             ->orderBy('month')
             ->get();
@@ -272,12 +272,11 @@ class ReportController extends Controller
         });
         $monthlyDistributionData = $monthlyDistribution->pluck('count');
 
-        // Nouveaux statistiques basés sur le modèle Record
-        $recordsWithAuthors = Record::has('authors')->count();
-        $recordsWithTerms = Record::has('thesaurusConcepts')->count();
-        $recordsWithAttachments = Record::has('attachments')->count();
+        // Nouveaux statistiques basés sur le modèle RecordPhysical $recordsWithAuthors = RecordPhysical::has('authors')->count();
+        $recordsWithTerms = RecordPhysical::has('thesaurusConcepts')->count();
+        $recordsWithAttachments = RecordPhysical::has('attachments')->count();
 
-//        $topOrganisations = Record::select('organisation_id', DB::raw('count(*) as count'))
+//        $topOrganisations = RecordPhysical::select('organisation_id', DB::raw('count(*) as count'))
 //            ->groupBy('organisation_id')
 //            ->orderByDesc('count')
 //            ->limit(5)
@@ -285,7 +284,7 @@ class ReportController extends Controller
 //            ->pluck('count', 'organisation_id')
 //            ->toArray();
 
-        $recordsWithChildren = Record::has('children')->count();
+        $recordsWithChildren = RecordPhysical::has('children')->count();
         $averageChildrenPerRecord = 0;
 
         // Préparer les données pour les graphiques
@@ -654,8 +653,8 @@ class ReportController extends Controller
             ->pluck('count', 'priority_id');
 
         // Repository
-        $totalRecords = Record::count();
-        $recordsByLevel = Record::query()
+        $totalRecords = RecordPhysical::count();
+        $recordsByLevel = RecordPhysical::query()
             ->select('level_id', DB::raw('count(*) as count'))
             ->groupBy('level_id')
             ->pluck('count', 'level_id');

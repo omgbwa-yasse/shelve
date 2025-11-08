@@ -18,6 +18,6 @@ class RecordStatus extends Model
 
     public function records()
     {
-        return $this->hasMany(Record::class);
+        return $this->hasMany(RecordPhysical::class);
     }
 }

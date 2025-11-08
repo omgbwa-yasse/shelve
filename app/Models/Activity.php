@@ -49,6 +49,6 @@ class Activity extends Model
 
     public function records()
     {
-        return $this->hasMany(Record::class, 'activity_id');
+        return $this->hasMany(RecordPhysical::class, 'activity_id');
     }
 }

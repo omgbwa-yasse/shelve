@@ -28,7 +28,7 @@ class ReservationRecord extends Model
 
     public function record()
     {
-        return $this->belongsTo(Record::class);
+        return $this->belongsTo(RecordPhysical::class);
     }
 
     public function communication()

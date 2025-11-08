@@ -2,7 +2,7 @@
 
 namespace App\Services\AI;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Mail;
 use App\Models\Communication;
 use App\Models\Slip;
@@ -27,7 +27,7 @@ class SearchActionService
     // Configuration spécifique par type d'élément
     private const TYPE_CONFIG = [
         'records' => [
-            'model' => Record::class,
+            'model' => RecordPhysical::class,
             'route_prefix' => 'records',
             'name_fr' => 'documents',
             'name_single' => 'document',

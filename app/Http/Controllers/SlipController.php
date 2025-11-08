@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use App\Models\Organisation;
 use App\Models\MailContainer;
 use App\Models\Slip;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -216,7 +216,7 @@ class SlipController extends Controller
         ]);
 
         foreach ($request->input('selected_records') as $recordId) {
-            $record = Record::findOrFail($recordId);
+            $record = RecordPhysical::findOrFail($recordId);
 
             // Mettre à jour le statut du record à 0
             $record->update(['status_id' => 0]);
@@ -324,7 +324,7 @@ class SlipController extends Controller
         if ($slip) {
             foreach ($slip->records as $source) {
 
-                $record = Record::create([
+                $record = RecordPhysical::create([
                     'code' => $source->code,
                     'name' => $source->name,
                     'date_format' => $source->date_format,

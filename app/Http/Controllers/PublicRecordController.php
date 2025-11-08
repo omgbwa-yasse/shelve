@@ -191,7 +191,7 @@ class PublicRecordController extends Controller
         $limit = $request->get('limit', 5);
 
         // Recherche dans les records par nom et code
-        $records = \App\Models\Record::where(function($q) use ($query) {
+        $records = \App\Models\RecordPhysical::where(function($q) use ($query) {
             $q->where('name', 'LIKE', '%' . $query . '%')
               ->orWhere('code', 'LIKE', '%' . $query . '%');
         })

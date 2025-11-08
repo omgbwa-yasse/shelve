@@ -59,7 +59,7 @@ class User extends Authenticatable
 
     public function recordsCreated()
     {
-        return $this->hasMany(Record::class, 'user_id');
+        return $this->hasMany(RecordPhysical::class, 'user_id');
     }
 
     public function communications()

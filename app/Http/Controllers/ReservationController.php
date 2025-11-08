@@ -77,7 +77,7 @@ class ReservationController extends Controller
             // Pour chaque record de la réservation
             foreach ($reservation->records as $record) {
                 // Créer l'entrée dans communication_record
-                communicationRecord::create([
+                communicationRecordPhysical::create([
                     'communication_id' => $communication->id,
                     'record_id' => $record->id,
                     'content' => null, // ou une valeur par défaut si nécessaire
@@ -87,7 +87,7 @@ class ReservationController extends Controller
                 ]);
 
                 // Supprimer l'entrée de reservation_record correspondante
-                ReservationRecord::where([
+                ReservationRecordPhysical::where([
                     'reservation_id' => $reservation->id,
                     'record_id' => $record->id
                 ])->delete();

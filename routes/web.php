@@ -138,10 +138,15 @@ use App\Http\Controllers\RecordEnricherController;
 
 
 Route::get('/', function () {
-        return redirect('/repositories');
+        return redirect('/dashboard');
 });
 
 Auth::routes();
+
+// Dashboard route
+Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
+    ->middleware('auth')
+    ->name('dashboard');
 
 Route::get('pdf/thumbnail/{id}', [PDFController::class, 'thumbnail'])->name('pdf.thumbnail');
 
@@ -184,6 +189,37 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [MailReceivedController::class, 'index'])->name('home');
+
+    // Digital Folders Management (Phase 10 - Task 10.2)
+    Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
+    Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
+    Route::get('folders/tree/data', [\App\Http\Controllers\Web\FolderController::class, 'tree'])->name('folders.tree');
+
+    // Digital Documents Management (Phase 10 - Task 10.3)
+    Route::resource('documents', \App\Http\Controllers\Web\DocumentController::class);
+    Route::post('documents/{document}/upload', [\App\Http\Controllers\Web\DocumentController::class, 'upload'])->name('documents.upload');
+    Route::post('documents/{document}/approve', [\App\Http\Controllers\Web\DocumentController::class, 'approve'])->name('documents.approve');
+    Route::post('documents/{document}/reject', [\App\Http\Controllers\Web\DocumentController::class, 'reject'])->name('documents.reject');
+    Route::get('documents/{document}/versions', [\App\Http\Controllers\Web\DocumentController::class, 'versions'])->name('documents.versions');
+    Route::get('documents/{document}/versions/{version}/download', [\App\Http\Controllers\Web\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
+
+    // Artifacts Management (Phase 10 - Task 10.4)
+    Route::resource('artifacts', \App\Http\Controllers\Web\ArtifactController::class);
+    Route::get('artifacts/{artifact}/exhibitions', [\App\Http\Controllers\Web\ArtifactController::class, 'exhibitions'])->name('artifacts.exhibitions');
+    Route::get('artifacts/{artifact}/loans', [\App\Http\Controllers\Web\ArtifactController::class, 'loans'])->name('artifacts.loans');
+    Route::post('artifacts/{artifact}/images', [\App\Http\Controllers\Web\ArtifactController::class, 'addImage'])->name('artifacts.images');
+
+    // Periodicals Management (Phase 10 - Task 10.5)
+    Route::resource('periodicals', \App\Http\Controllers\Web\PeriodicalController::class)->only(['index', 'show']);
+    Route::get('periodicals/articles/search', [\App\Http\Controllers\Web\PeriodicalController::class, 'articles'])->name('periodicals.articles');
+
+    // Admin Panel (Phase 10 - Task 10.7)
+    Route::prefix('admin-panel')->middleware('role:admin')->name('admin.')->group(function () {
+        Route::get('dashboard', [\App\Http\Controllers\Web\AdminPanelController::class, 'dashboard'])->name('dashboard');
+        Route::get('users', [\App\Http\Controllers\Web\AdminPanelController::class, 'users'])->name('users');
+        Route::get('settings', [\App\Http\Controllers\Web\AdminPanelController::class, 'settings'])->name('settings');
+        Route::get('logs', [\App\Http\Controllers\Web\AdminPanelController::class, 'logs'])->name('logs');
+    });
 
     // Routes avec authentification pour les bulletin boards
     Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {

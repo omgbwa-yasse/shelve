@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 
 class RecordChildController extends Controller
 {
-    public function index(Record $parent)
+    public function index(RecordPhysical $parent)
     {
 //        $children = $parent->children;
         return view('records.child.index', compact('parent'));
@@ -30,7 +30,7 @@ class RecordChildController extends Controller
         $containers = Container::all();
         $users = User::all();
         $levels = RecordLevel::all();
-        $records = Record::all();
+        $records = RecordPhysical::all();
         $authors = Author::with('authorType')->get();
         $terms = [];
         $record = record::findOrFail($id);
@@ -40,7 +40,7 @@ class RecordChildController extends Controller
 
 
 
-    public function store(Request $request, Record $parent)
+    public function store(Request $request, RecordPhysical $parent)
     {
         $validatedData =  $request->validate([
             'code' => 'required|string|max:10',
@@ -84,7 +84,7 @@ class RecordChildController extends Controller
             'term_ids' => 'required|array',
         ]);
 
-        $record = Record::create($validatedData);
+        $record = RecordPhysical::create($validatedData);
 
         // Association au parent
         $record->parent()->attach($parent->id);
@@ -113,13 +113,13 @@ class RecordChildController extends Controller
 
 
 
-//    public function edit(Record $parent, Record $record)
+//    public function edit(RecordPhysical $parent, RecordPhysical $record)
 //    {
 //        return view('records.child.edit', compact('record', 'child'));
 //    }
 
 
-//    public function update(Request $request, Record $parent, Record $record)
+//    public function update(Request $request, RecordPhysical $parent, RecordPhysical $record)
 //    {
 //        $validatedData = $request->validate([
 //            'code' => 'required|string|max:10',
@@ -183,7 +183,7 @@ class RecordChildController extends Controller
 //
 
 
-//    public function destroy(Record $parent, Record $record)
+//    public function destroy(RecordPhysical $parent, RecordPhysical $record)
 //    {
 //        if ($record->parent_id !== $parent->id) {
 //            return redirect()->route('record-child.index', $parent)->with('error', 'Child record does not belong to the specified parent.');

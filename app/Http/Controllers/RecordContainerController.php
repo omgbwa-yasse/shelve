@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\RecordContainer;
 use App\Models\Container;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use Illuminate\Http\Request;
 
 class RecordContainerController extends Controller
@@ -32,7 +32,7 @@ class RecordContainerController extends Controller
 
         $recordContainer->save();
 
-        $record = Record::with('containers', 'children', 'attachments')->findOrFail($validatedData['r_id']);
+        $record = RecordPhysical::with('containers', 'children', 'attachments')->findOrFail($validatedData['r_id']);
 
         return view('records.show', compact('record'))->with('success',"Archives ajoutées dans la boite");
 
@@ -83,7 +83,7 @@ class RecordContainerController extends Controller
             'r_id' => 'required|exists:records,id',
         ]);
 
-        $record = Record::findOrFail($validatedData['r_id']);
+        $record = RecordPhysical::findOrFail($validatedData['r_id']);
 
         $record->containers()->detach($validatedData['c_id']);
 

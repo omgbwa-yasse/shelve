@@ -4,7 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Keyword;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 
 class RecordKeyword extends Model
 {
@@ -13,7 +13,7 @@ class RecordKeyword extends Model
 
     public function record()
     {
-        return $this->belongsTo(Record::class);
+        return $this->belongsTo(RecordPhysical::class);
     }
 
     public function keyword()

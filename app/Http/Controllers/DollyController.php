@@ -6,7 +6,7 @@ use App\Models\Container;
 use App\Models\DollyCommunication;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mail;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\SlipRecord;
@@ -56,7 +56,7 @@ class DollyController extends Controller
 
     public function show(Dolly $dolly)
     {
-        $records = Record::all();
+        $records = RecordPhysical::all();
         $mails = Mail::all();
         $communications = Communication::all();
         $rooms = Room::all();

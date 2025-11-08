@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\ThesaurusConcept;
 use App\Models\ThesaurusScheme;
 use App\Models\ThesaurusLabel;
@@ -38,7 +38,7 @@ class ThesaurusController extends Controller
             'total_concepts' => ThesaurusConcept::count(),
             'total_labels' => ThesaurusLabel::count(),
             'total_relations' => ThesaurusConceptRelation::count(),
-            'records_with_concepts' => Record::has('thesaurusConcepts')->count(),
+            'records_with_concepts' => RecordPhysical::has('thesaurusConcepts')->count(),
         ];
 
         return view('thesaurus.tool.index', compact('schemes', 'stats'));
@@ -423,7 +423,7 @@ class ThesaurusController extends Controller
      */
     public function apiRecordTerms($recordId)
     {
-        $record = Record::with(['thesaurusConcepts.scheme'])->findOrFail($recordId);
+        $record = RecordPhysical::with(['thesaurusConcepts.scheme'])->findOrFail($recordId);
 
         return response()->json($record->thesaurusConcepts);
     }
@@ -438,7 +438,7 @@ class ThesaurusController extends Controller
             'concept_ids.*' => 'exists:thesaurus_concepts,id'
         ]);
 
-        $record = Record::findOrFail($recordId);
+        $record = RecordPhysical::findOrFail($recordId);
 
         // Synchroniser les concepts (remplace les existants)
         $record->thesaurusConcepts()->sync($request->concept_ids);
@@ -454,7 +454,7 @@ class ThesaurusController extends Controller
      */
     public function apiDisassociateTerm($recordId, $conceptId)
     {
-        $record = Record::findOrFail($recordId);
+        $record = RecordPhysical::findOrFail($recordId);
         $record->thesaurusConcepts()->detach($conceptId);
 
         return response()->json([
@@ -692,7 +692,7 @@ class ThesaurusController extends Controller
             $concept = ThesaurusConcept::with(['labels', 'scheme', 'records'])->findOrFail($conceptId);
             $records = $concept->records()->paginate(20);
         } elseif ($schemeId) {
-            $records = Record::whereHas('thesaurusConcepts', function($query) use ($schemeId) {
+            $records = RecordPhysical::whereHas('thesaurusConcepts', function($query) use ($schemeId) {
                 $query->where('scheme_id', $schemeId);
             })->with('thesaurusConcepts')->paginate(20);
         }
@@ -776,7 +776,7 @@ class ThesaurusController extends Controller
             ->get();
 
         // Top 10 des records les plus associés à des concepts
-        $topRecords = Record::select('id', 'name', 'code')
+        $topRecords = RecordPhysical::select('id', 'name', 'code')
             ->withCount('thesaurusConcepts as thesaurus_concepts_count') // Utilise le nom correct pour la vue
             ->has('thesaurusConcepts')
             ->orderByDesc('thesaurus_concepts_count')
@@ -821,9 +821,9 @@ class ThesaurusController extends Controller
 
         if (empty($recordIds)) {
             // Process all records without concepts
-            $records = Record::doesntHave('thesaurusConcepts')->get();
+            $records = RecordPhysical::doesntHave('thesaurusConcepts')->get();
         } else {
-            $records = Record::whereIn('id', $recordIds)->get();
+            $records = RecordPhysical::whereIn('id', $recordIds)->get();
         }
 
         foreach ($records as $record) {
@@ -942,7 +942,7 @@ class ThesaurusController extends Controller
     }
 
     // Méthodes privées pour l'extraction de concepts et autres fonctionnalités...
-    private function extractConceptsFromRecord(Record $record, $schemeId = null, $minWeight = 0.5, $maxConcepts = 5)
+    private function extractConceptsFromRecord(RecordPhysical $record, $schemeId = null, $minWeight = 0.5, $maxConcepts = 5)
     {
         // Implémentation simplifiée
         return [];

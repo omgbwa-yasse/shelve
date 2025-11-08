@@ -6,7 +6,7 @@ use App\Models\SlipStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Mail;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Author;
@@ -46,14 +46,14 @@ class SearchController extends Controller
 
         if ($query) {
             if ($advanced) {
-                $records = Record::search($query)->query(function ($builder) {
+                $records = RecordPhysical::search($query)->query(function ($builder) {
                     $builder->with(['status', 'support', 'level', 'activity', 'containers', 'authors']);
                 });
             } else {
-                $records = Record::search($query);
+                $records = RecordPhysical::search($query);
             }
         } else {
-            $records = Record::query();
+            $records = RecordPhysical::query();
         }
 
         $records = $records->paginate(10);
@@ -64,7 +64,7 @@ class SearchController extends Controller
 
         $queries = $this->convertStringToWords($request);
 
-        $records = Record::query();
+        $records = RecordPhysical::query();
 
         foreach ($queries as $query) {
             $records->where(function ($queryBuilder) use ($query) {
@@ -104,7 +104,7 @@ class SearchController extends Controller
     public function communication(Request $request)
     {
         $queries = preg_split('/[+\s]+/', $request->input('query'), -1, PREG_SPLIT_NO_EMPTY);
-        $communications = Record::query();
+        $communications = RecordPhysical::query();
 
         foreach ($queries as $query) {
             $communications->orWhere('name', 'LIKE', "%$query%");
@@ -118,7 +118,7 @@ class SearchController extends Controller
     {
         $queries = $this->convertStringToWords($request);
 
-        $communicationRecords = CommunicationRecord::query();
+        $communicationRecords = CommunicationRecordPhysical::query();
 
         foreach ($queries as $query) {
             $communicationRecords->orWhere('name', 'LIKE', "%$query%");
@@ -256,7 +256,7 @@ class SearchController extends Controller
     {
         $queries = $this->convertStringToWords($request);
 
-        $records = Record::query();
+        $records = RecordPhysical::query();
         foreach ($queries as $query) {
             $records->where('name', 'LIKE', "%$query%")
                 ->orWhere('code', 'LIKE', "%$query%")

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Record;
+use App\Models\RecordPhysical;
 use App\Services\MCP\McpManagerService;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +23,7 @@ class ProcessRecordWithMcp implements ShouldQueue
      * Créer une nouvelle instance du job
      */
     public function __construct(
-        public Record $record,
+        public RecordPhysical $record,
         public array $features = ['title', 'thesaurus', 'summary']
     ) {}
 
