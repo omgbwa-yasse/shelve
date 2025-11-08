@@ -44,6 +44,16 @@
                         </button>
                     </div>
 
+                    <div class="d-flex align-items-center gap-1">
+                        <label for="typeFilter" class="small text-muted mb-0">Type</label>
+                        <select id="typeFilter" class="form-select form-select-sm" style="width:auto;">
+                            <option value="">Tous les types</option>
+                            <option value="physical">Dossiers Physiques</option>
+                            <option value="folder">Dossiers Numériques</option>
+                            <option value="document">Documents Numériques</option>
+                        </select>
+                    </div>
+
 
 
                     </div>
@@ -162,11 +172,29 @@
             @forelse($records as $record)
                 @php
                     $index = ($records->currentPage()-1)*$records->perPage() + $loop->iteration;
-                    $year = $record->date_exact ?? ($record->date_start ? (Str::substr($record->date_start,0,4)) : '');
-                    $authors = $record->authors->pluck('name')->join(', ');
-                    $keywords = $record->keywords->pluck('name')->implode(' ');
+                    $recordType = $record->record_type ?? 'physical';
+                    $typeLabel = $record->type_label ?? 'Dossier Physique';
+
+                    // Définir la couleur du badge selon le type
+                    $badgeClass = match($recordType) {
+                        'physical' => 'bg-primary',
+                        'folder' => 'bg-success',
+                        'document' => 'bg-warning text-dark',
+                        default => 'bg-secondary'
+                    };
+
+                    // Route appropriée selon le type
+                    $viewRoute = match($recordType) {
+                        'folder' => route('folders.show', $record->id),
+                        'document' => route('documents.show', $record->id),
+                        default => route('records.show', $record->id)
+                    };
+
+                    $year = $record->date_exact ?? ($record->date_start ? (Str::substr($record->date_start,0,4)) : ($record->created_at ? $record->created_at->format('Y') : ''));
+                    $authors = $record->authors ? $record->authors->pluck('name')->join(', ') : '';
+                    $keywords = $record->keywords ? $record->keywords->pluck('name')->implode(' ') : '';
                 @endphp
-                <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}" data-keywords="{{ $keywords }}">
+                <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}" data-keywords="{{ $keywords }}" data-record-type="{{ $recordType }}">
                     <div class="d-flex align-items-start">
                         <div class="me-3" style="width:2.2rem;">
                             <div class="form-check">
@@ -174,11 +202,23 @@
                             </div>
                         </div>
                         <div class="flex-grow-1">
-                            <!-- Checkbox + Title line -->
-                            <h2 class="h6 fw-bold mb-1">
-                                <a href="{{ route('records.show',$record) }}" class="text-decoration-none record-title">{{ $record->name }}</a>
-                                @if($year)<span class="text-muted fw-normal ms-1">({{ $year }})</span>@endif
-                            </h2>
+                            <!-- Type Badge + Title line -->
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge {{ $badgeClass }} px-2 py-1">
+                                    @if($recordType === 'physical')
+                                        <i class="bi bi-archive me-1"></i>
+                                    @elseif($recordType === 'folder')
+                                        <i class="bi bi-folder me-1"></i>
+                                    @else
+                                        <i class="bi bi-file-earmark me-1"></i>
+                                    @endif
+                                    {{ $typeLabel }}
+                                </span>
+                                <h2 class="h6 fw-bold mb-0">
+                                    <a href="{{ $viewRoute }}" class="text-decoration-none record-title">{{ $record->name }}</a>
+                                    @if($year)<span class="text-muted fw-normal ms-1">({{ $year }})</span>@endif
+                                </h2>
+                            </div>
                             <!-- Authors / Responsibility -->
                             @if($authors)
                                 <div class="small mb-1">
@@ -186,24 +226,62 @@
                                         <a href="#" class="text-primary text-decoration-none me-1">{{ $a->name }}</a>@if(!$loop->last)<span class="text-muted">,</span>@endif
                                     @endforeach
                                 </div>
+                            @elseif($recordType === 'folder' && isset($record->creator))
+                                <div class="small mb-1">
+                                    <span class="text-muted">Créateur:</span> {{ $record->creator->name ?? 'N/A' }}
+                                </div>
+                            @elseif($recordType === 'document' && isset($record->creator))
+                                <div class="small mb-1">
+                                    <span class="text-muted">Créateur:</span> {{ $record->creator->name ?? 'N/A' }}
+                                    @if(isset($record->current_version))
+                                        <span class="badge bg-info ms-2">v{{ $record->current_version }}</span>
+                                    @endif
+                                </div>
                             @endif
-                            <!-- Material / Type line -->
-                            <div class="small text-muted mb-1 d-flex flex-wrap gap-3">
-                                @if($record->support)
-                                    <span><i class="bi bi-hdd-stack me-1"></i>{{ $record->support->name }}</span>
-                                @endif
-                                @if($record->level)
-                                    <span><i class="bi bi-diagram-2 me-1"></i>{{ $record->level->name }}</span>
-                                @endif
-                                @if($record->activity)
-                                    <span><i class="bi bi-activity me-1"></i>{{ $record->activity->name }}</span>
-                                @endif
-                                @if($record->status)
-                                    <span><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>{{ $record->status->name }}</span>
-                                @endif
-                            </div>
-                            <!-- Publication / archival details (placeholder mapping) -->
-                            @if($record->archival_history || $record->acquisition_source)
+
+                            <!-- Material / Type line (Physical only) -->
+                            @if($recordType === 'physical')
+                                <div class="small text-muted mb-1 d-flex flex-wrap gap-3">
+                                    @if($record->support)
+                                        <span><i class="bi bi-hdd-stack me-1"></i>{{ $record->support->name }}</span>
+                                    @endif
+                                    @if($record->level)
+                                        <span><i class="bi bi-diagram-2 me-1"></i>{{ $record->level->name }}</span>
+                                    @endif
+                                    @if($record->activity)
+                                        <span><i class="bi bi-activity me-1"></i>{{ $record->activity->name }}</span>
+                                    @endif
+                                    @if($record->status)
+                                        <span><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>{{ $record->status->name }}</span>
+                                    @endif
+                                </div>
+                            @elseif($recordType === 'folder')
+                                <div class="small text-muted mb-1">
+                                    @if(isset($record->parent))
+                                        <i class="bi bi-folder-symlink me-1"></i>
+                                        <span>Chemin: {{ $record->parent->name ?? 'Racine' }}</span>
+                                    @else
+                                        <i class="bi bi-folder me-1"></i>
+                                        <span>Dossier racine</span>
+                                    @endif
+                                </div>
+                            @else
+                                {{-- Document type --}}
+                                <div class="small text-muted mb-1 d-flex flex-wrap gap-3">
+                                    @if(isset($record->folder))
+                                        <span><i class="bi bi-folder me-1"></i>{{ $record->folder->name }}</span>
+                                    @endif
+                                    @if(isset($record->mime_type))
+                                        <span><i class="bi bi-file-earmark-code me-1"></i>{{ $record->mime_type }}</span>
+                                    @endif
+                                    @if(isset($record->file_size))
+                                        <span><i class="bi bi-hdd me-1"></i>{{ number_format($record->file_size / 1024, 2) }} KB</span>
+                                    @endif
+                                </div>
+                            @endif
+
+                            <!-- Publication / archival details -->
+                            @if($recordType === 'physical' && ($record->archival_history || $record->acquisition_source))
                                 <div class="small text-muted mb-1">
                                     @if($record->archival_history)
                                         <span>{{ Str::limit(strip_tags($record->archival_history), 140) }}</span>
@@ -212,12 +290,27 @@
                                         <span class="ms-2">{{ __('Source:') }} {{ Str::limit(strip_tags($record->acquisition_source), 60) }}</span>
                                     @endif
                                 </div>
+                            @elseif(in_array($recordType, ['folder', 'document']) && isset($record->description))
+                                <div class="small text-muted mb-1">
+                                    {{ Str::limit(strip_tags($record->description), 140) }}
+                                </div>
                             @endif
+
                             <!-- Availability / location -->
                             <div class="small mb-2">
                                 <span class="text-success fw-semibold">{{ __('Disponible') }}</span>
-                                @if($record->containers->isNotEmpty())
+                                @if($recordType === 'physical' && $record->containers && $record->containers->isNotEmpty())
                                     <span class="text-muted ms-2">{{ __('Containers:') }} {{ $record->containers->pluck('code')->join(', ') }}</span>
+                                @elseif($recordType === 'folder')
+                                    <span class="text-muted ms-2">
+                                        <i class="bi bi-files me-1"></i>
+                                        {{ $record->documents_count ?? 0 }} document(s)
+                                    </span>
+                                @elseif($recordType === 'document' && isset($record->versions_count))
+                                    <span class="text-muted ms-2">
+                                        <i class="bi bi-clock-history me-1"></i>
+                                        {{ $record->versions_count }} version(s)
+                                    </span>
                                 @endif
                             </div>
                             <!-- Keywords -->
@@ -666,6 +759,45 @@
     .mosaic-item:hover { box-shadow:0 4px 12px rgba(0,0,0,0.12); transform:translateY(-2px); transition:.25s; }
     .mosaic-item img { object-fit:cover; }
     .record-entry { padding: 1.5rem 1rem; } /* +50% vertical vs p-3 (1rem) */
+
+        /* Type Badge Styles */
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.bg-primary {
+            background-color: #0d6efd !important;
+            box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+        }
+
+        .badge.bg-success {
+            background-color: #198754 !important;
+            box-shadow: 0 2px 4px rgba(25, 135, 84, 0.3);
+        }
+
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            box-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Record type specific styling */
+        .record-entry[data-record-type="physical"] {
+            border-left: 4px solid #0d6efd;
+        }
+
+        .record-entry[data-record-type="folder"] {
+            border-left: 4px solid #198754;
+        }
+
+        .record-entry[data-record-type="document"] {
+            border-left: 4px solid #ffc107;
+        }
+
         :root {
             --bs-primary: #0d6efd;
             --bs-success: #198754;
@@ -1421,6 +1553,44 @@
                     filterRecordsByKeywords();
                 });
             }
+
+            // Filtre par type de record
+            const typeFilter = document.getElementById('typeFilter');
+            if (typeFilter) {
+                typeFilter.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    const recordCards = document.querySelectorAll('.record-entry');
+
+                    recordCards.forEach(card => {
+                        const recordType = card.getAttribute('data-record-type');
+                        if (selectedType === '' || recordType === selectedType) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Mettre à jour le compteur de résultats visibles
+                    const visibleCount = Array.from(recordCards).filter(c => c.style.display !== 'none').length;
+                    updateVisibleCountDisplay(visibleCount);
+                });
+            }
         });
+
+        // Fonction pour mettre à jour l'affichage du nombre de résultats visibles
+        function updateVisibleCountDisplay(count) {
+            const summaryEl = document.querySelector('.d-flex.flex-column.flex-sm-row.justify-content-between');
+            if (summaryEl) {
+                const firstDiv = summaryEl.querySelector('div:first-child');
+                if (firstDiv) {
+                    const totalMatch = firstDiv.textContent.match(/\/\s*(\d+)/);
+                    const total = totalMatch ? totalMatch[1] : count;
+
+                    if (count < parseInt(total)) {
+                        firstDiv.innerHTML = `{{ __('Résultats') }} ${count} / ${total} <span class="text-warning">(filtrés)</span>`;
+                    }
+                }
+            }
+        }
     </script>
 @endpush

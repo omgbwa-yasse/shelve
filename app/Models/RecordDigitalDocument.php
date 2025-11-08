@@ -135,6 +135,23 @@ class RecordDigitalDocument extends Model
         return $this->belongsTo(User::class, 'last_viewed_by');
     }
 
+    public function keywords()
+    {
+        return $this->belongsToMany(Keyword::class, 'record_digital_document_keyword', 'document_id', 'keyword_id');
+    }
+
+    public function thesaurusConcepts()
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'record_digital_document_thesaurus_concept',
+            'document_id',
+            'concept_id'
+        )
+        ->withPivot('weight', 'context', 'extraction_note')
+        ->withTimestamps();
+    }
+
     /**
      * Scopes
      */
@@ -222,10 +239,18 @@ class RecordDigitalDocument extends Model
         $newVersion->signed_at = null;
         $newVersion->save();
 
-        // TODO: Store the uploaded file as attachment
-        // $attachment = Attachment::createFromUpload($file, $newVersion);
-        // $newVersion->attachment_id = $attachment->id;
-        // $newVersion->save();
+        // Stocker le fichier uploadé comme attachment
+        $attachment = Attachment::createFromUpload(
+            $file,
+            Attachment::TYPE_DIGITAL_DOCUMENT,
+            $user->id,
+            [
+                'description' => $notes,
+                'is_primary' => true,
+            ]
+        );
+        $newVersion->attachment_id = $attachment->id;
+        $newVersion->save();
 
         return $newVersion;
     }

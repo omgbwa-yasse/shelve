@@ -96,6 +96,23 @@ class RecordDigitalFolder extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function keywords()
+    {
+        return $this->belongsToMany(Keyword::class, 'record_digital_folder_keyword', 'folder_id', 'keyword_id');
+    }
+
+    public function thesaurusConcepts()
+    {
+        return $this->belongsToMany(
+            ThesaurusConcept::class,
+            'record_digital_folder_thesaurus_concept',
+            'folder_id',
+            'concept_id'
+        )
+        ->withPivot('weight', 'context', 'extraction_note')
+        ->withTimestamps();
+    }
+
     /**
      * Scopes
      */

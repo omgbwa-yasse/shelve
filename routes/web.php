@@ -190,26 +190,15 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
-    // Digital Folders Management (Phase 10 - Task 10.2)
-    Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
-    Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
-    Route::get('folders/tree/data', [\App\Http\Controllers\Web\FolderController::class, 'tree'])->name('folders.tree');
-
-    // Digital Documents Management (Phase 10 - Task 10.3)
-    Route::resource('documents', \App\Http\Controllers\Web\DocumentController::class);
-    Route::post('documents/{document}/upload', [\App\Http\Controllers\Web\DocumentController::class, 'upload'])->name('documents.upload');
-    Route::post('documents/{document}/approve', [\App\Http\Controllers\Web\DocumentController::class, 'approve'])->name('documents.approve');
-    Route::post('documents/{document}/reject', [\App\Http\Controllers\Web\DocumentController::class, 'reject'])->name('documents.reject');
-    Route::get('documents/{document}/versions', [\App\Http\Controllers\Web\DocumentController::class, 'versions'])->name('documents.versions');
-    Route::get('documents/{document}/versions/{version}/download', [\App\Http\Controllers\Web\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
 
     // =================== MUSEUM MODULE ===================
     Route::prefix('museum')->name('museum.')->group(function () {
         // Artifacts Management (Collections, Catalogage, Conservation)
-        Route::resource('artifacts', \App\Http\Controllers\Web\ArtifactController::class);
-        Route::get('artifacts/{artifact}/exhibitions', [\App\Http\Controllers\Web\ArtifactController::class, 'exhibitions'])->name('artifacts.exhibitions');
-        Route::get('artifacts/{artifact}/loans', [\App\Http\Controllers\Web\ArtifactController::class, 'loans'])->name('artifacts.loans');
-        Route::post('artifacts/{artifact}/images', [\App\Http\Controllers\Web\ArtifactController::class, 'addImage'])->name('artifacts.images');
+        // TODO: Implement ArtifactController
+        // Route::resource('artifacts', \App\Http\Controllers\Museum\ArtifactController::class);
+        // Route::get('artifacts/{artifact}/exhibitions', [\App\Http\Controllers\Museum\ArtifactController::class, 'exhibitions'])->name('artifacts.exhibitions');
+        // Route::get('artifacts/{artifact}/loans', [\App\Http\Controllers\Museum\ArtifactController::class, 'loans'])->name('artifacts.loans');
+        // Route::post('artifacts/{artifact}/images', [\App\Http\Controllers\Museum\ArtifactController::class, 'addImage'])->name('artifacts.images');
 
         // Collections
         Route::get('collections', [\App\Http\Controllers\Museum\CollectionController::class, 'index'])->name('collections.index');
@@ -265,8 +254,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('books/export', [\App\Http\Controllers\Library\BookController::class, 'export'])->name('books.export');
 
         // Periodicals Management (Revues, Articles)
-        Route::resource('periodicals', \App\Http\Controllers\Web\PeriodicalController::class)->only(['index', 'show']);
-        Route::get('periodicals/articles/search', [\App\Http\Controllers\Web\PeriodicalController::class, 'articles'])->name('periodicals.articles');
+        // TODO: Implement PeriodicalController
+        // Route::resource('periodicals', \App\Http\Controllers\Web\PeriodicalController::class)->only(['index', 'show']);
+        // Route::get('periodicals/articles/search', [\App\Http\Controllers\Web\PeriodicalController::class, 'articles'])->name('periodicals.articles');
         Route::get('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'issues'])->name('periodicals.issues');
         Route::post('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'storeIssue'])->name('periodicals.issues.store');
 
@@ -329,12 +319,15 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     // Admin Panel (Phase 10 - Task 10.7)
+    // TODO: Implement AdminPanelController
+    /*
     Route::prefix('admin-panel')->middleware('role:admin')->name('admin.')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\Web\AdminPanelController::class, 'dashboard'])->name('dashboard');
         Route::get('users', [\App\Http\Controllers\Web\AdminPanelController::class, 'users'])->name('users');
         Route::get('settings', [\App\Http\Controllers\Web\AdminPanelController::class, 'settings'])->name('settings');
         Route::get('logs', [\App\Http\Controllers\Web\AdminPanelController::class, 'logs'])->name('logs');
     });
+    */
 
     // Routes avec authentification pour les bulletin boards
     Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
@@ -714,6 +707,23 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('repositories')->group(function () {
+
+         // Digital Folders Management (Phase 10 - Task 10.2)
+        Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
+        Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
+        Route::get('folders/tree/data', [\App\Http\Controllers\Web\FolderController::class, 'tree'])->name('folders.tree');
+
+        // Digital Documents Management (Phase 10 - Task 10.3)
+        Route::resource('documents', \App\Http\Controllers\Web\DocumentController::class);
+        Route::post('documents/{document}/upload', [\App\Http\Controllers\Web\DocumentController::class, 'upload'])->name('documents.upload');
+        Route::post('documents/{document}/approve', [\App\Http\Controllers\Web\DocumentController::class, 'approve'])->name('documents.approve');
+        Route::post('documents/{document}/reject', [\App\Http\Controllers\Web\DocumentController::class, 'reject'])->name('documents.reject');
+        Route::get('documents/{document}/versions', [\App\Http\Controllers\Web\DocumentController::class, 'versions'])->name('documents.versions');
+        Route::get('documents/{document}/versions/{version}/download', [\App\Http\Controllers\Web\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
+
+
+
+
         Route::post('/slips/store', [SlipController::class, 'storetransfert'])->name('slips.storetransfert');
         Route::get('/', [RecordController::class, 'index']);
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
@@ -740,9 +750,9 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('records/container/insert', [RecordContainerController::class, 'store'])->name('record-container-insert');
         Route::post('records/container/remove', [RecordContainerController::class, 'destroy'])->name('record-container-remove');
 
-    // Routes Drag & Drop AVANT la route resource (déplacées vers RecordDragDropController)
-    Route::get('records/drag-drop', [RecordDragDropController::class, 'dragDropForm'])->name('records.drag-drop');
-    Route::post('records/drag-drop', [RecordDragDropController::class, 'processDragDrop'])->name('records.drag-drop.process');
+        // Routes Drag & Drop AVANT la route resource (déplacées vers RecordDragDropController)
+        Route::get('records/drag-drop', [RecordDragDropController::class, 'dragDropForm'])->name('records.drag-drop');
+        Route::post('records/drag-drop', [RecordDragDropController::class, 'processDragDrop'])->name('records.drag-drop.process');
 
         // Route resource principale (génère automatiquement show, create, store, edit, update, destroy)
         Route::resource('records', RecordController::class);
@@ -1039,6 +1049,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('rate-limit/clear', [RateLimitController::class, 'clearLimits'])->name('rate-limit.clear');
 
     // OPAC Configuration Administration
+    // TODO: Implement OpacConfigurationController and related Admin controllers
+    /*
     Route::prefix('opac')->name('opac.')->group(function () {
         Route::get('configurations', [OpacConfigurationController::class, 'index'])->name('configurations.index');
         Route::post('configurations', [OpacConfigurationController::class, 'update'])->name('configurations.update');
@@ -1058,6 +1070,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
         // OPAC Templates Administration - Moved to Public Module
     });
+    */
 });
 
 // Routes publics de administration du module public
@@ -1092,6 +1105,8 @@ Route::prefix('public')->name('public.')->group(function () {
     })->name('test-editors');
 
     // OPAC Templates Management - Portail Administration
+    // TODO: Implement OpacTemplateController and OpacTemplateApiController
+    /*
     Route::resource('opac-templates', \App\Http\Controllers\Public\OpacTemplateController::class)->names('opac-templates');
     Route::get('opac-templates/{template}/preview', [\App\Http\Controllers\Public\OpacTemplateController::class, 'preview'])->name('opac-templates.preview');
     Route::post('opac-templates/{template}/duplicate', [\App\Http\Controllers\Public\OpacTemplateController::class, 'duplicate'])->name('opac-templates.duplicate');
@@ -1116,6 +1131,7 @@ Route::prefix('public')->name('public.')->group(function () {
             Route::get('{template}/components', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'getComponents'])->name('components');
             Route::post('render-component', [\App\Http\Controllers\Public\OpacTemplateApiController::class, 'renderComponent'])->name('render-component');
         });
+    */
 
     // Gestion des demandes de documents
     Route::resource('document-requests', PublicDocumentRequestController::class)->names('document-requests');

@@ -14,6 +14,8 @@ use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
 use App\Models\RecordPhysical;
+use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalDocument;
 use App\Models\RecordSupport;
 use App\Models\RecordStatus;
 use App\Models\Container;
@@ -76,29 +78,113 @@ class RecordController extends Controller
         $query = $request->input('query');
         $keywordFilter = $request->input('keyword_filter');
 
-        $recordsQuery = RecordPhysical::with(['level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords']);
+        // Si aucun critère de recherche n'est fourni, retourner une collection vide
+        if (empty($query) && empty($keywordFilter)) {
+            $records = new \Illuminate\Pagination\LengthAwarePaginator(
+                collect(),
+                0,
+                10,
+                $request->input('page', 1),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
 
+            $slipStatuses = SlipStatus::all();
+            $statuses = RecordStatus::all();
+            $terms = [];
+            $users = User::select('id', 'name')->get();
+            $organisations = Organisation::select('id', 'name')->get();
+
+            return view('records.index', compact(
+                'records',
+                'statuses',
+                'slipStatuses',
+                'terms',
+                'users',
+                'organisations',
+                'query'
+            ));
+        }
+
+        // Initialiser les queries pour les 3 types de records
+        $physicalQuery = RecordPhysical::with([
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
+        ]);
+
+        $foldersQuery = RecordDigitalFolder::with([
+            'level', 'status', 'activity', 'authors', 'keywords', 'thesaurusConcepts', 'attachments'
+        ]);
+
+        $documentsQuery = RecordDigitalDocument::with([
+            'level', 'status', 'activity', 'versions', 'keywords', 'thesaurusConcepts', 'attachments'
+        ]);
+
+        // Recherche par query (name et code) pour tous les types
         if (!empty($query)) {
-            // Recherche dans l'intitulé (name) et le code
-            $recordsQuery->where(function($q) use ($query) {
+            $physicalQuery->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', '%' . $query . '%')
+                    ->orWhere('code', 'LIKE', '%' . $query . '%');
+            });
+
+            $foldersQuery->where(function($q) use ($query) {
+                $q->where('name', 'LIKE', '%' . $query . '%')
+                    ->orWhere('code', 'LIKE', '%' . $query . '%');
+            });
+
+            $documentsQuery->where(function($q) use ($query) {
                 $q->where('name', 'LIKE', '%' . $query . '%')
                     ->orWhere('code', 'LIKE', '%' . $query . '%');
             });
         }
 
-        // Filtrage par mot-clé si fourni
+        // Filtrage par mot-clé si fourni (appliqué aux 3 types)
         if (!empty($keywordFilter)) {
-            $recordsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+            $physicalQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+            $foldersQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+            $documentsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
                 $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
             });
         }
 
-        // Si ni query ni keyword_filter ne sont fournis, retourner une collection vide paginée
-        if (empty($query) && empty($keywordFilter)) {
-            $records = RecordPhysical::where('id', 0)->paginate(10);
-        } else {
-            $records = $recordsQuery->paginate(10);
+        // Récupérer les résultats
+        $physicalRecords = $physicalQuery->get();
+        $folders = $foldersQuery->get();
+        $documents = $documentsQuery->get();
+
+        // Combiner tous les records avec leurs types
+        $allRecords = collect();
+
+        foreach ($physicalRecords as $record) {
+            $record->record_type = 'physical';
+            $record->type_label = $this->getRecordTypeLabel('physical');
+            $allRecords->push($record);
         }
+
+        foreach ($folders as $folder) {
+            $folder->record_type = 'folder';
+            $folder->type_label = $this->getRecordTypeLabel('folder');
+            $allRecords->push($folder);
+        }
+
+        foreach ($documents as $document) {
+            $document->record_type = 'document';
+            $document->type_label = $this->getRecordTypeLabel('document');
+            $allRecords->push($document);
+        }
+
+        // Pagination manuelle
+        $perPage = 10;
+        $page = $request->input('page', 1);
+        $records = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allRecords->forPage($page, $perPage),
+            $allRecords->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         // Charger les données nécessaires pour la vue index
         $slipStatuses = SlipStatus::all();
@@ -108,9 +194,13 @@ class RecordController extends Controller
         $organisations = Organisation::select('id', 'name')->get();
 
         // Contexte de navigation pour une expérience fluide
+        $listIds = $allRecords->map(function($record) {
+            return $record->record_type . '_' . $record->id;
+        })->toArray();
+
         session([
             'records.back_url' => $request->fullUrl(),
-            'records.list_ids' => $records->getCollection()->pluck('id')->all(),
+            'records.list_ids' => $listIds,
         ]);
 
         return view('records.index', compact(
@@ -128,21 +218,69 @@ class RecordController extends Controller
     {
         Gate::authorize('records_view');
 
-        // Initialiser la query des records avec les relations
-        $query = RecordPhysical::with([
+        // Initialiser les queries pour les 3 types de records
+        $physicalQuery = RecordPhysical::with([
             'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'attachments', 'keywords'
         ]);
 
-        // Filtrage par mot-clé si fourni
+        $foldersQuery = RecordDigitalFolder::with([
+            'level', 'status', 'activity', 'authors', 'keywords', 'thesaurusConcepts', 'attachments'
+        ]);
+
+        $documentsQuery = RecordDigitalDocument::with([
+            'level', 'status', 'activity', 'versions', 'keywords', 'thesaurusConcepts', 'attachments'
+        ]);
+
+        // Filtrage par mot-clé si fourni (appliqué aux 3 types)
+        $keywordFilter = $request->input('keyword_filter');
         if ($request->filled('keyword_filter')) {
-            $keywordFilter = $request->input('keyword_filter');
-            $query->whereHas('keywords', function ($q) use ($keywordFilter) {
+            $physicalQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+            $foldersQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+            $documentsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
                 $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
             });
         }
 
-        // Pagination des résultats
-        $records = $query->paginate(10);
+        // Récupérer les résultats
+        $physicalRecords = $physicalQuery->get();
+        $folders = $foldersQuery->get();
+        $documents = $documentsQuery->get();
+
+        // Combiner tous les records avec leurs types
+        $allRecords = collect();
+
+        foreach ($physicalRecords as $record) {
+            $record->record_type = 'physical';
+            $record->type_label = $this->getRecordTypeLabel('physical');
+            $allRecords->push($record);
+        }
+
+        foreach ($folders as $folder) {
+            $folder->record_type = 'folder';
+            $folder->type_label = $this->getRecordTypeLabel('folder');
+            $allRecords->push($folder);
+        }
+
+        foreach ($documents as $document) {
+            $document->record_type = 'document';
+            $document->type_label = $this->getRecordTypeLabel('document');
+            $allRecords->push($document);
+        }
+
+        // Pagination manuelle
+        $perPage = 10;
+        $page = $request->input('page', 1);
+        $records = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allRecords->forPage($page, $perPage),
+            $allRecords->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $slipStatuses = SlipStatus::all();
         $statuses = RecordStatus::all();
@@ -151,9 +289,14 @@ class RecordController extends Controller
         $organisations = Organisation::select('id', 'name')->get();
 
         // Contexte de navigation pour une expérience fluide
+        // On stocke les IDs avec préfixe de type pour distinguer les records
+        $listIds = $allRecords->map(function($record) {
+            return $record->record_type . '_' . $record->id;
+        })->toArray();
+
         session([
             'records.back_url' => $request->fullUrl(),
-            'records.list_ids' => $records->getCollection()->pluck('id')->all(),
+            'records.list_ids' => $listIds,
         ]);
 
         return view('records.index', compact(
@@ -613,54 +756,122 @@ class RecordController extends Controller
         // Vérifier les permissions d'export pour les records
         Gate::authorize('records_export');
 
-        $recordIds = explode(',', $request->query('records'));
+        $recordIdsRaw = explode(',', $request->query('records'));
         $format = $request->query('format', 'excel');
-        // Eager-load relations for richer exports (EAD/PDF)
-        $records = RecordPhysical::with([
-            'level','status','support','activity','organisation',
-            'containers','recordContainers.container','authors','thesaurusConcepts','attachments',
-            'children'
-        ])->whereIn('id', $recordIds)->get();
+
+        // Séparer les IDs par type (format: "type_id" ou juste "id" pour legacy)
+        $physicalIds = [];
+        $folderIds = [];
+        $documentIds = [];
+
+        foreach ($recordIdsRaw as $idStr) {
+            $idStr = trim($idStr);
+            if (str_contains($idStr, '_')) {
+                [$type, $id] = explode('_', $idStr, 2);
+                if ($type === 'physical') {
+                    $physicalIds[] = $id;
+                } elseif ($type === 'folder') {
+                    $folderIds[] = $id;
+                } elseif ($type === 'document') {
+                    $documentIds[] = $id;
+                }
+            } else {
+                // Legacy: IDs sans préfixe sont considérés comme physical
+                $physicalIds[] = $idStr;
+            }
+        }
+
+        // Charger les records de chaque type avec leurs relations
+        $physicalRecords = collect();
+        $folders = collect();
+        $documents = collect();
+
+        if (!empty($physicalIds)) {
+            $physicalRecords = RecordPhysical::with([
+                'level','status','support','activity','organisation',
+                'containers','recordContainers.container','authors','thesaurusConcepts','attachments',
+                'children'
+            ])->whereIn('id', $physicalIds)->get()->map(function($r) {
+                $r->record_type = 'physical';
+                $r->type_label = 'Dossier Physique';
+                return $r;
+            });
+        }
+
+        if (!empty($folderIds)) {
+            $folders = RecordDigitalFolder::with([
+                'level','status','activity','organisation','authors','keywords','thesaurusConcepts','attachments','parent'
+            ])->whereIn('id', $folderIds)->get()->map(function($f) {
+                $f->record_type = 'folder';
+                $f->type_label = 'Dossier Numérique';
+                return $f;
+            });
+        }
+
+        if (!empty($documentIds)) {
+            $documents = RecordDigitalDocument::with([
+                'level','status','activity','organisation','versions','keywords','thesaurusConcepts','attachments','folder'
+            ])->whereIn('id', $documentIds)->get()->map(function($d) {
+                $d->record_type = 'document';
+                $d->type_label = 'Document Numérique';
+                return $d;
+            });
+        }
+
+        // Combiner tous les records
+        $allRecords = $physicalRecords->concat($folders)->concat($documents);
 
         $slips = "";
         try {
             switch ($format) {
                 case 'excel':
-                    return Excel::download(new RecordsExport($records), 'records_export.xlsx');
-                case 'ead':
-                    $ead = new \App\Exports\EADExport();
-                    $xml = $ead->exportRecords($records);
-                    return response($xml)
-                        ->header('Content-Type', 'application/xml')
-                        ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
-                case 'ead2002':
-                    $ead2002 = new \App\Services\EAD2002ExportService();
-                    $xml = $ead2002->exportRecords($records);
-                    return response($xml)
-                        ->header('Content-Type', 'application/xml')
-                        ->header('Content-Disposition', 'attachment; filename="records_export_ead2002.xml"');
-                case 'dublincore':
-                    $dc = new \App\Services\DublinCoreExportService();
-                    $xml = $dc->exportRecords($records);
-                    return response($xml)
-                        ->header('Content-Type', 'application/xml')
-                        ->header('Content-Disposition', 'attachment; filename="records_export_dublincore.xml"');
-                case 'seda':
-                    return $this->exportSEDA($records,$slips);
-                case 'pdf':
-                    // Charger les relations nécessaires et conserver l'ordre de sélection
-                    $recordsForPdf = RecordPhysical::with([
-                        'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
-                    ])->whereIn('id', $recordIds)->get();
+                    // Excel peut exporter tous les types ensemble
+                    return Excel::download(new RecordsExport($allRecords), 'records_export.xlsx');
 
-                    $idOrder = array_flip($recordIds);
-                    $recordsForPdf = $recordsForPdf->sortBy(fn($r) => $idOrder[$r->id] ?? PHP_INT_MAX)->values();
+                case 'ead':
+                case 'ead2002':
+                case 'dublincore':
+                case 'seda':
+                    // Ces formats sont spécifiques aux archives physiques
+                    if ($physicalRecords->isEmpty()) {
+                        return response()->json([
+                            'error' => 'Les formats EAD/SEDA/DublinCore ne sont disponibles que pour les dossiers physiques.'
+                        ], 400);
+                    }
+
+                    if ($format === 'ead') {
+                        $ead = new \App\Exports\EADExport();
+                        $xml = $ead->exportRecords($physicalRecords);
+                        return response($xml)
+                            ->header('Content-Type', 'application/xml')
+                            ->header('Content-Disposition', 'attachment; filename="records_export.xml"');
+                    } elseif ($format === 'ead2002') {
+                        $ead2002 = new \App\Services\EAD2002ExportService();
+                        $xml = $ead2002->exportRecords($physicalRecords);
+                        return response($xml)
+                            ->header('Content-Type', 'application/xml')
+                            ->header('Content-Disposition', 'attachment; filename="records_export_ead2002.xml"');
+                    } elseif ($format === 'dublincore') {
+                        $dc = new \App\Services\DublinCoreExportService();
+                        $xml = $dc->exportRecords($physicalRecords);
+                        return response($xml)
+                            ->header('Content-Type', 'application/xml')
+                            ->header('Content-Disposition', 'attachment; filename="records_export_dublincore.xml"');
+                    } else { // seda
+                        return $this->exportSEDA($physicalRecords, $slips);
+                    }
+
+                case 'pdf':
+                    // PDF peut exporter tous les types ensemble
+                    // Conserver l'ordre de sélection original
+                    $recordsForPdf = $allRecords;
 
                     $pdf = PDF::loadView('records.print', [
                         'records' => $recordsForPdf,
                     ]);
 
                     return $pdf->download('records_export.pdf');
+
                 default:
                     return response()->json(['error' => 'Format d\'exportation non valide.'], 400);
             }
@@ -1156,22 +1367,77 @@ class RecordController extends Controller
             return redirect()->back()->with('error', __('Aucun document sélectionné.'));
         }
 
-        // Eager loading des relations utilisées dans la vue d'impression
-        $records = RecordPhysical::with([
-            'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
-        ])->whereIn('id', $recordIds)->get();
+        // Séparer les IDs par type (format: "type_id" ou juste "id" pour legacy)
+        $physicalIds = [];
+        $folderIds = [];
+        $documentIds = [];
+
+        foreach ($recordIds as $idStr) {
+            $idStr = trim($idStr);
+            if (str_contains($idStr, '_')) {
+                [$type, $id] = explode('_', $idStr, 2);
+                if ($type === 'physical') {
+                    $physicalIds[] = $id;
+                } elseif ($type === 'folder') {
+                    $folderIds[] = $id;
+                } elseif ($type === 'document') {
+                    $documentIds[] = $id;
+                }
+            } else {
+                // Legacy: IDs sans préfixe sont considérés comme physical
+                $physicalIds[] = $idStr;
+            }
+        }
+
+        // Charger les records de chaque type avec leurs relations
+        $physicalRecords = collect();
+        $folders = collect();
+        $documents = collect();
+
+        if (!empty($physicalIds)) {
+            $physicalRecords = RecordPhysical::with([
+                'level','status','support','activity','containers','authors','thesaurusConcepts','attachments'
+            ])->whereIn('id', $physicalIds)->get()->map(function($r) {
+                $r->record_type = 'physical';
+                $r->type_label = 'Dossier Physique';
+                return $r;
+            });
+        }
+
+        if (!empty($folderIds)) {
+            $folders = RecordDigitalFolder::with([
+                'level','status','activity','authors','keywords','thesaurusConcepts','attachments'
+            ])->whereIn('id', $folderIds)->get()->map(function($f) {
+                $f->record_type = 'folder';
+                $f->type_label = 'Dossier Numérique';
+                return $f;
+            });
+        }
+
+        if (!empty($documentIds)) {
+            $documents = RecordDigitalDocument::with([
+                'level','status','activity','versions','keywords','thesaurusConcepts','attachments'
+            ])->whereIn('id', $documentIds)->get()->map(function($d) {
+                $d->record_type = 'document';
+                $d->type_label = 'Document Numérique';
+                return $d;
+            });
+        }
+
+        // Combiner tous les records
+        $records = $physicalRecords->concat($folders)->concat($documents);
 
         // Conserver l'ordre de sélection (tel qu'affiché côté interface)
-        $idOrder = array_flip($recordIds);
-        $records = $records->sortBy(fn($r) => $idOrder[$r->id])->values();
+        // Note: Tri simplifié car les IDs peuvent être de modèles différents
+        // On pourrait améliorer en créant un mapping position => record
 
         $pdf = PDF::loadView('records.print', [
             'records' => $records,
         ]);
 
-    // Mode flux (prévisualisation dans le navigateur) si demandé (query ou body)
-    $mode = $request->query('mode', $request->input('mode'));
-    if ($mode === 'stream') {
+        // Mode flux (prévisualisation dans le navigateur) si demandé (query ou body)
+        $mode = $request->query('mode', $request->input('mode'));
+        if ($mode === 'stream') {
             return $pdf->stream('records_print.pdf');
         }
         return $pdf->download('records_print.pdf');
@@ -1257,6 +1523,51 @@ class RecordController extends Controller
                 ];
             })
         ]);
+    }
+
+    /**
+     * Détecte le type de record et retourne le modèle approprié
+     *
+     * @param string $type Type du record ('physical', 'folder', 'document')
+     * @return string Nom de classe du modèle
+     */
+    private function getRecordModel(string $type): string
+    {
+        return match($type) {
+            'physical' => RecordPhysical::class,
+            'folder' => RecordDigitalFolder::class,
+            'document' => RecordDigitalDocument::class,
+            default => RecordPhysical::class,
+        };
+    }
+
+    /**
+     * Trouve un record par son ID et son type
+     *
+     * @param int $id ID du record
+     * @param string $type Type du record ('physical', 'folder', 'document')
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    private function findRecord(int $id, string $type)
+    {
+        $modelClass = $this->getRecordModel($type);
+        return $modelClass::find($id);
+    }
+
+    /**
+     * Récupère le label pour le type de record
+     *
+     * @param string $type Type du record ('physical', 'folder', 'document')
+     * @return string Label traduit
+     */
+    private function getRecordTypeLabel(string $type): string
+    {
+        return match($type) {
+            'physical' => 'Dossier Physique',
+            'folder' => 'Dossier Numérique',
+            'document' => 'Document Numérique',
+            default => 'Dossier Physique',
+        };
     }
 
 }

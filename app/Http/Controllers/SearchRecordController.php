@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\RecordPhysical;
+use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalDocument;
 use App\Models\Activity;
 use App\Models\Author;
 use App\Models\Building;
@@ -21,6 +23,7 @@ use App\Models\RecordLevel;
 use App\Models\ThesaurusConcept;
 use App\Models\Keyword;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class SearchRecordController extends Controller
 {
@@ -56,7 +59,14 @@ class SearchRecordController extends Controller
         $operators = $request->input('operator');
         $values = $request->input('value');
 
-        $query = RecordPhysical::query();
+        // Recherche dans RecordPhysical
+        $queryPhysical = RecordPhysical::query();
+
+        // Recherche dans RecordDigitalFolder
+        $queryFolders = RecordDigitalFolder::query();
+
+        // Recherche dans RecordDigitalDocument
+        $queryDocuments = RecordDigitalDocument::query();
 
         if ($fields && $operators && $values) {
             foreach ($fields as $index => $field) {
@@ -69,7 +79,9 @@ class SearchRecordController extends Controller
                     case 'content':
                     case 'attachment':
                     case 'attachment_content':
-                        $this->applyTextSearch($query, $field, $operator, $value);
+                        $this->applyTextSearch($queryPhysical, $field, $operator, $value);
+                        $this->applyTextSearchDigital($queryFolders, $field, $operator, $value);
+                        $this->applyTextSearchDigital($queryDocuments, $field, $operator, $value);
                         break;
 
                     case 'date_start':
@@ -78,7 +90,9 @@ class SearchRecordController extends Controller
                     case 'date_creation':
                     case 'dua':
                     case 'dul':
-                        $this->applyDateSearch($query, $field, $operator, $value);
+                        $this->applyDateSearch($queryPhysical, $field, $operator, $value);
+                        $this->applyDateSearchDigital($queryFolders, $field, $operator, $value);
+                        $this->applyDateSearchDigital($queryDocuments, $field, $operator, $value);
                         break;
 
                     case 'room':
@@ -90,18 +104,23 @@ class SearchRecordController extends Controller
                     case 'container':
                     case 'status':
                     case 'keyword':
-                        $this->applyRelationSearch($query, $field, $operator, $value);
+                        $this->applyRelationSearch($queryPhysical, $field, $operator, $value);
+                        // Les dossiers et documents numériques n'ont pas de localisation physique
+                        if (!in_array($field, ['room', 'shelf', 'container'])) {
+                            $this->applyRelationSearchDigital($queryFolders, $field, $operator, $value);
+                            $this->applyRelationSearchDigital($queryDocuments, $field, $operator, $value);
+                        }
                         break;
 
                     default:
-                        $query->where($field, '=', $value);
+                        $queryPhysical->where($field, '=', $value);
                         break;
                 }
             }
         }
 
-        // Chargement des données nécessaires pour la vue
-        $records = $query->with([
+        // Récupération des résultats des 3 types
+        $physicalRecords = $queryPhysical->with([
             'status',
             'support',
             'level',
@@ -110,7 +129,52 @@ class SearchRecordController extends Controller
             'user',
             'authors',
             'thesaurusConcepts'
-        ])->paginate(20);
+        ])->get()->map(function($record) {
+            $record->record_type = 'physical';
+            $record->type_label = 'Dossier Physique';
+            return $record;
+        });
+
+        $folders = $queryFolders->with([
+            'parent',
+            'children',
+            'documents',
+            'creator'
+        ])->get()->map(function($folder) {
+            $folder->record_type = 'folder';
+            $folder->type_label = 'Dossier Numérique';
+            return $folder;
+        });
+
+        $documents = $queryDocuments->with([
+            'folder',
+            'type',
+            'attachment',
+            'creator'
+        ])->get()->map(function($document) {
+            $document->record_type = 'document';
+            $document->type_label = 'Document Numérique';
+            return $document;
+        });
+
+        // Fusion et tri des résultats
+        $allResults = $physicalRecords->concat($folders)->concat($documents);
+
+        // Tri par date de création décroissante
+        $allResults = $allResults->sortByDesc('created_at');
+
+        // Pagination manuelle
+        $perPage = 20;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $allResults->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $records = new LengthAwarePaginator(
+            $currentItems,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
 
         // Données additionnelles pour la vue
         $viewData = [
@@ -188,6 +252,49 @@ class SearchRecordController extends Controller
         }
     }
 
+    /**
+     * Recherche textuelle pour les dossiers et documents numériques
+     */
+    private function applyTextSearchDigital($query, $field, $operator, $value)
+    {
+        // Pour les dossiers/documents numériques, on cherche dans name et description
+        $searchFields = ['name', 'description'];
+
+        if ($field === 'code') {
+            $searchFields = ['code'];
+        } elseif ($field === 'name') {
+            $searchFields = ['name'];
+        } elseif ($field === 'content' || $field === 'attachment' || $field === 'attachment_content') {
+            $searchFields = ['description'];
+        }
+
+        switch ($operator) {
+            case self::OP_STARTS_WITH:
+                $query->where(function($q) use ($searchFields, $value) {
+                    foreach ($searchFields as $searchField) {
+                        $q->orWhere($searchField, 'like', $value . '%');
+                    }
+                });
+                break;
+            case self::OP_CONTAINS:
+                $query->where(function($q) use ($searchFields, $value) {
+                    foreach ($searchFields as $searchField) {
+                        $q->orWhere($searchField, 'like', '%' . $value . '%');
+                    }
+                });
+                break;
+            case self::OP_NOT_CONTAINS:
+                $query->where(function($q) use ($searchFields, $value) {
+                    foreach ($searchFields as $searchField) {
+                        $q->where($searchField, 'not like', '%' . $value . '%');
+                    }
+                });
+                break;
+            default:
+                break;
+        }
+    }
+
     private function applyDateSearch($query, $field, $operator, $value)
     {
         switch ($operator) {
@@ -199,6 +306,35 @@ class SearchRecordController extends Controller
                 break;
             case '<':
                 $query->whereDate($field, '<', $value);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Recherche par dates pour les dossiers et documents numériques
+     */
+    private function applyDateSearchDigital($query, $field, $operator, $value)
+    {
+        // Pour les dossiers/documents numériques, on utilise created_at
+        $dateField = 'created_at';
+
+        if (in_array($field, ['date_creation', 'created_at'])) {
+            $dateField = 'created_at';
+        } elseif ($field === 'date_start') {
+            $dateField = 'created_at'; // Pas de date_start dans les modèles numériques
+        }
+
+        switch ($operator) {
+            case '=':
+                $query->whereDate($dateField, '=', $value);
+                break;
+            case '>':
+                $query->whereDate($dateField, '>', $value);
+                break;
+            case '<':
+                $query->whereDate($dateField, '<', $value);
                 break;
             default:
                 break;
@@ -263,6 +399,30 @@ class SearchRecordController extends Controller
         }
     }
 
+    /**
+     * Recherche par relations pour les dossiers et documents numériques
+     */
+    private function applyRelationSearchDigital($query, $field, $operator, $value)
+    {
+        switch ($field) {
+            case 'creator':
+                $query->where('creator_id', $operator === 'avec' ? '=' : '!=', $value);
+                break;
+
+            case 'activity':
+            case 'author':
+            case 'term':
+            case 'status':
+            case 'keyword':
+                // Les dossiers/documents numériques n'ont pas ces relations pour l'instant
+                // On peut les ignorer ou les implémenter plus tard
+                break;
+
+            default:
+                break;
+        }
+    }
+
     private function getRelationName($field)
     {
         $relationMap = [
@@ -279,56 +439,62 @@ class SearchRecordController extends Controller
 
     public function sort(Request $request)
     {
-        $query = RecordPhysical::query();
+        $queryPhysical = RecordPhysical::query();
+        $queryFolders = RecordDigitalFolder::query();
+        $queryDocuments = RecordDigitalDocument::query();
 
-    switch ($request->input('categ')) {
+        switch ($request->input('categ')) {
             case "dates":
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
 
                 if ($exactDate) {
-                    $query->whereDate('date_exact', $exactDate);
+                    $queryPhysical->whereDate('date_exact', $exactDate);
                 }
 
                 if ($startDate && $endDate) {
-                    $query->orWhere(function ($q) use ($startDate, $endDate) {
+                    $queryPhysical->orWhere(function ($q) use ($startDate, $endDate) {
                         $q->whereDate('date_start', '>=', $startDate)
                             ->whereDate('date_end', '<=', $endDate);
                     });
+
+                    // Pour les dossiers/documents numériques, on filtre par created_at
+                    $queryFolders->whereBetween('created_at', [$startDate, $endDate]);
+                    $queryDocuments->whereBetween('created_at', [$startDate, $endDate]);
                 }
                 break;
 
             case "term":
-            case "concept": // Ajout du cas "concept" pour prendre en charge les deux formats
+            case "concept":
                 $conceptId = $request->input('id');
-                $query->whereHas('thesaurusConcepts', function ($q) use ($conceptId) {
+                $queryPhysical->whereHas('thesaurusConcepts', function ($q) use ($conceptId) {
                     $q->where('thesaurus_concepts.id', $conceptId);
                 });
                 break;
 
             case "author":
                 $authorId = $request->input('id');
-                $query->whereHas('authors', function ($q) use ($authorId) {
+                $queryPhysical->whereHas('authors', function ($q) use ($authorId) {
                     $q->where('authors.id', $authorId);
                 });
                 break;
 
             case "activity":
                 $activityId = $request->input('id');
-                $query->where('activity_id', $activityId);
+                $queryPhysical->where('activity_id', $activityId);
                 break;
 
             case "container":
                 $containerId = $request->input('id');
-                $query->whereHas('containers', function ($q) use ($containerId) {
+                $queryPhysical->whereHas('containers', function ($q) use ($containerId) {
                     $q->where('containers.id', $containerId);
                 });
                 break;
 
             case "keyword":
                 $keywordId = $request->input('id');
-                $query->whereHas('keywords', function ($q) use ($keywordId) {
+                $queryPhysical->whereHas('keywords', function ($q) use ($keywordId) {
                     $q->where('keywords.id', $keywordId);
                 });
                 break;
@@ -336,7 +502,7 @@ class SearchRecordController extends Controller
                 break;
         }
 
-                $query->with([
+        $queryPhysical->with([
             'level',
             'status',
             'support',
@@ -348,7 +514,39 @@ class SearchRecordController extends Controller
             'keywords'
         ]);
 
-        $records = $query->paginate(10);
+        // Récupération des résultats
+        $physicalRecords = $queryPhysical->get()->map(function($record) {
+            $record->record_type = 'physical';
+            $record->type_label = 'Dossier Physique';
+            return $record;
+        });
+
+        $folders = $queryFolders->with(['parent', 'children', 'creator'])->get()->map(function($folder) {
+            $folder->record_type = 'folder';
+            $folder->type_label = 'Dossier Numérique';
+            return $folder;
+        });
+
+        $documents = $queryDocuments->with(['folder', 'type', 'attachment', 'creator'])->get()->map(function($document) {
+            $document->record_type = 'document';
+            $document->type_label = 'Document Numérique';
+            return $document;
+        });
+
+        // Fusion et pagination
+        $allResults = $physicalRecords->concat($folders)->concat($documents)->sortByDesc('created_at');
+
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $allResults->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $records = new LengthAwarePaginator(
+            $currentItems,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
 
         $viewData = [
             'records' => $records,
@@ -370,7 +568,7 @@ class SearchRecordController extends Controller
 
     public function selectLast()
     {
-        $query = RecordPhysical::with([
+        $queryPhysical = RecordPhysical::with([
             'status',
             'support',
             'level',
@@ -382,17 +580,57 @@ class SearchRecordController extends Controller
         ]);
 
         // Filtrer par organisation seulement si l'utilisateur a une organisation courante
-        // et que l'activité est associée à des organisations
         if (Auth::user()->current_organisation_id) {
-            $query->where(function($q) {
+            $queryPhysical->where(function($q) {
                 $q->whereHas('activity.organisations', function($subQuery) {
                     $subQuery->where('organisations.id', Auth::user()->current_organisation_id);
                 })
-                ->orWhereDoesntHave('activity.organisations'); // Inclure les activités sans organisation
+                ->orWhereDoesntHave('activity.organisations');
             });
         }
 
-        $records = $query->latest()->paginate(10);
+        // Récupération des 3 types de records
+        $physicalRecords = $queryPhysical->latest()->take(20)->get()->map(function($record) {
+            $record->record_type = 'physical';
+            $record->type_label = 'Dossier Physique';
+            return $record;
+        });
+
+        $folders = RecordDigitalFolder::with(['parent', 'children', 'creator'])
+            ->latest()
+            ->take(20)
+            ->get()
+            ->map(function($folder) {
+                $folder->record_type = 'folder';
+                $folder->type_label = 'Dossier Numérique';
+                return $folder;
+            });
+
+        $documents = RecordDigitalDocument::with(['folder', 'type', 'attachment', 'creator'])
+            ->latest()
+            ->take(20)
+            ->get()
+            ->map(function($document) {
+                $document->record_type = 'document';
+                $document->type_label = 'Document Numérique';
+                return $document;
+            });
+
+        // Fusion et tri
+        $allResults = $physicalRecords->concat($folders)->concat($documents)->sortByDesc('created_at');
+
+        // Pagination
+        $perPage = 10;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $currentItems = $allResults->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        $records = new LengthAwarePaginator(
+            $currentItems,
+            $allResults->count(),
+            $perPage,
+            $currentPage,
+            ['path' => LengthAwarePaginator::resolveCurrentPath()]
+        );
 
         $viewData = [
             'records' => $records,

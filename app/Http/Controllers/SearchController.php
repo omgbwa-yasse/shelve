@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\Mail;
 use App\Models\RecordPhysical;
+use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalDocument;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
 use App\Models\Author;
@@ -40,55 +42,87 @@ class SearchController extends Controller
 
     public function record(Request $request)
     {
-
-        $query = $request->input('query');
-        $advanced = $request->input('advanced') == true;
-
-        if ($query) {
-            if ($advanced) {
-                $records = RecordPhysical::search($query)->query(function ($builder) {
-                    $builder->with(['status', 'support', 'level', 'activity', 'containers', 'authors']);
-                });
-            } else {
-                $records = RecordPhysical::search($query);
-            }
-        } else {
-            $records = RecordPhysical::query();
-        }
-
-        $records = $records->paginate(10);
-
-        $statuses = RecordStatus::all();
-        $terms = [];
-        $users = User::select('id', 'name')->get();
-
         $queries = $this->convertStringToWords($request);
 
-        $records = RecordPhysical::query();
-
-        foreach ($queries as $query) {
-            $records->where(function ($queryBuilder) use ($query) {
-                $queryBuilder->where('name', 'LIKE', "%{$query}%")
-                    ->orWhere('code', 'LIKE', "%{$query}%")
-                    ->orWhere('content', 'LIKE', "%{$query}%")
-                    ->orWhereHas('authors', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
+        // Recherche dans RecordPhysical
+        $physicalRecords = RecordPhysical::query();
+        foreach ($queries as $q) {
+            $physicalRecords->where(function ($queryBuilder) use ($q) {
+                $queryBuilder->where('name', 'LIKE', "%{$q}%")
+                    ->orWhere('code', 'LIKE', "%{$q}%")
+                    ->orWhere('content', 'LIKE', "%{$q}%")
+                    ->orWhereHas('authors', function ($qb) use ($q) {
+                        $qb->where('name', 'LIKE', "%$q%");
                     })
-                    ->orWhereHas('activity', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
+                    ->orWhereHas('activity', function ($qb) use ($q) {
+                        $qb->where('name', 'LIKE', "%$q%");
                     })
-                    ->orWhereHas('terms', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%$query%");
+                    ->orWhereHas('terms', function ($qb) use ($q) {
+                        $qb->where('name', 'LIKE', "%$q%");
                     });
             });
         }
+        $physicalRecords = $physicalRecords->with(['status', 'support', 'level', 'activity', 'containers', 'authors']);
 
-        $records = $records->paginate(15);
+        // Recherche dans RecordDigitalFolder
+        $folders = RecordDigitalFolder::query();
+        foreach ($queries as $q) {
+            $folders->where(function ($queryBuilder) use ($q) {
+                $queryBuilder->where('name', 'LIKE', "%{$q}%")
+                    ->orWhere('code', 'LIKE', "%{$q}%")
+                    ->orWhere('description', 'LIKE', "%{$q}%");
+            });
+        }
+        $folders = $folders->with(['type', 'creator', 'organisation']);
+
+        // Recherche dans RecordDigitalDocument
+        $documents = RecordDigitalDocument::query();
+        foreach ($queries as $q) {
+            $documents->where(function ($queryBuilder) use ($q) {
+                $queryBuilder->where('name', 'LIKE', "%{$q}%")
+                    ->orWhere('code', 'LIKE', "%{$q}%")
+                    ->orWhere('description', 'LIKE', "%{$q}%");
+            });
+        }
+        $documents = $documents->with(['type', 'folder', 'creator', 'organisation']);
+
+        // Combiner tous les résultats avec marqueur de type
+        $allRecords = collect();
+
+        foreach ($physicalRecords->get() as $record) {
+            $record->record_type = 'physical';
+            $record->type_label = 'Dossier Physique';
+            $allRecords->push($record);
+        }
+
+        foreach ($folders->get() as $folder) {
+            $folder->record_type = 'folder';
+            $folder->type_label = 'Dossier Numérique';
+            $allRecords->push($folder);
+        }
+
+        foreach ($documents->get() as $document) {
+            $document->record_type = 'document';
+            $document->type_label = 'Document Numérique';
+            $allRecords->push($document);
+        }
+
+        // Paginer manuellement
+        $perPage = 15;
+        $page = $request->input('page', 1);
+        $records = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allRecords->forPage($page, $perPage),
+            $allRecords->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        $statuses = RecordStatus::all();
+        $terms = [];
         $users = User::all();
         $organisations = Organisation::all();
-
         $slipStatuses = SlipStatus::all();
-
 
         return view('records.index', compact(
             'records',
@@ -98,7 +132,6 @@ class SearchController extends Controller
             'users',
             'organisations'
         ));
-
     }
 
     public function communication(Request $request)
@@ -256,13 +289,47 @@ class SearchController extends Controller
     {
         $queries = $this->convertStringToWords($request);
 
+        // Records Physical (top 4)
         $records = RecordPhysical::query();
         foreach ($queries as $query) {
             $records->where('name', 'LIKE', "%$query%")
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('content', 'LIKE', "%$query%");
         }
-        $records = $records->latest()->take(4)->paginate(10);
+        $records = $records->latest()->take(4)->get()->map(function($r) {
+            $r->record_type = 'physical';
+            $r->type_label = 'Dossier Physique';
+            return $r;
+        });
+
+        // Digital Folders (top 4)
+        $folders = RecordDigitalFolder::query();
+        foreach ($queries as $query) {
+            $folders->where('name', 'LIKE', "%$query%")
+                ->orWhere('code', 'LIKE', "%$query%")
+                ->orWhere('description', 'LIKE', "%$query%");
+        }
+        $folders = $folders->latest()->take(4)->get()->map(function($f) {
+            $f->record_type = 'folder';
+            $f->type_label = 'Dossier Numérique';
+            return $f;
+        });
+
+        // Digital Documents (top 4)
+        $documents = RecordDigitalDocument::query();
+        foreach ($queries as $query) {
+            $documents->where('name', 'LIKE', "%$query%")
+                ->orWhere('code', 'LIKE', "%$query%")
+                ->orWhere('description', 'LIKE', "%$query%");
+        }
+        $documents = $documents->latest()->take(4)->get()->map(function($d) {
+            $d->record_type = 'document';
+            $d->type_label = 'Document Numérique';
+            return $d;
+        });
+
+        // Combiner tous les records
+        $allRecords = $records->concat($folders)->concat($documents);
 
         $mails = Mail::query();
         foreach ($queries as $query) {
@@ -270,7 +337,7 @@ class SearchController extends Controller
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('description', 'LIKE', "%$query%");
         }
-        $mails = $mails->latest()->take(4)->paginate(10);
+        $mails = $mails->latest()->take(4)->get();
 
         $transferrings = Slip::query();
         foreach ($queries as $query) {
@@ -278,7 +345,7 @@ class SearchController extends Controller
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('description', 'LIKE', "%$query%");
         }
-        $transferrings = $transferrings->latest()->take(4)->paginate(10);
+        $transferrings = $transferrings->latest()->take(4)->get();
 
         $transferringRecords = SlipRecord::query();
         foreach ($queries as $query) {
@@ -286,9 +353,9 @@ class SearchController extends Controller
                 ->orWhere('code', 'LIKE', "%$query%")
                 ->orWhere('content', 'LIKE', "%$query%");
         }
-        $transferringRecords = $transferringRecords->latest()->take(4)->paginate(10);
+        $transferringRecords = $transferringRecords->latest()->take(4)->get();
 
-        return view('search.index', compact('records', 'mails', 'transferrings', 'transferringRecords'));
+        return view('search.index', compact('allRecords', 'mails', 'transferrings', 'transferringRecords'));
     }
 
 

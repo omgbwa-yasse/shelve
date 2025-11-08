@@ -6,6 +6,7 @@ use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Jobs\ExtractAttachmentText;
+use Illuminate\Support\Facades\Auth;
 
 class Attachment extends Model
 {
@@ -115,6 +116,68 @@ class Attachment extends Model
     public function scopeOrderedByDisplay($query)
     {
         return $query->orderBy('display_order')->orderBy('created_at');
+    }
+
+    /**
+     * Create an attachment from an uploaded file
+     *
+     * @param \Illuminate\Http\UploadedFile $file
+     * @param string $type Type of attachment (use class constants)
+     * @param int|null $creatorId
+     * @param array $additionalData Additional fillable data
+     * @return self
+     */
+    public static function createFromUpload($file, string $type = self::TYPE_ATTACHMENT, ?int $creatorId = null, array $additionalData = []): self
+    {
+        // Generate unique filename
+        $originalName = $file->getClientOriginalName();
+        $extension = $file->getClientOriginalExtension();
+        $nameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
+        $hash = hash('sha256', $originalName . time() . uniqid());
+        $filename = $nameWithoutExt . '_' . substr($hash, 0, 16) . '.' . $extension;
+
+        // Store file in appropriate directory based on type
+        $directory = match($type) {
+            self::TYPE_DIGITAL_DOCUMENT => 'digital_documents',
+            self::TYPE_DIGITAL_FOLDER => 'digital_folders',
+            self::TYPE_ARTIFACT => 'artifacts',
+            self::TYPE_BOOK => 'books',
+            self::TYPE_PERIODIC => 'periodics',
+            default => 'attachments',
+        };
+
+        $path = $file->storeAs($directory, $filename, 'local');
+
+        // Calculate hashes
+        $filePath = storage_path('app/' . $path);
+        $md5Hash = md5_file($filePath);
+        $sha512Hash = hash_file('sha512', $filePath);
+
+        // Create attachment record
+        return self::create(array_merge([
+            'path' => $path,
+            'name' => $originalName,
+            'crypt' => $hash,
+            'crypt_sha512' => $sha512Hash,
+            'size' => $file->getSize(),
+            'creator_id' => $creatorId ?? Auth::id(),
+            'type' => $type,
+            'mime_type' => $file->getMimeType(),
+            'file_hash_md5' => $md5Hash,
+            'file_extension' => $extension,
+        ], $additionalData));
+    }
+
+    /**
+     * Get download response for this attachment
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function download()
+    {
+        return response()->download($this->full_path, $this->name, [
+            'Content-Type' => $this->mime_type,
+        ]);
     }
 
     protected static function booted()
