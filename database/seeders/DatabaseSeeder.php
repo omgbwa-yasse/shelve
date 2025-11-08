@@ -61,10 +61,10 @@ class DatabaseSeeder extends Seeder
             OpacTemplateSeeder::class, // Templates OPAC disponibles
 
             // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
-            RecordSeederSimple::class, // Exemples de documents d'archives
+            // RecordSeederSimple::class, // Exemples de documents d'archives - Nécessite la table 'records'
 
             // 12. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
-            OpacSeeder::class, // Seeder complet pour l'OPAC
+            // OpacSeeder::class, // Seeder complet pour l'OPAC - Nécessite les tables OPAC
         ]);
     }
 }
