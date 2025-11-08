@@ -29,6 +29,8 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Author::class => \App\Policies\AuthorPolicy::class,
     \App\Models\Language::class => \App\Policies\LanguagePolicy::class,
         \App\Models\RecordPhysical::class => \App\Policies\RecordPolicy::class,
+        \App\Models\RecordDigitalFolder::class => \App\Policies\RecordDigitalFolderPolicy::class,
+        \App\Models\RecordDigitalDocument::class => \App\Policies\RecordDigitalDocumentPolicy::class,
         \App\Models\Mail::class => \App\Policies\MailPolicy::class,
         \App\Models\Slip::class => \App\Policies\SlipPolicy::class,
         \App\Models\SlipRecord::class => \App\Policies\SlipRecordPolicy::class,
