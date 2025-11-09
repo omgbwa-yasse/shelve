@@ -24,6 +24,7 @@ class PermissionCategorySeeder extends Seeder
         $this->createSystemPermissions();
         $this->createBackupsPermissions();
         $this->createWorkflowPermissions();
+        $this->createWorkPlacePermissions();
         $this->createAdditionalPermissions();
         $this->createLibraryPermissions();
         $this->createMuseumPermissions();
@@ -94,6 +95,11 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'module_workflow_access',
                 'category' => 'system',
                 'description' => 'Accès au module Workflow'
+            ],
+            [
+                'name' => 'module_workplace_access',
+                'category' => 'system',
+                'description' => 'Accès au module WorkPlace (Espaces de travail)'
             ],
         ];
 
@@ -797,6 +803,241 @@ class PermissionCategorySeeder extends Seeder
                 'name' => 'systemNotification_delete',
                 'category' => 'workflow',
                 'description' => 'Supprimer une notification système'
+            ],
+        ];
+
+        $this->insertPermissions($permissions);
+    }
+
+    private function createWorkPlacePermissions()
+    {
+        $permissions = [
+            // WorkPlace Module Access
+            [
+                'name' => 'workplace_access',
+                'category' => 'workplace',
+                'description' => 'Accès au module WorkPlace'
+            ],
+
+            // WorkPlace CRUD Permissions
+            [
+                'name' => 'workplace_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous les espaces de travail'
+            ],
+            [
+                'name' => 'workplace_view',
+                'category' => 'workplace',
+                'description' => 'Voir un espace de travail'
+            ],
+            [
+                'name' => 'workplace_create',
+                'category' => 'workplace',
+                'description' => 'Créer des espaces de travail'
+            ],
+            [
+                'name' => 'workplace_update',
+                'category' => 'workplace',
+                'description' => 'Modifier des espaces de travail'
+            ],
+            [
+                'name' => 'workplace_delete',
+                'category' => 'workplace',
+                'description' => 'Supprimer des espaces de travail'
+            ],
+            [
+                'name' => 'workplace_archive',
+                'category' => 'workplace',
+                'description' => 'Archiver des espaces de travail'
+            ],
+            [
+                'name' => 'workplace_settings',
+                'category' => 'workplace',
+                'description' => 'Gérer les paramètres d\'un espace de travail'
+            ],
+
+            // WorkPlace Category Permissions
+            [
+                'name' => 'workplace_category_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir toutes les catégories de workplaces'
+            ],
+            [
+                'name' => 'workplace_category_view',
+                'category' => 'workplace',
+                'description' => 'Voir une catégorie de workplace'
+            ],
+            [
+                'name' => 'workplace_category_create',
+                'category' => 'workplace',
+                'description' => 'Créer des catégories de workplaces'
+            ],
+            [
+                'name' => 'workplace_category_update',
+                'category' => 'workplace',
+                'description' => 'Modifier des catégories de workplaces'
+            ],
+            [
+                'name' => 'workplace_category_delete',
+                'category' => 'workplace',
+                'description' => 'Supprimer des catégories de workplaces'
+            ],
+
+            // WorkPlace Member Permissions
+            [
+                'name' => 'workplace_member_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous les membres d\'un workplace'
+            ],
+            [
+                'name' => 'workplace_member_view',
+                'category' => 'workplace',
+                'description' => 'Voir un membre d\'un workplace'
+            ],
+            [
+                'name' => 'workplace_member_add',
+                'category' => 'workplace',
+                'description' => 'Ajouter des membres à un workplace'
+            ],
+            [
+                'name' => 'workplace_member_update',
+                'category' => 'workplace',
+                'description' => 'Modifier le rôle/permissions d\'un membre'
+            ],
+            [
+                'name' => 'workplace_member_remove',
+                'category' => 'workplace',
+                'description' => 'Retirer des membres d\'un workplace'
+            ],
+            [
+                'name' => 'workplace_member_updatePermissions',
+                'category' => 'workplace',
+                'description' => 'Modifier les permissions d\'un membre'
+            ],
+            [
+                'name' => 'workplace_member_updateNotifications',
+                'category' => 'workplace',
+                'description' => 'Modifier les préférences de notification d\'un membre'
+            ],
+
+            // WorkPlace Invitation Permissions
+            [
+                'name' => 'workplace_invitation_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir toutes les invitations'
+            ],
+            [
+                'name' => 'workplace_invitation_create',
+                'category' => 'workplace',
+                'description' => 'Créer des invitations'
+            ],
+            [
+                'name' => 'workplace_invitation_cancel',
+                'category' => 'workplace',
+                'description' => 'Annuler des invitations'
+            ],
+            [
+                'name' => 'workplace_invitation_resend',
+                'category' => 'workplace',
+                'description' => 'Renvoyer des invitations'
+            ],
+
+            // WorkPlace Content (Folders & Documents) Permissions
+            [
+                'name' => 'workplace_folder_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous les dossiers partagés'
+            ],
+            [
+                'name' => 'workplace_folder_share',
+                'category' => 'workplace',
+                'description' => 'Partager des dossiers dans un workplace'
+            ],
+            [
+                'name' => 'workplace_folder_unshare',
+                'category' => 'workplace',
+                'description' => 'Retirer le partage de dossiers'
+            ],
+            [
+                'name' => 'workplace_folder_pin',
+                'category' => 'workplace',
+                'description' => 'Épingler/désépingler des dossiers'
+            ],
+            [
+                'name' => 'workplace_document_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous les documents partagés'
+            ],
+            [
+                'name' => 'workplace_document_share',
+                'category' => 'workplace',
+                'description' => 'Partager des documents dans un workplace'
+            ],
+            [
+                'name' => 'workplace_document_unshare',
+                'category' => 'workplace',
+                'description' => 'Retirer le partage de documents'
+            ],
+            [
+                'name' => 'workplace_document_feature',
+                'category' => 'workplace',
+                'description' => 'Mettre en vedette des documents'
+            ],
+
+            // WorkPlace Activity Permissions
+            [
+                'name' => 'workplace_activity_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir toutes les activités d\'un workplace'
+            ],
+            [
+                'name' => 'workplace_activity_view',
+                'category' => 'workplace',
+                'description' => 'Voir une activité spécifique'
+            ],
+
+            // WorkPlace Bookmark Permissions
+            [
+                'name' => 'workplace_bookmark_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous ses favoris'
+            ],
+            [
+                'name' => 'workplace_bookmark_create',
+                'category' => 'workplace',
+                'description' => 'Créer des favoris'
+            ],
+            [
+                'name' => 'workplace_bookmark_delete',
+                'category' => 'workplace',
+                'description' => 'Supprimer des favoris'
+            ],
+
+            // WorkPlace Template Permissions
+            [
+                'name' => 'workplace_template_viewAny',
+                'category' => 'workplace',
+                'description' => 'Voir tous les modèles de workplaces'
+            ],
+            [
+                'name' => 'workplace_template_view',
+                'category' => 'workplace',
+                'description' => 'Voir un modèle de workplace'
+            ],
+            [
+                'name' => 'workplace_template_create',
+                'category' => 'workplace',
+                'description' => 'Créer des modèles de workplaces'
+            ],
+            [
+                'name' => 'workplace_template_update',
+                'category' => 'workplace',
+                'description' => 'Modifier des modèles de workplaces'
+            ],
+            [
+                'name' => 'workplace_template_delete',
+                'category' => 'workplace',
+                'description' => 'Supprimer des modèles de workplaces'
             ],
         ];
 

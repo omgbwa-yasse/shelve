@@ -483,4 +483,302 @@ class DocumentController extends Controller
         // Télécharger le fichier
         return $versionDocument->attachment->download();
     }
+
+    /**
+     * Checkout a document for editing
+     */
+    public function checkout(RecordDigitalDocument $document)
+    {
+        if (!$document->is_current_version) {
+            return back()->with('error', 'Seule la version courante peut être réservée.');
+        }
+
+        if ($document->isCheckedOut()) {
+            $checkedOutBy = $document->checkedOutUser->name ?? 'un autre utilisateur';
+            return back()->with('error', "Ce document est déjà réservé par {$checkedOutBy}.");
+        }
+
+        DB::beginTransaction();
+        try {
+            $document->checkout(Auth::user());
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $document)
+                ->with('success', 'Document réservé avec succès. Vous pouvez maintenant le modifier.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de la réservation : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Checkin a document with a new version
+     */
+    public function checkin(Request $request, RecordDigitalDocument $document)
+    {
+        $request->validate([
+            'file' => 'required|file|max:51200', // 50MB
+            'checkin_notes' => 'nullable|string|max:1000',
+        ]);
+
+        if (!$document->is_current_version) {
+            return back()->with('error', 'Seule la version courante peut être déposée.');
+        }
+
+        if (!$document->isCheckedOut()) {
+            return back()->with('error', 'Ce document n\'est pas réservé.');
+        }
+
+        if (!$document->isCheckedOutBy(Auth::user())) {
+            return back()->with('error', 'Vous n\'avez pas réservé ce document.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $file = $request->file('file');
+
+            // Valider le fichier
+            $validationErrors = $document->validateFile($file);
+            if (!empty($validationErrors)) {
+                return back()->withErrors($validationErrors);
+            }
+
+            // Checkin crée automatiquement une nouvelle version
+            $newVersion = $document->checkin(
+                Auth::user(),
+                $file,
+                $request->input('checkin_notes')
+            );
+
+            // Mettre à jour les statistiques du dossier
+            if ($document->folder) {
+                $document->folder->updateStatistics();
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $newVersion)
+                ->with('success', "Document déposé avec succès (nouvelle version v{$newVersion->version_number}).");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors du dépôt : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Cancel checkout of a document
+     */
+    public function cancelCheckout(RecordDigitalDocument $document)
+    {
+        if (!$document->is_current_version) {
+            return back()->with('error', 'Seule la version courante peut être libérée.');
+        }
+
+        if (!$document->isCheckedOut()) {
+            return back()->with('error', 'Ce document n\'est pas réservé.');
+        }
+
+        $user = Auth::user();
+
+        // Seul celui qui a réservé peut annuler (ou gérer via Policy plus tard)
+        if (!$document->isCheckedOutBy($user)) {
+            return back()->with('error', 'Vous ne pouvez pas annuler la réservation d\'un autre utilisateur.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $document->cancelCheckout($user);
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $document)
+                ->with('success', 'Réservation annulée avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de l\'annulation : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Sign a document
+     */
+    public function sign(Request $request, RecordDigitalDocument $document)
+    {
+        $request->validate([
+            'signature_password' => 'required|string',
+            'signature_reason' => 'nullable|string|max:500',
+        ]);
+
+        if (!$document->is_current_version) {
+            return back()->with('error', 'Seule la version courante peut être signée.');
+        }
+
+        if ($document->signature_status === 'signed') {
+            return back()->with('error', 'Ce document est déjà signé.');
+        }
+
+        if ($document->isCheckedOut()) {
+            return back()->with('error', 'Impossible de signer un document réservé.');
+        }
+
+        // Vérifier le mot de passe de l'utilisateur
+        if (!Auth::validate([
+            'email' => Auth::user()->email,
+            'password' => $request->input('signature_password')
+        ])) {
+            return back()->with('error', 'Mot de passe incorrect.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $document->sign(Auth::user(), $request->input('signature_reason'));
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $document)
+                ->with('success', 'Document signé électroniquement avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de la signature : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Verify document signature
+     */
+    public function verifySignature(RecordDigitalDocument $document)
+    {
+        if ($document->signature_status !== 'signed') {
+            return back()->with('error', 'Ce document n\'est pas signé.');
+        }
+
+        try {
+            $isValid = $document->verifySignature();
+
+            if ($isValid) {
+                return redirect()
+                    ->route('documents.show', $document)
+                    ->with('success', 'Signature vérifiée avec succès. Le document est authentique.');
+            } else {
+                return redirect()
+                    ->route('documents.show', $document)
+                    ->with('error', 'La signature est invalide. Le document a peut-être été modifié.');
+            }
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la vérification : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Revoke document signature
+     */
+    public function revokeSignature(Request $request, RecordDigitalDocument $document)
+    {
+        $request->validate([
+            'revocation_reason' => 'required|string|max:1000',
+        ]);
+
+        if ($document->signature_status !== 'signed') {
+            return back()->with('error', 'Ce document n\'est pas signé.');
+        }
+
+        // Seul le signataire peut révoquer (ou gérer via Policy)
+        if ($document->signed_by !== Auth::id()) {
+            return back()->with('error', 'Seul le signataire peut révoquer la signature.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $document->revokeSignature(
+                Auth::user(),
+                $request->input('revocation_reason')
+            );
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $document)
+                ->with('success', 'Signature révoquée avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de la révocation : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Restore a previous version of the document
+     */
+    public function restoreVersion(RecordDigitalDocument $document, int $version)
+    {
+        $currentDocument = $document->is_current_version
+            ? $document
+            : $document->getCurrentVersion();
+
+        if ($currentDocument->isCheckedOut()) {
+            return back()->with('error', 'Impossible de restaurer une version sur un document réservé.');
+        }
+
+        if ($currentDocument->signature_status === 'signed') {
+            return back()->with('error', 'Impossible de restaurer une version sur un document signé.');
+        }
+
+        // Vérifier que la version existe
+        $versionToRestore = RecordDigitalDocument::where(function ($q) use ($document) {
+            $rootId = $document->parent_version_id ?? $document->id;
+            $q->where('id', $rootId)->orWhere('parent_version_id', $rootId);
+        })
+        ->where('version_number', $version)
+        ->first();
+
+        if (!$versionToRestore) {
+            return back()->with('error', "La version {$version} n'existe pas.");
+        }
+
+        if ($versionToRestore->is_current_version) {
+            return back()->with('error', "La version {$version} est déjà la version courante.");
+        }
+
+        DB::beginTransaction();
+        try {
+            $restoredVersion = $currentDocument->restoreVersion($version);
+
+            // Mettre à jour les statistiques du dossier
+            if ($currentDocument->folder) {
+                $currentDocument->folder->updateStatistics();
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->route('documents.show', $restoredVersion)
+                ->with('success', "Version {$version} restaurée avec succès (nouvelle version v{$restoredVersion->version_number}).");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Erreur lors de la restauration : ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download the current document file
+     */
+    public function download(RecordDigitalDocument $document)
+    {
+        if (!$document->attachment) {
+            return back()->with('error', 'Aucun fichier attaché à ce document.');
+        }
+
+        // Tracker le téléchargement si c'est la version courante
+        if ($document->is_current_version) {
+            $document->trackView(Auth::user());
+        }
+
+        return $document->attachment->download();
+    }
 }

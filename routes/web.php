@@ -721,6 +721,20 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('documents/{document}/versions', [\App\Http\Controllers\Web\DocumentController::class, 'versions'])->name('documents.versions');
         Route::get('documents/{document}/versions/{version}/download', [\App\Http\Controllers\Web\DocumentController::class, 'downloadVersion'])->name('documents.versions.download');
 
+        // Document Workflow - Check-out/Check-in (Phase 3 - Critical)
+        Route::post('documents/{document}/checkout', [\App\Http\Controllers\Web\DocumentController::class, 'checkout'])->name('documents.checkout');
+        Route::post('documents/{document}/checkin', [\App\Http\Controllers\Web\DocumentController::class, 'checkin'])->name('documents.checkin');
+        Route::post('documents/{document}/cancel-checkout', [\App\Http\Controllers\Web\DocumentController::class, 'cancelCheckout'])->name('documents.cancel-checkout');
+
+        // Document Workflow - Signature (Phase 3 - Critical)
+        Route::post('documents/{document}/sign', [\App\Http\Controllers\Web\DocumentController::class, 'sign'])->name('documents.sign');
+        Route::post('documents/{document}/verify-signature', [\App\Http\Controllers\Web\DocumentController::class, 'verifySignature'])->name('documents.verify-signature');
+        Route::post('documents/{document}/revoke-signature', [\App\Http\Controllers\Web\DocumentController::class, 'revokeSignature'])->name('documents.revoke-signature');
+
+        // Document Workflow - Version Management (Phase 3 - Critical)
+        Route::post('documents/{document}/versions/{version}/restore', [\App\Http\Controllers\Web\DocumentController::class, 'restoreVersion'])->name('documents.versions.restore');
+        Route::get('documents/{document}/download', [\App\Http\Controllers\Web\DocumentController::class, 'download'])->name('documents.download');
+
 
 
 
@@ -1281,6 +1295,75 @@ Route::middleware(['auth'])->prefix('api/thesaurus')->name('api.thesaurus.')->gr
 });
 
 // MCP/AI web proxy routes retirées
+
+// Workflow Management Routes
+Route::prefix('workflows')->name('workflows.')->middleware('auth')->group(function () {
+    // Workflow Definitions
+    Route::get('definitions', [\App\Http\Controllers\WorkflowDefinitionController::class, 'index'])->name('definitions.index');
+    Route::get('definitions/create', [\App\Http\Controllers\WorkflowDefinitionController::class, 'create'])->name('definitions.create');
+    Route::post('definitions', [\App\Http\Controllers\WorkflowDefinitionController::class, 'store'])->name('definitions.store');
+    Route::get('definitions/{definition}', [\App\Http\Controllers\WorkflowDefinitionController::class, 'show'])->name('definitions.show');
+    Route::get('definitions/{definition}/edit', [\App\Http\Controllers\WorkflowDefinitionController::class, 'edit'])->name('definitions.edit');
+    Route::put('definitions/{definition}', [\App\Http\Controllers\WorkflowDefinitionController::class, 'update'])->name('definitions.update');
+    Route::delete('definitions/{definition}', [\App\Http\Controllers\WorkflowDefinitionController::class, 'destroy'])->name('definitions.destroy');
+
+    // Workflow Instances
+    Route::get('instances', [\App\Http\Controllers\WorkflowInstanceController::class, 'index'])->name('instances.index');
+    Route::get('instances/create', [\App\Http\Controllers\WorkflowInstanceController::class, 'create'])->name('instances.create');
+    Route::post('instances', [\App\Http\Controllers\WorkflowInstanceController::class, 'store'])->name('instances.store');
+    Route::get('instances/{instance}', [\App\Http\Controllers\WorkflowInstanceController::class, 'show'])->name('instances.show');
+    Route::delete('instances/{instance}', [\App\Http\Controllers\WorkflowInstanceController::class, 'destroy'])->name('instances.destroy');
+});
+
+// Task Management Routes
+Route::prefix('tasks')->name('tasks.')->middleware('auth')->group(function () {
+    Route::get('/', [\App\Http\Controllers\TaskController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\TaskController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\TaskController::class, 'store'])->name('store');
+    Route::get('/{task}', [\App\Http\Controllers\TaskController::class, 'show'])->name('show');
+    Route::get('/{task}/edit', [\App\Http\Controllers\TaskController::class, 'edit'])->name('edit');
+    Route::put('/{task}', [\App\Http\Controllers\TaskController::class, 'update'])->name('update');
+    Route::delete('/{task}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('destroy');
+});
+
+// WorkPlace Management Routes
+Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(function () {
+    // Main Workplace Routes
+    Route::get('/', [\App\Http\Controllers\WorkplaceController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\WorkplaceController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\WorkplaceController::class, 'store'])->name('store');
+    Route::get('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'show'])->name('show');
+    Route::get('/{workplace}/edit', [\App\Http\Controllers\WorkplaceController::class, 'edit'])->name('edit');
+    Route::put('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'update'])->name('update');
+    Route::delete('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'destroy'])->name('destroy');
+    Route::post('/{workplace}/archive', [\App\Http\Controllers\WorkplaceController::class, 'archive'])->name('archive');
+    Route::get('/{workplace}/settings', [\App\Http\Controllers\WorkplaceController::class, 'settings'])->name('settings');
+
+    // Member Management Routes
+    Route::prefix('{workplace}/members')->name('members.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkplaceMemberController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\WorkplaceMemberController::class, 'store'])->name('store');
+        Route::put('/{member}', [\App\Http\Controllers\WorkplaceMemberController::class, 'update'])->name('update');
+        Route::delete('/{member}', [\App\Http\Controllers\WorkplaceMemberController::class, 'destroy'])->name('destroy');
+        Route::put('/{member}/permissions', [\App\Http\Controllers\WorkplaceMemberController::class, 'updatePermissions'])->name('permissions');
+        Route::put('/{member}/notifications', [\App\Http\Controllers\WorkplaceMemberController::class, 'updateNotifications'])->name('notifications');
+    });
+
+    // Content Management Routes
+    Route::prefix('{workplace}/content')->name('content.')->group(function () {
+        Route::get('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'folders'])->name('folders');
+        Route::get('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'documents'])->name('documents');
+        Route::post('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'shareFolder'])->name('shareFolder');
+        Route::post('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'shareDocument'])->name('shareDocument');
+        Route::delete('/folders/{folder}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareFolder'])->name('unshareFolder');
+        Route::delete('/documents/{document}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareDocument'])->name('unshareDocument');
+        Route::post('/folders/{folder}/pin', [\App\Http\Controllers\WorkplaceContentController::class, 'pinFolder'])->name('pinFolder');
+        Route::post('/documents/{document}/feature', [\App\Http\Controllers\WorkplaceContentController::class, 'featureDocument'])->name('featureDocument');
+        Route::get('/documents/{document}/view', [\App\Http\Controllers\WorkplaceContentController::class, 'viewDocument'])->name('viewDocument');
+    });
+});
+
+
 
 
 

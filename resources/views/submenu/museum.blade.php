@@ -13,13 +13,8 @@
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('museum.artifacts.index') }}">
-                    <i class="bi bi-palette"></i> {{ __('Artefacts') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('museum.artifacts.create') }}">
-                    <i class="bi bi-plus-square"></i> {{ __('Nouvel artefact') }}
+                <a class="submenu-link" href="{{ route('museum.collections.create') }}">
+                    <i class="bi bi-plus-square"></i> {{ __('Nouvelle collection') }}
                 </a>
             </div>
             <div class="submenu-item">
@@ -37,13 +32,13 @@
         </div>
         <div class="submenu-content" id="catalogageMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('museum.artifacts.create') }}">
+                <a class="submenu-link" href="{{ route('museum.collections.create') }}">
                     <i class="bi bi-plus-square"></i> {{ __('Nouvelle pièce') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('museum.artifacts.index') }}">
-                    <i class="bi bi-list"></i> {{ __('Liste artefacts') }}
+                <a class="submenu-link" href="{{ route('museum.collections.index') }}">
+                    <i class="bi bi-list"></i> {{ __('Liste collections') }}
                 </a>
             </div>
             <div class="submenu-item">
@@ -165,11 +160,6 @@
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('museum.collections.index') }}">
                     <i class="bi bi-collection"></i> {{ __('Par collection') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('museum.artifacts.index') }}">
-                    <i class="bi bi-list-ul"></i> {{ __('Liste complète') }}
                 </a>
             </div>
         </div>

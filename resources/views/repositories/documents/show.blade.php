@@ -130,10 +130,10 @@
                                         @endif
                                     </div>
                                     <div>
-                                        <a href="{{ route('documents.versions.download', [$document, $ver->version_number]) }}"
-                                           class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-download"></i>
-                                        </a>
+                                        @include('repositories.documents.partials.version-actions', [
+                                            'version' => $ver,
+                                            'currentDocument' => $document
+                                        ])
                                     </div>
                                 </div>
                             </div>
@@ -145,6 +145,11 @@
 
         <!-- Panneau latéral -->
         <div class="col-md-4">
+            {{-- Workflow Partials - Phase 3 --}}
+            @include('repositories.documents.partials.checkout')
+            @include('repositories.documents.partials.signature')
+            @include('repositories.documents.partials.workflow')
+
             @if($document->requires_approval && $document->approved_at)
                 <div class="card mb-3">
                     <div class="card-header">

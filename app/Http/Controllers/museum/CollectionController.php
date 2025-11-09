@@ -9,34 +9,36 @@ use Illuminate\Http\Request;
 class CollectionController extends Controller
 {
     /**
-     * Display a listing of collections.
+     * Display a listing of collections (grouped by category).
      */
     public function index(Request $request)
     {
-        // Group artifacts by collection
+        // Group artifacts by category (used as collection)
         $query = RecordArtifact::query();
 
         // Search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('collection', 'like', "%{$search}%");
+                  ->orWhere('category', 'like', "%{$search}%")
+                  ->orWhere('author', 'like', "%{$search}%");
             });
         }
 
-        // Filter by collection
-        if ($request->filled('collection')) {
-            $query->where('collection', $request->collection);
+        // Filter by category (collection)
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
         }
 
-        // Get collections with statistics
-        $collections = RecordArtifact::selectRaw('collection, COUNT(*) as pieces_count')
-            ->groupBy('collection')
+        // Get categories with statistics (used as collections)
+        $collections = RecordArtifact::selectRaw('category, COUNT(*) as pieces_count')
+            ->whereNotNull('category')
+            ->groupBy('category')
             ->get();
 
-        $artifacts = $query->orderBy('collection')->orderBy('code')->paginate(20);
+        $artifacts = $query->orderBy('category')->orderBy('code')->paginate(20);
 
         return view('museum.collections.index', compact('collections', 'artifacts'));
     }

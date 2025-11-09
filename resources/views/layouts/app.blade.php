@@ -79,6 +79,314 @@
             font-size: 1rem;
         }
 
+        /* ========== RESPONSIVE DESIGN ========== */
+
+        /* Mobile Toggle Button */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+
+        .mobile-menu-toggle i {
+            font-size: 24px;
+        }
+
+        /* Sidebar mobile overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1040;
+        }
+
+        /* Tablets et petits écrans (≤991px) */
+        @media (max-width: 991px) {
+            /* Header responsive */
+            .top-band-container {
+                flex-wrap: wrap;
+                padding: 0.5rem !important;
+            }
+
+            .left-section {
+                flex: 0 0 auto;
+            }
+
+            .center-section {
+                order: 3;
+                flex: 1 1 100%;
+                margin-top: 0.5rem;
+                text-align: center;
+            }
+
+            .right-section {
+                flex: 1 1 auto;
+                justify-content: flex-end;
+            }
+
+            .header-search {
+                max-width: 300px;
+            }
+
+            .header-search-input {
+                font-size: 0.875rem;
+                padding: 0.375rem 0.5rem;
+            }
+
+            .header-sai span {
+                font-size: 0.7rem;
+            }
+
+            /* Navigation horizontale scrollable */
+            .bottom-band-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .main-navigation {
+                flex-wrap: nowrap;
+                min-width: max-content;
+                padding: 0 0.5rem;
+            }
+
+            .nav-item {
+                flex: 0 0 auto;
+                min-width: 70px;
+            }
+
+            .nav-link span {
+                font-size: 0.65rem;
+            }
+
+            .nav-link i {
+                font-size: 1.2rem;
+            }
+
+            /* Sidebar mobile */
+            .col-md-2 {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                z-index: 1045;
+                transition: left 0.3s ease;
+                background-color: white;
+                overflow-y: auto;
+                padding-top: 1rem;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+
+            .col-md-2.show {
+                left: 0;
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Contenu principal */
+            .col-md-10 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            /* Cards responsive */
+            .card {
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Mobile (≤767px) */
+        @media (max-width: 767px) {
+            /* Header ultra compact */
+            .top-band {
+                padding: 0.25rem 0;
+            }
+
+            .header-logo img {
+                height: 30px;
+                width: auto;
+            }
+
+            .header-sai {
+                display: none;
+            }
+
+            .header-search {
+                max-width: 200px;
+            }
+
+            .header-search-input {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .header-search-select {
+                font-size: 0.75rem;
+                padding: 0.25rem;
+            }
+
+            .header-ai-button {
+                padding: 6px 8px;
+            }
+
+            .header-action-btn {
+                font-size: 0.875rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            /* Navigation très compacte */
+            .nav-item {
+                min-width: 60px;
+            }
+
+            .nav-link {
+                padding: 6px 2px 0 2px;
+            }
+
+            .nav-link i {
+                font-size: 1rem;
+                margin-bottom: 2px;
+            }
+
+            .nav-label {
+                font-size: 0.4rem;
+            }
+
+            /* Sidebar mobile pleine largeur */
+            .col-md-2 {
+                width: 85%;
+                max-width: 300px;
+            }
+
+            /* Modal responsive */
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+
+            .ai-chat-messages {
+                height: 300px;
+            }
+
+            /* Search type buttons responsive */
+            .search-type-selector {
+                gap: 5px;
+            }
+
+            .search-type-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+
+            /* Submenu compact */
+            .submenu-card .nav-link {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Très petits écrans (≤480px) */
+        @media (max-width: 480px) {
+            .header-search {
+                max-width: 150px;
+            }
+
+            .header-search-select {
+                display: none;
+            }
+
+            .center-section {
+                display: none;
+            }
+
+            .nav-item {
+                min-width: 50px;
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .nav-link i {
+                margin-bottom: 0;
+            }
+
+            .mobile-menu-toggle {
+                width: 48px;
+                height: 48px;
+                bottom: 15px;
+                right: 15px;
+            }
+
+            .mobile-menu-toggle i {
+                font-size: 20px;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .top-band,
+            .bottom-band {
+                position: relative;
+            }
+
+            .col-md-2 {
+                height: calc(100vh - 120px);
+            }
+
+            main {
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+        }
+
+        /* Touch improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-link,
+            .submenu-card .nav-link,
+            .header-action-btn,
+            .search-type-btn {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .mobile-menu-toggle {
+                min-width: 56px;
+                min-height: 56px;
+            }
+        }
+
         /* Styles pour les libellés des menus principaux */
         .header-nav-item {
             display: flex;
@@ -374,6 +682,13 @@
                         <!-- Actions utilisateur -->
                         <div class="header-actions">
 
+                                <div class="nav-item">
+                                    <a class="nav-link @if (Request::segment(1) == 'opac') active @endif" href="{{ route('opac.index') }}" target="_blank">
+                                        <i class="bi bi-globe"></i>
+                                        <span>{{ __('OPAC') }}</span>
+                                    </a>
+                                </div>
+
                             <!-- Sélecteur de langue -->
                             <div class="header-action-item">
                                 <a href="#" class="header-action-btn" id="langBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -507,14 +822,6 @@
                             </a>
                         </div>
 
-                        <!-- Module OPAC -->
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'opac') active @endif" href="{{ route('opac.index') }}" target="_blank">
-                                <i class="bi bi-globe"></i>
-                                <span>{{ __('OPAC') }}</span>
-                            </a>
-                        </div>
-
                         <!-- Module Library -->
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'library') active @endif" href="{{ route('library.books.index') }}">
@@ -524,17 +831,34 @@
                         </div>
 
                         <!-- Module Museum -->
-                        @php
-                            $museumRouteExists = Route::has('museum.artifacts.index');
-                        @endphp
-                        @if($museumRouteExists)
+                        @can('museum_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.artifacts.index') }}">
+                            <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.collections.index') }}">
                                 <i class="bi bi-bank"></i>
                                 <span>{{ __('Museum') }}</span>
                             </a>
                         </div>
-                        @endif
+                        @endcan
+
+                        <!-- Module Workflow -->
+                        @can('module_workflow_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>{{ __('Workflow') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+
+                        <!-- Module WorkPlace -->
+                        @can('module_workplace_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
+                                <i class="bi bi-briefcase"></i>
+                                <span>{{ __('WorkPlaces') }}</span>
+                            </a>
+                        </div>
+                        @endcan
 
                         @can('module_settings_access')
                         <div class="nav-item">
@@ -552,10 +876,18 @@
             </div>
         </header>
 
+        <!-- Overlay pour le menu mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+        <!-- Bouton toggle pour mobile -->
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileSidebar()" aria-label="Toggle menu">
+            <i class="bi bi-list"></i>
+        </button>
+
         <main class="py-3">
             <div class="container-fluid">
                 <div class="row">
-                    <div class="col-md-2">
+                    <div class="col-md-2" id="sidebar">
                         <div class="card submenu-card h-100">
                             <div class="card-body p-3">
                                 <div class="nav flex-column nav-pills">
@@ -602,6 +934,13 @@
                                             @break
                                         @case('museum')
                                             @include('submenu.museum')
+                                            @break
+                                        @case('workflows')
+                                        @case('tasks')
+                                            @include('submenu.workflow')
+                                            @break
+                                        @case('workplaces')
+                                            @include('submenu.workplaces')
                                             @break
                                     @endswitch
                                 </div>
@@ -796,6 +1135,39 @@
             // Retiré: suivi du statut MCP
         }
 
+        /**
+         * Toggle du menu latéral mobile
+         */
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const toggle = document.getElementById('mobileMenuToggle');
+
+            if (sidebar && overlay) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('show');
+
+                // Change icon
+                if (toggle) {
+                    const icon = toggle.querySelector('i');
+                    if (icon) {
+                        if (sidebar.classList.contains('show')) {
+                            icon.className = 'bi bi-x-lg';
+                        } else {
+                            icon.className = 'bi bi-list';
+                        }
+                    }
+                }
+
+                // Prevent body scroll when sidebar is open
+                if (sidebar.classList.contains('show')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
         // Initialiser les scripts quand le DOM est prêt et que Vite a chargé les dépendances
         document.addEventListener('DOMContentLoaded', function() {
             // Attendre un peu que Vite charge jQuery
@@ -803,6 +1175,25 @@
                 initializeLayoutScripts();
                 initSearchTypeButtons(); // Initialiser les boutons de type
             }, 200);
+
+            // Fermer le sidebar mobile lors du redimensionnement
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 991) {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebarOverlay');
+                    const toggle = document.getElementById('mobileMenuToggle');
+
+                    if (sidebar && sidebar.classList.contains('show')) {
+                        sidebar.classList.remove('show');
+                        if (overlay) overlay.classList.remove('show');
+                        if (toggle) {
+                            const icon = toggle.querySelector('i');
+                            if (icon) icon.className = 'bi bi-list';
+                        }
+                        document.body.style.overflow = '';
+                    }
+                }
+            });
         });
 
         // Ne plus réinitialiser à l'ouverture du modal pour éviter les doublons

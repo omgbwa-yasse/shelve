@@ -66,7 +66,9 @@ class SuperAdminSeeder extends Seeder
 
         $this->command->info('✅ Rôle "superadmin" créé ou trouvé (ID: ' . $superadminRole->id . ')');
 
-        // 4. Attribuer toutes les permissions au rôle
+        // 4. Attribuer TOUTES les permissions au rôle superadmin
+        $this->command->info('📋 Attribution de toutes les permissions au rôle superadmin...');
+
         $allPermissions = Permission::all();
         $permissionIds = $allPermissions->pluck('id')->toArray();
 
@@ -82,6 +84,9 @@ class SuperAdminSeeder extends Seeder
         }
 
         $this->command->info('✅ Toutes les permissions (' . $allPermissions->count() . ') attribuées au rôle superadmin');
+
+        // Afficher les catégories de permissions attribuées
+        $this->displayPermissionCategories($allPermissions);
 
         // 5. Créer l'utilisateur superadmin principal
         $superadminUser = User::firstOrCreate(
@@ -268,6 +273,22 @@ class SuperAdminSeeder extends Seeder
     }
 
     /**
+     * Afficher les catégories de permissions attribuées
+     */
+    private function displayPermissionCategories($allPermissions)
+    {
+        $this->command->info('');
+        $this->command->info('📊 Répartition des permissions par catégorie :');
+
+        $categories = $allPermissions->groupBy('category');
+        foreach ($categories as $category => $permissions) {
+            $categoryName = $category ?: 'Non catégorisée';
+            $this->command->line('   • ' . ucfirst($categoryName) . ': ' . $permissions->count() . ' permissions');
+        }
+        $this->command->info('');
+    }
+
+    /**
      * Afficher le résumé de création
      */
     private function displaySummary($user, $organisation, $permissionCount)
@@ -280,7 +301,7 @@ class SuperAdminSeeder extends Seeder
         $this->command->line('Nom: ' . $user->name . ' ' . $user->surname);
         $this->command->line('Organisation principale: ' . $organisation->name);
         $this->command->line('Rôle: superadmin (Système natif)');
-        $this->command->line('Permissions: ' . $permissionCount . ' permissions attribuées');
+        $this->command->line('Permissions: ' . $permissionCount . ' permissions attribuées (TOUTES)');
 
         // Afficher tous les modules disponibles
         $modulePermissions = Permission::where('name', 'like', 'module_%_access')->pluck('name');
