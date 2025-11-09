@@ -50,17 +50,17 @@
         </div>
         <div class="submenu-content" id="opacConfigMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('admin.opac.configurations.index') }}">
+                <a class="submenu-link" href="{{ route('public.configurations.index') }}">
                     <i class="bi bi-sliders"></i> {{ __('General Configuration') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('admin.opac.pages.index') }}">
+                <a class="submenu-link" href="{{ route('public.pages.index') }}">
                     <i class="bi bi-file-earmark-text"></i> {{ __('OPAC Pages') }}
                 </a>
             </div>
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('admin.opac.users.index') }}">
+                <a class="submenu-link" href="{{ route('public.users.index') }}">
                     <i class="bi bi-people"></i> {{ __('OPAC Users') }}
                 </a>
             </div>

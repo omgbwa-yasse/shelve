@@ -156,5 +156,64 @@ class PublicUserController extends Controller
             ->with('success', 'User account deactivated successfully.');
     }
 
+    /**
+     * Display the public dashboard.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function dashboard()
+    {
+        $totalUsers = PublicUser::count();
+        $activeUsers = PublicUser::where('is_approved', true)->count();
+        $pendingUsers = PublicUser::where('is_approved', false)->count();
+        $recentUsers = PublicUser::latest()->limit(5)->get();
+
+        return view('public.dashboard', compact('totalUsers', 'activeUsers', 'pendingUsers', 'recentUsers'));
+    }
+
+    /**
+     * Display statistics for public module.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function statistics()
+    {
+        $stats = [
+            'users' => [
+                'total' => PublicUser::count(),
+                'active' => PublicUser::where('is_approved', true)->count(),
+                'pending' => PublicUser::where('is_approved', false)->count(),
+                'new_this_month' => PublicUser::whereMonth('created_at', now()->month)->count(),
+            ],
+        ];
+
+        // Add news statistics if available
+        if (class_exists('\App\Models\PublicNews')) {
+            $stats['news'] = [
+                'total' => \App\Models\PublicNews::count(),
+                'published' => \App\Models\PublicNews::where('status', 'published')->count(),
+            ];
+        }
+
+        // Add events statistics if available
+        if (class_exists('\App\Models\PublicEvent')) {
+            $stats['events'] = [
+                'total' => \App\Models\PublicEvent::count(),
+                'upcoming' => \App\Models\PublicEvent::where('start_date', '>', now())->count(),
+            ];
+        }
+
+        // Add document requests statistics if available
+        if (class_exists('\App\Models\PublicDocumentRequest')) {
+            $stats['document_requests'] = [
+                'total' => \App\Models\PublicDocumentRequest::count(),
+                'pending' => \App\Models\PublicDocumentRequest::where('status', 'pending')->count(),
+                'completed' => \App\Models\PublicDocumentRequest::where('status', 'completed')->count(),
+            ];
+        }
+
+        return view('public.statistics', compact('stats'));
+    }
+
     // ========================================
 }
