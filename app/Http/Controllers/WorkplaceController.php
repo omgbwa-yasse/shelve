@@ -96,7 +96,7 @@ class WorkplaceController extends Controller
                 ->with('success', 'Workspace créé avec succès');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Erreur lors de la création du workspace: ' . $e->getMessage()])
+            return back()->withErrors(['error' => 'Erreur lors de la création du workspace'])
                 ->withInput();
         }
     }
@@ -184,6 +184,15 @@ class WorkplaceController extends Controller
             $number = 1;
         }
 
-        return sprintf('WP-%s-%04d', $year, $number);
+        // Ensure uniqueness
+        do {
+            $code = sprintf('WP-%s-%04d', $year, $number);
+            $exists = Workplace::where('code', $code)->exists();
+            if ($exists) {
+                $number++;
+            }
+        } while ($exists);
+
+        return $code;
     }
 }

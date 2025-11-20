@@ -242,10 +242,6 @@ class WorkplaceTest extends TestCase
             'template_id' => $template->id,
         ]);
 
-        if ($response->getSession()->has('errors')) {
-            dump($response->getSession()->get('errors')->all());
-        }
-
         $response->assertRedirect();
         $this->assertDatabaseHas('workplaces', ['name' => 'Templated Workplace']);
 
