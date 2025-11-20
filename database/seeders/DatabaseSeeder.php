@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             AuthorTypeSeeder::class, // Seeder pour les types d'auteurs
             AddressTypeSeeder::class, // Seeder pour les types d'adresses
             LibraryReferenceSeeder::class, // Seeder pour les références bibliographiques (langues, formats, éditeurs...)
+            ClassificationSeeder::class, // Seeder pour la classification Dewey
 
             // 3. THÉSAURUS (Indépendants)
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
