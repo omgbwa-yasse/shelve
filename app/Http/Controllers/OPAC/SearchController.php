@@ -4,8 +4,14 @@ namespace App\Http\Controllers\OPAC;
 
 use App\Http\Controllers\Controller;
 use App\Models\PublicSearchLog;
+use App\Models\RecordArtifact;
+use App\Models\RecordBook;
+use App\Models\RecordDigitalDocument;
+use App\Models\RecordDigitalFolder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
  * OPAC Search Controller - Advanced search functionality with history
@@ -18,10 +24,13 @@ class SearchController extends Controller
     public function index()
     {
         // Get search history for authenticated users
-        $searchHistory = [];
+        $searchHistory = collect();
         if (Auth::guard('public')->check()) {
-            // Get recent searches (if we implement search logging)
-            $searchHistory = collect(); // Placeholder
+            $user = Auth::guard('public')->user();
+            $searchHistory = PublicSearchLog::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
         }
 
         return view('opac.search.index', compact('searchHistory'));
@@ -43,22 +52,256 @@ class SearchController extends Controller
             'date_to' => 'nullable|date',
             'type' => 'nullable|string',
             'category' => 'nullable|string',
-            'sort' => 'nullable|in:relevance,title,author,date_asc,date_desc',
+            'sort' => 'nullable|in:relevance,title_asc,title_desc,author_asc,date_asc,date_desc',
+            'page' => 'nullable|integer|min:1',
         ]);
 
-        // Perform search logic here
-        $results = collect(); // Placeholder for search results
-        $totalResults = 0;
+        $query = $validated['q'] ?? null;
+        $type = $validated['type'] ?? null;
+        $results = collect();
 
-        // In a real implementation, this would search through records
-        // using Elasticsearch, database full-text search, or similar
+        // Search Books
+        if (!$type || $type === 'book') {
+            $bookQuery = RecordBook::query()->with(['authors', 'publisher']);
+
+            if ($query) {
+                $bookQuery->where(function($q) use ($query) {
+                    $q->where('title', 'like', "%{$query}%")
+                      ->orWhere('subtitle', 'like', "%{$query}%")
+                      ->orWhere('isbn', 'like', "%{$query}%")
+                      ->orWhereHas('authors', function($q) use ($query) {
+                          $q->where('last_name', 'like', "%{$query}%")
+                            ->orWhere('first_name', 'like', "%{$query}%");
+                      });
+                });
+            }
+
+            if (!empty($validated['title'])) {
+                $bookQuery->where('title', 'like', "%{$validated['title']}%");
+            }
+
+            if (!empty($validated['author'])) {
+                $bookQuery->whereHas('authors', function($q) use ($validated) {
+                    $q->where('last_name', 'like', "%{$validated['author']}%")
+                      ->orWhere('first_name', 'like', "%{$validated['author']}%");
+                });
+            }
+
+            if (!empty($validated['isbn'])) {
+                $bookQuery->where('isbn', 'like', "%{$validated['isbn']}%");
+            }
+
+            if (!empty($validated['language'])) {
+                $bookQuery->whereHas('language', function($q) use ($validated) {
+                    $q->where('code', $validated['language']);
+                });
+            }
+
+            if (!empty($validated['subject'])) {
+                $bookQuery->whereHas('subjects', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['subject']}%");
+                });
+            }
+
+            if (!empty($validated['date_from'])) {
+                $bookQuery->where('publication_year', '>=', substr($validated['date_from'], 0, 4));
+            }
+
+            if (!empty($validated['date_to'])) {
+                $bookQuery->where('publication_year', '<=', substr($validated['date_to'], 0, 4));
+            }
+
+            $books = $bookQuery->get()->map(function($book) {
+                return (object) [
+                    'id' => $book->id,
+                    'type' => 'book',
+                    'title' => $book->full_title,
+                    'description' => Str::limit($book->description, 150),
+                    'author' => $book->authors_string,
+                    'date' => $book->publication_year,
+                    'image' => null, // Add image logic if available
+                    'url' => route('opac.books.show', $book->id),
+                    'model' => $book
+                ];
+            });
+
+            $results = $results->merge($books);
+        }
+
+        // Search Artifacts
+        if (!$type || $type === 'artifact' || $type === 'multimedia') {
+            $artifactQuery = RecordArtifact::query();
+
+            if ($query) {
+                $artifactQuery->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('description', 'like', "%{$query}%")
+                      ->orWhere('author', 'like', "%{$query}%")
+                      ->orWhere('code', 'like', "%{$query}%");
+                });
+            }
+
+            if (!empty($validated['title'])) {
+                $artifactQuery->where('name', 'like', "%{$validated['title']}%");
+            }
+
+            if (!empty($validated['author'])) {
+                $artifactQuery->where('author', 'like', "%{$validated['author']}%");
+            }
+
+            if (!empty($validated['subject'])) {
+                $artifactQuery->where(function($q) use ($validated) {
+                    $q->where('category', 'like', "%{$validated['subject']}%")
+                      ->orWhere('sub_category', 'like', "%{$validated['subject']}%")
+                      ->orWhere('material', 'like', "%{$validated['subject']}%");
+                });
+            }
+
+            if (!empty($validated['date_from'])) {
+                $artifactQuery->where('date_start', '>=', substr($validated['date_from'], 0, 4));
+            }
+
+            if (!empty($validated['date_to'])) {
+                $artifactQuery->where('date_end', '<=', substr($validated['date_to'], 0, 4));
+            }
+
+            $artifacts = $artifactQuery->get()->map(function($artifact) {
+                return (object) [
+                    'id' => $artifact->id,
+                    'type' => 'artifact',
+                    'title' => $artifact->name,
+                    'description' => Str::limit($artifact->description, 150),
+                    'author' => $artifact->author,
+                    'date' => $artifact->date_range,
+                    'image' => null, // Add image logic
+                    'url' => route('opac.artifacts.show', $artifact->id),
+                    'model' => $artifact
+                ];
+            });
+
+            $results = $results->merge($artifacts);
+        }
+
+        // Search Digital Folders
+        if (!$type || $type === 'archive') {
+            $folderQuery = RecordDigitalFolder::query();
+
+            if ($query) {
+                $folderQuery->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('description', 'like', "%{$query}%");
+                });
+            }
+
+            if (!empty($validated['title'])) {
+                $folderQuery->where('name', 'like', "%{$validated['title']}%");
+            }
+
+            if (!empty($validated['author'])) {
+                $folderQuery->whereHas('creator', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['author']}%");
+                });
+            }
+
+            if (!empty($validated['subject'])) {
+                $folderQuery->whereHas('keywords', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['subject']}%");
+                });
+            }
+
+            $folders = $folderQuery->get()->map(function($folder) {
+                return (object) [
+                    'id' => $folder->id,
+                    'type' => 'folder',
+                    'title' => $folder->name,
+                    'description' => Str::limit($folder->description, 150),
+                    'author' => $folder->creator ? $folder->creator->name : null,
+                    'date' => $folder->created_at->format('Y'),
+                    'image' => null,
+                    'url' => route('opac.digital.folders.show', $folder->id),
+                    'model' => $folder
+                ];
+            });
+
+            $results = $results->merge($folders);
+        }
+
+        // Search Digital Documents
+        if (!$type || in_array($type, ['article', 'report', 'thesis', 'manuscript'])) {
+            $docQuery = RecordDigitalDocument::query()->with('creator');
+
+            if ($query) {
+                $docQuery->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('description', 'like', "%{$query}%");
+                });
+            }
+
+            if (!empty($validated['title'])) {
+                $docQuery->where('name', 'like', "%{$validated['title']}%");
+            }
+
+            if (!empty($validated['date_from'])) {
+                $docQuery->where('document_date', '>=', $validated['date_from']);
+            }
+
+            if (!empty($validated['date_to'])) {
+                $docQuery->where('document_date', '<=', $validated['date_to']);
+            }
+
+            $documents = $docQuery->get()->map(function($doc) {
+                return (object) [
+                    'id' => $doc->id,
+                    'type' => 'document',
+                    'title' => $doc->name,
+                    'description' => Str::limit($doc->description, 150),
+                    'author' => $doc->creator ? $doc->creator->name : null,
+                    'date' => $doc->document_date ? $doc->document_date->format('Y') : null,
+                    'image' => null,
+                    'url' => route('opac.digital.documents.show', $doc->id),
+                    'model' => $doc
+                ];
+            });
+
+            $results = $results->merge($documents);
+        }
+
+        // Sorting
+        $sort = $validated['sort'] ?? 'relevance';
+        if ($sort === 'title_asc') {
+            $results = $results->sortBy('title');
+        } elseif ($sort === 'title_desc') {
+            $results = $results->sortByDesc('title');
+        } elseif ($sort === 'date_desc') {
+            $results = $results->sortByDesc('date');
+        } elseif ($sort === 'date_asc') {
+            $results = $results->sortBy('date');
+        }
+        // Relevance is default (no sort needed as we just appended results)
+
+        // Pagination
+        $page = $request->get('page', 1);
+        $perPage = 15;
+        $totalResults = $results->count();
+
+        $paginatedResults = new LengthAwarePaginator(
+            $results->forPage($page, $perPage),
+            $totalResults,
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         // Log search if user is authenticated (after getting results)
         if (Auth::guard('public')->check()) {
             $this->logSearch($validated, $totalResults);
         }
 
-        return view('opac.search.results', compact('results', 'totalResults', 'validated'));
+        return view('opac.search.results', [
+            'results' => $paginatedResults,
+            'totalResults' => $totalResults,
+            'validated' => $validated
+        ]);
     }
 
     /**

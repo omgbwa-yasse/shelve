@@ -439,4 +439,22 @@ class RecordDigitalDocument extends Model
             $file->getSize()
         );
     }
+
+    /**
+     * Accessors delegated to Attachment
+     */
+    public function getFileSizeHumanAttribute(): string
+    {
+        return $this->attachment ? $this->attachment->file_size_human : '0 B';
+    }
+
+    public function getFilePathAttribute(): ?string
+    {
+        return $this->attachment ? $this->attachment->path : null;
+    }
+
+    public function getExtensionAttribute(): string
+    {
+        return $this->attachment ? $this->attachment->file_extension : '';
+    }
 }

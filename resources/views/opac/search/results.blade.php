@@ -17,6 +17,12 @@
                         @if(isset($validated['q']))
                             <input type="hidden" name="q" value="{{ $validated['q'] }}">
                         @endif
+                        @if(isset($validated['title']))
+                            <input type="hidden" name="title" value="{{ $validated['title'] }}">
+                        @endif
+                        @if(isset($validated['author']))
+                            <input type="hidden" name="author" value="{{ $validated['author'] }}">
+                        @endif
 
                         <!-- Quick search -->
                         <div class="mb-3">
@@ -28,25 +34,30 @@
 
                         <!-- Document Type Filter -->
                         <div class="mb-3">
-                            <label for="filter_type" class="form-label">{{ __('Document Type') }}</label>
+                            <label for="filter_type" class="form-label">{{ __('Resource Type') }}</label>
                             <select class="form-select" id="filter_type" name="type">
                                 <option value="">{{ __('All types') }}</option>
                                 <option value="book" {{ ($validated['type'] ?? '') == 'book' ? 'selected' : '' }}>{{ __('Book') }}</option>
-                                <option value="article" {{ ($validated['type'] ?? '') == 'article' ? 'selected' : '' }}>{{ __('Article') }}</option>
-                                <option value="report" {{ ($validated['type'] ?? '') == 'report' ? 'selected' : '' }}>{{ __('Report') }}</option>
-                                <option value="thesis" {{ ($validated['type'] ?? '') == 'thesis' ? 'selected' : '' }}>{{ __('Thesis') }}</option>
+                                <option value="artifact" {{ ($validated['type'] ?? '') == 'artifact' ? 'selected' : '' }}>{{ __('Artifact') }}</option>
+                                <option value="archive" {{ ($validated['type'] ?? '') == 'archive' ? 'selected' : '' }}>{{ __('Digital Folder') }}</option>
+                                <option value="document" {{ ($validated['type'] ?? '') == 'document' ? 'selected' : '' }}>{{ __('Digital Document') }}</option>
                             </select>
                         </div>
 
-                        <!-- Language Filter -->
+                        <!-- Author Filter -->
                         <div class="mb-3">
-                            <label for="filter_language" class="form-label">{{ __('Language') }}</label>
-                            <select class="form-select" id="filter_language" name="language">
-                                <option value="">{{ __('All languages') }}</option>
-                                <option value="fr" {{ ($validated['language'] ?? '') == 'fr' ? 'selected' : '' }}>{{ __('French') }}</option>
-                                <option value="en" {{ ($validated['language'] ?? '') == 'en' ? 'selected' : '' }}>{{ __('English') }}</option>
-                                <option value="es" {{ ($validated['language'] ?? '') == 'es' ? 'selected' : '' }}>{{ __('Spanish') }}</option>
-                            </select>
+                            <label for="filter_author" class="form-label">{{ __('Author / Creator') }}</label>
+                            <input type="text" class="form-control" id="filter_author" name="author"
+                                   value="{{ $validated['author'] ?? '' }}"
+                                   placeholder="{{ __('Name...') }}">
+                        </div>
+
+                        <!-- Subject Filter -->
+                        <div class="mb-3">
+                            <label for="filter_subject" class="form-label">{{ __('Subject / Category') }}</label>
+                            <input type="text" class="form-control" id="filter_subject" name="subject"
+                                   value="{{ $validated['subject'] ?? '' }}"
+                                   placeholder="{{ __('Topic...') }}">
                         </div>
 
                         <!-- Date Range -->
@@ -71,9 +82,10 @@
                             <label for="filter_sort" class="form-label">{{ __('Sort by') }}</label>
                             <select class="form-select" id="filter_sort" name="sort">
                                 <option value="relevance" {{ ($validated['sort'] ?? '') == 'relevance' ? 'selected' : '' }}>{{ __('Relevance') }}</option>
-                                <option value="title" {{ ($validated['sort'] ?? '') == 'title' ? 'selected' : '' }}>{{ __('Title') }}</option>
-                                <option value="date_desc" {{ ($validated['sort'] ?? '') == 'date_desc' ? 'selected' : '' }}>{{ __('Date (New-Old)') }}</option>
-                                <option value="date_asc" {{ ($validated['sort'] ?? '') == 'date_asc' ? 'selected' : '' }}>{{ __('Date (Old-New)') }}</option>
+                                <option value="title_asc" {{ ($validated['sort'] ?? '') == 'title_asc' ? 'selected' : '' }}>{{ __('Title (A-Z)') }}</option>
+                                <option value="title_desc" {{ ($validated['sort'] ?? '') == 'title_desc' ? 'selected' : '' }}>{{ __('Title (Z-A)') }}</option>
+                                <option value="date_desc" {{ ($validated['sort'] ?? '') == 'date_desc' ? 'selected' : '' }}>{{ __('Date (Newest)') }}</option>
+                                <option value="date_asc" {{ ($validated['sort'] ?? '') == 'date_asc' ? 'selected' : '' }}>{{ __('Date (Oldest)') }}</option>
                             </select>
                         </div>
 
@@ -117,7 +129,7 @@
                             </p>
                         @endif
                         <p class="text-muted">
-                            {{ number_format($totalResults) }} {{ __('document(s) found') }}
+                            {{ number_format($totalResults) }} {{ __('result(s) found') }}
                         </p>
                     </div>
                     <div>
@@ -148,13 +160,6 @@
                         </span>
                     @endif
 
-                    @if(!empty($validated['language']))
-                        <span class="opac-badge">
-                            {{ __('Language') }}: {{ strtoupper($validated['language']) }}
-                            <a href="{{ request()->fullUrlWithQuery(['language' => null]) }}" class="text-white ms-1">×</a>
-                        </span>
-                    @endif
-
                     @if(!empty($validated['date_from']) || !empty($validated['date_to']))
                         <span class="opac-badge">
                             {{ __('Date') }}:
@@ -181,77 +186,51 @@
                                 <div class="col-md-9">
                                     <!-- Title -->
                                     <h5 class="card-title mb-2">
-                                        <a href="{{ route('opac.records.show', $result->id) }}"
+                                        <a href="{{ $result->url }}"
                                            class="text-decoration-none text-dark">
-                                            {{ $result->title ?? $result->name ?? __('Untitled Document') }}
+                                            {{ $result->title ?? __('Untitled') }}
                                         </a>
                                     </h5>
 
                                     <!-- Metadata badges -->
                                     <div class="mb-2">
-                                        @if(isset($result->type))
-                                            <span class="opac-badge me-2">{{ ucfirst($result->type) }}</span>
-                                        @endif
-                                        @if(isset($result->language))
-                                            <span class="opac-badge me-2">{{ strtoupper($result->language) }}</span>
-                                        @endif
+                                        <span class="opac-badge me-2 bg-secondary">
+                                            @if($result->type == 'book') <i class="fas fa-book me-1"></i> {{ __('Book') }}
+                                            @elseif($result->type == 'artifact') <i class="fas fa-landmark me-1"></i> {{ __('Artifact') }}
+                                            @elseif($result->type == 'folder') <i class="fas fa-folder me-1"></i> {{ __('Folder') }}
+                                            @elseif($result->type == 'document') <i class="fas fa-file-alt me-1"></i> {{ __('Document') }}
+                                            @else {{ ucfirst($result->type) }}
+                                            @endif
+                                        </span>
+
                                         @if(isset($result->date))
-                                            <span class="opac-badge">
+                                            <span class="opac-badge me-2">
                                                 <i class="fas fa-calendar me-1"></i>{{ $result->date }}
                                             </span>
                                         @endif
                                     </div>
 
                                     <!-- Authors -->
-                                    @if(isset($result->authors) && !empty($result->authors))
+                                    @if(isset($result->author) && !empty($result->author))
                                     <p class="text-muted small mb-2">
                                         <i class="fas fa-user me-1"></i>
-                                        {{ is_array($result->authors) ? implode(', ', $result->authors) : $result->authors }}
+                                        {{ $result->author }}
                                     </p>
                                     @endif
 
-                                    <!-- Description/Content -->
-                                    @if(isset($result->description) || isset($result->content))
+                                    <!-- Description -->
+                                    @if(isset($result->description))
                                     <p class="card-text">
-                                        {{ Str::limit($result->description ?? $result->content, 200) }}
+                                        {{ $result->description }}
                                     </p>
-                                    @endif
-
-                                    <!-- Subject/Keywords -->
-                                    @if(isset($result->subjects) && !empty($result->subjects))
-                                    <div class="mb-2">
-                                        <small class="text-muted">
-                                            <i class="fas fa-tags me-1"></i>{{ __('Subjects:') }}
-                                            @if(is_array($result->subjects))
-                                                {{ implode(', ', $result->subjects) }}
-                                            @else
-                                                {{ $result->subjects }}
-                                            @endif
-                                        </small>
-                                    </div>
                                     @endif
                                 </div>
                                 <div class="col-md-3 text-end">
                                     <!-- Actions -->
-                                    <a href="{{ route('opac.records.show', $result->id) }}"
+                                    <a href="{{ $result->url }}"
                                        class="btn btn-primary mb-2 w-100">
                                         <i class="fas fa-eye me-2"></i>{{ __('View Details') }}
                                     </a>
-
-                                    <!-- Additional info -->
-                                    @if(isset($result->attachments_count) && $result->attachments_count > 0)
-                                    <div class="text-muted small">
-                                        <i class="fas fa-paperclip me-1"></i>
-                                        {{ $result->attachments_count }} {{ __('attachment(s)') }}
-                                    </div>
-                                    @endif
-
-                                    @if(isset($result->pages) && $result->pages > 0)
-                                    <div class="text-muted small">
-                                        <i class="fas fa-file-alt me-1"></i>
-                                        {{ $result->pages }} {{ __('page(s)') }}
-                                    </div>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -259,18 +238,18 @@
                     @endforeach
                 </div>
 
-                <!-- Pagination would go here -->
-                <!-- <div class="d-flex justify-content-center mt-4">
-                    {{ $results->appends(request()->query())->links() }}
-                </div> -->
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $results->links() }}
+                </div>
             @else
                 <!-- No Results -->
                 <div class="opac-card text-center py-5">
                     <div class="card-body">
                         <i class="fas fa-search fa-4x text-muted mb-4"></i>
-                        <h4>{{ __('No documents found') }}</h4>
+                        <h4>{{ __('No results found') }}</h4>
                         <p class="text-muted mb-4">
-                            {{ __('We couldn\'t find any documents matching your search criteria.') }}
+                            {{ __('We couldn\'t find any items matching your search criteria.') }}
                         </p>
 
                         <div class="row justify-content-center">
@@ -288,9 +267,6 @@
                         <div class="mt-4">
                             <a href="{{ route('opac.search') }}" class="btn btn-primary me-2">
                                 <i class="fas fa-search me-2"></i>{{ __('New Search') }}
-                            </a>
-                            <a href="{{ route('opac.records.index') }}" class="btn btn-outline-primary">
-                                <i class="fas fa-list me-2"></i>{{ __('Browse All') }}
                             </a>
                         </div>
                     </div>

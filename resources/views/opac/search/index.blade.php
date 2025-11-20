@@ -247,17 +247,13 @@
 
                                 <!-- Document Type -->
                                 <div class="col-md-6">
-                                    <label for="type" class="form-label fw-semibold">{{ __('Document Type') }}</label>
+                                    <label for="type" class="form-label fw-semibold">{{ __('Resource Type') }}</label>
                                     <select class="form-select" id="type" name="type">
                                         <option value="">{{ __('All types') }}</option>
                                         <option value="book" {{ request('type') == 'book' ? 'selected' : '' }}>{{ __('Book') }}</option>
-                                        <option value="article" {{ request('type') == 'article' ? 'selected' : '' }}>{{ __('Article') }}</option>
-                                        <option value="journal" {{ request('type') == 'journal' ? 'selected' : '' }}>{{ __('Journal') }}</option>
-                                        <option value="report" {{ request('type') == 'report' ? 'selected' : '' }}>{{ __('Report') }}</option>
-                                        <option value="thesis" {{ request('type') == 'thesis' ? 'selected' : '' }}>{{ __('Thesis') }}</option>
-                                        <option value="manuscript" {{ request('type') == 'manuscript' ? 'selected' : '' }}>{{ __('Manuscript') }}</option>
-                                        <option value="multimedia" {{ request('type') == 'multimedia' ? 'selected' : '' }}>{{ __('Multimedia') }}</option>
-                                        <option value="archive" {{ request('type') == 'archive' ? 'selected' : '' }}>{{ __('Archive') }}</option>
+                                        <option value="artifact" {{ request('type') == 'artifact' ? 'selected' : '' }}>{{ __('Artifact') }}</option>
+                                        <option value="archive" {{ request('type') == 'archive' ? 'selected' : '' }}>{{ __('Digital Folder') }}</option>
+                                        <option value="document" {{ request('type') == 'document' ? 'selected' : '' }}>{{ __('Digital Document') }}</option>
                                     </select>
                                 </div>
 

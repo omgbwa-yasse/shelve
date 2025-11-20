@@ -1227,6 +1227,20 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
 
+    // Artifacts
+    Route::get('/artifacts', [\App\Http\Controllers\OPAC\ArtifactController::class, 'index'])->name('artifacts.index');
+    Route::get('/artifacts/{id}', [\App\Http\Controllers\OPAC\ArtifactController::class, 'show'])->name('artifacts.show');
+
+    // Books
+    Route::get('/books', [\App\Http\Controllers\OPAC\BookController::class, 'index'])->name('books.index');
+    Route::get('/books/{id}', [\App\Http\Controllers\OPAC\BookController::class, 'show'])->name('books.show');
+
+    // Digital Collections
+    Route::get('/digital/folders', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'index'])->name('digital.folders.index');
+    Route::get('/digital/folders/{id}', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'show'])->name('digital.folders.show');
+    Route::get('/digital/documents/{id}', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'show'])->name('digital.documents.show');
+    Route::get('/digital/documents/{id}/download', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'download'])->name('digital.documents.download');
+
     // Search routes - Primary search interface
     Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search');
     Route::get('/search/advanced', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
