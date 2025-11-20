@@ -140,6 +140,12 @@ class RecordDigitalDocument extends Model
         return $this->belongsToMany(Keyword::class, 'record_digital_document_keyword', 'document_id', 'keyword_id');
     }
 
+    public function dollies()
+    {
+        return $this->belongsToMany(Dolly::class, 'dolly_digital_documents', 'document_id', 'dolly_id')
+            ->withTimestamps();
+    }
+
     public function thesaurusConcepts()
     {
         return $this->belongsToMany(

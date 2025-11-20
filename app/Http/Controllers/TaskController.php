@@ -10,7 +10,7 @@ class TaskController extends Controller
 {
     public function index()
     {
-        $tasks = Task::with(['assignedUser', 'creator'])
+        $tasks = Task::with(['assignedUser', 'creator', 'updater', 'workflowInstance'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

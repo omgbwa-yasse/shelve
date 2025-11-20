@@ -15,7 +15,7 @@ class DollyHandlerController extends Controller
     {
         try {
             $request->validate([
-                'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf'
+                'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,container,shelf,digital_folder,digital_document,artifact,book,book_series'
             ]);
 
             // Vérifier que l'utilisateur est connecté
@@ -55,9 +55,9 @@ class DollyHandlerController extends Controller
     public function addDolly(Request $request)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:70', 
+            'name' => 'required|string|max:70',
             'description' => 'nullable|string|max:100',
-            'category' => 'required|string|in:mail,transaction,record,slip,building,shelf,container,communication,room', 
+            'category' => 'required|string|in:mail,transaction,record,slip,building,shelf,container,communication,room,digital_folder,digital_document,artifact,book,book_series',
         ]);
 
         $validatedData['is_public'] = false;
@@ -80,7 +80,7 @@ class DollyHandlerController extends Controller
     {
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document,artifact,book,book_series',
             'items' => 'required|array',
         ]);
 
@@ -175,6 +175,51 @@ class DollyHandlerController extends Controller
                     }
                     break;
 
+                case 'digital_folder':
+                    foreach($request->items as $item) {
+                        $item = (int)$item;
+                        if (!$dolly->digitalFolders()->where('folder_id', $item)->exists()) {
+                            $dolly->digitalFolders()->attach($item);
+                        }
+                    }
+                    break;
+
+                case 'digital_document':
+                    foreach($request->items as $item) {
+                        $item = (int)$item;
+                        if (!$dolly->digitalDocuments()->where('document_id', $item)->exists()) {
+                            $dolly->digitalDocuments()->attach($item);
+                        }
+                    }
+                    break;
+
+                case 'artifact':
+                    foreach($request->items as $item) {
+                        $item = (int)$item;
+                        if (!$dolly->artifacts()->where('artifact_id', $item)->exists()) {
+                            $dolly->artifacts()->attach($item);
+                        }
+                    }
+                    break;
+
+                case 'book':
+                    foreach($request->items as $item) {
+                        $item = (int)$item;
+                        if (!$dolly->books()->where('book_id', $item)->exists()) {
+                            $dolly->books()->attach($item);
+                        }
+                    }
+                    break;
+
+                case 'book_series':
+                    foreach($request->items as $item) {
+                        $item = (int)$item;
+                        if (!$dolly->bookSeries()->where('series_id', $item)->exists()) {
+                            $dolly->bookSeries()->attach($item);
+                        }
+                    }
+                    break;
+
                 default:
                     return response()->json(['message' => 'Type non valide'], 400);
             }
@@ -188,7 +233,7 @@ class DollyHandlerController extends Controller
     public function removeItems(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document,artifact,book,book_series',
             'items' => 'required|array',
         ]);
 
@@ -224,6 +269,21 @@ class DollyHandlerController extends Controller
                 case $request->category == 'container':
                     $dolly->containers()->detach($request->items);
                     break;
+                case $request->category == 'digital_folder':
+                    $dolly->digitalFolders()->detach($request->items);
+                    break;
+                case $request->category == 'digital_document':
+                    $dolly->digitalDocuments()->detach($request->items);
+                    break;
+                case $request->category == 'artifact':
+                    $dolly->artifacts()->detach($request->items);
+                    break;
+                case $request->category == 'book':
+                    $dolly->books()->detach($request->items);
+                    break;
+                case $request->category == 'book_series':
+                    $dolly->bookSeries()->detach($request->items);
+                    break;
                 default :
                     return response()->json(['message' => 'Dolly not found'], 404);
             }
@@ -237,7 +297,7 @@ class DollyHandlerController extends Controller
     public function clean(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf',
+            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document,artifact,book,book_series',
         ]);
 
         $dolly = Dolly::find($request->dolly_id);
@@ -272,6 +332,21 @@ class DollyHandlerController extends Controller
                 case $request->category == 'container':
                     $dolly->containers()->detach();
                     break;
+                case $request->category == 'digital_folder':
+                    $dolly->digitalFolders()->detach();
+                    break;
+                case $request->category == 'digital_document':
+                    $dolly->digitalDocuments()->detach();
+                    break;
+                case $request->category == 'artifact':
+                    $dolly->artifacts()->detach();
+                    break;
+                case $request->category == 'book':
+                    $dolly->books()->detach();
+                    break;
+                case $request->category == 'book_series':
+                    $dolly->bookSeries()->detach();
+                    break;
                 default :
                     return response()->json(['message' => 'Dolly not found'], 404);
             }
@@ -300,6 +375,11 @@ class DollyHandlerController extends Controller
             $dolly->slips()->detach();
             $dolly->shelves()->detach();
             $dolly->containers()->detach();
+            $dolly->digitalFolders()->detach();
+            $dolly->digitalDocuments()->detach();
+            $dolly->artifacts()->detach();
+            $dolly->books()->detach();
+            $dolly->bookSeries()->detach();
             $dolly->delete();
         }
         return response()->json(['message' => 'Dolly and its relations deleted successfully'], 200);

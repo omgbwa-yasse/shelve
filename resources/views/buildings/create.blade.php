@@ -21,9 +21,22 @@
 
 /* Layout optimisé */
 .compact-container {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 0 2rem;
+}
+
+@media (max-width: 1400px) {
+    .compact-container {
+        max-width: 100%;
+        padding: 0 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .compact-container {
+        padding: 0 1rem;
+    }
 }
 
 /* Header harmonisé */
@@ -172,17 +185,21 @@
     .page-header {
         padding: 1rem;
     }
-    
+
     .page-title {
         font-size: 1.5rem;
     }
-    
+
     .form-body {
         padding: 1.5rem;
     }
-    
+
     .form-actions {
         flex-direction: column;
+    }
+
+    .compact-container {
+        padding: 0 1rem;
     }
 }
 
@@ -250,7 +267,7 @@
             <i class="bi bi-building"></i>
             <h3 class="mb-0">{{ __('Informations du bâtiment') }}</h3>
         </div>
-        
+
         <form action="{{ route('buildings.store') }}" method="POST" id="buildingForm">
             @csrf
             <div class="form-body">
@@ -262,10 +279,10 @@
                                 <i class="bi bi-tag text-primary"></i>
                                 {{ __('Nom') }}<span class="required">*</span>
                             </label>
-                            <input type="text" 
-                                   class="form-control @error('name') is-invalid @enderror" 
-                                   id="name" 
-                                   name="name" 
+                            <input type="text"
+                                   class="form-control @error('name') is-invalid @enderror"
+                                   id="name"
+                                   name="name"
                                    value="{{ old('name') }}"
                                    placeholder="Ex: Bâtiment A - Archives Centrales"
                                    required>
@@ -283,9 +300,9 @@
                                 <i class="bi bi-eye text-info"></i>
                                 {{ __('Visibilité') }}<span class="required">*</span>
                             </label>
-                            <select class="form-select @error('visibility') is-invalid @enderror" 
-                                    id="visibility" 
-                                    name="visibility" 
+                            <select class="form-select @error('visibility') is-invalid @enderror"
+                                    id="visibility"
+                                    name="visibility"
                                     required>
                                 <option value="">{{ __('Sélectionner la visibilité') }}</option>
                                 @foreach($visibilityOptions as $value => $label)
@@ -308,9 +325,9 @@
                                 <i class="bi bi-file-text text-secondary"></i>
                                 {{ __('Description') }}
                             </label>
-                            <textarea class="form-control @error('description') is-invalid @enderror" 
-                                      id="description" 
-                                      name="description" 
+                            <textarea class="form-control @error('description') is-invalid @enderror"
+                                      id="description"
+                                      name="description"
                                       rows="4"
                                       placeholder="Description détaillée du bâtiment (optionnel)">{{ old('description') }}</textarea>
                             @error('description')

@@ -9,7 +9,7 @@ class WorkflowDefinitionController extends Controller
 {
     public function index()
     {
-        $definitions = WorkflowDefinition::with('creator')
+        $definitions = WorkflowDefinition::with(['creator', 'updater', 'instances'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -27,7 +27,7 @@ class WorkflowDefinitionController extends Controller
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'bpmn_xml' => 'required|string',
-            'status' => 'required|in:draft,active,archived',
+            'status' => 'required|string|in:draft,active,archived',
         ]);
 
         $definition = WorkflowDefinition::create([
@@ -36,8 +36,9 @@ class WorkflowDefinitionController extends Controller
             'created_by' => auth()->id(),
         ]);
 
-        return redirect()->route('workflows.definitions.show', $definition)
-            ->with('success', 'Workflow definition created successfully.');
+        // Rediriger vers la configuration BPMN
+        return redirect()->route('workflows.definitions.configuration.create', $definition)
+            ->with('success', 'Workflow créé. Configurez maintenant le diagramme BPMN.');
     }
 
     public function show(WorkflowDefinition $definition)
@@ -57,7 +58,7 @@ class WorkflowDefinitionController extends Controller
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'bpmn_xml' => 'required|string',
-            'status' => 'required|in:draft,active,archived',
+            'status' => 'required|string|in:draft,active,archived',
         ]);
 
         $definition->update([
@@ -75,5 +76,58 @@ class WorkflowDefinitionController extends Controller
 
         return redirect()->route('workflows.definitions.index')
             ->with('success', 'Workflow definition deleted successfully.');
+    }
+
+    /**
+     * Show the form for creating BPMN configuration
+     */
+    public function createConfiguration(WorkflowDefinition $definition)
+    {
+        return view('workflows.definitions.configuration', compact('definition'));
+    }
+
+    /**
+     * Store BPMN configuration for a workflow definition
+     */
+    public function storeConfiguration(Request $request, WorkflowDefinition $definition)
+    {
+        $validated = $request->validate([
+            'bpmn_xml' => 'required|string',
+        ]);
+
+        $definition->update([
+            'bpmn_xml' => $validated['bpmn_xml'],
+            'updated_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('workflows.definitions.show', $definition)
+            ->with('success', 'Configuration BPMN enregistrée avec succès.');
+    }
+
+    /**
+     * Show the form for editing BPMN configuration
+     */
+    public function editConfiguration(WorkflowDefinition $definition)
+    {
+        $isEdit = true;
+        return view('workflows.definitions.configuration', compact('definition', 'isEdit'));
+    }
+
+    /**
+     * Update BPMN configuration for a workflow definition
+     */
+    public function updateConfiguration(Request $request, WorkflowDefinition $definition)
+    {
+        $validated = $request->validate([
+            'bpmn_xml' => 'required|string',
+        ]);
+
+        $definition->update([
+            'bpmn_xml' => $validated['bpmn_xml'],
+            'updated_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('workflows.definitions.show', $definition)
+            ->with('success', 'Configuration BPMN mise à jour avec succès.');
     }
 }

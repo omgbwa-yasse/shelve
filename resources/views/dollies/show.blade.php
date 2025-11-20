@@ -40,6 +40,33 @@
                         <i class="fas fa-trash-alt"></i> Vider le chariot
                     </button>
 
+                    @if(in_array($dolly->category, ['digital_folder', 'digital_document']))
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_seda&id={{ $dolly->id }}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-code"></i> Exporter SEDA
+                        </a>
+                    @endif
+
+                    @if(in_array($dolly->category, ['digital_folder', 'digital_document', 'artifact', 'book', 'book_series']))
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_inventory&id={{ $dolly->id }}" class="btn btn-info">
+                            <i class="bi bi-file-earmark-pdf"></i> Extraire Inventaire PDF
+                        </a>
+                    @endif
+
+                    @if(in_array($dolly->category, ['book', 'book_series']))
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_isbd&id={{ $dolly->id }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-text"></i> Exporter ISBD
+                        </a>
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_marc&id={{ $dolly->id }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-binary"></i> Exporter MARC
+                        </a>
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=import_isbd&id={{ $dolly->id }}" class="btn btn-warning">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Importer ISBD
+                        </a>
+                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=import_marc&id={{ $dolly->id }}" class="btn btn-warning">
+                            <i class="bi bi-file-earmark-arrow-down-fill"></i> Importer MARC
+                        </a>
+                    @endif
+
                 </div>
             </div>
         </div>
@@ -129,111 +156,310 @@
                     </tbody>
                 </table>
             </div>
+
+        @elseif($dolly->category === 'digital_folder' && $dolly->digitalFolders->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Date de création</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->digitalFolders as $folder)
+                        <tr>
+                            <td>{{ $folder->code }}</td>
+                            <td>{{ $folder->name }}</td>
+                            <td>{{ $folder->created_at->format('d/m/Y') }}</td>
+                            <td>
+                                <a href="{{ route('record-digital-folders.show', $folder) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-digital-folder', [$dolly, $folder]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce dossier du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'digital_document' && $dolly->digitalDocuments->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->digitalDocuments as $document)
+                        <tr>
+                            <td>{{ $document->code }}</td>
+                            <td>{{ $document->name }}</td>
+                            <td>{{ $document->type ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('record-digital-documents.show', $document) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-digital-document', [$dolly, $document]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce document du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'artifact' && $dolly->artifacts->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Code</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->artifacts as $artifact)
+                        <tr>
+                            <td>{{ $artifact->code }}</td>
+                            <td>{{ $artifact->name }}</td>
+                            <td>{{ $artifact->type ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('record-artifacts.show', $artifact) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-artifact', [$dolly, $artifact]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cet artefact du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'book' && $dolly->books->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>ISBN</th>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->books as $book)
+                        <tr>
+                            <td>{{ $book->isbn }}</td>
+                            <td>{{ $book->title }}</td>
+                            <td>{{ $book->author ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('record-books.show', $book) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-book', [$dolly, $book]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce livre du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'book_series' && $dolly->bookSeries->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Éditeur</th>
+                        <th>Nom de la série</th>
+                        <th>Nombre de livres</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->bookSeries as $series)
+                        <tr>
+                            <td>{{ $series->publisher->name ?? 'N/A' }}</td>
+                            <td>{{ $series->name }}</td>
+                            <td>{{ $series->books_count ?? 0 }}</td>
+                            <td>
+                                <a href="{{ route('record-book-series.show', $series) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-book-series', [$dolly, $series]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette série du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'communication' && $dolly->communications->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Titre</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->communications as $communication)
+                        <tr>
+                            <td>{{ $communication->title }}</td>
+                            <td>{{ $communication->date ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('communications.show', $communication) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-communication', [$dolly, $communication]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette communication du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'room' && $dolly->rooms->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Code</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->rooms as $room)
+                        <tr>
+                            <td>{{ $room->name }}</td>
+                            <td>{{ $room->code ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('rooms.show', $room) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-room', [$dolly, $room]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette salle du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'container' && $dolly->containers->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Code</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->containers as $container)
+                        <tr>
+                            <td>{{ $container->name }}</td>
+                            <td>{{ $container->code ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('containers.show', $container) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-container', [$dolly, $container]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette boîte du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'shelf' && $dolly->shelve->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Nom</th>
+                        <th>Code</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->shelve as $shelf)
+                        <tr>
+                            <td>{{ $shelf->name }}</td>
+                            <td>{{ $shelf->code ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('shelves.show', $shelf) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-shelve', [$dolly, $shelf]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette étagère du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+        @elseif($dolly->category === 'slip_record' && $dolly->slipRecords->isNotEmpty())
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-white">
+                    <tr>
+                        <th>Code</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($dolly->slipRecords as $slipRecord)
+                        <tr>
+                            <td>{{ $slipRecord->code }}</td>
+                            <td>{{ $slipRecord->date ?? 'N/A' }}</td>
+                            <td>
+                                <a href="{{ route('slip-records.show', $slipRecord) }}" class="btn btn-sm btn-info">Voir</a>
+                                <form action="{{ route('dolly.remove-slip-record', [$dolly, $slipRecord]) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce versement du chariot ?')">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
         @else
             <div class="alert alert-info">Ce chariot est vide.</div>
         @endif
-
-        <h2 class="mt-5 mb-4">Ajouter des éléments</h2>
-        @switch($dolly->categories())
-            @case('record')
-                <form action="{{ route('dolly.add-record', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="record_id">Sélectionner un enregistrement</label>
-                        <select class="form-control" id="record_id" name="record_id">
-                            @foreach($records as $record)
-                                <option value="{{ $record->id }}">{{ $record->code }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('mail')
-                <form action="{{ route('dolly.add-mail', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="mail_id">Sélectionner un courrier</label>
-                        <select class="form-control" id="mail_id" name="mail_id">
-                            @foreach($mails as $mail)
-                                <option value="{{ $mail->id }}">{{ $mail->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('communication')
-                <form action="{{ route('dolly.add-communication', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="communication_id">Sélectionner une communication</label>
-                        <select class="form-control" id="communication_id" name="communication_id">
-                            @foreach($communications as $communication)
-                                <option value="{{ $communication->id }}">{{ $communication->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('room')
-                <form action="{{ route('dolly.add-room', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="room_id">Sélectionner une salle</label>
-                        <select class="form-control" id="room_id" name="room_id">
-                            @foreach($rooms as $room)
-                                <option value="{{ $room->id }}">{{ $room->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('container')
-                <form action="{{ route('dolly.add-container', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="container_id">Sélectionner une boite</label>
-                        <select class="form-control" id="container_id" name="container_id">
-                            @foreach($containers as $container)
-                                <option value="{{ $container->id }}">{{ $container->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('shelve')
-                <form action="{{ route('dolly.add-shelve', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="shelve_id">Sélectionner une étagère</label>
-                        <select class="form-control" id="shelve_id" name="shelve_id">
-                            @foreach($shelves as $shelve)
-                                <option value="{{ $shelve->id }}">{{ $shelve->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-            @case('slip_record')
-                <form action="{{ route('dolly.add-slip-record', $dolly) }}" method="POST">
-                    @csrf
-                    <div class="form-group">
-                        <label for="slip_record_id">Sélectionner un enregistrement de versement</label>
-                        <select class="form-control" id="slip_record_id" name="slip_record_id">
-                            @foreach($slip_records as $slip_record)
-                                <option value="{{ $slip_record->id }}">{{ $slip_record->code }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-                @break
-        @endswitch
     </div>
 
 

@@ -15,15 +15,15 @@
                 </a>
             </div>
             @endcan
-            
+
             @can('viewAny', App\Models\RecordPhysical::class)
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('records.index') }}?type=physical">
+                <a class="submenu-link" href="{{ route('records.physical') }}">
                     <i class="bi bi-archive"></i> {{ __('Physical Records') }}
                 </a>
             </div>
             @endcan
-            
+
             @can('viewAny', App\Models\RecordDigitalFolder::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('folders.index') }}">
@@ -31,7 +31,7 @@
                 </a>
             </div>
             @endcan
-            
+
             @can('viewAny', App\Models\RecordDigitalDocument::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('documents.index') }}">
@@ -39,7 +39,7 @@
                 </a>
             </div>
             @endcan
-            
+
             @can('viewAny', App\Models\Author::class)
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('record-author.index') }}">

@@ -309,6 +309,61 @@ class RecordController extends Controller
         ));
     }
 
+    /**
+     * Display only physical records (harmonized route)
+     */
+    public function indexPhysical(Request $request)
+    {
+        Gate::authorize('records_view');
+
+        // Query uniquement pour les records physiques
+        $query = RecordPhysical::with([
+            'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'keywords'
+        ]);
+
+        // Filtrage par mot-clé si fourni
+        $keywordFilter = $request->input('keyword_filter');
+        if ($request->filled('keyword_filter')) {
+            $query->whereHas('keywords', function ($q) use ($keywordFilter) {
+                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
+            });
+        }
+
+        // Pagination
+        $records = $query->paginate(10);
+
+        // Ajouter le type aux records
+        foreach ($records as $record) {
+            $record->record_type = 'physical';
+            $record->type_label = $this->getRecordTypeLabel('physical');
+        }
+
+        $slipStatuses = SlipStatus::all();
+        $statuses = RecordStatus::all();
+        $terms = [];
+        $users = User::select('id', 'name')->get();
+        $organisations = Organisation::select('id', 'name')->get();
+
+        // Contexte de navigation
+        $listIds = $records->pluck('id')->map(function($id) {
+            return 'physical_' . $id;
+        })->toArray();
+
+        session([
+            'records.back_url' => $request->fullUrl(),
+            'records.list_ids' => $listIds,
+        ]);
+
+        return view('records.index', compact(
+            'records',
+            'statuses',
+            'slipStatuses',
+            'terms',
+            'users',
+            'organisations'
+        ));
+    }
+
     public function create()
     {
         Gate::authorize('records_create');

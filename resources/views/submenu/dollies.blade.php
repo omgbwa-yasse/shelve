@@ -15,42 +15,67 @@
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=mail">
-                    <i class="bi bi-cart3"></i> {{ __('mail') }}
+                    <i class="bi bi-envelope"></i> {{ __('mail') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=record">
-                    <i class="bi bi-cart3"></i> {{ __('archives') }}
+                    <i class="bi bi-archive"></i> {{ __('archives') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=communication">
-                    <i class="bi bi-cart3"></i> {{ __('communication') }}
+                    <i class="bi bi-chat-dots"></i> {{ __('communication') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=room">
-                    <i class="bi bi-cart3"></i> {{ __('room') }}
+                    <i class="bi bi-door-open"></i> {{ __('room') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=shelf">
-                    <i class="bi bi-cart3"></i> {{ __('shelf') }}
+                    <i class="bi bi-bookshelf"></i> {{ __('shelf') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=container">
-                    <i class="bi bi-cart3"></i> {{ __('archive_boxes') }}
+                    <i class="bi bi-box-seam"></i> {{ __('archive_boxes') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=slip_record">
-                    <i class="bi bi-cart3"></i> {{ __('archives_transfer') }}
+                    <i class="bi bi-file-earmark-arrow-up"></i> {{ __('archives_transfer') }}
                 </a>
             </div>
             <div class="submenu-item">
                 <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=slip">
-                    <i class="bi bi-cart3"></i> {{ __('transfer') }}
+                    <i class="bi bi-arrow-left-right"></i> {{ __('transfer') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=digital_folder">
+                    <i class="bi bi-folder-plus"></i> {{ __('digital_folders') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=digital_document">
+                    <i class="bi bi-file-earmark-text"></i> {{ __('digital_documents') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=artifact">
+                    <i class="bi bi-gem"></i> {{ __('artifacts') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=book">
+                    <i class="bi bi-book"></i> {{ __('books') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=book_series">
+                    <i class="bi bi-collection"></i> {{ __('book_series') }}
                 </a>
             </div>
         </div>

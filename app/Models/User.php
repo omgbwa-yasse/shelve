@@ -82,6 +82,58 @@ class User extends Authenticatable
         return $this->hasMany(Reservation::class, 'operator_id');
     }
 
+    // Workflow and Task Relations
+    public function createdWorkflowDefinitions()
+    {
+        return $this->hasMany(WorkflowDefinition::class, 'created_by');
+    }
+
+    public function updatedWorkflowDefinitions()
+    {
+        return $this->hasMany(WorkflowDefinition::class, 'updated_by');
+    }
+
+    public function startedWorkflowInstances()
+    {
+        return $this->hasMany(WorkflowInstance::class, 'started_by');
+    }
+
+    public function completedWorkflowInstances()
+    {
+        return $this->hasMany(WorkflowInstance::class, 'completed_by');
+    }
+
+    public function assignedTasks()
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function createdTasks()
+    {
+        return $this->hasMany(Task::class, 'created_by');
+    }
+
+    public function completedTasks()
+    {
+        return $this->hasMany(Task::class, 'completed_by');
+    }
+
+    public function taskComments()
+    {
+        return $this->hasMany(TaskComment::class, 'user_id');
+    }
+
+    public function watchedTasks()
+    {
+        return $this->belongsToMany(Task::class, 'task_watchers', 'user_id', 'task_id')
+            ->withPivot('notify_on_update', 'notify_on_comment', 'notify_on_completion', 'added_at');
+    }
+
+    public function taskReminders()
+    {
+        return $this->hasMany(TaskReminder::class, 'created_by');
+    }
+
     public function isSuperAdmin(): bool
     {
         return Cache::remember("user_{$this->id}_is_superadmin", 3600, function () {

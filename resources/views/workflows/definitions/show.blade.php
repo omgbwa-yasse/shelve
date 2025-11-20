@@ -5,6 +5,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1><i class="bi bi-diagram-3"></i> {{ $definition->name }}</h1>
         <div>
+            <a href="{{ route('workflows.definitions.configuration.edit', $definition) }}" class="btn btn-primary">
+                <i class="bi bi-diagram-2"></i> {{ __('Configurer BPMN') }}
+            </a>
             <a href="{{ route('workflows.definitions.edit', $definition) }}" class="btn btn-warning">
                 <i class="bi bi-pencil"></i> {{ __('Modifier') }}
             </a>

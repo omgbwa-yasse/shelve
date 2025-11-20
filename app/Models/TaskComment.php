@@ -19,12 +19,11 @@ class TaskComment extends Model
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
-    public $timestamps = false; // Using custom timestamp fields
+    // Laravel will manage created_at and updated_at automatically
+    public $timestamps = true;
 
     /**
      * Relations

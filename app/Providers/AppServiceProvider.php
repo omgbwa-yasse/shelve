@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Vite;
 use App\Models\Slip;
 use App\Observers\SlipObserver;
+use App\Models\Task;
+use App\Observers\TaskObserver;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -42,8 +44,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        // Enregistrer l'Observer pour Slip
+        // Enregistrer les Observers
         Slip::observe(SlipObserver::class);
+        Task::observe(TaskObserver::class);
 
         // Laravel découvrira automatiquement les policies selon les conventions de nommage
         // Exemple : User -> UserPolicy, Record -> RecordPolicy, etc.

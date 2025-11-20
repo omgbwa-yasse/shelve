@@ -48,6 +48,8 @@ class SearchRecordController extends Controller
             'statues' => RecordStatus::select('id', 'name')->get(),
             'containers' => Container::select('id', 'code')->get(),
             'keywords' => Keyword::select('id', 'name')->orderBy('name')->get(),
+            'folderTypes' => \App\Models\RecordDigitalFolderType::select('id', 'name', 'code')->orderBy('name')->get(),
+            'documentTypes' => \App\Models\RecordDigitalDocumentType::select('id', 'name', 'code')->orderBy('name')->get(),
         ];
 
         return view('search.record.advanced', compact('data'));

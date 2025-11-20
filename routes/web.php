@@ -708,6 +708,9 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::prefix('repositories')->group(function () {
 
+         // Physical Records Management (harmonized route)
+        Route::get('physical', [RecordController::class, 'indexPhysical'])->name('records.physical');
+
          // Digital Folders Management (Phase 10 - Task 10.2)
         Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
         Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
@@ -953,10 +956,35 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('{dolly}/add-record', [DollyController::class, 'addRecord'])->name('dolly.add-record');
         Route::post('{dolly}/add-mail', [DollyController::class, 'addMail'])->name('dolly.add-mail');
         Route::post('{dolly}/add-communication', [DollyController::class, 'addCommunication'])->name('dolly.add-communication');
+        Route::delete('{dolly}/remove-communication/{communication}', [DollyController::class, 'removeCommunication'])->name('dolly.remove-communication');
         Route::post('{dolly}/add-room', [DollyController::class, 'addRoom'])->name('dolly.add-room');
+        Route::delete('{dolly}/remove-room/{room}', [DollyController::class, 'removeRoom'])->name('dolly.remove-room');
         Route::post('{dolly}/add-container', [DollyController::class, 'addContainer'])->name('dolly.add-container');
+        Route::delete('{dolly}/remove-container/{container}', [DollyController::class, 'removeContainer'])->name('dolly.remove-container');
         Route::post('{dolly}/add-shelve', [DollyController::class, 'addShelve'])->name('dolly.add-shelve');
+        Route::delete('{dolly}/remove-shelve/{shelve}', [DollyController::class, 'removeShelve'])->name('dolly.remove-shelve');
         Route::post('{dolly}/add-slip-record', [DollyController::class, 'addSlipRecord'])->name('dolly.add-slip-record');
+        Route::delete('{dolly}/remove-slip-record/{slipRecord}', [DollyController::class, 'removeSlipRecord'])->name('dolly.remove-slip-record');
+
+        // Routes pour dossiers numériques
+        Route::post('{dolly}/add-digital-folder', [DollyController::class, 'addDigitalFolder'])->name('dolly.add-digital-folder');
+        Route::delete('{dolly}/remove-digital-folder/{folder}', [DollyController::class, 'removeDigitalFolder'])->name('dolly.remove-digital-folder');
+
+        // Routes pour documents numériques
+        Route::post('{dolly}/add-digital-document', [DollyController::class, 'addDigitalDocument'])->name('dolly.add-digital-document');
+        Route::delete('{dolly}/remove-digital-document/{document}', [DollyController::class, 'removeDigitalDocument'])->name('dolly.remove-digital-document');
+
+        // Routes pour artefacts
+        Route::post('{dolly}/add-artifact', [DollyController::class, 'addArtifact'])->name('dolly.add-artifact');
+        Route::delete('{dolly}/remove-artifact/{artifact}', [DollyController::class, 'removeArtifact'])->name('dolly.remove-artifact');
+
+        // Routes pour livres
+        Route::post('{dolly}/add-book', [DollyController::class, 'addBook'])->name('dolly.add-book');
+        Route::delete('{dolly}/remove-book/{book}', [DollyController::class, 'removeBook'])->name('dolly.remove-book');
+
+        // Routes pour séries
+        Route::post('{dolly}/add-book-series', [DollyController::class, 'addBookSeries'])->name('dolly.add-book-series');
+        Route::delete('{dolly}/remove-book-series/{series}', [DollyController::class, 'removeBookSeries'])->name('dolly.remove-book-series');
     });
 
 
@@ -1291,12 +1319,24 @@ Route::prefix('workflows')->name('workflows.')->middleware('auth')->group(functi
     Route::put('definitions/{definition}', [\App\Http\Controllers\WorkflowDefinitionController::class, 'update'])->name('definitions.update');
     Route::delete('definitions/{definition}', [\App\Http\Controllers\WorkflowDefinitionController::class, 'destroy'])->name('definitions.destroy');
 
+    // BPMN Configuration Routes
+    Route::get('definitions/{definition}/configuration/create', [\App\Http\Controllers\WorkflowDefinitionController::class, 'createConfiguration'])->name('definitions.configuration.create');
+    Route::post('definitions/{definition}/configuration', [\App\Http\Controllers\WorkflowDefinitionController::class, 'storeConfiguration'])->name('definitions.configuration.store');
+    Route::get('definitions/{definition}/configuration/edit', [\App\Http\Controllers\WorkflowDefinitionController::class, 'editConfiguration'])->name('definitions.configuration.edit');
+    Route::put('definitions/{definition}/configuration', [\App\Http\Controllers\WorkflowDefinitionController::class, 'updateConfiguration'])->name('definitions.configuration.update');
+
     // Workflow Instances
     Route::get('instances', [\App\Http\Controllers\WorkflowInstanceController::class, 'index'])->name('instances.index');
     Route::get('instances/create', [\App\Http\Controllers\WorkflowInstanceController::class, 'create'])->name('instances.create');
     Route::post('instances', [\App\Http\Controllers\WorkflowInstanceController::class, 'store'])->name('instances.store');
     Route::get('instances/{instance}', [\App\Http\Controllers\WorkflowInstanceController::class, 'show'])->name('instances.show');
     Route::delete('instances/{instance}', [\App\Http\Controllers\WorkflowInstanceController::class, 'destroy'])->name('instances.destroy');
+
+    // Workflow Instance Actions
+    Route::post('instances/{instance}/start', [\App\Http\Controllers\WorkflowInstanceController::class, 'start'])->name('instances.start');
+    Route::post('instances/{instance}/pause', [\App\Http\Controllers\WorkflowInstanceController::class, 'pause'])->name('instances.pause');
+    Route::post('instances/{instance}/resume', [\App\Http\Controllers\WorkflowInstanceController::class, 'resume'])->name('instances.resume');
+    Route::post('instances/{instance}/cancel', [\App\Http\Controllers\WorkflowInstanceController::class, 'cancel'])->name('instances.cancel');
 });
 
 // Task Management Routes

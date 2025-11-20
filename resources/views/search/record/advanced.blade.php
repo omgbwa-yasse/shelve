@@ -141,6 +141,19 @@
                             </div>
                         </div>
 
+                        <!-- Section: Documents Numériques -->
+                        <div class="field-section mb-3">
+                            <h6 class="border-bottom pb-2 mb-2">{{ __('Documents Numériques') }}</h6>
+                            <div class="list-group list-group-flush">
+                                <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="folder_type" data-name-field="{{ __('Type de dossier') }}">
+                                    <i class="bi bi-folder field-icon"></i> {{ __('Type de dossier') }}
+                                </a>
+                                <a href="#" class="list-group-item list-group-item-action px-2 py-1" data-field="document_type" data-name-field="{{ __('Type de document') }}">
+                                    <i class="bi bi-file-earmark field-icon"></i> {{ __('Type de document') }}
+                                </a>
+                            </div>
+                        </div>
+
                         <!-- Section: Autres -->
                         <div class="field-section">
                             <h6 class="border-bottom pb-2 mb-2">{{ __('search.others') }}</h6>
@@ -272,7 +285,9 @@
                         author: 'select',
                         creator: 'select',
                         container: 'select',
-                        status: 'select'
+                        status: 'select',
+                        folder_type: 'select',
+                        document_type: 'select'
                     }
                 };
 
@@ -300,7 +315,9 @@
                     author: data.authors || [],
                     creator: data.creators || [],
                     container: data.containers || [],
-                    status: data.statues || []
+                    status: data.statues || [],
+                    folder_type: data.folderTypes || [],
+                    document_type: data.documentTypes || []
                 };
 
                 // Initialisation des événements

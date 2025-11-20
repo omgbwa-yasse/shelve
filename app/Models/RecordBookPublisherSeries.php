@@ -53,6 +53,12 @@ class RecordBookPublisherSeries extends Model
         return $this->hasMany(RecordBook::class, 'series_id');
     }
 
+    public function dollies()
+    {
+        return $this->belongsToMany(Dolly::class, 'dolly_book_series', 'series_id', 'dolly_id')
+            ->withTimestamps();
+    }
+
     /**
      * Scopes
      */

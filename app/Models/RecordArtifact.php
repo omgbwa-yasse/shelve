@@ -111,6 +111,12 @@ class RecordArtifact extends Model
         return $this->morphMany(Attachment::class, 'attachmentable');
     }
 
+    public function dollies()
+    {
+        return $this->belongsToMany(Dolly::class, 'dolly_artifacts', 'artifact_id', 'dolly_id')
+            ->withTimestamps();
+    }
+
     /**
      * Scopes
      */

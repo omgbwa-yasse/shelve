@@ -156,6 +156,56 @@ class DollyActionController extends Controller
                 }
             }
 
+            if($request->categ == "digital_folder"){
+                switch($request->action){
+                    case 'export_seda' : return $this->digitalFolderExportSeda($request->id);
+                    case 'export_inventory' : return $this->digitalFolderExportInventory($request->id);
+                    case 'clean' : return $this->digitalFolderDetach($request->id);
+                    case 'delete' : return $this->digitalFolderDelete($request->id);
+                }
+            }
+
+            if($request->categ == "digital_document"){
+                switch($request->action){
+                    case 'export_seda' : return $this->digitalDocumentExportSeda($request->id);
+                    case 'export_inventory' : return $this->digitalDocumentExportInventory($request->id);
+                    case 'clean' : return $this->digitalDocumentDetach($request->id);
+                    case 'delete' : return $this->digitalDocumentDelete($request->id);
+                }
+            }
+
+            if($request->categ == "artifact"){
+                switch($request->action){
+                    case 'export_inventory' : return $this->artifactExportInventory($request->id);
+                    case 'clean' : return $this->artifactDetach($request->id);
+                    case 'delete' : return $this->artifactDelete($request->id);
+                }
+            }
+
+            if($request->categ == "book"){
+                switch($request->action){
+                    case 'export_inventory' : return $this->bookExportInventory($request->id);
+                    case 'export_isbd' : return $this->bookExportISBD($request->id);
+                    case 'export_marc' : return $this->bookExportMARC($request->id);
+                    case 'import_isbd' : return $this->bookImportISBD($request->id);
+                    case 'import_marc' : return $this->bookImportMARC($request->id);
+                    case 'clean' : return $this->bookDetach($request->id);
+                    case 'delete' : return $this->bookDelete($request->id);
+                }
+            }
+
+            if($request->categ == "book_series"){
+                switch($request->action){
+                    case 'export_inventory' : return $this->bookSeriesExportInventory($request->id);
+                    case 'export_isbd' : return $this->bookSeriesExportISBD($request->id);
+                    case 'export_marc' : return $this->bookSeriesExportMARC($request->id);
+                    case 'import_isbd' : return $this->bookSeriesImportISBD($request->id);
+                    case 'import_marc' : return $this->bookSeriesImportMARC($request->id);
+                    case 'clean' : return $this->bookSeriesDetach($request->id);
+                    case 'delete' : return $this->bookSeriesDelete($request->id);
+                }
+            }
+
 
 
         }
@@ -755,6 +805,443 @@ class DollyActionController extends Controller
     }
 
 
+    // ==================== DIGITAL FOLDERS ====================
+
+    public function digitalFolderDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->digitalFolders as $folder){
+            $dolly->digitalFolders()->detach($folder->id);
+        }
+    }
+
+    public function digitalFolderDelete(int $id) {
+        $this->digitalFolderDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalFolders');
+        foreach ($dolly->digitalFolders as $folder) {
+            $folder->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Dossiers numériques supprimés du chariot.');
+    }
+
+    public function digitalFolderExportSeda(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalFolders');
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
+        $xml->addChild('Date', date('c'));
+        $xml->addChild('MessageIdentifier', 'DOLLY_' . $dolly->id . '_' . time());
+
+        $dataObjectPackage = $xml->addChild('DataObjectPackage');
+
+        foreach ($dolly->digitalFolders as $folder) {
+            $descriptiveMetadata = $dataObjectPackage->addChild('DescriptiveMetadata');
+            $archiveUnit = $descriptiveMetadata->addChild('ArchiveUnit');
+            $archiveUnit->addAttribute('id', 'FOLDER_' . $folder->id);
+
+            $content = $archiveUnit->addChild('Content');
+            $content->addChild('DescriptionLevel', 'RecordGrp');
+            $content->addChild('Title', htmlspecialchars($folder->name));
+            $content->addChild('Description', htmlspecialchars($folder->description ?? ''));
+            $content->addChild('OriginatingSystemId', $folder->code);
+        }
+
+        $filename = 'seda_digital_folders_' . $dolly->id . '_' . date('Y-m-d_His') . '.xml';
+
+        return response($xml->asXML(), 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function digitalFolderExportInventory(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalFolders');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.digital_folders_inventory', [
+            'dolly' => $dolly,
+            'folders' => $dolly->digitalFolders
+        ]);
+
+        return $pdf->download('inventaire_dossiers_numeriques_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    // ==================== DIGITAL DOCUMENTS ====================
+
+    public function digitalDocumentDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->digitalDocuments as $document){
+            $dolly->digitalDocuments()->detach($document->id);
+        }
+    }
+
+    public function digitalDocumentDelete(int $id) {
+        $this->digitalDocumentDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalDocuments');
+        foreach ($dolly->digitalDocuments as $document) {
+            $document->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Documents numériques supprimés du chariot.');
+    }
+
+    public function digitalDocumentExportSeda(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalDocuments');
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
+        $xml->addChild('Date', date('c'));
+        $xml->addChild('MessageIdentifier', 'DOLLY_DOC_' . $dolly->id . '_' . time());
+
+        $dataObjectPackage = $xml->addChild('DataObjectPackage');
+
+        foreach ($dolly->digitalDocuments as $document) {
+            $descriptiveMetadata = $dataObjectPackage->addChild('DescriptiveMetadata');
+            $archiveUnit = $descriptiveMetadata->addChild('ArchiveUnit');
+            $archiveUnit->addAttribute('id', 'DOC_' . $document->id);
+
+            $content = $archiveUnit->addChild('Content');
+            $content->addChild('DescriptionLevel', 'Item');
+            $content->addChild('Title', htmlspecialchars($document->name));
+            $content->addChild('Description', htmlspecialchars($document->description ?? ''));
+            $content->addChild('OriginatingSystemId', $document->code);
+            if ($document->type) {
+                $content->addChild('DocumentType', htmlspecialchars($document->type));
+            }
+        }
+
+        $filename = 'seda_digital_documents_' . $dolly->id . '_' . date('Y-m-d_His') . '.xml';
+
+        return response($xml->asXML(), 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function digitalDocumentExportInventory(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('digitalDocuments');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.digital_documents_inventory', [
+            'dolly' => $dolly,
+            'documents' => $dolly->digitalDocuments
+        ]);
+
+        return $pdf->download('inventaire_documents_numeriques_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    // ==================== ARTIFACTS ====================
+
+    public function artifactDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->artifacts as $artifact){
+            $dolly->artifacts()->detach($artifact->id);
+        }
+    }
+
+    public function artifactDelete(int $id) {
+        $this->artifactDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('artifacts');
+        foreach ($dolly->artifacts as $artifact) {
+            $artifact->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Artefacts supprimés du chariot.');
+    }
+
+    public function artifactExportInventory(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('artifacts');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.artifacts_inventory', [
+            'dolly' => $dolly,
+            'artifacts' => $dolly->artifacts
+        ]);
+
+        return $pdf->download('inventaire_artefacts_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    // ==================== BOOKS ====================
+
+    public function bookDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->books as $book){
+            $dolly->books()->detach($book->id);
+        }
+    }
+
+    public function bookDelete(int $id) {
+        $this->bookDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('books');
+        foreach ($dolly->books as $book) {
+            $book->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Livres supprimés du chariot.');
+    }
+
+    public function bookExportInventory(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('books');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.books_inventory', [
+            'dolly' => $dolly,
+            'books' => $dolly->books
+        ]);
+
+        return $pdf->download('inventaire_livres_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    public function bookExportISBD(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('books.authors', 'books.publishers');
+
+        $isbd = "";
+        foreach ($dolly->books as $book) {
+            // Format ISBD (International Standard Bibliographic Description)
+            $isbd .= "===================================\n";
+
+            // Zone 1: Titre et mention de responsabilité
+            $isbd .= $book->title;
+            if ($book->subtitle) {
+                $isbd .= " : " . $book->subtitle;
+            }
+            if ($book->authors && $book->authors->isNotEmpty()) {
+                $isbd .= " / " . $book->authors->pluck('name')->join(', ');
+            }
+            $isbd .= "\n";
+
+            // Zone 2: Édition
+            if ($book->edition) {
+                $isbd .= ". - " . $book->edition . "\n";
+            }
+
+            // Zone 4: Publication
+            $isbd .= ". - ";
+            if ($book->publishers && $book->publishers->isNotEmpty()) {
+                $isbd .= $book->publishers->first()->name . ", ";
+            }
+            if ($book->publication_year) {
+                $isbd .= $book->publication_year;
+            }
+            $isbd .= "\n";
+
+            // Zone 5: Description matérielle
+            if ($book->pages) {
+                $isbd .= ". - " . $book->pages . " p.\n";
+            }
+
+            // Zone 8: ISBN
+            if ($book->isbn) {
+                $isbd .= "ISBN " . $book->isbn . "\n";
+            }
+
+            $isbd .= "\n";
+        }
+
+        $filename = 'isbd_books_' . $dolly->id . '_' . date('Y-m-d_His') . '.txt';
+
+        return response($isbd, 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function bookExportMARC(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('books.authors', 'books.publishers');
+
+        $marc = "";
+        foreach ($dolly->books as $book) {
+            $marc .= "=LDR  00000nam  2200000   4500\n";
+            $marc .= "=001  " . str_pad($book->id, 10, '0', STR_PAD_LEFT) . "\n";
+            $marc .= "=005  " . date('YmdHis') . ".0\n";
+            $marc .= "=008  " . date('ymd') . "s" . ($book->publication_year ?? '    ') . "    fr            000 0 fre d\n";
+
+            // ISBN
+            if ($book->isbn) {
+                $marc .= "=020  \\\\\$a" . $book->isbn . "\n";
+            }
+
+            // Auteurs
+            if ($book->authors && $book->authors->isNotEmpty()) {
+                $firstAuthor = $book->authors->first();
+                $marc .= "=100  1\\\$a" . $firstAuthor->name . "\n";
+
+                foreach ($book->authors->skip(1) as $author) {
+                    $marc .= "=700  1\\\$a" . $author->name . "\n";
+                }
+            }
+
+            // Titre
+            $marc .= "=245  10\$a" . $book->title;
+            if ($book->subtitle) {
+                $marc .= " :\$b" . $book->subtitle;
+            }
+            $marc .= "\n";
+
+            // Édition
+            if ($book->edition) {
+                $marc .= "=250  \\\\\$a" . $book->edition . "\n";
+            }
+
+            // Publication
+            if ($book->publishers && $book->publishers->isNotEmpty()) {
+                $publisher = $book->publishers->first();
+                $marc .= "=260  \\\\\$b" . $publisher->name;
+                if ($book->publication_year) {
+                    $marc .= ",\$c" . $book->publication_year;
+                }
+                $marc .= "\n";
+            }
+
+            // Description physique
+            if ($book->pages) {
+                $marc .= "=300  \\\\\$a" . $book->pages . " p.\n";
+            }
+
+            $marc .= "\n";
+        }
+
+        $filename = 'marc_books_' . $dolly->id . '_' . date('Y-m-d_His') . '.mrc';
+
+        return response($marc, 200, [
+            'Content-Type' => 'application/marc; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function bookImportISBD(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        return view('dollies.imports.book_import_isbd', compact('dolly'));
+    }
+
+    public function bookImportMARC(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        return view('dollies.imports.book_import_marc', compact('dolly'));
+    }
+
+    // ==================== BOOK SERIES ====================
+
+    public function bookSeriesDetach(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        foreach($dolly->bookSeries as $series){
+            $dolly->bookSeries()->detach($series->id);
+        }
+    }
+
+    public function bookSeriesDelete(int $id) {
+        $this->bookSeriesDetach($id);
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('bookSeries');
+        foreach ($dolly->bookSeries as $series) {
+            $series->delete();
+        }
+        return redirect()->route('dolly.index')->with('success', 'Séries supprimées du chariot.');
+    }
+
+    public function bookSeriesExportInventory(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('bookSeries.publisher');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.book_series_inventory', [
+            'dolly' => $dolly,
+            'series' => $dolly->bookSeries
+        ]);
+
+        return $pdf->download('inventaire_series_livres_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
+    }
+
+    public function bookSeriesExportISBD(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('bookSeries.publisher', 'bookSeries.books');
+
+        $isbd = "";
+        foreach ($dolly->bookSeries as $series) {
+            $isbd .= "===================================\n";
+
+            // Titre de la série
+            $isbd .= $series->name . " [Collection]\n";
+
+            // Éditeur
+            if ($series->publisher) {
+                $isbd .= ". - " . $series->publisher->name . "\n";
+            }
+
+            // ISSN si disponible
+            if ($series->issn) {
+                $isbd .= "ISSN " . $series->issn . "\n";
+            }
+
+            // Nombre de volumes
+            if ($series->books && $series->books->isNotEmpty()) {
+                $isbd .= ". - " . $series->books->count() . " volumes\n";
+            }
+
+            $isbd .= "\n";
+        }
+
+        $filename = 'isbd_book_series_' . $dolly->id . '_' . date('Y-m-d_His') . '.txt';
+
+        return response($isbd, 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function bookSeriesExportMARC(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        $dolly->load('bookSeries.publisher', 'bookSeries.books');
+
+        $marc = "";
+        foreach ($dolly->bookSeries as $series) {
+            $marc .= "=LDR  00000nas  2200000   4500\n";
+            $marc .= "=001  SER" . str_pad($series->id, 10, '0', STR_PAD_LEFT) . "\n";
+            $marc .= "=005  " . date('YmdHis') . ".0\n";
+            $marc .= "=008  " . date('ymd') . "c        fr pr         0   0fre d\n";
+
+            // ISSN
+            if ($series->issn) {
+                $marc .= "=022  \\\\\$a" . $series->issn . "\n";
+            }
+
+            // Titre de la série
+            $marc .= "=245  00\$a" . $series->name . "\n";
+
+            // Éditeur
+            if ($series->publisher) {
+                $marc .= "=260  \\\\\$b" . $series->publisher->name . "\n";
+            }
+
+            // Note sur le nombre de volumes
+            if ($series->books && $series->books->isNotEmpty()) {
+                $marc .= "=500  \\\\\$a" . $series->books->count() . " volumes dans cette série\n";
+            }
+
+            // Type de série
+            $marc .= "=490  0\\\$a" . $series->name . "\n";
+
+            $marc .= "\n";
+        }
+
+        $filename = 'marc_book_series_' . $dolly->id . '_' . date('Y-m-d_His') . '.mrc';
+
+        return response($marc, 200, [
+            'Content-Type' => 'application/marc; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    public function bookSeriesImportISBD(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        return view('dollies.imports.book_series_import_isbd', compact('dolly'));
+    }
+
+    public function bookSeriesImportMARC(int $id) {
+        $dolly = Dolly::findOrFail($id);
+        return view('dollies.imports.book_series_import_marc', compact('dolly'));
+    }
 
 }
+
 

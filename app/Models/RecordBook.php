@@ -121,6 +121,12 @@ class RecordBook extends Model
         return $this->hasMany(RecordBookReservation::class, 'book_id');
     }
 
+    public function dollies()
+    {
+        return $this->belongsToMany(Dolly::class, 'dolly_books', 'book_id', 'dolly_id')
+            ->withTimestamps();
+    }
+
     /**
      * Scopes
      */

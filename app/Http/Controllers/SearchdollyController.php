@@ -34,11 +34,16 @@ class SearchdollyController extends Controller
             case "room":
             case "slip_record":
             case "container":
-                $dollies = Dolly::where('category', $request->input('categ'))->get();
+            case "digital_folder":
+            case "digital_document":
+            case "artifact":
+            case "book":
+            case "book_series":
+                $dollies = Dolly::where('category', $request->input('categ'))->paginate(25);
                 break;
 
             default:
-                $dollies = Dolly::take(5)->get();
+                $dollies = Dolly::paginate(25);
                 break;
         }
 

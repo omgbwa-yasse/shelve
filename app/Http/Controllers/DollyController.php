@@ -7,6 +7,11 @@ use App\Models\DollyCommunication;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Mail;
 use App\Models\RecordPhysical;
+use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalDocument;
+use App\Models\RecordArtifact;
+use App\Models\RecordBook;
+use App\Models\RecordBookPublisherSeries;
 use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\SlipRecord;
@@ -63,8 +68,21 @@ class DollyController extends Controller
         $containers = Container::all();
         $shelves = Shelf::all();
         $slip_records = SlipRecord::all();
+
+        // Nouvelles entités numériques
+        $digitalFolders = RecordDigitalFolder::where('organisation_id', Auth::user()->current_organisation_id)->get();
+        $digitalDocuments = RecordDigitalDocument::where('organisation_id', Auth::user()->current_organisation_id)->get();
+        $artifacts = RecordArtifact::where('organisation_id', Auth::user()->current_organisation_id)->get();
+        $books = RecordBook::where('organisation_id', Auth::user()->current_organisation_id)->get();
+        $bookSeries = RecordBookPublisherSeries::all();
+
         $dolly->load('creator','ownerOrganisation');
-        return view('dollies.show', compact('dolly', 'records', 'mails', 'communications', 'rooms', 'containers', 'shelves', 'slip_records'));
+
+        return view('dollies.show', compact(
+            'dolly', 'records', 'mails', 'communications', 'rooms',
+            'containers', 'shelves', 'slip_records',
+            'digitalFolders', 'digitalDocuments', 'artifacts', 'books', 'bookSeries'
+        ));
     }
 
 
@@ -107,7 +125,20 @@ class DollyController extends Controller
     public function destroy(Dolly $dolly)
     {
 
-        if ($dolly->mails()->exists() || $dolly->records()->exists() || $dolly->communications()->exists() || $dolly->slips()->exists() || $dolly->slipRecords()->exists() || $dolly->buildings()->exists() || $dolly->rooms()->exists() || $dolly->shelve()->exists()) {
+        if ($dolly->mails()->exists()
+            || $dolly->records()->exists()
+            || $dolly->communications()->exists()
+            || $dolly->slips()->exists()
+            || $dolly->slipRecords()->exists()
+            || $dolly->buildings()->exists()
+            || $dolly->rooms()->exists()
+            || $dolly->shelve()->exists()
+            || $dolly->digitalFolders()->exists()
+            || $dolly->digitalDocuments()->exists()
+            || $dolly->artifacts()->exists()
+            || $dolly->books()->exists()
+            || $dolly->bookSeries()->exists()
+        ) {
            return redirect()->route('dolly.index')->with('error', 'Cannot delete Dolly because it has related records in other tables.');
         }
         $dolly->delete();
@@ -153,6 +184,269 @@ class DollyController extends Controller
     }
 
 
-}
+    // ==================== RECORDS ====================
 
+    public function addRecord(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'record_id' => 'required|exists:record_physicals,id'
+        ]);
+
+        $dolly->records()->syncWithoutDetaching($request->record_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Archive ajoutée au chariot');
+    }
+
+    public function removeRecord(Dolly $dolly, RecordPhysical $record)
+    {
+        $dolly->records()->detach($record->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Archive retirée du chariot');
+    }
+
+    // ==================== MAILS ====================
+
+    public function addMail(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'mail_id' => 'required|exists:mails,id'
+        ]);
+
+        $dolly->mails()->syncWithoutDetaching($request->mail_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Courrier ajouté au chariot');
+    }
+
+    public function removeMail(Dolly $dolly, Mail $mail)
+    {
+        $dolly->mails()->detach($mail->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Courrier retiré du chariot');
+    }
+
+    // ==================== COMMUNICATIONS ====================
+
+    public function addCommunication(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'communication_id' => 'required|exists:communications,id'
+        ]);
+
+        $dolly->communications()->syncWithoutDetaching($request->communication_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Communication ajoutée au chariot');
+    }
+
+    public function removeCommunication(Dolly $dolly, Communication $communication)
+    {
+        $dolly->communications()->detach($communication->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Communication retirée du chariot');
+    }
+
+    // ==================== ROOMS ====================
+
+    public function addRoom(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'room_id' => 'required|exists:rooms,id'
+        ]);
+
+        $dolly->rooms()->syncWithoutDetaching($request->room_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Salle ajoutée au chariot');
+    }
+
+    public function removeRoom(Dolly $dolly, Room $room)
+    {
+        $dolly->rooms()->detach($room->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Salle retirée du chariot');
+    }
+
+    // ==================== CONTAINERS ====================
+
+    public function addContainer(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'container_id' => 'required|exists:containers,id'
+        ]);
+
+        $dolly->containers()->syncWithoutDetaching($request->container_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Boîte ajoutée au chariot');
+    }
+
+    public function removeContainer(Dolly $dolly, Container $container)
+    {
+        $dolly->containers()->detach($container->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Boîte retirée du chariot');
+    }
+
+    // ==================== SHELVES ====================
+
+    public function addShelve(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'shelve_id' => 'required|exists:shelves,id'
+        ]);
+
+        $dolly->shelve()->syncWithoutDetaching($request->shelve_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Étagère ajoutée au chariot');
+    }
+
+    public function removeShelve(Dolly $dolly, Shelf $shelve)
+    {
+        $dolly->shelve()->detach($shelve->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Étagère retirée du chariot');
+    }
+
+    // ==================== SLIP RECORDS ====================
+
+    public function addSlipRecord(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'slip_record_id' => 'required|exists:slip_records,id'
+        ]);
+
+        $dolly->slipRecords()->syncWithoutDetaching($request->slip_record_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Description de versement ajoutée au chariot');
+    }
+
+    public function removeSlipRecord(Dolly $dolly, SlipRecord $slipRecord)
+    {
+        $dolly->slipRecords()->detach($slipRecord->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Description de versement retirée du chariot');
+    }
+
+    // ==================== DIGITAL FOLDERS ====================
+
+    public function addDigitalFolder(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'folder_id' => 'required|exists:record_digital_folders,id'
+        ]);
+
+        $dolly->digitalFolders()->syncWithoutDetaching($request->folder_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Dossier numérique ajouté au chariot');
+    }
+
+    public function removeDigitalFolder(Dolly $dolly, RecordDigitalFolder $folder)
+    {
+        $dolly->digitalFolders()->detach($folder->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Dossier numérique retiré du chariot');
+    }
+
+    // ==================== DIGITAL DOCUMENTS ====================
+
+    public function addDigitalDocument(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'document_id' => 'required|exists:record_digital_documents,id'
+        ]);
+
+        $dolly->digitalDocuments()->syncWithoutDetaching($request->document_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Document numérique ajouté au chariot');
+    }
+
+    public function removeDigitalDocument(Dolly $dolly, RecordDigitalDocument $document)
+    {
+        $dolly->digitalDocuments()->detach($document->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Document numérique retiré du chariot');
+    }
+
+    // ==================== ARTIFACTS ====================
+
+    public function addArtifact(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'artifact_id' => 'required|exists:record_artifacts,id'
+        ]);
+
+        $dolly->artifacts()->syncWithoutDetaching($request->artifact_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Artefact ajouté au chariot');
+    }
+
+    public function removeArtifact(Dolly $dolly, RecordArtifact $artifact)
+    {
+        $dolly->artifacts()->detach($artifact->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Artefact retiré du chariot');
+    }
+
+    // ==================== BOOKS ====================
+
+    public function addBook(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'book_id' => 'required|exists:record_books,id'
+        ]);
+
+        $dolly->books()->syncWithoutDetaching($request->book_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Livre ajouté au chariot');
+    }
+
+    public function removeBook(Dolly $dolly, RecordBook $book)
+    {
+        $dolly->books()->detach($book->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Livre retiré du chariot');
+    }
+
+    // ==================== BOOK SERIES ====================
+
+    public function addBookSeries(Request $request, Dolly $dolly)
+    {
+        $request->validate([
+            'series_id' => 'required|exists:record_book_publisher_series,id'
+        ]);
+
+        $dolly->bookSeries()->syncWithoutDetaching($request->series_id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Série ajoutée au chariot');
+    }
+
+    public function removeBookSeries(Dolly $dolly, RecordBookPublisherSeries $series)
+    {
+        $dolly->bookSeries()->detach($series->id);
+
+        return redirect()->route('dolly.show', $dolly)
+            ->with('success', 'Série retirée du chariot');
+    }
+
+}
 
