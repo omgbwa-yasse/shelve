@@ -1350,18 +1350,29 @@ Route::prefix('tasks')->name('tasks.')->middleware('auth')->group(function () {
     Route::delete('/{task}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('destroy');
 });
 
+// Workplace Invitations
+Route::get('/workplaces/invitations/{token}', [\App\Http\Controllers\WorkplaceInvitationController::class, 'accept'])
+    ->name('workplaces.invitations.accept');
+
 // WorkPlace Management Routes
 Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(function () {
     // Main Workplace Routes
     Route::get('/', [\App\Http\Controllers\WorkplaceController::class, 'index'])->name('index');
     Route::get('/create', [\App\Http\Controllers\WorkplaceController::class, 'create'])->name('create');
     Route::post('/', [\App\Http\Controllers\WorkplaceController::class, 'store'])->name('store');
+
+    // Template Management Routes
+    Route::resource('templates', \App\Http\Controllers\WorkplaceTemplateController::class)->names('templates');
+
     Route::get('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'show'])->name('show');
     Route::get('/{workplace}/edit', [\App\Http\Controllers\WorkplaceController::class, 'edit'])->name('edit');
     Route::put('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'update'])->name('update');
     Route::delete('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'destroy'])->name('destroy');
     Route::post('/{workplace}/archive', [\App\Http\Controllers\WorkplaceController::class, 'archive'])->name('archive');
     Route::get('/{workplace}/settings', [\App\Http\Controllers\WorkplaceController::class, 'settings'])->name('settings');
+
+    // Activity Management Routes
+    Route::get('{workplace}/activities', [\App\Http\Controllers\WorkplaceActivityController::class, 'index'])->name('activities.index');
 
     // Member Management Routes
     Route::prefix('{workplace}/members')->name('members.')->group(function () {
@@ -1371,6 +1382,13 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
         Route::delete('/{member}', [\App\Http\Controllers\WorkplaceMemberController::class, 'destroy'])->name('destroy');
         Route::put('/{member}/permissions', [\App\Http\Controllers\WorkplaceMemberController::class, 'updatePermissions'])->name('permissions');
         Route::put('/{member}/notifications', [\App\Http\Controllers\WorkplaceMemberController::class, 'updateNotifications'])->name('notifications');
+    });
+
+    // Bookmark Management Routes
+    Route::prefix('{workplace}/bookmarks')->name('bookmarks.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'store'])->name('store');
+        Route::delete('/{bookmark}', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'destroy'])->name('destroy');
     });
 
     // Content Management Routes
