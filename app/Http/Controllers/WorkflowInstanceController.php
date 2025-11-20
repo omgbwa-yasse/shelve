@@ -6,6 +6,7 @@ use App\Models\WorkflowInstance;
 use App\Models\WorkflowDefinition;
 use App\Services\WorkflowEngine;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WorkflowInstanceController extends Controller
 {
@@ -26,12 +27,15 @@ class WorkflowInstanceController extends Controller
 
     public function create()
     {
-        $definitions = WorkflowDefinition::active()->get();
-        return view('workflows.instances.create', compact('definitions'));
+        return view('workflows.instances.create', ['definitions' => WorkflowDefinition::active()->get()]);
     }
 
     public function store(Request $request)
     {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
         $validated = $request->validate([
             'definition_id' => 'required|exists:workflow_definitions,id',
             'name' => 'required|string|max:190',
@@ -41,7 +45,7 @@ class WorkflowInstanceController extends Controller
             ...$validated,
             'status' => 'running',
             'current_state' => [],
-            'started_by' => auth()->id(),
+            'started_by' => Auth::id(),
         ]);
 
         return redirect()->route('workflows.instances.show', $instance)

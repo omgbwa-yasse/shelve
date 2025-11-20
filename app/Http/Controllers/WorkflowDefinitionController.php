@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WorkflowDefinition;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WorkflowDefinitionController extends Controller
 {
@@ -23,6 +24,10 @@ class WorkflowDefinitionController extends Controller
 
     public function store(Request $request)
     {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
@@ -30,10 +35,13 @@ class WorkflowDefinitionController extends Controller
             'status' => 'required|string|in:draft,active,archived',
         ]);
 
+        // Calculate version
+        $latestVersion = WorkflowDefinition::where('name', $validated['name'])->max('version') ?? 0;
+
         $definition = WorkflowDefinition::create([
             ...$validated,
-            'version' => 1,
-            'created_by' => auth()->id(),
+            'version' => $latestVersion + 1,
+            'created_by' => Auth::id(),
         ]);
 
         // Rediriger vers la configuration BPMN
@@ -63,7 +71,7 @@ class WorkflowDefinitionController extends Controller
 
         $definition->update([
             ...$validated,
-            'updated_by' => auth()->id(),
+            'updated_by' => Auth::id(),
         ]);
 
         return redirect()->route('workflows.definitions.show', $definition)
@@ -97,7 +105,7 @@ class WorkflowDefinitionController extends Controller
 
         $definition->update([
             'bpmn_xml' => $validated['bpmn_xml'],
-            'updated_by' => auth()->id(),
+            'updated_by' => Auth::id(),
         ]);
 
         return redirect()->route('workflows.definitions.show', $definition)
@@ -124,7 +132,7 @@ class WorkflowDefinitionController extends Controller
 
         $definition->update([
             'bpmn_xml' => $validated['bpmn_xml'],
-            'updated_by' => auth()->id(),
+            'updated_by' => Auth::id(),
         ]);
 
         return redirect()->route('workflows.definitions.show', $definition)

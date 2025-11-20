@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -25,6 +26,10 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:190',
             'description' => 'nullable|string',
@@ -36,7 +41,7 @@ class TaskController extends Controller
 
         $task = Task::create([
             ...$validated,
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
         ]);
 
         return redirect()->route('tasks.show', $task)
@@ -57,6 +62,10 @@ class TaskController extends Controller
 
     public function update(Request $request, Task $task)
     {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:190',
             'description' => 'nullable|string',
@@ -68,7 +77,7 @@ class TaskController extends Controller
 
         $task->update([
             ...$validated,
-            'updated_by' => auth()->id(),
+            'updated_by' => Auth::id(),
         ]);
 
         return redirect()->route('tasks.show', $task)
