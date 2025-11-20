@@ -711,6 +711,7 @@ Route::group(['middleware' => 'auth'], function () {
          // Digital Folders Management (Phase 10 - Task 10.2)
         Route::resource('folders', \App\Http\Controllers\Web\FolderController::class);
         Route::post('folders/{folder}/move', [\App\Http\Controllers\Web\FolderController::class, 'move'])->name('folders.move');
+        Route::get('folders/tree/view', [\App\Http\Controllers\Web\FolderController::class, 'treeView'])->name('folders.tree.view');
         Route::get('folders/tree/data', [\App\Http\Controllers\Web\FolderController::class, 'tree'])->name('folders.tree');
 
         // Digital Documents Management (Phase 10 - Task 10.3)

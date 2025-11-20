@@ -193,7 +193,7 @@ class Record extends Model
      */
     public function thesaurusConcepts()
     {
-        return $this->belongsToMany(ThesaurusConcept::class, 'record_thesaurus_concept', 'record_id', 'concept_id')
+        return $this->belongsToMany(ThesaurusConcept::class, 'record_physical_thesaurus_concept', 'record_id', 'concept_id')
                     ->withPivot('weight', 'context', 'extraction_note')
                     ->withTimestamps();
     }

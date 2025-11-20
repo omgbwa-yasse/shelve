@@ -22,6 +22,9 @@ class FolderController extends Controller
         $query = RecordDigitalFolder::with(['type', 'parent', 'creator', 'organisation', 'assignedUser'])
             ->withCount(['children', 'documents']);
 
+        // Filtrer par organisation courante de l'utilisateur
+        $this->applyOrganisationFilter($query);
+
         // Filtres
         if ($request->filled('type_id')) {
             $query->where('type_id', $request->type_id);
@@ -66,11 +69,11 @@ class FolderController extends Controller
         $organisations = Organisation::orderBy('name')->get();
         $users = User::orderBy('name')->get();
 
-        // Récupérer les dossiers parents potentiels
-        $parentFolders = RecordDigitalFolder::with('type')
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+        // Récupérer les dossiers parents potentiels de l'organisation courante
+        $query = RecordDigitalFolder::with('type')
+            ->where('status', 'active');
+        $this->applyOrganisationFilter($query);
+        $parentFolders = $query->orderBy('name')->get();
 
         $parentId = $request->get('parent_id');
 
@@ -134,6 +137,12 @@ class FolderController extends Controller
      */
     public function show(RecordDigitalFolder $folder)
     {
+        // Vérifier que l'utilisateur a accès à ce dossier
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         $folder->load([
             'type',
             'parent',
@@ -158,17 +167,23 @@ class FolderController extends Controller
      */
     public function edit(RecordDigitalFolder $folder)
     {
+        // Vérifier que l'utilisateur a accès à ce dossier
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         $types = RecordDigitalFolderType::orderBy('name')->get();
         $organisations = Organisation::orderBy('name')->get();
         $users = User::orderBy('name')->get();
 
         // Exclure le dossier lui-même et ses descendants de la liste des parents possibles
         $excludedIds = $folder->getDescendants()->pluck('id')->push($folder->id);
-        $parentFolders = RecordDigitalFolder::with('type')
+        $query = RecordDigitalFolder::with('type')
             ->where('status', 'active')
-            ->whereNotIn('id', $excludedIds)
-            ->orderBy('name')
-            ->get();
+            ->whereNotIn('id', $excludedIds);
+        $this->applyOrganisationFilter($query);
+        $parentFolders = $query->orderBy('name')->get();
 
         return view('repositories.folders.edit', compact('folder', 'types', 'organisations', 'users', 'parentFolders'));
     }
@@ -178,6 +193,12 @@ class FolderController extends Controller
      */
     public function update(Request $request, RecordDigitalFolder $folder)
     {
+        // Vérifier que l'utilisateur a accès à ce dossier
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -241,6 +262,12 @@ class FolderController extends Controller
      */
     public function destroy(RecordDigitalFolder $folder)
     {
+        // Vérifier que l'utilisateur a accès à ce dossier
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         // Vérifier si le dossier contient des documents ou des sous-dossiers
         if ($folder->documents()->count() > 0) {
             return back()->with('error', 'Impossible de supprimer un dossier contenant des documents.');
@@ -278,6 +305,15 @@ class FolderController extends Controller
      */
     public function move(Request $request, RecordDigitalFolder $folder)
     {
+        // Vérifier que l'utilisateur a accès à ce dossier
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Accès non autorisé à ce dossier.'
+            ], 403);
+        }
+
         $validated = $request->validate([
             'new_parent_id' => 'nullable|exists:record_digital_folders,id',
         ]);
@@ -340,8 +376,16 @@ class FolderController extends Controller
             ->withCount(['children', 'documents'])
             ->where('status', 'active');
 
+        // Filtrer par organisation courante de l'utilisateur
+        $this->applyOrganisationFilter($query);
+
+        // Si un filtre d'organisation supplémentaire est fourni, l'appliquer
         if ($organisationId) {
-            $query->where('organisation_id', $organisationId);
+            $currentOrgId = Auth::user()->current_organisation_id ?? null;
+            // Vérifier que l'organisation demandée correspond à celle de l'utilisateur
+            if ($currentOrgId && $organisationId == $currentOrgId) {
+                $query->where('organisation_id', $organisationId);
+            }
         }
 
         if ($typeId) {
@@ -358,6 +402,22 @@ class FolderController extends Controller
             'success' => true,
             'tree' => $tree
         ]);
+    }
+
+    /**
+     * Display tree view page
+     */
+    public function treeView(Request $request)
+    {
+        $types = RecordDigitalFolderType::orderBy('name')->get();
+
+        // Ne récupérer que l'organisation courante de l'utilisateur
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+        $organisations = $currentOrgId
+            ? Organisation::where('id', $currentOrgId)->orderBy('name')->get()
+            : collect();
+
+        return view('repositories.folders.tree', compact('types', 'organisations'));
     }
 
     /**
@@ -381,5 +441,19 @@ class FolderController extends Controller
                 'children' => $folder->children ? $this->buildTree($folder->children) : []
             ];
         });
+    }
+
+    /**
+     * Apply organisation filter to query based on current user's organisation
+     */
+    private function applyOrganisationFilter($query)
+    {
+        $currentOrgId = Auth::user()->current_organisation_id ?? null;
+
+        if ($currentOrgId) {
+            $query->where('organisation_id', $currentOrgId);
+        }
+
+        return $query;
     }
 }

@@ -78,7 +78,7 @@
         <a href="{{ route('folders.create') }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Nouveau dossier
         </a>
-        <a href="{{ route('folders.tree') }}" class="btn btn-info">
+        <a href="{{ route('folders.tree.view') }}" class="btn btn-info">
             <i class="bi bi-diagram-3"></i> Vue arborescente
         </a>
     </div>
