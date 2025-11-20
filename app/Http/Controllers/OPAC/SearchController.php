@@ -93,7 +93,8 @@ class SearchController extends Controller
 
             if (!empty($validated['language'])) {
                 $bookQuery->whereHas('language', function($q) use ($validated) {
-                    $q->where('code', $validated['language']);
+                    $q->where('code', $validated['language'])
+                      ->orWhere('iso_639_1', $validated['language']);
                 });
             }
 
@@ -239,6 +240,18 @@ class SearchController extends Controller
 
             if (!empty($validated['title'])) {
                 $docQuery->where('name', 'like', "%{$validated['title']}%");
+            }
+
+            if (!empty($validated['author'])) {
+                $docQuery->whereHas('creator', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['author']}%");
+                });
+            }
+
+            if (!empty($validated['subject'])) {
+                $docQuery->whereHas('keywords', function($q) use ($validated) {
+                    $q->where('name', 'like', "%{$validated['subject']}%");
+                });
             }
 
             if (!empty($validated['date_from'])) {
