@@ -1,50 +1,60 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!-- Sync Impact Report
+Version: 1.0.0
+Modified Principles: Initial definition of all principles based on project context.
+Added Sections: Core Principles, Governance.
+Templates requiring updates: None pending.
+Follow-up TODOs: None.
+-->
+
+# Shelve Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Modern Laravel Stack
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Built on Laravel 12, PHP 8.2+, and Vue.js 3. Adhere to Laravel best practices and modern PHP standards. All new features must leverage the latest framework capabilities and maintain compatibility with the core stack.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### II. AI-Native Integration
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+AI is intrinsic to the platform, not an afterthought. Leverage local (Ollama) and cloud (OpenAI) models for intelligent features such as extraction, classification, summaries, and chat. AI integrations must be modular and provider-agnostic where possible.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### III. API-First Design
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+All core functionality must be exposed via RESTful API. OpenAPI 3.0 documentation is mandatory for every endpoint. The API is the primary interface for all client interactions, ensuring consistency across web, mobile, and third-party integrations.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### IV. Security & Compliance
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Zero trust architecture. Granular permissions, Sanctum authentication, and comprehensive audit logging are required for all sensitive operations. Data privacy and security best practices must be strictly followed.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### V. Quality & Reliability
+
+Automated testing (Unit/Feature), static analysis (PHPStan), and code style (PHP-CS-Fixer) enforcement are non-negotiable. High test coverage and passing quality gates are required for all contributions.
+
+## Technical Standards
+
+### Technology Stack
+
+- **Backend**: Laravel 12.x, PHP 8.2+
+- **Frontend**: Vue.js 3, TailwindCSS
+- **Database**: MySQL 8.0+
+- **AI**: Ollama, OpenAI, LangChain/MCP
+- **Search**: TNTSearch, Scout
+
+### Development Workflow
+
+- **Branching**: Feature branches merged via PR.
+- **Commits**: Conventional Commits format.
+- **CI/CD**: Automated pipelines for testing and deployment.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Procedure
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+This Constitution supersedes all other practices. Amendments require documentation, approval, and a migration plan if necessary.
+
+### Compliance
+
+All PRs and reviews must verify compliance with these principles. Complexity must be justified. Use `docs/` for runtime development guidance.
+
+**Version**: 1.0.0 | **Ratified**: 2025-11-20 | **Last Amended**: 2025-11-20
+

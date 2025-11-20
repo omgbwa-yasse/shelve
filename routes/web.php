@@ -1392,3 +1392,5 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
 
 
 
+
+Route::get('/new-feature', [App\Http\Controllers\NewFeatureController::class, 'index']);
