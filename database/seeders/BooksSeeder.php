@@ -9,6 +9,9 @@ use App\Models\RecordBookPublisher;
 use App\Models\RecordBookPublisherSeries;
 use App\Models\RecordSubject;
 use App\Models\BookClassification;
+use App\Models\RecordBookFormat;
+use App\Models\RecordBookBinding;
+use App\Models\RecordLanguage;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -67,21 +70,31 @@ class BooksSeeder extends Seeder
             ]
         );
 
+        // Create or get formats
+        $paperback = RecordBookFormat::firstOrCreate(['name' => 'Paperback']);
+        $hardcover = RecordBookFormat::firstOrCreate(['name' => 'Hardcover']);
+        $boxedSet = RecordBookFormat::firstOrCreate(['name' => 'Boxed Set']);
+
+        // Create or get bindings
+        $perfect = RecordBookBinding::firstOrCreate(['name' => 'Perfect']);
+        $case = RecordBookBinding::firstOrCreate(['name' => 'Case']);
+
+        // Create or get languages
+        $english = RecordLanguage::firstOrCreate(['code' => 'en'], ['name' => 'English']);
+
         // Book 1: Programming book
         $book1 = RecordBook::firstOrCreate(
             ['isbn' => '978-0-13-468599-1'],
             [
             'title' => 'Clean Code',
             'subtitle' => 'A Handbook of Agile Software Craftsmanship',
-            'publisher_id' => $prenticeHall->id,
-            'series_id' => $martinSeries->id,
             'publication_year' => 2008,
             'edition' => '1st',
             'place_of_publication' => 'Upper Saddle River, NJ',
             'pages' => 464,
-            'format' => 'Paperback',
-            'binding' => 'Perfect',
-            'language' => 'en',
+            'format_id' => $paperback->id,
+            'binding_id' => $perfect->id,
+            'language_id' => $english->id,
             'dimensions' => '23.5 x 17.8 x 2.8 cm',
             'description' => 'Even bad code can function. But if code isn\'t clean, it can bring a development organization to its knees.',
             'table_of_contents' => 'Chapter 1: Clean Code; Chapter 2: Meaningful Names; Chapter 3: Functions...',
@@ -89,6 +102,14 @@ class BooksSeeder extends Seeder
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Attach publisher and series
+        if (!$book1->publishers()->where('publisher_id', $prenticeHall->id)->exists()) {
+            $book1->publishers()->attach($prenticeHall->id);
+        }
+        if (!$book1->collections()->where('series_id', $martinSeries->id)->exists()) {
+            $book1->collections()->attach($martinSeries->id);
+        }
 
         // Add subjects
         $subjects1 = ['Software Development', 'Programming', 'Best Practices'];
@@ -145,20 +166,24 @@ class BooksSeeder extends Seeder
             [
             'title' => 'Sapiens',
             'subtitle' => 'A Brief History of Humankind',
-            'publisher_id' => $harper->id,
             'publication_year' => 2015,
             'edition' => '1st',
             'place_of_publication' => 'New York',
             'pages' => 443,
-            'format' => 'Hardcover',
-            'binding' => 'Case',
-            'language' => 'en',
+            'format_id' => $hardcover->id,
+            'binding_id' => $case->id,
+            'language_id' => $english->id,
             'dimensions' => '24 x 16 x 3.5 cm',
             'description' => 'How did our species succeed in the battle for dominance? Why did our foraging ancestors come together to create cities and kingdoms?',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Attach publisher
+        if (!$book2->publishers()->where('publisher_id', $harper->id)->exists()) {
+            $book2->publishers()->attach($harper->id);
+        }
 
         // Add subjects
         $subjects2 = ['History', 'Anthropology', 'Human Evolution'];
@@ -215,20 +240,24 @@ class BooksSeeder extends Seeder
             ['isbn' => '978-0-06-112008-4'],
             [
             'title' => 'To Kill a Mockingbird',
-            'publisher_id' => $harper->id,
             'publication_year' => 2006,
             'edition' => 'Reprint',
             'place_of_publication' => 'New York',
             'pages' => 324,
-            'format' => 'Paperback',
-            'binding' => 'Perfect',
-            'language' => 'en',
+            'format_id' => $paperback->id,
+            'binding_id' => $perfect->id,
+            'language_id' => $english->id,
             'dimensions' => '20.3 x 13.5 x 2 cm',
             'description' => 'The unforgettable novel of a childhood in a sleepy Southern town and the crisis of conscience that rocked it.',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Attach publisher
+        if (!$book3->publishers()->where('publisher_id', $harper->id)->exists()) {
+            $book3->publishers()->attach($harper->id);
+        }
 
         // Add subjects
         $subjects3 = ['Fiction', 'Classic Literature', 'American Literature'];
@@ -287,20 +316,24 @@ class BooksSeeder extends Seeder
             ['isbn' => '978-0-393-35457-6'],
             [
             'title' => 'The Feynman Lectures on Physics',
-            'publisher_id' => $oreilly->id,
             'publication_year' => 2011,
             'edition' => 'New Millennium',
             'place_of_publication' => 'New York',
             'pages' => 1552,
-            'format' => 'Boxed Set',
-            'binding' => 'Hardcover',
-            'language' => 'en',
+            'format_id' => $boxedSet->id,
+            'binding_id' => $hardcover->id,
+            'language_id' => $english->id,
             'dimensions' => '26 x 18.5 x 12 cm',
             'description' => 'The whole thing was basically an experiment and Richard Feynman\'s experiment turned out to be hugely successful.',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Attach publisher
+        if (!$book4->publishers()->where('publisher_id', $oreilly->id)->exists()) {
+            $book4->publishers()->attach($oreilly->id);
+        }
 
         // Add subjects
         $subjects4 = ['Physics', 'Science', 'Education'];
