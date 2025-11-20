@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             MailSystemSeeder::class, // Seeder pour le système de courriers
             AuthorTypeSeeder::class, // Seeder pour les types d'auteurs
             AddressTypeSeeder::class, // Seeder pour les types d'adresses
+            LibraryReferenceSeeder::class, // Seeder pour les références bibliographiques (langues, formats, éditeurs...)
 
             // 3. THÉSAURUS (Indépendants)
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
@@ -62,6 +63,7 @@ class DatabaseSeeder extends Seeder
 
             // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
             // RecordSeederSimple::class, // Exemples de documents d'archives - Nécessite la table 'records'
+            BooksSeeder::class, // Exemples de livres
             KeywordSeeder::class, // Mots-clés pour les dossiers/documents numériques
             RecordDigitalFolderSeeder::class, // Exemples de dossiers numériques (Phase 3)
             RecordDigitalDocumentSeederSimple::class, // Exemples de documents numériques (Phase 3)

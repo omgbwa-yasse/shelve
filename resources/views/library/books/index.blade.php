@@ -66,42 +66,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- @forelse($books as $book)
+                        @forelse($books as $book)
                         <tr>
-                            <td>{{ $book->code }}</td>
-                            <td>{{ $book->title }}</td>
-                            <td>{{ $book->authors }}</td>
-                            <td>{{ $book->isbn }}</td>
-                            <td>{{ $book->category->name ?? '-' }}</td>
+                            <td>{{ $book->dewey ?? '-' }}</td>
                             <td>
-                                <span class="badge bg-{{ $book->status_color }}">
-                                    {{ $book->status_label }}
-                                </span>
+                                <div class="fw-bold">{{ $book->title }}</div>
+                                @if($book->subtitle)
+                                    <small class="text-muted">{{ $book->subtitle }}</small>
+                                @endif
+                            </td>
+                            <td>{{ $book->authors_string }}</td>
+                            <td>{{ $book->formatted_isbn ?? $book->isbn }}</td>
+                            <td>{{ $book->series->title ?? '-' }}</td>
+                            <td>
+                                @if($book->available_copies > 0)
+                                    <span class="badge bg-success">{{ __('Disponible') }}</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ __('Indisponible') }}</span>
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ route('library.books.show', $book) }}" class="btn btn-sm btn-info">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('library.books.edit', $book) }}" class="btn btn-sm btn-warning">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                                <div class="btn-group">
+                                    <a href="{{ route('library.books.show', $book->id) }}" class="btn btn-sm btn-info" title="{{ __('Voir') }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('library.books.edit', $book->id) }}" class="btn btn-sm btn-warning" title="{{ __('Modifier') }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
-                        @empty --}}
+                        @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox display-4 d-block mb-2"></i>
                                 {{ __('Aucun ouvrage trouvé') }}
                             </td>
                         </tr>
-                        {{-- @endforelse --}}
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            {{-- Pagination --}}
-            {{-- <div class="mt-3">
+            <div class="mt-3">
                 {{ $books->links() }}
-            </div> --}}
+            </div>
         </div>
     </div>
 </div>

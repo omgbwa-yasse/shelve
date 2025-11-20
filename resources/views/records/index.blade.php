@@ -192,7 +192,8 @@
 
                     $year = $record->date_exact ?? ($record->date_start ? (Str::substr($record->date_start,0,4)) : ($record->created_at ? $record->created_at->format('Y') : ''));
                     $authors = $record->authors ? $record->authors->pluck('name')->join(', ') : '';
-                    $keywords = $record->keywords ? $record->keywords->pluck('name')->implode(' ') : '';
+                    // Keywords only available for physical records
+                    $keywords = ($recordType === 'physical' && $record->keywords) ? $record->keywords->pluck('name')->implode(' ') : '';
                 @endphp
                 <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}" data-keywords="{{ $keywords }}" data-record-type="{{ $recordType }}">
                     <div class="d-flex align-items-start">
@@ -314,7 +315,7 @@
                                 @endif
                             </div>
                             <!-- Keywords -->
-                            @if($record->keywords->isNotEmpty())
+                            @if($recordType === 'physical' && $record->keywords && $record->keywords->isNotEmpty())
                                 <div class="small mb-2">
                                     <span class="text-muted me-2">{{ __('Mots-clés:') }}</span>
                                     @foreach($record->keywords as $keyword)

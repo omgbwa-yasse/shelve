@@ -56,7 +56,7 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Publié par :</strong> {{ $record->publisher->name ?? 'Inconnu' }}
+                            <strong>Publié par :</strong> {{ $record->publishers->pluck('name')->join(', ') ?? 'Inconnu' }}
                         </div>
                         <div class="col-md-6">
                             <strong>Créé le :</strong> {{ $record->created_at->format('d/m/Y H:i') }}

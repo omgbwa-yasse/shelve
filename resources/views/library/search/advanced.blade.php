@@ -29,23 +29,42 @@
                         <input type="text" class="form-control" id="isbn" name="isbn" value="{{ request('isbn') }}">
                     </div>
                     <div class="col-md-4">
-                        <label for="publisher" class="form-label">{{ __('Éditeur') }}</label>
-                        <input type="text" class="form-control" id="publisher" name="publisher" value="{{ request('publisher') }}">
+                        <label for="publisher_id" class="form-label">{{ __('Éditeur') }}</label>
+                        <select class="form-select" id="publisher_id" name="publisher_id">
+                            <option value="">{{ __('Tous les éditeurs') }}</option>
+                            @foreach($publishers as $id => $name)
+                                <option value="{{ $id }}" {{ request('publisher_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-4">
-                        <label for="year" class="form-label">{{ __('Année de publication') }}</label>
-                        <input type="number" class="form-control" id="year" name="year" value="{{ request('year') }}">
+                        <label for="year_from" class="form-label">{{ __('Année (De)') }}</label>
+                        <input type="number" class="form-control" id="year_from" name="year_from" value="{{ request('year_from') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="year_to" class="form-label">{{ __('Année (À)') }}</label>
+                        <input type="number" class="form-control" id="year_to" name="year_to" value="{{ request('year_to') }}">
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="category" class="form-label">{{ __('Catégorie') }}</label>
-                        <input type="text" class="form-control" id="category" name="category" value="{{ request('category') }}">
+                        <label for="dewey" class="form-label">{{ __('Cote (Dewey)') }}</label>
+                        <select class="form-select" id="dewey" name="dewey">
+                            <option value="">{{ __('Toutes les cotes') }}</option>
+                            @foreach($categories as $dewey)
+                                <option value="{{ $dewey }}" {{ request('dewey') == $dewey ? 'selected' : '' }}>{{ $dewey }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6">
-                        <label for="language" class="form-label">{{ __('Langue') }}</label>
-                        <input type="text" class="form-control" id="language" name="language" value="{{ request('language') }}">
+                        <label for="language_id" class="form-label">{{ __('Langue') }}</label>
+                        <select class="form-select" id="language_id" name="language_id">
+                            <option value="">{{ __('Toutes les langues') }}</option>
+                            @foreach($languages as $id => $name)
+                                <option value="{{ $id }}" {{ request('language_id') == $id ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 

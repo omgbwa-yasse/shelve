@@ -7,6 +7,8 @@ use App\Models\RecordAuthor;
 use App\Models\RecordBookCopy;
 use App\Models\RecordBookPublisher;
 use App\Models\RecordBookPublisherSeries;
+use App\Models\RecordSubject;
+use App\Models\BookClassification;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -76,9 +78,6 @@ class BooksSeeder extends Seeder
             'publication_year' => 2008,
             'edition' => '1st',
             'place_of_publication' => 'Upper Saddle River, NJ',
-            'dewey' => '005.1',
-            'lcc' => 'QA76.76.D47',
-            'subjects' => ['Software Development', 'Programming', 'Best Practices'],
             'pages' => 464,
             'format' => 'Paperback',
             'binding' => 'Perfect',
@@ -86,13 +85,25 @@ class BooksSeeder extends Seeder
             'dimensions' => '23.5 x 17.8 x 2.8 cm',
             'description' => 'Even bad code can function. But if code isn\'t clean, it can bring a development organization to its knees.',
             'table_of_contents' => 'Chapter 1: Clean Code; Chapter 2: Meaningful Names; Chapter 3: Functions...',
-            'total_copies' => 3,
-            'available_copies' => 3,
-            'access_level' => 'public',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Add subjects
+        $subjects1 = ['Software Development', 'Programming', 'Best Practices'];
+        foreach ($subjects1 as $subjectName) {
+            $subject = RecordSubject::firstOrCreate(['name' => $subjectName]);
+            if (!$book1->subjects()->where('subject_id', $subject->id)->exists()) {
+                $book1->subjects()->attach($subject->id);
+            }
+        }
+
+        // Add classification (Dewey)
+        $dewey1 = BookClassification::firstOrCreate(['name' => '005.1', 'description' => 'Computer programming, programs, data']);
+        if (!$book1->classifications()->where('classification_id', $dewey1->id)->exists()) {
+            $book1->classifications()->attach($dewey1->id);
+        }
 
         // Add author
         $martinAuthor = RecordAuthor::firstOrCreate(
@@ -138,22 +149,31 @@ class BooksSeeder extends Seeder
             'publication_year' => 2015,
             'edition' => '1st',
             'place_of_publication' => 'New York',
-            'dewey' => '909',
-            'lcc' => 'CB25',
-            'subjects' => ['History', 'Anthropology', 'Human Evolution'],
             'pages' => 443,
             'format' => 'Hardcover',
             'binding' => 'Case',
             'language' => 'en',
             'dimensions' => '24 x 16 x 3.5 cm',
             'description' => 'How did our species succeed in the battle for dominance? Why did our foraging ancestors come together to create cities and kingdoms?',
-            'total_copies' => 5,
-            'available_copies' => 5,
-            'access_level' => 'public',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Add subjects
+        $subjects2 = ['History', 'Anthropology', 'Human Evolution'];
+        foreach ($subjects2 as $subjectName) {
+            $subject = RecordSubject::firstOrCreate(['name' => $subjectName]);
+            if (!$book2->subjects()->where('subject_id', $subject->id)->exists()) {
+                $book2->subjects()->attach($subject->id);
+            }
+        }
+
+        // Add classification (Dewey)
+        $dewey2 = BookClassification::firstOrCreate(['name' => '909', 'description' => 'World history']);
+        if (!$book2->classifications()->where('classification_id', $dewey2->id)->exists()) {
+            $book2->classifications()->attach($dewey2->id);
+        }
 
         // Add author
         $harariAuthor = RecordAuthor::firstOrCreate(
@@ -199,22 +219,31 @@ class BooksSeeder extends Seeder
             'publication_year' => 2006,
             'edition' => 'Reprint',
             'place_of_publication' => 'New York',
-            'dewey' => '813.54',
-            'lcc' => 'PS3563.E353',
-            'subjects' => ['Fiction', 'Classic Literature', 'American Literature'],
             'pages' => 324,
             'format' => 'Paperback',
             'binding' => 'Perfect',
             'language' => 'en',
             'dimensions' => '20.3 x 13.5 x 2 cm',
             'description' => 'The unforgettable novel of a childhood in a sleepy Southern town and the crisis of conscience that rocked it.',
-            'total_copies' => 2,
-            'available_copies' => 2,
-            'access_level' => 'public',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Add subjects
+        $subjects3 = ['Fiction', 'Classic Literature', 'American Literature'];
+        foreach ($subjects3 as $subjectName) {
+            $subject = RecordSubject::firstOrCreate(['name' => $subjectName]);
+            if (!$book3->subjects()->where('subject_id', $subject->id)->exists()) {
+                $book3->subjects()->attach($subject->id);
+            }
+        }
+
+        // Add classification (Dewey)
+        $dewey3 = BookClassification::firstOrCreate(['name' => '813.54', 'description' => 'American fiction 1945-1999']);
+        if (!$book3->classifications()->where('classification_id', $dewey3->id)->exists()) {
+            $book3->classifications()->attach($dewey3->id);
+        }
 
         // Add author
         $leeAuthor = RecordAuthor::firstOrCreate(
@@ -262,22 +291,31 @@ class BooksSeeder extends Seeder
             'publication_year' => 2011,
             'edition' => 'New Millennium',
             'place_of_publication' => 'New York',
-            'dewey' => '530',
-            'lcc' => 'QC21.3',
-            'subjects' => ['Physics', 'Science', 'Education'],
             'pages' => 1552,
             'format' => 'Boxed Set',
             'binding' => 'Hardcover',
             'language' => 'en',
             'dimensions' => '26 x 18.5 x 12 cm',
             'description' => 'The whole thing was basically an experiment and Richard Feynman\'s experiment turned out to be hugely successful.',
-            'total_copies' => 1,
-            'available_copies' => 1,
-            'access_level' => 'internal',
             'status' => 'active',
             'creator_id' => $user->id,
             'organisation_id' => $organisationId,
         ]);
+
+        // Add subjects
+        $subjects4 = ['Physics', 'Science', 'Education'];
+        foreach ($subjects4 as $subjectName) {
+            $subject = RecordSubject::firstOrCreate(['name' => $subjectName]);
+            if (!$book4->subjects()->where('subject_id', $subject->id)->exists()) {
+                $book4->subjects()->attach($subject->id);
+            }
+        }
+
+        // Add classification (Dewey)
+        $dewey4 = BookClassification::firstOrCreate(['name' => '530', 'description' => 'Physics']);
+        if (!$book4->classifications()->where('classification_id', $dewey4->id)->exists()) {
+            $book4->classifications()->attach($dewey4->id);
+        }
 
         // Add authors
         $feynmanAuthor = RecordAuthor::firstOrCreate(
@@ -347,6 +385,6 @@ class BooksSeeder extends Seeder
 
         $this->command->info('✅ Created 4 books with ' . RecordBookCopy::count() . ' copies');
         $this->command->info('✅ Added ' . RecordAuthor::count() . ' authors with ' .
-            \DB::table('record_author_book')->count() . ' book-author relations');
+            \Illuminate\Support\Facades\DB::table('record_author_book')->count() . ' book-author relations');
     }
 }

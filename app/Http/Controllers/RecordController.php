@@ -224,25 +224,20 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'type', 'creator', 'organisation', 'keywords', 'thesaurusConcepts'
+            'type', 'creator', 'organisation'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'type', 'creator', 'organisation', 'folder', 'keywords', 'thesaurusConcepts'
+            'type', 'creator', 'organisation', 'folder'
         ]);
 
-        // Filtrage par mot-clé si fourni (appliqué aux 3 types)
+        // Filtrage par mot-clé si fourni (appliqué aux records physiques uniquement)
         $keywordFilter = $request->input('keyword_filter');
         if ($request->filled('keyword_filter')) {
             $physicalQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
                 $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
             });
-            $foldersQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
-                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
-            });
-            $documentsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
-                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
-            });
+            // Note: Keywords filtering not yet implemented for digital folders and documents
         }
 
         // Récupérer les résultats

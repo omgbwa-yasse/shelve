@@ -247,7 +247,11 @@ Route::group(['middleware' => 'auth'], function () {
     // =================== LIBRARY MODULE ===================
     Route::prefix('library')->name('library.')->group(function () {
         // Books Management (Catalogue, Gestion des ouvrages)
+        Route::get('books/modal/data', [\App\Http\Controllers\Library\BookController::class, 'getModalData'])->name('books.modal.data');
+        Route::post('books/modal/store', [\App\Http\Controllers\Library\BookController::class, 'storeModalData'])->name('books.modal.store');
         Route::resource('books', \App\Http\Controllers\Library\BookController::class);
+        Route::get('books/modal/data', [\App\Http\Controllers\Library\BookController::class, 'getModalData'])->name('books.modal.data');
+        Route::post('books/modal/store', [\App\Http\Controllers\Library\BookController::class, 'storeModalData'])->name('books.modal.store');
         Route::get('books/{book}/duplicate', [\App\Http\Controllers\Library\BookController::class, 'duplicate'])->name('books.duplicate');
         Route::post('books/import', [\App\Http\Controllers\Library\BookController::class, 'import'])->name('books.import');
         Route::get('books/export/form', [\App\Http\Controllers\Library\BookController::class, 'exportForm'])->name('books.export.form');
@@ -285,6 +289,12 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('loans/{loan}/return', [\App\Http\Controllers\Library\LoanController::class, 'return'])->name('loans.return');
         Route::get('loans/overdue', [\App\Http\Controllers\Library\LoanController::class, 'overdue'])->name('loans.overdue');
         Route::get('loans/history', [\App\Http\Controllers\Library\LoanController::class, 'history'])->name('loans.history');
+        Route::get('loans/check-borrower', [\App\Http\Controllers\Library\LoanController::class, 'checkBorrower'])->name('loans.check-borrower');
+        Route::get('loans/check-copy', [\App\Http\Controllers\Library\LoanController::class, 'checkCopy'])->name('loans.check-copy');
+        Route::get('loans/check-active-loan', [\App\Http\Controllers\Library\LoanController::class, 'checkActiveLoan'])->name('loans.check-active-loan');
+
+        Route::get('loans/return-book', [\App\Http\Controllers\Library\LoanController::class, 'returnForm'])->name('loans.return-form');
+        Route::post('loans/return-book', [\App\Http\Controllers\Library\LoanController::class, 'storeReturn'])->name('loans.store-return');
 
         // Readers Management (Lecteurs)
         Route::get('readers', [\App\Http\Controllers\Library\ReaderController::class, 'index'])->name('readers.index');
@@ -297,6 +307,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('readers/{reader}/card', [\App\Http\Controllers\Library\ReaderController::class, 'card'])->name('readers.card');
 
         // Search
+        Route::get('search/autocomplete', [\App\Http\Controllers\Library\SearchController::class, 'autocomplete'])->name('search.autocomplete');
         Route::get('search', [\App\Http\Controllers\Library\SearchController::class, 'index'])->name('search.index');
         Route::post('search', [\App\Http\Controllers\Library\SearchController::class, 'search'])->name('search');
         Route::get('search/advanced', [\App\Http\Controllers\Library\SearchController::class, 'advanced'])->name('search.advanced');
@@ -669,8 +680,6 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::prefix('reservations')->name('communications.reservations.')->group(function () {
             Route::get('/', [ReservationController::class, 'index'])->name('index');
-            Route::get('/create', [ReservationController::class, 'create'])->name('create');
-            Route::post('/', [ReservationController::class, 'store'])->name('store');
             Route::get('/approved', [ReservationController::class, 'listApproved'])->name('approved.list');
             Route::get('/approved-reservations', [ReservationController::class, 'listApprovedReservations'])->name('approved.reservations');
             Route::get('/return-available', [ReservationController::class, 'returnAvailable'])->name('return.available');

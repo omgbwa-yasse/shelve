@@ -41,8 +41,8 @@
                                 </p>
                                 <p class="card-text small">
                                     <span class="text-muted">{{ $book->publication_year }}</span>
-                                    @if($book->publisher)
-                                        <span class="text-muted"> • {{ $book->publisher->name }}</span>
+                                    @if($book->publishers->count() > 0)
+                                        <span class="text-muted"> • {{ $book->publishers->pluck('name')->join(', ') }}</span>
                                     @endif
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mt-3">

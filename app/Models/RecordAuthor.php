@@ -14,6 +14,7 @@ class RecordAuthor extends Model
     protected $table = 'record_authors';
 
     protected $fillable = [
+        'author_type',
         'first_name',
         'last_name',
         'full_name',

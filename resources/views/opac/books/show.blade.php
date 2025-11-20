@@ -56,7 +56,7 @@
                                     </tr>
                                     <tr>
                                         <th scope="row">{{ __('Publisher') }}</th>
-                                        <td>{{ $book->publisher->name ?? '-' }}</td>
+                                        <td>{{ $book->publishers->pluck('name')->join(', ') ?? '-' }}</td>
                                     </tr>
                                     <tr>
                                         <th scope="row">{{ __('Year') }}</th>

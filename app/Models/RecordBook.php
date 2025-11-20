@@ -16,43 +16,88 @@ class RecordBook extends Model
     protected $table = 'record_books';
 
     protected $fillable = [
+        // ZONE 0
+        'typdoc',
+        'statut',
+        'forme_contenu',
+        'type_mediation',
+
+        // ZONE 1 - Titre
         'isbn',
         'title',
+        'titre_parallele',
         'subtitle',
-        'publisher_id',
-        'publication_year',
-        'edition',
-        'place_of_publication',
-        'dewey',
-        'lcc',
+        'complement_titre',
+        'titre_cle',
+
+        // ZONE 2 - Édition
+        'mention_edition',
+        'mention_resp_edition',
+
+        // ZONE 3
+        'zone_specifique',
+
+        // ZONE 4 - Adresse bibliographique
+        'annee_publication',
+        'date_publication',
+        'date_depot_legal',
+        'date_copyright',
+        'publication_year', // legacy
+        'edition', // legacy
+        'place_of_publication', // legacy
+
+        // ZONE 5 - Collation
+        'importance_materielle',
+        'autre_materiel',
+        'format_dimensions',
+        'materiel_accompagnement',
         'pages',
+        'format', // legacy
+        'binding', // legacy
+        'language', // legacy
+        'dimensions', // legacy
+
+        // ZONE 7 - Notes
+        'notes_generales',
+        'notes_contenu',
+        'notes_bibliographie',
+        'notes_resume',
+        'notes_public_destine',
+        'description', // legacy
+        'table_of_contents', // legacy
+        'notes', // legacy
+
+        // ZONE 8 - Numéros
+        'isbn_errone',
+        'ean',
+        'issn',
+        'numero_editeur',
+        'autre_numero',
+        'prix',
+        'disponibilite',
+
+        // Métadonnées UNIMARC
+        'code_langue',
+        'code_pays',
+        'catalogueur',
+        'source_notice',
+        'ppn',
+
+        // Relations (legacy)
+        'series_id',
         'format_id',
         'binding_id',
         'language_id',
-        'dimensions',
-        'description',
-        'table_of_contents',
-        'notes',
-        'series_id',
-        'total_copies',
-        'available_copies',
-        'loan_count',
-        'reservation_count',
-        'metadata',
-        'access_level',
+
+        // Métadonnées système
         'status',
         'creator_id',
         'organisation_id',
     ];
 
     protected $casts = [
-        'metadata' => 'array',
         'publication_year' => 'integer',
         'pages' => 'integer',
-        'total_copies' => 'integer',
-        'available_copies' => 'integer',
-        'loan_count' => 'integer',
-        'reservation_count' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -71,9 +116,10 @@ class RecordBook extends Model
         return $this->belongsTo(Organisation::class);
     }
 
-    public function publisher(): BelongsTo
+    public function publishers(): BelongsToMany
     {
-        return $this->belongsTo(RecordBookPublisher::class, 'publisher_id');
+        return $this->belongsToMany(RecordBookPublisher::class, 'record_book_publisher', 'book_id', 'publisher_id')
+            ->withTimestamps();
     }
 
     public function series(): BelongsTo
@@ -99,9 +145,15 @@ class RecordBook extends Model
     public function authors(): BelongsToMany
     {
         return $this->belongsToMany(RecordAuthor::class, 'record_author_book', 'book_id', 'author_id')
-            ->withPivot('role', 'display_order', 'notes')
+            ->withPivot('responsibility_type', 'function', 'role', 'display_order', 'notes')
             ->withTimestamps()
             ->orderByPivot('display_order');
+    }
+
+    public function responsabilites(): HasMany
+    {
+        return $this->hasMany(RecordAuthorBook::class, 'book_id')
+            ->orderBy('display_order');
     }
 
     public function subjects(): BelongsToMany
@@ -109,6 +161,34 @@ class RecordBook extends Model
         return $this->belongsToMany(RecordSubject::class, 'record_book_subject', 'book_id', 'subject_id')
             ->withPivot('relevance', 'is_primary')
             ->withTimestamps();
+    }
+
+    // Relations UNIMARC
+
+    public function classifications(): BelongsToMany
+    {
+        return $this->belongsToMany(BookClassification::class, 'record_book_classification', 'book_id', 'classification_id')
+            ->withPivot('display_order')
+            ->orderByPivot('display_order');
+    }
+
+    public function terms(): BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Term::class, 'record_book_term', 'book_id', 'term_id')
+            ->withPivot('display_order')
+            ->orderByPivot('display_order');
+    }
+
+    public function publisherPlaces(): HasMany
+    {
+        return $this->hasMany(RecordBookPublisherPlace::class, 'book_id')
+            ->orderBy('display_order');
+    }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(RecordBookPublisherSeries::class, 'record_book_collection', 'book_id', 'collection_id')
+            ->withPivot('collection_number');
     }
 
     public function copies(): HasMany
@@ -278,8 +358,10 @@ class RecordBook extends Model
             ->get();
     }
 
-    public static function byPublisher($publisher)
+    public static function byPublisher($publisherName)
     {
-        return self::where('publisher', $publisher)->get();
+        return self::whereHas('publishers', function ($query) use ($publisherName) {
+            $query->where('name', 'like', "%{$publisherName}%");
+        })->get();
     }
 }

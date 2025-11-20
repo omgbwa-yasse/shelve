@@ -73,6 +73,7 @@ class AuthorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'author_type' => 'required|in:person,organization,conference',
             'first_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'full_name' => 'required|string|max:500',
@@ -139,6 +140,7 @@ class AuthorController extends Controller
         $author = RecordAuthor::findOrFail($id);
 
         $validated = $request->validate([
+            'author_type' => 'required|in:person,organization,conference',
             'first_name' => 'nullable|string|max:255',
             'last_name' => 'required|string|max:255',
             'full_name' => 'required|string|max:500',

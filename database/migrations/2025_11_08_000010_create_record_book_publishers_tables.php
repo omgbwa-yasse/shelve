@@ -18,10 +18,14 @@ return new class extends Migration
             $table->string('original_name')->nullable()->comment('Nom original (si différent)');
             $table->string('country')->nullable()->comment('Pays d\'origine (ISO 3166-1 alpha-2)');
             $table->string('city')->nullable()->comment('Ville principale');
+            $table->text('adresse')->nullable()->comment('Adresse complète');
+            $table->string('website')->nullable()->comment('Site web');
+            $table->string('site_web')->nullable()->comment('Site web (alias)');
             $table->integer('founded_year')->nullable()->comment('Année de fondation');
+            $table->date('date_creation')->nullable()->comment('Date de création');
             $table->integer('ceased_year')->nullable()->comment('Année de cessation d\'activité');
             $table->text('description')->nullable()->comment('Description de l\'éditeur');
-            $table->string('website')->nullable()->comment('Site web');
+            $table->text('note')->nullable()->comment('Notes diverses');
             $table->string('logo')->nullable()->comment('Logo de l\'éditeur');
             $table->enum('status', ['active', 'inactive', 'acquired', 'ceased'])->default('active')->comment('Statut');
             $table->json('metadata')->nullable()->comment('Métadonnées additionnelles');
@@ -39,12 +43,21 @@ return new class extends Migration
         Schema::create('record_book_publisher_series', function (Blueprint $table) {
             $table->id();
             $table->foreignId('publisher_id')
+                ->nullable()
                 ->constrained('record_book_publishers')
                 ->onDelete('cascade')
                 ->comment('Éditeur de la collection');
+            $table->foreignId('parent_id')
+                ->nullable()
+                ->constrained('record_book_publisher_series')
+                ->onDelete('set null')
+                ->comment('Collection parente (hiérarchie)');
             $table->string('name')->comment('Nom de la collection/série');
+            $table->string('titre_section')->nullable()->comment('Sous-titre de la collection');
             $table->text('description')->nullable()->comment('Description de la collection');
             $table->string('issn')->nullable()->unique()->comment('ISSN de la collection (si applicable)');
+            $table->integer('niveau')->default(1)->comment('Niveau hiérarchique (1=principale, 2=sous-collection)');
+            $table->integer('ordre_affichage')->default(0)->comment('Ordre d\'affichage');
             $table->integer('started_year')->nullable()->comment('Année de début');
             $table->integer('ended_year')->nullable()->comment('Année de fin (si terminée)');
             $table->string('editor')->nullable()->comment('Directeur/Éditeur de la collection');
@@ -57,8 +70,10 @@ return new class extends Migration
 
             // Index
             $table->index('publisher_id');
+            $table->index('parent_id');
             $table->index('name');
             $table->index('issn');
+            $table->index('niveau');
             $table->index('status');
             $table->index(['publisher_id', 'status']);
             $table->fullText(['name', 'description']);

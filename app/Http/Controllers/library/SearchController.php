@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RecordBook;
 use App\Models\RecordAuthor;
 use App\Models\RecordPeriodical;
+use App\Models\BookClassification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -30,7 +31,7 @@ class SearchController extends Controller
         $results = [];
 
         if ($type === 'all' || $type === 'books') {
-            $results['books'] = RecordBook::with(['authors', 'publisher'])
+            $results['books'] = RecordBook::with(['authors', 'publishers'])
                 ->where(function ($q) use ($query) {
                     $q->where('title', 'like', "%{$query}%")
                         ->orWhere('subtitle', 'like', "%{$query}%")
@@ -70,24 +71,17 @@ class SearchController extends Controller
     public function advanced()
     {
         // Récupérer les options pour les filtres
-        $publishers = RecordBook::with('publisher')
-            ->get()
-            ->pluck('publisher.name', 'publisher.id')
-            ->unique()
-            ->filter();
+        $publishers = \App\Models\RecordBookPublisher::orderBy('name')
+            ->pluck('name', 'id');
 
-        $languages = RecordBook::select('language_id')
-            ->distinct()
-            ->whereNotNull('language_id')
-            ->pluck('language_id');
+        $languages = \App\Models\RecordLanguage::orderBy('name')
+            ->pluck('name', 'id');
 
-        $categories = RecordBook::select('dewey')
-            ->distinct()
-            ->whereNotNull('dewey')
-            ->orderBy('dewey')
-            ->pluck('dewey');
+        $classifications = BookClassification::whereNull('parent_id')
+            ->orderBy('name')
+            ->get();
 
-        return view('library.search.advanced', compact('publishers', 'languages', 'categories'));
+        return view('library.search.advanced', compact('publishers', 'languages', 'classifications'));
     }
 
     /**
@@ -95,7 +89,7 @@ class SearchController extends Controller
      */
     public function advancedSearch(Request $request)
     {
-        $query = RecordBook::with(['authors', 'publisher']);
+        $query = RecordBook::with(['authors', 'publishers']);
 
         if ($request->filled('title')) {
             $query->where('title', 'like', "%{$request->title}%");
@@ -112,7 +106,9 @@ class SearchController extends Controller
         }
 
         if ($request->filled('publisher_id')) {
-            $query->where('publisher_id', $request->publisher_id);
+            $query->whereHas('publishers', function ($q) use ($request) {
+                $q->where('record_book_publishers.id', $request->publisher_id);
+            });
         }
 
         if ($request->filled('year_from')) {
@@ -123,8 +119,10 @@ class SearchController extends Controller
             $query->where('publication_year', '<=', $request->year_to);
         }
 
-        if ($request->filled('dewey')) {
-            $query->where('dewey', 'like', $request->dewey . '%');
+        if ($request->filled('classification_id')) {
+            $query->whereHas('classifications', function ($q) use ($request) {
+                $q->where('id', $request->classification_id);
+            });
         }
 
         if ($request->filled('language_id')) {
@@ -195,5 +193,73 @@ class SearchController extends Controller
         $popularSearches = Cache::get('popular_searches', []);
         $popularSearches[$query] = ($popularSearches[$query] ?? 0) + 1;
         Cache::put('popular_searches', $popularSearches, now()->addDays(30));
+    }
+
+    /**
+     * Autocomplete for various entities.
+     */
+    public function autocomplete(Request $request)
+    {
+        $request->validate([
+            'q' => 'required|string|min:3',
+            'type' => 'required|string|in:publishers,languages,formats,bindings,series,authors,books',
+        ]);
+
+        $query = $request->input('q');
+        $type = $request->input('type');
+        $limit = 10;
+
+        $results = [];
+
+        switch ($type) {
+            case 'publishers':
+                $results = \App\Models\RecordBookPublisher::where('name', 'like', "%{$query}%")
+                    ->select('id', 'name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'languages':
+                $results = \App\Models\RecordLanguage::where('name', 'like', "%{$query}%")
+                    ->orWhere('code', 'like', "%{$query}%")
+                    ->select('id', 'name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'formats':
+                $results = \App\Models\RecordBookFormat::where('name', 'like', "%{$query}%")
+                    ->select('id', 'name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'bindings':
+                $results = \App\Models\RecordBookBinding::where('name', 'like', "%{$query}%")
+                    ->select('id', 'name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'series':
+                $results = \App\Models\RecordBookPublisherSeries::where('name', 'like', "%{$query}%")
+                    ->select('id', 'name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'authors':
+                $results = \App\Models\RecordAuthor::where('full_name', 'like', "%{$query}%")
+                    ->select('id', 'full_name as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+            case 'books':
+                $results = \App\Models\RecordBook::where('title', 'like', "%{$query}%")
+                    ->orWhere('isbn', 'like', "%{$query}%")
+                    ->select('id', 'title as text')
+                    ->limit($limit)
+                    ->get();
+                break;
+        }
+
+        return response()->json([
+            'results' => $results
+        ]);
     }
 }

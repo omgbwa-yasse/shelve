@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -39,9 +40,10 @@ class RecordBookPublisher extends Model
     /**
      * Relations
      */
-    public function books(): HasMany
+    public function books(): BelongsToMany
     {
-        return $this->hasMany(RecordBook::class, 'publisher_id');
+        return $this->belongsToMany(RecordBook::class, 'record_book_publisher', 'publisher_id', 'book_id')
+            ->withTimestamps();
     }
 
     public function series(): HasMany
@@ -104,7 +106,7 @@ class RecordBookPublisher extends Model
         if (!$this->founded_year) {
             return null;
         }
-        
+
         $endYear = $this->ceased_year ?? date('Y');
         return $endYear - $this->founded_year;
     }
