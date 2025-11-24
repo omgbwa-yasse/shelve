@@ -364,6 +364,384 @@ class BookController extends Controller
     }
 
     /**
+     * Search publishers via AJAX for autocomplete.
+     */
+    public function searchPublishers(Request $request)
+    {
+        $search = $request->input('q', '');
+        $page = $request->input('page', 1);
+        $perPage = 20;
+
+        $query = \App\Models\RecordBookPublisher::query()
+            ->where('status', 'active')
+            ->orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('original_name', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+        $publishers = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get(['id', 'name', 'country', 'city']);
+
+        $results = $publishers->map(function($publisher) {
+            $text = $publisher->name;
+            if ($publisher->city && $publisher->country) {
+                $text .= " ({$publisher->city}, {$publisher->country})";
+            }
+            return [
+                'id' => $publisher->id,
+                'text' => $text,
+                'name' => $publisher->name,
+                'country' => $publisher->country,
+                'city' => $publisher->city,
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => ($page * $perPage) < $total
+            ]
+        ]);
+    }
+
+    /**
+     * Search series via AJAX for autocomplete.
+     */
+    public function searchSeries(Request $request)
+    {
+        $search = $request->input('q', '');
+        $publisherId = $request->input('publisher_id');
+        $page = $request->input('page', 1);
+        $perPage = 20;
+
+        $query = \App\Models\RecordBookPublisherSeries::query()
+            ->with('publisher')
+            ->where('status', 'active')
+            ->orderBy('name');
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($publisherId) {
+            $query->where('publisher_id', $publisherId);
+        }
+
+        $total = $query->count();
+        $series = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get(['id', 'name', 'publisher_id', 'issn']);
+
+        $results = $series->map(function($s) {
+            $text = $s->name;
+            if ($s->publisher) {
+                $text .= " - {$s->publisher->name}";
+            }
+            return [
+                'id' => $s->id,
+                'text' => $text,
+                'name' => $s->name,
+                'publisher_id' => $s->publisher_id,
+                'publisher_name' => $s->publisher?->name,
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => ($page * $perPage) < $total
+            ]
+        ]);
+    }
+
+    /**
+     * Search authors via AJAX for autocomplete.
+     */
+    public function searchAuthors(Request $request)
+    {
+        $search = $request->input('q', '');
+        $page = $request->input('page', 1);
+        $perPage = 20;
+
+        $query = \App\Models\RecordAuthor::query()
+            ->where('status', 'active')
+            ->orderBy('full_name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                  ->orWhere('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('pseudonym', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+        $authors = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get(['id', 'full_name', 'pseudonym', 'birth_year', 'death_year']);
+
+        $results = $authors->map(function($author) {
+            $text = $author->full_name;
+            if ($author->pseudonym) {
+                $text .= " ({$author->pseudonym})";
+            }
+            if ($author->birth_year) {
+                $years = $author->birth_year;
+                if ($author->death_year) {
+                    $years .= "-{$author->death_year}";
+                }
+                $text .= " [{$years}]";
+            }
+            return [
+                'id' => $author->id,
+                'text' => $text,
+                'full_name' => $author->full_name,
+                'pseudonym' => $author->pseudonym,
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => ($page * $perPage) < $total
+            ]
+        ]);
+    }
+
+    /**
+     * Search classifications via AJAX for autocomplete.
+     */
+    public function searchClassifications(Request $request)
+    {
+        $search = $request->input('q', '');
+        $page = $request->input('page', 1);
+        $perPage = 20;
+
+        $query = BookClassification::query()
+            ->orderBy('name');
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $total = $query->count();
+        $classifications = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get(['id', 'name', 'description']);
+
+        $results = $classifications->map(function($class) {
+            $text = $class->name;
+            if ($class->description) {
+                $text .= " - " . \Illuminate\Support\Str::limit($class->description, 50);
+            }
+            return [
+                'id' => $class->id,
+                'text' => $text,
+                'name' => $class->name,
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => ($page * $perPage) < $total
+            ]
+        ]);
+    }
+
+    /**
+     * Store a new publisher via AJAX.
+     */
+    public function storePublisher(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'country' => 'nullable|string|max:100',
+            'city' => 'nullable|string|max:100',
+        ]);
+
+        $publisher = \App\Models\RecordBookPublisher::create(array_merge($validated, [
+            'status' => 'active'
+        ]));
+
+        return response()->json([
+            'id' => $publisher->id,
+            'text' => $publisher->name,
+            'name' => $publisher->name,
+        ]);
+    }
+
+    /**
+     * Store a new series via AJAX.
+     */
+    public function storeSeries(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'publisher_id' => 'nullable|exists:record_book_publishers,id',
+        ]);
+
+        $series = \App\Models\RecordBookPublisherSeries::create(array_merge($validated, [
+            'status' => 'active'
+        ]));
+
+        $text = $series->name;
+        if ($series->publisher) {
+            $text .= " - {$series->publisher->name}";
+        }
+
+        return response()->json([
+            'id' => $series->id,
+            'text' => $text,
+            'name' => $series->name,
+        ]);
+    }
+
+    /**
+     * Store a new author via AJAX.
+     */
+    public function storeAuthor(Request $request)
+    {
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'first_name' => 'nullable|string|max:100',
+            'last_name' => 'nullable|string|max:100',
+            'pseudonym' => 'nullable|string|max:100',
+        ]);
+
+        $author = \App\Models\RecordAuthor::create(array_merge($validated, [
+            'status' => 'active'
+        ]));
+
+        return response()->json([
+            'id' => $author->id,
+            'text' => $author->full_name,
+            'full_name' => $author->full_name,
+        ]);
+    }
+
+    /**
+     * Store a new classification via AJAX.
+     */
+    public function storeClassification(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $classification = BookClassification::create($validated);
+
+        return response()->json([
+            'id' => $classification->id,
+            'text' => $classification->name,
+            'name' => $classification->name,
+        ]);
+    }
+
+    /**
+     * Search thesaurus terms via AJAX for autocomplete.
+     */
+    public function searchThesaurus(Request $request)
+    {
+        $search = $request->input('q', '');
+        $page = $request->input('page', 1);
+        $limit = $request->input('limit', 20);
+        $perPage = min($limit, 20); // Maximum 20
+
+        $query = \App\Models\ThesaurusConcept::query()
+            ->with(['labels' => function($q) {
+                $q->where('language', 'fr')
+                  ->where('type', 'prefLabel');
+            }])
+            ->where('status', 'active')
+            ->orderBy('notation');
+
+        if ($search) {
+            $query->whereHas('labels', function($q) use ($search) {
+                $q->where('value', 'like', "%{$search}%")
+                  ->where('language', 'fr');
+            });
+        }
+
+        $total = $query->count();
+        $terms = $query->skip(($page - 1) * $perPage)
+            ->take($perPage)
+            ->get();
+
+        $results = $terms->map(function($term) {
+            $prefLabel = $term->labels->first();
+            $text = $prefLabel ? $prefLabel->value : $term->notation;
+
+            if ($term->notation) {
+                $text .= " [{$term->notation}]";
+            }
+
+            return [
+                'id' => $term->id,
+                'text' => $text,
+                'name' => $prefLabel ? $prefLabel->value : '',
+                'notation' => $term->notation,
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => ($page * $perPage) < $total
+            ]
+        ]);
+    }
+
+    /**
+     * Store a new thesaurus term via AJAX.
+     */
+    public function storeThesaurus(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'notation' => 'nullable|string|max:50',
+            'scheme_id' => 'nullable|exists:thesaurus_schemes,id',
+        ]);
+
+        // Créer le concept
+        $concept = \App\Models\ThesaurusConcept::create([
+            'scheme_id' => $validated['scheme_id'] ?? null,
+            'notation' => $validated['notation'] ?? null,
+            'status' => 'active',
+        ]);
+
+        // Créer le label préféré
+        $label = \App\Models\ThesaurusLabel::create([
+            'concept_id' => $concept->id,
+            'value' => $validated['name'],
+            'language' => 'fr',
+            'type' => 'prefLabel',
+        ]);
+
+        $text = $validated['name'];
+        if ($validated['notation'] ?? null) {
+            $text .= " [{$validated['notation']}]";
+        }
+
+        return response()->json([
+            'id' => $concept->id,
+            'text' => $text,
+            'name' => $validated['name'],
+        ]);
+    }
+
+    /**
      * Get data for the selection modal.
      */
     public function getModalData(Request $request)

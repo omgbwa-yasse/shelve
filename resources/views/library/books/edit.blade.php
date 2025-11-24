@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-pencil"></i> {{ __('Modifier le livre') }} : {{ $book->title }}</h1>
+        <h1><i class="bi bi-pencil"></i> {{ __('Modifier le livre') }}</h1>
         <a href="{{ route('library.books.show', $book->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> {{ __('Retour') }}
         </a>
@@ -11,13 +11,16 @@
 
     <div class="card">
         <div class="card-body">
-            <form method="POST" action="{{ route('library.books.update', $book->id) }}">
+            <form method="POST" action="{{ route('library.books.update', $book->id) }}" id="bookForm">
                 @csrf
                 @method('PUT')
 
+                {{-- ZONE 1 - Titres --}}
+                <h5 class="border-bottom pb-2 mb-3"><i class="bi bi-card-heading"></i> Zone 1 - Titres et mentions de responsabilité</h5>
+
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="title" class="form-label">{{ __('Titre') }} <span class="text-danger">*</span></label>
+                        <label for="title" class="form-label">{{ __('Titre principal') }} <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('title') is-invalid @enderror"
                                id="title" name="title" value="{{ old('title', $book->title) }}" required>
                         @error('title')
@@ -26,89 +29,330 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label for="subtitle" class="form-label">{{ __('Sous-titre') }}</label>
+                        <label for="subtitle" class="form-label">{{ __('Sous-titre / Complément de titre') }}</label>
                         <input type="text" class="form-control @error('subtitle') is-invalid @enderror"
                                id="subtitle" name="subtitle" value="{{ old('subtitle', $book->subtitle) }}">
-                        @error('subtitle')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label for="isbn" class="form-label">{{ __('ISBN') }}</label>
-                        <input type="text" class="form-control @error('isbn') is-invalid @enderror"
-                               id="isbn" name="isbn" value="{{ old('isbn', $book->isbn) }}">
-                        @error('isbn')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="col-md-6">
+                        <label for="titre_parallele" class="form-label">{{ __('Titre parallèle') }}</label>
+                        <input type="text" class="form-control" id="titre_parallele" name="titre_parallele" value="{{ old('titre_parallele', $book->titre_parallele) }}">
                     </div>
+                    <div class="col-md-6">
+                        <label for="titre_cle" class="form-label">{{ __('Titre clé') }}</label>
+                        <input type="text" class="form-control" id="titre_cle" name="titre_cle" value="{{ old('titre_cle', $book->titre_cle) }}">
+                    </div>
+                </div>
 
+                {{-- Auteurs / Responsabilités --}}
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Auteurs et responsabilités') }}</label>
+                    <div id="authors-container">
+                        @forelse($book->authors as $index => $author)
+                            <div class="author-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <div class="input-group">
+                                            <select name="authors[{{ $index }}][id]" class="form-select author-select" data-index="{{ $index }}">
+                                                <option value="{{ $author->id }}" selected>{{ $author->full_name }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openAuthorModal({{ $index }})">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="authors[{{ $index }}][responsibility_type]" class="form-select">
+                                            <option value="">Type de responsabilité</option>
+                                            <option value="author" {{ $author->pivot->responsibility_type == 'author' ? 'selected' : '' }}>Auteur principal</option>
+                                            <option value="co-author" {{ $author->pivot->responsibility_type == 'co-author' ? 'selected' : '' }}>Co-auteur</option>
+                                            <option value="editor" {{ $author->pivot->responsibility_type == 'editor' ? 'selected' : '' }}>Éditeur scientifique</option>
+                                            <option value="translator" {{ $author->pivot->responsibility_type == 'translator' ? 'selected' : '' }}>Traducteur</option>
+                                            <option value="illustrator" {{ $author->pivot->responsibility_type == 'illustrator' ? 'selected' : '' }}>Illustrateur</option>
+                                            <option value="preface" {{ $author->pivot->responsibility_type == 'preface' ? 'selected' : '' }}>Préfacier</option>
+                                            <option value="contributor" {{ $author->pivot->responsibility_type == 'contributor' ? 'selected' : '' }}>Contributeur</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" name="authors[{{ $index }}][function]" class="form-control"
+                                               value="{{ $author->pivot->function }}" placeholder="Fonction spécifique">
+                                    </div>
+                                    <div class="col-md-1">
+                                        @if($loop->first)
+                                            <button type="button" class="btn btn-success add-author" title="Ajouter un auteur">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-danger remove-author" title="Supprimer">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="author-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-5">
+                                        <div class="input-group">
+                                            <select name="authors[0][id]" class="form-select author-select" data-index="0">
+                                                <option value="">{{ __('Sélectionner un auteur') }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openAuthorModal(0)">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="authors[0][responsibility_type]" class="form-select">
+                                            <option value="">Type de responsabilité</option>
+                                            <option value="author">Auteur principal</option>
+                                            <option value="co-author">Co-auteur</option>
+                                            <option value="editor">Éditeur scientifique</option>
+                                            <option value="translator">Traducteur</option>
+                                            <option value="illustrator">Illustrateur</option>
+                                            <option value="preface">Préfacier</option>
+                                            <option value="contributor">Contributeur</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <input type="text" name="authors[0][function]" class="form-control" placeholder="Fonction spécifique">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-success add-author" title="Ajouter un auteur">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- ZONE 2 - Édition --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-journal"></i> Zone 2 - Édition</h5>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="mention_edition" class="form-label">{{ __('Mention d\'édition') }}</label>
+                        <input type="text" class="form-control" id="mention_edition" name="mention_edition"
+                               value="{{ old('mention_edition', $book->mention_edition) }}" placeholder="Ex: 2e édition revue et augmentée">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="mention_resp_edition" class="form-label">{{ __('Mention de responsabilité d\'édition') }}</label>
+                        <input type="text" class="form-control" id="mention_resp_edition" name="mention_resp_edition"
+                               value="{{ old('mention_resp_edition', $book->mention_resp_edition) }}">
+                    </div>
+                </div>
+
+                {{-- ZONE 4 - Publication --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-building"></i> Zone 4 - Adresse bibliographique</h5>
+
+                {{-- Éditeurs --}}
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Éditeurs') }}</label>
+                    <div id="publishers-container">
+                        @forelse($book->publishers as $index => $publisher)
+                            <div class="publisher-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <div class="input-group">
+                                            <select name="publishers[]" class="form-select publisher-select" data-index="{{ $index }}">
+                                                <option value="{{ $publisher->id }}" selected>{{ $publisher->name }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openPublisherModal({{ $index }})">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        @if($loop->first)
+                                            <button type="button" class="btn btn-success add-publisher w-100" title="Ajouter un éditeur">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-danger remove-publisher w-100" title="Supprimer">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="publisher-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <div class="input-group">
+                                            <select name="publishers[]" class="form-select publisher-select" data-index="0">
+                                                <option value="">{{ __('Sélectionner un éditeur') }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openPublisherModal(0)">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-success add-publisher w-100" title="Ajouter un éditeur">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Lieux de publication --}}
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Lieux de publication') }}</label>
+                    <div id="places-container">
+                        @forelse($book->publisherPlaces as $index => $place)
+                            <div class="place-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <input type="text" name="publisher_places[{{ $index }}][place]" class="form-control"
+                                               value="{{ $place->publication_place }}" placeholder="Ville, Pays">
+                                    </div>
+                                    <div class="col-md-2">
+                                        @if($loop->first)
+                                            <button type="button" class="btn btn-success add-place w-100" title="Ajouter un lieu">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-danger remove-place w-100" title="Supprimer">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="place-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <input type="text" name="publisher_places[0][place]" class="form-control" placeholder="Ville, Pays">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-success add-place w-100" title="Ajouter un lieu">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Collections --}}
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Collections') }}</label>
+                    <div id="collections-container">
+                        @forelse($book->collections as $index => $collection)
+                            <div class="collection-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <select name="collections[{{ $index }}][id]" class="form-select collection-select" data-index="{{ $index }}">
+                                                <option value="{{ $collection->id }}" selected>{{ $collection->name }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openCollectionModal({{ $index }})">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="collections[{{ $index }}][collection_number]" class="form-control"
+                                               value="{{ $collection->pivot->collection_number }}" placeholder="N° dans la collection">
+                                    </div>
+                                    <div class="col-md-2">
+                                        @if($loop->first)
+                                            <button type="button" class="btn btn-success add-collection w-100" title="Ajouter une collection">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-danger remove-collection w-100" title="Supprimer">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="collection-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <select name="collections[0][id]" class="form-select collection-select" data-index="0">
+                                                <option value="">{{ __('Sélectionner une collection') }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openCollectionModal(0)">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="collections[0][collection_number]" class="form-control" placeholder="N° dans la collection">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-success add-collection w-100" title="Ajouter une collection">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="row mb-3">
                     <div class="col-md-4">
                         <label for="publication_year" class="form-label">{{ __('Année de publication') }}</label>
-                        <input type="number" class="form-control @error('publication_year') is-invalid @enderror"
-                               id="publication_year" name="publication_year" value="{{ old('publication_year', $book->publication_year) }}" min="1000" max="{{ date('Y') + 5 }}">
-                        @error('publication_year')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="number" class="form-control" id="publication_year" name="publication_year"
+                               value="{{ old('publication_year', $book->publication_year) }}" min="1000" max="{{ date('Y') + 5 }}">
                     </div>
-
                     <div class="col-md-4">
-                        <label for="edition" class="form-label">{{ __('Édition') }}</label>
-                        <input type="text" class="form-control @error('edition') is-invalid @enderror"
-                               id="edition" name="edition" value="{{ old('edition', $book->edition) }}">
-                        @error('edition')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <label for="date_publication" class="form-label">{{ __('Date de publication complète') }}</label>
+                        <input type="text" class="form-control" id="date_publication" name="date_publication"
+                               value="{{ old('date_publication', $book->date_publication) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_copyright" class="form-label">{{ __('Date de copyright') }}</label>
+                        <input type="text" class="form-control" id="date_copyright" name="date_copyright"
+                               value="{{ old('date_copyright', $book->date_copyright) }}">
                     </div>
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="publishers" class="form-label">{{ __('Éditeurs') }}</label>
-                        <div class="input-group">
-                            <select name="publishers[]" id="publishers" class="form-select @error('publishers') is-invalid @enderror" multiple>
-                                @foreach($publishers as $publisher)
-                                    <option value="{{ $publisher->id }}" {{ in_array($publisher->id, old('publishers', $book->publishers->pluck('id')->toArray())) ? 'selected' : '' }}>
-                                        {{ $publisher->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="btn btn-outline-secondary" onclick="openSelectionModal('publishers')">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                        </div>
-                        @error('publishers')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-6">
-                        <label for="series_id" class="form-label">{{ __('Collection') }}</label>
-                        <div class="input-group">
-                            <select name="series_id" id="series_id" class="form-select @error('series_id') is-invalid @enderror">
-                                <option value="">{{ __('Sélectionner une collection') }}</option>
-                                @foreach($series as $s)
-                                    <option value="{{ $s->id }}" {{ old('series_id', $book->series_id) == $s->id ? 'selected' : '' }}>
-                                        {{ $s->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="btn btn-outline-secondary" onclick="openSelectionModal('series')">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                        </div>
-                        @error('series_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
+                {{-- ZONE 5 - Collation --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-file-earmark-text"></i> Zone 5 - Collation (Description physique)</h5>
 
                 <div class="row mb-3">
                     <div class="col-md-3">
+                        <label for="pages" class="form-label">{{ __('Pages') }}</label>
+                        <input type="number" class="form-control" id="pages" name="pages" value="{{ old('pages', $book->pages) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="importance_materielle" class="form-label">{{ __('Importance matérielle') }}</label>
+                        <input type="text" class="form-control" id="importance_materielle" name="importance_materielle"
+                               value="{{ old('importance_materielle', $book->importance_materielle) }}" placeholder="Ex: 1 vol. (XVIII-324 p.)">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="format_dimensions" class="form-label">{{ __('Format / Dimensions') }}</label>
+                        <input type="text" class="form-control" id="format_dimensions" name="format_dimensions"
+                               value="{{ old('format_dimensions', $book->format_dimensions) }}" placeholder="Ex: 24 cm">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="materiel_accompagnement" class="form-label">{{ __('Matériel d\'accompagnement') }}</label>
+                        <input type="text" class="form-control" id="materiel_accompagnement" name="materiel_accompagnement"
+                               value="{{ old('materiel_accompagnement', $book->materiel_accompagnement) }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
                         <label for="language_id" class="form-label">{{ __('Langue') }}</label>
-                        <select name="language_id" id="language_id" class="form-select @error('language_id') is-invalid @enderror">
+                        <select name="language_id" id="language_id" class="form-select">
                             <option value="">{{ __('Sélectionner') }}</option>
                             @foreach($languages as $language)
                                 <option value="{{ $language->id }}" {{ old('language_id', $book->language_id) == $language->id ? 'selected' : '' }}>
@@ -117,10 +361,9 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label for="format_id" class="form-label">{{ __('Format') }}</label>
-                        <select name="format_id" id="format_id" class="form-select @error('format_id') is-invalid @enderror">
+                        <select name="format_id" id="format_id" class="form-select">
                             <option value="">{{ __('Sélectionner') }}</option>
                             @foreach($formats as $format)
                                 <option value="{{ $format->id }}" {{ old('format_id', $book->format_id) == $format->id ? 'selected' : '' }}>
@@ -129,10 +372,9 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label for="binding_id" class="form-label">{{ __('Reliure') }}</label>
-                        <select name="binding_id" id="binding_id" class="form-select @error('binding_id') is-invalid @enderror">
+                        <select name="binding_id" id="binding_id" class="form-select">
                             <option value="">{{ __('Sélectionner') }}</option>
                             @foreach($bindings as $binding)
                                 <option value="{{ $binding->id }}" {{ old('binding_id', $book->binding_id) == $binding->id ? 'selected' : '' }}>
@@ -141,40 +383,131 @@
                             @endforeach
                         </select>
                     </div>
+                </div>
 
-                    <div class="col-md-3">
-                        <label for="pages" class="form-label">{{ __('Pages') }}</label>
-                        <input type="number" class="form-control @error('pages') is-invalid @enderror"
-                               id="pages" name="pages" value="{{ old('pages', $book->pages) }}">
+                {{-- Classifications --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-tags"></i> Classifications et indexation</h5>
+
+                <div class="mb-3">
+                    <label class="form-label">{{ __('Classifications') }}</label>
+                    <div id="classifications-container">
+                        @forelse($book->classifications as $index => $classification)
+                            <div class="classification-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <div class="input-group">
+                                            <select name="classifications[]" class="form-select classification-select" data-index="{{ $index }}">
+                                                <option value="{{ $classification->id }}" selected>{{ $classification->name }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openClassificationModal({{ $index }})">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        @if($loop->first)
+                                            <button type="button" class="btn btn-success add-classification w-100" title="Ajouter une classification">
+                                                <i class="bi bi-plus"></i>
+                                            </button>
+                                        @else
+                                            <button type="button" class="btn btn-danger remove-classification w-100" title="Supprimer">
+                                                <i class="bi bi-dash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="classification-item mb-2">
+                                <div class="row g-2">
+                                    <div class="col-md-10">
+                                        <div class="input-group">
+                                            <select name="classifications[]" class="form-select classification-select" data-index="0">
+                                                <option value="">{{ __('Sélectionner une classification') }}</option>
+                                            </select>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="openClassificationModal(0)">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-success add-classification w-100" title="Ajouter une classification">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- ZONE 7 - Notes --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-card-text"></i> Zone 7 - Notes</h5>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">{{ __('Résumé / Description') }}</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{ old('description', $book->description) }}</textarea>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="notes_contenu" class="form-label">{{ __('Notes de contenu') }}</label>
+                        <textarea class="form-control" id="notes_contenu" name="notes_contenu" rows="2">{{ old('notes_contenu', $book->notes_contenu) }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="notes_bibliographie" class="form-label">{{ __('Notes bibliographie') }}</label>
+                        <textarea class="form-control" id="notes_bibliographie" name="notes_bibliographie" rows="2">{{ old('notes_bibliographie', $book->notes_bibliographie) }}</textarea>
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="dewey" class="form-label">{{ __('Classification Dewey') }}</label>
-                        <input type="text" class="form-control @error('dewey') is-invalid @enderror"
-                               id="dewey" name="dewey" value="{{ old('dewey', $book->dewey) }}">
+                        <label for="notes_public_destine" class="form-label">{{ __('Public destiné') }}</label>
+                        <textarea class="form-control" id="notes_public_destine" name="notes_public_destine" rows="2">{{ old('notes_public_destine', $book->notes_public_destine) }}</textarea>
                     </div>
                     <div class="col-md-6">
-                        <label for="dimensions" class="form-label">{{ __('Dimensions') }}</label>
-                        <input type="text" class="form-control @error('dimensions') is-invalid @enderror"
-                               id="dimensions" name="dimensions" value="{{ old('dimensions', $book->dimensions) }}" placeholder="Ex: 15x23 cm">
+                        <label for="notes_generales" class="form-label">{{ __('Notes générales') }}</label>
+                        <textarea class="form-control" id="notes_generales" name="notes_generales" rows="2">{{ old('notes_generales', $book->notes_generales) }}</textarea>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="description" class="form-label">{{ __('Description / Résumé') }}</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror"
-                              id="description" name="description" rows="4">{{ old('description', $book->description) }}</textarea>
+                {{-- ZONE 8 - Numéros --}}
+                <h5 class="border-bottom pb-2 mb-3 mt-4"><i class="bi bi-upc-scan"></i> Zone 8 - Numéros normalisés</h5>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="isbn" class="form-label">{{ __('ISBN') }}</label>
+                        <input type="text" class="form-control" id="isbn" name="isbn" value="{{ old('isbn', $book->isbn) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="issn" class="form-label">{{ __('ISSN') }}</label>
+                        <input type="text" class="form-control" id="issn" name="issn" value="{{ old('issn', $book->issn) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="ean" class="form-label">{{ __('EAN') }}</label>
+                        <input type="text" class="form-control" id="ean" name="ean" value="{{ old('ean', $book->ean) }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="numero_editeur" class="form-label">{{ __('N° éditeur') }}</label>
+                        <input type="text" class="form-control" id="numero_editeur" name="numero_editeur" value="{{ old('numero_editeur', $book->numero_editeur) }}">
+                    </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="notes" class="form-label">{{ __('Notes internes') }}</label>
-                    <textarea class="form-control @error('notes') is-invalid @enderror"
-                              id="notes" name="notes" rows="2">{{ old('notes', $book->notes) }}</textarea>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="prix" class="form-label">{{ __('Prix') }}</label>
+                        <input type="text" class="form-control" id="prix" name="prix" value="{{ old('prix', $book->prix) }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="disponibilite" class="form-label">{{ __('Disponibilité') }}</label>
+                        <input type="text" class="form-control" id="disponibilite" name="disponibilite" value="{{ old('disponibilite', $book->disponibilite) }}">
+                    </div>
                 </div>
 
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ route('library.books.show', $book->id) }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> {{ __('Annuler') }}
+                    </a>
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-save"></i> {{ __('Enregistrer les modifications') }}
                     </button>
@@ -183,24 +516,47 @@
         </div>
     </div>
 </div>
+
+{{-- Modales de sélection --}}
+@include('library.partials.selection-modal', [
+    'id' => 'publisherModal',
+    'title' => 'Sélectionner un éditeur',
+    'type' => 'publishers',
+    'searchRoute' => route('library.api.publishers.search'),
+    'storeRoute' => route('library.api.publishers.store')
+])
+
+@include('library.partials.selection-modal', [
+    'id' => 'collectionModal',
+    'title' => 'Sélectionner une collection',
+    'type' => 'series',
+    'searchRoute' => route('library.api.series.search'),
+    'storeRoute' => route('library.api.series.store')
+])
+
+@include('library.partials.selection-modal', [
+    'id' => 'authorModal',
+    'title' => 'Sélectionner un auteur',
+    'type' => 'authors',
+    'searchRoute' => route('library.api.authors.search'),
+    'storeRoute' => route('library.api.authors.store')
+])
+
+@include('library.partials.selection-modal', [
+    'id' => 'classificationModal',
+    'title' => 'Sélectionner une classification',
+    'type' => 'classifications',
+    'searchRoute' => route('library.api.classifications.search'),
+    'storeRoute' => route('library.api.classifications.store')
+])
+
 @endsection
 
 @push('styles')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
-    .select2-container .select2-selection--single {
-        height: 38px;
-        border: 1px solid #ced4da;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 36px;
-        padding-left: 12px;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px;
-    }
-    .select2-container--default .select2-selection--multiple {
-        border: 1px solid #ced4da;
+    .select2-container--bootstrap-5 .select2-selection {
         min-height: 38px;
     }
 </style>
@@ -209,186 +565,252 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Configuration commune pour Select2 AJAX
-        function getSelect2Config(type, placeholder) {
-            return {
-                placeholder: placeholder,
-                allowClear: true,
-                ajax: {
-                    url: '{{ route("library.search.autocomplete") }}',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function (params) {
-                        return {
-                            q: params.term,
-                            type: type
-                        };
-                    },
-                    processResults: function (data) {
-                        return {
-                            results: data.results
-                        };
-                    },
-                    cache: true
+$(document).ready(function() {
+    // Configuration Select2 pour l'autocomplétion AJAX
+    function initSelect2(selector, routeName, placeholder) {
+        $(selector).select2({
+            theme: 'bootstrap-5',
+            placeholder: placeholder,
+            allowClear: true,
+            tags: true, // Permet la saisie libre
+            ajax: {
+                url: routeName,
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        page: params.page || 1
+                    };
                 },
-                minimumInputLength: 3
-            };
-        }
-
-        // Initialisation des champs Select2
-        $('#publishers').select2(getSelect2Config('publishers', '{{ __("Rechercher un éditeur...") }}'));
-        $('#language_id').select2(getSelect2Config('languages', '{{ __("Rechercher une langue...") }}'));
-        $('#format_id').select2(getSelect2Config('formats', '{{ __("Rechercher un format...") }}'));
-        $('#binding_id').select2(getSelect2Config('bindings', '{{ __("Rechercher une reliure...") }}'));
-        $('#series_id').select2(getSelect2Config('series', '{{ __("Rechercher une collection...") }}'));
-    });
-
-    // Modal functions
-    let currentModalType = null;
-
-    function openSelectionModal(type) {
-        currentModalType = type;
-        const modalTitle = type === 'publishers' ? 'Sélectionner un éditeur' : 'Sélectionner une collection';
-
-        $('#selectionModalLabel').text(modalTitle);
-        $('#modalItemsList').html('<div class="text-center"><i class="bi bi-hourglass-split"></i> Chargement...</div>');
-        $('#selectionModal').modal('show');
-
-        // Load data
-        $.get('{{ route("library.books.modal.data") }}', { type: type })
-            .done(function(data) {
-                renderModalItems(data, type);
-            })
-            .fail(function() {
-                $('#modalItemsList').html('<div class="alert alert-danger">Erreur de chargement</div>');
-            });
-    }
-
-    function renderModalItems(data, type) {
-        let html = '';
-
-        for (const [letter, items] of Object.entries(data)) {
-            html += `<div class="letter-group mb-3">
-                        <h5 class="text-primary border-bottom">${letter}</h5>
-                        <div class="list-group">`;
-
-            items.forEach(item => {
-                const displayName = type === 'series' && item.publisher
-                    ? `${item.name} (${item.publisher.name})`
-                    : item.name;
-                html += `<a href="#" class="list-group-item list-group-item-action" onclick="selectModalItem(${item.id}, '${item.name.replace(/'/g, "\\'")  }'); return false;">
-                            ${displayName}
-                         </a>`;
-            });
-
-            html += `</div></div>`;
-        }
-
-        $('#modalItemsList').html(html);
-    }
-
-    function selectModalItem(id, name) {
-        const selectId = currentModalType === 'publishers' ? '#publishers' : '#series_id';
-
-        // Check if option exists
-        if ($(selectId + ' option[value="' + id + '"]').length === 0) {
-            // Add new option
-            const newOption = new Option(name, id, true, true);
-            $(selectId).append(newOption);
-        }
-
-        // Select the option
-        if (currentModalType === 'publishers') {
-            let selected = $(selectId).val() || [];
-            if (!selected.includes(id.toString())) {
-                selected.push(id.toString());
-                $(selectId).val(selected);
-            }
-        } else {
-            $(selectId).val(id);
-        }
-
-        $(selectId).trigger('change');
-        $('#selectionModal').modal('hide');
-    }
-
-    function showCreateForm() {
-        $('#itemsList').hide();
-        $('#createForm').show();
-        $('#newItemName').val('').focus();
-    }
-
-    function cancelCreate() {
-        $('#createForm').hide();
-        $('#itemsList').show();
-    }
-
-    function saveNewItem() {
-        const name = $('#newItemName').val().trim();
-
-        if (!name) {
-            alert('Le nom est requis');
-            return;
-        }
-
-        $.post('{{ route("library.books.modal.store") }}', {
-            _token: '{{ csrf_token() }}',
-            type: currentModalType,
-            name: name
-        })
-        .done(function(data) {
-            // Add to select
-            const selectId = currentModalType === 'publishers' ? '#publishers' : '#series_id';
-            const newOption = new Option(data.text, data.id, true, true);
-            $(selectId).append(newOption).trigger('change');
-
-            // Close modal
-            $('#selectionModal').modal('hide');
-            cancelCreate();
-        })
-        .fail(function(xhr) {
-            const error = xhr.responseJSON?.error || 'Erreur lors de la création';
-            alert(error);
+                processResults: function (data, params) {
+                    params.page = params.page || 1;
+                    return {
+                        results: data.results,
+                        pagination: {
+                            more: data.pagination && data.pagination.more
+                        }
+                    };
+                },
+                cache: true
+            },
+            minimumInputLength: 0 // Permet d'afficher les résultats dès l'ouverture
         });
     }
+
+    // Initialisation des Select2
+    initSelect2('.publisher-select', '{{ route("library.api.publishers.search") }}', 'Rechercher un éditeur...');
+    initSelect2('.collection-select', '{{ route("library.api.series.search") }}', 'Rechercher une collection...');
+    initSelect2('.author-select', '{{ route("library.api.authors.search") }}', 'Rechercher un auteur...');
+    initSelect2('.classification-select', '{{ route("library.api.classifications.search") }}', 'Rechercher une classification...');
+
+    // Fonctions pour ouvrir les modales
+    window.openPublisherModal = function(index) {
+        window.initSelectionModal_publisherModal(function(item) {
+            const $select = $(`.publisher-select[data-index="${index}"]`);
+            const option = new Option(item.text, item.id, true, true);
+            $select.append(option).trigger('change');
+        });
+    };
+
+    window.openCollectionModal = function(index) {
+        window.initSelectionModal_collectionModal(function(item) {
+            const $select = $(`.collection-select[data-index="${index}"]`);
+            const option = new Option(item.text, item.id, true, true);
+            $select.append(option).trigger('change');
+        });
+    };
+
+    window.openAuthorModal = function(index) {
+        window.initSelectionModal_authorModal(function(item) {
+            const $select = $(`.author-select[data-index="${index}"]`);
+            const option = new Option(item.text, item.id, true, true);
+            $select.append(option).trigger('change');
+        });
+    };
+
+    window.openClassificationModal = function(index) {
+        window.initSelectionModal_classificationModal(function(item) {
+            const $select = $(`.classification-select[data-index="${index}"]`);
+            const option = new Option(item.text, item.id, true, true);
+            $select.append(option).trigger('change');
+        });
+    };
+
+    // Multiplication des champs - Éditeurs
+    let publisherIndex = {{ $book->publishers->count() }};
+    $(document).on('click', '.add-publisher', function() {
+        const template = `
+            <div class="publisher-item mb-2">
+                <div class="row g-2">
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <select name="publishers[]" class="form-select publisher-select" data-index="${publisherIndex}">
+                                <option value="">{{ __('Sélectionner un éditeur') }}</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="openPublisherModal(${publisherIndex})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-publisher w-100" title="Supprimer">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#publishers-container').append(template);
+        initSelect2(`.publisher-select[data-index="${publisherIndex}"]`, '{{ route("library.api.publishers.search") }}', 'Rechercher un éditeur...');
+        publisherIndex++;
+    });
+
+    $(document).on('click', '.remove-publisher', function() {
+        $(this).closest('.publisher-item').remove();
+    });
+
+    // Multiplication des champs - Auteurs
+    let authorIndex = {{ $book->authors->count() }};
+    $(document).on('click', '.add-author', function() {
+        const template = `
+            <div class="author-item mb-2">
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <select name="authors[${authorIndex}][id]" class="form-select author-select" data-index="${authorIndex}">
+                                <option value="">{{ __('Sélectionner un auteur') }}</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="openAuthorModal(${authorIndex})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="authors[${authorIndex}][responsibility_type]" class="form-select">
+                            <option value="">Type de responsabilité</option>
+                            <option value="author">Auteur principal</option>
+                            <option value="co-author">Co-auteur</option>
+                            <option value="editor">Éditeur scientifique</option>
+                            <option value="translator">Traducteur</option>
+                            <option value="illustrator">Illustrateur</option>
+                            <option value="preface">Préfacier</option>
+                            <option value="contributor">Contributeur</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="authors[${authorIndex}][function]" class="form-control" placeholder="Fonction spécifique">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger remove-author" title="Supprimer">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#authors-container').append(template);
+        initSelect2(`.author-select[data-index="${authorIndex}"]`, '{{ route("library.api.authors.search") }}', 'Rechercher un auteur...');
+        authorIndex++;
+    });
+
+    $(document).on('click', '.remove-author', function() {
+        $(this).closest('.author-item').remove();
+    });
+
+    // Multiplication des champs - Collections
+    let collectionIndex = {{ $book->collections->count() }};
+    $(document).on('click', '.add-collection', function() {
+        const template = `
+            <div class="collection-item mb-2">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <select name="collections[${collectionIndex}][id]" class="form-select collection-select" data-index="${collectionIndex}">
+                                <option value="">{{ __('Sélectionner une collection') }}</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="openCollectionModal(${collectionIndex})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="collections[${collectionIndex}][collection_number]" class="form-control" placeholder="N° dans la collection">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-collection w-100" title="Supprimer">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#collections-container').append(template);
+        initSelect2(`.collection-select[data-index="${collectionIndex}"]`, '{{ route("library.api.series.search") }}', 'Rechercher une collection...');
+        collectionIndex++;
+    });
+
+    $(document).on('click', '.remove-collection', function() {
+        $(this).closest('.collection-item').remove();
+    });
+
+    // Multiplication des champs - Classifications
+    let classificationIndex = {{ $book->classifications->count() }};
+    $(document).on('click', '.add-classification', function() {
+        const template = `
+            <div class="classification-item mb-2">
+                <div class="row g-2">
+                    <div class="col-md-10">
+                        <div class="input-group">
+                            <select name="classifications[]" class="form-select classification-select" data-index="${classificationIndex}">
+                                <option value="">{{ __('Sélectionner une classification') }}</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-secondary" onclick="openClassificationModal(${classificationIndex})">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-classification w-100" title="Supprimer">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#classifications-container').append(template);
+        initSelect2(`.classification-select[data-index="${classificationIndex}"]`, '{{ route("library.api.classifications.search") }}', 'Rechercher une classification...');
+        classificationIndex++;
+    });
+
+    $(document).on('click', '.remove-classification', function() {
+        $(this).closest('.classification-item').remove();
+    });
+
+    // Multiplication des champs - Lieux de publication
+    let placeIndex = {{ $book->publisherPlaces->count() }};
+    $(document).on('click', '.add-place', function() {
+        const template = `
+            <div class="place-item mb-2">
+                <div class="row g-2">
+                    <div class="col-md-10">
+                        <input type="text" name="publisher_places[${placeIndex}][place]" class="form-control" placeholder="Ville, Pays">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-place w-100" title="Supprimer">
+                            <i class="bi bi-dash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#places-container').append(template);
+        placeIndex++;
+    });
+
+    $(document).on('click', '.remove-place', function() {
+        $(this).closest('.place-item').remove();
+    });
+});
 </script>
-
-<!-- Modal -->
-<div class="modal fade" id="selectionModal" tabindex="-1" aria-labelledby="selectionModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="selectionModalLabel">Sélection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="itemsList">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <input type="text" id="modalSearch" class="form-control me-2" placeholder="Rechercher...">
-                        <button type="button" class="btn btn-primary" onclick="showCreateForm()">
-                            <i class="bi bi-plus-circle"></i> Nouveau
-                        </button>
-                    </div>
-                    <div id="modalItemsList" style="max-height: 400px; overflow-y: auto;"></div>
-                </div>
-
-                <div id="createForm" style="display: none;">
-                    <div class="mb-3">
-                        <label for="newItemName" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="newItemName" placeholder="Entrez le nom...">
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-primary" onclick="saveNewItem()">
-                            <i class="bi bi-save"></i> Enregistrer
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="cancelCreate()">
-                            Annuler
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 @endpush

@@ -247,11 +247,21 @@ Route::group(['middleware' => 'auth'], function () {
     // =================== LIBRARY MODULE ===================
     Route::prefix('library')->name('library.')->group(function () {
         // Books Management (Catalogue, Gestion des ouvrages)
+        // API Routes for AJAX autocomplete
+        Route::get('api/publishers/search', [\App\Http\Controllers\Library\BookController::class, 'searchPublishers'])->name('api.publishers.search');
+        Route::get('api/series/search', [\App\Http\Controllers\Library\BookController::class, 'searchSeries'])->name('api.series.search');
+        Route::get('api/authors/search', [\App\Http\Controllers\Library\BookController::class, 'searchAuthors'])->name('api.authors.search');
+        Route::get('api/classifications/search', [\App\Http\Controllers\Library\BookController::class, 'searchClassifications'])->name('api.classifications.search');
+        Route::get('api/thesaurus/search', [\App\Http\Controllers\Library\BookController::class, 'searchThesaurus'])->name('api.thesaurus.search');
+        Route::post('api/publishers/store', [\App\Http\Controllers\Library\BookController::class, 'storePublisher'])->name('api.publishers.store');
+        Route::post('api/series/store', [\App\Http\Controllers\Library\BookController::class, 'storeSeries'])->name('api.series.store');
+        Route::post('api/authors/store', [\App\Http\Controllers\Library\BookController::class, 'storeAuthor'])->name('api.authors.store');
+        Route::post('api/classifications/store', [\App\Http\Controllers\Library\BookController::class, 'storeClassification'])->name('api.classifications.store');
+        Route::post('api/thesaurus/store', [\App\Http\Controllers\Library\BookController::class, 'storeThesaurus'])->name('api.thesaurus.store');
+
         Route::get('books/modal/data', [\App\Http\Controllers\Library\BookController::class, 'getModalData'])->name('books.modal.data');
         Route::post('books/modal/store', [\App\Http\Controllers\Library\BookController::class, 'storeModalData'])->name('books.modal.store');
         Route::resource('books', \App\Http\Controllers\Library\BookController::class);
-        Route::get('books/modal/data', [\App\Http\Controllers\Library\BookController::class, 'getModalData'])->name('books.modal.data');
-        Route::post('books/modal/store', [\App\Http\Controllers\Library\BookController::class, 'storeModalData'])->name('books.modal.store');
         Route::get('books/{book}/duplicate', [\App\Http\Controllers\Library\BookController::class, 'duplicate'])->name('books.duplicate');
         Route::post('books/import', [\App\Http\Controllers\Library\BookController::class, 'import'])->name('books.import');
         Route::get('books/export/form', [\App\Http\Controllers\Library\BookController::class, 'exportForm'])->name('books.export.form');
