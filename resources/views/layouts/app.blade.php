@@ -822,24 +822,6 @@
                             </a>
                         </div>
 
-                        <!-- Module Library -->
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'library') active @endif" href="{{ route('library.books.index') }}">
-                                <i class="bi bi-book"></i>
-                                <span>{{ __('Library') }}</span>
-                            </a>
-                        </div>
-
-                        <!-- Module Museum -->
-                        @can('museum_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.collections.index') }}">
-                                <i class="bi bi-bank"></i>
-                                <span>{{ __('Museum') }}</span>
-                            </a>
-                        </div>
-                        @endcan
-
                         <!-- Module Workflow -->
                         @can('module_workflow_access')
                         <div class="nav-item">

@@ -80,24 +80,6 @@ class Dolly extends Model
             ->withTimestamps();
     }
 
-    public function artifacts()
-    {
-        return $this->belongsToMany(RecordArtifact::class, 'dolly_artifacts', 'dolly_id', 'artifact_id')
-            ->withTimestamps();
-    }
-
-    public function books()
-    {
-        return $this->belongsToMany(RecordBook::class, 'dolly_books', 'dolly_id', 'book_id')
-            ->withTimestamps();
-    }
-
-    public function bookSeries()
-    {
-        return $this->belongsToMany(RecordBookPublisherSeries::class, 'dolly_book_series', 'dolly_id', 'series_id')
-            ->withTimestamps();
-    }
-
     public function creator(){
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -122,10 +104,7 @@ class Dolly extends Model
             'container',
             'shelf',
             'digital_folder',
-            'digital_document',
-            'artifact',
-            'book',
-            'book_series'
+            'digital_document'
         );
 
         return collect($list);

@@ -190,155 +190,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
-
-    // =================== MUSEUM MODULE ===================
-    Route::prefix('museum')->name('museum.')->group(function () {
-        // Artifacts Management (Collections, Catalogage, Conservation)
-        // TODO: Implement ArtifactController
-        // Route::resource('artifacts', \App\Http\Controllers\Museum\ArtifactController::class);
-        // Route::get('artifacts/{artifact}/exhibitions', [\App\Http\Controllers\Museum\ArtifactController::class, 'exhibitions'])->name('artifacts.exhibitions');
-        // Route::get('artifacts/{artifact}/loans', [\App\Http\Controllers\Museum\ArtifactController::class, 'loans'])->name('artifacts.loans');
-        // Route::post('artifacts/{artifact}/images', [\App\Http\Controllers\Museum\ArtifactController::class, 'addImage'])->name('artifacts.images');
-
-        // Collections
-        Route::get('collections', [\App\Http\Controllers\Museum\CollectionController::class, 'index'])->name('collections.index');
-        Route::get('collections/create', [\App\Http\Controllers\Museum\CollectionController::class, 'create'])->name('collections.create');
-        Route::post('collections', [\App\Http\Controllers\Museum\CollectionController::class, 'store'])->name('collections.store');
-        Route::get('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'show'])->name('collections.show');
-        Route::get('collections/{collection}/edit', [\App\Http\Controllers\Museum\CollectionController::class, 'edit'])->name('collections.edit');
-        Route::put('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'update'])->name('collections.update');
-        Route::delete('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'destroy'])->name('collections.destroy');
-
-        // Exhibitions
-        Route::get('exhibitions', [\App\Http\Controllers\Museum\ExhibitionController::class, 'index'])->name('exhibitions.index');
-        Route::get('exhibitions/create', [\App\Http\Controllers\Museum\ExhibitionController::class, 'create'])->name('exhibitions.create');
-        Route::post('exhibitions', [\App\Http\Controllers\Museum\ExhibitionController::class, 'store'])->name('exhibitions.store');
-        Route::get('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'show'])->name('exhibitions.show');
-        Route::get('exhibitions/{exhibition}/edit', [\App\Http\Controllers\Museum\ExhibitionController::class, 'edit'])->name('exhibitions.edit');
-        Route::put('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'update'])->name('exhibitions.update');
-        Route::delete('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'destroy'])->name('exhibitions.destroy');
-
-        // Conservation
-        Route::get('conservation', [\App\Http\Controllers\Museum\ConservationController::class, 'index'])->name('conservation.index');
-        Route::get('conservation/create', [\App\Http\Controllers\Museum\ConservationController::class, 'create'])->name('conservation.create');
-        Route::post('conservation', [\App\Http\Controllers\Museum\ConservationController::class, 'store'])->name('conservation.store');
-        Route::get('conservation/{conservation}', [\App\Http\Controllers\Museum\ConservationController::class, 'show'])->name('conservation.show');
-
-        // Inventory (Récolement)
-        Route::get('inventory', [\App\Http\Controllers\Museum\InventoryController::class, 'index'])->name('inventory.index');
-        Route::get('inventory/recolement', [\App\Http\Controllers\Museum\InventoryController::class, 'recolement'])->name('inventory.recolement');
-        Route::post('inventory/recolement', [\App\Http\Controllers\Museum\InventoryController::class, 'storeRecolement'])->name('inventory.recolement.store');
-
-        // Search
-        Route::get('search', [\App\Http\Controllers\Museum\SearchController::class, 'index'])->name('search.index');
-        Route::post('search', [\App\Http\Controllers\Museum\SearchController::class, 'search'])->name('search');
-        Route::get('search/advanced', [\App\Http\Controllers\Museum\SearchController::class, 'advanced'])->name('search.advanced');
-
-        // Reports
-        Route::get('reports', [\App\Http\Controllers\Museum\ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/collection', [\App\Http\Controllers\Museum\ReportController::class, 'collection'])->name('reports.collection');
-        Route::get('reports/conservation', [\App\Http\Controllers\Museum\ReportController::class, 'conservation'])->name('reports.conservation');
-        Route::get('reports/exhibitions', [\App\Http\Controllers\Museum\ReportController::class, 'exhibitions'])->name('reports.exhibitions');
-        Route::get('reports/valuation', [\App\Http\Controllers\Museum\ReportController::class, 'valuation'])->name('reports.valuation');
-        Route::get('reports/statistics', [\App\Http\Controllers\Museum\ReportController::class, 'statistics'])->name('reports.statistics');
-        Route::get('reports/collection/export-csv', [\App\Http\Controllers\Museum\ReportController::class, 'exportCollectionCsv'])->name('reports.collection.export-csv');
-    });
-
-    // =================== LIBRARY MODULE ===================
-    Route::prefix('library')->name('library.')->group(function () {
-        // Books Management (Catalogue, Gestion des ouvrages)
-        // API Routes for AJAX autocomplete
-        Route::get('api/publishers/search', [\App\Http\Controllers\Library\BookController::class, 'searchPublishers'])->name('api.publishers.search');
-        Route::get('api/series/search', [\App\Http\Controllers\Library\BookController::class, 'searchSeries'])->name('api.series.search');
-        Route::get('api/authors/search', [\App\Http\Controllers\Library\BookController::class, 'searchAuthors'])->name('api.authors.search');
-        Route::get('api/classifications/search', [\App\Http\Controllers\Library\BookController::class, 'searchClassifications'])->name('api.classifications.search');
-        Route::get('api/thesaurus/search', [\App\Http\Controllers\Library\BookController::class, 'searchThesaurus'])->name('api.thesaurus.search');
-        Route::post('api/publishers/store', [\App\Http\Controllers\Library\BookController::class, 'storePublisher'])->name('api.publishers.store');
-        Route::post('api/series/store', [\App\Http\Controllers\Library\BookController::class, 'storeSeries'])->name('api.series.store');
-        Route::post('api/authors/store', [\App\Http\Controllers\Library\BookController::class, 'storeAuthor'])->name('api.authors.store');
-        Route::post('api/classifications/store', [\App\Http\Controllers\Library\BookController::class, 'storeClassification'])->name('api.classifications.store');
-        Route::post('api/thesaurus/store', [\App\Http\Controllers\Library\BookController::class, 'storeThesaurus'])->name('api.thesaurus.store');
-
-        Route::get('books/modal/data', [\App\Http\Controllers\Library\BookController::class, 'getModalData'])->name('books.modal.data');
-        Route::post('books/modal/store', [\App\Http\Controllers\Library\BookController::class, 'storeModalData'])->name('books.modal.store');
-        Route::resource('books', \App\Http\Controllers\Library\BookController::class);
-        Route::get('books/{book}/duplicate', [\App\Http\Controllers\Library\BookController::class, 'duplicate'])->name('books.duplicate');
-        Route::post('books/import', [\App\Http\Controllers\Library\BookController::class, 'import'])->name('books.import');
-        Route::get('books/export/form', [\App\Http\Controllers\Library\BookController::class, 'exportForm'])->name('books.export.form');
-        Route::post('books/export', [\App\Http\Controllers\Library\BookController::class, 'export'])->name('books.export');
-
-        // Periodicals Management (Revues, Articles)
-        // TODO: Implement PeriodicalController
-        // Route::resource('periodicals', \App\Http\Controllers\Web\PeriodicalController::class)->only(['index', 'show']);
-        // Route::get('periodicals/articles/search', [\App\Http\Controllers\Web\PeriodicalController::class, 'articles'])->name('periodicals.articles');
-        Route::get('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'issues'])->name('periodicals.issues');
-        Route::post('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'storeIssue'])->name('periodicals.issues.store');
-
-        // Authors Management
-        Route::get('authors', [\App\Http\Controllers\Library\AuthorController::class, 'index'])->name('authors.index');
-        Route::get('authors/create', [\App\Http\Controllers\Library\AuthorController::class, 'create'])->name('authors.create');
-        Route::post('authors', [\App\Http\Controllers\Library\AuthorController::class, 'store'])->name('authors.store');
-        Route::get('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'show'])->name('authors.show');
-        Route::get('authors/{author}/edit', [\App\Http\Controllers\Library\AuthorController::class, 'edit'])->name('authors.edit');
-        Route::put('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'update'])->name('authors.update');
-        Route::delete('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'destroy'])->name('authors.destroy');
-
-        // Categories Management
-        Route::get('categories', [\App\Http\Controllers\Library\CategoryController::class, 'index'])->name('categories.index');
-        Route::get('categories/create', [\App\Http\Controllers\Library\CategoryController::class, 'create'])->name('categories.create');
-        Route::post('categories', [\App\Http\Controllers\Library\CategoryController::class, 'store'])->name('categories.store');
-        Route::get('categories/{category}/edit', [\App\Http\Controllers\Library\CategoryController::class, 'edit'])->name('categories.edit');
-        Route::put('categories/{category}', [\App\Http\Controllers\Library\CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('categories/{category}', [\App\Http\Controllers\Library\CategoryController::class, 'destroy'])->name('categories.destroy');
-
-        // Loans Management (Prêts)
-        Route::get('loans', [\App\Http\Controllers\Library\LoanController::class, 'index'])->name('loans.index');
-        Route::get('loans/create', [\App\Http\Controllers\Library\LoanController::class, 'create'])->name('loans.create');
-        Route::post('loans', [\App\Http\Controllers\Library\LoanController::class, 'store'])->name('loans.store');
-        Route::get('loans/{loan}', [\App\Http\Controllers\Library\LoanController::class, 'show'])->name('loans.show');
-        Route::post('loans/{loan}/return', [\App\Http\Controllers\Library\LoanController::class, 'return'])->name('loans.return');
-        Route::get('loans/overdue', [\App\Http\Controllers\Library\LoanController::class, 'overdue'])->name('loans.overdue');
-        Route::get('loans/history', [\App\Http\Controllers\Library\LoanController::class, 'history'])->name('loans.history');
-        Route::get('loans/check-borrower', [\App\Http\Controllers\Library\LoanController::class, 'checkBorrower'])->name('loans.check-borrower');
-        Route::get('loans/check-copy', [\App\Http\Controllers\Library\LoanController::class, 'checkCopy'])->name('loans.check-copy');
-        Route::get('loans/check-active-loan', [\App\Http\Controllers\Library\LoanController::class, 'checkActiveLoan'])->name('loans.check-active-loan');
-
-        Route::get('loans/return-book', [\App\Http\Controllers\Library\LoanController::class, 'returnForm'])->name('loans.return-form');
-        Route::post('loans/return-book', [\App\Http\Controllers\Library\LoanController::class, 'storeReturn'])->name('loans.store-return');
-
-        // Readers Management (Lecteurs)
-        Route::get('readers', [\App\Http\Controllers\Library\ReaderController::class, 'index'])->name('readers.index');
-        Route::get('readers/create', [\App\Http\Controllers\Library\ReaderController::class, 'create'])->name('readers.create');
-        Route::post('readers', [\App\Http\Controllers\Library\ReaderController::class, 'store'])->name('readers.store');
-        Route::get('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'show'])->name('readers.show');
-        Route::get('readers/{reader}/edit', [\App\Http\Controllers\Library\ReaderController::class, 'edit'])->name('readers.edit');
-        Route::put('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'update'])->name('readers.update');
-        Route::delete('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'destroy'])->name('readers.destroy');
-        Route::get('readers/{reader}/card', [\App\Http\Controllers\Library\ReaderController::class, 'card'])->name('readers.card');
-
-        // Search
-        Route::get('search/autocomplete', [\App\Http\Controllers\Library\SearchController::class, 'autocomplete'])->name('search.autocomplete');
-        Route::get('search', [\App\Http\Controllers\Library\SearchController::class, 'index'])->name('search.index');
-        Route::post('search', [\App\Http\Controllers\Library\SearchController::class, 'search'])->name('search');
-        Route::get('search/advanced', [\App\Http\Controllers\Library\SearchController::class, 'advanced'])->name('search.advanced');
-        Route::get('search/popular', [\App\Http\Controllers\Library\SearchController::class, 'popular'])->name('search.popular');
-        Route::get('search/recent', [\App\Http\Controllers\Library\SearchController::class, 'recent'])->name('search.recent');
-
-        // Statistics & Reports
-        Route::get('statistics', [\App\Http\Controllers\Library\StatisticsController::class, 'index'])->name('statistics.index');
-        Route::get('statistics/loans', [\App\Http\Controllers\Library\StatisticsController::class, 'loans'])->name('statistics.loans');
-        Route::get('statistics/categories', [\App\Http\Controllers\Library\StatisticsController::class, 'categories'])->name('statistics.categories');
-
-        // Reports
-        Route::get('reports', [\App\Http\Controllers\Library\ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/collection', [\App\Http\Controllers\Library\ReportController::class, 'collection'])->name('reports.collection');
-        Route::get('reports/loans', [\App\Http\Controllers\Library\ReportController::class, 'loans'])->name('reports.loans');
-        Route::get('reports/inventory', [\App\Http\Controllers\Library\ReportController::class, 'inventory'])->name('reports.inventory');
-        Route::get('reports/readers', [\App\Http\Controllers\Library\ReportController::class, 'readers'])->name('reports.readers');
-        Route::get('reports/overdue', [\App\Http\Controllers\Library\ReportController::class, 'overdue'])->name('reports.overdue');
-        Route::get('reports/collection/export-csv', [\App\Http\Controllers\Library\ReportController::class, 'exportCollectionCsv'])->name('reports.collection.export-csv');
-    });
-
     // Admin Panel (Phase 10 - Task 10.7)
     // TODO: Implement AdminPanelController
     /*
@@ -992,18 +843,6 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes pour documents numériques
         Route::post('{dolly}/add-digital-document', [DollyController::class, 'addDigitalDocument'])->name('dolly.add-digital-document');
         Route::delete('{dolly}/remove-digital-document/{document}', [DollyController::class, 'removeDigitalDocument'])->name('dolly.remove-digital-document');
-
-        // Routes pour artefacts
-        Route::post('{dolly}/add-artifact', [DollyController::class, 'addArtifact'])->name('dolly.add-artifact');
-        Route::delete('{dolly}/remove-artifact/{artifact}', [DollyController::class, 'removeArtifact'])->name('dolly.remove-artifact');
-
-        // Routes pour livres
-        Route::post('{dolly}/add-book', [DollyController::class, 'addBook'])->name('dolly.add-book');
-        Route::delete('{dolly}/remove-book/{book}', [DollyController::class, 'removeBook'])->name('dolly.remove-book');
-
-        // Routes pour séries
-        Route::post('{dolly}/add-book-series', [DollyController::class, 'addBookSeries'])->name('dolly.add-book-series');
-        Route::delete('{dolly}/remove-book-series/{series}', [DollyController::class, 'removeBookSeries'])->name('dolly.remove-book-series');
     });
 
 
@@ -1245,14 +1084,6 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     Route::get('/records/search', [\App\Http\Controllers\OPAC\RecordController::class, 'search'])->name('records.search');
     Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
-
-    // Artifacts
-    Route::get('/artifacts', [\App\Http\Controllers\OPAC\ArtifactController::class, 'index'])->name('artifacts.index');
-    Route::get('/artifacts/{id}', [\App\Http\Controllers\OPAC\ArtifactController::class, 'show'])->name('artifacts.show');
-
-    // Books
-    Route::get('/books', [\App\Http\Controllers\OPAC\BookController::class, 'index'])->name('books.index');
-    Route::get('/books/{id}', [\App\Http\Controllers\OPAC\BookController::class, 'show'])->name('books.show');
 
     // Digital Collections
     Route::get('/digital/folders', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'index'])->name('digital.folders.index');

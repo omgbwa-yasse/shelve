@@ -22,8 +22,6 @@ use App\Http\Controllers\PromptController;
 use App\Http\Controllers\Api\ContainerSearchController;
 use App\Http\Controllers\Api\RecordDigitalFolderApiController;
 use App\Http\Controllers\Api\RecordDigitalDocumentApiController;
-use App\Http\Controllers\Api\RecordArtifactApiController;
-use App\Http\Controllers\Api\RecordPeriodicApiController;
 
 // Public API routes with rate limiting
 Route::prefix('public')->name('api.public.')->middleware('rate.limit:api_general,100,60')->group(function () {
@@ -121,26 +119,4 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:ap
     Route::get('digital-documents/{id}/download', [RecordDigitalDocumentApiController::class, 'download'])->name('digital-documents.download');
     Route::get('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'versions'])->name('digital-documents.versions');
     Route::get('digital-documents-search', [RecordDigitalDocumentApiController::class, 'search'])->name('digital-documents.search');
-
-    // Museum Artifacts API
-    Route::apiResource('artifacts', RecordArtifactApiController::class);
-    Route::post('artifacts/{id}/exhibitions', [RecordArtifactApiController::class, 'addToExhibition'])->name('artifacts.add-exhibition');
-    Route::post('artifacts/{id}/loans', [RecordArtifactApiController::class, 'loan'])->name('artifacts.loan');
-    Route::post('artifacts/{id}/return', [RecordArtifactApiController::class, 'returnFromLoan'])->name('artifacts.return');
-    Route::post('artifacts/{id}/condition-reports', [RecordArtifactApiController::class, 'addConditionReport'])->name('artifacts.condition-report');
-    Route::post('artifacts/{id}/valuation', [RecordArtifactApiController::class, 'updateValuation'])->name('artifacts.valuation');
-    Route::get('artifacts-search', [RecordArtifactApiController::class, 'search'])->name('artifacts.search');
-    Route::get('artifacts-statistics', [RecordArtifactApiController::class, 'statistics'])->name('artifacts.statistics');
-
-    // Scientific Periodicals API
-    Route::apiResource('periodics', RecordPeriodicApiController::class);
-    Route::post('periodics/{id}/issues', [RecordPeriodicApiController::class, 'addIssue'])->name('periodics.add-issue');
-    Route::post('issues/{issueId}/articles', [RecordPeriodicApiController::class, 'addArticle'])->name('periodics.add-article');
-    Route::post('periodics/{id}/subscriptions', [RecordPeriodicApiController::class, 'createSubscription'])->name('periodics.subscription');
-    Route::get('periodics-search', [RecordPeriodicApiController::class, 'searchPeriodics'])->name('periodics.search');
-    Route::get('issues-search', [RecordPeriodicApiController::class, 'searchIssues'])->name('issues.search');
-    Route::get('articles-search', [RecordPeriodicApiController::class, 'searchArticles'])->name('articles.search');
-    Route::get('subscriptions-expiring', [RecordPeriodicApiController::class, 'expiringSoonSubscriptions'])->name('subscriptions.expiring');
-    Route::get('issues-missing', [RecordPeriodicApiController::class, 'missingIssues'])->name('issues.missing');
-    Route::get('periodics-statistics', [RecordPeriodicApiController::class, 'statistics'])->name('periodics.statistics');
 });

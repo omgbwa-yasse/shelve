@@ -31,16 +31,6 @@ class Term extends Model
     ];
 
     /**
-     * Relations
-     */
-    public function books(): BelongsToMany
-    {
-        return $this->belongsToMany(RecordBook::class, 'record_book_term', 'term_id', 'book_id')
-            ->withPivot('display_order')
-            ->orderByPivot('display_order');
-    }
-
-    /**
      * Scopes
      */
     public function scopeByLanguage($query, $language)
