@@ -38,16 +38,18 @@ return new class extends Migration
             $table->fullText(['name', 'name_en', 'native_name']);
         });
 
-        // Add language_id foreign key to record_books
-        Schema::table('record_books', function (Blueprint $table) {
-            $table->foreignId('language_id')
-                ->nullable()
-                ->after('language')
-                ->constrained('record_languages')
-                ->nullOnDelete();
+        // Add language_id foreign key to record_books (if table exists)
+        if (Schema::hasTable('record_books')) {
+            Schema::table('record_books', function (Blueprint $table) {
+                $table->foreignId('language_id')
+                    ->nullable()
+                    ->after('language')
+                    ->constrained('record_languages')
+                    ->nullOnDelete();
 
-            $table->index('language_id');
-        });
+                $table->index('language_id');
+            });
+        }
     }
 
     /**
@@ -55,10 +57,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('record_books', function (Blueprint $table) {
-            $table->dropForeign(['language_id']);
-            $table->dropColumn('language_id');
-        });
+        if (Schema::hasTable('record_books')) {
+            Schema::table('record_books', function (Blueprint $table) {
+                $table->dropForeign(['language_id']);
+                $table->dropColumn('language_id');
+            });
+        }
 
         Schema::dropIfExists('record_languages');
     }

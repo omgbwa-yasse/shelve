@@ -69,6 +69,50 @@ class RecordDigitalDocumentType extends Model
     }
 
     /**
+     * Get the metadata profiles for this document type.
+     */
+    public function metadataProfiles()
+    {
+        return $this->hasMany(RecordDigitalDocumentMetadataProfile::class, 'document_type_id');
+    }
+
+    /**
+     * Get the metadata definitions through profiles.
+     */
+    public function metadataDefinitions()
+    {
+        return $this->belongsToMany(
+            MetadataDefinition::class,
+            'record_digital_document_metadata_profiles',
+            'document_type_id',
+            'metadata_definition_id'
+        )->withPivot([
+            'mandatory',
+            'visible',
+            'readonly',
+            'default_value',
+            'validation_rules',
+            'sort_order',
+        ])->withTimestamps()->orderByPivot('sort_order');
+    }
+
+    /**
+     * Get mandatory metadata definitions for this document type.
+     */
+    public function getMandatoryMetadataDefinitions()
+    {
+        return $this->metadataDefinitions()->wherePivot('mandatory', true)->get();
+    }
+
+    /**
+     * Get visible metadata definitions for this document type.
+     */
+    public function getVisibleMetadataDefinitions()
+    {
+        return $this->metadataDefinitions()->wherePivot('visible', true)->get();
+    }
+
+    /**
      * Scope pour les types actifs
      */
     public function scopeActive($query)

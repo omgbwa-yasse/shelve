@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\RecordDigitalFolderService;
+use App\Services\MetadataValidationService;
 use App\Models\RecordDigitalFolder;
 use App\Models\RecordDigitalFolderType;
 use App\Models\Organisation;
@@ -22,10 +23,12 @@ use OpenApi\Attributes as OA;
 class RecordDigitalFolderApiController extends Controller
 {
     protected RecordDigitalFolderService $service;
+    protected MetadataValidationService $metadataValidator;
 
-    public function __construct(RecordDigitalFolderService $service)
+    public function __construct(RecordDigitalFolderService $service, MetadataValidationService $metadataValidator)
     {
         $this->service = $service;
+        $this->metadataValidator = $metadataValidator;
     }
 
     #[OA\Get(
@@ -156,10 +159,24 @@ class RecordDigitalFolderApiController extends Controller
             $parent = $request->parent_id ? RecordDigitalFolder::findOrFail($request->parent_id) : null;
             $type = RecordDigitalFolderType::findOrFail($request->type_id);
 
+            // Validate metadata according to folder type profile
+            $metadata = $request->metadata ?? [];
+            if (!empty($metadata)) {
+                try {
+                    $metadata = $this->metadataValidator->validateFolderMetadata($type, $metadata);
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Metadata validation error',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
+            }
+
             $data = [
                 'name' => $request->name,
                 'description' => $request->description,
-                'metadata' => $request->metadata ?? [],
+                'metadata' => $metadata,
                 'access_level' => $request->access_level ?? null,
                 'assigned_to' => $request->assigned_to ?? null,
                 'start_date' => $request->start_date ?? null,
@@ -238,13 +255,27 @@ class RecordDigitalFolderApiController extends Controller
         }
 
         try {
-            $folder = RecordDigitalFolder::findOrFail($id);
+            $folder = RecordDigitalFolder::with('type')->findOrFail($id);
+
+            // Validate metadata if provided
+            if ($request->has('metadata')) {
+                try {
+                    $metadata = $this->metadataValidator->validateFolderMetadata($folder->type, $request->metadata);
+                    $folder->metadata = $metadata;
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Metadata validation error',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
+            }
 
             if ($request->has('name')) {
                 $folder = $this->service->renameFolder($folder, $request->name);
             }
 
-            $folder->update($request->only(['description', 'status', 'metadata']));
+            $folder->update($request->only(['description', 'status']));
 
             return response()->json([
                 'success' => true,

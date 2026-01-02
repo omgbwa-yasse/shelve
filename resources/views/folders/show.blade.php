@@ -142,6 +142,67 @@
                                 {{ $folder->creator->name ?? 'N/A' }} on {{ $folder->created_at->format('M d, Y') }}
                             </dd>
                         </div>
+
+                        {{-- Display Metadata --}}
+                        @if($folder->type && $folder->type->metadataDefinitions->count() > 0)
+                            <div class="col-span-full border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Metadata</h4>
+                                @foreach($folder->type->metadataDefinitions as $definition)
+                                    @if($definition->pivot->visible)
+                                        <div class="mb-3">
+                                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                {{ $definition->label }}
+                                            </dt>
+                                            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">
+                                                @php
+                                                    $value = $folder->getMetadataValue($definition->name);
+                                                @endphp
+                                                @if($value !== null)
+                                                    @if($definition->data_type === 'boolean')
+                                                        <span class="px-2 py-1 {{ $value ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' }} rounded text-xs font-medium">
+                                                            {{ $value ? 'Yes' : 'No' }}
+                                                        </span>
+                                                    @elseif($definition->data_type === 'select' && $definition->referenceList)
+                                                        @php
+                                                            $refValue = $definition->referenceList->values->firstWhere('value', $value);
+                                                        @endphp
+                                                        {{ $refValue->display_value ?? $value }}
+                                                    @elseif($definition->data_type === 'multi_select' && $definition->referenceList)
+                                                        @php
+                                                            $values = is_array($value) ? $value : json_decode($value, true);
+                                                        @endphp
+                                                        @if(is_array($values))
+                                                            @foreach($values as $val)
+                                                                @php
+                                                                    $refValue = $definition->referenceList->values->firstWhere('value', $val);
+                                                                @endphp
+                                                                <span class="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium mr-1 mb-1">
+                                                                    {{ $refValue->display_value ?? $val }}
+                                                                </span>
+                                                            @endforeach
+                                                        @endif
+                                                    @elseif($definition->data_type === 'url')
+                                                        <a href="{{ $value }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                                            {{ $value }}
+                                                        </a>
+                                                    @elseif($definition->data_type === 'email')
+                                                        <a href="mailto:{{ $value }}" class="text-blue-600 dark:text-blue-400 hover:underline">
+                                                            {{ $value }}
+                                                        </a>
+                                                    @elseif($definition->data_type === 'json')
+                                                        <pre class="bg-gray-100 dark:bg-gray-700 p-2 rounded text-xs overflow-x-auto">{{ is_array($value) ? json_encode($value, JSON_PRETTY_PRINT) : $value }}</pre>
+                                                    @else
+                                                        {{ $value }}
+                                                    @endif
+                                                @else
+                                                    <span class="text-gray-400 dark:text-gray-500 italic">Not set</span>
+                                                @endif
+                                            </dd>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
                     </dl>
                 </div>
 

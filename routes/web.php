@@ -768,6 +768,29 @@ Route::group(['middleware' => 'auth'], function () {
         Route::post('definitions/{id}/set-value', [SettingController::class, 'setValue'])->name('settings.definitions.set-value');
         Route::delete('definitions/{id}/reset-value', [SettingController::class, 'resetValue'])->name('settings.definitions.reset-value');
 
+        // Routes pour les métadonnées
+        Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('settings.metadata-definitions');
+        Route::resource('reference-lists', \App\Http\Controllers\Settings\ReferenceListController::class)->names('settings.reference-lists');
+
+        // Routes pour les valeurs de référence
+        Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('settings.reference-lists.values.store');
+        Route::put('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'updateValue'])->name('settings.reference-lists.values.update');
+        Route::delete('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'deleteValue'])->name('settings.reference-lists.values.destroy');
+
+        // Routes pour les profils de métadonnées des types de documents
+        Route::get('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'index'])->name('settings.document-types.metadata-profiles.index');
+        Route::post('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'store'])->name('settings.document-types.metadata-profiles.store');
+        Route::put('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'update'])->name('settings.document-types.metadata-profiles.update');
+        Route::delete('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'destroy'])->name('settings.document-types.metadata-profiles.destroy');
+        Route::put('document-types/{documentType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.document-types.metadata-profiles.bulk-update');
+
+        // Routes pour les profils de métadonnées des types de dossiers
+        Route::get('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'index'])->name('settings.folder-types.metadata-profiles.index');
+        Route::post('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'store'])->name('settings.folder-types.metadata-profiles.store');
+        Route::put('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'update'])->name('settings.folder-types.metadata-profiles.update');
+        Route::delete('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'destroy'])->name('settings.folder-types.metadata-profiles.destroy');
+        Route::put('folder-types/{folderType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.folder-types.metadata-profiles.bulk-update');
+
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
         Route::get('users', [UserController::class, 'index'] );

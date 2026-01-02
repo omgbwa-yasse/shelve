@@ -17,8 +17,6 @@ class DatabaseSeeder extends Seeder
             MailSystemSeeder::class, // Seeder pour le système de courriers
             AuthorTypeSeeder::class, // Seeder pour les types d'auteurs
             AddressTypeSeeder::class, // Seeder pour les types d'adresses
-            LibraryReferenceSeeder::class, // Seeder pour les références bibliographiques (langues, formats, éditeurs...)
-            ClassificationSeeder::class, // Seeder pour la classification Dewey
 
             // 3. THÉSAURUS (Indépendants)
             ThesaurusTypologieSeeder::class, // Seeder pour le thésaurus des typologies documentaires
@@ -62,14 +60,18 @@ class DatabaseSeeder extends Seeder
             OpacConfigurationSeeder::class, // Configuration OPAC par organisation
             OpacTemplateSeeder::class, // Templates OPAC disponibles
 
-            // 11. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
+            // 11. SYSTÈME DE MÉTADONNÉES (Définitions et profils)
+            // MetadataSystemSeeder::class, // Définitions de métadonnées et listes de référence - Déjà exécuté
+            // DocumentFolderTypesWithMetadataSeeder::class, // Types de documents/dossiers avec profils de métadonnées - À corriger
+
+            // 12. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
             // RecordSeederSimple::class, // Exemples de documents d'archives - Nécessite la table 'records'
-            BooksSeeder::class, // Exemples de livres
+            // BooksSeeder::class, // Exemples de livres - Supprimé
             KeywordSeeder::class, // Mots-clés pour les dossiers/documents numériques
             RecordDigitalFolderSeeder::class, // Exemples de dossiers numériques (Phase 3)
             RecordDigitalDocumentSeederSimple::class, // Exemples de documents numériques (Phase 3)
 
-            // 12. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
+            // 13. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
             // OpacSeeder::class, // Seeder complet pour l'OPAC - Nécessite les tables OPAC
         ]);
     }

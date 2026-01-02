@@ -120,6 +120,89 @@ class RecordDigitalFolder extends Model
     }
 
     /**
+     * Metadata methods
+     */
+    public function getMetadataValue(string $metadataCode, $default = null)
+    {
+        return $this->metadata[$metadataCode] ?? $default;
+    }
+
+    public function setMetadataValue(string $metadataCode, $value): void
+    {
+        $metadata = $this->metadata ?? [];
+        $metadata[$metadataCode] = $value;
+        $this->metadata = $metadata;
+    }
+
+    public function setMultipleMetadata(array $metadataArray): void
+    {
+        $metadata = $this->metadata ?? [];
+        foreach ($metadataArray as $code => $value) {
+            $metadata[$code] = $value;
+        }
+        $this->metadata = $metadata;
+    }
+
+    public function getRequiredMetadataFields(): array
+    {
+        if (!$this->type) {
+            return [];
+        }
+
+        return $this->type->getMandatoryMetadataDefinitions()
+            ->map(function ($definition) {
+                return [
+                    'code' => $definition->code,
+                    'name' => $definition->name,
+                    'data_type' => $definition->data_type,
+                    'required' => true,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function getVisibleMetadataFields(): array
+    {
+        if (!$this->type) {
+            return [];
+        }
+
+        return $this->type->getVisibleMetadataDefinitions()
+            ->map(function ($definition) {
+                return [
+                    'code' => $definition->code,
+                    'name' => $definition->name,
+                    'data_type' => $definition->data_type,
+                    'value' => $this->getMetadataValue($definition->code),
+                    'required' => $definition->pivot->mandatory,
+                    'readonly' => $definition->pivot->readonly,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function validateMetadata(): array
+    {
+        if (!$this->type) {
+            return ['type' => 'Folder type not set'];
+        }
+
+        $service = app(\App\Services\MetadataValidationService::class);
+
+        try {
+            $service->validateFolderMetadata($this->type_id, $this->metadata ?? []);
+            return [];
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $e->errors();
+        }
+    }
+
+    public function hasCompleteMetadata(): bool
+    {
+        return empty($this->validateMetadata());
+    }
+
+    /**
      * Scopes
      */
     public function scopeActive($query)

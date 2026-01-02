@@ -118,5 +118,10 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:ap
     Route::post('digital-documents/{id}/reject', [RecordDigitalDocumentApiController::class, 'reject'])->name('digital-documents.reject');
     Route::get('digital-documents/{id}/download', [RecordDigitalDocumentApiController::class, 'download'])->name('digital-documents.download');
     Route::get('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'versions'])->name('digital-documents.versions');
+
+    // Metadata API
+    Route::get('metadata/folder-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getFolderTypeMetadata'])->name('metadata.folder-types');
+    Route::get('metadata/document-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getDocumentTypeMetadata'])->name('metadata.document-types');
+    Route::get('metadata/all', [App\Http\Controllers\Api\MetadataApiController::class, 'getAllMetadata'])->name('metadata.all');
     Route::get('digital-documents-search', [RecordDigitalDocumentApiController::class, 'search'])->name('digital-documents.search');
 });

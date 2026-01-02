@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\RecordDigitalDocumentService;
+use App\Services\MetadataValidationService;
 use App\Models\RecordDigitalDocument;
 use App\Models\RecordDigitalDocumentType;
 use App\Models\RecordDigitalFolder;
@@ -25,10 +26,12 @@ use OpenApi\Attributes as OA;
 class RecordDigitalDocumentApiController extends Controller
 {
     protected RecordDigitalDocumentService $service;
+    protected MetadataValidationService $metadataValidator;
 
-    public function __construct(RecordDigitalDocumentService $service)
+    public function __construct(RecordDigitalDocumentService $service, MetadataValidationService $metadataValidator)
     {
         $this->service = $service;
+        $this->metadataValidator = $metadataValidator;
     }
 
     /**
@@ -222,6 +225,20 @@ class RecordDigitalDocumentApiController extends Controller
             $folder = RecordDigitalFolder::findOrFail($request->folder_id);
             $type = RecordDigitalDocumentType::findOrFail($request->type_id);
 
+            // Validate metadata according to document type profile
+            $metadata = $request->metadata ?? [];
+            if (!empty($metadata)) {
+                try {
+                    $metadata = $this->metadataValidator->validateDocumentMetadata($type, $metadata);
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Metadata validation error',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
+            }
+
             // Handle file upload
             $attachment = null;
             if ($request->hasFile('file')) {
@@ -241,7 +258,7 @@ class RecordDigitalDocumentApiController extends Controller
             $data = [
                 'name' => $request->name,
                 'description' => $request->description,
-                'metadata' => $request->metadata ?? [],
+                'metadata' => $metadata,
                 'access_level' => $request->access_level ?? null,
                 'status' => $request->status ?? 'draft',
                 'assigned_to' => $request->assigned_to ?? null,
@@ -331,14 +348,28 @@ class RecordDigitalDocumentApiController extends Controller
         }
 
         try {
-            $document = RecordDigitalDocument::findOrFail($id);
+            $document = RecordDigitalDocument::with('type')->findOrFail($id);
+
+            // Validate metadata if provided
+            if ($request->has('metadata')) {
+                try {
+                    $metadata = $this->metadataValidator->validateDocumentMetadata($document->type, $request->metadata);
+                    $document->metadata = $metadata;
+                } catch (\Illuminate\Validation\ValidationException $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Metadata validation error',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
+            }
+
             $document->update($request->only([
                 'name',
                 'description',
                 'status',
                 'access_level',
                 'assigned_to',
-                'metadata',
             ]));
 
             return response()->json([
