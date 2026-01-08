@@ -123,6 +123,30 @@
         </div>
     </div>
 
+    <!-- Records numériques Section -->
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-file-earmark-binary"></i> {{ __('Records') }}
+        </div>
+        <div class="submenu-content">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.folder-types.index') }}">
+                    <i class="bi bi-folder-2"></i> Gestion des types de dossiers
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.document-types.index') }}">
+                    <i class="bi bi-file-earmark"></i> Gestion des types de documents
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('settings.metadata-definitions.index') }}">
+                    <i class="bi bi-list-check"></i> Définitions de métadonnées
+                </a>
+            </div>
+        </div>
+    </div>
+
     <!-- Transfert Section -->
     <div class="submenu-section">
         <div class="submenu-heading">

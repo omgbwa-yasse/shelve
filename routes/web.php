@@ -791,6 +791,13 @@ Route::group(['middleware' => 'auth'], function () {
         Route::delete('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'destroy'])->name('settings.folder-types.metadata-profiles.destroy');
         Route::put('folder-types/{folderType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.folder-types.metadata-profiles.bulk-update');
 
+        // Routes CRUD pour les types de dossiers et documents numériques (Records)
+        Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('settings.folder-types');
+        Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('settings.folder-types.update-order');
+
+        Route::resource('document-types', \App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class)->names('settings.document-types');
+        Route::post('document-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class, 'updateOrder'])->name('settings.document-types.update-order');
+
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
         Route::get('users', [UserController::class, 'index'] );
