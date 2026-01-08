@@ -35,6 +35,9 @@ class RecordDigitalFolder extends Model
         'total_size',
         'start_date',
         'end_date',
+        'transferred_at',
+        'transferred_to_record_id',
+        'transfer_metadata',
     ];
 
     protected $casts = [
@@ -46,6 +49,8 @@ class RecordDigitalFolder extends Model
         'total_size' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
+        'transferred_at' => 'datetime',
+        'transfer_metadata' => 'array',
     ];
 
     /**
@@ -94,6 +99,11 @@ class RecordDigitalFolder extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function transferredToRecord(): BelongsTo
+    {
+        return $this->belongsTo(RecordPhysical::class, 'transferred_to_record_id');
     }
 
     public function keywords()

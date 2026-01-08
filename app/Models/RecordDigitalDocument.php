@@ -49,6 +49,9 @@ class RecordDigitalDocument extends Model
         'last_viewed_at',
         'last_viewed_by',
         'document_date',
+        'transferred_at',
+        'transferred_to_record_id',
+        'transfer_metadata',
     ];
 
     protected $casts = [
@@ -65,6 +68,8 @@ class RecordDigitalDocument extends Model
         'download_count' => 'integer',
         'last_viewed_at' => 'datetime',
         'document_date' => 'date',
+        'transferred_at' => 'datetime',
+        'transfer_metadata' => 'array',
     ];
 
     /**
@@ -113,6 +118,11 @@ class RecordDigitalDocument extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function transferredToRecord(): BelongsTo
+    {
+        return $this->belongsTo(RecordPhysical::class, 'transferred_to_record_id');
     }
 
     public function checkedOutUser(): BelongsTo

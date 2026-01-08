@@ -119,6 +119,13 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'rate.limit:ap
     Route::get('digital-documents/{id}/download', [RecordDigitalDocumentApiController::class, 'download'])->name('digital-documents.download');
     Route::get('digital-documents/{id}/versions', [RecordDigitalDocumentApiController::class, 'versions'])->name('digital-documents.versions');
 
+    // Digital to Physical Transfer API
+    Route::prefix('record-digital-transfer')->name('record-digital-transfer.')->group(function () {
+        Route::get('form', [\App\Http\Controllers\RecordDigitalTransferController::class, 'showTransferForm'])->name('form');
+        Route::post('/', [\App\Http\Controllers\RecordDigitalTransferController::class, 'store'])->name('store');
+        Route::delete('cancel', [\App\Http\Controllers\RecordDigitalTransferController::class, 'cancel'])->name('cancel');
+    });
+
     // Metadata API
     Route::get('metadata/folder-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getFolderTypeMetadata'])->name('metadata.folder-types');
     Route::get('metadata/document-types/{typeId}', [App\Http\Controllers\Api\MetadataApiController::class, 'getDocumentTypeMetadata'])->name('metadata.document-types');
