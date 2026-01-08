@@ -34,7 +34,7 @@ class DigitalPhysicalTransferTest extends TestCase
     protected RecordDigitalDocumentType $documentType;
     protected RecordDigitalFolderType $folderType;
     protected DigitalPhysicalTransferService $transferService;
-    protected static int $testCounter = 0;
+    protected static int $testCounter = 100;
 
     protected function setUp(): void
     {
