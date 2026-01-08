@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\RecordDigitalDocument;
+use App\Models\RecordDigitalDocumentType;
 use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalFolderType;
 use App\Models\RecordPhysical;
 use App\Models\Organisation;
 use App\Models\Activity;
@@ -28,6 +30,8 @@ class DigitalPhysicalTransferTest extends TestCase
     protected RecordPhysical $physicalRecord;
     protected RecordDigitalDocument $digitalDocument;
     protected RecordDigitalFolder $digitalFolder;
+    protected RecordDigitalDocumentType $documentType;
+    protected RecordDigitalFolderType $folderType;
     protected DigitalPhysicalTransferService $transferService;
     protected static int $testCounter = 0;
 
@@ -69,11 +73,24 @@ class DigitalPhysicalTransferTest extends TestCase
             'name' => 'Test Activity ' . self::$testCounter,
         ]);
 
-        $this->activity->organisations()->attach($this->organisation->id);
+        $this->activity->organisations()->attach($this->organisation->id, ['creator_id' => $this->user->id]);
+
+        $this->documentType = RecordDigitalDocumentType::create([
+            'code' => 'TYPE-' . self::$testCounter,
+            'name' => 'Test Document Type ' . self::$testCounter,
+            'description' => 'Test type for digital documents',
+        ]);
+
+        $this->folderType = RecordDigitalFolderType::create([
+            'code' => 'FTYPE-' . self::$testCounter,
+            'name' => 'Test Folder Type ' . self::$testCounter,
+            'description' => 'Test type for digital folders',
+        ]);
 
         $this->physicalRecord = RecordPhysical::create([
             'code' => 'PHYS-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT),
             'name' => 'Test Physical Record',
+            'date_format' => 'A',
             'level_id' => $this->level->id,
             'status_id' => $this->status->id,
             'support_id' => $this->support->id,
@@ -84,6 +101,7 @@ class DigitalPhysicalTransferTest extends TestCase
         $this->digitalDocument = RecordDigitalDocument::create([
             'code' => 'DOC-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT) . 'A',
             'name' => 'Test Digital Document',
+            'type_id' => $this->documentType->id,
             'organisation_id' => $this->organisation->id,
             'creator_id' => $this->user->id,
         ]);
@@ -91,6 +109,7 @@ class DigitalPhysicalTransferTest extends TestCase
         $this->digitalFolder = RecordDigitalFolder::create([
             'code' => 'FOL-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT) . 'A',
             'name' => 'Test Digital Folder',
+            'type_id' => $this->folderType->id,
             'organisation_id' => $this->organisation->id,
             'creator_id' => $this->user->id,
         ]);

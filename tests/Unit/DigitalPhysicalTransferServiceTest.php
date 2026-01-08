@@ -5,7 +5,9 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\RecordDigitalDocument;
+use App\Models\RecordDigitalDocumentType;
 use App\Models\RecordDigitalFolder;
+use App\Models\RecordDigitalFolderType;
 use App\Models\RecordPhysical;
 use App\Models\Organisation;
 use App\Models\Activity;
@@ -26,6 +28,8 @@ class DigitalPhysicalTransferServiceTest extends TestCase
     protected RecordSupport $support;
     protected RecordLevel $level;
     protected RecordPhysical $physicalRecord;
+    protected RecordDigitalDocumentType $documentType;
+    protected RecordDigitalFolderType $folderType;
     protected DigitalPhysicalTransferService $service;
     protected static int $testCounter = 0;
 
@@ -64,11 +68,24 @@ class DigitalPhysicalTransferServiceTest extends TestCase
             'name' => 'Test Activity ' . self::$testCounter,
         ]);
 
-        $this->activity->organisations()->attach($this->organisation->id);
+        $this->activity->organisations()->attach($this->organisation->id, ['creator_id' => $this->user->id]);
+
+        $this->documentType = RecordDigitalDocumentType::create([
+            'code' => 'TYPE-' . self::$testCounter,
+            'name' => 'Test Document Type ' . self::$testCounter,
+            'description' => 'Test type for digital documents',
+        ]);
+
+        $this->folderType = RecordDigitalFolderType::create([
+            'code' => 'FTYPE-' . self::$testCounter,
+            'name' => 'Test Folder Type ' . self::$testCounter,
+            'description' => 'Test type for digital folders',
+        ]);
 
         $this->physicalRecord = RecordPhysical::create([
             'code' => 'PHYS-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT),
             'name' => 'Test Physical Record',
+            'date_format' => 'A',
             'level_id' => $this->level->id,
             'status_id' => $this->status->id,
             'support_id' => $this->support->id,
@@ -84,6 +101,18 @@ class DigitalPhysicalTransferServiceTest extends TestCase
         return RecordDigitalDocument::create([
             'code' => 'DOC-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT) . $suffix,
             'name' => 'Test Document ' . $suffix,
+            'type_id' => $this->documentType->id,
+            'organisation_id' => $this->organisation->id,
+            'creator_id' => $this->user->id,
+        ]);
+    }
+
+    protected function createTestFolder($suffix = ''): RecordDigitalFolder
+    {
+        return RecordDigitalFolder::create([
+            'code' => 'FOL-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT) . $suffix,
+            'name' => 'Test Folder ' . $suffix,
+            'type_id' => $this->folderType->id,
             'organisation_id' => $this->organisation->id,
             'creator_id' => $this->user->id,
         ]);
@@ -185,14 +214,9 @@ class DigitalPhysicalTransferServiceTest extends TestCase
 
     public function test_folder_transfer_metadata_includes_document_count()
     {
-        $folder = RecordDigitalFolder::create([
-            'code' => 'FOL-' . str_pad(self::$testCounter, 3, '0', STR_PAD_LEFT),
-            'name' => 'Test Folder',
-            'organisation_id' => $this->organisation->id,
-            'creator_id' => $this->user->id,
-        ]);
-        RecordDigitalDocument::create(['code' => 'D1', 'name' => 'Doc 1', 'folder_id' => $folder->id, 'creator_id' => $this->user->id, 'organisation_id' => $this->organisation->id]);
-        RecordDigitalDocument::create(['code' => 'D2', 'name' => 'Doc 2', 'folder_id' => $folder->id, 'creator_id' => $this->user->id, 'organisation_id' => $this->organisation->id]);
+        $folder = $this->createTestFolder('H');
+        RecordDigitalDocument::create(['code' => 'D1', 'name' => 'Doc 1', 'type_id' => $this->documentType->id, 'folder_id' => $folder->id, 'creator_id' => $this->user->id, 'organisation_id' => $this->organisation->id]);
+        RecordDigitalDocument::create(['code' => 'D2', 'name' => 'Doc 2', 'type_id' => $this->documentType->id, 'folder_id' => $folder->id, 'creator_id' => $this->user->id, 'organisation_id' => $this->organisation->id]);
 
         $result = $this->service->associateDigitalToPhysical(
             'folder',
