@@ -57,9 +57,13 @@ class RecordPhysical extends Model
         'parent_id',
         'accession_id',
         'user_id',
-        'organisation_id'
+        'organisation_id',
+        'linked_digital_metadata',
     ];
 
+    protected $casts = [
+        'linked_digital_metadata' => 'array',
+    ];
 
     // Relation avec Container via la table pivot
     public function containers()

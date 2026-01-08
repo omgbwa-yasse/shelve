@@ -298,7 +298,7 @@ class DigitalPhysicalTransferService
         $folder->documents()->forceDelete();
 
         // Recursively delete subfolders
-        foreach ($folder->subfolders()->cursor() as $subfolder) {
+        foreach ($folder->children()->cursor() as $subfolder) {
             $this->deleteFolder($subfolder);
         }
     }
