@@ -322,35 +322,6 @@
                 </div>
             @endif
 
-            <!-- Actions rapides -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Actions</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    @if($document->is_current_version)
-                        <a href="{{ route('documents.edit', $document) }}" class="list-group-item list-group-item-action">
-                            <i class="bi bi-pencil"></i> Modifier le document
-                        </a>
-                        <button type="button" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#uploadVersionModal">
-                            <i class="bi bi-upload"></i> Nouvelle version
-                        </button>
-                    @endif
-
-                    @if($document->is_current_version && $document->requires_approval && !$document->approved_at)
-                        <form action="{{ route('documents.approve', $document) }}" method="POST" class="w-100">
-                            @csrf
-                            <button type="submit" class="list-group-item list-group-item-action text-success w-100 text-start">
-                                <i class="bi bi-check-circle"></i> Approuver
-                            </button>
-                        </form>
-                    @endif
-
-                    <a href="{{ route('documents.index') }}" class="list-group-item list-group-item-action">
-                        <i class="bi bi-arrow-left"></i> Retour à la liste
-                    </a>
-                </div>
-            </div>
         </div>
     </div>
 </div>

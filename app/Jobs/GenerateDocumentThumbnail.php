@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\RecordDigitalDocument;
 use App\Models\Attachment;
+use App\Services\ThumbnailGenerationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,6 +21,7 @@ class GenerateDocumentThumbnail implements ShouldQueue
     protected $attachment;
     protected $maxAttempts = 3;
     protected $timeout = 60;
+    private $thumbnailService;
 
     /**
      * Create a new job instance.
@@ -27,6 +29,7 @@ class GenerateDocumentThumbnail implements ShouldQueue
     public function __construct(Attachment $attachment)
     {
         $this->attachment = $attachment;
+        $this->thumbnailService = new ThumbnailGenerationService();
     }
 
     /**
@@ -59,9 +62,9 @@ class GenerateDocumentThumbnail implements ShouldQueue
             $mimeType = $this->attachment->mime_type ?? $this->guessMimeType($filePath);
 
             if (strpos($mimeType, 'pdf') !== false) {
-                $this->generatePdfThumbnail($filePath);
+                $this->thumbnailService->generatePdfThumbnail($filePath, $this->attachment);
             } elseif (strpos($mimeType, 'image/') === 0) {
-                $this->generateImageThumbnail($filePath);
+                $this->thumbnailService->generateImageThumbnail($filePath, $this->attachment);
             } else {
                 Log::info("No thumbnail generation available for mime type {$mimeType}");
             }
@@ -70,72 +73,6 @@ class GenerateDocumentThumbnail implements ShouldQueue
             $this->recordError($e->getMessage());
             throw $e;
         }
-    }
-
-    /**
-     * Generate thumbnail for PDF files
-     */
-    private function generatePdfThumbnail(string $filePath): void
-    {
-        try {
-            $imagick = new \Imagick();
-            $imagick->setResolution(300, 300);
-            $imagick->readImage($filePath . '[0]'); // Premier page seulement
-            $imagick->setImageFormat('jpeg');
-            $imagick->thumbnailImage(200, 300, true); // 200x300, aspect ratio preserved
-
-            $thumbnailPath = $this->saveThumbnail($imagick->getImageBlob());
-            $this->updateAttachmentThumbnail($thumbnailPath);
-            Log::info("PDF thumbnail generated for attachment {$this->attachment->id}");
-        } catch (Exception $e) {
-            Log::error("Error generating PDF thumbnail: {$e->getMessage()}");
-            throw $e;
-        }
-    }
-
-    /**
-     * Generate thumbnail for image files
-     */
-    private function generateImageThumbnail(string $filePath): void
-    {
-        try {
-            $imagick = new \Imagick($filePath);
-            $imagick->thumbnailImage(200, 300, true); // 200x300, aspect ratio preserved
-            $imagick->setImageFormat('jpeg');
-
-            $thumbnailPath = $this->saveThumbnail($imagick->getImageBlob());
-            $this->updateAttachmentThumbnail($thumbnailPath);
-            Log::info("Image thumbnail generated for attachment {$this->attachment->id}");
-        } catch (Exception $e) {
-            Log::error("Error generating image thumbnail: {$e->getMessage()}");
-            throw $e;
-        }
-    }
-
-    /**
-     * Save thumbnail to storage
-     */
-    private function saveThumbnail(string $imageBlob): string
-    {
-        $thumbnailDir = 'thumbnails';
-        $hash = hash('sha256', $this->attachment->id . time());
-        $filename = substr($hash, 0, 16) . '.jpg';
-        $path = $thumbnailDir . '/' . $filename;
-
-        Storage::disk('local')->put($path, $imageBlob);
-        return $path;
-    }
-
-    /**
-     * Update attachment with thumbnail path
-     */
-    private function updateAttachmentThumbnail(string $thumbnailPath): void
-    {
-        $this->attachment->update([
-            'thumbnail_path' => $thumbnailPath,
-            'thumbnail_generated_at' => now(),
-            'thumbnail_error' => null,
-        ]);
     }
 
     /**
