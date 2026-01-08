@@ -1,0 +1,199 @@
+﻿<?php
+
+namespace Database\Seeders\Workplaces;
+
+use Illuminate\Database\Seeder;
+use App\Models\Organisation;
+use Illuminate\Support\Facades\DB;
+
+class OrganisationServicesSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        DB::beginTransaction();
+
+        try {
+            $this->command->info('ðŸ¢ CrÃ©ation des services et bureaux...');
+
+            // RÃ©cupÃ©rer les directions
+            $directionFinances = Organisation::where('code', 'DF')->first();
+            $directionRH = Organisation::where('code', 'DRH')->first();
+            $directionArchives = Organisation::where('code', 'DADA')->first();
+
+            if (!$directionFinances || !$directionRH || !$directionArchives) {
+                $this->command->error('Les directions principales doivent Ãªtre crÃ©Ã©es avant ce seeder');
+                return;
+            }
+
+            // CrÃ©er les services pour la Direction des Finances
+            $this->createFinanceServices($directionFinances);
+
+            // CrÃ©er les services pour la Direction des Ressources Humaines
+            $this->createHRServices($directionRH);
+
+            // CrÃ©er les services pour la Direction des Archives
+            $this->createArchiveServices($directionArchives);
+
+            DB::commit();
+            $this->command->info('âœ… Services et bureaux crÃ©Ã©s avec succÃ¨s');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->command->error('âŒ Erreur lors de la crÃ©ation: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * CrÃ©er les services de la Direction des Finances
+     */
+    private function createFinanceServices($directionFinances)
+    {
+        $this->command->info('ðŸ’° CrÃ©ation des services - Direction des Finances...');
+
+        // Service ComptabilitÃ©
+        $serviceComptabilite = Organisation::create([
+            'code' => 'DF-COMPTA',
+            'name' => 'Service ComptabilitÃ©',
+            'description' => 'Service en charge de la comptabilitÃ© gÃ©nÃ©rale',
+            'parent_id' => $directionFinances->id
+        ]);
+
+        // Bureaux du Service ComptabilitÃ©
+        Organisation::create([
+            'code' => 'DF-CG',
+            'name' => 'Bureau ComptabilitÃ© GÃ©nÃ©rale',
+            'description' => 'Bureau de la comptabilitÃ© gÃ©nÃ©rale',
+            'parent_id' => $serviceComptabilite->id
+        ]);
+
+        Organisation::create([
+            'code' => 'DF-BUDGET',
+            'name' => 'Bureau Budget',
+            'description' => 'Bureau de gestion budgÃ©taire',
+            'parent_id' => $serviceComptabilite->id
+        ]);
+
+        // Service TrÃ©sorerie
+        $serviceTresorerie = Organisation::create([
+            'code' => 'DF-TRES',
+            'name' => 'Service TrÃ©sorerie',
+            'description' => 'Service en charge de la trÃ©sorerie',
+            'parent_id' => $directionFinances->id
+        ]);
+
+        // Bureau du Service TrÃ©sorerie
+        Organisation::create([
+            'code' => 'DF-CAISSE',
+            'name' => 'Bureau Caisse',
+            'description' => 'Bureau de gestion de la caisse',
+            'parent_id' => $serviceTresorerie->id
+        ]);
+
+        $this->command->info('   âœ… 5 organisations crÃ©Ã©es pour la Direction des Finances');
+    }
+
+    /**
+     * CrÃ©er les services de la Direction des Ressources Humaines
+     */
+    private function createHRServices($directionRH)
+    {
+        $this->command->info('ðŸ‘¥ CrÃ©ation des services - Direction des Ressources Humaines...');
+
+        // Service Recrutement
+        $serviceRecrutement = Organisation::create([
+            'code' => 'DRH-REC',
+            'name' => 'Service Recrutement',
+            'description' => 'Service en charge du recrutement',
+            'parent_id' => $directionRH->id
+        ]);
+
+        // Bureau du Service Recrutement
+        Organisation::create([
+            'code' => 'DRH-SEL',
+            'name' => 'Bureau SÃ©lection',
+            'description' => 'Bureau de sÃ©lection des candidats',
+            'parent_id' => $serviceRecrutement->id
+        ]);
+
+        // Service Formation
+        $serviceFormation = Organisation::create([
+            'code' => 'DRH-FORM',
+            'name' => 'Service Formation',
+            'description' => 'Service en charge de la formation',
+            'parent_id' => $directionRH->id
+        ]);
+
+        // Bureau du Service Formation
+        Organisation::create([
+            'code' => 'DRH-PLAN',
+            'name' => 'Bureau Planification Formation',
+            'description' => 'Bureau de planification des formations',
+            'parent_id' => $serviceFormation->id
+        ]);
+
+        // Service Paie
+        Organisation::create([
+            'code' => 'DRH-PAIE',
+            'name' => 'Service Paie',
+            'description' => 'Service en charge de la paie',
+            'parent_id' => $directionRH->id
+        ]);
+
+        $this->command->info('   âœ… 5 organisations crÃ©Ã©es pour la Direction des Ressources Humaines');
+    }
+
+    /**
+     * CrÃ©er les services de la Direction des Archives
+     */
+    private function createArchiveServices($directionArchives)
+    {
+        $this->command->info('ðŸ“š CrÃ©ation des services - Direction des Archives...');
+
+        // Service Classement
+        $serviceClassement = Organisation::create([
+            'code' => 'DADA-CL',
+            'name' => 'Service Classement',
+            'description' => 'Service en charge du classement des archives',
+            'parent_id' => $directionArchives->id
+        ]);
+
+        // Bureau du Service Classement
+        Organisation::create([
+            'code' => 'DADA-COT',
+            'name' => 'Bureau Cotation',
+            'description' => 'Bureau de cotation des archives',
+            'parent_id' => $serviceClassement->id
+        ]);
+
+        // Service Conservation
+        $serviceConservation = Organisation::create([
+            'code' => 'DADA-CON',
+            'name' => 'Service Conservation',
+            'description' => 'Service en charge de la conservation',
+            'parent_id' => $directionArchives->id
+        ]);
+
+        // Bureau du Service Conservation
+        Organisation::create([
+            'code' => 'DADA-PREV',
+            'name' => 'Bureau Conservation PrÃ©ventive',
+            'description' => 'Bureau de conservation prÃ©ventive',
+            'parent_id' => $serviceConservation->id
+        ]);
+
+        // Service Communication
+        Organisation::create([
+            'code' => 'DADA-COMM',
+            'name' => 'Service Communication',
+            'description' => 'Service en charge de la communication des archives',
+            'parent_id' => $directionArchives->id
+        ]);
+
+        $this->command->info('   âœ… 5 organisations crÃ©Ã©es pour la Direction des Archives');
+    }
+}
+
