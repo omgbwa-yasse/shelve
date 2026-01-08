@@ -342,6 +342,6 @@ class DigitalPhysicalTransferService
                 'organisation' => $organisation,
                 'reference' => $record->code . ' - ' . $record->name,
             ];
-        });
+        })->toArray();
     }
 }
