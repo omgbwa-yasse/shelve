@@ -123,16 +123,18 @@ class DigitalPhysicalTransferService
                     'linked_digital_metadata' => $currentMetadata,
                 ]);
 
-                // Log the transfer activity
-                activity()
-                    ->causedBy(\Auth::user())
-                    ->performedOn($digitalAsset)
-                    ->withProperties([
-                        'transferred_to_record_id' => $physicalId,
-                        'transfer_type' => $type,
-                        'notes' => $notes,
-                    ])
-                    ->log('digital_transferred_to_physical');
+                // Log the transfer activity (if user is authenticated)
+                if (\Auth::check()) {
+                    activity()
+                        ->causedBy(\Auth::user())
+                        ->performedOn($digitalAsset)
+                        ->withProperties([
+                            'transferred_to_record_id' => $physicalId,
+                            'transfer_type' => $type,
+                            'notes' => $notes,
+                        ])
+                        ->log('digital_transferred_to_physical');
+                }
 
                 return [
                     'success' => true,
@@ -189,14 +191,16 @@ class DigitalPhysicalTransferService
                 // Force delete the asset
                 $digitalAsset->forceDelete();
 
-                // Log the deletion
-                activity()
-                    ->causedBy(\Auth::user())
-                    ->withProperties([
-                        'type' => $type,
-                        'digital_id' => $digitalId,
-                    ])
-                    ->log('digital_asset_deleted_after_transfer');
+                // Log the deletion (if user is authenticated)
+                if (\Auth::check()) {
+                    activity()
+                        ->causedBy(\Auth::user())
+                        ->withProperties([
+                            'type' => $type,
+                            'digital_id' => $digitalId,
+                        ])
+                        ->log('digital_asset_deleted_after_transfer');
+                }
 
                 return [
                     'success' => true,

@@ -251,7 +251,8 @@ class DigitalPhysicalTransferServiceTest extends TestCase
             'Test transfer note'
         );
         $this->assertTrue($result['success']);
-        $metadata = json_decode($document->fresh()->transfer_metadata, true);
+        $metadata = $document->fresh()->transfer_metadata;
+        $this->assertIsArray($metadata);
         $this->assertArrayHasKey('transferred_at', $metadata);
         $this->assertArrayHasKey('transferred_by_user_id', $metadata);
         $this->assertArrayHasKey('transferred_to_record_id', $metadata);
