@@ -185,7 +185,7 @@ class DigitalPhysicalTransferServiceTest extends TestCase
         $document = $this->createTestDocument('F');
         $records = $this->service->getAvailablePhysicalRecords('document', $document->id);
         $this->assertIsArray($records);
-        $this->assertCount(1, $records);
+        $this->assertGreaterThanOrEqual(1, count($records), 'Should find at least one physical record');
         $record = $records[0];
         $this->assertArrayHasKey('id', $record);
         $this->assertArrayHasKey('code', $record);

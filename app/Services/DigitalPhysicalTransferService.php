@@ -309,24 +309,37 @@ class DigitalPhysicalTransferService
     public function getAvailablePhysicalRecords(string $type, int $digitalId, int $limit = 50)
     {
         $query = RecordPhysical::query()
-            ->with(['level', 'status', 'support', 'container'])
+            ->with(['level', 'status', 'support'])
             ->orderBy('code')
             ->limit($limit);
 
         // Filter by organisation if the digital asset has one
         $digitalAsset = $this->getDigitalAsset($type, $digitalId);
         if ($digitalAsset && $digitalAsset->organisation_id) {
-            $query->where('organisation_id', $digitalAsset->organisation_id);
+            // Filter physical records where activity has this organisation
+            $query->whereHas('activity.organisations', function ($q) use ($digitalAsset) {
+                $q->where('organisations.id', $digitalAsset->organisation_id);
+            });
         }
 
+        // Load activity with organisations for mapping
+        $query->with(['activity' => function ($q) {
+            $q->with('organisations');
+        }]);
+
         return $query->get()->map(function ($record) {
+            // Get organisation name from the activity's organisations
+            $organisation = '';
+            if ($record->activity && $record->activity->organisations && $record->activity->organisations->count() > 0) {
+                $organisation = $record->activity->organisations->first()->name;
+            }
             return [
                 'id' => $record->id,
                 'code' => $record->code,
                 'name' => $record->name,
                 'level' => $record->level?->name ?? 'Unknown',
                 'status' => $record->status?->name ?? 'Unknown',
-                'organisation' => $record->organisation?->name ?? '',
+                'organisation' => $organisation,
                 'reference' => $record->code . ' - ' . $record->name,
             ];
         });
