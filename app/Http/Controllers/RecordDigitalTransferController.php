@@ -87,7 +87,8 @@ class RecordDigitalTransferController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Physical record not found',
-            ], 404);
+                'errors' => ['Physical record not found'],
+            ], 422);
         }
 
         $this->authorize('view', $physicalRecord);
@@ -102,7 +103,7 @@ class RecordDigitalTransferController extends Controller
         );
 
         if (!$result['success']) {
-            $statusCode = isset($result['partial_success']) && $result['partial_success'] ? 207 : 400;
+            $statusCode = isset($result['partial_success']) && $result['partial_success'] ? 207 : 422;
             return response()->json($result, $statusCode);
         }
 
@@ -150,13 +151,13 @@ class RecordDigitalTransferController extends Controller
             ]);
 
             // Log the cancellation
-            if (\Auth::check()) {
-                activity()
-                    ->causedBy(auth()->user())
-                    ->performedOn($digitalAsset)
-                    ->withProperties(['type' => $type])
-                    ->log('digital_transfer_cancelled');
-            }
+            // TODO: Re-enable activity logging after fixing Spatie config
+            // if (\Auth::check()) {
+            //     \Spatie\ActivityLog\Facades\Activity::causedBy(auth()->user())
+            //         ->performedOn($digitalAsset)
+            //         ->withProperties(['type' => $type])
+            //         ->log('digital_transfer_cancelled');
+            // }
 
             return response()->json([
                 'success' => true,

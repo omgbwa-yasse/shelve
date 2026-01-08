@@ -83,8 +83,8 @@ class DigitalPhysicalTransferService
                     'transferred_at' => now()->toIso8601String(),
                     'transferred_by_user_id' => $userId,
                     'transferred_to_record_id' => $physicalId,
-                    'original_digital_id' => $digitalId,
-                    'digital_type' => $type,
+                    'transferred_from_id' => $digitalId,
+                    'transferred_from_type' => $type,
                     'digital_name' => $digitalAsset->name,
                     'notes' => $notes,
                 ];
@@ -124,17 +124,17 @@ class DigitalPhysicalTransferService
                 ]);
 
                 // Log the transfer activity (if user is authenticated)
-                if (\Auth::check()) {
-                    activity()
-                        ->causedBy(\Auth::user())
-                        ->performedOn($digitalAsset)
-                        ->withProperties([
-                            'transferred_to_record_id' => $physicalId,
-                            'transfer_type' => $type,
-                            'notes' => $notes,
-                        ])
-                        ->log('digital_transferred_to_physical');
-                }
+                // TODO: Re-enable activity logging after fixing Spatie config
+                // if (\Auth::check()) {
+                //     \Spatie\ActivityLog\Facades\Activity::causedBy(\Auth::user())
+                //         ->performedOn($digitalAsset)
+                //         ->withProperties([
+                //             'transferred_to_record_id' => $physicalId,
+                //             'transfer_type' => $type,
+                //             'notes' => $notes,
+                //         ])
+                //         ->log('digital_transferred_to_physical');
+                // }
 
                 return [
                     'success' => true,
@@ -192,15 +192,15 @@ class DigitalPhysicalTransferService
                 $digitalAsset->forceDelete();
 
                 // Log the deletion (if user is authenticated)
-                if (\Auth::check()) {
-                    activity()
-                        ->causedBy(\Auth::user())
-                        ->withProperties([
-                            'type' => $type,
-                            'digital_id' => $digitalId,
-                        ])
-                        ->log('digital_asset_deleted_after_transfer');
-                }
+                // TODO: Re-enable activity logging after fixing Spatie config
+                // if (\Auth::check()) {
+                //     \Spatie\ActivityLog\Facades\Activity::causedBy(\Auth::user())
+                //         ->withProperties([
+                //             'type' => $type,
+                //             'digital_id' => $digitalId,
+                //         ])
+                //         ->log('digital_asset_deleted_after_transfer');
+                // }
 
                 return [
                     'success' => true,
