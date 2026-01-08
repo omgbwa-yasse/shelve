@@ -145,6 +145,9 @@
 
         <!-- Panneau latéral -->
         <div class="col-md-4">
+            {{-- Vignette et fichier --}}
+            @include('repositories.documents.partials.thumbnail')
+
             {{-- Workflow Partials - Phase 3 --}}
             @include('repositories.documents.partials.checkout')
             @include('repositories.documents.partials.signature')

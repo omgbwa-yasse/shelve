@@ -224,11 +224,11 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'type', 'creator', 'organisation'
+            'type', 'creator', 'organisation', 'documents.attachment'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'type', 'creator', 'organisation', 'folder'
+            'type', 'creator', 'organisation', 'folder', 'attachment'
         ]);
 
         // Filtrage par mot-clé si fourni (appliqué aux records physiques uniquement)
