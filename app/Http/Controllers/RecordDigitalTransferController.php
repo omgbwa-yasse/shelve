@@ -150,11 +150,13 @@ class RecordDigitalTransferController extends Controller
             ]);
 
             // Log the cancellation
-            activity()
-                ->causedBy(auth()->user())
-                ->performedOn($digitalAsset)
-                ->withProperties(['type' => $type])
-                ->log('digital_transfer_cancelled');
+            if (\Auth::check()) {
+                activity()
+                    ->causedBy(auth()->user())
+                    ->performedOn($digitalAsset)
+                    ->withProperties(['type' => $type])
+                    ->log('digital_transfer_cancelled');
+            }
 
             return response()->json([
                 'success' => true,
