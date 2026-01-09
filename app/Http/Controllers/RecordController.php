@@ -111,11 +111,11 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'level', 'status', 'activity', 'authors', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'documents.attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'level', 'status', 'activity', 'versions', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'folder', 'attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         // Recherche par query (name et code) pour tous les types
@@ -224,11 +224,11 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'type', 'creator', 'organisation', 'documents.attachment'
+            'type', 'creator', 'organisation', 'documents.attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'type', 'creator', 'organisation', 'folder', 'attachment'
+            'type', 'creator', 'organisation', 'folder', 'attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         // Filtrage par mot-clé si fourni (appliqué aux records physiques uniquement)
@@ -285,6 +285,9 @@ class RecordController extends Controller
 
         // Contexte de navigation pour une expérience fluide
         // On stocke les IDs avec préfixe de type pour distinguer les records
+        // Trier les records par pertinence pour le contexte de navigation
+        $allRecords = $this->calculateRelevanceAndSort($allRecords, $request->input('keyword_filter'));
+
         $listIds = $allRecords->map(function($record) {
             return $record->record_type . '_' . $record->id;
         })->toArray();
@@ -1618,6 +1621,66 @@ class RecordController extends Controller
             'document' => 'Document Numérique',
             default => 'Dossier Physique',
         };
+    }
+
+    /**
+     * Calcule la pertinence pour chaque record et les trie
+     */
+    private function calculateRelevanceAndSort($allRecords, $keywordFilter = null)
+    {
+        $allRecords = $allRecords->map(function ($record) use ($keywordFilter) {
+            $relevanceScore = 0;
+
+            // Score basé sur la correspondance avec les mots-clés recherchés
+            if (!empty($keywordFilter) && $record->record_type === 'physical') {
+                $recordKeywords = $record->keywords->pluck('name')->join(' ');
+                if (stripos($recordKeywords, $keywordFilter) !== false) {
+                    $relevanceScore += 100;
+                }
+                if (stripos($record->name ?? '', $keywordFilter) !== false) {
+                    $relevanceScore += 50;
+                }
+                if (stripos($record->content ?? '', $keywordFilter) !== false) {
+                    $relevanceScore += 30;
+                }
+            }
+
+            // Score basé sur l'activité récente
+            if (isset($record->updated_at)) {
+                $daysSinceUpdate = now()->diffInDays($record->updated_at);
+                $relevanceScore += max(0, 20 - $daysSinceUpdate); // Plus récent = plus pertinent
+            }
+
+            // Score basé sur le nombre de relations/connexions
+            if ($record->record_type === 'physical') {
+                $relevanceScore += $record->authors->count() * 5;
+                $relevanceScore += $record->keywords->count() * 3;
+                $relevanceScore += $record->thesaurusConcepts->count() * 2;
+            } elseif (in_array($record->record_type, ['folder', 'document'])) {
+                // Pour les documents et dossiers numériques
+                $relevanceScore += $record->keywords->count() * 3;
+                $relevanceScore += $record->thesaurusConcepts->count() * 2;
+
+                // Score supplémentaire pour les correspondances dans les métadonnées numériques
+                if (!empty($keywordFilter)) {
+                    if (stripos($record->name ?? '', $keywordFilter) !== false) {
+                        $relevanceScore += 50;
+                    }
+                    if (stripos($record->description ?? '', $keywordFilter) !== false) {
+                        $relevanceScore += 30;
+                    }
+                }
+            }
+
+            // Score par défaut basé sur l'ID (plus ancien en cas d'égalité)
+            $relevanceScore += ($record->id ?? 0) * 0.01;
+
+            $record->relevance_score = $relevanceScore;
+            return $record;
+        });
+
+        // Trier par pertinence (score le plus élevé en premier)
+        return $allRecords->sortByDesc('relevance_score')->values();
     }
 
 }

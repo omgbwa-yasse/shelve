@@ -367,9 +367,9 @@ class QueryExecutorService
                     if ($table === 'records') {
                         $query->whereExists(function ($q) use ($value) {
                             $q->select(DB::raw(1))
-                              ->from('record_container')
-                              ->whereColumn('record_container.record_id', 'records.id')
-                              ->join('containers', 'record_container.container_id', '=', 'containers.id')
+                              ->from('record_physical_container')
+                              ->whereColumn('record_physical_container.record_physical_id', 'records.id')
+                              ->join('containers', 'record_physical_container.container_id', '=', 'containers.id')
                               ->where(function ($subQuery) use ($value) {
                                   $subQuery->where('containers.name', 'LIKE', "%{$value}%")
                                            ->orWhere('containers.code', 'LIKE', "%{$value}%");

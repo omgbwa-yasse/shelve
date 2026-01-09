@@ -459,8 +459,13 @@ class FolderController extends Controller
         $currentOrgId = Auth::user()->current_organisation_id ?? null;
 
         if ($currentOrgId) {
-            $query->where('organisation_id', $currentOrgId);
+            // Filtrer par l'organisation courante OU les dossiers sans organisation (NULL)
+            $query->where(function ($q) use ($currentOrgId) {
+                $q->where('organisation_id', $currentOrgId)
+                  ->orWhereNull('organisation_id');
+            });
         }
+        // Si pas d'organisation courante, afficher tous les dossiers
 
         return $query;
     }

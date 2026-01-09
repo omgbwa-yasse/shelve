@@ -68,14 +68,14 @@ class RecordPhysical extends Model
     // Relation avec Container via la table pivot
     public function containers()
     {
-        return $this->belongsToMany(Container::class, 'record_physical_container', 'record_id', 'container_id')
+        return $this->belongsToMany(Container::class, 'record_physical_container', 'record_physical_id', 'container_id')
             ->withPivot(['description', 'creator_id']);
     }
 
     // Relation avec RecordContainer
     public function recordContainers()
     {
-        return $this->hasMany(RecordContainer::class);
+        return $this->hasMany(RecordContainer::class, 'record_physical_id');
     }
 
     // Relations pour accéder aux Shelf et Room via Container
@@ -150,12 +150,12 @@ class RecordPhysical extends Model
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'record_physical_author');
+        return $this->belongsToMany(Author::class, 'record_physical_author', 'record_physical_id', 'author_id');
     }
 
     public function attachments()
     {
-        return $this->belongsToMany(Attachment::class, 'record_physical_attachment');
+        return $this->belongsToMany(Attachment::class, 'record_physical_attachment', 'record_physical_id', 'attachment_id');
     }
 
     public function user()
@@ -199,7 +199,7 @@ class RecordPhysical extends Model
      */
     public function thesaurusConcepts()
     {
-        return $this->belongsToMany(ThesaurusConcept::class, 'record_physical_thesaurus_concept', 'record_id', 'concept_id')
+        return $this->belongsToMany(ThesaurusConcept::class, 'record_physical_thesaurus_concept', 'record_physical_id', 'concept_id')
                     ->withPivot('weight', 'context', 'extraction_note')
                     ->withTimestamps();
     }
@@ -233,7 +233,7 @@ class RecordPhysical extends Model
      */
     public function keywords()
     {
-        return $this->belongsToMany(Keyword::class, 'record_physical_keyword');
+        return $this->belongsToMany(Keyword::class, 'record_physical_keyword', 'record_physical_id', 'keyword_id');
     }
 
     /**

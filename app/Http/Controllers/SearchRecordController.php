@@ -30,26 +30,23 @@ class SearchRecordController extends Controller
     private const OP_STARTS_WITH = 'commence par';
     private const OP_CONTAINS = 'contient';
     private const OP_NOT_CONTAINS = 'ne contient pas';
+    private const OP_IS_EXACTLY = 'est exactement';
 
     public function form()
     {
+        // Version simplifiée pour test
         $data = [
-            'rooms' => Room::select('id', 'name', 'code')->get(),
-            'shelve' => Shelf::select('id', 'code')->get(),
-            'activities' => Activity::select('id', 'name')->get(),
-            'terms' => ThesaurusConcept::with('labels')->get()->map(function($concept) {
-                return [
-                    'id' => $concept->id,
-                    'name' => $concept->preferred_label
-                ];
-            }),
-            'authors' => Author::select('id', 'name')->get(),
-            'creators' => User::select('id', 'name')->get(),
-            'statues' => RecordStatus::select('id', 'name')->get(),
-            'containers' => Container::select('id', 'code')->get(),
-            'keywords' => Keyword::select('id', 'name')->orderBy('name')->get(),
-            'folderTypes' => \App\Models\RecordDigitalFolderType::select('id', 'name', 'code')->orderBy('name')->get(),
-            'documentTypes' => \App\Models\RecordDigitalDocumentType::select('id', 'name', 'code')->orderBy('name')->get(),
+            'rooms' => collect([]),
+            'shelve' => collect([]),
+            'activities' => collect([]),
+            'terms' => collect([]),
+            'authors' => collect([]),
+            'creators' => collect([]),
+            'statues' => collect([]),
+            'containers' => collect([]),
+            'keywords' => collect([]),
+            'folderTypes' => collect([]),
+            'documentTypes' => collect([]),
         ];
 
         return view('search.record.advanced', compact('data'));
@@ -60,6 +57,11 @@ class SearchRecordController extends Controller
         $fields = $request->input('field');
         $operators = $request->input('operator');
         $values = $request->input('value');
+
+        // Si aucun critère de recherche n'est fourni, afficher le formulaire
+        if (!$fields && !$operators && !$values) {
+            return $this->form();
+        }
 
         // Recherche dans RecordPhysical
         $queryPhysical = RecordPhysical::query();
@@ -72,8 +74,13 @@ class SearchRecordController extends Controller
 
         if ($fields && $operators && $values) {
             foreach ($fields as $index => $field) {
-                $operator = $operators[$index];
-                $value = $values[$index];
+                $operator = $operators[$index] ?? null;
+                $value = $values[$index] ?? null;
+
+                // Ignorer les critères vides
+                if (empty($field) || empty($operator) || empty($value)) {
+                    continue;
+                }
 
                 switch ($field) {
                     case 'code':
@@ -119,51 +126,54 @@ class SearchRecordController extends Controller
                         break;
                 }
             }
+
+            // Récupération des résultats des 3 types
+            $physicalRecords = $queryPhysical->with([
+                'status',
+                'support',
+                'level',
+                'activity',
+                'containers',
+                'user',
+                'authors',
+                'thesaurusConcepts'
+            ])->get()->map(function($record) {
+                $record->record_type = 'physical';
+                $record->type_label = 'Dossier Physique';
+                return $record;
+            });
+
+            $folders = $queryFolders->with([
+                'parent',
+                'children',
+                'documents',
+                'creator'
+            ])->get()->map(function($folder) {
+                $folder->record_type = 'folder';
+                $folder->type_label = 'Dossier Numérique';
+                return $folder;
+            });
+
+            $documents = $queryDocuments->with([
+                'folder',
+                'type',
+                'attachment',
+                'creator'
+            ])->get()->map(function($document) {
+                $document->record_type = 'document';
+                $document->type_label = 'Document Numérique';
+                return $document;
+            });
+
+            // Fusion et tri des résultats
+            $allResults = $physicalRecords->concat($folders)->concat($documents);
+
+            // Tri par date de création décroissante
+            $allResults = $allResults->sortByDesc('created_at');
+        } else {
+            // Aucun critère de recherche, créer une collection vide
+            $allResults = collect();
         }
-
-        // Récupération des résultats des 3 types
-        $physicalRecords = $queryPhysical->with([
-            'status',
-            'support',
-            'level',
-            'activity',
-            'containers',
-            'user',
-            'authors',
-            'thesaurusConcepts'
-        ])->get()->map(function($record) {
-            $record->record_type = 'physical';
-            $record->type_label = 'Dossier Physique';
-            return $record;
-        });
-
-        $folders = $queryFolders->with([
-            'parent',
-            'children',
-            'documents',
-            'creator'
-        ])->get()->map(function($folder) {
-            $folder->record_type = 'folder';
-            $folder->type_label = 'Dossier Numérique';
-            return $folder;
-        });
-
-        $documents = $queryDocuments->with([
-            'folder',
-            'type',
-            'attachment',
-            'creator'
-        ])->get()->map(function($document) {
-            $document->record_type = 'document';
-            $document->type_label = 'Document Numérique';
-            return $document;
-        });
-
-        // Fusion et tri des résultats
-        $allResults = $physicalRecords->concat($folders)->concat($documents);
-
-        // Tri par date de création décroissante
-        $allResults = $allResults->sortByDesc('created_at');
 
         // Pagination manuelle
         $perPage = 20;
@@ -249,6 +259,9 @@ class SearchRecordController extends Controller
             case self::OP_NOT_CONTAINS:
                 $query->where($field, 'not like', '%' . $value . '%');
                 break;
+            case self::OP_IS_EXACTLY:
+                $query->where($field, '=', $value);
+                break;
             default:
                 break;
         }
@@ -289,6 +302,13 @@ class SearchRecordController extends Controller
                 $query->where(function($q) use ($searchFields, $value) {
                     foreach ($searchFields as $searchField) {
                         $q->where($searchField, 'not like', '%' . $value . '%');
+                    }
+                });
+                break;
+            case self::OP_IS_EXACTLY:
+                $query->where(function($q) use ($searchFields, $value) {
+                    foreach ($searchFields as $searchField) {
+                        $q->orWhere($searchField, '=', $value);
                     }
                 });
                 break;

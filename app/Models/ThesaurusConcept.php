@@ -72,7 +72,7 @@ class ThesaurusConcept extends Model
      */
     public function records(): BelongsToMany
     {
-        return $this->belongsToMany(RecordPhysical::class, 'record_physical_thesaurus_concept', 'concept_id', 'record_id');
+        return $this->belongsToMany(RecordPhysical::class, 'record_physical_thesaurus_concept', 'concept_id', 'record_physical_id');
     }
 
     /**

@@ -62,7 +62,7 @@ class Record extends Model
     // Relation avec Container via la table pivot
     public function containers()
     {
-        return $this->belongsToMany(Container::class, 'record_container')
+        return $this->belongsToMany(Container::class, 'record_physical_container', 'record_physical_id', 'container_id')
             ->withPivot(['description', 'creator_id']);
     }
 
@@ -193,7 +193,7 @@ class Record extends Model
      */
     public function thesaurusConcepts()
     {
-        return $this->belongsToMany(ThesaurusConcept::class, 'record_physical_thesaurus_concept', 'record_id', 'concept_id')
+        return $this->belongsToMany(ThesaurusConcept::class, 'record_physical_thesaurus_concept', 'record_physical_id', 'concept_id')
                     ->withPivot('weight', 'context', 'extraction_note')
                     ->withTimestamps();
     }

@@ -541,6 +541,8 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::prefix('reservations')->name('communications.reservations.')->group(function () {
             Route::get('/', [ReservationController::class, 'index'])->name('index');
+            Route::get('/create', [ReservationController::class, 'create'])->name('create');
+            Route::post('/', [ReservationController::class, 'store'])->name('store');
             Route::get('/approved', [ReservationController::class, 'listApproved'])->name('approved.list');
             Route::get('/approved-reservations', [ReservationController::class, 'listApprovedReservations'])->name('approved.reservations');
             Route::get('/return-available', [ReservationController::class, 'returnAvailable'])->name('return.available');
@@ -679,6 +681,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('recordtoretain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
         Route::get('recordtostore', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
 
+        Route::get('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced.get');
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
         Route::get('advanced/form', [SearchRecordController::class, 'form'])->name('records.advanced.form');
         Route::get('sort', [SearchRecordController::class, 'sort'])->name('records.sort');
