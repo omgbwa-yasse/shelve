@@ -2,98 +2,78 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-list-task"></i> {{ __('Gestion des Tâches') }}</h1>
-        <a href="{{ route('tasks.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> {{ __('Nouvelle tâche') }}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="bi bi-list-task me-2"></i>{{ __('Gestion des Tâches') }}</h5>
+        <a href="{{ route('tasks.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>{{ __('Nouvelle tâche') }}
         </a>
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <!-- Statistiques -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card text-white bg-secondary">
-                <div class="card-body">
-                    <h5 class="card-title">{{ __('En attente') }}</h5>
-                    <p class="card-text display-4">{{ $tasks->where('status', 'pending')->count() }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h5 class="card-title">{{ __('En cours') }}</h5>
-                    <p class="card-text display-4">{{ $tasks->where('status', 'in_progress')->count() }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h5 class="card-title">{{ __('Terminées') }}</h5>
-                    <p class="card-text display-4">{{ $tasks->where('status', 'completed')->count() }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h5 class="card-title">{{ __('Urgentes') }}</h5>
-                    <p class="card-text display-4">{{ $tasks->where('priority', 'urgent')->count() }}</p>
-                </div>
-            </div>
-        </div>
+    <!-- Statistiques compactes -->
+    <div class="d-flex flex-wrap gap-4 mb-3">
+        <span class="d-flex align-items-center gap-2" title="En attente">
+            <i class="bi bi-hourglass-split text-secondary fs-5"></i>
+            <strong class="fs-5">{{ $tasks->where('status', 'pending')->count() }}</strong>
+            <span class="text-muted">{{ __('En attente') }}</span>
+        </span>
+        <span class="d-flex align-items-center gap-2" title="En cours">
+            <i class="bi bi-play-circle text-primary fs-5"></i>
+            <strong class="fs-5">{{ $tasks->where('status', 'in_progress')->count() }}</strong>
+            <span class="text-muted">{{ __('En cours') }}</span>
+        </span>
+        <span class="d-flex align-items-center gap-2" title="Terminées">
+            <i class="bi bi-check-circle text-success fs-5"></i>
+            <strong class="fs-5">{{ $tasks->where('status', 'completed')->count() }}</strong>
+            <span class="text-muted">{{ __('Terminées') }}</span>
+        </span>
+        <span class="d-flex align-items-center gap-2" title="Urgentes">
+            <i class="bi bi-exclamation-triangle text-warning fs-5"></i>
+            <strong class="fs-5">{{ $tasks->where('priority', 'urgent')->count() }}</strong>
+            <span class="text-muted">{{ __('Urgentes') }}</span>
+        </span>
     </div>
 
     <!-- Filtres -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <form method="GET" action="{{ route('tasks.index') }}" class="row g-3">
-                <div class="col-md-3">
-                    <label for="status" class="form-label">{{ __('Statut') }}</label>
-                    <select name="status" id="status" class="form-select">
-                        <option value="">{{ __('Tous') }}</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('En attente') }}</option>
-                        <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>{{ __('En cours') }}</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('Terminées') }}</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>{{ __('Annulées') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="priority" class="form-label">{{ __('Priorité') }}</label>
-                    <select name="priority" id="priority" class="form-select">
-                        <option value="">{{ __('Toutes') }}</option>
-                        <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>{{ __('Urgente') }}</option>
-                        <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>{{ __('Haute') }}</option>
-                        <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>{{ __('Normale') }}</option>
-                        <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>{{ __('Basse') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="assigned_to" class="form-label">{{ __('Assigné à') }}</label>
-                    <select name="assigned_to" id="assigned_to" class="form-select">
-                        <option value="">{{ __('Tous') }}</option>
-                        <option value="me" {{ request('assigned_to') == 'me' ? 'selected' : '' }}>{{ __('Mes tâches') }}</option>
-                    </select>
-                </div>
-                <div class="col-md-3 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="bi bi-funnel"></i> {{ __('Filtrer') }}
-                    </button>
-                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> {{ __('Réinitialiser') }}
-                    </a>
-                </div>
-            </form>
+    <form method="GET" action="{{ route('tasks.index') }}" class="d-flex flex-wrap gap-2 align-items-end mb-3">
+        <div>
+            <label class="form-label small mb-0">{{ __('Statut') }}</label>
+            <select name="status" class="form-select form-select-sm" style="min-width:130px">
+                <option value="">{{ __('Tous') }}</option>
+                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>{{ __('En attente') }}</option>
+                <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>{{ __('En cours') }}</option>
+                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>{{ __('Terminées') }}</option>
+                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>{{ __('Annulées') }}</option>
+            </select>
         </div>
-    </div>
+        <div>
+            <label class="form-label small mb-0">{{ __('Priorité') }}</label>
+            <select name="priority" class="form-select form-select-sm" style="min-width:120px">
+                <option value="">{{ __('Toutes') }}</option>
+                <option value="urgent" {{ request('priority') == 'urgent' ? 'selected' : '' }}>{{ __('Urgente') }}</option>
+                <option value="high" {{ request('priority') == 'high' ? 'selected' : '' }}>{{ __('Haute') }}</option>
+                <option value="normal" {{ request('priority') == 'normal' ? 'selected' : '' }}>{{ __('Normale') }}</option>
+                <option value="low" {{ request('priority') == 'low' ? 'selected' : '' }}>{{ __('Basse') }}</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label small mb-0">{{ __('Assigné à') }}</label>
+            <select name="assigned_to" class="form-select form-select-sm" style="min-width:120px">
+                <option value="">{{ __('Tous') }}</option>
+                <option value="me" {{ request('assigned_to') == 'me' ? 'selected' : '' }}>{{ __('Mes tâches') }}</option>
+            </select>
+        </div>
+        <div class="d-flex gap-1">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-funnel me-1"></i>{{ __('Filtrer') }}</button>
+            <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i></a>
+        </div>
+    </form>
 
     <!-- Liste des tâches -->
     <div class="card">

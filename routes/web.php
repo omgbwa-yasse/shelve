@@ -550,14 +550,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('records.child', RecordChildController::class)->names('record-child');
 
-        // Gestion du cycle de vie des documents
 
-        Route::get('recordtotransfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
-        Route::get('recordtosort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
-        Route::get('recordtoeliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
-        Route::get('recordtokeep', [LifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
-        Route::get('recordtoretain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
-        Route::get('recordtostore', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
 
         Route::get('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced.get');
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
@@ -594,6 +587,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('transferrings')->group(function () {
+        // Gestion du cycle de vie des documents
+        Route::get('lifecycle/transfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
+        Route::get('lifecycle/sort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
+        Route::get('lifecycle/eliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
+        Route::get('lifecycle/keep', [LifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
+        Route::get('lifecycle/retain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
+        Route::get('lifecycle/store', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
+
         Route::get('/advanced', [SearchSlipController::class, 'form'])->name('slips.advanced.form');
         Route::post('/advanced', [SearchSlipController::class, 'advanced'])->name('search.slips.advanced');
         Route::get('/', [SlipController::class, 'index']);
