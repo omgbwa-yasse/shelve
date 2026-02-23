@@ -733,14 +733,6 @@
             <div class="bottom-band">
                 <div class="bottom-band-container">
                     <nav class="main-navigation">
-                        @can('module_bulletin_boards_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
-                                <i class="bi bi-card-text"></i>
-                                <span>{{ __('Bulletin Boards') }}</span>
-                            </a>
-                        </div>
-                        @endcan
                         @can('module_mails_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif position-relative" href="{{ route('mail-received.index') }}">
@@ -876,9 +868,6 @@
                                     @switch(Request::segment(1))
                                         @case('public')
                                             @include('submenu.public')
-                                            @break
-                                        @case('bulletin-boards')
-                                            @include('submenu.bulletinboards')
                                             @break
                                         @case('')
                                         @case('mails')

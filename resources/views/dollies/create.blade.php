@@ -45,10 +45,6 @@
                                     <i class="bi bi-file-earmark-text text-success"></i> Documents Numériques
                                 @elseif($category == 'artifact')
                                     <i class="bi bi-gem text-warning"></i> Artefacts
-                                @elseif($category == 'book')
-                                    <i class="bi bi-book text-info"></i> Livres
-                                @elseif($category == 'book_series')
-                                    <i class="bi bi-collection text-secondary"></i> Séries d'Éditeur
                                 @else
                                     <i class="bi bi-cart3 text-primary"></i> {{ ucfirst(str_replace('_', ' ', $category)) }}
                                 @endif

@@ -36,11 +36,7 @@ class PermissionCategorySeeder extends Seeder
     private function createModulePermissions()
     {
         $permissions = [
-            [
-                'name' => 'module_bulletin_boards_access',
-                'category' => 'system',
-                'description' => 'AccÃ¨s au module Tableaux d\'affichage'
-            ],
+
             [
                 'name' => 'module_mails_access',
                 'category' => 'system',
@@ -426,37 +422,6 @@ class PermissionCategorySeeder extends Seeder
     private function createAdditionalPermissions()
     {
         $permissions = [
-            // BulletinBoard permissions
-            [
-                'name' => 'bulletinboards_view',
-                'category' => 'system',
-                'description' => 'Voir les tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_create',
-                'category' => 'system',
-                'description' => 'CrÃ©er des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_update',
-                'category' => 'system',
-                'description' => 'Modifier des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_delete',
-                'category' => 'system',
-                'description' => 'Supprimer des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_restore',
-                'category' => 'system',
-                'description' => 'Restaurer des tableaux d\'affichage'
-            ],
-            [
-                'name' => 'bulletinboards_force_delete',
-                'category' => 'system',
-                'description' => 'Supprimer dÃ©finitivement des tableaux d\'affichage'
-            ],
             // Organisation permissions
             [
                 'name' => 'organisations_view',

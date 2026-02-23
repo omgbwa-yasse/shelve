@@ -40,11 +40,9 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Law::class => \App\Policies\LawPolicy::class,
         \App\Models\Communicability::class => \App\Policies\CommunicabilityPolicy::class,
         \App\Models\Reservation::class => \App\Policies\ReservationPolicy::class,
-        \App\Models\Event::class => \App\Policies\EventPolicy::class,
         \App\Models\Log::class => \App\Policies\LogPolicy::class,
         \App\Models\Backup::class => \App\Policies\BackupPolicy::class,
         \App\Models\Communication::class => \App\Policies\CommunicationPolicy::class,
-        \App\Models\BulletinBoard::class => \App\Policies\BulletinBoardPolicy::class,
         \App\Models\Batch::class => \App\Policies\BatchPolicy::class,
         \App\Models\Building::class => \App\Policies\BuildingPolicy::class,
         \App\Models\Floor::class => \App\Policies\FloorPolicy::class,
@@ -52,7 +50,6 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Shelf::class => \App\Policies\ShelfPolicy::class,
         \App\Models\Setting::class => \App\Policies\SettingPolicy::class,
     // \App\Models\PublicPortal model not found; mapping removed
-        \App\Models\Post::class => \App\Policies\PostPolicy::class,
     // \App\Models\Ai model and AiPolicy not found; mapping removed
     // \App\Models\Barcode model not found; mapping removed
     ];

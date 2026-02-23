@@ -39,41 +39,6 @@ class RecordContainerController extends Controller
     }
 
 
-
-
-
-    public function edit($recordId, $containerId)
-    {
-        $recordContainer = RecordContainer::where('record_id', $recordId)
-            ->where('container_id', $containerId)
-            ->firstOrFail();
-
-        return view('record_containers.edit', compact('recordContainer'));
-    }
-
-
-
-
-
-    public function update(Request $request, $recordId, $containerId)
-    {
-        $validatedData = $request->validate([
-            'description' => 'nullable|string|max:100',
-            'creator_id' => 'required|exists:users,id',
-        ]);
-
-        $recordContainer = RecordContainer::where('record_id', $recordId)
-            ->where('container_id', $containerId)
-            ->firstOrFail();
-
-        $recordContainer->update([
-            'description' => $validatedData['description'],
-            'creator_id' => $validatedData['creator_id'],
-        ]);
-
-    }
-
-
     public function destroy(Request $request)
     {
 
