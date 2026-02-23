@@ -741,6 +741,17 @@
                             </a>
                         </div>
                         @endcan
+
+                         <!-- Module WorkPlace -->
+                        @can('module_workplace_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
+                                <i class="bi bi-briefcase"></i>
+                                <span>{{ __('WorkPlaces') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+
                         @can('module_repositories_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
@@ -820,16 +831,6 @@
                             <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}">
                                 <i class="bi bi-diagram-3"></i>
                                 <span>{{ __('Workflow') }}</span>
-                            </a>
-                        </div>
-                        @endcan
-
-                        <!-- Module WorkPlace -->
-                        @can('module_workplace_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
-                                <i class="bi bi-briefcase"></i>
-                                <span>{{ __('WorkPlaces') }}</span>
                             </a>
                         </div>
                         @endcan

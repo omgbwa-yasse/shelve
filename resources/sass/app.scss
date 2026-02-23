@@ -172,9 +172,11 @@ h2 { font-weight:600; }
 .main-navigation {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     height: 45px;
     overflow-x: auto;
     gap: 5px;
+    width: 100%;
 }
 
 .main-navigation::-webkit-scrollbar {
@@ -183,11 +185,14 @@ h2 { font-weight:600; }
 
 .main-navigation .nav-item {
     flex-shrink: 0;
+    flex-grow: 1;
+    text-align: center;
 }
 
 .main-navigation .nav-link {
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: 8px 12px;
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
@@ -211,7 +216,7 @@ h2 { font-weight:600; }
 }
 
 .main-navigation .nav-link i {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
 }
 
 /* Logo styles */

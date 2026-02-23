@@ -14,6 +14,8 @@ class WorkplaceContentController extends Controller
 {
     public function folders(Workplace $workplace)
     {
+        $workplace->load('category')->loadCount(['folders', 'documents', 'members']);
+
         $folders = $workplace->folders()
             ->with(['folder', 'sharedBy'])
             ->latest('shared_at')
@@ -24,6 +26,8 @@ class WorkplaceContentController extends Controller
 
     public function documents(Workplace $workplace)
     {
+        $workplace->load('category')->loadCount(['folders', 'documents', 'members']);
+
         $documents = $workplace->documents()
             ->with(['document', 'sharedBy'])
             ->latest('shared_at')
@@ -152,5 +156,90 @@ class WorkplaceContentController extends Controller
 
         // Redirect to actual document view
         return redirect()->route('documents.show', $document->document_id);
+    }
+
+    /**
+     * AJAX search for folders to share in a workplace.
+     */
+    public function searchFolders(Request $request, Workplace $workplace)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $orgId = Auth::user()->current_organisation_id;
+
+        // Get IDs of folders already shared in this workplace
+        $alreadySharedIds = $workplace->folders()->pluck('folder_id')->toArray();
+
+        $folders = RecordDigitalFolder::where('organisation_id', $orgId)
+            ->whereNotIn('id', $alreadySharedIds)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('code', 'like', "%{$query}%")
+                  ->orWhere('description', 'like', "%{$query}%");
+            })
+            ->select('id', 'code', 'name', 'description', 'status', 'documents_count')
+            ->orderBy('name')
+            ->limit(15)
+            ->get()
+            ->map(function ($folder) {
+                return [
+                    'id' => $folder->id,
+                    'text' => $folder->code . ' - ' . $folder->name,
+                    'code' => $folder->code,
+                    'name' => $folder->name,
+                    'description' => $folder->description ? \Illuminate\Support\Str::limit($folder->description, 80) : null,
+                    'documents_count' => $folder->documents_count ?? 0,
+                    'status' => $folder->status,
+                ];
+            });
+
+        return response()->json($folders);
+    }
+
+    /**
+     * AJAX search for documents to share in a workplace.
+     */
+    public function searchDocuments(Request $request, Workplace $workplace)
+    {
+        $query = $request->get('q', '');
+
+        if (strlen($query) < 2) {
+            return response()->json([]);
+        }
+
+        $orgId = Auth::user()->current_organisation_id;
+
+        // Get IDs of documents already shared in this workplace
+        $alreadySharedIds = $workplace->documents()->pluck('document_id')->toArray();
+
+        $documents = RecordDigitalDocument::where('organisation_id', $orgId)
+            ->whereNotIn('id', $alreadySharedIds)
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('code', 'like', "%{$query}%")
+                  ->orWhere('description', 'like', "%{$query}%");
+            })
+            ->select('id', 'code', 'name', 'description', 'status', 'folder_id')
+            ->with('folder:id,name')
+            ->orderBy('name')
+            ->limit(15)
+            ->get()
+            ->map(function ($doc) {
+                return [
+                    'id' => $doc->id,
+                    'text' => $doc->code . ' - ' . $doc->name,
+                    'code' => $doc->code,
+                    'name' => $doc->name,
+                    'description' => $doc->description ? \Illuminate\Support\Str::limit($doc->description, 80) : null,
+                    'folder_name' => $doc->folder->name ?? null,
+                    'status' => $doc->status,
+                ];
+            });
+
+        return response()->json($documents);
     }
 }

@@ -2,15 +2,13 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>Dossiers partagés - {{ $workplace->name }}</h2>
-        </div>
-        <div class="col-md-4 text-end">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#shareFolderModal">
-                <i class="bi bi-folder-plus"></i> Partager un dossier
-            </button>
-        </div>
+    @include('workplaces.partials.site-header', ['activeTab' => 'folders'])
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 text-muted"><i class="bi bi-folder me-2"></i>Dossiers partagés</h5>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#shareFolderModal">
+            <i class="bi bi-folder-plus me-1"></i>Partager un dossier
+        </button>
     </div>
 
     <div class="row">
@@ -82,23 +80,40 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Partager un dossier</h5>
+                <h5 class="modal-title"><i class="bi bi-folder-plus me-2"></i>Partager un dossier</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ route('workplaces.content.shareFolder', $workplace) }}">
+            <form method="POST" action="{{ route('workplaces.content.shareFolder', $workplace) }}" id="shareFolderForm">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="folder_id" class="form-label">Dossier</label>
-                        <select class="form-select" id="folder_id" name="folder_id" required>
-                            <option value="">Sélectionner un dossier</option>
-                            <!-- TODO: Load available folders dynamically -->
-                        </select>
+                        <label for="folder_search" class="form-label">Rechercher un dossier <span class="text-danger">*</span></label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" id="folder_search" placeholder="Tapez au moins 2 caractères pour rechercher..." autocomplete="off">
+                            <input type="hidden" id="folder_id" name="folder_id" required>
+                            <div class="spinner-border spinner-border-sm position-absolute text-muted d-none" id="folderSearchSpinner" style="right: 10px; top: 10px;" role="status">
+                                <span class="visually-hidden">Recherche...</span>
+                            </div>
+                        </div>
+                        <div id="folderSearchResults" class="list-group mt-1 shadow-sm" style="position: absolute; z-index: 1055; width: calc(100% - 2rem); max-height: 250px; overflow-y: auto; display: none;"></div>
+                        <div id="folderSelected" class="alert alert-success mt-2 d-none p-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-folder-fill text-warning me-1"></i>
+                                    <strong id="folderSelectedName"></strong>
+                                    <small class="text-muted ms-2" id="folderSelectedCode"></small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="folderClearBtn">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted" id="folderSelectedDesc"></small>
+                        </div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="access_level" class="form-label">Niveau d'accès</label>
-                        <select class="form-select" id="access_level" name="access_level" required>
+                        <label for="folder_access_level" class="form-label">Niveau d'accès</label>
+                        <select class="form-select" id="folder_access_level" name="access_level" required>
                             <option value="view">Lecture seule</option>
                             <option value="edit" selected>Lecture et modification</option>
                             <option value="full">Accès complet</option>
@@ -106,8 +121,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="share_note" class="form-label">Note (optionnel)</label>
-                        <textarea class="form-control" id="share_note" name="share_note" rows="2"></textarea>
+                        <label for="folder_share_note" class="form-label">Note (optionnel)</label>
+                        <textarea class="form-control" id="folder_share_note" name="share_note" rows="2"></textarea>
                     </div>
 
                     <div class="form-check">
@@ -119,10 +134,123 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Partager</button>
+                    <button type="submit" class="btn btn-primary" id="shareFolderSubmit" disabled>Partager</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ===================== FOLDER SEARCH =====================
+    const folderSearch = document.getElementById('folder_search');
+    const folderIdInput = document.getElementById('folder_id');
+    const folderResults = document.getElementById('folderSearchResults');
+    const folderSpinner = document.getElementById('folderSearchSpinner');
+    const folderSelected = document.getElementById('folderSelected');
+    const folderSelectedName = document.getElementById('folderSelectedName');
+    const folderSelectedCode = document.getElementById('folderSelectedCode');
+    const folderSelectedDesc = document.getElementById('folderSelectedDesc');
+    const folderClearBtn = document.getElementById('folderClearBtn');
+    const shareFolderSubmit = document.getElementById('shareFolderSubmit');
+    let folderSearchTimeout = null;
+
+    folderSearch.addEventListener('input', function() {
+        clearTimeout(folderSearchTimeout);
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            folderResults.style.display = 'none';
+            folderResults.innerHTML = '';
+            return;
+        }
+
+        folderSpinner.classList.remove('d-none');
+
+        folderSearchTimeout = setTimeout(function() {
+            fetch('{{ route("workplaces.content.searchFolders", $workplace) }}?q=' + encodeURIComponent(query), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                folderSpinner.classList.add('d-none');
+                folderResults.innerHTML = '';
+
+                if (data.length === 0) {
+                    folderResults.innerHTML = '<div class="list-group-item text-muted"><i class="bi bi-info-circle me-1"></i>Aucun dossier trouvé</div>';
+                    folderResults.style.display = 'block';
+                    return;
+                }
+
+                data.forEach(function(folder) {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.innerHTML = '<div class="d-flex justify-content-between align-items-center">' +
+                        '<div>' +
+                            '<i class="bi bi-folder-fill text-warning me-1"></i>' +
+                            '<strong>' + folder.name + '</strong>' +
+                            '<small class="text-muted ms-2">' + folder.code + '</small>' +
+                        '</div>' +
+                        '<span class="badge bg-secondary">' + folder.documents_count + ' doc(s)</span>' +
+                    '</div>' +
+                    (folder.description ? '<small class="text-muted">' + folder.description + '</small>' : '');
+
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        selectFolder(folder);
+                    });
+                    folderResults.appendChild(item);
+                });
+                folderResults.style.display = 'block';
+            })
+            .catch(function() {
+                folderSpinner.classList.add('d-none');
+                folderResults.innerHTML = '<div class="list-group-item text-danger"><i class="bi bi-exclamation-triangle me-1"></i>Erreur de recherche</div>';
+                folderResults.style.display = 'block';
+            });
+        }, 300);
+    });
+
+    function selectFolder(folder) {
+        folderIdInput.value = folder.id;
+        folderSelectedName.textContent = folder.name;
+        folderSelectedCode.textContent = folder.code;
+        folderSelectedDesc.textContent = folder.description || '';
+        folderSelected.classList.remove('d-none');
+        folderSearch.value = '';
+        folderResults.style.display = 'none';
+        shareFolderSubmit.disabled = false;
+    }
+
+    folderClearBtn.addEventListener('click', function() {
+        folderIdInput.value = '';
+        folderSelected.classList.add('d-none');
+        folderSearch.value = '';
+        shareFolderSubmit.disabled = true;
+    });
+
+    // Close results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!folderSearch.contains(e.target) && !folderResults.contains(e.target)) {
+            folderResults.style.display = 'none';
+        }
+    });
+
+    // Reset modal on close
+    document.getElementById('shareFolderModal').addEventListener('hidden.bs.modal', function() {
+        folderIdInput.value = '';
+        folderSearch.value = '';
+        folderSelected.classList.add('d-none');
+        folderResults.style.display = 'none';
+        shareFolderSubmit.disabled = true;
+    });
+});
+</script>
+@endpush

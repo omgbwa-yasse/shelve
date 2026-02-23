@@ -1170,6 +1170,8 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
     Route::prefix('{workplace}/content')->name('content.')->group(function () {
         Route::get('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'folders'])->name('folders');
         Route::get('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'documents'])->name('documents');
+        Route::get('/search-folders', [\App\Http\Controllers\WorkplaceContentController::class, 'searchFolders'])->name('searchFolders');
+        Route::get('/search-documents', [\App\Http\Controllers\WorkplaceContentController::class, 'searchDocuments'])->name('searchDocuments');
         Route::post('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'shareFolder'])->name('shareFolder');
         Route::post('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'shareDocument'])->name('shareDocument');
         Route::delete('/folders/{folder}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareFolder'])->name('unshareFolder');

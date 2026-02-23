@@ -21,6 +21,7 @@ use Database\Seeders\Transfers\SlipStatusSeeder;
 use Database\Seeders\Workplaces\OrganisationSeeder;
 use Database\Seeders\Workplaces\OrganisationServicesSeeder;
 use Database\Seeders\Workplaces\OrganisationRoomSeeder;
+use Database\Seeders\Workplaces\WorkplaceCategorySeeder;
 use Database\Seeders\Settings\SuperAdminSeeder;
 use Database\Seeders\Tools\ToolActivitySeeder;
 use Database\Seeders\Tools\ToolCommunicabilitySeeder;
@@ -67,6 +68,9 @@ class DatabaseSeeder extends Seeder
 
             // 5bis. SERVICES ET BUREAUX (Dépendent des organisations principales)
             OrganisationServicesSeeder::class, // Seeder pour créer les services et bureaux
+
+            // 5ter. CATÉGORIES WORKPLACE
+            WorkplaceCategorySeeder::class, // Catégories pour les espaces de travail
 
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions

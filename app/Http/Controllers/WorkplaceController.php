@@ -110,8 +110,10 @@ class WorkplaceController extends Controller
             'owner',
             'members.user',
             'folders.folder',
+            'folders.sharedBy',
             'documents.document',
-            'activities' => fn($q) => $q->latest()->limit(10)
+            'documents.sharedBy',
+            'activities' => fn($q) => $q->with('user')->latest()->limit(10),
         ]);
 
         return view('workplaces.show', compact('workplace'));
