@@ -63,11 +63,6 @@
                     <i class="bi bi-file-earmark-text"></i> {{ __('digital_documents') }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=artifact">
-                    <i class="bi bi-gem"></i> {{ __('artifacts') }}
-                </a>
-            </div>
 
         </div>
     </div>

@@ -174,14 +174,6 @@ class DollyActionController extends Controller
                 }
             }
 
-            if($request->categ == "artifact"){
-                switch($request->action){
-                    case 'export_inventory' : return $this->artifactExportInventory($request->id);
-                    case 'clean' : return $this->artifactDetach($request->id);
-                    case 'delete' : return $this->artifactDelete($request->id);
-                }
-            }
-
 
 
         }
@@ -904,37 +896,6 @@ class DollyActionController extends Controller
         ]);
 
         return $pdf->download('inventaire_documents_numeriques_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
-    }
-
-    // ==================== ARTIFACTS ====================
-
-    public function artifactDetach(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        foreach($dolly->artifacts as $artifact){
-            $dolly->artifacts()->detach($artifact->id);
-        }
-    }
-
-    public function artifactDelete(int $id) {
-        $this->artifactDetach($id);
-        $dolly = Dolly::findOrFail($id);
-        $dolly->load('artifacts');
-        foreach ($dolly->artifacts as $artifact) {
-            $artifact->delete();
-        }
-        return redirect()->route('dolly.index')->with('success', 'Artefacts supprimés du chariot.');
-    }
-
-    public function artifactExportInventory(int $id) {
-        $dolly = Dolly::findOrFail($id);
-        $dolly->load('artifacts');
-
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dollies.exports.artifacts_inventory', [
-            'dolly' => $dolly,
-            'artifacts' => $dolly->artifacts
-        ]);
-
-        return $pdf->download('inventaire_artefacts_' . $dolly->id . '_' . date('Y-m-d') . '.pdf');
     }
 
 }

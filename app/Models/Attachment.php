@@ -17,7 +17,6 @@ class Attachment extends Model
     const TYPE_ATTACHMENT = 'attachment';
     const TYPE_DIGITAL_FOLDER = 'digital_folder';
     const TYPE_DIGITAL_DOCUMENT = 'digital_document';
-    const TYPE_ARTIFACT = 'artifact';
     const TYPE_BOOK = 'book';
     const TYPE_PERIODIC = 'periodic';
 
@@ -140,7 +139,6 @@ class Attachment extends Model
         $directory = match($type) {
             self::TYPE_DIGITAL_DOCUMENT => 'digital_documents',
             self::TYPE_DIGITAL_FOLDER => 'digital_folders',
-            self::TYPE_ARTIFACT => 'artifacts',
             self::TYPE_BOOK => 'books',
             self::TYPE_PERIODIC => 'periodics',
             default => 'attachments',

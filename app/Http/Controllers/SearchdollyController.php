@@ -36,7 +36,6 @@ class SearchdollyController extends Controller
             case "container":
             case "digital_folder":
             case "digital_document":
-            case "artifact":
             case "book":
             case "book_series":
                 $dollies = Dolly::where('category', $request->input('categ'))->paginate(25);

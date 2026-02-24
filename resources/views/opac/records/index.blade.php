@@ -58,7 +58,6 @@
                                     <select class="form-select" id="type" name="type" onchange="updateAdvancedSearchFields()">
                                         <option value="">{{ __('All types') }}</option>
                                         <option value="book" {{ request('type') == 'book' ? 'selected' : '' }}>{{ __('Book') }}</option>
-                                        <option value="artifact" {{ request('type') == 'artifact' ? 'selected' : '' }}>{{ __('Artifact') }}</option>
                                         <option value="archive" {{ request('type') == 'archive' ? 'selected' : '' }}>{{ __('Digital Folder') }}</option>
                                         <option value="document" {{ request('type') == 'document' ? 'selected' : '' }}>{{ __('Digital Document') }}</option>
                                     </select>
@@ -225,11 +224,6 @@ function updateAdvancedSearchFields() {
         // Books have everything
         authorLabel.innerText = "{{ __('Author') }}";
         subjectLabel.innerText = "{{ __('Subject') }}";
-    } else if (type === 'artifact') {
-        isbnField.style.display = 'none';
-        languageField.style.display = 'none';
-        authorLabel.innerText = "{{ __('Creator') }}";
-        subjectLabel.innerText = "{{ __('Category / Material') }}";
     } else if (type === 'archive' || type === 'document') {
         isbnField.style.display = 'none';
         languageField.style.display = 'none';

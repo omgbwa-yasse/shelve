@@ -4,7 +4,6 @@ namespace App\Http\Controllers\OPAC;
 
 use App\Http\Controllers\Controller;
 use App\Models\PublicSearchLog;
-use App\Models\RecordArtifact;
 use App\Models\RecordBook;
 use App\Models\RecordDigitalDocument;
 use App\Models\RecordDigitalFolder;
@@ -127,60 +126,6 @@ class SearchController extends Controller
             });
 
             $results = $results->merge($books);
-        }
-
-        // Search Artifacts
-        if (!$type || $type === 'artifact' || $type === 'multimedia') {
-            $artifactQuery = RecordArtifact::query();
-
-            if ($query) {
-                $artifactQuery->where(function($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                      ->orWhere('description', 'like', "%{$query}%")
-                      ->orWhere('author', 'like', "%{$query}%")
-                      ->orWhere('code', 'like', "%{$query}%");
-                });
-            }
-
-            if (!empty($validated['title'])) {
-                $artifactQuery->where('name', 'like', "%{$validated['title']}%");
-            }
-
-            if (!empty($validated['author'])) {
-                $artifactQuery->where('author', 'like', "%{$validated['author']}%");
-            }
-
-            if (!empty($validated['subject'])) {
-                $artifactQuery->where(function($q) use ($validated) {
-                    $q->where('category', 'like', "%{$validated['subject']}%")
-                      ->orWhere('sub_category', 'like', "%{$validated['subject']}%")
-                      ->orWhere('material', 'like', "%{$validated['subject']}%");
-                });
-            }
-
-            if (!empty($validated['date_from'])) {
-                $artifactQuery->where('date_start', '>=', substr($validated['date_from'], 0, 4));
-            }
-
-            if (!empty($validated['date_to'])) {
-                $artifactQuery->where('date_end', '<=', substr($validated['date_to'], 0, 4));
-            }
-
-            $artifacts = $artifactQuery->get()->map(function($artifact) {
-                return (object) [
-                    'id' => $artifact->id,
-                    'type' => 'artifact',
-                    'title' => $artifact->name,
-                    'description' => Str::limit($artifact->description, 150),
-                    'author' => $artifact->author,
-                    'date' => $artifact->date_range,
-                    'image' => null, // Add image logic
-                    'url' => route('opac.artifacts.show', $artifact->id),
-                    'model' => $artifact
-                ];
-            });
-
-            $results = $results->merge($artifacts);
         }
 
         // Search Digital Folders

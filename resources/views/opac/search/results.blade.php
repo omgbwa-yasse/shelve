@@ -38,7 +38,6 @@
                             <select class="form-select" id="filter_type" name="type">
                                 <option value="">{{ __('All types') }}</option>
                                 <option value="book" {{ ($validated['type'] ?? '') == 'book' ? 'selected' : '' }}>{{ __('Book') }}</option>
-                                <option value="artifact" {{ ($validated['type'] ?? '') == 'artifact' ? 'selected' : '' }}>{{ __('Artifact') }}</option>
                                 <option value="archive" {{ ($validated['type'] ?? '') == 'archive' ? 'selected' : '' }}>{{ __('Digital Folder') }}</option>
                                 <option value="document" {{ ($validated['type'] ?? '') == 'document' ? 'selected' : '' }}>{{ __('Digital Document') }}</option>
                             </select>
@@ -196,7 +195,6 @@
                                     <div class="mb-2">
                                         <span class="opac-badge me-2 bg-secondary">
                                             @if($result->type == 'book') <i class="fas fa-book me-1"></i> {{ __('Book') }}
-                                            @elseif($result->type == 'artifact') <i class="fas fa-landmark me-1"></i> {{ __('Artifact') }}
                                             @elseif($result->type == 'folder') <i class="fas fa-folder me-1"></i> {{ __('Folder') }}
                                             @elseif($result->type == 'document') <i class="fas fa-file-alt me-1"></i> {{ __('Document') }}
                                             @else {{ ucfirst($result->type) }}
