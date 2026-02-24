@@ -43,7 +43,7 @@ class CommunicationSeeder extends Seeder
         $comDefs = [
             ['code' => 'COM-000001', 'name' => 'Communication en attente — Dossier RH', 'status' => CommunicationStatus::PENDING, 'content' => 'Demande de consultation du dossier DUPONT pour vérification.', 'return_date' => now()->addDays(14)],
             ['code' => 'COM-000002', 'name' => 'Communication approuvée — Budget 2022', 'status' => CommunicationStatus::APPROVED, 'content' => 'Consultation approuvée pour le budget prévisionnel 2022.', 'return_date' => now()->addDays(30)],
-            ['code' => 'COM-000003', 'name' => 'Communication rejetée — Confidentiel', 'status' => CommunicationStatus::REJECTED, 'content' => 'Dossier confidentiel — accès refusé.', 'return_date' => null],
+            ['code' => 'COM-000003', 'name' => 'Communication rejetée — Confidentiel', 'status' => CommunicationStatus::REJECTED, 'content' => 'Dossier confidentiel — accès refusé.', 'return_date' => now()->addDays(30)],
             ['code' => 'COM-000004', 'name' => 'Communication en consultation', 'status' => CommunicationStatus::IN_CONSULTATION, 'content' => 'Documents en cours de consultation dans la salle de lecture.', 'return_date' => now()->addDays(7)],
             ['code' => 'COM-000005', 'name' => 'Communication retournée', 'status' => CommunicationStatus::RETURNED, 'content' => 'Documents retournés après consultation.', 'return_date' => now()->subDays(5), 'return_effective' => now()->subDay()],
         ];

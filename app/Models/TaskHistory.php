@@ -10,6 +10,8 @@ class TaskHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'task_history';
+
     protected $fillable = [
         'task_id',
         'field_changed',

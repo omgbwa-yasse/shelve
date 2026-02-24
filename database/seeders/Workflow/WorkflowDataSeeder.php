@@ -153,11 +153,11 @@ class WorkflowDataSeeder extends Seeder
             TaskHistory::firstOrCreate(
                 ['task_id' => $task->id, 'action' => 'created'],
                 [
-                    'user_id' => $user->id,
-                    'description' => "Tâche '{$task->title}' créée",
+                    'changed_by' => $user->id,
+                    'field_changed' => 'status',
                     'old_value' => null,
                     'new_value' => $task->status,
-                    'created_at' => now()->subDays(rand(5, 30)),
+                    'changed_at' => now()->subDays(rand(5, 30)),
                 ]
             );
         }
@@ -173,7 +173,7 @@ class WorkflowDataSeeder extends Seeder
             TaskComment::firstOrCreate(
                 ['task_id' => $task->id, 'user_id' => $users[$i % $users->count()]->id],
                 [
-                    'content' => $comments[$i],
+                    'comment' => $comments[$i],
                     'created_at' => now()->subDays(rand(1, 10)),
                 ]
             );

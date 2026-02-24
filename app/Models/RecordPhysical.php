@@ -150,7 +150,7 @@ class RecordPhysical extends Model
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'record_physical_author', 'record_physical_id', 'author_id');
+        return $this->belongsToMany(Author::class, 'record_physical_author', 'record_id', 'author_id');
     }
 
     public function attachments()
@@ -233,7 +233,7 @@ class RecordPhysical extends Model
      */
     public function keywords()
     {
-        return $this->belongsToMany(Keyword::class, 'record_physical_keyword', 'record_physical_id', 'keyword_id');
+        return $this->belongsToMany(Keyword::class, 'record_physical_keyword', 'record_id', 'keyword_id');
     }
 
     /**

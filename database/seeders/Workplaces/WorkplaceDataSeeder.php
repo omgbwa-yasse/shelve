@@ -163,7 +163,7 @@ class WorkplaceDataSeeder extends Seeder
         }
 
         // --- 5. Workplace Activities ---
-        $activityTypes = ['member_joined', 'document_shared', 'folder_created', 'member_invited', 'settings_updated', 'document_viewed'];
+        $activityTypes = ['joined', 'shared_document', 'created_folder', 'member_added', 'settings_changed', 'created_document'];
         foreach ($createdWorkplaces as $ws) {
             foreach (array_slice($activityTypes, 0, rand(2, 4)) as $type) {
                 WorkplaceActivity::firstOrCreate(

@@ -196,8 +196,7 @@ class RecordDataSeeder extends Seeder
             foreach ($createdDossiers as $i => $dossier) {
                 $kw = $keywords[$i % $keywords->count()];
                 DB::table('record_physical_keyword')->updateOrInsert(
-                    ['record_physical_id' => $dossier->id, 'keyword_id' => $kw->id],
-                    ['created_at' => now()]
+                    ['record_id' => $dossier->id, 'keyword_id' => $kw->id]
                 );
             }
         }
@@ -207,8 +206,7 @@ class RecordDataSeeder extends Seeder
             foreach ([$fonds, $sousFonds1, $sousFonds2] as $i => $record) {
                 $author = $authors[$i % $authors->count()];
                 DB::table('record_physical_author')->updateOrInsert(
-                    ['record_physical_id' => $record->id, 'author_id' => $author->id],
-                    ['created_at' => now(), 'updated_at' => now()]
+                    ['record_id' => $record->id, 'author_id' => $author->id]
                 );
             }
         }

@@ -5,7 +5,6 @@ namespace Database\Seeders\Dollies;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Dolly;
-use App\Models\DollyType;
 use App\Models\User;
 use App\Models\Organisation;
 use App\Models\Mail;
@@ -33,19 +32,7 @@ class DollySeeder extends Seeder
             return;
         }
 
-        // --- 1. Dolly Types ---
-        $typeDefs = [
-            ['name' => 'Chariot de consultation',  'description' => 'Chariot utilisé pour les demandes de communication en salle de lecture.'],
-            ['name' => 'Chariot de versement',     'description' => 'Chariot pour le transfert de bordereaux de versement.'],
-            ['name' => 'Chariot de classement',     'description' => 'Chariot temporaire pour le tri et classement de documents.'],
-            ['name' => 'Chariot numérique',         'description' => 'Panier virtuel pour les documents numériques.'],
-        ];
-
-        foreach ($typeDefs as $td) {
-            DollyType::firstOrCreate(['name' => $td['name']], $td);
-        }
-
-        // --- 2. Dollies (one per main category) ---
+        // --- 1. Dollies (one per main category) ---
         $dollyDefs = [
             ['name' => 'Chariot courrier entrant',         'category' => 'mail',           'description' => 'Courriers reçus à traiter', 'is_public' => false],
             ['name' => 'Chariot transactions',              'category' => 'transaction',    'description' => 'Transactions en cours', 'is_public' => false],
@@ -120,6 +107,6 @@ class DollySeeder extends Seeder
             );
         }
 
-        $this->command->info('✅ Dollies: ' . count($typeDefs) . ' types, ' . count($createdDollies) . ' dollies with pivot entries seeded.');
+        $this->command->info('✅ Dollies: ' . count($createdDollies) . ' dollies with pivot entries seeded.');
     }
 }

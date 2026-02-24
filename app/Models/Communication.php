@@ -39,7 +39,7 @@ class Communication extends Model
 
     public function records()
     {
-        return $this->belongsToMany(RecordPhysical::class, 'communication_record')
+        return $this->belongsToMany(RecordPhysical::class, 'communication_record', 'communication_id', 'record_id')
                     ->withPivot('content', 'is_original', 'return_date', 'return_effective', 'operator_id')
                     ->withTimestamps();
     }

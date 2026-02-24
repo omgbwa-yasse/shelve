@@ -5,11 +5,8 @@ namespace Database\Seeders\Mails;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Mail;
-use App\Models\MailTransaction;
 use App\Models\MailHistory;
-use App\Models\MailEvent;
 use App\Models\MailContainer;
-use App\Models\MailMetric;
 use App\Models\Batch;
 use App\Models\BatchTransaction;
 use App\Models\User;
@@ -115,26 +112,7 @@ class MailDataSeeder extends Seeder
             $createdMails[] = $mail;
         }
 
-        // --- 5. Mail Transactions (routing chains) ---
-        foreach (array_slice($createdMails, 0, 8) as $i => $mail) {
-            $sender = $users[$i % $users->count()];
-            $receiver = $users[($i + 1) % $users->count()];
-            MailTransaction::firstOrCreate(
-                ['code' => 'MT-' . $mail->code],
-                [
-                    'date_creation' => now()->subDays(rand(1, 30)),
-                    'mail_id' => $mail->id,
-                    'user_send_id' => $sender->id,
-                    'organisation_send_id' => $orgs[$i % $orgs->count()]->id,
-                    'user_received_id' => $receiver->id,
-                    'organisation_received_id' => $orgs[($i + 1) % $orgs->count()]->id,
-                    'action_id' => $action?->id,
-                    'description' => 'Transmission pour traitement',
-                ]
-            );
-        }
-
-        // --- 6. Mail History (audit trail) ---
+        // --- 5. Mail History (audit trail) ---
         $historyActions = ['created', 'status_changed', 'assigned', 'transmitted', 'archived', 'commented'];
         foreach (array_slice($createdMails, 0, 10) as $mail) {
             foreach (array_slice($historyActions, 0, rand(2, 4)) as $historyAction) {
@@ -143,38 +121,25 @@ class MailDataSeeder extends Seeder
                     [
                         'description' => "Action '$historyAction' effectuée sur le courrier {$mail->code}",
                         'field_changed' => $historyAction === 'status_changed' ? 'status' : null,
-                        'old_value' => $historyAction === 'status_changed' ? 'draft' : null,
-                        'new_value' => $historyAction === 'status_changed' ? 'in_progress' : null,
+                        'old_value' => $historyAction === 'status_changed' ? json_encode('draft') : null,
+                        'new_value' => $historyAction === 'status_changed' ? json_encode('in_progress') : null,
                         'ip_address' => '127.0.0.1',
                     ]
                 );
             }
         }
 
-        // --- 7. Mail Events ---
-        $eventTypes = ['opened', 'forwarded', 'printed', 'downloaded', 'annotated'];
-        foreach (array_slice($createdMails, 0, 6) as $mail) {
-            MailEvent::firstOrCreate(
-                ['mail_id' => $mail->id, 'event_type' => $eventTypes[array_rand($eventTypes)]],
-                [
-                    'user_id' => $user->id,
-                    'description' => "Événement sur le courrier {$mail->code}",
-                    'ip_address' => '127.0.0.1',
-                ]
-            );
-        }
-
-        // --- 8. Batches ---
+        // --- 6. Batches ---
         $batch1 = Batch::firstOrCreate(
-            ['code' => 'BATCH-2026-001'],
+            ['code' => 'BT-26-001'],
             ['name' => 'Lot courriers entrants - Semaine 8', 'organisation_holder_id' => $org->id]
         );
         $batch2 = Batch::firstOrCreate(
-            ['code' => 'BATCH-2026-002'],
+            ['code' => 'BT-26-002'],
             ['name' => 'Lot courriers sortants - Février 2026', 'organisation_holder_id' => $org->id]
         );
         $batch3 = Batch::firstOrCreate(
-            ['code' => 'BATCH-2026-003'],
+            ['code' => 'BT-26-003'],
             ['name' => 'Lot courriers internes - DRH', 'organisation_holder_id' => $orgs->count() > 1 ? $orgs[1]->id : $org->id]
         );
 
@@ -186,7 +151,7 @@ class MailDataSeeder extends Seeder
             );
         }
 
-        // --- 9. Batch Transactions ---
+        // --- 7. Batch Transactions ---
         if ($orgs->count() >= 2) {
             BatchTransaction::firstOrCreate(
                 ['batch_id' => $batch1->id, 'organisation_send_id' => $orgs[0]->id],
@@ -198,27 +163,14 @@ class MailDataSeeder extends Seeder
             );
         }
 
-        // --- 10. Mail Archives ---
+        // --- 8. Mail Archives ---
         foreach (array_slice($createdMails, 0, 4) as $mail) {
             DB::table('mail_archives')->updateOrInsert(
-                ['mail_id' => $mail->id, 'mail_container_id' => $container1->id],
-                ['created_at' => now(), 'updated_at' => now()]
+                ['mail_id' => $mail->id, 'container_id' => $container1->id],
+                ['archived_by' => $user->id, 'document_type' => 'original', 'created_at' => now(), 'updated_at' => now()]
             );
         }
 
-        // --- 11. Mail Metrics ---
-        foreach (array_slice($createdMails, 0, 5) as $mail) {
-            MailMetric::firstOrCreate(
-                ['mail_id' => $mail->id, 'metric_type' => 'processing_time'],
-                [
-                    'metric_date' => now()->subDays(rand(1, 30)),
-                    'value' => rand(1, 48) + (rand(0, 99) / 100),
-                    'unit' => 'hours',
-                    'metadata' => ['measured_by' => 'system'],
-                ]
-            );
-        }
-
-        $this->command->info('✅ Mails module: ' . count($createdMails) . ' mails, transactions, history, batches, metrics seeded.');
+        $this->command->info('✅ Mails module: ' . count($createdMails) . ' mails, history, batches seeded.');
     }
 }

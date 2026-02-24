@@ -188,16 +188,16 @@ class PublicDataSeeder extends Seeder
 
             // Chat messages
             $messages = [
-                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[0]->id, 'content' => 'Bonjour, je cherche des archives sur la région de Tlemcen.'],
-                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[1]->id, 'content' => 'Avez-vous essayé la recherche par mot-clé sur le portail ?'],
-                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[0]->id, 'content' => 'Oui, mais je ne trouve pas de résultats pertinents.'],
-                ['chat_id' => $chat2->id, 'user_id' => $publicUsers[0]->id, 'content' => 'Pouvez-vous m\'aider avec ma demande de reproduction ?'],
-                ['chat_id' => $chat2->id, 'user_id' => $publicUsers[1]->id, 'content' => 'Bien sûr, envoyez-moi la référence du document.'],
+                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[0]->id, 'message' => 'Bonjour, je cherche des archives sur la région de Tlemcen.'],
+                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[1]->id, 'message' => 'Avez-vous essayé la recherche par mot-clé sur le portail ?'],
+                ['chat_id' => $chat1->id, 'user_id' => $publicUsers[0]->id, 'message' => 'Oui, mais je ne trouve pas de résultats pertinents.'],
+                ['chat_id' => $chat2->id, 'user_id' => $publicUsers[0]->id, 'message' => 'Pouvez-vous m\'aider avec ma demande de reproduction ?'],
+                ['chat_id' => $chat2->id, 'user_id' => $publicUsers[1]->id, 'message' => 'Bien sûr, envoyez-moi la référence du document.'],
             ];
 
             foreach ($messages as $idx => $msg) {
                 DB::table('public_chat_messages')->updateOrInsert(
-                    ['chat_id' => $msg['chat_id'], 'user_id' => $msg['user_id'], 'content' => $msg['content']],
+                    ['chat_id' => $msg['chat_id'], 'user_id' => $msg['user_id'], 'message' => $msg['message']],
                     ['created_at' => now()->subMinutes(count($messages) - $idx), 'updated_at' => now()]
                 );
             }
@@ -208,7 +208,7 @@ class PublicDataSeeder extends Seeder
             ['title' => 'Excellent service de consultation', 'content' => 'Le personnel est très compétent et a facilité mes recherches.', 'type' => 'improvement', 'priority' => 'low', 'status' => 'resolved', 'rating' => 5, 'user_idx' => 0],
             ['title' => 'Bug affichage sur mobile', 'content' => 'La page de résultats ne s\'affiche pas correctement sur smartphone.', 'type' => 'bug', 'priority' => 'high', 'status' => 'in_progress', 'rating' => 2, 'user_idx' => 1],
             ['title' => 'Suggestion : filtre par date', 'content' => 'Il serait utile de pouvoir filtrer les résultats par plage de dates.', 'type' => 'feature', 'priority' => 'medium', 'status' => 'new', 'rating' => null, 'user_idx' => 2],
-            ['title' => 'Problème d\'accès aux numérisations', 'content' => 'Impossible d\'ouvrir les PDF des documents numérisés.', 'type' => 'bug', 'priority' => 'high', 'status' => 'new', 'rating' => 1, 'contact_name' => 'Visiteur anonyme', 'contact_email' => 'anonyme@test.dz'],
+            ['title' => 'Problème d\'accès aux numérisations', 'content' => 'Impossible d\'ouvrir les PDF des documents numérisés.', 'type' => 'bug', 'priority' => 'high', 'status' => 'new', 'rating' => 1, 'user_idx' => 0, 'contact_name' => 'Visiteur anonyme', 'contact_email' => 'anonyme@test.dz'],
         ];
 
         foreach ($feedbackDefs as $fd) {
@@ -217,6 +217,7 @@ class PublicDataSeeder extends Seeder
                 ['title' => $fd['title']],
                 [
                     'user_id' => $userId,
+                    'subject' => $fd['title'],
                     'content' => $fd['content'],
                     'type' => $fd['type'],
                     'priority' => $fd['priority'],

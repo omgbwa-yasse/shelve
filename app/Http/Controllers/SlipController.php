@@ -518,7 +518,6 @@ class SlipController extends Controller
             'records.activity',
             'records.containers',
             'records.creator',
-            'records.authors'
         ]);
 
         switch ($format) {
