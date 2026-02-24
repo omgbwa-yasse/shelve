@@ -25,7 +25,6 @@ use Database\Seeders\Workplaces\WorkplaceCategorySeeder;
 use Database\Seeders\Settings\SuperAdminSeeder;
 use Database\Seeders\Tools\ToolActivitySeeder;
 use Database\Seeders\Tools\ToolCommunicabilitySeeder;
-use Database\Seeders\Tools\ToolOrganisationSeeder;
 use Database\Seeders\Settings\SettingSeeder;
 use Database\Seeders\AI\AiProvidersSeeder;
 use Database\Seeders\AI\PromptSeeder;
@@ -34,6 +33,19 @@ use Database\Seeders\Public\OpacTemplateSeeder;
 use Database\Seeders\Tools\KeywordSeeder;
 use Database\Seeders\Records\ExampleData\RecordDigitalFolderSeeder;
 use Database\Seeders\Records\ExampleData\RecordDigitalDocumentSeederSimple;
+
+// Module Data Seeders (test data for all 11 modules)
+use Database\Seeders\Contacts\ContactDataSeeder;
+use Database\Seeders\Tools\RetentionLawSeeder;
+use Database\Seeders\Records\RecordDataSeeder;
+use Database\Seeders\Deposits\DepositDataSeeder;
+use Database\Seeders\Mails\MailDataSeeder;
+use Database\Seeders\Workflow\WorkflowDataSeeder;
+use Database\Seeders\Workplaces\WorkplaceDataSeeder;
+use Database\Seeders\Transfers\TransferDataSeeder;
+use Database\Seeders\Communications\CommunicationSeeder;
+use Database\Seeders\Dollies\DollySeeder;
+use Database\Seeders\PublicPortal\PublicDataSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -78,7 +90,6 @@ class DatabaseSeeder extends Seeder
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités
             ToolCommunicabilitySeeder::class, // Seeder pour les règles de communicabilité
-            ToolOrganisationSeeder::class, // Seeder pour les organisations et services
 
             // 7bis. AFFECTATION SALLES AUX ORGANISATIONS
             OrganisationRoomSeeder::class, // Seeder pour affecter les salles aux organisations
@@ -94,19 +105,28 @@ class DatabaseSeeder extends Seeder
             OpacConfigurationSeeder::class, // Configuration OPAC par organisation
             OpacTemplateSeeder::class, // Templates OPAC disponibles
 
-            // 11. SYSTÈME DE MÉTADONNÉES (Définitions et profils)
-            // MetadataSystemSeeder::class, // Définitions de métadonnées et listes de référence - Déjà exécuté
-            // DocumentFolderTypesWithMetadataSeeder::class, // Types de documents/dossiers avec profils de métadonnées - À corriger
-
-            // 12. DONNÉES D'EXEMPLE (Optionnel - après toute la structure)
-            // RecordSeederSimple::class, // Exemples de documents d'archives - Nécessite la table 'records'
-            // BooksSeeder::class, // Exemples de livres - Supprimé
+            // 11. DONNÉES D'EXEMPLE NUMÉRIQUES
             KeywordSeeder::class, // Mots-clés pour les dossiers/documents numériques
             RecordDigitalFolderSeeder::class, // Exemples de dossiers numériques (Phase 3)
             RecordDigitalDocumentSeederSimple::class, // Exemples de documents numériques (Phase 3)
 
-            // 13. MODULE OPAC COMPLET (Pages, événements, utilisateurs publics)
-            // OpacSeeder::class, // Seeder complet pour l'OPAC - Nécessite les tables OPAC
+            // ============================================================
+            // 12. DONNÉES DE TEST PAR MODULE (idempotentes — firstOrCreate)
+            //     Ordre : Contacts → Outils → Dépôts → Répertoire → Courriers
+            //     → Workflow → Espaces de travail → Transferts → Communications
+            //     → Chariots → Portail public
+            // ============================================================
+            ContactDataSeeder::class,       // Auteurs, contacts, organisations externes
+            RetentionLawSeeder::class,      // Sorts, lois, articles, règles de conservation
+            DepositDataSeeder::class,       // Propriétés, statuts et conteneurs
+            RecordDataSeeder::class,        // Hiérarchie ISAD(G) + versements
+            MailDataSeeder::class,          // Courriers (internes/entrants/sortants), lots, métriques
+            WorkflowDataSeeder::class,      // Définitions, instances, tâches de workflow
+            WorkplaceDataSeeder::class,     // Espaces de travail, membres, dossiers
+            TransferDataSeeder::class,      // Bordereaux de versement + articles
+            CommunicationSeeder::class,     // Communications + réservations
+            DollySeeder::class,             // Types et chariots multi-catégories
+            PublicDataSeeder::class,        // Utilisateurs publics, actualités, pages, événements, chat, feedback
         ]);
     }
 }
