@@ -30,7 +30,7 @@
 
 **Purpose**: Verify feature branch and codebase readiness
 
-- [ ] T001 Verify `004-organisation-scoping-modules` branch is active and up-to-date with main
+- [X] T001 Verify `004-organisation-scoping-modules` branch is active and up-to-date with main
 
 ---
 
@@ -40,11 +40,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Create `BelongsToOrganisation` trait with `scopeByOrganisation()`, `organisation()` relationship, and auto-assign boot in app/Traits/BelongsToOrganisation.php
-- [ ] T003 [P] Create `HasDualOrganisation` trait with configurable `$emitterOrgField`/`$beneficiaryOrgField`, `scopeForOrganisation()` (OR clause), and dual relationships in app/Traits/HasDualOrganisation.php
-- [ ] T004 [P] Create migration to add `organisation_id` (BIGINT UNSIGNED NOT NULL, FK to organisations) to `workflow_definitions` and `workflow_instances` tables, with data backfill from `created_by` user's org in database/migrations/
-- [ ] T005 [P] Create migration to add indexes on `operator_organisation_id`/`user_organisation_id` (communications), `officer_organisation_id`/`user_organisation_id` (slips), `sender_organisation_id`/`recipient_organisation_id` (mails) in database/migrations/
-- [ ] T006 Run migrations and verify schema changes applied correctly
+- [X] T002 Create `BelongsToOrganisation` trait with `scopeByOrganisation()`, `organisation()` relationship, and auto-assign boot in app/Traits/BelongsToOrganisation.php
+- [X] T003 [P] Create `HasDualOrganisation` trait with configurable `$emitterOrgField`/`$beneficiaryOrgField`, `scopeForOrganisation()` (OR clause), and dual relationships in app/Traits/HasDualOrganisation.php
+- [X] T004 [P] Create migration to add `organisation_id` (BIGINT UNSIGNED NOT NULL, FK to organisations) to `workflow_definitions` and `workflow_instances` tables, with data backfill from `created_by` user's org in database/migrations/
+- [X] T005 [P] Create migration to add indexes on `operator_organisation_id`/`user_organisation_id` (communications), `officer_organisation_id`/`user_organisation_id` (slips), `sender_organisation_id`/`recipient_organisation_id` (mails) in database/migrations/
+- [X] T006 Run migrations and verify schema changes applied correctly
 
 **Checkpoint**: Foundation ready — traits exist, workflow tables have `organisation_id`, all org columns indexed. User story implementation can now begin.
 
@@ -58,11 +58,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Add `BelongsToOrganisation` trait and add `organisation_id` to `$fillable` array in app/Models/WorkflowDefinition.php
-- [ ] T008 [P] [US1] Add `BelongsToOrganisation` trait and add `organisation_id` to `$fillable` array in app/Models/WorkflowInstance.php
-- [ ] T009 [P] [US1] Create `WorkflowDefinitionPolicy` extending `BasePolicy` with `viewAny`, `view`, `create`, `update`, `delete` methods using `checkOrganisationAccess()` in app/Policies/WorkflowDefinitionPolicy.php
-- [ ] T010 [US1] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()`, add `$this->authorize()` to `show/store/update/destroy`, auto-assign `organisation_id` in `store()` in app/Http/Controllers/WorkflowDefinitionController.php
-- [ ] T011 [US1] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()`, add `$this->authorize()` to `show/store/update/destroy`, auto-assign `organisation_id` in `store()` in app/Http/Controllers/WorkflowInstanceController.php
+- [X] T007 [P] [US1] Add `BelongsToOrganisation` trait and add `organisation_id` to `$fillable` array in app/Models/WorkflowDefinition.php
+- [X] T008 [P] [US1] Add `BelongsToOrganisation` trait and add `organisation_id` to `$fillable` array in app/Models/WorkflowInstance.php
+- [X] T009 [P] [US1] Create `WorkflowDefinitionPolicy` extending `BasePolicy` with `viewAny`, `view`, `create`, `update`, `delete` methods using `checkOrganisationAccess()` in app/Policies/WorkflowDefinitionPolicy.php
+- [X] T010 [US1] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()`, add `$this->authorize()` to `show/store/update/destroy`, auto-assign `organisation_id` in `store()` in app/Http/Controllers/WorkflowDefinitionController.php
+- [X] T011 [US1] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()`, add `$this->authorize()` to `show/store/update/destroy`, auto-assign `organisation_id` in `store()` in app/Http/Controllers/WorkflowInstanceController.php
 
 **Checkpoint**: Workflow module is fully scoped. Definitions and instances are filtered by org. SuperAdmin can see all. Policy authorization blocks cross-org access.
 
@@ -76,9 +76,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Add `HasDualOrganisation` trait with `$emitterOrgField = 'operator_organisation_id'` and `$beneficiaryOrgField = 'user_organisation_id'` in app/Models/Communication.php
-- [ ] T013 [US2] Add org filter (`forOrganisation()` with SuperAdmin bypass) to `index()` query in app/Http/Controllers/CommunicationController.php
-- [ ] T014 [US2] Wire `CommunicationPolicy` via `$this->authorize()` in `show`, `edit`, `update`, `destroy` methods in app/Http/Controllers/CommunicationController.php
+- [X] T012 [US2] Add `HasDualOrganisation` trait with `$emitterOrgField = 'operator_organisation_id'` and `$beneficiaryOrgField = 'user_organisation_id'` in app/Models/Communication.php
+- [X] T013 [US2] Add org filter (`forOrganisation()` with SuperAdmin bypass) to `index()` query in app/Http/Controllers/CommunicationController.php
+- [X] T014 [US2] Wire `CommunicationPolicy` via `$this->authorize()` in `show`, `edit`, `update`, `destroy` methods in app/Http/Controllers/CommunicationController.php
 
 **Checkpoint**: Communications module is scoped. Index shows only communications where user's org is operator OR user. Policy blocks cross-org direct access.
 
@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Add `HasDualOrganisation` trait with `$emitterOrgField = 'officer_organisation_id'` and `$beneficiaryOrgField = 'user_organisation_id'` in app/Models/Slip.php
-- [ ] T016 [US3] Fix `store()` bug: change `Auth::user()->organisation_id` to `Auth::user()->current_organisation_id` for officer org assignment in app/Http/Controllers/SlipController.php
-- [ ] T017 [US3] Add org filter (`forOrganisation()` with SuperAdmin bypass) to `index()` and `sort()` methods in app/Http/Controllers/SlipController.php
-- [ ] T018 [US3] Wire `SlipPolicy` via `$this->authorize()` in `show`, `edit`, `update`, `destroy` methods in app/Http/Controllers/SlipController.php
+- [X] T015 [US3] Add `HasDualOrganisation` trait with `$emitterOrgField = 'officer_organisation_id'` and `$beneficiaryOrgField = 'user_organisation_id'` in app/Models/Slip.php
+- [X] T016 [US3] Fix `store()` bug: change `Auth::user()->organisation_id` to `Auth::user()->current_organisation_id` for officer org assignment in app/Http/Controllers/SlipController.php
+- [X] T017 [US3] Add org filter (`forOrganisation()` with SuperAdmin bypass) to `index()` and `sort()` methods in app/Http/Controllers/SlipController.php
+- [X] T018 [US3] Wire `SlipPolicy` via `$this->authorize()` in `show`, `edit`, `update`, `destroy` methods in app/Http/Controllers/SlipController.php
 
 **Checkpoint**: Slips module is scoped. Bug fixed. Index and sort filter by org. Policy blocks cross-org access.
 
@@ -109,12 +109,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T019 [P] [US4] Add `BelongsToOrganisation` trait to Record model in app/Models/Record.php
-- [ ] T020 [P] [US4] Add `BelongsToOrganisation` trait to RecordPhysical model in app/Models/RecordPhysical.php
-- [ ] T021 [P] [US4] Add `BelongsToOrganisation` trait to RecordDigitalDocument model in app/Models/RecordDigitalDocument.php
-- [ ] T022 [P] [US4] Replace inline `scopeByOrganisation` method with `BelongsToOrganisation` trait in app/Models/RecordDigitalFolder.php
-- [ ] T023 [US4] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()` for physical records, digital folders, and digital documents queries in app/Http/Controllers/RecordController.php
-- [ ] T024 [US4] Add `$this->authorize('view', $record)` to `show()` method for model-level policy check in app/Http/Controllers/RecordController.php
+- [X] T019 [P] [US4] Add `BelongsToOrganisation` trait to Record model in app/Models/Record.php
+- [X] T020 [P] [US4] Add `BelongsToOrganisation` trait to RecordPhysical model in app/Models/RecordPhysical.php
+- [X] T021 [P] [US4] Add `BelongsToOrganisation` trait to RecordDigitalDocument model in app/Models/RecordDigitalDocument.php
+- [X] T022 [P] [US4] Replace inline `scopeByOrganisation` method with `BelongsToOrganisation` trait in app/Models/RecordDigitalFolder.php
+- [X] T023 [US4] Add org filter (`byOrganisation()` with SuperAdmin bypass) to `index()` for physical records, digital folders, and digital documents queries in app/Http/Controllers/RecordController.php
+- [X] T024 [US4] Add `$this->authorize('view', $record)` to `show()` method for model-level policy check in app/Http/Controllers/RecordController.php
 
 **Checkpoint**: Records module fully scoped. All 4 record models use the standardized trait. Index queries filter by org. Show has policy authorization.
 
