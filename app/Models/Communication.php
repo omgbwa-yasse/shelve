@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Traits\HasDualOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\RecordPhysical;
@@ -10,8 +11,15 @@ use Laravel\Scout\Searchable;
 
 class Communication extends Model
 {
-    use HasFactory;
-    use searchable;
+    use HasFactory, Searchable, HasDualOrganisation;
+
+    /**
+     * Dual organisation configuration:
+     * - emitter = operator's organisation (who creates the communication)
+     * - beneficiary = user's organisation (who receives the communication)
+     */
+    protected string $emitterOrgField = 'operator_organisation_id';
+    protected string $beneficiaryOrgField = 'user_organisation_id';
     protected $fillable = [
         'code',
         'name',

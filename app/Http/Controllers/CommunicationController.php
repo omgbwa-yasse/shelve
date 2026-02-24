@@ -26,7 +26,13 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
+        $query = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation');
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $communications = $query->paginate(10);
         return view('communications.index', compact('communications'));
     }
 
@@ -132,6 +138,7 @@ class CommunicationController extends Controller
     public function show(INT $id)
     {
         $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $this->authorize('view', $communication);
         return view('communications.show', compact('communication'));
     }
 
@@ -141,6 +148,7 @@ class CommunicationController extends Controller
     public function edit(INT $id)
     {
         $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $this->authorize('update', $communication);
 
         // Empêcher l'édition si la communication est retournée
         if ($communication->isReturned()) {
@@ -244,6 +252,8 @@ class CommunicationController extends Controller
 
     public function update(Request $request, Communication $communication)
     {
+        $this->authorize('update', $communication);
+
         // Empêcher la modification si la communication est retournée
         if ($communication->isReturned()) {
             return redirect()->route('communications.transactions.show', $communication->id)
@@ -279,6 +289,7 @@ class CommunicationController extends Controller
     public function destroy(INT $communication_id)
     {
         $communication = Communication::with('records')->findOrFail($communication_id);
+        $this->authorize('delete', $communication);
 
         // Empêcher la suppression si la communication est retournée
         if ($communication->isReturned()) {

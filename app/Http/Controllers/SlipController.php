@@ -67,12 +67,17 @@ class SlipController extends Controller
     }
     public function index()
     {
-        $slips = Slip::where('is_received', false)
+        $query = Slip::where('is_received', false)
             ->whereNotNull('code')
             ->whereNotNull('name')
             ->where('is_approved', false)
-            ->where('is_integrated', false)
-            ->paginate(10);
+            ->where('is_integrated', false);
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $slips = $query->paginate(10);
         return view('slips.index', compact('slips'));
     }
 
@@ -114,7 +119,7 @@ class SlipController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
             'officer_id' => Auth::user()->id,
-            'officer_organisation_id' => Auth::user()->organisation_id,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
             'slip_status_id' => $defaultStatusId,
             'is_received' => $request->is_received ?? false,
             'received_date' => $request->received_date,
@@ -358,6 +363,7 @@ class SlipController extends Controller
 
     public function show(Slip $slip)
     {
+        $this->authorize('view', $slip);
         $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator');
         $slipRecords = $slip->records;
         return view('slips.show', compact('slip', 'slipRecords'));
@@ -368,6 +374,7 @@ class SlipController extends Controller
 
     public function edit(Slip $slip)
     {
+        $this->authorize('update', $slip);
         $organisations = Organisation::all();
         $users = User::all();
         $slipStatuses = SlipStatus::all();
@@ -378,6 +385,8 @@ class SlipController extends Controller
 
     public function update(Request $request, Slip $slip)
     {
+        $this->authorize('update', $slip);
+
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
@@ -405,6 +414,8 @@ class SlipController extends Controller
 
     public function destroy(Slip $slip)
     {
+        $this->authorize('delete', $slip);
+
         // Vérifier s'il y a des slip_records associés
         $slipRecordsCount = $slip->records()->count();
 
@@ -423,38 +434,42 @@ class SlipController extends Controller
     public function sort(Request $request)
     {
         $type = $request->input('categ');
-        $slips = [];
+
+        $baseQuery = Slip::query();
+
+        // Apply org scoping for non-superadmin users
+        if (!Auth::user()->isSuperAdmin()) {
+            $baseQuery->forOrganisation(Auth::user()->current_organisation_id);
+        }
 
         switch ($type) {
             case 'project':
-                $slips = Slip::where('is_received', '=', false)
+                $slips = (clone $baseQuery)->where('is_received', '=', false)
                             ->where('is_approved', '=', false)
                             ->paginate(10);
                 break;
 
             case 'received':
-                $slips = Slip::where('is_received', '=', true)
+                $slips = (clone $baseQuery)->where('is_received', '=', true)
                             ->whereNull('is_approved')
                             ->paginate(10);
                 break;
 
             case 'approved':
-                $slips = Slip::where('is_approved', '=', true)
+                $slips = (clone $baseQuery)->where('is_approved', '=', true)
                             ->paginate(10);
                 break;
 
             case 'integrated':
-                $slips = Slip::where('is_integrated', '=', true)
+                $slips = (clone $baseQuery)->where('is_integrated', '=', true)
                             ->paginate(10);
                 break;
 
             default:
-                $slips = Slip::where('is_received', false)
+                $slips = (clone $baseQuery)->where('is_received', false)
                             ->where('is_approved', false)
                             ->paginate(10);
                 break;
-
-
         }
 
         $slips->load('officer', 'officerOrganisation', 'userOrganisation', 'user','slipStatus','records');

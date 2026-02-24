@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Http\UploadedFile;
 
 class RecordDigitalDocument extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToOrganisation;
 
     protected $fillable = [
         'code',

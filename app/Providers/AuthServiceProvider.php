@@ -49,6 +49,8 @@ class AuthServiceProvider extends ServiceProvider
         \App\Models\Room::class => \App\Policies\RoomPolicy::class,
         \App\Models\Shelf::class => \App\Policies\ShelfPolicy::class,
         \App\Models\Setting::class => \App\Policies\SettingPolicy::class,
+        \App\Models\WorkflowDefinition::class => \App\Policies\WorkflowDefinitionPolicy::class,
+        \App\Models\WorkflowInstance::class => \App\Policies\WorkflowInstancePolicy::class,
     // \App\Models\PublicPortal model not found; mapping removed
     // \App\Models\Ai model and AiPolicy not found; mapping removed
     // \App\Models\Barcode model not found; mapping removed

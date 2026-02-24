@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Support\Collection;
 
 class RecordDigitalFolder extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToOrganisation;
 
     protected $fillable = [
         'code',
@@ -235,11 +236,6 @@ class RecordDigitalFolder extends Model
         return $query->whereHas('type', function ($q) use ($typeCode) {
             $q->where('code', $typeCode);
         });
-    }
-
-    public function scopeByOrganisation($query, $organisationId)
-    {
-        return $query->where('organisation_id', $organisationId);
     }
 
     /**

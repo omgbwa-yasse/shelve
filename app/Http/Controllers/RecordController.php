@@ -231,6 +231,14 @@ class RecordController extends Controller
             'type', 'creator', 'organisation', 'folder', 'attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
+        // Organisation scoping
+        if (!Auth::user()->isSuperAdmin()) {
+            $orgId = Auth::user()->current_organisation_id;
+            $physicalQuery->byOrganisation($orgId);
+            $foldersQuery->byOrganisation($orgId);
+            $documentsQuery->byOrganisation($orgId);
+        }
+
         // Filtrage par mot-clé si fourni (appliqué aux records physiques uniquement)
         $keywordFilter = $request->input('keyword_filter');
         if ($request->filled('keyword_filter')) {
@@ -318,6 +326,11 @@ class RecordController extends Controller
         $query = RecordPhysical::with([
             'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'keywords'
         ]);
+
+        // Organisation scoping
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->byOrganisation(Auth::user()->current_organisation_id);
+        }
 
         // Filtrage par mot-clé si fourni
         $keywordFilter = $request->input('keyword_filter');
@@ -586,6 +599,7 @@ class RecordController extends Controller
     {
 
         Gate::authorize('records_view');
+        $this->authorize('view', $record);
 
         $record->load([
             'children',
@@ -621,6 +635,7 @@ class RecordController extends Controller
     public function showFull(RecordPhysical $record, Request $request)
     {
         Gate::authorize('records_view');
+        $this->authorize('view', $record);
 
         // Charger toutes les relations pour la vue détaillée
         $record->load([

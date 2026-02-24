@@ -6,12 +6,15 @@ use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Enums\MailStatusEnum;
+use App\Traits\HasDualOrganisation;
 use Illuminate\Support\Facades\Auth;
 
 class Mail extends Model
 {
-    use HasFactory;
-    use Searchable;
+    use HasFactory, Searchable, HasDualOrganisation;
+
+    protected $emitterOrgField = 'sender_organisation_id';
+    protected $beneficiaryOrgField = 'recipient_organisation_id';
 
 
     const TYPE_INTERNAL = 'internal';
@@ -164,6 +167,16 @@ class Mail extends Model
     public function assignedOrganisation()
     {
         return $this->belongsTo(Organisation::class, 'assigned_organisation_id');
+    }
+
+    /**
+     * Override trait method to also check assigned_organisation_id.
+     */
+    public function involvesOrganisation(int $organisationId): bool
+    {
+        return $this->{$this->emitterOrgField} == $organisationId
+            || $this->{$this->beneficiaryOrgField} == $organisationId
+            || $this->assigned_organisation_id == $organisationId;
     }
 
     // La relation workflow a été supprimée

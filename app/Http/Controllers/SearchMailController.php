@@ -18,6 +18,7 @@ use App\Models\RecordStatus;
 
 use App\Models\Slip;
 use App\Models\SlipRecord;
+use Illuminate\Support\Facades\Auth;
 
 class SearchMailController extends Controller
 {
@@ -37,6 +38,12 @@ class SearchMailController extends Controller
     public function advanced(Request $request)
     {
     $query = Mail::query()->excludeFactoryLike();
+
+        // Organisation scoping — SuperAdmin sees all
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
         $title = 'Recherche avancée';
         $filters = [];
 

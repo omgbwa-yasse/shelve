@@ -10,9 +10,14 @@ class WorkflowDefinitionController extends Controller
 {
     public function index()
     {
-        $definitions = WorkflowDefinition::with(['creator', 'updater', 'instances'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = WorkflowDefinition::with(['creator', 'updater', 'instances'])
+            ->orderBy('created_at', 'desc');
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->byOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $definitions = $query->paginate(20);
 
         return view('workflows.definitions.index', compact('definitions'));
     }
@@ -41,6 +46,7 @@ class WorkflowDefinitionController extends Controller
         $definition = WorkflowDefinition::create([
             ...$validated,
             'version' => $latestVersion + 1,
+            'organisation_id' => Auth::user()->current_organisation_id,
             'created_by' => Auth::id(),
         ]);
 
@@ -51,17 +57,21 @@ class WorkflowDefinitionController extends Controller
 
     public function show(WorkflowDefinition $definition)
     {
+        $this->authorize('view', $definition);
         $definition->load(['instances', 'transitions', 'creator']);
         return view('workflows.definitions.show', compact('definition'));
     }
 
     public function edit(WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
         return view('workflows.definitions.edit', compact('definition'));
     }
 
     public function update(Request $request, WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
+
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'nullable|string',
@@ -80,6 +90,7 @@ class WorkflowDefinitionController extends Controller
 
     public function destroy(WorkflowDefinition $definition)
     {
+        $this->authorize('delete', $definition);
         $definition->delete();
 
         return redirect()->route('workflows.definitions.index')
@@ -91,6 +102,7 @@ class WorkflowDefinitionController extends Controller
      */
     public function createConfiguration(WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
         return view('workflows.definitions.configuration', compact('definition'));
     }
 
@@ -99,6 +111,8 @@ class WorkflowDefinitionController extends Controller
      */
     public function storeConfiguration(Request $request, WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
+
         $validated = $request->validate([
             'bpmn_xml' => 'required|string',
         ]);
@@ -117,6 +131,7 @@ class WorkflowDefinitionController extends Controller
      */
     public function editConfiguration(WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
         $isEdit = true;
         return view('workflows.definitions.configuration', compact('definition', 'isEdit'));
     }
@@ -126,6 +141,8 @@ class WorkflowDefinitionController extends Controller
      */
     public function updateConfiguration(Request $request, WorkflowDefinition $definition)
     {
+        $this->authorize('update', $definition);
+
         $validated = $request->validate([
             'bpmn_xml' => 'required|string',
         ]);

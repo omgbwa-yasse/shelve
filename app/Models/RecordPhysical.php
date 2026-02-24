@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToOrganisation;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,8 +18,7 @@ use App\Models\ThesaurusConcept;
 
 class RecordPhysical extends Model
 {
-    use HasFactory;
-    use Searchable;
+    use HasFactory, Searchable, BelongsToOrganisation;
 
     protected $table = 'record_physicals';
 
