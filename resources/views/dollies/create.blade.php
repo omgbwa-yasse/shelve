@@ -43,8 +43,6 @@
                                     <i class="bi bi-folder-plus text-primary"></i> Dossiers Numériques
                                 @elseif($category == 'digital_document')
                                     <i class="bi bi-file-earmark-text text-success"></i> Documents Numériques
-                                @elseif($category == 'artifact')
-                                    <i class="bi bi-gem text-warning"></i> Artefacts
                                 @else
                                     <i class="bi bi-cart3 text-primary"></i> {{ ucfirst(str_replace('_', ' ', $category)) }}
                                 @endif

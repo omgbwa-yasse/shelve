@@ -129,7 +129,6 @@ class DollyController extends Controller
             || $dolly->shelve()->exists()
             || $dolly->digitalFolders()->exists()
             || $dolly->digitalDocuments()->exists()
-            || $dolly->artifacts()->exists()
         ) {
            return redirect()->route('dolly.index')->with('error', 'Cannot delete Dolly because it has related records in other tables.');
         }

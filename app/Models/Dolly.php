@@ -104,8 +104,7 @@ class Dolly extends Model
             'container',
             'shelf',
             'digital_folder',
-            'digital_document',
-            'artifact'
+            'digital_document'
         );
 
         return collect($list);

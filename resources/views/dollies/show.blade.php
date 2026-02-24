@@ -46,7 +46,7 @@
                         </a>
                     @endif
 
-                    @if(in_array($dolly->category, ['digital_folder', 'digital_document', 'artifact']))
+                    @if(in_array($dolly->category, ['digital_folder', 'digital_document']))
                         <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_inventory&id={{ $dolly->id }}" class="btn btn-info">
                             <i class="bi bi-file-earmark-pdf"></i> Extraire Inventaire PDF
                         </a>
@@ -196,37 +196,6 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce document du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-        @elseif($dolly->category === 'artifact' && $dolly->artifacts->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>Code</th>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->artifacts as $artifact)
-                        <tr>
-                            <td>{{ $artifact->code }}</td>
-                            <td>{{ $artifact->name }}</td>
-                            <td>{{ $artifact->type ?? 'N/A' }}</td>
-                            <td>
-                                <a href="{{ route('record-artifacts.show', $artifact) }}" class="btn btn-sm btn-info">Voir</a>
-                                <form action="{{ route('dolly.remove-artifact', [$dolly, $artifact]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cet artefact du chariot ?')">Retirer</button>
                                 </form>
                             </td>
                         </tr>
