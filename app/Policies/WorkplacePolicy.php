@@ -27,7 +27,7 @@ class WorkplacePolicy extends BasePolicy
         }
 
         // Check if workplace is public within the organisation
-        if ($workplace->is_public && $workplace->organisation_id === $user->current_organisation_id) {
+        if ($workplace->is_public && $workplace->organisation_id == $user->current_organisation_id) {
             return true;
         }
 

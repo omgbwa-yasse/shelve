@@ -6,11 +6,7 @@ use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
-use App\Services\AttachmentTextExtractor;
-use AiBridge\Facades\AiBridge;
-use App\Models\RecordAttachment;
 use App\Models\SlipStatus;
-use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
 use App\Models\RecordPhysical;
@@ -23,19 +19,15 @@ use App\Models\Activity;
 use App\Models\Slip;
 use App\Models\ThesaurusConcept;
 use App\Models\User;
-use App\Models\Accession;
 use App\Models\Author;
 use App\Models\AuthorType;
 use App\Models\RecordLevel;
-use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use ZipArchive;
 
 class RecordController extends Controller
@@ -934,7 +926,7 @@ class RecordController extends Controller
                     // Conserver l'ordre de sélection original
                     $recordsForPdf = $allRecords;
 
-                    $pdf = PDF::loadView('records.print', [
+                    $pdf = Pdf::loadView('records.print', [
                         'records' => $recordsForPdf,
                     ]);
 
@@ -1189,118 +1181,6 @@ class RecordController extends Controller
 
         return response()->download(storage_path('app/public/' . $zipFileName))->deleteFileAfterSend(true);
     }
-
-    private function generateSEDA($records)
-    {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
-
-        $xml->addChild('Comment', 'Archive Transfer');
-        $xml->addChild('Date', date('Y-m-d'));
-
-        $archive = $xml->addChild('Archive');
-
-        foreach ($records as $record) {
-            $archiveObject = $archive->addChild('ArchiveObject');
-            $archiveObject->addChild('Name', $record->name);
-            $archiveObject->addChild('Description', $record->content);
-
-            $document = $archiveObject->addChild('Document');
-            $document->addChild('Identification', $record->code);
-            $document->addChild('Type', $record->level->name ?? 'item');
-
-            foreach ($record->attachments as $attachment) {
-                $attachmentNode = $document->addChild('Attachment');
-                $attachmentNode->addChild('FileName', $attachment->name . '.pdf');  // Added .pdf extension
-                $attachmentNode->addChild('Size', $attachment->size);
-                $attachmentNode->addChild('Path', 'attachments/' . $attachment->name . '.pdf');  // Added .pdf extension
-                $attachmentNode->addChild('Crypt', $attachment->crypt);
-            }
-        }
-
-        return $xml->asXML();
-    }
-
-    private function importEAD($file, $dolly)
-    {
-        $xml = simplexml_load_file($file);
-        $xml->registerXPathNamespace('ead', 'urn:isbn:1-931666-22-9');
-
-        $records = $xml->xpath('//ead:c');
-
-        foreach ($records as $record) {
-            $data = [
-                'name' => (string)$record->did->unittitle,
-                'date_start' => (string)$record->did->unitdate,
-                'content' => (string)$record->scopecontent->p,
-                // Map other fields as needed
-            ];
-
-            $newRecord = RecordPhysical::create($data);
-            $dolly->records()->attach($newRecord->id);
-        }
-    }
-
-    private function importSEDA($file, $dolly)
-    {
-        $zip = new ZipArchive;
-        $extractPath = storage_path('app/temp_import');
-
-        if ($zip->open($file) === TRUE) {
-            $zip->extractTo($extractPath);
-            $zip->close();
-
-            $xmlFile = $extractPath . '/records.xml';
-            $xml = simplexml_load_file($xmlFile);
-            $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
-
-            $records = $xml->xpath('//seda:ArchiveObject');
-
-            foreach ($records as $record) {
-                $data = [
-                    'name' => (string)$record->Name,
-                    'content' => (string)$record->Description,
-                    'code' => (string)$record->Document->Identification,
-                    // Map other fields as needed
-                ];
-
-                $newRecord = RecordPhysical::create($data);
-                $dolly->records()->attach($newRecord->id);
-                // Import attachments
-                $attachments = $record->xpath('Document/Attachment');
-                foreach ($attachments as $attachment) {
-                    $fileName = (string)$attachment->FileName;
-                    $filePath = $extractPath . '/attachments/' . $fileName;
-
-                    if (file_exists($filePath)) {
-                        $hashMd5 = md5_file($filePath);
-                        $hashSha512 = hash_file('sha512', $filePath);
-                        $mimeType = mime_content_type($filePath);
-
-                        $createdAttachment = Attachment::create([
-                            'path' => 'attachments/' . $fileName,
-                            'name' => $fileName,
-                            'crypt' => $hashMd5,
-                            'crypt_sha512' => $hashSha512,
-                            'size' => (int)$attachment->Size,
-                            'creator_id' => Auth::id(),
-                            'type' => 'record',
-                            'thumbnail_path' => '',
-                            'mime_type' => $mimeType,
-                        ]);
-
-                        $newRecord->attachments()->attach($createdAttachment->id);
-
-                        // Move file to the correct storage location
-                        Storage::putFileAs('public/attachments', $filePath, $fileName);
-                    }
-                }
-            }
-
-            // Clean up temporary files
-            Storage::deleteDirectory('temp_import');
-        }
-    }
-    // EAD/SEDA import logic handled by services
 
     /**
      * Analyser un fichier pour extraire les en-têtes (remapping UI)
@@ -1591,35 +1471,6 @@ class RecordController extends Controller
                 ];
             })
         ]);
-    }
-
-    /**
-     * Détecte le type de record et retourne le modèle approprié
-     *
-     * @param string $type Type du record ('physical', 'folder', 'document')
-     * @return string Nom de classe du modèle
-     */
-    private function getRecordModel(string $type): string
-    {
-        return match($type) {
-            'physical' => RecordPhysical::class,
-            'folder' => RecordDigitalFolder::class,
-            'document' => RecordDigitalDocument::class,
-            default => RecordPhysical::class,
-        };
-    }
-
-    /**
-     * Trouve un record par son ID et son type
-     *
-     * @param int $id ID du record
-     * @param string $type Type du record ('physical', 'folder', 'document')
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    private function findRecord(int $id, string $type)
-    {
-        $modelClass = $this->getRecordModel($type);
-        return $modelClass::find($id);
     }
 
     /**

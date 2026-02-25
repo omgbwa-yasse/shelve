@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\EADExport;
-use App\Exports\SEDAExport;
 use App\Exports\SlipExport;
 use App\Imports\SlipsImport;
 use App\Models\Dolly;
 use App\Models\SlipRecord;
-use App\Models\slipRecordAttachment;
+use App\Models\SlipRecordAttachment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\Organisation;
@@ -22,11 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
-use SimpleXMLElement;
 use ZipArchive;
-use Illuminate\Validation\Rule;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Validator;
 
 
 
@@ -54,7 +48,7 @@ class SlipController extends Controller
         ]);
 
         // Générer le PDF
-        $pdf = PDF::loadView('slips.print', compact('slip'));
+        $pdf = Pdf::loadView('slips.print', compact('slip'));
 
         // Configurer le PDF
         $pdf->setPaper('A4');
@@ -199,7 +193,6 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'nullable|exists:slip_statuses,id',
@@ -213,7 +206,7 @@ class SlipController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'officer_organisation_id' => $request->officer_organisation_id,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
             'officer_id' => Auth::id(),
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
@@ -391,7 +384,6 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'required|exists:slip_statuses,id',
@@ -401,9 +393,20 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
-    $request->merge(['officer_id' => Auth::id()]);
-
-        $slip->update($request->all());
+        $slip->update([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
+            'officer_id' => Auth::id(),
+            'user_organisation_id' => $request->user_organisation_id,
+            'user_id' => $request->user_id,
+            'slip_status_id' => $request->slip_status_id,
+            'is_received' => $request->is_received ?? false,
+            'received_date' => $request->received_date,
+            'is_approved' => $request->is_approved ?? false,
+            'approved_date' => $request->approved_date,
+        ]);
 
         return redirect()->route('slips.index')
             ->with('success', 'Slip updated successfully.');
