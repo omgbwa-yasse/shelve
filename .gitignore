@@ -20,7 +20,18 @@
 
 # Testing
 .phpunit.result.cache
+/.phpunit.cache
 /tests/coverage
+*.log
+test_output.txt
+testresult.txt
+phpunit.xml.coverage
+
+# Generated/regenerable files
+composer.phar
+/storage/tntsearch/
+/storage/records.index
+/storage/api-docs/api-docs.json
 
 # Development tools
 Homestead.json
