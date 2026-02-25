@@ -2,16 +2,13 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2>Membres - {{ $workplace->name }}</h2>
-            <p class="text-muted">Gérer les membres et les invitations</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteModal">
-                <i class="bi bi-person-plus"></i> Inviter un membre
-            </button>
-        </div>
+    @include('workplaces.partials.site-header', ['activeTab' => 'members'])
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 text-muted"><i class="bi bi-people me-2"></i>Gérer les membres et les invitations</h5>
+        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#inviteModal">
+            <i class="bi bi-person-plus me-1"></i>Inviter un membre
+        </button>
     </div>
 
     <!-- Current Members -->

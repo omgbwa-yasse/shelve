@@ -6,6 +6,7 @@ use App\Models\Workplace;
 use App\Models\WorkplaceMember;
 use App\Models\WorkplaceInvitation;
 use App\Models\User;
+use App\Mail\WorkplaceInvitationMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +15,10 @@ class WorkplaceMemberController extends Controller
 {
     public function index(Workplace $workplace)
     {
+        $this->authorize('view', $workplace);
+
+        $workplace->load('category')->loadCount(['folders', 'documents', 'members']);
+
         $members = $workplace->members()
             ->with('user')
             ->latest('joined_at')
@@ -29,6 +34,8 @@ class WorkplaceMemberController extends Controller
 
     public function store(Request $request, Workplace $workplace)
     {
+        $this->authorize('manageMembers', $workplace);
+
         $validated = $request->validate([
             'user_id' => 'nullable|exists:users,id',
             'email' => 'nullable|email',
@@ -70,8 +77,8 @@ class WorkplaceMemberController extends Controller
                 'expires_at' => now()->addDays(7),
             ]);
 
-            // TODO: Send invitation email
-            // Mail::to($validated['email'])->send(new WorkplaceInvitationMail($invitation));
+            // Send invitation email
+            Mail::to($validated['email'])->send(new WorkplaceInvitationMail($invitation));
 
             return back()->with('success', 'Invitation envoyée avec succès');
         }
@@ -79,6 +86,8 @@ class WorkplaceMemberController extends Controller
 
     public function update(Request $request, Workplace $workplace, WorkplaceMember $member)
     {
+        $this->authorize('manageMembers', $workplace);
+
         $validated = $request->validate([
             'role' => 'required|in:admin,editor,contributor,viewer',
         ]);
@@ -102,6 +111,8 @@ class WorkplaceMemberController extends Controller
 
     public function destroy(Workplace $workplace, WorkplaceMember $member)
     {
+        $this->authorize('manageMembers', $workplace);
+
         // Prevent removing owner
         if ($member->role === 'owner') {
             return back()->withErrors(['error' => 'Le propriétaire ne peut pas être retiré']);
@@ -113,6 +124,8 @@ class WorkplaceMemberController extends Controller
 
     public function updatePermissions(Request $request, Workplace $workplace, WorkplaceMember $member)
     {
+        $this->authorize('manageMembers', $workplace);
+
         $validated = $request->validate([
             'can_create_folders' => 'boolean',
             'can_create_documents' => 'boolean',
@@ -128,6 +141,10 @@ class WorkplaceMemberController extends Controller
 
     public function updateNotifications(Request $request, Workplace $workplace, WorkplaceMember $member)
     {
+        if ($member->user_id !== Auth::id()) {
+            $this->authorize('manageMembers', $workplace);
+        }
+
         $validated = $request->validate([
             'notify_on_new_content' => 'boolean',
             'notify_on_mentions' => 'boolean',

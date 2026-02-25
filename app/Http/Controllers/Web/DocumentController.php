@@ -192,6 +192,13 @@ class DocumentController extends Controller
             'lastViewer'
         ]);
 
+        // Régénérer la vignette si elle manque et que le document a un attachment
+        if ($document->attachment && !$document->attachment->thumbnail_path) {
+            if ($document->attachment->canGenerateThumbnail()) {
+                \App\Jobs\GenerateDocumentThumbnail::dispatch($document->attachment)->onQueue('default');
+            }
+        }
+
         // Récupérer toutes les versions du document
         $versions = $document->getAllVersions();
 

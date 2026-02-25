@@ -17,7 +17,6 @@ class Attachment extends Model
     const TYPE_ATTACHMENT = 'attachment';
     const TYPE_DIGITAL_FOLDER = 'digital_folder';
     const TYPE_DIGITAL_DOCUMENT = 'digital_document';
-    const TYPE_ARTIFACT = 'artifact';
     const TYPE_BOOK = 'book';
     const TYPE_PERIODIC = 'periodic';
 
@@ -140,7 +139,6 @@ class Attachment extends Model
         $directory = match($type) {
             self::TYPE_DIGITAL_DOCUMENT => 'digital_documents',
             self::TYPE_DIGITAL_FOLDER => 'digital_folders',
-            self::TYPE_ARTIFACT => 'artifacts',
             self::TYPE_BOOK => 'books',
             self::TYPE_PERIODIC => 'periodics',
             default => 'attachments',
@@ -180,17 +178,106 @@ class Attachment extends Model
         ]);
     }
 
+    /**
+     * Get thumbnail URL with fallback to default icon
+     */
+    public function getThumbnailUrl(): string
+    {
+        if ($this->thumbnail_path && Storage::disk('local')->exists($this->thumbnail_path)) {
+            return asset('storage/' . $this->thumbnail_path);
+        }
+
+        // Fallback to default thumbnail based on MIME type or file extension
+        return $this->getDefaultThumbnailUrl();
+    }
+
+    /**
+     * Get default thumbnail icon based on file type
+     */
+    public function getDefaultThumbnailUrl(): string
+    {
+        $extension = strtolower($this->file_extension);
+        $mimeType = $this->mime_type ?? '';
+
+        $iconMap = [
+            // Documents
+            'pdf' => 'pdf',
+            'doc' => 'word',
+            'docx' => 'word',
+            'xls' => 'excel',
+            'xlsx' => 'excel',
+            'ppt' => 'powerpoint',
+            'pptx' => 'powerpoint',
+            'txt' => 'document',
+
+            // Images
+            'jpg' => 'image',
+            'jpeg' => 'image',
+            'png' => 'image',
+            'gif' => 'image',
+            'bmp' => 'image',
+            'svg' => 'image',
+
+            // Archives
+            'zip' => 'archive',
+            'rar' => 'archive',
+            '7z' => 'archive',
+            'tar' => 'archive',
+            'gz' => 'archive',
+        ];
+
+        $icon = $iconMap[$extension] ?? 'document';
+
+        // Try to find icon file in public/images/file-icons/
+        $iconPath = "images/file-icons/{$icon}.svg";
+        if (file_exists(public_path($iconPath))) {
+            return asset($iconPath);
+        }
+
+        // Fallback to generic document icon
+        return asset('images/file-icons/document.svg');
+    }
+
+    /**
+     * Check if this attachment can generate a thumbnail
+     */
+    public function canGenerateThumbnail(): bool
+    {
+        // Check if imagick is available
+        if (!extension_loaded('imagick')) {
+            return false;
+        }
+
+        $mimeType = $this->mime_type ?? '';
+        $extension = strtolower($this->file_extension);
+
+        // PDF and images can generate thumbnails
+        return strpos($mimeType, 'pdf') !== false ||
+               strpos($mimeType, 'image/') === 0 ||
+               in_array($extension, ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp']);
+    }
+
     protected static function booted()
     {
         static::created(function (Attachment $attachment) {
             // Extract and index content asynchronously (respects queue driver)
             ExtractAttachmentText::dispatch($attachment->id)->onQueue('default');
+
+            // Generate thumbnail for digital documents if possible
+            if ($attachment->type === self::TYPE_DIGITAL_DOCUMENT && $attachment->canGenerateThumbnail()) {
+                \App\Jobs\GenerateDocumentThumbnail::dispatch($attachment)->onQueue('default');
+            }
         });
 
         static::updated(function (Attachment $attachment) {
             // If file path or mime type changed, re-extract
             if ($attachment->wasChanged(['path', 'mime_type', 'name'])) {
                 ExtractAttachmentText::dispatch($attachment->id)->onQueue('default');
+
+                // Regenerate thumbnail if file changed
+                if ($attachment->type === self::TYPE_DIGITAL_DOCUMENT && $attachment->canGenerateThumbnail()) {
+                    \App\Jobs\GenerateDocumentThumbnail::dispatch($attachment)->onQueue('default');
+                }
             }
         });
     }

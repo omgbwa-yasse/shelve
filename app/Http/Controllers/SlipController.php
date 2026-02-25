@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\EADExport;
-use App\Exports\SEDAExport;
 use App\Exports\SlipExport;
 use App\Imports\SlipsImport;
 use App\Models\Dolly;
 use App\Models\SlipRecord;
-use App\Models\slipRecordAttachment;
+use App\Models\SlipRecordAttachment;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Models\Organisation;
@@ -22,11 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
-use SimpleXMLElement;
 use ZipArchive;
-use Illuminate\Validation\Rule;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Validator;
 
 
 
@@ -54,7 +48,7 @@ class SlipController extends Controller
         ]);
 
         // Générer le PDF
-        $pdf = PDF::loadView('slips.print', compact('slip'));
+        $pdf = Pdf::loadView('slips.print', compact('slip'));
 
         // Configurer le PDF
         $pdf->setPaper('A4');
@@ -67,12 +61,17 @@ class SlipController extends Controller
     }
     public function index()
     {
-        $slips = Slip::where('is_received', false)
+        $query = Slip::where('is_received', false)
             ->whereNotNull('code')
             ->whereNotNull('name')
             ->where('is_approved', false)
-            ->where('is_integrated', false)
-            ->paginate(10);
+            ->where('is_integrated', false);
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $slips = $query->paginate(10);
         return view('slips.index', compact('slips'));
     }
 
@@ -114,7 +113,7 @@ class SlipController extends Controller
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
             'officer_id' => Auth::user()->id,
-            'officer_organisation_id' => Auth::user()->organisation_id,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
             'slip_status_id' => $defaultStatusId,
             'is_received' => $request->is_received ?? false,
             'received_date' => $request->received_date,
@@ -194,7 +193,6 @@ class SlipController extends Controller
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'nullable|exists:slip_statuses,id',
@@ -208,7 +206,7 @@ class SlipController extends Controller
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
-            'officer_organisation_id' => $request->officer_organisation_id,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
             'officer_id' => Auth::id(),
             'user_organisation_id' => $request->user_organisation_id,
             'user_id' => $request->user_id,
@@ -358,6 +356,7 @@ class SlipController extends Controller
 
     public function show(Slip $slip)
     {
+        $this->authorize('view', $slip);
         $slip->load('records.level', 'records.support', 'records.activity', 'records.containers', 'records.creator');
         $slipRecords = $slip->records;
         return view('slips.show', compact('slip', 'slipRecords'));
@@ -368,6 +367,7 @@ class SlipController extends Controller
 
     public function edit(Slip $slip)
     {
+        $this->authorize('update', $slip);
         $organisations = Organisation::all();
         $users = User::all();
         $slipStatuses = SlipStatus::all();
@@ -378,11 +378,12 @@ class SlipController extends Controller
 
     public function update(Request $request, Slip $slip)
     {
+        $this->authorize('update', $slip);
+
         $request->validate([
             'code' => 'required|max:20',
             'name' => 'required|max:200',
             'description' => 'nullable',
-            'officer_organisation_id' => 'required|exists:organisations,id',
             'user_organisation_id' => 'required|exists:organisations,id',
             'user_id' => 'nullable|exists:users,id',
             'slip_status_id' => 'required|exists:slip_statuses,id',
@@ -392,9 +393,20 @@ class SlipController extends Controller
             'approved_date' => 'nullable|date',
         ]);
 
-    $request->merge(['officer_id' => Auth::id()]);
-
-        $slip->update($request->all());
+        $slip->update([
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'officer_organisation_id' => Auth::user()->current_organisation_id,
+            'officer_id' => Auth::id(),
+            'user_organisation_id' => $request->user_organisation_id,
+            'user_id' => $request->user_id,
+            'slip_status_id' => $request->slip_status_id,
+            'is_received' => $request->is_received ?? false,
+            'received_date' => $request->received_date,
+            'is_approved' => $request->is_approved ?? false,
+            'approved_date' => $request->approved_date,
+        ]);
 
         return redirect()->route('slips.index')
             ->with('success', 'Slip updated successfully.');
@@ -405,6 +417,8 @@ class SlipController extends Controller
 
     public function destroy(Slip $slip)
     {
+        $this->authorize('delete', $slip);
+
         // Vérifier s'il y a des slip_records associés
         $slipRecordsCount = $slip->records()->count();
 
@@ -423,38 +437,42 @@ class SlipController extends Controller
     public function sort(Request $request)
     {
         $type = $request->input('categ');
-        $slips = [];
+
+        $baseQuery = Slip::query();
+
+        // Apply org scoping for non-superadmin users
+        if (!Auth::user()->isSuperAdmin()) {
+            $baseQuery->forOrganisation(Auth::user()->current_organisation_id);
+        }
 
         switch ($type) {
             case 'project':
-                $slips = Slip::where('is_received', '=', false)
+                $slips = (clone $baseQuery)->where('is_received', '=', false)
                             ->where('is_approved', '=', false)
                             ->paginate(10);
                 break;
 
             case 'received':
-                $slips = Slip::where('is_received', '=', true)
+                $slips = (clone $baseQuery)->where('is_received', '=', true)
                             ->whereNull('is_approved')
                             ->paginate(10);
                 break;
 
             case 'approved':
-                $slips = Slip::where('is_approved', '=', true)
+                $slips = (clone $baseQuery)->where('is_approved', '=', true)
                             ->paginate(10);
                 break;
 
             case 'integrated':
-                $slips = Slip::where('is_integrated', '=', true)
+                $slips = (clone $baseQuery)->where('is_integrated', '=', true)
                             ->paginate(10);
                 break;
 
             default:
-                $slips = Slip::where('is_received', false)
+                $slips = (clone $baseQuery)->where('is_received', false)
                             ->where('is_approved', false)
                             ->paginate(10);
                 break;
-
-
         }
 
         $slips->load('officer', 'officerOrganisation', 'userOrganisation', 'user','slipStatus','records');
@@ -518,7 +536,6 @@ class SlipController extends Controller
             'records.activity',
             'records.containers',
             'records.creator',
-            'records.authors'
         ]);
 
         switch ($format) {

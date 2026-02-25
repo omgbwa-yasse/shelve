@@ -56,7 +56,7 @@
                         </div>
 
                         <div class="card-text d-flex flex-wrap">
-                            <div class="mr-3">
+                            <div class="me-4">
                                 <strong>Date de retour prévu :</strong> {{ $reservation->return_date ?? 'N/A' }}
                             </div>
                             <div>
@@ -97,20 +97,20 @@
                 <i class="bi bi-check me-1"></i> Approuver la réservation
             </button>
         </form>
-    </div>
 
-    <ul class="list-group list-group-none">
-        @foreach($reservation->records as $record)
-                <li class="list-group-item">{{  $record->name }}
+        <ul class="list-group mt-4">
+            @foreach($reservation->records as $record)
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ $record->name }}
                     <form action="{{ route('communications.reservations.records.destroy', [$reservation->id , $record]) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this record?')">Delete</button>
                     </form>
                 </li>
-        @endforeach
-
-    </ul>
+            @endforeach
+        </ul>
+    </div>
 
 
 @endsection

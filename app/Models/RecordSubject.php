@@ -53,24 +53,6 @@ class RecordSubject extends Model
     }
 
     /**
-     * Relation: Livres associés
-     */
-    public function books(): BelongsToMany
-    {
-        return $this->belongsToMany(RecordBook::class, 'record_book_subject', 'subject_id', 'book_id')
-            ->withPivot('relevance', 'is_primary')
-            ->withTimestamps();
-    }
-
-    /**
-     * Livres où ce sujet est principal
-     */
-    public function primaryBooks(): BelongsToMany
-    {
-        return $this->books()->wherePivot('is_primary', true);
-    }
-
-    /**
      * Scope: Sujets actifs
      */
     public function scopeActive($query)
@@ -150,16 +132,6 @@ class RecordSubject extends Model
     }
 
     /**
-     * Mettre à jour le nombre de livres
-     */
-    public function updateBookCount(): void
-    {
-        $this->update([
-            'total_books' => $this->books()->count(),
-        ]);
-    }
-
-    /**
      * Obtenir tous les ancêtres
      */
     public function getAncestors()
@@ -215,31 +187,6 @@ class RecordSubject extends Model
     }
 
     /**
-     * Fusionner avec un autre sujet
-     */
-    public function mergeInto(RecordSubject $target): void
-    {
-        // Transférer tous les livres
-        foreach ($this->books as $book) {
-            if (!$target->books()->where('book_id', $book->id)->exists()) {
-                $target->books()->attach($book->id, [
-                    'relevance' => $book->pivot->relevance,
-                    'is_primary' => $book->pivot->is_primary,
-                ]);
-            }
-        }
-
-        // Transférer les enfants
-        $this->children()->update(['parent_id' => $target->id]);
-
-        // Marquer comme fusionné
-        $this->update(['status' => 'merged']);
-
-        // Mettre à jour les compteurs
-        $target->updateBookCount();
-    }
-
-    /**
      * Trouver ou créer un sujet par nom
      */
     public static function findOrCreateByName(string $name, array $attributes = []): self
@@ -251,17 +198,6 @@ class RecordSubject extends Model
         }
 
         return self::create(array_merge(['name' => $name], $attributes));
-    }
-
-    /**
-     * Sujets les plus utilisés
-     */
-    public static function mostUsed(int $limit = 10)
-    {
-        return self::withCount('books')
-            ->orderBy('books_count', 'desc')
-            ->limit($limit)
-            ->get();
     }
 
     /**

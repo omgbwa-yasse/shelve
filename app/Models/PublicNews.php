@@ -13,6 +13,7 @@ class PublicNews extends Model
     protected $table = 'public_news';
 
     protected $fillable = [
+        'name',
         'title',
         'slug',
         'content',

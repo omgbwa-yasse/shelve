@@ -4,10 +4,8 @@
 
 use App\Http\Controllers\Admin\OpacConfigurationController;
 use App\Http\Controllers\Admin\PublicUserController as AdminPublicUserController;
-use App\Http\Controllers\BulletinBoardAdminController;
 use App\Http\Controllers\PDFController;
 use App\Http\Controllers\PhantomController;
-use App\Http\Controllers\PostController;
 use App\Http\Controllers\RateLimitController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -94,7 +92,6 @@ use App\Http\Controllers\SlipController;
 use App\Http\Controllers\SlipContainerController;
 use App\Http\Controllers\SlipRecordContainerController;
 use App\Http\Controllers\MailActionController;
-use App\Http\Controllers\MailWorkflowController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOrganisationRoleController;
@@ -104,10 +101,7 @@ use App\Http\Controllers\SearchMailFeedbackController;
 use App\Http\Controllers\SearchSlipController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\BulletinBoardController;
-use App\Http\Controllers\EventAttachmentController;
-use App\Http\Controllers\PostAttachmentController;
-use App\Http\Controllers\EventController;
+
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BackupFileController;
 use App\Http\Controllers\BackupPlanningController;
@@ -132,9 +126,6 @@ use App\Http\Controllers\PublicResponseAttachmentController;
 use App\Http\Controllers\PublicFeedbackController;
 use App\Http\Controllers\OllamaController;
 use Illuminate\Support\Facades\Gate;
-
-// MCP retiré
-use App\Http\Controllers\RecordEnricherController;
 
 
 Route::get('/', function () {
@@ -190,134 +181,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
     Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
-
-    // =================== MUSEUM MODULE ===================
-    Route::prefix('museum')->name('museum.')->group(function () {
-        // Artifacts Management (Collections, Catalogage, Conservation)
-        // TODO: Implement ArtifactController
-        // Route::resource('artifacts', \App\Http\Controllers\Museum\ArtifactController::class);
-        // Route::get('artifacts/{artifact}/exhibitions', [\App\Http\Controllers\Museum\ArtifactController::class, 'exhibitions'])->name('artifacts.exhibitions');
-        // Route::get('artifacts/{artifact}/loans', [\App\Http\Controllers\Museum\ArtifactController::class, 'loans'])->name('artifacts.loans');
-        // Route::post('artifacts/{artifact}/images', [\App\Http\Controllers\Museum\ArtifactController::class, 'addImage'])->name('artifacts.images');
-
-        // Collections
-        Route::get('collections', [\App\Http\Controllers\Museum\CollectionController::class, 'index'])->name('collections.index');
-        Route::get('collections/create', [\App\Http\Controllers\Museum\CollectionController::class, 'create'])->name('collections.create');
-        Route::post('collections', [\App\Http\Controllers\Museum\CollectionController::class, 'store'])->name('collections.store');
-        Route::get('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'show'])->name('collections.show');
-        Route::get('collections/{collection}/edit', [\App\Http\Controllers\Museum\CollectionController::class, 'edit'])->name('collections.edit');
-        Route::put('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'update'])->name('collections.update');
-        Route::delete('collections/{collection}', [\App\Http\Controllers\Museum\CollectionController::class, 'destroy'])->name('collections.destroy');
-
-        // Exhibitions
-        Route::get('exhibitions', [\App\Http\Controllers\Museum\ExhibitionController::class, 'index'])->name('exhibitions.index');
-        Route::get('exhibitions/create', [\App\Http\Controllers\Museum\ExhibitionController::class, 'create'])->name('exhibitions.create');
-        Route::post('exhibitions', [\App\Http\Controllers\Museum\ExhibitionController::class, 'store'])->name('exhibitions.store');
-        Route::get('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'show'])->name('exhibitions.show');
-        Route::get('exhibitions/{exhibition}/edit', [\App\Http\Controllers\Museum\ExhibitionController::class, 'edit'])->name('exhibitions.edit');
-        Route::put('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'update'])->name('exhibitions.update');
-        Route::delete('exhibitions/{exhibition}', [\App\Http\Controllers\Museum\ExhibitionController::class, 'destroy'])->name('exhibitions.destroy');
-
-        // Conservation
-        Route::get('conservation', [\App\Http\Controllers\Museum\ConservationController::class, 'index'])->name('conservation.index');
-        Route::get('conservation/create', [\App\Http\Controllers\Museum\ConservationController::class, 'create'])->name('conservation.create');
-        Route::post('conservation', [\App\Http\Controllers\Museum\ConservationController::class, 'store'])->name('conservation.store');
-        Route::get('conservation/{conservation}', [\App\Http\Controllers\Museum\ConservationController::class, 'show'])->name('conservation.show');
-
-        // Inventory (Récolement)
-        Route::get('inventory', [\App\Http\Controllers\Museum\InventoryController::class, 'index'])->name('inventory.index');
-        Route::get('inventory/recolement', [\App\Http\Controllers\Museum\InventoryController::class, 'recolement'])->name('inventory.recolement');
-        Route::post('inventory/recolement', [\App\Http\Controllers\Museum\InventoryController::class, 'storeRecolement'])->name('inventory.recolement.store');
-
-        // Search
-        Route::get('search', [\App\Http\Controllers\Museum\SearchController::class, 'index'])->name('search.index');
-        Route::post('search', [\App\Http\Controllers\Museum\SearchController::class, 'search'])->name('search');
-        Route::get('search/advanced', [\App\Http\Controllers\Museum\SearchController::class, 'advanced'])->name('search.advanced');
-
-        // Reports
-        Route::get('reports', [\App\Http\Controllers\Museum\ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/collection', [\App\Http\Controllers\Museum\ReportController::class, 'collection'])->name('reports.collection');
-        Route::get('reports/conservation', [\App\Http\Controllers\Museum\ReportController::class, 'conservation'])->name('reports.conservation');
-        Route::get('reports/exhibitions', [\App\Http\Controllers\Museum\ReportController::class, 'exhibitions'])->name('reports.exhibitions');
-        Route::get('reports/valuation', [\App\Http\Controllers\Museum\ReportController::class, 'valuation'])->name('reports.valuation');
-        Route::get('reports/statistics', [\App\Http\Controllers\Museum\ReportController::class, 'statistics'])->name('reports.statistics');
-        Route::get('reports/collection/export-csv', [\App\Http\Controllers\Museum\ReportController::class, 'exportCollectionCsv'])->name('reports.collection.export-csv');
-    });
-
-    // =================== LIBRARY MODULE ===================
-    Route::prefix('library')->name('library.')->group(function () {
-        // Books Management (Catalogue, Gestion des ouvrages)
-        Route::resource('books', \App\Http\Controllers\Library\BookController::class);
-        Route::get('books/{book}/duplicate', [\App\Http\Controllers\Library\BookController::class, 'duplicate'])->name('books.duplicate');
-        Route::post('books/import', [\App\Http\Controllers\Library\BookController::class, 'import'])->name('books.import');
-        Route::get('books/export/form', [\App\Http\Controllers\Library\BookController::class, 'exportForm'])->name('books.export.form');
-        Route::post('books/export', [\App\Http\Controllers\Library\BookController::class, 'export'])->name('books.export');
-
-        // Periodicals Management (Revues, Articles)
-        // TODO: Implement PeriodicalController
-        // Route::resource('periodicals', \App\Http\Controllers\Web\PeriodicalController::class)->only(['index', 'show']);
-        // Route::get('periodicals/articles/search', [\App\Http\Controllers\Web\PeriodicalController::class, 'articles'])->name('periodicals.articles');
-        Route::get('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'issues'])->name('periodicals.issues');
-        Route::post('periodicals/{periodical}/issues', [\App\Http\Controllers\Library\PeriodicalController::class, 'storeIssue'])->name('periodicals.issues.store');
-
-        // Authors Management
-        Route::get('authors', [\App\Http\Controllers\Library\AuthorController::class, 'index'])->name('authors.index');
-        Route::get('authors/create', [\App\Http\Controllers\Library\AuthorController::class, 'create'])->name('authors.create');
-        Route::post('authors', [\App\Http\Controllers\Library\AuthorController::class, 'store'])->name('authors.store');
-        Route::get('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'show'])->name('authors.show');
-        Route::get('authors/{author}/edit', [\App\Http\Controllers\Library\AuthorController::class, 'edit'])->name('authors.edit');
-        Route::put('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'update'])->name('authors.update');
-        Route::delete('authors/{author}', [\App\Http\Controllers\Library\AuthorController::class, 'destroy'])->name('authors.destroy');
-
-        // Categories Management
-        Route::get('categories', [\App\Http\Controllers\Library\CategoryController::class, 'index'])->name('categories.index');
-        Route::get('categories/create', [\App\Http\Controllers\Library\CategoryController::class, 'create'])->name('categories.create');
-        Route::post('categories', [\App\Http\Controllers\Library\CategoryController::class, 'store'])->name('categories.store');
-        Route::get('categories/{category}/edit', [\App\Http\Controllers\Library\CategoryController::class, 'edit'])->name('categories.edit');
-        Route::put('categories/{category}', [\App\Http\Controllers\Library\CategoryController::class, 'update'])->name('categories.update');
-        Route::delete('categories/{category}', [\App\Http\Controllers\Library\CategoryController::class, 'destroy'])->name('categories.destroy');
-
-        // Loans Management (Prêts)
-        Route::get('loans', [\App\Http\Controllers\Library\LoanController::class, 'index'])->name('loans.index');
-        Route::get('loans/create', [\App\Http\Controllers\Library\LoanController::class, 'create'])->name('loans.create');
-        Route::post('loans', [\App\Http\Controllers\Library\LoanController::class, 'store'])->name('loans.store');
-        Route::get('loans/{loan}', [\App\Http\Controllers\Library\LoanController::class, 'show'])->name('loans.show');
-        Route::post('loans/{loan}/return', [\App\Http\Controllers\Library\LoanController::class, 'return'])->name('loans.return');
-        Route::get('loans/overdue', [\App\Http\Controllers\Library\LoanController::class, 'overdue'])->name('loans.overdue');
-        Route::get('loans/history', [\App\Http\Controllers\Library\LoanController::class, 'history'])->name('loans.history');
-
-        // Readers Management (Lecteurs)
-        Route::get('readers', [\App\Http\Controllers\Library\ReaderController::class, 'index'])->name('readers.index');
-        Route::get('readers/create', [\App\Http\Controllers\Library\ReaderController::class, 'create'])->name('readers.create');
-        Route::post('readers', [\App\Http\Controllers\Library\ReaderController::class, 'store'])->name('readers.store');
-        Route::get('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'show'])->name('readers.show');
-        Route::get('readers/{reader}/edit', [\App\Http\Controllers\Library\ReaderController::class, 'edit'])->name('readers.edit');
-        Route::put('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'update'])->name('readers.update');
-        Route::delete('readers/{reader}', [\App\Http\Controllers\Library\ReaderController::class, 'destroy'])->name('readers.destroy');
-        Route::get('readers/{reader}/card', [\App\Http\Controllers\Library\ReaderController::class, 'card'])->name('readers.card');
-
-        // Search
-        Route::get('search', [\App\Http\Controllers\Library\SearchController::class, 'index'])->name('search.index');
-        Route::post('search', [\App\Http\Controllers\Library\SearchController::class, 'search'])->name('search');
-        Route::get('search/advanced', [\App\Http\Controllers\Library\SearchController::class, 'advanced'])->name('search.advanced');
-        Route::get('search/popular', [\App\Http\Controllers\Library\SearchController::class, 'popular'])->name('search.popular');
-        Route::get('search/recent', [\App\Http\Controllers\Library\SearchController::class, 'recent'])->name('search.recent');
-
-        // Statistics & Reports
-        Route::get('statistics', [\App\Http\Controllers\Library\StatisticsController::class, 'index'])->name('statistics.index');
-        Route::get('statistics/loans', [\App\Http\Controllers\Library\StatisticsController::class, 'loans'])->name('statistics.loans');
-        Route::get('statistics/categories', [\App\Http\Controllers\Library\StatisticsController::class, 'categories'])->name('statistics.categories');
-
-        // Reports
-        Route::get('reports', [\App\Http\Controllers\Library\ReportController::class, 'index'])->name('reports.index');
-        Route::get('reports/collection', [\App\Http\Controllers\Library\ReportController::class, 'collection'])->name('reports.collection');
-        Route::get('reports/loans', [\App\Http\Controllers\Library\ReportController::class, 'loans'])->name('reports.loans');
-        Route::get('reports/inventory', [\App\Http\Controllers\Library\ReportController::class, 'inventory'])->name('reports.inventory');
-        Route::get('reports/readers', [\App\Http\Controllers\Library\ReportController::class, 'readers'])->name('reports.readers');
-        Route::get('reports/overdue', [\App\Http\Controllers\Library\ReportController::class, 'overdue'])->name('reports.overdue');
-        Route::get('reports/collection/export-csv', [\App\Http\Controllers\Library\ReportController::class, 'exportCollectionCsv'])->name('reports.collection.export-csv');
-    });
-
     // Admin Panel (Phase 10 - Task 10.7)
     // TODO: Implement AdminPanelController
     /*
@@ -328,114 +191,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('logs', [\App\Http\Controllers\Web\AdminPanelController::class, 'logs'])->name('logs');
     });
     */
-
-    // Routes avec authentification pour les bulletin boards
-    Route::middleware(['auth'])->prefix('bulletin-boards')->group(function () {
-        // Routes principales des bulletin boards
-        Route::get('/', [BulletinBoardController::class, 'index'])->name('bulletin-boards.index');
-        Route::get('/create', [BulletinBoardController::class, 'create'])->name('bulletin-boards.create');
-        Route::post('/', [BulletinBoardController::class, 'store'])->name('bulletin-boards.store');
-        Route::get('/{bulletinBoard}', [BulletinBoardController::class, 'show'])->name('bulletin-boards.show');
-        Route::get('/{bulletinBoard}/edit', [BulletinBoardController::class, 'edit'])->name('bulletin-boards.edit');
-        Route::put('/{bulletinBoard}', [BulletinBoardController::class, 'update'])->name('bulletin-boards.update');
-        Route::delete('/{bulletinBoard}', [BulletinBoardController::class, 'destroy'])->name('bulletin-boards.destroy');
-
-        // Routes additionnelles des bulletin boards
-        Route::get('/dashboard', [BulletinBoardController::class, 'dashboard'])->name('bulletin-boards.dashboard');
-        Route::get('/my-posts', [BulletinBoardController::class, 'myPosts'])->name('bulletin-boards.my-posts');
-        Route::get('/archives', [BulletinBoardController::class, 'archives'])->name('bulletin-boards.archives');
-        Route::post('/{bulletinBoard}/archive', [BulletinBoardController::class, 'toggleArchive'])->name('bulletin-boards.toggle-archive');
-
-        // Routes pour les organisations
-        Route::prefix('/organisations')->name('organisations.')->group(function () {
-            Route::post('/{bulletinBoard}/attach', [BulletinBoardController::class, 'attachOrganisation'])->name('bulletin-boards.attach');
-            Route::delete('/{bulletinBoard}/detach/{organisation}', [BulletinBoardController::class, 'detachOrganisation'])->name('bulletin-boards.detach');
-        });
-
-        // Routes pour les Events
-        Route::get('/{bulletinBoard}/events', [EventController::class, 'index'])->name('bulletin-boards.events.index');
-        Route::get('/{bulletinBoard}/events/create', [EventController::class, 'create'])->name('bulletin-boards.events.create');
-        Route::post('/{bulletinBoard}/events', [EventController::class, 'store'])->name('bulletin-boards.events.store');
-        Route::get('/{bulletinBoard}/events/{event}', [EventController::class, 'show'])->name('bulletin-boards.events.show');
-        Route::get('/{bulletinBoard}/events/{event}/edit', [EventController::class, 'edit'])->name('bulletin-boards.events.edit');
-        Route::put('/{bulletinBoard}/events/{event}', [EventController::class, 'update'])->name('bulletin-boards.events.update');
-        Route::delete('/{bulletinBoard}/events/{event}', [EventController::class, 'destroy'])->name('bulletin-boards.events.destroy');
-        Route::post('/{bulletinBoard}/events/{event}/update-status', [EventController::class, 'updateStatus'])->name('bulletin-boards.events.update-status');
-        Route::post('/{bulletinBoard}/events/{event}/register', [EventController::class, 'register'])->name('bulletin-boards.events.register');
-        Route::post('/{bulletinBoard}/events/{event}/unregister', [EventController::class, 'unregister'])->name('bulletin-boards.events.unregister');
-
-        // Routes pour les pièces jointes des Events
-        Route::get('/{bulletinBoard}/events/{event}/attachments', [EventController::class, 'attachmentsIndex'])->name('bulletin-boards.events.attachments.index');
-        Route::get('/{bulletinBoard}/events/{event}/attachments/create', [EventController::class, 'attachmentsCreate'])->name('bulletin-boards.events.attachments.create');
-        Route::post('/{bulletinBoard}/events/{event}/attachments', [EventController::class, 'attachmentsStore'])->name('bulletin-boards.events.attachments.store');
-        Route::get('/{bulletinBoard}/events/{event}/attachments/{attachment}', [EventController::class, 'attachmentsShow'])->name('bulletin-boards.events.attachments.show');
-        Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}', [EventController::class, 'attachmentsDestroy'])->name('bulletin-boards.events.attachments.destroy');
-        Route::get('/events/{id}/preview', [EventController::class, 'attachmentsPreview'])->name('events.attachments.preview');
-        Route::get('/events/{id}/download', [EventController::class, 'attachmentsDownload'])->name('events.attachments.download');
-        Route::get('/{bulletinBoard}/events/{event}/attachments/list', [EventController::class, 'attachmentsList'])->name('bulletin-boards.events.attachments.list');
-        Route::post('/{bulletinBoard}/events/{event}/attachments/ajax', [EventController::class, 'attachmentsAjaxStore'])->name('bulletin-boards.events.attachments.ajax.store');
-        Route::delete('/{bulletinBoard}/events/{event}/attachments/{attachment}/ajax', [EventController::class, 'attachmentsAjaxDestroy'])->name('bulletin-boards.events.attachments.ajax.destroy');
-
-    // Notifications retirées
-
-        // Routes principales pour les publications (existantes)
-        Route::get('/{bulletinBoard}/posts', [PostController::class, 'index'])
-            ->name('bulletin-boards.posts.index');
-        Route::get('/{bulletinBoard}/posts/create', [PostController::class, 'create'])
-            ->name('bulletin-boards.posts.create');
-        Route::post('/{bulletinBoard}/posts', [PostController::class, 'store'])
-            ->name('bulletin-boards.posts.store');
-        Route::get('/{bulletinBoard}/posts/{post}', [PostController::class, 'show'])
-            ->name('bulletin-boards.posts.show');
-        Route::get('/{bulletinBoard}/posts/{post}/edit', [PostController::class, 'edit'])
-            ->name('bulletin-boards.posts.edit');
-        Route::put('/{bulletinBoard}/posts/{post}', [PostController::class, 'update'])
-            ->name('bulletin-boards.posts.update');
-        Route::delete('/{bulletinBoard}/posts/{post}', [PostController::class, 'destroy'])
-            ->name('bulletin-boards.posts.destroy');
-        Route::post('/{bulletinBoard}/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])
-            ->name('bulletin-boards.posts.toggle-status');
-        Route::post('/{bulletinBoard}/posts/{post}/cancel', [PostController::class, 'cancel'])
-            ->name('bulletin-boards.posts.cancel');
-
-        // Routes pour les pièces jointes des publications (existantes)
-        Route::get('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsIndex'])
-            ->name('bulletin-boards.posts.attachments.index');
-        Route::get('/{bulletinBoard}/posts/{post}/attachments/create', [PostController::class, 'attachmentsCreate'])
-            ->name('bulletin-boards.posts.attachments.create');
-        Route::post('/{bulletinBoard}/posts/{post}/attachments', [PostController::class, 'attachmentsStore'])
-            ->name('bulletin-boards.posts.attachments.store');
-        Route::get('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsShow'])
-            ->name('bulletin-boards.posts.attachments.show');
-        Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}', [PostController::class, 'attachmentsDestroy'])
-            ->name('bulletin-boards.posts.attachments.destroy');
-
-        // Routes utilitaires pour les pièces jointes des publications (existantes)
-        Route::get('/posts/attachments/{attachment}/preview', [PostController::class, 'attachmentsPreview'])
-            ->name('posts.attachments.preview');
-        Route::get('/posts/attachments/{attachment}/download', [PostController::class, 'attachmentsDownload'])
-            ->name('posts.attachments.download');
-
-        // Routes AJAX pour les pièces jointes des publications (existantes)
-        Route::get('/{bulletinBoard}/posts/{post}/attachments/list', [PostController::class, 'attachmentsList'])
-            ->name('bulletin-boards.posts.attachments.list');
-        Route::post('/{bulletinBoard}/posts/{post}/attachments/ajax', [PostController::class, 'attachmentsAjaxStore'])
-            ->name('bulletin-boards.posts.attachments.ajax.store');
-        Route::delete('/{bulletinBoard}/posts/{post}/attachments/{attachment}/ajax', [PostController::class, 'attachmentsAjaxDestroy'])
-            ->name('bulletin-boards.posts.attachments.ajax.destroy');
-    });
-
-
-
-
-
-
-    // Routes utilitaires pour les pièces jointes générales
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/attachments/{attachment}/preview', [EventController::class, 'attachmentsPreview'])->name('attachments.preview');
-        Route::get('/attachments/{attachment}/download', [EventController::class, 'attachmentsDownload'])->name('attachments.download');
-    });
-
 
     Route::prefix('mails')->middleware(['auth'])->group(function () {
         // New route for searching mails
@@ -509,12 +264,8 @@ Route::group(['middleware' => 'auth'], function () {
         // Route pour les courriers retournés
         Route::get('returned', [MailReceivedController::class, 'returned'])->name('mail-received.returned');
 
-        // Route pour les courriers à retourner (filtre spécifique)
-        Route::get('to-return', [MailReceivedController::class, 'toReturn'])->name('mail-received.to-return');
-
         // Route pour les courriers à retourner
         Route::get('to-return', [MailReceivedController::class, 'toReturn'])->name('mail-received.toReturn');
-        // Route pour les courriers à retourner
 
         Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mail-feedback');
         Route::get('/organisations/{organisation}/users', function(\App\Models\Organisation $organisation) {
@@ -569,7 +320,6 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('sort', [SearchMailController::class, 'advanced'])->name('mails.sort');
         Route::get('select', [SearchMailController::class, 'date'])->name('mail-select-date');
         Route::get('InProgress', [MailReceivedController::class, 'inprogress'])->name('mails.inprogress');
-        Route::get('feedback', [SearchMailFeedbackController::class, 'index'])->name('mails.feedback');
         Route::get('/mail-attachment/{id}/preview', [MailAttachmentController::class, 'preview'])->name('mail-attachment.preview');
         Route::get('chart', [SearchMailController::class, 'chart'])->name('mails.chart');
         Route::resource('archives', MailArchiveController::class)->names('mail-archive');
@@ -747,14 +497,14 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('shelve', [SearchRecordController::class, 'selectShelve'])->name('record-select-shelve');
         Route::post('dolly/create-with-records', [DollyController::class, 'createWithRecords'])->name('dolly.createWithRecords');
         // Routes spécifiques AVANT la route resource (pour éviter les conflits)
-        // Dedicated export/import controllers for records
-        Route::get('records/exportButton', [\App\Http\Controllers\RecordExportController::class, 'exportButton'])->name('records.exportButton');
-        Route::post('records/print', [\App\Http\Controllers\RecordExportController::class, 'printRecords'])->name('records.print');
-        Route::post('records/export', [\App\Http\Controllers\RecordExportController::class, 'export'])->name('records.export');
-        Route::get('records/export', [\App\Http\Controllers\RecordExportController::class, 'exportForm'])->name('records.export.form');
-        Route::get('records/import', [\App\Http\Controllers\RecordImportController::class, 'importForm'])->name('records.import.form');
-        Route::post('records/import', [\App\Http\Controllers\RecordImportController::class, 'import'])->name('records.import');
-        Route::post('records/analyze-file', [\App\Http\Controllers\RecordImportController::class, 'analyzeFile'])->name('records.analyze-file');
+        // Export/import routes for records
+        Route::get('records/exportButton', [RecordController::class, 'exportButton'])->name('records.exportButton');
+        Route::post('records/print', [RecordController::class, 'printRecords'])->name('records.print');
+        Route::post('records/export', [RecordController::class, 'export'])->name('records.export');
+        Route::get('records/export', [RecordController::class, 'exportForm'])->name('records.export.form');
+        Route::get('records/import', [RecordController::class, 'importForm'])->name('records.import.form');
+        Route::post('records/import', [RecordController::class, 'import'])->name('records.import');
+        Route::post('records/analyze-file', [RecordController::class, 'analyzeFile'])->name('records.analyze-file');
         Route::get('records/terms/autocomplete', [RecordController::class, 'autocompleteTerms'])->name('records.terms.autocomplete');
         Route::get('records/{record}/attachments', [RecordController::class, 'getAttachments'])->name('records.attachments.list');
         Route::get('records/create/full', [RecordController::class, 'createFull'])->name('records.create.full');
@@ -800,15 +550,9 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::resource('records.child', RecordChildController::class)->names('record-child');
 
-        // Gestion du cycle de vie des documents
 
-        Route::get('recordtotransfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
-        Route::get('recordtosort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
-        Route::get('recordtoeliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
-        Route::get('recordtokeep', [LifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
-        Route::get('recordtoretain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
-        Route::get('recordtostore', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
 
+        Route::get('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced.get');
         Route::post('advanced', [SearchRecordController::class, 'advanced'])->name('records.advanced');
         Route::get('advanced/form', [SearchRecordController::class, 'form'])->name('records.advanced.form');
         Route::get('sort', [SearchRecordController::class, 'sort'])->name('records.sort');
@@ -843,6 +587,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::prefix('transferrings')->group(function () {
+        // Gestion du cycle de vie des documents
+        Route::get('lifecycle/transfer', [LifeCycleController::class, 'recordToTransfer'])->name('records.totransfer');
+        Route::get('lifecycle/sort', [LifeCycleController::class, 'recordToSort'])->name('records.tosort');
+        Route::get('lifecycle/eliminate', [LifeCycleController::class, 'recordToEliminate'])->name('records.toeliminate');
+        Route::get('lifecycle/keep', [LifeCycleController::class, 'recordToKeep'])->name('records.tokeep');
+        Route::get('lifecycle/retain', [LifeCycleController::class, 'recordToRetain'])->name('records.toretain');
+        Route::get('lifecycle/store', [LifeCycleController::class, 'recordToStore'])->name('records.tostore');
+
         Route::get('/advanced', [SearchSlipController::class, 'form'])->name('slips.advanced.form');
         Route::post('/advanced', [SearchSlipController::class, 'advanced'])->name('search.slips.advanced');
         Route::get('/', [SlipController::class, 'index']);
@@ -897,6 +649,36 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes supplémentaires pour les paramètres
         Route::post('definitions/{id}/set-value', [SettingController::class, 'setValue'])->name('settings.definitions.set-value');
         Route::delete('definitions/{id}/reset-value', [SettingController::class, 'resetValue'])->name('settings.definitions.reset-value');
+
+        // Routes pour les métadonnées
+        Route::resource('metadata-definitions', \App\Http\Controllers\Settings\MetadataDefinitionController::class)->names('settings.metadata-definitions');
+        Route::resource('reference-lists', \App\Http\Controllers\Settings\ReferenceListController::class)->names('settings.reference-lists');
+
+        // Routes pour les valeurs de référence
+        Route::post('reference-lists/{referenceList}/values', [\App\Http\Controllers\Settings\ReferenceListController::class, 'addValue'])->name('settings.reference-lists.values.store');
+        Route::put('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'updateValue'])->name('settings.reference-lists.values.update');
+        Route::delete('reference-lists/{referenceList}/values/{value}', [\App\Http\Controllers\Settings\ReferenceListController::class, 'deleteValue'])->name('settings.reference-lists.values.destroy');
+
+        // Routes pour les profils de métadonnées des types de documents
+        Route::get('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'index'])->name('settings.document-types.metadata-profiles.index');
+        Route::post('document-types/{documentType}/metadata-profiles', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'store'])->name('settings.document-types.metadata-profiles.store');
+        Route::put('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'update'])->name('settings.document-types.metadata-profiles.update');
+        Route::delete('document-types/{documentType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'destroy'])->name('settings.document-types.metadata-profiles.destroy');
+        Route::put('document-types/{documentType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\DocumentTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.document-types.metadata-profiles.bulk-update');
+
+        // Routes pour les profils de métadonnées des types de dossiers
+        Route::get('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'index'])->name('settings.folder-types.metadata-profiles.index');
+        Route::post('folder-types/{folderType}/metadata-profiles', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'store'])->name('settings.folder-types.metadata-profiles.store');
+        Route::put('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'update'])->name('settings.folder-types.metadata-profiles.update');
+        Route::delete('folder-types/{folderType}/metadata-profiles/{profile}', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'destroy'])->name('settings.folder-types.metadata-profiles.destroy');
+        Route::put('folder-types/{folderType}/metadata-profiles/bulk', [\App\Http\Controllers\Settings\FolderTypeMetadataProfileController::class, 'bulkUpdate'])->name('settings.folder-types.metadata-profiles.bulk-update');
+
+        // Routes CRUD pour les types de dossiers et documents numériques (Records)
+        Route::resource('folder-types', \App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class)->names('settings.folder-types');
+        Route::post('folder-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalFolderTypeController::class, 'updateOrder'])->name('settings.folder-types.update-order');
+
+        Route::resource('document-types', \App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class)->names('settings.document-types');
+        Route::post('document-types/order/update', [\App\Http\Controllers\Settings\RecordDigitalDocumentTypeController::class, 'updateOrder'])->name('settings.document-types.update-order');
 
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
@@ -973,18 +755,6 @@ Route::group(['middleware' => 'auth'], function () {
         // Routes pour documents numériques
         Route::post('{dolly}/add-digital-document', [DollyController::class, 'addDigitalDocument'])->name('dolly.add-digital-document');
         Route::delete('{dolly}/remove-digital-document/{document}', [DollyController::class, 'removeDigitalDocument'])->name('dolly.remove-digital-document');
-
-        // Routes pour artefacts
-        Route::post('{dolly}/add-artifact', [DollyController::class, 'addArtifact'])->name('dolly.add-artifact');
-        Route::delete('{dolly}/remove-artifact/{artifact}', [DollyController::class, 'removeArtifact'])->name('dolly.remove-artifact');
-
-        // Routes pour livres
-        Route::post('{dolly}/add-book', [DollyController::class, 'addBook'])->name('dolly.add-book');
-        Route::delete('{dolly}/remove-book/{book}', [DollyController::class, 'removeBook'])->name('dolly.remove-book');
-
-        // Routes pour séries
-        Route::post('{dolly}/add-book-series', [DollyController::class, 'addBookSeries'])->name('dolly.add-book-series');
-        Route::delete('{dolly}/remove-book-series/{series}', [DollyController::class, 'removeBookSeries'])->name('dolly.remove-book-series');
     });
 
 
@@ -1227,6 +997,12 @@ Route::prefix('opac')->name('opac.')->middleware('opac.errors')->group(function 
     Route::get('/records/autocomplete', [\App\Http\Controllers\OPAC\RecordController::class, 'autocomplete'])->name('records.autocomplete');
     Route::get('/records/{id}', [\App\Http\Controllers\OPAC\RecordController::class, 'show'])->name('records.show');
 
+    // Digital Collections
+    Route::get('/digital/folders', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'index'])->name('digital.folders.index');
+    Route::get('/digital/folders/{id}', [\App\Http\Controllers\OPAC\DigitalFolderController::class, 'show'])->name('digital.folders.show');
+    Route::get('/digital/documents/{id}', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'show'])->name('digital.documents.show');
+    Route::get('/digital/documents/{id}/download', [\App\Http\Controllers\OPAC\DigitalDocumentController::class, 'download'])->name('digital.documents.download');
+
     // Search routes - Primary search interface
     Route::get('/search', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search');
     Route::get('/search/advanced', [\App\Http\Controllers\OPAC\SearchController::class, 'index'])->name('search.index');
@@ -1350,18 +1126,29 @@ Route::prefix('tasks')->name('tasks.')->middleware('auth')->group(function () {
     Route::delete('/{task}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('destroy');
 });
 
+// Workplace Invitations
+Route::get('/workplaces/invitations/{token}', [\App\Http\Controllers\WorkplaceInvitationController::class, 'accept'])
+    ->name('workplaces.invitations.accept');
+
 // WorkPlace Management Routes
 Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(function () {
     // Main Workplace Routes
     Route::get('/', [\App\Http\Controllers\WorkplaceController::class, 'index'])->name('index');
     Route::get('/create', [\App\Http\Controllers\WorkplaceController::class, 'create'])->name('create');
     Route::post('/', [\App\Http\Controllers\WorkplaceController::class, 'store'])->name('store');
+
+    // Template Management Routes
+    Route::resource('templates', \App\Http\Controllers\WorkplaceTemplateController::class)->names('templates');
+
     Route::get('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'show'])->name('show');
     Route::get('/{workplace}/edit', [\App\Http\Controllers\WorkplaceController::class, 'edit'])->name('edit');
     Route::put('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'update'])->name('update');
     Route::delete('/{workplace}', [\App\Http\Controllers\WorkplaceController::class, 'destroy'])->name('destroy');
     Route::post('/{workplace}/archive', [\App\Http\Controllers\WorkplaceController::class, 'archive'])->name('archive');
     Route::get('/{workplace}/settings', [\App\Http\Controllers\WorkplaceController::class, 'settings'])->name('settings');
+
+    // Activity Management Routes
+    Route::get('{workplace}/activities', [\App\Http\Controllers\WorkplaceActivityController::class, 'index'])->name('activities.index');
 
     // Member Management Routes
     Route::prefix('{workplace}/members')->name('members.')->group(function () {
@@ -1373,10 +1160,19 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
         Route::put('/{member}/notifications', [\App\Http\Controllers\WorkplaceMemberController::class, 'updateNotifications'])->name('notifications');
     });
 
+    // Bookmark Management Routes
+    Route::prefix('{workplace}/bookmarks')->name('bookmarks.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'store'])->name('store');
+        Route::delete('/{bookmark}', [\App\Http\Controllers\WorkplaceBookmarkController::class, 'destroy'])->name('destroy');
+    });
+
     // Content Management Routes
     Route::prefix('{workplace}/content')->name('content.')->group(function () {
         Route::get('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'folders'])->name('folders');
         Route::get('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'documents'])->name('documents');
+        Route::get('/search-folders', [\App\Http\Controllers\WorkplaceContentController::class, 'searchFolders'])->name('searchFolders');
+        Route::get('/search-documents', [\App\Http\Controllers\WorkplaceContentController::class, 'searchDocuments'])->name('searchDocuments');
         Route::post('/folders', [\App\Http\Controllers\WorkplaceContentController::class, 'shareFolder'])->name('shareFolder');
         Route::post('/documents', [\App\Http\Controllers\WorkplaceContentController::class, 'shareDocument'])->name('shareDocument');
         Route::delete('/folders/{folder}', [\App\Http\Controllers\WorkplaceContentController::class, 'unshareFolder'])->name('unshareFolder');
@@ -1392,3 +1188,5 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
 
 
 
+
+Route::get('/new-feature', [App\Http\Controllers\NewFeatureController::class, 'index']);

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\BelongsToOrganisation;
 
 class Workplace extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToOrganisation;
 
     protected $fillable = [
         'code',
@@ -125,11 +126,6 @@ class Workplace extends Model
     public function scopePublic($query)
     {
         return $query->where('is_public', true);
-    }
-
-    public function scopeByOrganisation($query, $organisationId)
-    {
-        return $query->where('organisation_id', $organisationId);
     }
 
     /**

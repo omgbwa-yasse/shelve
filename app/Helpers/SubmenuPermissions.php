@@ -69,15 +69,6 @@ class SubmenuPermissions
                 'create_record' => 'records_create',
                 'create_author' => 'authors_create',
             ],
-            // Section Cycle de vie
-            'lifecycle' => [
-                'tostore' => 'records_lifecycle',
-                'toretain' => 'records_lifecycle',
-                'totransfer' => 'records_lifecycle',
-                'toeliminate' => 'records_lifecycle',
-                'tokeep' => 'records_lifecycle',
-                'tosort' => 'records_lifecycle',
-            ],
             // Section Outils
             'tools' => [
                 'import' => 'records_import',
@@ -186,6 +177,15 @@ class SubmenuPermissions
             'config' => [
                 'transfer_types' => 'slips.config',
                 'approval_workflows' => 'slips.config',
+            ],
+            // Section Cycle de vie
+            'lifecycle' => [
+                'tostore' => 'records_lifecycle',
+                'toretain' => 'records_lifecycle',
+                'totransfer' => 'records_lifecycle',
+                'toeliminate' => 'records_lifecycle',
+                'tokeep' => 'records_lifecycle',
+                'tosort' => 'records_lifecycle',
             ],
             // Section Outils
             'tools' => [

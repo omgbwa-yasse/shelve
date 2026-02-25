@@ -96,6 +96,11 @@ class PolicyService
                 return false;
             }
 
+            // Si le modèle supporte le dual-organisation (emitter/beneficiary pattern)
+            if (method_exists($model, 'involvesOrganisation')) {
+                return $model->involvesOrganisation($user->current_organisation_id);
+            }
+
             // Si le modèle a une relation avec l'organisation
             if (method_exists($model, 'organisations')) {
                 return $model->organisations()->where('id', $user->current_organisation_id)->exists();

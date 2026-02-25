@@ -4,11 +4,7 @@ namespace App\Http\Controllers;
 
 
 use App\Exports\CommunicationsExport;
-use App\Http\Requests\CommunicationRequest;
 use App\Models\Communication;
-use App\Models\communicationRecord;
-use App\Models\Dolly;
-use App\Models\DollyCommunication;
 use App\Models\Organisation;
 use App\Models\User;
 use App\Services\CodeGeneratorService;
@@ -16,8 +12,6 @@ use App\Services\RateLimitService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\RateLimiter;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CommunicationController extends Controller
@@ -26,7 +20,13 @@ class CommunicationController extends Controller
 
     public function index()
     {
-        $communications = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation')->paginate(10);
+        $query = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation');
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $communications = $query->paginate(10);
         return view('communications.index', compact('communications'));
     }
 
@@ -129,18 +129,20 @@ class CommunicationController extends Controller
 
 
 
-    public function show(INT $id)
+    public function show(int $id)
     {
         $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $this->authorize('view', $communication);
         return view('communications.show', compact('communication'));
     }
 
 
 
 
-    public function edit(INT $id)
+    public function edit(int $id)
     {
         $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $this->authorize('update', $communication);
 
         // Empêcher l'édition si la communication est retournée
         if ($communication->isReturned()) {
@@ -244,6 +246,8 @@ class CommunicationController extends Controller
 
     public function update(Request $request, Communication $communication)
     {
+        $this->authorize('update', $communication);
+
         // Empêcher la modification si la communication est retournée
         if ($communication->isReturned()) {
             return redirect()->route('communications.transactions.show', $communication->id)
@@ -276,9 +280,10 @@ class CommunicationController extends Controller
 
 
 
-    public function destroy(INT $communication_id)
+    public function destroy(int $communication_id)
     {
         $communication = Communication::with('records')->findOrFail($communication_id);
+        $this->authorize('delete', $communication);
 
         // Empêcher la suppression si la communication est retournée
         if ($communication->isReturned()) {
@@ -340,7 +345,7 @@ class CommunicationController extends Controller
             }
         ]);
 
-        $pdf = PDF::loadView('communications.print', compact('communications'));
+        $pdf = Pdf::loadView('communications.print', compact('communications'));
         return $pdf->download('communications_print.pdf');
     }
 }

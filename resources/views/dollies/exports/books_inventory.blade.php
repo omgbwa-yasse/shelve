@@ -37,7 +37,7 @@
                 <td>{{ $book->isbn ?? '-' }}</td>
                 <td>{{ $book->title }}</td>
                 <td>{{ $book->author ?? '-' }}</td>
-                <td>{{ $book->publisher ?? '-' }}</td>
+                <td>{{ $book->publishers->pluck('name')->join(', ') ?? '-' }}</td>
                 <td>{{ $book->publication_year ?? '-' }}</td>
                 <td>{{ $book->pages ?? '-' }}</td>
             </tr>

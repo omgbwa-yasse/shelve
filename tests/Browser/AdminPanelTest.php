@@ -56,8 +56,7 @@ class AdminPanelTest extends DuskTestCase
                     ->visit('/admin')
                     ->assertSee('Total Users')
                     ->assertSee('Total Documents')
-                    ->assertSee('Total Folders')
-                    ->assertSee('Total Artifacts');
+                    ->assertSee('Total Folders');
         });
     }
 

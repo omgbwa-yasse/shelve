@@ -15,11 +15,6 @@
     </a>
 
     <a href="#" class="nav-link">
-        <i class="bi bi-box"></i>
-        <span>{{ __('Artifacts') }}</span>
-    </a>
-
-    <a href="#" class="nav-link">
         <i class="bi bi-newspaper"></i>
         <span>{{ __('Periodicals') }}</span>
     </a>

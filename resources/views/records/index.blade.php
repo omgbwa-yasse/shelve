@@ -192,16 +192,18 @@
 
                     $year = $record->date_exact ?? ($record->date_start ? (Str::substr($record->date_start,0,4)) : ($record->created_at ? $record->created_at->format('Y') : ''));
                     $authors = $record->authors ? $record->authors->pluck('name')->join(', ') : '';
-                    $keywords = $record->keywords ? $record->keywords->pluck('name')->implode(' ') : '';
+                    // Keywords only available for physical records
+                    $keywords = ($recordType === 'physical' && $record->keywords) ? $record->keywords->pluck('name')->implode(' ') : '';
                 @endphp
                 <li class="record-entry record-card position-relative mb-2 bg-light rounded" data-record-id="{{ $record->id }}" data-keywords="{{ $keywords }}" data-record-type="{{ $recordType }}">
-                    <div class="d-flex align-items-start">
-                        <div class="me-3" style="width:2.2rem;">
-                            <div class="form-check">
-                                <input class="form-check-input record-select" type="checkbox" value="{{ $record->id }}" id="select-{{ $record->id }}">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <div class="d-flex align-items-start flex-grow-1">
+                            <div class="me-3" style="width:2.2rem;">
+                                <div class="form-check">
+                                    <input class="form-check-input record-select" type="checkbox" value="{{ $record->id }}" id="select-{{ $record->id }}">
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1">
+                            <div class="flex-grow-1">
                             <!-- Type Badge + Title line -->
                             <div class="d-flex align-items-center gap-2 mb-1">
                                 <span class="badge {{ $badgeClass }} px-2 py-1">
@@ -314,7 +316,7 @@
                                 @endif
                             </div>
                             <!-- Keywords -->
-                            @if($record->keywords->isNotEmpty())
+                            @if($recordType === 'physical' && $record->keywords && $record->keywords->isNotEmpty())
                                 <div class="small mb-2">
                                     <span class="text-muted me-2">{{ __('Mots-clés:') }}</span>
                                     @foreach($record->keywords as $keyword)
@@ -329,6 +331,12 @@
                             @endif
                             <!-- Actions row (none for now) -->
                             <div class="record-actions small d-flex flex-wrap gap-3"></div>
+                        </div>
+                        </div>
+
+                        <!-- Thumbnail Preview on the right -->
+                        <div class="d-none d-lg-flex align-items-center justify-content-end flex-shrink-0" style="min-width: 100px;">
+                            @include('records.partials.thumbnail-preview', ['recordType' => $recordType, 'record' => $record])
                         </div>
                     </div>
                 </li>

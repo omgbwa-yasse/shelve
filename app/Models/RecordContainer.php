@@ -9,15 +9,15 @@ class RecordContainer extends Model
 {
     use HasFactory;
 
-    protected $table = 'record_container';
+    protected $table = 'record_physical_container';
 
-    protected $primaryKey = ['record_id', 'container_id'];
+    protected $primaryKey = ['record_physical_id', 'container_id'];
 
     public $incrementing = false;
 
 
     protected $fillable = [
-        'record_id',
+        'record_physical_id',
         'container_id',
         'description',
         'creator_id',
@@ -26,7 +26,7 @@ class RecordContainer extends Model
 
     public function record()
     {
-        return $this->belongsTo(RecordPhysical::class, 'record_id');
+        return $this->belongsTo(RecordPhysical::class, 'record_physical_id');
     }
 
 

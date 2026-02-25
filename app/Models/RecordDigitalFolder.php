@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Support\Collection;
 
 class RecordDigitalFolder extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToOrganisation;
 
     protected $fillable = [
         'code',
@@ -35,6 +36,9 @@ class RecordDigitalFolder extends Model
         'total_size',
         'start_date',
         'end_date',
+        'transferred_at',
+        'transferred_to_record_id',
+        'transfer_metadata',
     ];
 
     protected $casts = [
@@ -46,6 +50,8 @@ class RecordDigitalFolder extends Model
         'total_size' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
+        'transferred_at' => 'datetime',
+        'transfer_metadata' => 'array',
     ];
 
     /**
@@ -96,6 +102,11 @@ class RecordDigitalFolder extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function transferredToRecord(): BelongsTo
+    {
+        return $this->belongsTo(RecordPhysical::class, 'transferred_to_record_id');
+    }
+
     public function keywords()
     {
         return $this->belongsToMany(Keyword::class, 'record_digital_folder_keyword', 'folder_id', 'keyword_id');
@@ -117,6 +128,89 @@ class RecordDigitalFolder extends Model
         )
         ->withPivot('weight', 'context', 'extraction_note')
         ->withTimestamps();
+    }
+
+    /**
+     * Metadata methods
+     */
+    public function getMetadataValue(string $metadataCode, $default = null)
+    {
+        return $this->metadata[$metadataCode] ?? $default;
+    }
+
+    public function setMetadataValue(string $metadataCode, $value): void
+    {
+        $metadata = $this->metadata ?? [];
+        $metadata[$metadataCode] = $value;
+        $this->metadata = $metadata;
+    }
+
+    public function setMultipleMetadata(array $metadataArray): void
+    {
+        $metadata = $this->metadata ?? [];
+        foreach ($metadataArray as $code => $value) {
+            $metadata[$code] = $value;
+        }
+        $this->metadata = $metadata;
+    }
+
+    public function getRequiredMetadataFields(): array
+    {
+        if (!$this->type) {
+            return [];
+        }
+
+        return $this->type->getMandatoryMetadataDefinitions()
+            ->map(function ($definition) {
+                return [
+                    'code' => $definition->code,
+                    'name' => $definition->name,
+                    'data_type' => $definition->data_type,
+                    'required' => true,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function getVisibleMetadataFields(): array
+    {
+        if (!$this->type) {
+            return [];
+        }
+
+        return $this->type->getVisibleMetadataDefinitions()
+            ->map(function ($definition) {
+                return [
+                    'code' => $definition->code,
+                    'name' => $definition->name,
+                    'data_type' => $definition->data_type,
+                    'value' => $this->getMetadataValue($definition->code),
+                    'required' => $definition->pivot->mandatory,
+                    'readonly' => $definition->pivot->readonly,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function validateMetadata(): array
+    {
+        if (!$this->type) {
+            return ['type' => 'Folder type not set'];
+        }
+
+        $service = app(\App\Services\MetadataValidationService::class);
+
+        try {
+            $service->validateFolderMetadata($this->type_id, $this->metadata ?? []);
+            return [];
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $e->errors();
+        }
+    }
+
+    public function hasCompleteMetadata(): bool
+    {
+        return empty($this->validateMetadata());
     }
 
     /**
@@ -142,11 +236,6 @@ class RecordDigitalFolder extends Model
         return $query->whereHas('type', function ($q) use ($typeCode) {
             $q->where('code', $typeCode);
         });
-    }
-
-    public function scopeByOrganisation($query, $organisationId)
-    {
-        return $query->where('organisation_id', $organisationId);
     }
 
     /**

@@ -6,11 +6,7 @@ use App\Exports\RecordsExport;
 use App\Imports\RecordsImport;
 use App\Services\EADImportService;
 use App\Services\SedaImportService;
-use App\Services\AttachmentTextExtractor;
-use AiBridge\Facades\AiBridge;
-use App\Models\RecordAttachment;
 use App\Models\SlipStatus;
-use App\Models\Attachment;
 use App\Models\Dolly;
 use App\Models\Organisation;
 use App\Models\RecordPhysical;
@@ -23,19 +19,15 @@ use App\Models\Activity;
 use App\Models\Slip;
 use App\Models\ThesaurusConcept;
 use App\Models\User;
-use App\Models\Accession;
 use App\Models\Author;
 use App\Models\AuthorType;
 use App\Models\RecordLevel;
-use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use ZipArchive;
 
 class RecordController extends Controller
@@ -111,11 +103,11 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'level', 'status', 'activity', 'authors', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'documents.attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'level', 'status', 'activity', 'versions', 'keywords', 'thesaurusConcepts', 'attachments'
+            'type', 'creator', 'organisation', 'folder', 'attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         // Recherche par query (name et code) pour tous les types
@@ -224,25 +216,28 @@ class RecordController extends Controller
         ]);
 
         $foldersQuery = RecordDigitalFolder::with([
-            'type', 'creator', 'organisation', 'keywords', 'thesaurusConcepts'
+            'type', 'creator', 'organisation', 'documents.attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
         $documentsQuery = RecordDigitalDocument::with([
-            'type', 'creator', 'organisation', 'folder', 'keywords', 'thesaurusConcepts'
+            'type', 'creator', 'organisation', 'folder', 'attachment', 'keywords', 'thesaurusConcepts'
         ]);
 
-        // Filtrage par mot-clé si fourni (appliqué aux 3 types)
+        // Organisation scoping
+        if (!Auth::user()->isSuperAdmin()) {
+            $orgId = Auth::user()->current_organisation_id;
+            $physicalQuery->byOrganisation($orgId);
+            $foldersQuery->byOrganisation($orgId);
+            $documentsQuery->byOrganisation($orgId);
+        }
+
+        // Filtrage par mot-clé si fourni (appliqué aux records physiques uniquement)
         $keywordFilter = $request->input('keyword_filter');
         if ($request->filled('keyword_filter')) {
             $physicalQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
                 $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
             });
-            $foldersQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
-                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
-            });
-            $documentsQuery->whereHas('keywords', function ($q) use ($keywordFilter) {
-                $q->where('name', 'LIKE', '%' . $keywordFilter . '%');
-            });
+            // Note: Keywords filtering not yet implemented for digital folders and documents
         }
 
         // Récupérer les résultats
@@ -290,6 +285,9 @@ class RecordController extends Controller
 
         // Contexte de navigation pour une expérience fluide
         // On stocke les IDs avec préfixe de type pour distinguer les records
+        // Trier les records par pertinence pour le contexte de navigation
+        $allRecords = $this->calculateRelevanceAndSort($allRecords, $request->input('keyword_filter'));
+
         $listIds = $allRecords->map(function($record) {
             return $record->record_type . '_' . $record->id;
         })->toArray();
@@ -320,6 +318,11 @@ class RecordController extends Controller
         $query = RecordPhysical::with([
             'level', 'status', 'support', 'activity', 'containers', 'authors', 'thesaurusConcepts', 'keywords'
         ]);
+
+        // Organisation scoping
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->byOrganisation(Auth::user()->current_organisation_id);
+        }
 
         // Filtrage par mot-clé si fourni
         $keywordFilter = $request->input('keyword_filter');
@@ -588,6 +591,7 @@ class RecordController extends Controller
     {
 
         Gate::authorize('records_view');
+        $this->authorize('view', $record);
 
         $record->load([
             'children',
@@ -623,6 +627,7 @@ class RecordController extends Controller
     public function showFull(RecordPhysical $record, Request $request)
     {
         Gate::authorize('records_view');
+        $this->authorize('view', $record);
 
         // Charger toutes les relations pour la vue détaillée
         $record->load([
@@ -921,7 +926,7 @@ class RecordController extends Controller
                     // Conserver l'ordre de sélection original
                     $recordsForPdf = $allRecords;
 
-                    $pdf = PDF::loadView('records.print', [
+                    $pdf = Pdf::loadView('records.print', [
                         'records' => $recordsForPdf,
                     ]);
 
@@ -1176,118 +1181,6 @@ class RecordController extends Controller
 
         return response()->download(storage_path('app/public/' . $zipFileName))->deleteFileAfterSend(true);
     }
-
-    private function generateSEDA($records)
-    {
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ArchiveTransfer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="fr:gouv:culture:archivesdefrance:seda:v2.1 seda-2.1-main.xsd" xmlns="fr:gouv:culture:archivesdefrance:seda:v2.1"></ArchiveTransfer>');
-
-        $xml->addChild('Comment', 'Archive Transfer');
-        $xml->addChild('Date', date('Y-m-d'));
-
-        $archive = $xml->addChild('Archive');
-
-        foreach ($records as $record) {
-            $archiveObject = $archive->addChild('ArchiveObject');
-            $archiveObject->addChild('Name', $record->name);
-            $archiveObject->addChild('Description', $record->content);
-
-            $document = $archiveObject->addChild('Document');
-            $document->addChild('Identification', $record->code);
-            $document->addChild('Type', $record->level->name ?? 'item');
-
-            foreach ($record->attachments as $attachment) {
-                $attachmentNode = $document->addChild('Attachment');
-                $attachmentNode->addChild('FileName', $attachment->name . '.pdf');  // Added .pdf extension
-                $attachmentNode->addChild('Size', $attachment->size);
-                $attachmentNode->addChild('Path', 'attachments/' . $attachment->name . '.pdf');  // Added .pdf extension
-                $attachmentNode->addChild('Crypt', $attachment->crypt);
-            }
-        }
-
-        return $xml->asXML();
-    }
-
-    private function importEAD($file, $dolly)
-    {
-        $xml = simplexml_load_file($file);
-        $xml->registerXPathNamespace('ead', 'urn:isbn:1-931666-22-9');
-
-        $records = $xml->xpath('//ead:c');
-
-        foreach ($records as $record) {
-            $data = [
-                'name' => (string)$record->did->unittitle,
-                'date_start' => (string)$record->did->unitdate,
-                'content' => (string)$record->scopecontent->p,
-                // Map other fields as needed
-            ];
-
-            $newRecord = RecordPhysical::create($data);
-            $dolly->records()->attach($newRecord->id);
-        }
-    }
-
-    private function importSEDA($file, $dolly)
-    {
-        $zip = new ZipArchive;
-        $extractPath = storage_path('app/temp_import');
-
-        if ($zip->open($file) === TRUE) {
-            $zip->extractTo($extractPath);
-            $zip->close();
-
-            $xmlFile = $extractPath . '/records.xml';
-            $xml = simplexml_load_file($xmlFile);
-            $xml->registerXPathNamespace('seda', 'fr:gouv:culture:archivesdefrance:seda:v2.1');
-
-            $records = $xml->xpath('//seda:ArchiveObject');
-
-            foreach ($records as $record) {
-                $data = [
-                    'name' => (string)$record->Name,
-                    'content' => (string)$record->Description,
-                    'code' => (string)$record->Document->Identification,
-                    // Map other fields as needed
-                ];
-
-                $newRecord = RecordPhysical::create($data);
-                $dolly->records()->attach($newRecord->id);
-                // Import attachments
-                $attachments = $record->xpath('Document/Attachment');
-                foreach ($attachments as $attachment) {
-                    $fileName = (string)$attachment->FileName;
-                    $filePath = $extractPath . '/attachments/' . $fileName;
-
-                    if (file_exists($filePath)) {
-                        $hashMd5 = md5_file($filePath);
-                        $hashSha512 = hash_file('sha512', $filePath);
-                        $mimeType = mime_content_type($filePath);
-
-                        $createdAttachment = Attachment::create([
-                            'path' => 'attachments/' . $fileName,
-                            'name' => $fileName,
-                            'crypt' => $hashMd5,
-                            'crypt_sha512' => $hashSha512,
-                            'size' => (int)$attachment->Size,
-                            'creator_id' => Auth::id(),
-                            'type' => 'record',
-                            'thumbnail_path' => '',
-                            'mime_type' => $mimeType,
-                        ]);
-
-                        $newRecord->attachments()->attach($createdAttachment->id);
-
-                        // Move file to the correct storage location
-                        Storage::putFileAs('public/attachments', $filePath, $fileName);
-                    }
-                }
-            }
-
-            // Clean up temporary files
-            Storage::deleteDirectory('temp_import');
-        }
-    }
-    // EAD/SEDA import logic handled by services
 
     /**
      * Analyser un fichier pour extraire les en-têtes (remapping UI)
@@ -1581,35 +1474,6 @@ class RecordController extends Controller
     }
 
     /**
-     * Détecte le type de record et retourne le modèle approprié
-     *
-     * @param string $type Type du record ('physical', 'folder', 'document')
-     * @return string Nom de classe du modèle
-     */
-    private function getRecordModel(string $type): string
-    {
-        return match($type) {
-            'physical' => RecordPhysical::class,
-            'folder' => RecordDigitalFolder::class,
-            'document' => RecordDigitalDocument::class,
-            default => RecordPhysical::class,
-        };
-    }
-
-    /**
-     * Trouve un record par son ID et son type
-     *
-     * @param int $id ID du record
-     * @param string $type Type du record ('physical', 'folder', 'document')
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    private function findRecord(int $id, string $type)
-    {
-        $modelClass = $this->getRecordModel($type);
-        return $modelClass::find($id);
-    }
-
-    /**
      * Récupère le label pour le type de record
      *
      * @param string $type Type du record ('physical', 'folder', 'document')
@@ -1623,6 +1487,66 @@ class RecordController extends Controller
             'document' => 'Document Numérique',
             default => 'Dossier Physique',
         };
+    }
+
+    /**
+     * Calcule la pertinence pour chaque record et les trie
+     */
+    private function calculateRelevanceAndSort($allRecords, $keywordFilter = null)
+    {
+        $allRecords = $allRecords->map(function ($record) use ($keywordFilter) {
+            $relevanceScore = 0;
+
+            // Score basé sur la correspondance avec les mots-clés recherchés
+            if (!empty($keywordFilter) && $record->record_type === 'physical') {
+                $recordKeywords = $record->keywords->pluck('name')->join(' ');
+                if (stripos($recordKeywords, $keywordFilter) !== false) {
+                    $relevanceScore += 100;
+                }
+                if (stripos($record->name ?? '', $keywordFilter) !== false) {
+                    $relevanceScore += 50;
+                }
+                if (stripos($record->content ?? '', $keywordFilter) !== false) {
+                    $relevanceScore += 30;
+                }
+            }
+
+            // Score basé sur l'activité récente
+            if (isset($record->updated_at)) {
+                $daysSinceUpdate = now()->diffInDays($record->updated_at);
+                $relevanceScore += max(0, 20 - $daysSinceUpdate); // Plus récent = plus pertinent
+            }
+
+            // Score basé sur le nombre de relations/connexions
+            if ($record->record_type === 'physical') {
+                $relevanceScore += $record->authors->count() * 5;
+                $relevanceScore += $record->keywords->count() * 3;
+                $relevanceScore += $record->thesaurusConcepts->count() * 2;
+            } elseif (in_array($record->record_type, ['folder', 'document'])) {
+                // Pour les documents et dossiers numériques
+                $relevanceScore += $record->keywords->count() * 3;
+                $relevanceScore += $record->thesaurusConcepts->count() * 2;
+
+                // Score supplémentaire pour les correspondances dans les métadonnées numériques
+                if (!empty($keywordFilter)) {
+                    if (stripos($record->name ?? '', $keywordFilter) !== false) {
+                        $relevanceScore += 50;
+                    }
+                    if (stripos($record->description ?? '', $keywordFilter) !== false) {
+                        $relevanceScore += 30;
+                    }
+                }
+            }
+
+            // Score par défaut basé sur l'ID (plus ancien en cas d'égalité)
+            $relevanceScore += ($record->id ?? 0) * 0.01;
+
+            $record->relevance_score = $relevanceScore;
+            return $record;
+        });
+
+        // Trier par pertinence (score le plus élevé en premier)
+        return $allRecords->sortByDesc('relevance_score')->values();
     }
 
 }

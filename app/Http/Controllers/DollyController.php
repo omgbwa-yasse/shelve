@@ -9,9 +9,6 @@ use App\Models\Mail;
 use App\Models\RecordPhysical;
 use App\Models\RecordDigitalFolder;
 use App\Models\RecordDigitalDocument;
-use App\Models\RecordArtifact;
-use App\Models\RecordBook;
-use App\Models\RecordBookPublisherSeries;
 use App\Models\Room;
 use App\Models\Shelf;
 use App\Models\SlipRecord;
@@ -72,16 +69,13 @@ class DollyController extends Controller
         // Nouvelles entités numériques
         $digitalFolders = RecordDigitalFolder::where('organisation_id', Auth::user()->current_organisation_id)->get();
         $digitalDocuments = RecordDigitalDocument::where('organisation_id', Auth::user()->current_organisation_id)->get();
-        $artifacts = RecordArtifact::where('organisation_id', Auth::user()->current_organisation_id)->get();
-        $books = RecordBook::where('organisation_id', Auth::user()->current_organisation_id)->get();
-        $bookSeries = RecordBookPublisherSeries::all();
 
         $dolly->load('creator','ownerOrganisation');
 
         return view('dollies.show', compact(
             'dolly', 'records', 'mails', 'communications', 'rooms',
             'containers', 'shelves', 'slip_records',
-            'digitalFolders', 'digitalDocuments', 'artifacts', 'books', 'bookSeries'
+            'digitalFolders', 'digitalDocuments'
         ));
     }
 
@@ -135,9 +129,6 @@ class DollyController extends Controller
             || $dolly->shelve()->exists()
             || $dolly->digitalFolders()->exists()
             || $dolly->digitalDocuments()->exists()
-            || $dolly->artifacts()->exists()
-            || $dolly->books()->exists()
-            || $dolly->bookSeries()->exists()
         ) {
            return redirect()->route('dolly.index')->with('error', 'Cannot delete Dolly because it has related records in other tables.');
         }
@@ -380,72 +371,6 @@ class DollyController extends Controller
 
         return redirect()->route('dolly.show', $dolly)
             ->with('success', 'Document numérique retiré du chariot');
-    }
-
-    // ==================== ARTIFACTS ====================
-
-    public function addArtifact(Request $request, Dolly $dolly)
-    {
-        $request->validate([
-            'artifact_id' => 'required|exists:record_artifacts,id'
-        ]);
-
-        $dolly->artifacts()->syncWithoutDetaching($request->artifact_id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Artefact ajouté au chariot');
-    }
-
-    public function removeArtifact(Dolly $dolly, RecordArtifact $artifact)
-    {
-        $dolly->artifacts()->detach($artifact->id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Artefact retiré du chariot');
-    }
-
-    // ==================== BOOKS ====================
-
-    public function addBook(Request $request, Dolly $dolly)
-    {
-        $request->validate([
-            'book_id' => 'required|exists:record_books,id'
-        ]);
-
-        $dolly->books()->syncWithoutDetaching($request->book_id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Livre ajouté au chariot');
-    }
-
-    public function removeBook(Dolly $dolly, RecordBook $book)
-    {
-        $dolly->books()->detach($book->id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Livre retiré du chariot');
-    }
-
-    // ==================== BOOK SERIES ====================
-
-    public function addBookSeries(Request $request, Dolly $dolly)
-    {
-        $request->validate([
-            'series_id' => 'required|exists:record_book_publisher_series,id'
-        ]);
-
-        $dolly->bookSeries()->syncWithoutDetaching($request->series_id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Série ajoutée au chariot');
-    }
-
-    public function removeBookSeries(Dolly $dolly, RecordBookPublisherSeries $series)
-    {
-        $dolly->bookSeries()->detach($series->id);
-
-        return redirect()->route('dolly.show', $dolly)
-            ->with('success', 'Série retirée du chariot');
     }
 
 }

@@ -14,6 +14,7 @@ class PublicFeedback extends Model
 
     protected $fillable = [
         'user_id',
+        'subject',
         'title',
         'content',
         'type',

@@ -137,10 +137,12 @@ class FolderController extends Controller
      */
     public function show(RecordDigitalFolder $folder)
     {
-        // Vérifier que l'utilisateur a accès à ce dossier
-        $currentOrgId = Auth::user()->current_organisation_id ?? null;
-        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
-            abort(403, 'Accès non autorisé à ce dossier.');
+        // Superadmin peut accéder à tous les dossiers
+        if (!Auth::user()->isSuperAdmin()) {
+            $currentOrgId = Auth::user()->current_organisation_id ?? null;
+            if (!$currentOrgId || $folder->organisation_id !== $currentOrgId) {
+                abort(403, 'Accès non autorisé à ce dossier.');
+            }
         }
 
         $folder->load([
@@ -167,10 +169,12 @@ class FolderController extends Controller
      */
     public function edit(RecordDigitalFolder $folder)
     {
-        // Vérifier que l'utilisateur a accès à ce dossier
-        $currentOrgId = Auth::user()->current_organisation_id ?? null;
-        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
-            abort(403, 'Accès non autorisé à ce dossier.');
+        // Superadmin peut accéder à tous les dossiers
+        if (!Auth::user()->isSuperAdmin()) {
+            $currentOrgId = Auth::user()->current_organisation_id ?? null;
+            if (!$currentOrgId || $folder->organisation_id !== $currentOrgId) {
+                abort(403, 'Accès non autorisé à ce dossier.');
+            }
         }
 
         $types = RecordDigitalFolderType::orderBy('name')->get();
@@ -193,10 +197,12 @@ class FolderController extends Controller
      */
     public function update(Request $request, RecordDigitalFolder $folder)
     {
-        // Vérifier que l'utilisateur a accès à ce dossier
-        $currentOrgId = Auth::user()->current_organisation_id ?? null;
-        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
-            abort(403, 'Accès non autorisé à ce dossier.');
+        // Superadmin peut accéder à tous les dossiers
+        if (!Auth::user()->isSuperAdmin()) {
+            $currentOrgId = Auth::user()->current_organisation_id ?? null;
+            if (!$currentOrgId || $folder->organisation_id !== $currentOrgId) {
+                abort(403, 'Accès non autorisé à ce dossier.');
+            }
         }
 
         $validated = $request->validate([
@@ -262,10 +268,12 @@ class FolderController extends Controller
      */
     public function destroy(RecordDigitalFolder $folder)
     {
-        // Vérifier que l'utilisateur a accès à ce dossier
-        $currentOrgId = Auth::user()->current_organisation_id ?? null;
-        if ($currentOrgId && $folder->organisation_id !== $currentOrgId) {
-            abort(403, 'Accès non autorisé à ce dossier.');
+        // Superadmin peut accéder à tous les dossiers
+        if (!Auth::user()->isSuperAdmin()) {
+            $currentOrgId = Auth::user()->current_organisation_id ?? null;
+            if (!$currentOrgId || $folder->organisation_id !== $currentOrgId) {
+                abort(403, 'Accès non autorisé à ce dossier.');
+            }
         }
 
         // Vérifier si le dossier contient des documents ou des sous-dossiers
@@ -451,8 +459,13 @@ class FolderController extends Controller
         $currentOrgId = Auth::user()->current_organisation_id ?? null;
 
         if ($currentOrgId) {
-            $query->where('organisation_id', $currentOrgId);
+            // Filtrer par l'organisation courante OU les dossiers sans organisation (NULL)
+            $query->where(function ($q) use ($currentOrgId) {
+                $q->where('organisation_id', $currentOrgId)
+                  ->orWhereNull('organisation_id');
+            });
         }
+        // Si pas d'organisation courante, afficher tous les dossiers
 
         return $query;
     }

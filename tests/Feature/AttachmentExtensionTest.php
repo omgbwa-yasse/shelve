@@ -89,17 +89,6 @@ class AttachmentExtensionTest extends TestCase
             'creator_id' => $user->id,
         ]);
 
-        Attachment::create([
-            'name' => 'Primary Artifact.jpg',
-            'path' => 'images/',
-            'crypt' => 'art789',
-            'is_primary' => true,
-            'type' => 'artifact',
-            'mime_type' => 'image/jpeg',
-            'size' => 100,
-            'creator_id' => $user->id,
-        ]);
-
         $primaryDocs = Attachment::ofType('digital_document')->primary()->get();
 
         $this->assertCount(1, $primaryDocs);
@@ -174,7 +163,6 @@ class AttachmentExtensionTest extends TestCase
         $this->assertEquals('record', Attachment::TYPE_RECORD);
         $this->assertEquals('digital_folder', Attachment::TYPE_DIGITAL_FOLDER);
         $this->assertEquals('digital_document', Attachment::TYPE_DIGITAL_DOCUMENT);
-        $this->assertEquals('artifact', Attachment::TYPE_ARTIFACT);
         $this->assertEquals('book', Attachment::TYPE_BOOK);
         $this->assertEquals('periodic', Attachment::TYPE_PERIODIC);
     }

@@ -645,7 +645,7 @@ public function inprogress()
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('mails.received.index', compact('mails'));
+        return view('mails.send.index', compact('mails'));
     } catch (Exception $e) {
         Log::error('Erreur lors de la récupération des courriers en cours : ' . $e->getMessage());
         return back()->with('error', 'Une erreur est survenue lors du chargement des courriers.');

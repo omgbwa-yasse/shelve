@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Traits\HasDualOrganisation;
 use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,8 +10,15 @@ use App\Models\SlipStatus;
 
 class Slip extends Model
 {
-    use HasFactory;
-    use Searchable;
+    use HasFactory, Searchable, HasDualOrganisation;
+
+    /**
+     * Dual organisation configuration:
+     * - emitter = officer's organisation (who creates the slip)
+     * - beneficiary = user's organisation (who receives the slip)
+     */
+    protected string $emitterOrgField = 'officer_organisation_id';
+    protected string $beneficiaryOrgField = 'user_organisation_id';
 
     protected $fillable = [
         'code',

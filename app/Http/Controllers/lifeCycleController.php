@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 class LifeCycleController extends Controller
 {
     // Constantes pour éviter la duplication avec logique date_end/date_exact
-    const RECORDS_SELECT = 'records.*';
+    const RECORDS_SELECT = 'record_physicals.*';
 
     /**
      * Convertit une date selon son format en date MySQL
@@ -28,7 +28,7 @@ class LifeCycleController extends Controller
      * @param string $formatField Le champ de format de date
      * @return string Expression SQL pour la conversion
      */
-    private function convertDateToMysqlDate($dateField, $formatField = 'records.date_format')
+    private function convertDateToMysqlDate($dateField, $formatField = 'record_physicals.date_format')
     {
         return "CASE
             WHEN {$formatField} = 'Y' AND {$dateField} REGEXP '^[0-9]{4}$' THEN
@@ -59,8 +59,8 @@ class LifeCycleController extends Controller
      */
     private function getReferenceDateExpression()
     {
-        $convertedDateEnd = $this->convertDateToMysqlDate('records.date_end');
-        return "COALESCE({$convertedDateEnd}, records.date_exact)";
+        $convertedDateEnd = $this->convertDateToMysqlDate('record_physicals.date_end');
+        return "COALESCE({$convertedDateEnd}, record_physicals.date_exact)";
     }
 
     /**
@@ -104,7 +104,7 @@ class LifeCycleController extends Controller
      */
     private function getRetentionBaseQuery()
     {
-        return RecordPhysical::join('activities', 'records.activity_id', '=', 'activities.id')
+        return RecordPhysical::join('activities', 'record_physicals.activity_id', '=', 'activities.id')
             ->join('retention_activity', 'activities.id', '=', 'retention_activity.activity_id')
             ->join('retentions', 'retention_activity.retention_id', '=', 'retentions.id')
             ->join('sorts', 'retentions.sort_id', '=', 'sorts.id');
@@ -155,7 +155,7 @@ class LifeCycleController extends Controller
         $title = "à transférer aux archives historiques - communicabilité écoulée";
 
         $records = $this->addDateOrderBy(
-            RecordPhysical::join('activities', 'records.activity_id', '=', 'activities.id')
+            RecordPhysical::join('activities', 'record_physicals.activity_id', '=', 'activities.id')
                 ->join('communicabilities', 'activities.communicability_id', '=', 'communicabilities.id')
                 ->whereRaw($this->getCommunicabilityExpiredCondition())
                 ->select(self::RECORDS_SELECT)

@@ -49,20 +49,6 @@
             </x-slot>
         </x-stat-card>
 
-        <!-- Artifacts Card -->
-        <x-stat-card
-            title="Artifacts"
-            :value="$stats['artifacts']"
-            :trend="3"
-            color="purple"
-            href="{{ route('artifacts.index') }}">
-            <x-slot name="icon">
-                <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                </svg>
-            </x-slot>
-        </x-stat-card>
-
         <!-- Periodicals Card -->
         <x-stat-card
             title="Periodicals"
@@ -95,13 +81,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                     <span class="text-sm font-medium text-gray-900 dark:text-white">Upload Document</span>
-                </a>
-
-                <a href="{{ route('artifacts.create') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">
-                    <svg class="h-8 w-8 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">Add Artifact</span>
                 </a>
 
                 <a href="{{ route('search.advanced') }}" class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-indigo-500 dark:hover:border-indigo-400 transition-colors group">

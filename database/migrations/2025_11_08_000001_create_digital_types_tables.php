@@ -14,39 +14,52 @@ return new class extends Migration
         // Table des types de dossiers numériques
         Schema::create('record_digital_folder_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 50)->unique()->comment('Code technique : CONTRACTS, HR, PROJECTS');
-            $table->string('name', 200)->comment('Nom du type');
-            $table->text('description')->nullable();
-            $table->string('icon', 50)->nullable()->comment('Icône FontAwesome');
-            $table->string('color', 7)->nullable()->comment('Code couleur hexa');
+            $table->string('code', 50)->unique()->comment('Code unique du type (ex: CONTRACTS, HR, INVOICES)');
+            $table->string('name')->comment('Nom du type de dossier');
+            $table->text('description')->nullable()->comment('Description détaillée du type');
 
-            // Relation avec les templates de métadonnées
+            // Configuration
+            $table->string('code_pattern')->nullable()->comment('Pattern de génération de code (ex: CTR-{YYYY}-{NNN})');
+            $table->integer('max_depth')->default(5)->comment('Profondeur maximale de hiérarchie autorisée');
+            $table->boolean('allows_documents')->default(true)->comment('Autorise les documents dans ce type de dossier');
+            $table->json('allowed_document_types')->nullable()->comment('Types de documents autorisés (IDs)');
+
+            // Métadonnées et template
             $table->unsignedBigInteger('metadata_template_id')->nullable();
-            $table->foreign('metadata_template_id')
-                ->references('id')
-                ->on('metadata_templates')
-                ->onDelete('set null');
+            // $table->foreign('metadata_template_id')->references('id')->on('metadata_templates')->onDelete('set null');
+            $table->json('required_metadata_fields')->nullable()->comment('Champs de métadonnées obligatoires');
 
-            // Configuration du code généré
-            $table->string('code_prefix', 10)->nullable()->comment('Préfixe du code : CTR, HR, PRJ');
-            $table->string('code_pattern', 100)->default('{{PREFIX}}-{{YEAR}}-{{SEQ}}');
+            // Règles de nommage et validation
+            $table->string('naming_convention')->nullable()->comment('Convention de nommage des dossiers');
+            $table->json('validation_rules')->nullable()->comment('Règles de validation personnalisées');
 
-            // Règles métier
-            $table->enum('default_access_level', ['public', 'internal', 'restricted', 'confidential', 'secret'])
-                ->default('internal');
-            $table->boolean('requires_approval')->default(false)->comment('Nécessite une approbation');
-            $table->json('mandatory_metadata')->nullable()->comment('Métadonnées obligatoires');
-            $table->json('allowed_document_types')->nullable()->comment('Types de documents autorisés');
+            // Sécurité et workflow
+            $table->string('default_access_level')->default('public')->comment('Niveau d\'accès par défaut');
+            $table->boolean('requires_approval')->default(false)->comment('Nécessite approbation');
+            $table->boolean('version_control')->default(false)->comment('Contrôle de version activé');
 
-            // Système
+            // Rétention
+            $table->integer('retention_years')->nullable()->comment('Durée de conservation en années');
+            $table->string('retention_policy')->nullable()->comment('Politique de conservation');
+
+            // Statistiques
+            $table->integer('folders_count')->default(0)->comment('Nombre de dossiers de ce type');
+            $table->timestamp('last_used_at')->nullable()->comment('Dernière utilisation');
+
+            // État et organisation
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_system')->default(false)->comment('Type système non modifiable');
             $table->integer('display_order')->default(0);
+            $table->string('icon')->nullable()->comment('Icône pour l\'interface');
+            $table->string('color')->nullable()->comment('Couleur pour l\'interface');
+
+            // Audit
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
 
             $table->timestamps();
             $table->softDeletes();
 
-            // Index
+            // Indexes
             $table->index('code');
             $table->index('is_active');
             $table->index('display_order');
@@ -55,48 +68,73 @@ return new class extends Migration
         // Table des types de documents numériques
         Schema::create('record_digital_document_types', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 50)->unique()->comment('Code technique : INVOICE, QUOTE, CONTRACT_DOC');
-            $table->string('name', 200)->comment('Nom du type');
-            $table->text('description')->nullable();
-            $table->string('icon', 50)->nullable();
-            $table->string('color', 7)->nullable();
+            $table->string('code', 50)->unique()->comment('Code unique du type (ex: INVOICE, CONTRACT, REPORT)');
+            $table->string('name')->comment('Nom du type de document');
+            $table->text('description')->nullable()->comment('Description détaillée du type');
 
-            // Relation avec les templates de métadonnées
-            $table->unsignedBigInteger('metadata_template_id')->nullable();
-            $table->foreign('metadata_template_id')
-                ->references('id')
-                ->on('metadata_templates')
-                ->onDelete('set null');
+            // Catégorie et classification
+            $table->string('category')->nullable()->comment('Catégorie (administratif, financier, RH, etc.)');
+            $table->json('tags')->nullable()->comment('Tags pour recherche et organisation');
 
-            // Configuration du code généré
-            $table->string('code_prefix', 10)->nullable();
-            $table->string('code_pattern', 100)->default('{{PREFIX}}-{{YEAR}}-{{SEQ}}');
-
-            // Règles métier
-            $table->enum('default_access_level', ['public', 'internal', 'restricted', 'confidential', 'secret'])
-                ->default('internal');
-            $table->json('allowed_mime_types')->nullable()->comment('Types MIME autorisés : ["application/pdf"]');
-            $table->json('allowed_extensions')->nullable()->comment('Extensions autorisées : [".pdf", ".docx"]');
+            // Contraintes de fichiers
+            $table->json('allowed_mime_types')->nullable()->comment('Types MIME autorisés (application/pdf, image/*, etc.)');
+            $table->json('allowed_extensions')->nullable()->comment('Extensions autorisées (pdf, docx, xlsx, etc.)');
             $table->bigInteger('max_file_size')->nullable()->comment('Taille max en octets');
-            $table->boolean('requires_signature')->default(false);
-            $table->boolean('requires_approval')->default(false);
-            $table->json('mandatory_metadata')->nullable();
-            $table->integer('retention_years')->nullable()->comment('Durée de conservation en années');
+            $table->bigInteger('min_file_size')->nullable()->comment('Taille min en octets');
 
-            // Versioning
-            $table->boolean('enable_versioning')->default(true);
+            // Métadonnées et template
+            $table->unsignedBigInteger('metadata_template_id')->nullable();
+            // $table->foreign('metadata_template_id')->references('id')->on('metadata_templates')->onDelete('set null');
+            $table->json('required_metadata_fields')->nullable()->comment('Champs de métadonnées obligatoires');
+            $table->json('optional_metadata_fields')->nullable()->comment('Champs de métadonnées optionnels');
+
+            // Règles de nommage
+            $table->string('naming_pattern')->nullable()->comment('Pattern de nommage (ex: {TYPE}-{DATE}-{NNN})');
+            $table->json('validation_rules')->nullable()->comment('Règles de validation personnalisées');
+
+            // Versioning et workflow
+            $table->boolean('requires_versioning')->default(false)->comment('Versioning obligatoire');
             $table->integer('max_versions')->nullable()->comment('Nombre max de versions conservées');
+            $table->boolean('requires_approval')->default(false)->comment('Nécessite approbation');
+            $table->boolean('requires_signature')->default(false)->comment('Nécessite signature électronique');
 
-            // Système
+            // Sécurité
+            $table->string('default_access_level')->default('public')->comment('Niveau d\'accès par défaut');
+            $table->boolean('requires_encryption')->default(false)->comment('Chiffrement obligatoire');
+            $table->boolean('watermark_enabled')->default(false)->comment('Filigrane activé');
+
+            // Rétention et archivage
+            $table->integer('retention_years')->nullable()->comment('Durée de conservation en années');
+            $table->string('retention_policy')->nullable()->comment('Politique de conservation');
+            $table->boolean('auto_archive')->default(false)->comment('Archivage automatique');
+            $table->integer('archive_after_days')->nullable()->comment('Archiver après X jours');
+
+            // OCR et traitement
+            $table->boolean('ocr_enabled')->default(false)->comment('OCR automatique activé');
+            $table->boolean('thumbnail_enabled')->default(true)->comment('Génération de miniature');
+            $table->boolean('preview_enabled')->default(true)->comment('Prévisualisation activée');
+
+            // Statistiques
+            $table->integer('documents_count')->default(0)->comment('Nombre de documents de ce type');
+            $table->bigInteger('total_size')->default(0)->comment('Taille totale en octets');
+            $table->timestamp('last_used_at')->nullable()->comment('Dernière utilisation');
+
+            // État et organisation
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_system')->default(false);
             $table->integer('display_order')->default(0);
+            $table->string('icon')->nullable()->comment('Icône pour l\'interface');
+            $table->string('color')->nullable()->comment('Couleur pour l\'interface');
+
+            // Audit
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
 
             $table->timestamps();
             $table->softDeletes();
 
-            // Index
+            // Indexes
             $table->index('code');
+            $table->index('category');
             $table->index('is_active');
             $table->index('display_order');
         });

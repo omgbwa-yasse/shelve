@@ -11,31 +11,40 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Table des auteurs normalisée
+        // Table des auteurs normalisée (format UNIMARC)
         Schema::create('record_authors', function (Blueprint $table) {
             $table->id();
 
+            // Type d'auteur
+            $table->enum('author_type', ['person', 'organization', 'conference'])->default('person')->comment('Author type');
+
             // Identification
-            $table->string('first_name')->nullable()->comment('Prénom');
-            $table->string('last_name')->comment('Nom de famille');
-            $table->string('full_name')->comment('Nom complet (indexé)');
-            $table->string('pseudonym')->nullable()->comment('Pseudonyme ou nom de plume');
+            $table->string('last_name')->comment('Last name or organization name');
+            $table->string('first_name')->nullable()->comment('First name');
+            $table->string('full_name')->comment('Full name (indexed)');
+            $table->string('pseudonym')->nullable()->comment('Pseudonym or pen name');
+            $table->text('rejected_form')->nullable()->comment('Other name forms');
 
-            // Dates biographiques
-            $table->integer('birth_year')->nullable()->comment('Année de naissance');
-            $table->integer('death_year')->nullable()->comment('Année de décès');
-            $table->string('birth_place')->nullable()->comment('Lieu de naissance');
-            $table->string('nationality')->nullable()->comment('Nationalité (ISO 3166-1 alpha-2)');
+            // Biographical dates
+            $table->string('dates', 100)->nullable()->comment('Dates (ex: 1909-1943)');
+            $table->integer('birth_year')->nullable()->comment('Birth year');
+            $table->integer('death_year')->nullable()->comment('Death year');
+            $table->string('birth_place')->nullable()->comment('Birth place');
+            $table->string('country', 100)->nullable()->comment('Country');
+            $table->string('nationality')->nullable()->comment('Nationality (ISO 3166-1 alpha-2)');
+            $table->string('language', 50)->nullable()->comment('Language');
 
-            // Informations professionnelles
-            $table->text('biography')->nullable()->comment('Biographie courte');
-            $table->json('specializations')->nullable()->comment('Spécialisations/Domaines (JSON array)');
-            $table->string('website')->nullable()->comment('Site web personnel');
-            $table->string('photo')->nullable()->comment('Photo de l\'auteur');
+            // Professional information
+            $table->text('biographical_note')->nullable()->comment('Biographical note');
+            $table->text('biography')->nullable()->comment('Short biography (legacy)');
+            $table->json('specializations')->nullable()->comment('Specializations/Fields (JSON array)');
+            $table->string('website')->nullable()->comment('Personal website');
+            $table->string('photo')->nullable()->comment('Author photo');
 
-            // Identifiants externes
+            // External identifiers
+            $table->string('ppn_authority', 20)->nullable()->comment('PPN authority SUDOC');
+            $table->string('isni', 50)->nullable()->unique()->comment('ISNI (International Standard Name Identifier)');
             $table->string('orcid')->nullable()->unique()->comment('ORCID iD');
-            $table->string('isni')->nullable()->unique()->comment('ISNI (International Standard Name Identifier)');
             $table->string('viaf')->nullable()->comment('VIAF (Virtual International Authority File)');
 
             // Statistiques
@@ -52,35 +61,39 @@ return new class extends Migration
             // Index
             $table->index('last_name');
             $table->index('full_name');
+            $table->index('author_type');
+            $table->index('ppn_authority');
             $table->index('nationality');
             $table->index('status');
-            $table->fullText(['full_name', 'pseudonym', 'biography']);
+            $table->fullText(['full_name', 'pseudonym', 'biography', 'biographical_note'], 'authors_fulltext_idx');
         });
 
-        // Table pivot pour la relation many-to-many entre auteurs et livres
+        // Table de responsabilité (relation many-to-many between authors and books)
         Schema::create('record_author_book', function (Blueprint $table) {
             $table->id();
             $table->foreignId('author_id')
                 ->constrained('record_authors')
                 ->onDelete('cascade')
-                ->comment('Auteur');
+                ->comment('Author (person, organization, or conference)');
             $table->foreignId('book_id')
                 ->constrained('record_books')
                 ->onDelete('cascade')
-                ->comment('Livre');
+                ->comment('Book');
 
-            $table->string('role')->default('author')->comment('Rôle (author, editor, translator, illustrator, contributor)');
-            $table->integer('display_order')->default(0)->comment('Ordre d\'affichage');
-            $table->text('notes')->nullable()->comment('Notes sur la contribution');
+            $table->string('responsibility_type', 10)->nullable()->comment('UNIMARC code (ex: 070=author, 730=translator)');
+            $table->string('function', 100)->nullable()->comment('Function (Author, Translator, Preface writer, etc.)');
+            $table->string('role')->default('author')->comment('Role (legacy: author, editor, translator, illustrator, contributor)');
+            $table->integer('display_order')->default(1)->comment('Display order');
+            $table->text('notes')->nullable()->comment('Notes on contribution');
 
             $table->timestamps();
 
             // Index
             $table->index('author_id');
             $table->index('book_id');
+            $table->index('responsibility_type');
             $table->index('role');
             $table->index(['book_id', 'display_order']);
-            $table->unique(['author_id', 'book_id', 'role'], 'author_book_role_unique');
         });
     }
 

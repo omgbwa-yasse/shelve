@@ -34,7 +34,7 @@
                                     <tr>
                                         <td>{{ $record->title }}</td>
                                         <td>{{ $record->code }}</td>
-                                        <td>{{ $record->publisher->name ?? 'Inconnu' }}</td>
+                                        <td>{{ $record->publishers->pluck('name')->join(', ') ?? 'Inconnu' }}</td>
                                         <td>{{ $record->published_at ? $record->published_at->format('d/m/Y H:i') : '-' }}</td>
                                         <td>{{ $record->expires_at ? $record->expires_at->format('d/m/Y H:i') : 'Pas d\'expiration' }}</td>
                                         <td>

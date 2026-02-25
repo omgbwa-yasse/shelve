@@ -38,7 +38,6 @@ class DashboardTest extends DuskTestCase
                     ->visit('/dashboard')
                     ->assertSee('Folders')
                     ->assertSee('Documents')
-                    ->assertSee('Artifacts')
                     ->assertSee('Periodicals');
         });
     }

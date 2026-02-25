@@ -87,6 +87,47 @@
     </div>
     @endif
 
+    <!-- Cycle de vie Section -->
+    @can('viewAny', App\Models\Record::class)
+    <div class="submenu-section">
+        <div class="submenu-heading">
+            <i class="bi bi-cart"></i> {{ __('life_cycle') }}
+        </div>
+        <div class="submenu-content" id="lifeCycleMenu">
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.tostore') }}">
+                    <i class="bi bi-folder-check"></i> {{ __('to_transfer') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.toretain') }}">
+                    <i class="bi bi-folder-check"></i> {{ __('active_files') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.totransfer') }}">
+                    <i class="bi bi-arrow-right-square"></i> {{ __('to_deposit') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.toeliminate') }}">
+                    <i class="bi bi-trash"></i> {{ __('to_eliminate') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.tokeep') }}">
+                    <i class="bi bi-archive"></i> {{ __('to_keep') }}
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a class="submenu-link" href="{{ route('records.tosort') }}">
+                    <i class="bi bi-sort-down"></i> {{ __('to_sort') }}
+                </a>
+            </div>
+        </div>
+    </div>
+    @endcan
+
     <!-- Import / Export Section -->
     @if(\App\Helpers\SubmenuPermissions::canAccessSubmenuSection('transferrings', 'tools'))
     <div class="submenu-section">

@@ -63,21 +63,7 @@
                     <i class="bi bi-file-earmark-text"></i> {{ __('digital_documents') }}
                 </a>
             </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=artifact">
-                    <i class="bi bi-gem"></i> {{ __('artifacts') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=book">
-                    <i class="bi bi-book"></i> {{ __('books') }}
-                </a>
-            </div>
-            <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('dollies-sort')}}?categ=book_series">
-                    <i class="bi bi-collection"></i> {{ __('book_series') }}
-                </a>
-            </div>
+
         </div>
     </div>
     @endcan

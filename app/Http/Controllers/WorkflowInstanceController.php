@@ -6,6 +6,7 @@ use App\Models\WorkflowInstance;
 use App\Models\WorkflowDefinition;
 use App\Services\WorkflowEngine;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WorkflowInstanceController extends Controller
 {
@@ -17,21 +18,35 @@ class WorkflowInstanceController extends Controller
     }
     public function index()
     {
-        $instances = WorkflowInstance::with(['definition', 'starter', 'updater', 'completer'])
-            ->orderBy('started_at', 'desc')
-            ->paginate(20);
+        $query = WorkflowInstance::with(['definition', 'starter', 'updater', 'completer'])
+            ->orderBy('started_at', 'desc');
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->byOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        $instances = $query->paginate(20);
 
         return view('workflows.instances.index', compact('instances'));
     }
 
     public function create()
     {
-        $definitions = WorkflowDefinition::active()->get();
-        return view('workflows.instances.create', compact('definitions'));
+        $query = WorkflowDefinition::active();
+
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->byOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        return view('workflows.instances.create', ['definitions' => $query->get()]);
     }
 
     public function store(Request $request)
     {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
         $validated = $request->validate([
             'definition_id' => 'required|exists:workflow_definitions,id',
             'name' => 'required|string|max:190',
@@ -41,7 +56,8 @@ class WorkflowInstanceController extends Controller
             ...$validated,
             'status' => 'running',
             'current_state' => [],
-            'started_by' => auth()->id(),
+            'organisation_id' => Auth::user()->current_organisation_id,
+            'started_by' => Auth::id(),
         ]);
 
         return redirect()->route('workflows.instances.show', $instance)
@@ -50,12 +66,14 @@ class WorkflowInstanceController extends Controller
 
     public function show(WorkflowInstance $instance)
     {
+        $this->authorize('view', $instance);
         $instance->load(['definition', 'tasks', 'starter']);
         return view('workflows.instances.show', compact('instance'));
     }
 
     public function destroy(WorkflowInstance $instance)
     {
+        $this->authorize('delete', $instance);
         $instance->delete();
 
         return redirect()->route('workflows.instances.index')
@@ -67,6 +85,8 @@ class WorkflowInstanceController extends Controller
      */
     public function start(WorkflowInstance $instance)
     {
+        $this->authorize('update', $instance);
+
         try {
             $this->workflowEngine->startWorkflow($instance);
 
@@ -83,6 +103,8 @@ class WorkflowInstanceController extends Controller
      */
     public function pause(WorkflowInstance $instance)
     {
+        $this->authorize('update', $instance);
+
         try {
             $this->workflowEngine->pauseWorkflow($instance);
 
@@ -99,6 +121,8 @@ class WorkflowInstanceController extends Controller
      */
     public function resume(WorkflowInstance $instance)
     {
+        $this->authorize('update', $instance);
+
         try {
             $this->workflowEngine->resumeWorkflow($instance);
 
@@ -115,6 +139,8 @@ class WorkflowInstanceController extends Controller
      */
     public function cancel(WorkflowInstance $instance)
     {
+        $this->authorize('update', $instance);
+
         try {
             $this->workflowEngine->cancelWorkflow($instance);
 

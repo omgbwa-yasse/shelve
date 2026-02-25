@@ -36,7 +36,7 @@
                         <div class="mb-3">
                             <label for="type_id" class="form-label">Type <span class="text-danger">*</span></label>
                             <select class="form-select @error('type_id') is-invalid @enderror"
-                                    id="type_id" name="type_id" required>
+                                    id="type_id" name="type_id" required onchange="loadMetadata(this.value)">
                                 <option value="">-- Sélectionner un type --</option>
                                 @foreach($types as $type)
                                     <option value="{{ $type->id }}"
@@ -193,6 +193,12 @@
                     </label>
                 </div>
 
+                {{-- Conteneur pour les métadonnées dynamiques --}}
+                <div id="metadata-container" class="mb-4" style="display:none;">
+                    <h5 class="border-top pt-3 mt-3">Métadonnées personnalisées</h5>
+                    <div id="metadata-fields" class="row"></div>
+                </div>
+
                 @if($folder->requires_approval && $folder->approved_by)
                     <div class="alert alert-info">
                         <strong>Approuvé par:</strong> {{ $folder->approver->name ?? 'Inconnu' }}<br>
@@ -241,4 +247,121 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function loadMetadata(typeId) {
+    const container = document.getElementById('metadata-container');
+    const fieldsDiv = document.getElementById('metadata-fields');
+
+    if (!typeId) {
+        container.style.display = 'none';
+        fieldsDiv.innerHTML = '';
+        return;
+    }
+
+    fetch(`/api/v1/metadata/folder-types/${typeId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.data && data.data.length > 0) {
+            container.style.display = 'block';
+            renderMetadataFields(data.data);
+        } else {
+            container.style.display = 'none';
+            fieldsDiv.innerHTML = '';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur chargement métadonnées:', error);
+        container.style.display = 'none';
+        fieldsDiv.innerHTML = '';
+    });
+}
+
+function renderMetadataFields(metadata) {
+    const fieldsDiv = document.getElementById('metadata-fields');
+    fieldsDiv.innerHTML = '';
+
+    metadata.forEach(field => {
+        if (!field.visible) return;
+
+        const col = document.createElement('div');
+        col.className = 'col-md-6 mb-3';
+
+        const label = document.createElement('label');
+        label.className = 'form-label';
+        label.htmlFor = `metadata_${field.name}`;
+        label.innerHTML = field.name + (field.mandatory ? ' <span class="text-danger">*</span>' : '');
+
+        let input;
+        const fieldName = `metadata[${field.name}]`;
+        const required = field.mandatory ? 'required' : '';
+        const readonly = field.readonly ? 'readonly' : '';
+
+        switch (field.data_type) {
+            case 'text':
+                input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'textarea':
+                input = `<textarea class="form-control" id="metadata_${field.name}" name="${fieldName}" rows="3" ${required} ${readonly}>${field.default_value || ''}</textarea>`;
+                break;
+            case 'number':
+                input = `<input type="number" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'date':
+                input = `<input type="date" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'datetime':
+                input = `<input type="datetime-local" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'boolean':
+                const checked = field.default_value ? 'checked' : '';
+                input = `<div class="form-check"><input type="checkbox" class="form-check-input" id="metadata_${field.name}" name="${fieldName}" value="1" ${checked} ${readonly}><input type="hidden" name="${fieldName}" value="0"></div>`;
+                break;
+            case 'email':
+                input = `<input type="email" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'url':
+                input = `<input type="url" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                break;
+            case 'select':
+            case 'reference_list':
+                if (field.reference_list && field.reference_list.values) {
+                    let options = '<option value="">-- Sélectionner --</option>';
+                    field.reference_list.values.forEach(val => {
+                        const selected = val.value === field.default_value ? 'selected' : '';
+                        options += `<option value="${val.value}" ${selected}>${val.display_value}</option>`;
+                    });
+                    input = `<select class="form-select" id="metadata_${field.name}" name="${fieldName}" ${required} ${readonly}>${options}</select>`;
+                } else {
+                    input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+                }
+                break;
+            default:
+                input = `<input type="text" class="form-control" id="metadata_${field.name}" name="${fieldName}" value="${field.default_value || ''}" ${required} ${readonly}>`;
+        }
+
+        col.innerHTML = label.outerHTML + input;
+        if (field.description) {
+            col.innerHTML += `<small class="form-text text-muted">${field.description}</small>`;
+        }
+        fieldsDiv.appendChild(col);
+    });
+}
+
+// Charger les métadonnées au chargement de la page si un type est déjà sélectionné
+document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.getElementById('type_id');
+    if (typeSelect && typeSelect.value) {
+        loadMetadata(typeSelect.value);
+    }
+});
+</script>
+@endpush
+
 @endsection

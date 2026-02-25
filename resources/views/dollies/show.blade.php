@@ -46,24 +46,9 @@
                         </a>
                     @endif
 
-                    @if(in_array($dolly->category, ['digital_folder', 'digital_document', 'artifact', 'book', 'book_series']))
+                    @if(in_array($dolly->category, ['digital_folder', 'digital_document']))
                         <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_inventory&id={{ $dolly->id }}" class="btn btn-info">
                             <i class="bi bi-file-earmark-pdf"></i> Extraire Inventaire PDF
-                        </a>
-                    @endif
-
-                    @if(in_array($dolly->category, ['book', 'book_series']))
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_isbd&id={{ $dolly->id }}" class="btn btn-success">
-                            <i class="bi bi-file-earmark-text"></i> Exporter ISBD
-                        </a>
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=export_marc&id={{ $dolly->id }}" class="btn btn-success">
-                            <i class="bi bi-file-earmark-binary"></i> Exporter MARC
-                        </a>
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=import_isbd&id={{ $dolly->id }}" class="btn btn-warning">
-                            <i class="bi bi-file-earmark-arrow-down"></i> Importer ISBD
-                        </a>
-                        <a href="{{ route('dollies.action') }}?categ={{ $dolly->category }}&action=import_marc&id={{ $dolly->id }}" class="btn btn-warning">
-                            <i class="bi bi-file-earmark-arrow-down-fill"></i> Importer MARC
                         </a>
                     @endif
 
@@ -211,99 +196,6 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce document du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-        @elseif($dolly->category === 'artifact' && $dolly->artifacts->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>Code</th>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->artifacts as $artifact)
-                        <tr>
-                            <td>{{ $artifact->code }}</td>
-                            <td>{{ $artifact->name }}</td>
-                            <td>{{ $artifact->type ?? 'N/A' }}</td>
-                            <td>
-                                <a href="{{ route('record-artifacts.show', $artifact) }}" class="btn btn-sm btn-info">Voir</a>
-                                <form action="{{ route('dolly.remove-artifact', [$dolly, $artifact]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cet artefact du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-        @elseif($dolly->category === 'book' && $dolly->books->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>ISBN</th>
-                        <th>Titre</th>
-                        <th>Auteur</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->books as $book)
-                        <tr>
-                            <td>{{ $book->isbn }}</td>
-                            <td>{{ $book->title }}</td>
-                            <td>{{ $book->author ?? 'N/A' }}</td>
-                            <td>
-                                <a href="{{ route('record-books.show', $book) }}" class="btn btn-sm btn-info">Voir</a>
-                                <form action="{{ route('dolly.remove-book', [$dolly, $book]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer ce livre du chariot ?')">Retirer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-        @elseif($dolly->category === 'book_series' && $dolly->bookSeries->isNotEmpty())
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-white">
-                    <tr>
-                        <th>Éditeur</th>
-                        <th>Nom de la série</th>
-                        <th>Nombre de livres</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($dolly->bookSeries as $series)
-                        <tr>
-                            <td>{{ $series->publisher->name ?? 'N/A' }}</td>
-                            <td>{{ $series->name }}</td>
-                            <td>{{ $series->books_count ?? 0 }}</td>
-                            <td>
-                                <a href="{{ route('record-book-series.show', $series) }}" class="btn btn-sm btn-info">Voir</a>
-                                <form action="{{ route('dolly.remove-book-series', [$dolly, $series]) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Retirer cette série du chariot ?')">Retirer</button>
                                 </form>
                             </td>
                         </tr>

@@ -1,0 +1,148 @@
+<?php
+
+namespace Database\Seeders\Public;
+
+use App\Models\OpacConfiguration;
+use App\Models\Organisation;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class OpacConfigurationSeeder extends Seeder
+{
+    /**
+     * Run the database seeder.
+     */
+    public function run(): void
+    {
+        $this->command->info('ðŸ”§ CrÃ©ation des configurations OPAC par dÃ©faut...');
+
+        // RÃ©cupÃ©rer toutes les organisations
+        $organisations = Organisation::all();
+
+        foreach ($organisations as $organisation) {
+            $this->createDefaultConfigurationsForOrganisation($organisation);
+        }
+
+        $this->command->info('âœ… Configurations OPAC crÃ©Ã©es avec succÃ¨s pour ' . $organisations->count() . ' organisations');
+    }
+
+    private function createDefaultConfigurationsForOrganisation($organisation)
+    {
+        $configs = [
+            [
+                'config_key' => 'opac_title',
+                'config_value' => 'Catalogue en ligne - ' . $organisation->name,
+                'config_type' => 'string',
+                'description' => 'Titre affichÃ© sur l\'OPAC'
+            ],
+            [
+                'config_key' => 'visible_organisations',
+                'config_value' => [$organisation->id],
+                'config_type' => 'array',
+                'description' => 'Organisations visibles dans ce catalogue'
+            ],
+            [
+                'config_key' => 'show_statistics',
+                'config_value' => true,
+                'config_type' => 'boolean',
+                'description' => 'Afficher les statistiques sur la page d\'accueil'
+            ],
+            [
+                'config_key' => 'show_recent_records',
+                'config_value' => true,
+                'config_type' => 'boolean',
+                'description' => 'Afficher les documents rÃ©cents'
+            ],
+            [
+                'config_key' => 'allow_downloads',
+                'config_value' => false,
+                'config_type' => 'boolean',
+                'description' => 'Autoriser le tÃ©lÃ©chargement des documents'
+            ],
+            [
+                'config_key' => 'records_per_page',
+                'config_value' => 15,
+                'config_type' => 'integer',
+                'description' => 'Nombre de rÃ©sultats par page'
+            ],
+            [
+                'config_key' => 'allowed_file_types',
+                'config_value' => ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+                'config_type' => 'array',
+                'description' => 'Types de fichiers autorisÃ©s en tÃ©lÃ©chargement'
+            ],
+            [
+                'config_key' => 'show_full_record_details',
+                'config_value' => true,
+                'config_type' => 'boolean',
+                'description' => 'Afficher tous les dÃ©tails des documents'
+            ],
+            [
+                'config_key' => 'show_attachments',
+                'config_value' => false,
+                'config_type' => 'boolean',
+                'description' => 'Afficher les piÃ¨ces jointes'
+            ],
+            [
+                'config_key' => 'theme',
+                'config_value' => 'default',
+                'config_type' => 'string',
+                'description' => 'ThÃ¨me visuel de l\'OPAC'
+            ],
+            [
+                'config_key' => 'primary_color',
+                'config_value' => '#007bff',
+                'config_type' => 'string',
+                'description' => 'Couleur principale du thÃ¨me'
+            ],
+            [
+                'config_key' => 'secondary_color',
+                'config_value' => '#6c757d',
+                'config_type' => 'string',
+                'description' => 'Couleur secondaire du thÃ¨me'
+            ],
+            [
+                'config_key' => 'logo_url',
+                'config_value' => '',
+                'config_type' => 'string',
+                'description' => 'URL du logo de l\'organisation'
+            ],
+            [
+                'config_key' => 'footer_text',
+                'config_value' => 'SystÃ¨me de gestion documentaire - ' . $organisation->name,
+                'config_type' => 'string',
+                'description' => 'Texte affichÃ© dans le pied de page'
+            ],
+            [
+                'config_key' => 'contact_email',
+                'config_value' => '',
+                'config_type' => 'string',
+                'description' => 'Email de contact affichÃ© sur l\'OPAC'
+            ],
+            [
+                'config_key' => 'help_url',
+                'config_value' => '',
+                'config_type' => 'string',
+                'description' => 'URL de la page d\'aide'
+            ]
+        ];
+
+        foreach ($configs as $config) {
+            OpacConfiguration::updateOrCreate(
+                [
+                    'organisation_id' => $organisation->id,
+                    'config_key' => $config['config_key']
+                ],
+                [
+                    'config_value' => $config['config_value'],
+                    'config_type' => $config['config_type'],
+                    'description' => $config['description'],
+                    'is_active' => true
+                ]
+            );
+        }
+
+        $this->command->info("  âœ… Configurations crÃ©Ã©es pour {$organisation->name}");
+    }
+}
+

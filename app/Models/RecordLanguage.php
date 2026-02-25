@@ -28,16 +28,6 @@ class RecordLanguage extends Model
         'total_books' => 'integer',
     ];
 
-    // Relations
-
-    /**
-     * Get all books in this language
-     */
-    public function books()
-    {
-        return $this->hasMany(RecordBook::class, 'language_id');
-    }
-
     // Scopes
 
     /**
@@ -156,16 +146,6 @@ class RecordLanguage extends Model
     }
 
     // Methods
-
-    /**
-     * Update the total_books counter
-     */
-    public function updateBookCount(): void
-    {
-        $this->update([
-            'total_books' => $this->books()->count(),
-        ]);
-    }
 
     /**
      * Mark language as deprecated

@@ -14,6 +14,7 @@ use App\Models\Slip;
 use App\Observers\SlipObserver;
 use App\Models\Task;
 use App\Observers\TaskObserver;
+use Illuminate\Pagination\Paginator;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -42,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::useBootstrapFive();
         Schema::defaultStringLength(191);
 
         // Enregistrer les Observers

@@ -331,8 +331,6 @@ class MailController extends Controller
      */
     public function show($type, $id)
     {
-        $organisationId = Auth::user()->current_organisation_id;
-
         // Configuration des relations selon le type
         $relations = [];
         switch ($type) {
@@ -354,31 +352,14 @@ class MailController extends Controller
 
         $mail = Mail::with($relations)->findOrFail($id);
 
-        // Vérification des permissions
-        if (!$this->canAccessMail($mail, $organisationId, $type)) {
-            abort(403);
-        }
+        // Vérification des permissions via policy
+        $this->authorize('view', $mail);
 
         // Vue centralisée unique
         return view('mails.show', compact('mail', 'type'));
     }
 
-    /**
-     * Vérifier si l'utilisateur peut accéder au courrier
-     */
-    private function canAccessMail($mail, $organisationId, $type)
-    {
-        switch ($type) {
-            case 'received':
-            case 'received_external':
-                return $mail->recipient_organisation_id == $organisationId;
-            case 'send':
-            case 'send_external':
-                return $mail->sender_organisation_id == $organisationId;
-            default:
-                return false;
-        }
-    }
+
 
     /**
      * Update the specified resource in storage.
@@ -387,6 +368,7 @@ class MailController extends Controller
     {
         try {
             $mail = Mail::findOrFail($id);
+            $this->authorize('update', $mail);
 
             if ($mail->mail_type === 'incoming') {
                 return $this->updateIncoming($request, $mail);
@@ -503,6 +485,8 @@ class MailController extends Controller
     {
         try {
             $mail = Mail::findOrFail($id);
+            $this->authorize('delete', $mail);
+
             $mailType = $mail->mail_type;
             $mailCode = $mail->code;
 

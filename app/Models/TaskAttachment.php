@@ -69,8 +69,4 @@ class TaskAttachment extends Model
         return $query->where('attachable_type', 'RecordPhysical');
     }
 
-    public function scopeArtifacts($query)
-    {
-        return $query->where('attachable_type', 'Artifact');
-    }
 }

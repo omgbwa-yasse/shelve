@@ -733,14 +733,6 @@
             <div class="bottom-band">
                 <div class="bottom-band-container">
                     <nav class="main-navigation">
-                        @can('module_bulletin_boards_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'bulletin-boards') active @endif" href="{{ route('bulletin-boards.index') }}">
-                                <i class="bi bi-card-text"></i>
-                                <span>{{ __('Bulletin Boards') }}</span>
-                            </a>
-                        </div>
-                        @endcan
                         @can('module_mails_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'mails' || Request::segment(1) == '') active @endif position-relative" href="{{ route('mail-received.index') }}">
@@ -749,6 +741,28 @@
                             </a>
                         </div>
                         @endcan
+
+
+                         <!-- Module Workflow -->
+                        @can('module_workflow_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>{{ __('Workflow') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+
+                         <!-- Module WorkPlace -->
+                        @can('module_workplace_access')
+                        <div class="nav-item">
+                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
+                                <i class="bi bi-briefcase"></i>
+                                <span>{{ __('WorkPlaces') }}</span>
+                            </a>
+                        </div>
+                        @endcan
+
                         @can('module_repositories_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'repositories') active @endif" href="{{ route('records.index') }}">
@@ -822,44 +836,6 @@
                             </a>
                         </div>
 
-                        <!-- Module Library -->
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'library') active @endif" href="{{ route('library.books.index') }}">
-                                <i class="bi bi-book"></i>
-                                <span>{{ __('Library') }}</span>
-                            </a>
-                        </div>
-
-                        <!-- Module Museum -->
-                        @can('museum_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'museum') active @endif" href="{{ route('museum.collections.index') }}">
-                                <i class="bi bi-bank"></i>
-                                <span>{{ __('Museum') }}</span>
-                            </a>
-                        </div>
-                        @endcan
-
-                        <!-- Module Workflow -->
-                        @can('module_workflow_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workflows' || Request::segment(1) == 'tasks') active @endif" href="{{ route('tasks.index') }}">
-                                <i class="bi bi-diagram-3"></i>
-                                <span>{{ __('Workflow') }}</span>
-                            </a>
-                        </div>
-                        @endcan
-
-                        <!-- Module WorkPlace -->
-                        @can('module_workplace_access')
-                        <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'workplaces') active @endif" href="{{ route('workplaces.index') }}">
-                                <i class="bi bi-briefcase"></i>
-                                <span>{{ __('WorkPlaces') }}</span>
-                            </a>
-                        </div>
-                        @endcan
-
                         @can('module_settings_access')
                         <div class="nav-item">
                             <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
@@ -894,9 +870,6 @@
                                     @switch(Request::segment(1))
                                         @case('public')
                                             @include('submenu.public')
-                                            @break
-                                        @case('bulletin-boards')
-                                            @include('submenu.bulletinboards')
                                             @break
                                         @case('')
                                         @case('mails')

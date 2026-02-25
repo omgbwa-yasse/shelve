@@ -4,20 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Mail;
-use App\Models\RecordPhysical;
 use App\Models\Batch;
 use App\Models\MailPriority;
 use App\Models\MailTypology;
-use App\Models\MailType;
 use App\Models\Author;
-use App\Models\BatchMail;
-use App\Models\MailArchiving;
 use App\Models\DocumentType;
 use App\Models\MailContainer;
-use App\Models\RecordStatus;
-
-use App\Models\Slip;
-use App\Models\SlipRecord;
+use Illuminate\Support\Facades\Auth;
 
 class SearchMailController extends Controller
 {
@@ -37,6 +30,12 @@ class SearchMailController extends Controller
     public function advanced(Request $request)
     {
     $query = Mail::query()->excludeFactoryLike();
+
+        // Organisation scoping — SuperAdmin sees all
+        if (!Auth::user()->isSuperAdmin()) {
+            $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
         $title = 'Recherche avancée';
         $filters = [];
 

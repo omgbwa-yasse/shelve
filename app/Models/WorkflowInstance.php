@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WorkflowInstance extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToOrganisation;
 
     protected $fillable = [
         'definition_id',
         'name',
         'status',
         'current_state',
+        'organisation_id',
         'started_by',
         'updated_by',
         'completed_by',
