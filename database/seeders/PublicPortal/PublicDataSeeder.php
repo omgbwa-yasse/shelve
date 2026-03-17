@@ -51,6 +51,9 @@ class PublicDataSeeder extends Seeder
             );
         }
 
+        $newsAuthorId = !empty($publicUsers) ? $publicUsers[0]->id : null;
+        $pageAuthorId = \App\Models\User::where('email', 'superadmin@example.com')->first()?->id ?? 1;
+
         // --- 2. Public News ---
         $newsDefs = [
             ['title' => 'Inauguration de la nouvelle salle de lecture', 'slug' => 'inauguration-salle-lecture', 'status' => 'published', 'featured' => true, 'summary' => 'La nouvelle salle de lecture moderne accueille désormais les chercheurs.'],
@@ -70,7 +73,7 @@ class PublicDataSeeder extends Seeder
                     'summary' => $nd['summary'],
                     'status' => $nd['status'],
                     'featured' => $nd['featured'],
-                    'author_id' => $adminUser?->id,
+                    'author_id' => $newsAuthorId,
                     'published_at' => $nd['status'] === 'published' ? now()->subDays(rand(1, 30)) : null,
                 ]
             );
@@ -79,32 +82,32 @@ class PublicDataSeeder extends Seeder
         // --- 3. Public Pages (hierarchy) ---
         $pageAbout = PublicPage::firstOrCreate(
             ['slug' => 'a-propos'],
-            ['title' => 'À propos', 'name' => 'À propos', 'content' => '<p>Présentation du centre d\'archives national.</p>', 'meta_description' => 'À propos du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $adminUser?->id, 'order' => 1]
+            ['title' => 'À propos', 'name' => 'À propos', 'content' => '<p>Présentation du centre d\'archives national.</p>', 'meta_description' => 'À propos du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $pageAuthorId, 'order' => 1]
         );
 
         PublicPage::firstOrCreate(
             ['slug' => 'histoire'],
-            ['title' => 'Notre histoire', 'name' => 'Notre histoire', 'content' => '<p>Historique de l\'institution depuis sa création.</p>', 'meta_description' => 'Histoire du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $adminUser?->id, 'order' => 1, 'parent_id' => $pageAbout->id]
+            ['title' => 'Notre histoire', 'name' => 'Notre histoire', 'content' => '<p>Historique de l\'institution depuis sa création.</p>', 'meta_description' => 'Histoire du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $pageAuthorId, 'order' => 1, 'parent_id' => $pageAbout->id]
         );
 
         PublicPage::firstOrCreate(
             ['slug' => 'equipe'],
-            ['title' => 'Notre équipe', 'name' => 'Notre équipe', 'content' => '<p>Présentation de l\'équipe scientifique et technique.</p>', 'meta_description' => 'Équipe du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $adminUser?->id, 'order' => 2, 'parent_id' => $pageAbout->id]
+            ['title' => 'Notre équipe', 'name' => 'Notre équipe', 'content' => '<p>Présentation de l\'équipe scientifique et technique.</p>', 'meta_description' => 'Équipe du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $pageAuthorId, 'order' => 2, 'parent_id' => $pageAbout->id]
         );
 
         $pageServices = PublicPage::firstOrCreate(
             ['slug' => 'services'],
-            ['title' => 'Services', 'name' => 'Services', 'content' => '<p>Découvrez les services proposés par le centre d\'archives.</p>', 'meta_description' => 'Services du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $adminUser?->id, 'order' => 2]
+            ['title' => 'Services', 'name' => 'Services', 'content' => '<p>Découvrez les services proposés par le centre d\'archives.</p>', 'meta_description' => 'Services du centre d\'archives', 'status' => 'published', 'is_published' => true, 'author_id' => $pageAuthorId, 'order' => 2]
         );
 
         PublicPage::firstOrCreate(
             ['slug' => 'consultation'],
-            ['title' => 'Consultation sur place', 'name' => 'Consultation', 'content' => '<p>Modalités de consultation des documents en salle de lecture.</p>', 'status' => 'published', 'is_published' => true, 'author_id' => $adminUser?->id, 'order' => 1, 'parent_id' => $pageServices->id]
+            ['title' => 'Consultation sur place', 'name' => 'Consultation', 'content' => '<p>Modalités de consultation des documents en salle de lecture.</p>', 'status' => 'published', 'is_published' => true, 'author_id' => $pageAuthorId, 'order' => 1, 'parent_id' => $pageServices->id]
         );
 
         PublicPage::firstOrCreate(
             ['slug' => 'reproductions'],
-            ['title' => 'Demande de reproductions', 'name' => 'Reproductions', 'content' => '<p>Comment demander des reproductions de documents d\'archives.</p>', 'status' => 'draft', 'is_published' => false, 'author_id' => $adminUser?->id, 'order' => 2, 'parent_id' => $pageServices->id]
+            ['title' => 'Demande de reproductions', 'name' => 'Reproductions', 'content' => '<p>Comment demander des reproductions de documents d\'archives.</p>', 'status' => 'draft', 'is_published' => false, 'author_id' => $pageAuthorId, 'order' => 2, 'parent_id' => $pageServices->id]
         );
 
         // --- 4. Public Events ---

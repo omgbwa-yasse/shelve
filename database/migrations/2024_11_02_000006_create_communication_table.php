@@ -12,6 +12,13 @@ return new class extends Migration
     public function up(): void
     {
 
+        Schema::create('communication_statuses', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 50)->unique()->nullable(false);
+            $table->text('description')->nullable(true);
+            $table->timestamps();
+        });
+
         Schema::create('communications', function (Blueprint $table) {
             $table->id();
             $table->string('code', 10)->unique()->nullable(false);
@@ -45,15 +52,6 @@ return new class extends Migration
             $table->foreign('communication_id')->references('id')->on('communications')->onDelete('cascade');
             $table->foreign('record_id')->references('id')->on('records')->onDelete('cascade');
             $table->foreign('operator_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-
-
-        Schema::create('communication_statuses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 50)->unique()->nullable(false);
-            $table->text('description')->nullable(true);
-            $table->timestamps();
         });
 
         Schema::create('reservations', function (Blueprint $table) {

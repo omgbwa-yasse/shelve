@@ -712,6 +712,9 @@ Route::group(['middleware' => 'auth'], function () {
             Route::post('/update/{version}', [App\Http\Controllers\SystemUpdateController::class, 'updateToVersion'])->name('system.updates.update');
             Route::get('/history', [App\Http\Controllers\SystemUpdateController::class, 'history'])->name('system.updates.history');
             Route::post('/rollback', [App\Http\Controllers\SystemUpdateController::class, 'rollback'])->name('system.updates.rollback');
+            
+            // New Git Pull Update Route
+            Route::post('/git-pull', [App\Http\Controllers\GitUpdateController::class, 'update'])->name('system.updates.git-pull');
         });
 
         // API routes for system updates

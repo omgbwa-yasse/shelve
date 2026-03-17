@@ -71,7 +71,6 @@ class DatabaseSeeder extends Seeder
             RecordStatusSeeder::class, // Seeder pour les statuts des dossiers
             RecordLevelSeeder::class,  // Seeder pour les niveaux hiérarchiques
             RecordSupportSeeder::class, // Seeder pour les supports physiques
-            ContainerStatusSeeder::class, // Seeder pour les statuts des contenants
             SortSeeder::class, // Seeder pour les sorts finaux (E, T, C)
             SlipStatusSeeder::class, // Seeder pour les statuts de bordereaux
 
@@ -86,6 +85,9 @@ class DatabaseSeeder extends Seeder
 
             // 6. UTILISATEURS (Dépendent des organisations et permissions)
             SuperAdminSeeder::class, // Seeder pour créer le superadmin avec toutes les permissions
+
+            // 6bis. DONNÉES DÉPENDANTES DES UTILISATEURS
+            ContainerStatusSeeder::class, // Seeder pour les statuts des contenants
 
             // 7. ACTIVITÉS ET SERVICES (Dépendent des organisations)
             ToolActivitySeeder::class, // Seeder pour les activités

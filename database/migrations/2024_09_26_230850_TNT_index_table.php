@@ -14,19 +14,35 @@ return new class extends Migration
     {
         $tnt = new TNTSearch;
 
-        $config = [
-            'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'database' => env('DB_DATABASE', 'shelve_db'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'storage' => storage_path() . '/tntsearch',
-            'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
-            'fuzzy_min_similarity' => env('TNTSEARCH_FUZZY_MIN_SIMILARITY', 0.1),
-            'fuzzy_prefix_length' => env('TNTSEARCH_FUZZY_PREFIX_LENGTH', 2),
-            'fuzzy_max_expansions' => env('TNTSEARCH_FUZZY_MAX_EXPANSIONS', 50),
-            'as_you_type' => env('TNTSEARCH_AS_YOU_TYPE', false),
-        ];
+        $dbDriver = env('DB_CONNECTION', 'mysql');
+
+        if ($dbDriver === 'sqlite') {
+            $config = [
+                'driver'                => 'sqlite',
+                'database'              => env('DB_DATABASE', database_path('database.sqlite')),
+                'storage'               => storage_path() . '/tntsearch',
+                'fuzziness'             => env('TNTSEARCH_FUZZINESS', false),
+                'fuzzy_min_similarity'  => env('TNTSEARCH_FUZZY_MIN_SIMILARITY', 0.1),
+                'fuzzy_prefix_length'   => env('TNTSEARCH_FUZZY_PREFIX_LENGTH', 2),
+                'fuzzy_max_expansions'  => env('TNTSEARCH_FUZZY_MAX_EXPANSIONS', 50),
+                'as_you_type'           => env('TNTSEARCH_AS_YOU_TYPE', false),
+            ];
+        } else {
+            $config = [
+                'driver'                => 'mysql',
+                'host'                  => env('DB_HOST', '127.0.0.1'),
+                'port'                  => env('DB_PORT', '3306'),
+                'database'              => env('DB_DATABASE', 'shelve_db'),
+                'username'              => env('DB_USERNAME', 'root'),
+                'password'              => env('DB_PASSWORD', ''),
+                'storage'               => storage_path() . '/tntsearch',
+                'fuzziness'             => env('TNTSEARCH_FUZZINESS', false),
+                'fuzzy_min_similarity'  => env('TNTSEARCH_FUZZY_MIN_SIMILARITY', 0.1),
+                'fuzzy_prefix_length'   => env('TNTSEARCH_FUZZY_PREFIX_LENGTH', 2),
+                'fuzzy_max_expansions'  => env('TNTSEARCH_FUZZY_MAX_EXPANSIONS', 50),
+                'as_you_type'           => env('TNTSEARCH_AS_YOU_TYPE', false),
+            ];
+        }
 
         $tnt->loadConfig($config);
         $tnt->createIndex('products.title');

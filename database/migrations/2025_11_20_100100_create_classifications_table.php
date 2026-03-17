@@ -12,38 +12,42 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('classifications', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->comment('Classification name');
-            $table->text('description')->nullable()->comment('Description');
-            $table->foreignId('parent_id')
-                ->nullable()
-                ->constrained('classifications')
-                ->onDelete('set null')
-                ->comment('Parent for hierarchy');
-            $table->timestamps();
+        if (!Schema::hasTable('classifications')) {
+            Schema::create('classifications', function (Blueprint $table) {
+                $table->id();
+                $table->string('name')->comment('Classification name');
+                $table->text('description')->nullable()->comment('Description');
+                $table->foreignId('parent_id')
+                    ->nullable()
+                    ->constrained('classifications')
+                    ->onDelete('set null')
+                    ->comment('Parent for hierarchy');
+                $table->timestamps();
 
-            // Index
-            $table->index('name');
-            $table->index('parent_id');
-        });
+                // Index
+                $table->index('name');
+                $table->index('parent_id');
+            });
+        }
 
         // Table de liaison notices <-> classifications
-        Schema::create('record_book_classification', function (Blueprint $table) {
-            $table->foreignId('book_id')
-                ->constrained('record_books')
-                ->onDelete('cascade')
-                ->comment('Reference to book');
-            $table->foreignId('classification_id')
-                ->constrained('classifications')
-                ->onDelete('cascade')
-                ->comment('Reference to classification');
-            $table->integer('display_order')->default(1)->comment('Display order');
+        if (!Schema::hasTable('record_book_classification')) {
+            Schema::create('record_book_classification', function (Blueprint $table) {
+                $table->foreignId('book_id')
+                    ->constrained('record_physicals')
+                    ->onDelete('cascade')
+                    ->comment('Reference to book');
+                $table->foreignId('classification_id')
+                    ->constrained('classifications')
+                    ->onDelete('cascade')
+                    ->comment('Reference to classification');
+                $table->integer('display_order')->default(1)->comment('Display order');
 
-            $table->primary(['book_id', 'classification_id']);
-            $table->index('book_id');
-            $table->index('classification_id');
-        });
+                $table->primary(['book_id', 'classification_id']);
+                $table->index('book_id');
+                $table->index('classification_id');
+            });
+        }
     }
 
     /**

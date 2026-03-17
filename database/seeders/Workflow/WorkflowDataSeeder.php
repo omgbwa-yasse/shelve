@@ -28,6 +28,7 @@ class WorkflowDataSeeder extends Seeder
             return;
         }
         $user = $users->first();
+        $organisationId = $user->primary_organisation_id ?? 1;
 
         // --- 1. Workflow Definitions ---
         $defApproval = WorkflowDefinition::firstOrCreate(
@@ -37,6 +38,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="doc_approval"><bpmn:startEvent id="start"/><bpmn:task id="submit" name="Soumettre"/><bpmn:task id="review" name="Réviser"/><bpmn:task id="approve" name="Approuver"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 1,
                 'status' => 'active',
+                'organisation_id' => $organisationId,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -49,6 +51,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="transfer"><bpmn:startEvent id="start"/><bpmn:task id="prepare" name="Préparer bordereau"/><bpmn:task id="validate" name="Valider"/><bpmn:task id="integrate" name="Intégrer"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 1,
                 'status' => 'active',
+                'organisation_id' => $organisationId,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -61,6 +64,7 @@ class WorkflowDataSeeder extends Seeder
                 'bpmn_xml' => '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"><bpmn:process id="mail_process"><bpmn:startEvent id="start"/><bpmn:task id="register" name="Enregistrer"/><bpmn:task id="distribute" name="Distribuer"/><bpmn:task id="process" name="Traiter"/><bpmn:task id="archive" name="Archiver"/><bpmn:endEvent id="end"/></bpmn:process></bpmn:definitions>',
                 'version' => 2,
                 'status' => 'active',
+                'organisation_id' => $organisationId,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]
@@ -105,6 +109,7 @@ class WorkflowDataSeeder extends Seeder
                 ['name' => $inst['name']],
                 array_merge($inst, [
                     'current_state' => ['step' => $inst['status'] === 'completed' ? 'end' : 'in_progress'],
+                    'organisation_id' => $organisationId,
                     'started_by' => $user->id,
                     'updated_by' => $user->id,
                 ])
@@ -140,6 +145,7 @@ class WorkflowDataSeeder extends Seeder
                     'description' => 'Tâche de test : ' . $td['title'],
                     'assigned_to' => $assignee->id,
                     'sequence_order' => $i + 1,
+                    'organisation_id' => $organisationId,
                     'created_by' => $user->id,
                     'updated_by' => $user->id,
                     'completed_by' => isset($td['completed_at']) ? $assignee->id : null,

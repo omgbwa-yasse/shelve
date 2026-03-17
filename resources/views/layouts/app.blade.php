@@ -681,6 +681,14 @@
 
                         <!-- Actions utilisateur -->
                         <div class="header-actions">
+                                @if(Request::segment(1) == 'settings' && (Auth::user()->isSuperAdmin() || Gate::allows('system_updates_manage')))
+                                <div class="nav-item me-2">
+                                    <button class="btn btn-sm btn-outline-success" onclick="runGitUpdate()" title="{{ __('Pull updates from Git and run migrations') }}">
+                                        <i class="bi bi-git"></i>
+                                        <span class="d-none d-md-inline ms-1">{{ __('Mise à jour') }}</span>
+                                    </button>
+                                </div>
+                                @endif
 
                                 <div class="nav-item">
                                     <a class="nav-link @if (Request::segment(1) == 'opac') active @endif" href="{{ route('opac.index') }}" target="_blank">
@@ -1322,6 +1330,86 @@
                 sendAiMessage();
             }
         });
+
+        /**
+         * Lance la mise à jour via Git Pull et Migrations
+         */
+        function runGitUpdate(force = false) {
+            const title = force ? 'Forcer la mise à jour ?' : 'Mise à jour du système';
+            const text = force ? 
+                'Cela va écraser vos modifications locales pour forcer le pull. Êtes-vous sûr ?' : 
+                'Voulez-vous récupérer les dernières mises à jour du code et lancer les migrations ?';
+
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: force ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: force ? 'Oui, forcer' : 'Lancer la mise à jour',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Afficher le loader
+                    Swal.fire({
+                        title: 'Mise à jour en cours...',
+                        html: 'Récupération du code et mise à jour de la base de données.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Envoyer la requête
+                    fetch('{{ route("system.updates.git-pull") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            force: force
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Réussi !',
+                                text: data.message,
+                                icon: 'success',
+                                timer: 3000
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            // Si échec à cause de conflits, proposer le mode force
+                            if (data.message.includes('conflits')) {
+                                Swal.fire({
+                                    title: 'Conflits détectés',
+                                    text: 'Des modifications locales empêchent la mise à jour. Voulez-vous forcer la mise à jour en écrasant ces changements ?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Forcer la mise à jour',
+                                    cancelButtonText: 'Annuler'
+                                }).then((innerResult) => {
+                                    if (innerResult.isConfirmed) {
+                                        runGitUpdate(true);
+                                    }
+                                });
+                            } else {
+                                Swal.fire('Erreur', data.message, 'error');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Erreur', 'Une erreur technique est survenue.', 'error');
+                    });
+                }
+            });
+        }
 
     </script>
 </body>

@@ -1,3 +1,7 @@
+# Portable runtimes (trop lourds pour git — à copier manuellement)
+/php/
+/mysql/
+
 # Laravel
 /.phpunit.cache
 /node_modules

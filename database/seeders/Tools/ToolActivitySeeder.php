@@ -14,6 +14,7 @@ class ToolActivitySeeder extends Seeder
      */
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::beginTransaction();
 
         try {
@@ -26,6 +27,7 @@ class ToolActivitySeeder extends Seeder
 
             if ($organisations->count() != 3) {
                 $this->command->error('Les organisations DF, DRH et DADA doivent Ãªtre crÃ©Ã©es avant ce seeder');
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
                 return;
             }
 
@@ -40,8 +42,11 @@ class ToolActivitySeeder extends Seeder
         } catch (\Exception $e) {
             DB::rollback();
             $this->command->error('âŒ Erreur lors de la crÃ©ation des activitÃ©s: ' . $e->getMessage());
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
             throw $e;
         }
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
 
     /**
