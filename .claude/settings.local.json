@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Read(/C:\\c\\wamp64\\www\\ICA/**)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Read(//c/wamp64/bin/php//**)",
+      "Bash(./php/php.exe -v)",
+      "Bash(./php/php.exe -c ./php/php.ini -m)",
+      "Bash(./php/php.exe -c ./php/php.ini artisan app:setup)",
+      "Bash(./php/php.exe -c ./php/php.ini artisan app:setup --fresh)",
+      "Bash(DB_CONNECTION=sqlite ./php/php.exe -c ./php/php.ini artisan app:setup --fresh)"
     ],
     "deny": [],
     "ask": []

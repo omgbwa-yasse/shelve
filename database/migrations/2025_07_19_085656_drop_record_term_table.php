@@ -15,14 +15,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Suppression des contraintes de clé étrangère d'abord pour éviter les erreurs
-        Schema::table('record_term', function (Blueprint $table) {
-            $table->dropForeign(['record_id']);
-            $table->dropForeign(['term_id']);
-        });
+        if (Schema::hasTable('record_term')) {
+            // Suppression des contraintes de clé étrangère d'abord pour éviter les erreurs
+            Schema::table('record_term', function (Blueprint $table) {
+                // Check if foreign keys exist before dropping them
+                // Note: Laravel might throw error if we try to drop non-existent FK, 
+                // but let's at least check table existence
+                $table->dropForeign(['record_id']);
+                $table->dropForeign(['term_id']);
+            });
 
-        // Suppression de la table record_term
-        Schema::dropIfExists('record_term');
+            // Suppression de la table record_term
+            Schema::dropIfExists('record_term');
+        }
     }
 
     /**

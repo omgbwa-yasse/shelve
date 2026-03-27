@@ -11,21 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_organisation_role', function (Blueprint $table) {
-            $table->bigInteger('user_id')->unsigned()->notNull();
-            $table->bigInteger('organisation_id')->unsigned()->notNull();
-            $table->bigInteger('role_id')->unsigned()->notNull();
-            $table->unsignedBigInteger('creator_id')->nullable(false);
+        Schema::create('roles', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->unique()->notNull();
+            $table->text('description')->nullable();
             $table->timestamps();
-            $table->primary(['user_id', 'organisation_id']);
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
-            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
-            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('permissions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->unique()->notNull();
             $table->text('description')->nullable();
@@ -41,11 +34,17 @@ return new class extends Migration
             $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
         });
 
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name')->unique()->notNull();
-            $table->text('description')->nullable();
+        Schema::create('user_organisation_role', function (Blueprint $table) {
+            $table->bigInteger('user_id')->unsigned()->notNull();
+            $table->bigInteger('organisation_id')->unsigned()->notNull();
+            $table->bigInteger('role_id')->unsigned()->notNull();
+            $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
+            $table->primary(['user_id', 'organisation_id']);
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->foreign('organisation_id')->references('id')->on('organisations')->onDelete('cascade');
+            $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
         });
 
     }

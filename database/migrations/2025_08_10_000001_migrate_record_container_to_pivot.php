@@ -40,13 +40,24 @@ return new class extends Migration {
 
             // drop FK then column
             // Drop foreign key if it exists (best effort)
-            Schema::table('records', function (Blueprint $table) {
-                if (Schema::hasColumn('records', 'container_id')) {
-                    // Laravel usually names it records_container_id_foreign
-                    try { $table->dropForeign('records_container_id_foreign'); } catch (\Throwable $e) {}
-                    try { $table->dropForeign(['container_id']); } catch (\Throwable $e) {}
-                }
-            });
+            try {
+                Schema::table('records', function (Blueprint $table) {
+                    // Try to drop by name
+                    $table->dropForeign('records_container_id_foreign');
+                });
+            } catch (\Exception $e) {
+                // Ignore if doesn't exist
+            }
+
+            try {
+                Schema::table('records', function (Blueprint $table) {
+                    // Try to drop by column
+                    $table->dropForeign(['container_id']);
+                });
+            } catch (\Exception $e) {
+                // Ignore if doesn't exist
+            }
+
             // Drop column after FK removal
             Schema::table('records', function (Blueprint $table) {
                 if (Schema::hasColumn('records', 'container_id')) {

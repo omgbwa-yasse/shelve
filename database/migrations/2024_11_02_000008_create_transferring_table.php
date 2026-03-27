@@ -70,7 +70,7 @@ return new class extends Migration
             $table->unsignedBigInteger('creator_id')->nullable(false);
             $table->timestamps();
             $table->foreign('slip_id')->references('id')->on('slips')->onDelete('cascade');
-            $table->foreign('level_id')->references('id')->on('levels')->onDelete('cascade'); // Ajout de la clé étrangère manquante
+            $table->foreign('level_id')->references('id')->on('record_levels')->onDelete('cascade'); // Ajout de la clé étrangère manquante
             $table->foreign('support_id')->references('id')->on('record_supports')->onDelete('cascade');
             $table->foreign('activity_id')->references('id')->on('activities')->onDelete('cascade');
             $table->foreign('creator_id')->references('id')->on('users')->onDelete('cascade');
