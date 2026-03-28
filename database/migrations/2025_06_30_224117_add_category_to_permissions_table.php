@@ -12,25 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('permissions', function (Blueprint $table) {
-            $table->enum('category', [
-                'dashboard',
-                'mail',
-                'records',
-                'communications',
-                'reservations',
-                'transfers',
-                'deposits',
-                'users',
-                'settings',
-                'system',
-                'reports',
-                'tools',
-                'ai',
-                'backups',
-                'search',
-                'thesaurus',
-                'organizations'
-            ])->nullable()->after('name');
+            // Utiliser string pour compatibilité SQLite (pas de contrainte ENUM)
+            $table->string('category', 64)->nullable()->after('name');
         });
     }
 
