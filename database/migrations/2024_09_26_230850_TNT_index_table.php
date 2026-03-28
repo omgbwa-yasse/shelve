@@ -14,37 +14,34 @@ return new class extends Migration
     {
         $tnt = new TNTSearch;
 
-        $dbDriver = env('DB_CONNECTION', 'mysql');
+        $dbDriver = config('database.default', 'mysql');
+        $dbDatabase = config('database.connections.' . $dbDriver . '.database');
 
         if ($dbDriver === 'sqlite') {
-            $dbFile = env('DB_DATABASE', 'database.sqlite');
-            if ($dbFile !== ':memory:' && !str_starts_with($dbFile, '/') && !preg_match('/^[A-Za-z]:/', $dbFile)) {
-                $dbFile = database_path($dbFile . (str_ends_with($dbFile, '.sqlite') ? '' : '.sqlite'));
-            }
             $config = [
                 'driver'                => 'sqlite',
-                'database'              => $dbFile,
+                'database'              => $dbDatabase,
                 'storage'               => storage_path() . '/tntsearch',
-                'fuzziness'             => env('TNTSEARCH_FUZZINESS', false),
-                'fuzzy_min_similarity'  => env('TNTSEARCH_FUZZY_MIN_SIMILARITY', 0.1),
-                'fuzzy_prefix_length'   => env('TNTSEARCH_FUZZY_PREFIX_LENGTH', 2),
-                'fuzzy_max_expansions'  => env('TNTSEARCH_FUZZY_MAX_EXPANSIONS', 50),
-                'as_you_type'           => env('TNTSEARCH_AS_YOU_TYPE', false),
+                'fuzziness'             => false,
+                'fuzzy_min_similarity'  => 0.1,
+                'fuzzy_prefix_length'   => 2,
+                'fuzzy_max_expansions'  => 50,
+                'as_you_type'           => false,
             ];
         } else {
             $config = [
-                'driver'                => 'mysql',
-                'host'                  => env('DB_HOST', '127.0.0.1'),
-                'port'                  => env('DB_PORT', '3306'),
-                'database'              => env('DB_DATABASE', 'shelve_db'),
-                'username'              => env('DB_USERNAME', 'root'),
-                'password'              => env('DB_PASSWORD', ''),
+                'driver'                => $dbDriver,
+                'host'                  => config('database.connections.' . $dbDriver . '.host', '127.0.0.1'),
+                'port'                  => config('database.connections.' . $dbDriver . '.port', '3306'),
+                'database'              => $dbDatabase,
+                'username'              => config('database.connections.' . $dbDriver . '.username', 'root'),
+                'password'              => config('database.connections.' . $dbDriver . '.password', ''),
                 'storage'               => storage_path() . '/tntsearch',
-                'fuzziness'             => env('TNTSEARCH_FUZZINESS', false),
-                'fuzzy_min_similarity'  => env('TNTSEARCH_FUZZY_MIN_SIMILARITY', 0.1),
-                'fuzzy_prefix_length'   => env('TNTSEARCH_FUZZY_PREFIX_LENGTH', 2),
-                'fuzzy_max_expansions'  => env('TNTSEARCH_FUZZY_MAX_EXPANSIONS', 50),
-                'as_you_type'           => env('TNTSEARCH_AS_YOU_TYPE', false),
+                'fuzziness'             => false,
+                'fuzzy_min_similarity'  => 0.1,
+                'fuzzy_prefix_length'   => 2,
+                'fuzzy_max_expansions'  => 50,
+                'as_you_type'           => false,
             ];
         }
 
