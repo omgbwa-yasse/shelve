@@ -26,30 +26,27 @@ return new class extends Migration
             $table->unsignedBigInteger('organisation_id')->nullable()->after('id');
         });
 
-        // 2. Backfill organisation_id from the creator/starter user
-        DB::statement('
-            UPDATE workflow_definitions wd
-            JOIN users u ON u.id = wd.created_by
-            SET wd.organisation_id = u.current_organisation_id
-            WHERE wd.organisation_id IS NULL
-              AND u.current_organisation_id IS NOT NULL
-        ');
+        // 2. Backfill organisation_id from the creator/starter user (compatible SQLite et MySQL)
+        foreach (DB::table('workflow_definitions')->whereNull('organisation_id')->get() as $row) {
+            $orgId = DB::table('users')->where('id', $row->created_by)->value('current_organisation_id');
+            if ($orgId) {
+                DB::table('workflow_definitions')->where('id', $row->id)->update(['organisation_id' => $orgId]);
+            }
+        }
 
-        DB::statement('
-            UPDATE workflow_instances wi
-            JOIN users u ON u.id = wi.started_by
-            SET wi.organisation_id = u.current_organisation_id
-            WHERE wi.organisation_id IS NULL
-              AND u.current_organisation_id IS NOT NULL
-        ');
+        foreach (DB::table('workflow_instances')->whereNull('organisation_id')->get() as $row) {
+            $orgId = DB::table('users')->where('id', $row->started_by)->value('current_organisation_id');
+            if ($orgId) {
+                DB::table('workflow_instances')->where('id', $row->id)->update(['organisation_id' => $orgId]);
+            }
+        }
 
-        DB::statement('
-            UPDATE tasks t
-            JOIN users u ON u.id = t.created_by
-            SET t.organisation_id = u.current_organisation_id
-            WHERE t.organisation_id IS NULL
-              AND u.current_organisation_id IS NOT NULL
-        ');
+        foreach (DB::table('tasks')->whereNull('organisation_id')->get() as $row) {
+            $orgId = DB::table('users')->where('id', $row->created_by)->value('current_organisation_id');
+            if ($orgId) {
+                DB::table('tasks')->where('id', $row->id)->update(['organisation_id' => $orgId]);
+            }
+        }
 
         // 3. For any remaining NULL values, try to get org from the first available organisation
         $defaultOrgId = DB::table('organisations')->value('id');

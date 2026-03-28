@@ -45,10 +45,10 @@ return new class extends Migration
             $table->unsignedBigInteger('completed_by')->nullable();
             $table->timestamp('completed_at')->nullable();
 
-            $table->index('definition_id', 'idx_workflow_definition');
-            $table->index('started_by', 'idx_workflow_started');
-            $table->index('updated_by', 'idx_workflow_updated');
-            $table->index('completed_by', 'idx_workflow_completed');
+            $table->index('definition_id', 'idx_wf_inst_definition');
+            $table->index('started_by', 'idx_wf_inst_started');
+            $table->index('updated_by', 'idx_wf_inst_updated');
+            $table->index('completed_by', 'idx_wf_inst_completed');
 
             $table->foreign('definition_id')->references('id')->on('workflow_definitions');
             $table->foreign('started_by')->references('id')->on('users');
