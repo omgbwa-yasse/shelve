@@ -94,11 +94,11 @@ class OrganisationSeeder extends Seeder
         } catch (\Exception $e) {
             DB::rollback();
             $this->command->error('âŒ Erreur lors de la crÃ©ation: ' . $e->getMessage());
-            if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=1'); } else { DB::statement('PRAGMA foreign_keys = ON'); }
+            Schema::enableForeignKeyConstraints();
             throw $e;
         }
 
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=1'); } else { DB::statement('PRAGMA foreign_keys = ON'); }
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
