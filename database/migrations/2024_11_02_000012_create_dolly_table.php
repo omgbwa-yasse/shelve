@@ -22,7 +22,7 @@ return new class extends Migration
                 $table->id();
                 $table->string('name', 70)->unique(true)->nullable(false);
                 $table->string('description', 100)->nullable();
-                $table->enum('category', ['mail', 'transaction', 'record', 'slip', 'building', 'shelf', 'container', 'communication', 'room']);
+                $table->string('category', 30);
                 $table->boolean('is_public')->default(false);
                 $table->unsignedBigInteger('created_by')->nullable(false);
                 $table->unsignedBigInteger('owner_organisation_id')->nullable(false);
