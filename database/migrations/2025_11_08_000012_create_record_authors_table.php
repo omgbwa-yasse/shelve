@@ -66,7 +66,9 @@ return new class extends Migration
                 $table->index('ppn_authority');
                 $table->index('nationality');
                 $table->index('status');
-                $table->fullText(['full_name', 'pseudonym', 'biography', 'biographical_note'], 'authors_fulltext_idx');
+                if (DB::getDriverName() !== 'sqlite') {
+                    $table->fullText(['full_name', 'pseudonym', 'biography', 'biographical_note'], 'authors_fulltext_idx');
+                }
             });
         }
 
