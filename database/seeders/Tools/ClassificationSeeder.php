@@ -5,6 +5,7 @@ namespace Database\Seeders\Tools;
 use App\Models\BookClassification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ClassificationSeeder extends Seeder
 {
@@ -14,9 +15,9 @@ class ClassificationSeeder extends Seeder
     public function run(): void
     {
         // Disable foreign key checks to allow truncation
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         BookClassification::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         $dewey = [
             [

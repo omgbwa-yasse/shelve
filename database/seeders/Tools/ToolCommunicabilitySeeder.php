@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Activity;
 use App\Models\Communicability;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ToolCommunicabilitySeeder extends Seeder
 {
@@ -40,9 +41,9 @@ class ToolCommunicabilitySeeder extends Seeder
         $this->command->info('Seeding communicability rules...');
 
         // Disable foreign key checks to truncate the table
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         Communicability::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
         // Create generic communicability rules
         foreach ($this->rules as $index => $rule) {

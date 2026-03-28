@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Activity;
 use App\Models\Organisation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ToolActivitySeeder extends Seeder
 {
@@ -14,7 +15,7 @@ class ToolActivitySeeder extends Seeder
      */
     public function run(): void
     {
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=0'); } else { DB::statement('PRAGMA foreign_keys = OFF'); }
+        Schema::disableForeignKeyConstraints();
         DB::beginTransaction();
 
         try {
@@ -27,7 +28,7 @@ class ToolActivitySeeder extends Seeder
 
             if ($organisations->count() != 3) {
                 $this->command->error('Les organisations DF, DRH et DADA doivent Ãªtre crÃ©Ã©es avant ce seeder');
-                if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=1'); } else { DB::statement('PRAGMA foreign_keys = ON'); }
+                Schema::enableForeignKeyConstraints();
                 return;
             }
 
@@ -42,11 +43,11 @@ class ToolActivitySeeder extends Seeder
         } catch (\Exception $e) {
             DB::rollback();
             $this->command->error('âŒ Erreur lors de la crÃ©ation des activitÃ©s: ' . $e->getMessage());
-            if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=1'); } else { DB::statement('PRAGMA foreign_keys = ON'); }
+            Schema::enableForeignKeyConstraints();
             throw $e;
         }
 
-        if (DB::getDriverName() !== 'sqlite') { DB::statement('SET FOREIGN_KEY_CHECKS=1'); } else { DB::statement('PRAGMA foreign_keys = ON'); }
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
