@@ -203,13 +203,7 @@ return [
 'tntsearch' => [
     'storage'  => storage_path('tntsearch'), // Absolute path to the index files directory
     'host'     => env('DB_HOST', '127.0.0.1'),
-    'database' => (function() {
-        $db = env('DB_DATABASE', 'database.sqlite');
-        if (env('DB_CONNECTION', 'sqlite') === 'sqlite' && $db !== ':memory:' && !str_starts_with($db, '/') && !preg_match('/^[A-Za-z]:/', $db)) {
-            return database_path($db . (str_ends_with($db, '.sqlite') ? '' : '.sqlite'));
-        }
-        return $db;
-    })(),
+    'database' => env('DB_DATABASE', database_path('database.sqlite')),
     'username' => env('DB_USERNAME', 'root'),
     'password' => env('DB_PASSWORD', ''),
     'fuzziness' => env('TNTSEARCH_FUZZINESS', false),
