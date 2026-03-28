@@ -64,7 +64,9 @@ return new class extends Migration
             $table->index('type');
             $table->index('status');
             $table->index(['organisation_id', 'status']);
-            $table->fullText(['title', 'subtitle', 'description', 'publisher']);
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->fullText(['title', 'subtitle', 'description', 'publisher']);
+            }
         });
 
         // Table: Numéros/Issues de périodiques
@@ -111,8 +113,13 @@ return new class extends Migration
             $table->index('periodic_id');
         });
 
-        // Ajout de l'index unique après création de la table pour limiter la longueur
-        DB::statement('ALTER TABLE record_periodic_issues ADD UNIQUE unique_issue (periodic_id, volume(50), issue_number(50), year(10))');
+        // Ajout de l'index unique après création de la table
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite ne supporte pas les prefix lengths sur les index
+            DB::statement('CREATE UNIQUE INDEX unique_issue ON record_periodic_issues (periodic_id, volume, issue_number, year)');
+        } else {
+            DB::statement('ALTER TABLE record_periodic_issues ADD UNIQUE unique_issue (periodic_id, volume(50), issue_number(50), year(10))');
+        }
 
         // Table: Articles de périodiques
         Schema::create('record_periodic_articles', function (Blueprint $table) {
@@ -151,7 +158,9 @@ return new class extends Migration
             // Indexes
             $table->index('doi');
             $table->index(['periodic_id', 'issue_id']);
-            $table->fullText(['title', 'abstract']);
+            if (DB::getDriverName() !== 'sqlite') {
+                $table->fullText(['title', 'abstract']);
+            }
         });
 
         // Table: Abonnements

@@ -13,10 +13,28 @@ return new class extends Migration
      * Cette migration renomme la table 'records' en 'record_physicals' ainsi que
      * toutes les tables pivot associées pour refléter la nouvelle architecture modulaire.
      */
+    private function disableForeignKeys(): void
+    {
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        }
+    }
+
+    private function enableForeignKeys(): void
+    {
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
+    }
+
     public function up(): void
     {
         // Désactiver temporairement les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->disableForeignKeys();
 
         try {
             // 1. Renommer la table principale
@@ -58,11 +76,11 @@ return new class extends Migration
             ]);
 
             // Réactiver les contraintes
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            $this->enableForeignKeys();
 
         } catch (\Exception $e) {
             // En cas d'erreur, réactiver les contraintes et relancer l'exception
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            $this->enableForeignKeys();
             throw $e;
         }
     }
@@ -75,7 +93,7 @@ return new class extends Migration
     public function down(): void
     {
         // Désactiver temporairement les contraintes de clés étrangères
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        $this->disableForeignKeys();
 
         try {
             // Restaurer les noms originaux dans l'ordre inverse
@@ -111,11 +129,11 @@ return new class extends Migration
             Schema::rename('record_physicals', 'records');
 
             // Réactiver les contraintes
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            $this->enableForeignKeys();
 
         } catch (\Exception $e) {
             // En cas d'erreur, réactiver les contraintes et relancer l'exception
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            $this->enableForeignKeys();
             throw $e;
         }
     }

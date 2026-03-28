@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
@@ -21,7 +22,9 @@ return new class extends Migration {
                 $table->timestamps();
 
                 // Recherche plein texte et unicité contextuelle
-                $table->fullText(['title', 'content']);
+                if (DB::getDriverName() !== 'sqlite') {
+                    $table->fullText(['title', 'content']);
+                }
                 $table->unique(['title', 'is_system', 'organisation_id', 'user_id'], 'prompts_unique_title_scope');
             });
         } else {

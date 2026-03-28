@@ -42,9 +42,7 @@ return new class extends Migration
             $table->renameColumn('new_type', 'type');
         });
 
-        // 5. Modifier le type de la colonne pour qu'elle soit un ENUM et ajouter l'index
-        DB::statement("ALTER TABLE thesaurus_imports MODIFY COLUMN type ENUM('skos-rdf', 'csv', 'json') NOT NULL COMMENT 'Type d\\'import'");
-
+        // 5. Ajouter l'index sur la colonne renommée
         Schema::table('thesaurus_imports', function (Blueprint $table) {
             $table->index('type');
         });
@@ -77,9 +75,7 @@ return new class extends Migration
             $table->renameColumn('old_type', 'type');
         });
 
-        // 5. Modifier le type de la colonne pour qu'elle soit un ENUM et ajouter l'index
-        DB::statement("ALTER TABLE thesaurus_imports MODIFY COLUMN type ENUM('skos', 'rdf', 'csv', 'json') NOT NULL COMMENT 'Type d\\'import'");
-
+        // 5. Ajouter l'index sur la colonne renommée
         Schema::table('thesaurus_imports', function (Blueprint $table) {
             $table->index('type');
         });

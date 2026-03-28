@@ -17,6 +17,8 @@ return new class extends Migration
             // Ajouter les nouveaux champs
             $table->enum('type', ['bug', 'feature', 'improvement', 'other'])->after('content')->default('other');
             $table->enum('priority', ['low', 'medium', 'high'])->after('type')->default('medium');
+            // Dropper l'index avant la colonne (SQLite ne supporte pas le drop de colonne avec index)
+            $table->dropIndex('public_feedbacks_status_index');
             // Modifier le statut pour correspondre aux nouvelles valeurs
             $table->dropColumn('status');
         });

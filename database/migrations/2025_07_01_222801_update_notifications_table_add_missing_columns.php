@@ -7,6 +7,27 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $connection = DB::getDriverName();
+        if ($connection === 'sqlite') {
+            $indexes = DB::select("PRAGMA index_list(\"$table\")");
+            foreach ($indexes as $index) {
+                if ($index->name === $indexName) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // MySQL / MariaDB
+        $database = DB::getDatabaseName();
+        return DB::table('information_schema.statistics')
+            ->where('table_schema', $database)
+            ->where('table_name', $table)
+            ->where('index_name', $indexName)
+            ->exists();
+    }
+
     /**
      * Run the migrations.
      */
@@ -14,12 +35,7 @@ return new class extends Migration
     {
         // Compute once outside the closure whether the composite index already exists
         $indexName = 'notifications_notifiable_type_notifiable_id_index';
-        $database = DB::getDatabaseName();
-        $indexExists = DB::table('information_schema.statistics')
-            ->where('table_schema', $database)
-            ->where('table_name', 'notifications')
-            ->where('index_name', $indexName)
-            ->exists();
+        $indexExists = $this->indexExists('notifications', $indexName);
 
         Schema::table('notifications', function (Blueprint $table) use ($indexExists, $indexName) {
             // Vérifions d'abord si les colonnes n'existent pas avant de les ajouter
@@ -56,12 +72,7 @@ return new class extends Migration
     public function down(): void
     {
         $indexName = 'notifications_notifiable_type_notifiable_id_index';
-        $database = DB::getDatabaseName();
-        $indexExists = DB::table('information_schema.statistics')
-            ->where('table_schema', $database)
-            ->where('table_name', 'notifications')
-            ->where('index_name', $indexName)
-            ->exists();
+        $indexExists = $this->indexExists('notifications', $indexName);
 
         Schema::table('notifications', function (Blueprint $table) use ($indexExists, $indexName) {
             // Suppression de l'index (si présent)

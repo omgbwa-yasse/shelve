@@ -82,27 +82,28 @@ return new class extends Migration
             });
         }
 
-        // Modifier l'enum category dans la table dollies
-        // Pour MySQL/MariaDB
-        DB::statement("
-            ALTER TABLE dollies
-            MODIFY COLUMN category ENUM(
-                'mail',
-                'transaction',
-                'record',
-                'slip',
-                'building',
-                'shelf',
-                'container',
-                'communication',
-                'room',
-                'digital_folder',
-                'digital_document',
-                'artifact',
-                'book',
-                'book_series'
-            )
-        ");
+        // Modifier l'enum category dans la table dollies (MySQL/MariaDB uniquement)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE dollies
+                MODIFY COLUMN category ENUM(
+                    'mail',
+                    'transaction',
+                    'record',
+                    'slip',
+                    'building',
+                    'shelf',
+                    'container',
+                    'communication',
+                    'room',
+                    'digital_folder',
+                    'digital_document',
+                    'artifact',
+                    'book',
+                    'book_series'
+                )
+            ");
+        }
     }
 
     /**
@@ -116,20 +117,22 @@ return new class extends Migration
         Schema::dropIfExists('dolly_books');
         Schema::dropIfExists('dolly_book_series');
 
-        // Restaurer l'enum category original
-        DB::statement("
-            ALTER TABLE dollies
-            MODIFY COLUMN category ENUM(
-                'mail',
-                'transaction',
-                'record',
-                'slip',
-                'building',
-                'shelf',
-                'container',
-                'communication',
-                'room'
-            )
-        ");
+        // Restaurer l'enum category original (MySQL/MariaDB uniquement)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("
+                ALTER TABLE dollies
+                MODIFY COLUMN category ENUM(
+                    'mail',
+                    'transaction',
+                    'record',
+                    'slip',
+                    'building',
+                    'shelf',
+                    'container',
+                    'communication',
+                    'room'
+                )
+            ");
+        }
     }
 };

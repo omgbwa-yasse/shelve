@@ -12,21 +12,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Ajouter les nouveaux types ENUM
-        DB::statement("ALTER TABLE attachments MODIFY COLUMN type ENUM(
-            'mail',
-            'record',
-            'communication',
-            'transferting',
-            'bulletinboardpost',
-            'bulletinboard',
-            'bulletinboardevent',
-            'digital_folder',
-            'digital_document',
-            'artifact',
-            'book',
-            'periodic'
-        ) NOT NULL");
+        // 1. Ajouter les nouveaux types ENUM (MySQL/MariaDB uniquement, SQLite stocke en string)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE attachments MODIFY COLUMN type ENUM(
+                'mail',
+                'record',
+                'communication',
+                'transferting',
+                'bulletinboardpost',
+                'bulletinboard',
+                'bulletinboardevent',
+                'digital_folder',
+                'digital_document',
+                'artifact',
+                'book',
+                'periodic'
+            ) NOT NULL");
+        }
 
         // 2. Ajouter les colonnes de métadonnées
         Schema::table('attachments', function (Blueprint $table) {
@@ -74,15 +76,17 @@ return new class extends Migration
             ]);
         });
 
-        // Restaurer l'ENUM original
-        DB::statement("ALTER TABLE attachments MODIFY COLUMN type ENUM(
-            'mail',
-            'record',
-            'communication',
-            'transferting',
-            'bulletinboardpost',
-            'bulletinboard',
-            'bulletinboardevent'
-        ) NOT NULL");
+        // Restaurer l'ENUM original (MySQL/MariaDB uniquement)
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE attachments MODIFY COLUMN type ENUM(
+                'mail',
+                'record',
+                'communication',
+                'transferting',
+                'bulletinboardpost',
+                'bulletinboard',
+                'bulletinboardevent'
+            ) NOT NULL");
+        }
     }
 };
