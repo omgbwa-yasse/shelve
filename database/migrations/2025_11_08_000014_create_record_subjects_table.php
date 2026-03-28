@@ -48,7 +48,9 @@ return new class extends Migration
                 $table->index('lcc_class');
                 $table->index('parent_id');
                 $table->index('status');
-                $table->fullText(['name', 'name_en', 'description']);
+                if (DB::getDriverName() !== 'sqlite') {
+                    $table->fullText(['name', 'name_en', 'description']);
+                }
             });
         }
 

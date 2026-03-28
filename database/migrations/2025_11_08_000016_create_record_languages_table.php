@@ -36,7 +36,9 @@ return new class extends Migration
                 $table->index('script');
                 $table->index('direction');
                 $table->index('status');
-                $table->fullText(['name', 'name_en', 'native_name']);
+                if (DB::getDriverName() !== 'sqlite') {
+                    $table->fullText(['name', 'name_en', 'native_name']);
+                }
             });
         }
 
