@@ -12,33 +12,60 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Première étape : ajouter la nouvelle colonne enum status
-        Schema::table('communications', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'approved', 'rejected', 'in_consultation', 'returned'])
-                  ->default('pending')
-                  ->after('return_effective');
-        });
+        // Première étape : ajouter la nouvelle colonne enum status si elle n'existe pas
+        if (!Schema::hasColumn('communications', 'status')) {
+            Schema::table('communications', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'approved', 'rejected', 'in_consultation', 'returned'])
+                      ->default('pending')
+                      ->after('return_effective');
+            });
+        }
 
-        // Deuxième étape : migrer les données de status_id vers status
-        DB::statement("
-            UPDATE communications
-            SET status = CASE
-                WHEN status_id = 1 THEN 'pending'
-                WHEN status_id = 2 THEN 'approved'
-                WHEN status_id = 3 THEN 'rejected'
-                WHEN status_id = 4 THEN 'in_consultation'
-                WHEN status_id = 5 THEN 'returned'
-                ELSE 'pending'
-            END
-        ");
+        // Deuxième étape : migrer les données de status_id vers status (seulement si status_id existe)
+        if (Schema::hasColumn('communications', 'status_id')) {
+            DB::statement("
+                UPDATE communications
+                SET status = CASE
+                    WHEN status_id = 1 THEN 'pending'
+                    WHEN status_id = 2 THEN 'approved'
+                    WHEN status_id = 3 THEN 'rejected'
+                    WHEN status_id = 4 THEN 'in_consultation'
+                    WHEN status_id = 5 THEN 'returned'
+                    ELSE 'pending'
+                END
+            ");
+        }
 
         // Troisième étape : supprimer la contrainte de clé étrangère et la colonne status_id
-        Schema::table('communications', function (Blueprint $table) {
-            $table->dropForeign(['status_id']);
-            $table->dropColumn('status_id');
-        });
+        if (Schema::hasColumn('communications', 'status_id')) {
+            // Obtenir toutes les contraintes de clé étrangère de la table
+            $foreignKeys = DB::select("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE CONSTRAINT_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'communications'
+                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+                AND CONSTRAINT_NAME LIKE '%status_id%'
+            ");
+            
+            // Supprimer chaque contrainte trouvée
+            foreach ($foreignKeys as $fk) {
+                try {
+                    Schema::table('communications', function (Blueprint $table) use ($fk) {
+                        $table->dropForeign($fk->CONSTRAINT_NAME);
+                    });
+                } catch (\Exception $e) {
+                    // La clé étrangère n'existe pas, on continue
+                }
+            }
+            
+            // Supprimer la colonne status_id
+            Schema::table('communications', function (Blueprint $table) {
+                $table->dropColumn('status_id');
+            });
+        }
 
-        // Quatrième étape : supprimer la table communication_statuses
+        // Quatrième étape : supprimer la table communication_statuses si elle existe
         Schema::dropIfExists('communication_statuses');
     }
 

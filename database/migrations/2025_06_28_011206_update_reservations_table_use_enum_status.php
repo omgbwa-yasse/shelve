@@ -35,8 +35,29 @@ return new class extends Migration
             ");
 
             // Troisième étape : supprimer la contrainte de clé étrangère et la colonne status_id
+            // Obtenir toutes les contraintes de clé étrangère de la table
+            $foreignKeys = DB::select("
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.TABLE_CONSTRAINTS
+                WHERE CONSTRAINT_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'reservations'
+                AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+                AND CONSTRAINT_NAME LIKE '%status_id%'
+            ");
+            
+            // Supprimer chaque contrainte trouvée
+            foreach ($foreignKeys as $fk) {
+                try {
+                    Schema::table('reservations', function (Blueprint $table) use ($fk) {
+                        $table->dropForeign($fk->CONSTRAINT_NAME);
+                    });
+                } catch (\Exception $e) {
+                    // La clé étrangère n'existe pas, on continue
+                }
+            }
+            
+            // Supprimer la colonne status_id
             Schema::table('reservations', function (Blueprint $table) {
-                $table->dropForeign(['status_id']);
                 $table->dropColumn('status_id');
             });
         }
