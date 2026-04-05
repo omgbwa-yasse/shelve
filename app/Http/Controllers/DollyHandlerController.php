@@ -80,7 +80,7 @@ class DollyHandlerController extends Controller
     {
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,slipRecord,container,shelf,digital_folder,digital_document',
             'items' => 'required|array',
         ]);
 
@@ -206,7 +206,7 @@ class DollyHandlerController extends Controller
     public function removeItems(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,slipRecord,container,shelf,digital_folder,digital_document',
             'items' => 'required|array',
         ]);
 
@@ -261,7 +261,7 @@ class DollyHandlerController extends Controller
     public function clean(Request $request){
         $request->validate([
             'dolly_id' => 'required|integer|exists:dollies,id',
-            'category' => 'required|string|in:mail,communication, building, transferring, building, room, record, slip, slipRecord, container, shelf,digital_folder,digital_document',
+            'category' => 'required|string|in:mail,communication,building,transferring,room,record,slip,slipRecord,container,shelf,digital_folder,digital_document',
         ]);
 
         $dolly = Dolly::find($request->dolly_id);

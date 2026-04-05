@@ -149,8 +149,7 @@
                     <div class="form-group">
                         <label for="format">Format d'export</label>
                         <select name="format" id="format" class="form-control" required>
-                            <option value="skos">SKOS RDF/XML</option>
-                            <option value="rdf">RDF/XML</option>
+                            <option value="skos-rdf">SKOS RDF/XML</option>
                             <option value="csv">CSV</option>
                             <option value="json">JSON</option>
                         </select>

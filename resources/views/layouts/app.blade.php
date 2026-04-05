@@ -606,9 +606,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('switch.organisation') }}" method="POST">
+                    <form action="{{ route('switch.organisation') }}" method="POST" id="switchOrgForm">
                         @csrf
-                        <div class="list-group org-list">
+                        <div class="list-group org-list" id="orgList">
                             @if(Auth::user() && Auth::user()->organisations && Auth::user()->organisations->count() > 0)
                                 @foreach(Auth::user()->organisations as $organisation)
                                     <button type="submit" name="organisation_id" value="{{ $organisation->id }}" class="list-group-item list-group-item-action">
@@ -846,7 +846,7 @@
 
                         @can('module_settings_access')
                         <div class="nav-item">
-                            <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('users.show', Auth::user() ) }}">
+                            <a class="nav-link @if (Request::segment(1) == 'settings') active @endif" href="{{ route('settings.users.show', Auth::user() ) }}">
                                 <i class="bi bi-gear"></i>
                                 <span>{{ __('Settings') }}</span>
                             </a>
@@ -1149,6 +1149,34 @@
             }
         }
 
+        // Rafraîchir la liste des organisations lors de l'ouverture du modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const orgModal = document.getElementById('orgModal');
+            if (orgModal) {
+                orgModal.addEventListener('show.bs.modal', function() {
+                    fetch('{{ route("user.organisations") }}', {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(r => r.json())
+                    .then(orgs => {
+                        const orgList = document.getElementById('orgList');
+                        if (!orgList) return;
+                        if (!orgs.length) {
+                            orgList.innerHTML = '<div class="list-group-item"><i class="bi bi-info-circle me-2"></i>{{ __("no_organisation_available") }}</div>';
+                            return;
+                        }
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+                        let html = '';
+                        orgs.forEach(org => {
+                            html += `<button type="submit" name="organisation_id" value="${org.id}" class="list-group-item list-group-item-action"><i class="bi bi-building me-2"></i> ${org.name}</button>`;
+                        });
+                        orgList.innerHTML = html;
+                    })
+                    .catch(() => {}); // Garder la liste statique en cas d'erreur
+                });
+            }
+        });
+
         // Initialiser les scripts quand le DOM est prêt et que Vite a chargé les dépendances
         document.addEventListener('DOMContentLoaded', function() {
             // Attendre un peu que Vite charge jQuery
@@ -1325,8 +1353,8 @@
         }
 
         // Envoyer le message avec Entrée
-        $(document).on('keypress', '#aiChatInput', function(e) {
-            if (e.which === 13) {
+        document.addEventListener('keypress', function(e) {
+            if (e.target && e.target.id === 'aiChatInput' && (e.which === 13 || e.keyCode === 13)) {
                 sendAiMessage();
             }
         });

@@ -66,6 +66,9 @@ class ContainerController extends Controller
             'shelve_id' => 'required|exists:shelves,id',
             'status_id' => 'required|exists:container_statuses,id',
             'property_id' => 'required|exists:container_properties,id',
+            'x_position' => 'nullable|integer',
+            'y_position' => 'nullable|integer',
+            'z_position' => 'nullable|integer',
         ]);
 
         Container::create([
@@ -73,6 +76,9 @@ class ContainerController extends Controller
             'shelve_id' => $request->shelve_id,
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
+            'x_position' => $request->x_position,
+            'y_position' => $request->y_position,
+            'z_position' => $request->z_position,
             'creator_id' => Auth::id(),
             'creator_organisation_id' => Auth::user()->current_organisation_id,
         ]);
@@ -133,6 +139,9 @@ class ContainerController extends Controller
             'shelve_id' => 'required|exists:shelves,id',
             'status_id' => 'required|exists:container_statuses,id',
             'property_id' => 'required|exists:container_properties,id',
+            'x_position' => 'nullable|integer',
+            'y_position' => 'nullable|integer',
+            'z_position' => 'nullable|integer',
         ]);
 
         $container->update([
@@ -140,8 +149,9 @@ class ContainerController extends Controller
             'shelve_id' => $request->shelve_id,
             'status_id' => $request->status_id,
             'property_id' => $request->property_id,
-            'creator_id' => Auth::id(),
-            'creator_organisation_id' => Auth::user()->current_organisation_id,
+            'x_position' => $request->x_position,
+            'y_position' => $request->y_position,
+            'z_position' => $request->z_position,
         ]);
 
         return redirect()->route('containers.index')->with('success', 'Container updated successfully.');

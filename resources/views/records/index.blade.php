@@ -31,6 +31,9 @@
                             <option value="seda">SEDA</option>
                             <option value="pdf">PDF</option>
                         </select>
+                        <button id="exportBtn" class="btn btn-outline-success btn-sm d-flex align-items-center" disabled title="Sélectionnez des documents à exporter">
+                            <i class="bi bi-download me-1"></i>{{ __('export') }}
+                        </button>
                     </div>
 
                     <button id="mosaicToggle" class="btn btn-outline-dark btn-sm d-flex align-items-center">
@@ -200,7 +203,7 @@
                         <div class="d-flex align-items-start flex-grow-1">
                             <div class="me-3" style="width:2.2rem;">
                                 <div class="form-check">
-                                    <input class="form-check-input record-select" type="checkbox" value="{{ $record->id }}" id="select-{{ $record->id }}">
+                                    <input class="form-check-input record-select" type="checkbox" name="selected_record[]" value="{{ $record->id }}" id="select-{{ $record->id }}">
                                 </div>
                             </div>
                             <div class="flex-grow-1">

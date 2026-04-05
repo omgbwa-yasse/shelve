@@ -28,9 +28,16 @@ return new class extends Migration
         });
 
         // Supprimer la contrainte de clé étrangère type_id dans rooms
+        if (collect(Schema::getForeignKeys('rooms'))->contains('name', 'rooms_type_id_foreign')) {
+            Schema::table('rooms', function (Blueprint $table) {
+                $table->dropForeign(['type_id']);
+            });
+        }
+        
         Schema::table('rooms', function (Blueprint $table) {
-            $table->dropForeign(['type_id']);
-            $table->dropColumn('type_id');
+            if (Schema::hasColumn('rooms', 'type_id')) {
+                $table->dropColumn('type_id');
+            }
         });
 
         // Ajouter la colonne type enum directement dans rooms

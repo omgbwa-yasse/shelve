@@ -85,7 +85,7 @@
                 userSelect.disabled = true;
                 userSelect.innerHTML = '<option value="">{{ __("Loading...") }}</option>';
 
-                fetch(`/api/organisations/${organisationId}/users`, {
+                fetch(`${window.location.origin}/api/organisations/${organisationId}/users`, {
                     method: 'GET',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',

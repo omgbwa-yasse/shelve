@@ -4,18 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Enums\CommunicationStatus;
 use Illuminate\Http\Request;
-use App\Models\communication;
+use App\Models\Communication;
 use App\Models\Activity;
 use App\Models\Building;
 use App\Models\Room;
 use App\Models\Shelf;
-use App\Models\floor;
+use App\Models\Floor;
 use App\Models\Organisation;
 use App\Models\User;
 use App\Models\Container;
 use App\Models\RecordStatus;
 
-use App\Models\communicationRecord;
+use App\Models\CommunicationRecord;
 
 
 class SearchCommunicationController extends Controller
@@ -187,7 +187,7 @@ class SearchCommunicationController extends Controller
                 $exactDate = $request->input('date_exact');
                 $startDate = $request->input('date_start');
                 $endDate = $request->input('date_end');
-                $query = communication::query();
+                $query = Communication::query();
 
                 if ($exactDate) {
                     $query->whereDate('created_at', $exactDate);
@@ -206,14 +206,14 @@ class SearchCommunicationController extends Controller
 
 
             case "code":
-                $communications = communication::where('code', $request->input('value'))
+                $communications = Communication::where('code', $request->input('value'))
                     ->paginate(10);
                 break;
 
 
 
             case "operator":
-                $communications = communication::where('operator_id', $request->input('id'))
+                $communications = Communication::where('operator_id', $request->input('id'))
                     ->paginate(10);
                     $user=User::findOrFail($request->input('id'))->pluck('name');
                     $title = "de ". $user->name;
@@ -222,7 +222,7 @@ class SearchCommunicationController extends Controller
 
 
             case "operator-organisation":
-                $communications = communication::where('operator_organisation_id', $request->input('id'))
+                $communications = Communication::where('operator_organisation_id', $request->input('id'))
                     ->paginate(10);
                     $organisation=Organisation::findOrFail($request->input('id'))->pluck('name');
                     $title = "de ". $organisation->name;
@@ -230,7 +230,7 @@ class SearchCommunicationController extends Controller
 
 
             case "user":
-                $communications = communication::where('user_id', $request->input('id'))
+                $communications = Communication::where('user_id', $request->input('id'))
                     ->paginate(10);
                     $user=User::findOrFail($request->input('id'))->pluck('name');
                     $title = "de ". $user->name;
@@ -238,7 +238,7 @@ class SearchCommunicationController extends Controller
 
 
             case "user-organisation":
-                $communications = communication::where('user_organisation_id', $request->input('id'))
+                $communications = Communication::where('user_organisation_id', $request->input('id'))
                     ->paginate(10);
                     $organisation=Organisation::findOrFail($request->input('id'))->pluck('name');
                     $title = "de ". $organisation->name;
@@ -246,34 +246,34 @@ class SearchCommunicationController extends Controller
 
 
             case "return-available":
-                $communications = communication::where('return_date','>=', now()->format('Y-m-d'))
+                $communications = Communication::where('return_date','>=', now()->format('Y-m-d'))
                     ->paginate(10);
                     $title = "date de retour non atteinte";
                 break;
 
 
             case "not-return":
-                    $communications = communication::where('return_effective', NULL)
+                    $communications = Communication::where('return_effective', NULL)
                     ->paginate(10);
                     $title = "non returnées";
                     break;
 
             case "unreturn":
-                $communications = communication::where('return_date', NULL)
+                $communications = Communication::where('return_date', NULL)
                     ->paginate(10);
                     $title = "sans retour";
                 break;
 
 
             case "return-effective":
-                $communications = communication::where('return_effective', '<=', now())
+                $communications = Communication::where('return_effective', '<=', now())
                     ->paginate(10);
                     $title = "returnées";
                 break;
 
 
             default:
-                $communications = communication::take(5)->paginate(10);
+                $communications = Communication::take(5)->paginate(10);
                 break;
         }
 

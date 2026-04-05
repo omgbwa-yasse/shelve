@@ -18,12 +18,32 @@ class CommunicationController extends Controller
 {
 
 
-    public function index()
+    public function index(Request $request)
     {
         $query = Communication::with('operator', 'operatorOrganisation','records','user', 'userOrganisation');
 
         if (!Auth::user()->isSuperAdmin()) {
             $query->forOrganisation(Auth::user()->current_organisation_id);
+        }
+
+        if ($request->filled('categ')) {
+            switch($request->input('categ')) {
+                case 'InProgress':
+                    $query->whereIn('status', ['pending', 'approved', 'in_consultation']);
+                    break;
+                case 'return-effective':
+                    $query->whereNotNull('return_effective')->where('return_effective', '<=', now());
+                    break;
+                case 'unreturn':
+                    $query->whereNull('return_date');
+                    break;
+                case 'not-return':
+                    $query->whereNull('return_effective');
+                    break;
+                case 'return-available':
+                    $query->where('return_date', '>=', now()->format('Y-m-d'));
+                    break;
+            }
         }
 
         $communications = $query->paginate(10);
@@ -129,9 +149,9 @@ class CommunicationController extends Controller
 
 
 
-    public function show(int $id)
+    public function show(int $transaction)
     {
-        $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($transaction);
         $this->authorize('view', $communication);
         return view('communications.show', compact('communication'));
     }
@@ -139,14 +159,14 @@ class CommunicationController extends Controller
 
 
 
-    public function edit(int $id)
+    public function edit(int $transaction)
     {
-        $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($id);
+        $communication = Communication::with('operator', 'operatorOrganisation', 'user', 'userOrganisation')->findOrFail($transaction);
         $this->authorize('update', $communication);
 
         // Empêcher l'édition si la communication est retournée
         if ($communication->isReturned()) {
-            return redirect()->route('communications.transactions.show', $id)
+            return redirect()->route('communications.transactions.show', $transaction)
                 ->with('error', 'Cette communication ne peut plus être modifiée car elle a été retournée.');
         }
 
@@ -244,8 +264,9 @@ class CommunicationController extends Controller
     }
 
 
-    public function update(Request $request, Communication $communication)
+    public function update(Request $request, $transaction)
     {
+        $communication = Communication::findOrFail($transaction);
         $this->authorize('update', $communication);
 
         // Empêcher la modification si la communication est retournée
@@ -274,15 +295,15 @@ class CommunicationController extends Controller
             'status' => $request->status,
         ]);
 
-        return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication mise à jour avec succès.');
+        return redirect()->route('communications.transactions.show', $communication->id)->with('success', 'Communication mise à jour avec succès.');
     }
 
 
 
 
-    public function destroy(int $communication_id)
+    public function destroy(int $transaction)
     {
-        $communication = Communication::with('records')->findOrFail($communication_id);
+        $communication = Communication::with('records')->findOrFail($transaction);
         $this->authorize('delete', $communication);
 
         // Empêcher la suppression si la communication est retournée
@@ -328,8 +349,7 @@ class CommunicationController extends Controller
             'userOrganisation',
             'operator',
             'operatorOrganisation',
-            'status',
-            'records.record' => function ($query) {
+            'records' => function ($query) {
                 $query->with([
                     'status',
                     'support',
@@ -338,7 +358,6 @@ class CommunicationController extends Controller
                     'parent',
                     'user',
                     'authors',
-                    'terms',
                     'attachments',
                     'children'
                 ]);

@@ -77,17 +77,18 @@ class ReservationController extends Controller
             // Pour chaque record de la réservation
             foreach ($reservation->records as $record) {
                 // Créer l'entrée dans communication_record
-                communicationRecordPhysical::create([
+                \App\Models\CommunicationRecord::create([
                     'communication_id' => $communication->id,
                     'record_id' => $record->id,
                     'content' => null, // ou une valeur par défaut si nécessaire
                     'is_original' => true, // ou false selon votre logique
                     'return_date' => Carbon::now()->addDays(14)->format('Y-m-d'),
-                    'return_effective' => null
+                    'return_effective' => null,
+                    'operator_id' => Auth::user()->id, // Ajout de l'operator_id manquant
                 ]);
 
                 // Supprimer l'entrée de reservation_record correspondante
-                ReservationRecordPhysical::where([
+                DB::table('reservation_record')->where([
                     'reservation_id' => $reservation->id,
                     'record_id' => $record->id
                 ])->delete();

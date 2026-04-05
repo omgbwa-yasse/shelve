@@ -195,15 +195,40 @@
             </div>
 
             <!-- Actions -->
-            @if($instance->status == 'running')
+            @if(in_array($instance->status, ['running', 'paused']))
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">{{ __('Actions') }}</h5>
                     </div>
-                    <div class="card-body">
-                        <form action="{{ route('workflows.instances.destroy', $instance) }}" method="POST" onsubmit="return confirm('{{ __('Annuler ce workflow ? Cette action est irréversible.') }}')">
+                    <div class="card-body d-grid gap-2">
+                        @if($instance->status == 'running')
+                            {{-- Mettre en pause --}}
+                            <form action="{{ route('workflows.instances.pause', $instance) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-warning w-100">
+                                    <i class="bi bi-pause-circle"></i> {{ __('Mettre en pause') }}
+                                </button>
+                            </form>
+                            {{-- Terminer --}}
+                            <form action="{{ route('workflows.instances.start', $instance) }}" method="POST" onsubmit="return confirm('{{ __('Marquer ce workflow comme terminé ?') }}')">
+                                @csrf
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="bi bi-check-circle"></i> {{ __('Terminer le workflow') }}
+                                </button>
+                            </form>
+                        @endif
+                        @if($instance->status == 'paused')
+                            {{-- Reprendre --}}
+                            <form action="{{ route('workflows.instances.resume', $instance) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-play-circle"></i> {{ __('Reprendre le workflow') }}
+                                </button>
+                            </form>
+                        @endif
+                        {{-- Annuler (sans supprimer) --}}
+                        <form action="{{ route('workflows.instances.cancel', $instance) }}" method="POST" onsubmit="return confirm('{{ __('Annuler ce workflow ? Cette action est irréversible.') }}')">
                             @csrf
-                            @method('DELETE')
                             <button type="submit" class="btn btn-danger w-100">
                                 <i class="bi bi-x-circle"></i> {{ __('Annuler le workflow') }}
                             </button>

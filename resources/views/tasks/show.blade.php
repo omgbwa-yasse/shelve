@@ -301,6 +301,12 @@
                 </div>
                 <div class="card-body">
                     @if($task->status != 'completed')
+                        <form action="{{ route('tasks.complete', $task) }}" method="POST" class="mb-2">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-check-lg"></i> {{ __('Marquer comme terminée') }}
+                            </button>
+                        </form>
                         <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning w-100 mb-2">
                             <i class="bi bi-pencil"></i> {{ __('Modifier') }}
                         </a>

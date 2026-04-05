@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Enums\CommunicationStatus;
 use App\Traits\HasDualOrganisation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -72,7 +73,7 @@ class Communication extends Model
      */
     public function isReturned(): bool
     {
-        return $this->status === 'returned';
+        return $this->status === CommunicationStatus::RETURNED;
     }
 
     /**
@@ -88,7 +89,7 @@ class Communication extends Model
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === CommunicationStatus::PENDING;
     }
 
     /**
@@ -96,7 +97,7 @@ class Communication extends Model
      */
     public function isApproved(): bool
     {
-        return $this->status === 'approved';
+        return $this->status === CommunicationStatus::APPROVED;
     }
 
     /**
@@ -104,7 +105,7 @@ class Communication extends Model
      */
     public function isRejected(): bool
     {
-        return $this->status === 'rejected';
+        return $this->status === CommunicationStatus::REJECTED;
     }
 
     /**
@@ -112,7 +113,7 @@ class Communication extends Model
      */
     public function isInConsultation(): bool
     {
-        return $this->status === 'in_consultation';
+        return $this->status === CommunicationStatus::IN_CONSULTATION;
     }
 
     /**
@@ -121,12 +122,12 @@ class Communication extends Model
     public function getNextStatus(string $action): string
     {
         return match ($action) {
-            'validate' => $this->status === 'pending' ? 'approved' : $this->status,
-            'reject' => in_array($this->status, ['pending', 'approved']) ? 'rejected' : $this->status,
-            'transmit' => $this->status === 'approved' ? 'in_consultation' : $this->status,
-            'return' => $this->status === 'in_consultation' ? 'returned' : $this->status,
-            'cancel_return' => $this->status === 'returned' ? 'in_consultation' : $this->status,
-            default => $this->status,
+            'validate' => $this->status === CommunicationStatus::PENDING ? 'approved' : $this->status->value,
+            'reject' => in_array($this->status, [CommunicationStatus::PENDING, CommunicationStatus::APPROVED]) ? 'rejected' : $this->status->value,
+            'transmit' => $this->status === CommunicationStatus::APPROVED ? 'in_consultation' : $this->status->value,
+            'return' => $this->status === CommunicationStatus::IN_CONSULTATION ? 'returned' : $this->status->value,
+            'cancel_return' => $this->status === CommunicationStatus::RETURNED ? 'in_consultation' : $this->status->value,
+            default => $this->status->value,
         };
     }
 
@@ -136,7 +137,7 @@ class Communication extends Model
     public function changeStatus(string $action): bool
     {
         $newStatus = $this->getNextStatus($action);
-        if ($newStatus !== $this->status) {
+        if ($newStatus !== $this->status->value) {
             $this->update(['status' => $newStatus]);
             return true;
         }

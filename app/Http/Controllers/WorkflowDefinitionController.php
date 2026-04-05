@@ -91,10 +91,17 @@ class WorkflowDefinitionController extends Controller
     public function destroy(WorkflowDefinition $definition)
     {
         $this->authorize('delete', $definition);
+
+        if ($definition->instances()->exists()) {
+            return redirect()->route('workflows.definitions.show', $definition)
+                ->with('error', 'Impossible de supprimer cette définition car elle possède des instances actives. Supprimez d\'abord toutes les instances associées.');
+        }
+
+        $definition->transitions()->delete();
         $definition->delete();
 
         return redirect()->route('workflows.definitions.index')
-            ->with('success', 'Workflow definition deleted successfully.');
+            ->with('success', 'Définition de workflow supprimée avec succès.');
     }
 
     /**

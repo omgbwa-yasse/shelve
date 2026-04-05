@@ -14,14 +14,11 @@ class ReservationRecordController extends Controller
 {
     public function index(Reservation $reservation)
     {
-        $reservationRecords = ReservationRecordPhysical::where('reservation_id', $reservation->id)->get();
+        $reservationRecords = ReservationRecord::where('reservation_id', $reservation->id)->get();
         $reservationRecords->load('reservation', 'record','communication');
 
         return view('communications.reservations.records.index', compact('reservationRecords','reservation'));
     }
-
-
-
 
     public function create(Reservation $reservation)
     {
@@ -29,18 +26,11 @@ class ReservationRecordController extends Controller
         return view('communications.reservations.records.create', compact('reservation'));
     }
 
-
-
-
     public function show(Reservation $reservation, ReservationRecord $reservationRecord)
     {
         $reservationRecord->load('record','reservation');
         return view('communications.reservations.records.show', compact('reservationRecord', 'reservation'));
     }
-
-
-
-
 
     public function edit(Reservation $reservation, ReservationRecord $reservationRecord)
     {
@@ -51,18 +41,15 @@ class ReservationRecordController extends Controller
         return view('communications.reservations.records.edit', compact('reservationRecord', 'reservation', 'records'));
     }
 
-
-
-
     public function store(Request $request, Reservation $reservation)
     {
         $request->validate([
-            'record_id' => 'required|exists:records,id',
+            'record_id' => 'required|exists:record_physicals,id',
             'is_original' => 'required|boolean',
             'reservation_date' => 'required|date',
         ]);
 
-        ReservationRecordPhysical::create([
+        ReservationRecord::create([
             'reservation_id' => $reservation->id,
             'record_id' => $request->record_id,
             'is_original' => $request->is_original,
@@ -73,13 +60,10 @@ class ReservationRecordController extends Controller
         return redirect()->route('communications.reservations.records.index', $reservation)->with('success', 'Reservation created successfully.');
     }
 
-
-
-
     public function update(Request $request, Reservation $reservation, ReservationRecord $reservationRecord)
     {
         $request->validate([
-            'record_id' => 'required|exists:records,id',
+            'record_id' => 'required|exists:record_physicals,id',
             'is_original' => 'required|boolean',
             'reservation_date' => 'required|date',
         ]);

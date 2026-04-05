@@ -39,7 +39,7 @@
     function confirmDelete(userId) {
         if (confirm('Are you sure you want to delete this user?')) {
             const form = document.getElementById('deleteUserForm');
-            form.action = `/users/${userId}`;
+            form.action = '{{ url("settings/users") }}/' + userId;
             form.submit();
         }
     }
@@ -75,7 +75,7 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <a href="{{ route('users.create') }}" class="btn btn-success">
+                            <a href="{{ route('settings.users.create') }}" class="btn btn-success">
                                 <i class="bi bi-person-plus"></i> Create New User
                             </a>
                             <div class="input-group w-auto">
@@ -107,10 +107,10 @@
                                         <td>{{ $user->email }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-sm">
+                                                <a href="{{ route('settings.users.show', $user->id) }}" class="btn btn-info btn-sm">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">
+                                                <a href="{{ route('settings.users.edit', $user->id) }}" class="btn btn-primary btn-sm">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $user->id }})">

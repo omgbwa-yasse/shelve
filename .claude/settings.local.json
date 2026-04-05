@@ -8,7 +8,10 @@
       "Bash(./php/php.exe -c ./php/php.ini -m)",
       "Bash(./php/php.exe -c ./php/php.ini artisan app:setup)",
       "Bash(./php/php.exe -c ./php/php.ini artisan app:setup --fresh)",
-      "Bash(DB_CONNECTION=sqlite ./php/php.exe -c ./php/php.ini artisan app:setup --fresh)"
+      "Bash(DB_CONNECTION=sqlite ./php/php.exe -c ./php/php.ini artisan app:setup --fresh)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(perl -pi -e 's/use App\\\\\\\\\\\\\\\\models\\\\\\\\\\\\\\\\/use App\\\\\\\\\\\\\\\\Models\\\\\\\\\\\\\\\\/g' \"$f\")"
     ],
     "deny": [],
     "ask": []

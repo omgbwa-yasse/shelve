@@ -14,6 +14,14 @@ class SettingController extends Controller
 {
 
     /**
+     * Page d'accueil des paramètres
+     */
+    public function home()
+    {
+        return view('settings.home');
+    }
+
+    /**
      * Affiche la liste des paramètres
      */
     public function index(Request $request)

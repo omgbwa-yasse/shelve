@@ -79,7 +79,7 @@ class ThesaurusSchemeController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('schemes.index')
+            return redirect()->route('thesaurus.schemes.index')
                 ->with('success', 'Schéma de thésaurus créé avec succès.');
         } catch (\Exception $e) {
             DB::rollback();
@@ -158,7 +158,7 @@ class ThesaurusSchemeController extends Controller
             $scheme->save();
 
             DB::commit();
-            return redirect()->route('schemes.show', $scheme->id)
+            return redirect()->route('thesaurus.schemes.show', $scheme->id)
                 ->with('success', 'Schéma de thésaurus modifié avec succès.');
         } catch (\Exception $e) {
             DB::rollback();
@@ -195,7 +195,7 @@ class ThesaurusSchemeController extends Controller
             $scheme->delete();
 
             DB::commit();
-            return redirect()->route('schemes.index')
+            return redirect()->route('thesaurus.schemes.index')
                 ->with('success', 'Schéma de thésaurus supprimé avec succès.');
         } catch (\Exception $e) {
             DB::rollback();

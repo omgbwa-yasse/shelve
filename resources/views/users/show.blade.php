@@ -21,7 +21,7 @@
             <p class="text-muted mb-0">{{ __('Personal Information') }}</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning">
+            <a href="{{ route('settings.users.edit', $user->id) }}" class="btn btn-warning">
                 <i class="bi bi-pencil me-2"></i>{{ __('Edit') }}
             </a>
             <a href="{{ route('settings.home') }}" class="btn btn-secondary">
@@ -139,7 +139,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm">
+                        <a href="{{ route('settings.users.edit', $user->id) }}" class="btn btn-warning btn-sm">
                             <i class="bi bi-pencil me-2"></i>{{ __('Edit Profile') }}
                         </a>
                         <button class="btn btn-outline-secondary btn-sm" onclick="showPasswordModal()">

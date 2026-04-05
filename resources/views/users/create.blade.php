@@ -8,12 +8,22 @@
                 <div class="card-header">{{ __('Create User') }}</div>
 
                 <div class="card-body">
-                    <form action="{{ route('users.store') }}" method="POST">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('settings.users.store') }}" method="POST">
                         @csrf
 
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
                         </div>
 
                         <div class="form-group">
@@ -41,8 +51,20 @@
                             <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <a href="{{ route('users.index') }}" class="btn btn-secondary">Cancel</a>
+                        <div class="form-group">
+                            <label for="role_id">{{ __('Rôle') }}</label>
+                            <select class="form-control" id="role_id" name="role_id">
+                                <option value="">-- {{ __('Aucun rôle') }} --</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                                        {{ $role->display_name ?? $role->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-2">Save</button>
+                        <a href="{{ route('settings.users.index') }}" class="btn btn-secondary mt-2">Cancel</a>
                     </form>
                 </div>
             </div>

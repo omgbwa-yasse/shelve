@@ -20,10 +20,13 @@ return new class extends Migration
 
         // Une fois la table address_types créée, nous pouvons mettre à jour
         // la contrainte de clé étrangère de la table author_addresses
-        Schema::table('author_addresses', function (Blueprint $table) {
-            // D'abord, supprimez la contrainte de clé étrangère existante
-            $table->dropForeign(['type_id']);
+        if (collect(Schema::getForeignKeys('author_addresses'))->contains('name', 'author_addresses_type_id_foreign')) {
+            Schema::table('author_addresses', function (Blueprint $table) {
+                $table->dropForeign(['type_id']);
+            });
+        }
 
+        Schema::table('author_addresses', function (Blueprint $table) {
             // Ensuite, ajoutez la nouvelle contrainte vers address_types
             $table->foreign('type_id')->references('id')->on('address_types')->onDelete('cascade');
         });

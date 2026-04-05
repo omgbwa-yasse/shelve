@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\models\RecordSupport;
+use App\Models\RecordSupport;
 
     class RecordSupportController extends Controller
     {

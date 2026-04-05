@@ -19,6 +19,7 @@ class Task extends Model
         'priority',
         'assigned_to',
         'workflow_instance_id',
+        'organisation_id',
         'task_key',
         'form_data',
         'sequence_order',

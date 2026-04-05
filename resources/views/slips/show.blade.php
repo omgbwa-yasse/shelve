@@ -37,7 +37,7 @@
                                         <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->userOrganisation->id) }}">{{ $slip->userOrganisation->name }}</a></strong></p>
                                         <p class="card-text">Intervenant: <strong>
                                             @if($slip->user)
-                                                <a href="{{ route('users.show', $slip->user->id) }}">{{ $slip->user->name }}</a>
+                                                <a href="{{ route('settings.users.show', $slip->user->id) }}">{{ $slip->user->name }}</a>
                                             @else
                                                 Aucun
                                             @endif
@@ -50,7 +50,7 @@
                                     <div class="card-body">
                                         <h4 class="card-title text-primary">Service des archives</h4>
                                         <p class="card-text"><strong><a href="{{ route('organisations.show', $slip->officerOrganisation->id) }}">{{ $slip->officerOrganisation->name }}</a></strong></p>
-                                        <p class="card-text">Responsable: <strong><a href="{{ route('users.show', $slip->officer->id) }}">{{ $slip->officer->name }}</a></strong></p>
+                                        <p class="card-text">Responsable: <strong><a href="{{ route('settings.users.show', $slip->officer->id) }}">{{ $slip->officer->name }}</a></strong></p>
                                     </div>
                                 </div>
                             </div>

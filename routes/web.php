@@ -179,6 +179,11 @@ Route::group(['middleware' => 'auth'], function () {
     });
 
     Route::post('/switch-organisation', [OrganisationController::class, 'switchOrganisation'])->name('switch.organisation');
+    Route::get('/user-organisations', function() {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user) return response()->json([]);
+        return response()->json($user->organisations()->select('organisations.id', 'organisations.name', 'organisations.code')->get());
+    })->name('user.organisations');
     Route::get('/', [MailReceivedController::class, 'index'])->name('home');
 
     // Admin Panel (Phase 10 - Task 10.7)
@@ -538,6 +543,7 @@ Route::group(['middleware' => 'auth'], function () {
 
         // Routes imbriquées
         Route::resource('records.attachments', RecordAttachmentController::class);
+        Route::get('attachments/{id}/download', [RecordAttachmentController::class, 'download'])->name('attachments.download');
         Route::post('attachments/upload-temp', [RecordAttachmentController::class, 'uploadTemp'])->name('attachments.upload-temp');
         Route::get('upload-diagnostics', [RecordAttachmentController::class, 'diagnostics'])->name('upload.diagnostics');
 
@@ -682,11 +688,10 @@ Route::group(['middleware' => 'auth'], function () {
 
         Route::get('activities/export/excel', [ActivityController::class, 'exportExcel'])->name('activities.export.excel');
         Route::get('activities/export/pdf', [ActivityController::class, 'exportPdf'])->name('activities.export.pdf');
-        Route::get('users', [UserController::class, 'index'] );
         Route::resource('user-organisation-role', UserOrganisationRoleController::class);
         Route::resource('user-roles', UserRoleController::class);
         Route::resource('roles', RoleController::class);
-        Route::resource('users', UserController::class);
+        Route::resource('users', UserController::class)->names('settings.users');
         Route::resource('role_permissions', RolePermissionController::class);
         Route::get('role_permissions/{role}/permissions', [RolePermissionController::class, 'getRolePermissions'])->name('role_permissions.get_permissions');
         Route::put('role_permissions/matrix', [RolePermissionController::class, 'updateMatrix'])->name('role_permissions.update_matrix');
@@ -935,7 +940,7 @@ Route::prefix('public')->name('public.')->group(function () {
     // Gestion des demandes de documents
     Route::resource('document-requests', PublicDocumentRequestController::class)->names('document-requests');
     Route::get('records/autocomplete', [PublicRecordController::class, 'autocomplete'])->name('records.autocomplete');
-    Route::resource('records', PublicRecordController::class)->names('records');
+    Route::resource('records', PublicRecordController::class)->names('public.records');
     Route::resource('responses', PublicResponseController::class)->names('responses');
     Route::resource('response-attachments', PublicResponseAttachmentController::class)->names('response-attachments');
 
@@ -1127,6 +1132,7 @@ Route::prefix('tasks')->name('tasks.')->middleware('auth')->group(function () {
     Route::get('/{task}/edit', [\App\Http\Controllers\TaskController::class, 'edit'])->name('edit');
     Route::put('/{task}', [\App\Http\Controllers\TaskController::class, 'update'])->name('update');
     Route::delete('/{task}', [\App\Http\Controllers\TaskController::class, 'destroy'])->name('destroy');
+    Route::post('/{task}/complete', [\App\Http\Controllers\TaskController::class, 'complete'])->name('complete');
 });
 
 // Workplace Invitations

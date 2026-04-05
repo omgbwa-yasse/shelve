@@ -708,18 +708,16 @@ class ThesaurusController extends Controller
         $schemeId = $request->get('scheme_id');
 
         $stats = [
-            'total_schemes' => DB::table('concept_schemes')->count(),
-            'total_concepts' => DB::table('concepts')->count(),
-            'total_labels' => DB::table('xl_labels')->count() + DB::table('alternative_labels')->count(),
-            'total_relations' => DB::table('hierarchical_relations')->count() +
-                              DB::table('associative_relations')->count() +
-                              DB::table('mapping_relations')->count(),
+            'total_schemes' => DB::table('thesaurus_schemes')->count(),
+            'total_concepts' => DB::table('thesaurus_concepts')->count(),
+            'total_labels' => DB::table('thesaurus_labels')->count(),
+            'total_relations' => DB::table('thesaurus_concept_relations')->count(),
             'records_with_concepts' => DB::table('record_thesaurus_concept')
                                     ->select('record_id')
                                     ->distinct()
                                     ->count(),
-            'notes' => DB::table('thesaurus_concept_notes')->count(), // Compte réel des notes
-            'organizations' => DB::table('thesaurus_organizations')->count(), // Compte réel des organisations
+            'notes' => DB::table('thesaurus_concept_notes')->count(),
+            'organizations' => DB::table('thesaurus_organizations')->count(),
             'total_record_concept_relations' => DB::table('record_thesaurus_concept')->count(),
         ];
 
@@ -755,23 +753,16 @@ class ThesaurusController extends Controller
 
         // Statistiques par type de relation
         // Utiliser l'union des différentes tables de relations avec des noms compatibles avec la vue
-        $relationStats = DB::table('hierarchical_relations')
-            ->select(DB::raw("'broader' as relation_type, COUNT(*) as count")) // "broader" au lieu de "hierarchical"
-            ->union(
-                DB::table('associative_relations')
-                ->select(DB::raw("'related' as relation_type, COUNT(*) as count")) // "related" au lieu de "associative"
-            )
-            ->union(
-                DB::table('mapping_relations')
-                ->select(DB::raw("'exactMatch' as relation_type, COUNT(*) as count")) // "exactMatch" au lieu de "mapping"
-            )
+        $relationStats = DB::table('thesaurus_concept_relations')
+            ->select('relation_type', DB::raw('count(*) as count'))
+            ->groupBy('relation_type')
             ->orderByDesc('count')
             ->get();
 
         // Statistiques par type de label
-        $labelStats = DB::table('xl_labels')
-            ->select('label_type', DB::raw('count(*) as count'))
-            ->groupBy('label_type')
+        $labelStats = DB::table('thesaurus_labels')
+            ->select('type', DB::raw('count(*) as count'))
+            ->groupBy('type')
             ->orderByDesc('count')
             ->get();
 

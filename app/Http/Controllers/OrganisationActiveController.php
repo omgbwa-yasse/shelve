@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
-use App\models\OrganisationActive;
-use App\models\UserOrganisation;
-use App\models\Organisation;
+use App\Models\OrganisationActive;
+use App\Models\UserOrganisation;
+use App\Models\Organisation;
 use Illuminate\Support\Facades\Auth;
 
 class OrganisationActiveController extends Controller
@@ -44,7 +44,7 @@ class OrganisationActiveController extends Controller
 
         public function show()
         {
-            $organisationActive = organisationActive::where('user_id',auth()->user()->getAuthIdentifier());
+            $organisationActive = OrganisationActive::where('user_id',auth()->user()->getAuthIdentifier());
             return view('organisations.active.show', compact('organisationActive'));
         }
 

@@ -17,6 +17,9 @@
     const connectBtn = document.getElementById('connectElement');
     const connectionStatus = document.getElementById('connectionStatus');
 
+    // Only initialize if the BPMN canvas exists on this page
+    if (!canvas) return;
+
     // Initialize
     init();
 

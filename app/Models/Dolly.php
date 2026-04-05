@@ -20,7 +20,7 @@ class Dolly extends Model
 
     public function mails()
     {
-        return $this->belongsToMany(mail::class, 'dolly_mails', 'dolly_id', 'mail_id');
+        return $this->belongsToMany(Mail::class, 'dolly_mails', 'dolly_id', 'mail_id');
     }
 
     public function mailTransactions()
@@ -30,12 +30,12 @@ class Dolly extends Model
 
     public function records()
     {
-        return $this->belongsToMany(record::class, 'dolly_records', 'dolly_id', 'record_id');
+        return $this->belongsToMany(RecordPhysical::class, 'dolly_records', 'dolly_id', 'record_id');
     }
 
     public function communications()
     {
-        return $this->belongsToMany(communication::class, 'dolly_communications', 'dolly_id', 'communication_id');
+        return $this->belongsToMany(Communication::class, 'dolly_communications', 'dolly_id', 'communication_id');
     }
 
     public function slips()
@@ -65,7 +65,7 @@ class Dolly extends Model
 
     public function containers()
     {
-        return $this->belongsToMany(Shelf::class, 'dolly_containers', 'dolly_id', 'container_id');
+        return $this->belongsToMany(Container::class, 'dolly_containers', 'dolly_id', 'container_id');
     }
 
     public function digitalFolders()

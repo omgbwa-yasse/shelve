@@ -14,7 +14,7 @@ class CommunicationRecordController extends Controller
 {
     public function index(Communication $communication)
     {
-        $communicationRecords = CommunicationRecordPhysical::where('communication_id', $communication->id)->get();
+        $communicationRecords = CommunicationRecord::where('communication_id', $communication->id)->get();
         $communicationRecords->load('communication', 'record');
 
         return view('communications.records.index', compact('communicationRecords', 'communication'));
@@ -46,7 +46,7 @@ class CommunicationRecordController extends Controller
     public function store(Request $request, Communication $communication)
     {
         $request->validate([
-            'record_id' => 'required|exists:records,id',
+            'record_id' => 'required|exists:record_physicals,id',
             'is_original' => 'required|in:0,1',
             'content' => 'nullable|string',
         ]);
@@ -62,12 +62,13 @@ class CommunicationRecordController extends Controller
             }
         }
 
-        $communicationRecord = CommunicationRecordPhysical::create([
+        $communicationRecord = CommunicationRecord::create([
             'communication_id' => $communication->id,
             'content' => $request->input('content'),
             'record_id' => $request->record_id,
             'is_original' => (int)$request->is_original,
             'return_date' => date('Y-m-d', strtotime("+14 days")),
+            'operator_id' => auth()->user()->id,
         ]);
 
         return redirect()->route('communications.transactions.show', $communication->id)->with('success', 'Communication request created successfully.');
@@ -76,7 +77,7 @@ class CommunicationRecordController extends Controller
     public function update(Request $request, Communication $communication, CommunicationRecord $communicationRecord)
     {
         $request->validate([
-            'record_id' => 'required|exists:records,id',
+            'record_id' => 'required|exists:record_physicals,id',
             'is_original' => 'required|boolean',
             'content' => 'nullable|string',
         ]);
@@ -87,7 +88,7 @@ class CommunicationRecordController extends Controller
 
     public function returnEffective(Request $request)
     {
-        $communicationRecord = CommunicationRecordPhysical::findOrFail($request->input('id'));
+        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => now(), 'operator_id' => auth()->user()->id]);
         $communication = $communicationRecord->communication;
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');
@@ -95,7 +96,7 @@ class CommunicationRecordController extends Controller
 
     public function returnCancel(Request $request)
     {
-        $communicationRecord = CommunicationRecordPhysical::findOrFail($request->input('id'));
+        $communicationRecord = CommunicationRecord::findOrFail($request->input('id'));
         $communicationRecord->update(['return_effective' => null]);
         $communication = $communicationRecord->communication;
         return redirect()->route('communications.transactions.show', $communication)->with('success', 'Communication updated successfully.');

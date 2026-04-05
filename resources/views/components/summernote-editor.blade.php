@@ -59,7 +59,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const editorElement = document.getElementById('{{ $editorId }}');
 
-    if (editorElement && typeof $.fn.summernote !== 'undefined') {
+    if (editorElement && typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
         $(editorElement).summernote({
             height: {{ $height }},
             lang: 'fr-FR',

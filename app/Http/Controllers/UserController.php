@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\models\User;
-use App\models\UserType;
+use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -23,7 +23,8 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('users.create');
+        $roles = Role::orderBy('name')->get();
+        return view('users.create', compact('roles'));
     }
 
 
@@ -36,6 +37,7 @@ class UserController extends Controller
             'birthday' => 'required|date',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role_id' => 'nullable|exists:roles,id',
         ]);
 
         $user = new User();
@@ -46,7 +48,11 @@ class UserController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return redirect()->route('users.index')
+        if ($request->filled('role_id')) {
+            $user->roles()->attach($request->role_id);
+        }
+
+        return redirect()->route('settings.users.index')
             ->with('success', 'User created successfully.');
     }
 
@@ -93,7 +99,7 @@ class UserController extends Controller
 
         $user->save();
 
-        return redirect()->route('users.index')
+        return redirect()->route('settings.users.index')
             ->with('success', 'User updated successfully.');
     }
 
@@ -104,7 +110,7 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return redirect()->route('users.index')
+        return redirect()->route('settings.users.index')
             ->with('success', 'User deleted successfully.');
     }
 

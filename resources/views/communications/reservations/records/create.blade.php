@@ -128,9 +128,15 @@
                 }
                 return response.json();
             })
-            .then(records => {
+            .then(data => {
                 searchLoading.style.display = 'none';
-                displayResults(records);
+                // Aplatir les résultats (physique, dossiers, documents)
+                const allRecords = [
+                    ...(data.physical || []),
+                    ...(data.folders || []),
+                    ...(data.documents || [])
+                ];
+                displayResults(allRecords);
             })
             .catch(error => {
                 console.error('Erreur:', error);

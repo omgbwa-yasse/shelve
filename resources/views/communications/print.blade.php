@@ -167,29 +167,29 @@
             @if($communication->records->count() > 0)
                 <div class="records-section">
                     <h3>{{ __('associated_records') }}</h3>
-                    @foreach($communication->records as $communicationRecord)
+                    @foreach($communication->records as $record)
                         <div class="record">
-                            <h4>{{ $communicationRecord->record->code ?? __('not_available') }}: {{ $communicationRecord->record->name ?? __('not_available') }}</h4>
+                            <h4>{{ $record->code ?? __('not_available') }}: {{ $record->name ?? __('not_available') }}</h4>
                             <div class="info-row">
                                 <span class="info-label">{{ __('content') }}:</span>
-                                {{ Str::limit($communicationRecord->content ?? __('not_available'), 50) }}
+                                {{ Str::limit($record->pivot->content ?? __('not_available'), 50) }}
                             </div>
                             <div class="info-grid">
                                 <div class="info-row">
                                     <span class="info-label">{{ __('is_original') }}:</span>
-                                    {{ $communicationRecord->is_original ? __('yes') : __('no') }}
+                                    {{ $record->pivot->is_original ? __('yes') : __('no') }}
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">{{ __('level') }}:</span>
-                                    {{ $communicationRecord->record->level->name ?? __('not_available') }}
+                                    {{ $record->level->name ?? __('not_available') }}
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">{{ __('support') }}:</span>
-                                    {{ $communicationRecord->record->support->name ?? __('not_available') }}
+                                    {{ $record->support->name ?? __('not_available') }}
                                 </div>
                                 <div class="info-row">
                                     <span class="info-label">{{ __('status') }}:</span>
-                                    {{ method_exists($communicationRecord->record->status, 'label') ? $communicationRecord->record->status->label() : ucfirst($communicationRecord->record->status->value) }}
+                                    {{ $record->status->name ?? __('not_available') }}
                                 </div>
                             </div>
                         </div>

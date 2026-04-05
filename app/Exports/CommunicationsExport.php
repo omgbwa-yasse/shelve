@@ -61,7 +61,7 @@ class CommunicationsSheet implements FromCollection, WithHeadings, WithTitle
                 'Operator Organisation' => $communication->operatorOrganisation->name ?? 'N/A',
                 'Return Date' => $communication->return_date ?? 'N/A',
                 'Return Effective' => $communication->return_effective ?? 'N/A',
-                'Status' => $communication->status->name ?? 'N/A',
+                'Status' => $communication->status->label() ?? 'N/A',
             ];
         });
     }
@@ -109,22 +109,22 @@ class RecordsSheet implements FromCollection, WithHeadings, WithTitle
                 $records->push([
                     'Communication Code' => $communication->code,
                     'Communication Name' => $communication->name,
-                    'Record Code' => $record->record->code ?? 'N/A',
-                    'Record Name' => $record->record->name ?? 'N/A',
-                    'Date Format' => $record->record->date_format ?? 'N/A',
-                    'Date Start' => $record->record->date_start ?? 'N/A',
-                    'Date End' => $record->record->date_end ?? 'N/A',
-                    'Date Exact' => $record->record->date_exact ?? 'N/A',
-                    'Level' => $record->record->level_id ?? 'N/A',
-                    'Width' => $record->record->width ?? 'N/A',
-                    'Width Description' => $record->record->width_description ?? 'N/A',
-                    'Biographical History' => $record->record->biographical_history ?? 'N/A',
-                    'Archival History' => $record->record->archival_history ?? 'N/A',
-                    'Acquisition Source' => $record->record->acquisition_source ?? 'N/A',
-                    'Content' => $record->record->content ?? 'N/A',
-                    'Is Original' => $record->is_original ? 'Yes' : 'No',
-                    'Return Date' => $record->return_date ?? 'N/A',
-                    'Return Effective' => $record->return_effective ?? 'N/A'
+                    'Record Code' => $record->code ?? 'N/A',
+                    'Record Name' => $record->name ?? 'N/A',
+                    'Date Format' => $record->date_format ?? 'N/A',
+                    'Date Start' => $record->date_start ?? 'N/A',
+                    'Date End' => $record->date_end ?? 'N/A',
+                    'Date Exact' => $record->date_exact ?? 'N/A',
+                    'Level' => $record->level_id ?? 'N/A',
+                    'Width' => $record->width ?? 'N/A',
+                    'Width Description' => $record->width_description ?? 'N/A',
+                    'Biographical History' => $record->biographical_history ?? 'N/A',
+                    'Archival History' => $record->archival_history ?? 'N/A',
+                    'Acquisition Source' => $record->acquisition_source ?? 'N/A',
+                    'Content' => $record->pivot->content ?? 'N/A',
+                    'Is Original' => $record->pivot->is_original ? 'Yes' : 'No',
+                    'Return Date' => $record->pivot->return_date ?? 'N/A',
+                    'Return Effective' => $record->pivot->return_effective ?? 'N/A'
                 ]);
             }
         }

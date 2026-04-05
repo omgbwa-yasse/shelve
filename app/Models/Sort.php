@@ -51,7 +51,7 @@ class Sort extends Model
 
     public function retentions()
     {
-        return $this->hasMany(retention::class);
+        return $this->hasMany(Retention::class);
     }
 }
 

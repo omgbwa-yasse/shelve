@@ -13,6 +13,9 @@ class Container extends Model
         'shelve_id',
         'status_id',
         'property_id',
+        'x_position',
+        'y_position',
+        'z_position',
         'creator_id',
         'creator_organisation_id',
         'is_archived'

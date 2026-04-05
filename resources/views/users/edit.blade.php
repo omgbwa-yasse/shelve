@@ -13,7 +13,7 @@
                         </a>
                     </li>
                     <li class="breadcrumb-item">
-                        <a href="{{ route('users.show', $user->id) }}" class="text-decoration-none">
+                        <a href="{{ route('settings.users.show', $user->id) }}" class="text-decoration-none">
                             <i class="bi bi-person me-1"></i>{{ __('User Details') }}
                         </a>
                     </li>
@@ -26,7 +26,7 @@
             <p class="text-muted mb-0">{{ __('Update user information') }}</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('users.show', $user->id) }}" class="btn btn-secondary">
+            <a href="{{ route('settings.users.show', $user->id) }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left me-2"></i>{{ __('Back') }}
             </a>
         </div>
@@ -41,7 +41,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('users.update', $user->id) }}" method="POST" id="editUserForm">
+                    <form action="{{ route('settings.users.update', $user->id) }}" method="POST" id="editUserForm">
                         @csrf
                         @method('PUT')
 
@@ -209,7 +209,7 @@
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex justify-content-between">
-                                    <a href="{{ route('users.show', $user->id) }}" class="btn btn-secondary">
+                                    <a href="{{ route('settings.users.show', $user->id) }}" class="btn btn-secondary">
                                         <i class="bi bi-x-circle me-2"></i>{{ __('Cancel') }}
                                     </a>
                                     <button type="submit" class="btn btn-primary">

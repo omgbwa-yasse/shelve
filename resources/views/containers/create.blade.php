@@ -66,6 +66,20 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="x_position" class="form-label">Face</label>
+                                <input type="number" class="form-control" id="x_position" name="x_position" min="1">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="y_position" class="form-label">Travée</label>
+                                <input type="number" class="form-control" id="y_position" name="y_position" min="1">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="z_position" class="form-label">Tablette</label>
+                                <input type="number" class="form-control" id="z_position" name="z_position" min="1">
+                            </div>
+                        </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">Create Container</button>
                         </div>

@@ -45,7 +45,7 @@ class DollyController extends Controller
             'category' => 'required|exists:dollies,category',
         ]);
         $validatedData['is_public'] = false;
-        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['created_by'] = Auth::id();
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly = Dolly::create($validatedData);
@@ -103,7 +103,7 @@ class DollyController extends Controller
         ]);
 
         $validatedData['is_public'] = false;
-        $validatedData['created_by'] = Auth::user()->getAuthIdentifier;
+        $validatedData['created_by'] = Auth::id();
         $validatedData['owner_organisation_id'] = Auth::user()->current_organisation_id;
 
         $dolly->update($validatedData);

@@ -118,6 +118,7 @@ class DefaultValueService
             'grok',
             'ollama_turbo',
             'openai_custom',
+            'mistral',
         ];
 
         if (in_array($provider, $supportedProviders)) {

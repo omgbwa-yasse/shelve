@@ -9,13 +9,31 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with(['assignedUser', 'creator', 'updater', 'workflowInstance'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = Task::with(['assignedUser', 'creator', 'updater', 'workflowInstance'])
+            ->orderBy('created_at', 'desc');
 
-        return view('tasks.index', compact('tasks'));
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->priority);
+        }
+
+        if ($request->filled('assigned_to')) {
+            $query->where('assigned_to', $request->assigned_to);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $tasks = $query->paginate(20)->withQueryString();
+        $users = User::orderBy('name')->get();
+
+        return view('tasks.index', compact('tasks', 'users'));
     }
 
     public function create()
@@ -41,6 +59,7 @@ class TaskController extends Controller
 
         $task = Task::create([
             ...$validated,
+            'organisation_id' => Auth::user()->current_organisation_id,
             'created_by' => Auth::id(),
         ]);
 
@@ -82,6 +101,22 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.show', $task)
             ->with('success', 'Task updated successfully.');
+    }
+
+    public function complete(Task $task)
+    {
+        if (!Auth::check()) {
+            abort(401, 'Authentication required');
+        }
+
+        // Vérifier si l'utilisateur est l'assigné ou le créateur ou un admin (optionnel selon vos règles)
+        
+        $task->update([
+            'status' => 'completed',
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Tâche marquée comme terminée.');
     }
 
     public function destroy(Task $task)

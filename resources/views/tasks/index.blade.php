@@ -147,6 +147,14 @@
                                         @endif
                                     </td>
                                     <td class="text-end">
+                                        @if($task->status != 'completed')
+                                            <form action="{{ route('tasks.complete', $task) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success" title="{{ __('Marquer comme terminée') }}">
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                         <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info">
                                             <i class="bi bi-eye"></i>
                                         </a>
