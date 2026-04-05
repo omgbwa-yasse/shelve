@@ -6,7 +6,7 @@
         </div>
         <div class="submenu-content">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('users.show', auth()->user()->id) }}">
+                <a class="submenu-link" href="{{ route('settings.users.show', auth()->user()->id) }}">
                     <i class="bi bi-gear"></i> {{ __('my_account') }}
                 </a>
             </div>
@@ -39,7 +39,7 @@
         </div>
         <div class="submenu-content">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('users.index') }}">
+                <a class="submenu-link" href="{{ route('settings.users.index') }}">
                     <i class="bi bi-person"></i> {{ __('users') }}
                 </a>
             </div>
