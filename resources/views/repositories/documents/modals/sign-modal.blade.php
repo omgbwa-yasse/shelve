@@ -1,57 +1,51 @@
 {{-- Modal Signature Électronique --}}
-<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="signModal" tabindex="-1" aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <form action="{{ route('documents.sign', $document) }}" method="POST">
                 @csrf
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title" id="signModalLabel">
-                        <i class="fas fa-signature"></i> Signature Électronique
+                        <i class="bi bi-patch-check"></i> {{ __('electronic_signature') }}
                     </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fermer">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="{{ __('close') }}"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Attention:</strong> La signature électronique garantit que vous approuvez
-                        l'intégrité et le contenu de ce document. Cette action est irréversible (sauf révocation).
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>{{ __('warning') }}:</strong> {{ __('irreversible_action_warning') }}
                     </div>
 
                     {{-- Password Confirmation --}}
-                    <div class="form-group">
-                        <label for="signature-password">Votre mot de passe <span class="text-danger">*</span></label>
+                    <div class="mb-3">
+                        <label for="signature-password" class="form-label">{{ __('confirm_identity_password') }} <span class="text-danger">*</span></label>
                         <input type="password" name="signature_password" id="signature-password" class="form-control"
-                               placeholder="Confirmez votre identité" required autofocus>
-                        <small class="form-text text-muted">
-                            Requis pour valider votre signature électronique.
-                        </small>
+                               placeholder="{{ __('your_password') }}" required autofocus>
                     </div>
 
                     {{-- Signature Reason --}}
-                    <div class="form-group">
-                        <label for="signature-reason">Raison de la signature (optionnel)</label>
+                    <div class="mb-3">
+                        <label for="signature-reason" class="form-label">{{ __('signature_reason_optional') }}</label>
                         <input type="text" name="signature_reason" id="signature-reason" class="form-control"
                                placeholder="Ex: Validation technique, Approbation managériale...">
                     </div>
 
                     {{-- Info Signature --}}
-                    <div class="card bg-light">
+                    <div class="card bg-light border-0">
                         <div class="card-body p-2">
                             <small class="text-muted">
-                                <strong>Informations de signature:</strong><br>
-                                <i class="fas fa-user"></i> Signataire: {{ Auth::user()->name }}<br>
-                                <i class="fas fa-calendar"></i> Date: {{ now()->format('d/m/Y à H:i') }}<br>
-                                <i class="fas fa-hashtag"></i> Hash: SHA256 (calculé automatiquement)
+                                <strong>{{ __('signature_info') }}:</strong><br>
+                                <i class="bi bi-person"></i> {{ __('signer') }}: {{ Auth::user()->name }}<br>
+                                <i class="bi bi-calendar-event"></i> {{ __('date') }}: {{ now()->format('d/m/Y à H:i') }}<br>
+                                <i class="bi bi-hash"></i> {{ __('hash') }}: SHA256 ({{ __('calculated_automatically') }})
                             </small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('cancel') }}</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-pen"></i> Signer le document
+                        <i class="bi bi-pencil-fill"></i> {{ __('sign_electronically') }}
                     </button>
                 </div>
             </form>

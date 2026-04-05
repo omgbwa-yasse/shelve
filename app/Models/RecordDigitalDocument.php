@@ -33,6 +33,9 @@ class RecordDigitalDocument extends Model
         'signed_by',
         'signed_at',
         'signature_data',
+        'signature_hash',
+        'signature_revoked_at',
+        'signature_revocation_reason',
         'metadata',
         'access_level',
         'status',
@@ -60,6 +63,7 @@ class RecordDigitalDocument extends Model
         'is_current_version' => 'boolean',
         'checked_out_at' => 'datetime',
         'signed_at' => 'datetime',
+        'signature_revoked_at' => 'datetime',
         'metadata' => 'array',
         'requires_approval' => 'boolean',
         'approved_at' => 'datetime',
@@ -456,11 +460,59 @@ class RecordDigitalDocument extends Model
             throw new \Exception('Cannot sign a checked out document');
         }
 
+        if (!$this->attachment) {
+            throw new \Exception('Cannot sign a document without an attachment');
+        }
+
+        // Calculer le hash du fichier
+        $filePath = storage_path('app/' . $this->attachment->path);
+        if (!file_exists($filePath)) {
+            throw new \Exception('Attachment file not found');
+        }
+
+        $hash = hash_file('sha256', $filePath);
+
         $this->update([
             'signature_status' => 'signed',
             'signed_by' => $user->id,
             'signed_at' => now(),
             'signature_data' => $signatureData,
+            'signature_hash' => $hash,
+            'signature_revoked_at' => null,
+            'signature_revocation_reason' => null,
+        ]);
+    }
+
+    public function verifySignature(): bool
+    {
+        if ($this->signature_status !== 'signed' || !$this->signature_hash) {
+            return false;
+        }
+
+        if (!$this->attachment) {
+            return false;
+        }
+
+        $filePath = storage_path('app/' . $this->attachment->path);
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
+        $currentHash = hash_file('sha256', $filePath);
+
+        return $currentHash === $this->signature_hash;
+    }
+
+    public function revokeSignature(User $user, string $reason): void
+    {
+        if ($this->signature_status !== 'signed') {
+            throw new \Exception('Document is not signed');
+        }
+
+        $this->update([
+            'signature_status' => 'revoked',
+            'signature_revoked_at' => now(),
+            'signature_revocation_reason' => $reason,
         ]);
     }
 

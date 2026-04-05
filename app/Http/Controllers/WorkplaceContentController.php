@@ -158,6 +158,12 @@ class WorkplaceContentController extends Controller
         return redirect()->route('documents.show', $document->document_id);
     }
 
+    public function viewFolder(Workplace $workplace, WorkplaceFolder $folder)
+    {
+        // Redirect to actual folder view
+        return redirect()->route('folders.show', $folder->folder_id);
+    }
+
     /**
      * AJAX search for folders to share in a workplace.
      */

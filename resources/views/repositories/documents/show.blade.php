@@ -327,28 +327,59 @@
 </div>
 
 <!-- Modal upload nouvelle version -->
-<div class="modal fade" id="uploadVersionModal" tabindex="-1">
+<div class="modal fade" id="uploadVersionModal" tabindex="-1" aria-labelledby="uploadVersionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="{{ route('documents.upload', $document) }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Nouvelle version</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="uploadVersionModalLabel">
+                        <i class="bi bi-upload"></i> Nouvelle version
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="file" class="form-label">Fichier</label>
+                        <label for="file" class="form-label">Fichier <span class="text-danger">*</span></label>
                         <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">Taille maximale : 50 MB</div>
                     </div>
                     <div class="mb-3">
                         <label for="version_notes" class="form-label">Notes de version</label>
-                        <textarea class="form-control" id="version_notes" name="version_notes" rows="3"></textarea>
+                        <textarea class="form-control" id="version_notes" name="version_notes" rows="3" placeholder="Description des changements..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-primary">Téléverser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Supprimer -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('documents.destroy', $document) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="bi bi-exclamation-triangle"></i> Confirmation de suppression
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Êtes-vous sûr de vouloir supprimer ce document ?</p>
+                    <div class="alert alert-danger">
+                        <i class="bi bi-info-circle"></i> Cette action supprimera également <strong>toutes les versions</strong> précédentes de ce document. Cette action est irréversible.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
                 </div>
             </form>
         </div>

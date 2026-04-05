@@ -54,9 +54,12 @@ class SedaImportService
         try {
             $slip = Slip::create([
                 'name' => 'SEDA Import ' . date('Y-m-d H:i:s'),
+                'code' => 'SEDA-' . time(),
                 'description' => 'Imported from SEDA package',
                 'user_id' => Auth::id() ?? 1,
                 'user_organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+                'officer_organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+                'officer_id' => Auth::id() ?? 1,
             ]);
             $dolly->slips()->attach($slip->id);
 
@@ -78,9 +81,12 @@ class SedaImportService
         $xml = $this->loadXml($xmlString);
         $slip = Slip::create([
             'name' => 'SEDA Import ' . date('Y-m-d H:i:s'),
+            'code' => 'SEDA-' . time(),
             'description' => 'Imported from SEDA manifest',
             'user_id' => Auth::id() ?? 1,
             'user_organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+            'officer_organisation_id' => optional(Auth::user())->current_organisation_id ?? 1,
+            'officer_id' => Auth::id() ?? 1,
         ]);
         $dolly->slips()->attach($slip->id);
 

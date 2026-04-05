@@ -1189,6 +1189,7 @@ Route::prefix('workplaces')->name('workplaces.')->middleware('auth')->group(func
         Route::post('/folders/{folder}/pin', [\App\Http\Controllers\WorkplaceContentController::class, 'pinFolder'])->name('pinFolder');
         Route::post('/documents/{document}/feature', [\App\Http\Controllers\WorkplaceContentController::class, 'featureDocument'])->name('featureDocument');
         Route::get('/documents/{document}/view', [\App\Http\Controllers\WorkplaceContentController::class, 'viewDocument'])->name('viewDocument');
+        Route::get('/folders/{folder}/view', [\App\Http\Controllers\WorkplaceContentController::class, 'viewFolder'])->name('viewFolder');
     });
 });
 

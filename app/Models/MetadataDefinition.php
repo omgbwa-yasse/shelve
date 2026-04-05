@@ -50,7 +50,7 @@ class MetadataDefinition extends Model
      */
     public function metadataProfiles(): HasMany
     {
-        return $this->hasMany(MetadataProfile::class);
+        return $this->hasMany(RecordDigitalDocumentMetadataProfile::class);
     }
 
     /**

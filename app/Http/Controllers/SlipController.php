@@ -586,6 +586,8 @@ class SlipController extends Controller
             'name' => 'Import ' . now()->format('Y-m-d H:i:s'),
             'description' => 'Imported data',
             'type_id' => 1,
+            'created_by' => auth()->id(),
+            'owner_organisation_id' => auth()->user()->current_organisation_id,
         ]);
 
     try {

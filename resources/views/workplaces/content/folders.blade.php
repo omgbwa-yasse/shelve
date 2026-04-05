@@ -45,7 +45,7 @@
                 </div>
                 <div class="card-footer">
                     <div class="btn-group btn-group-sm w-100">
-                        <a href="#" class="btn btn-outline-primary">
+                        <a href="{{ route('workplaces.content.viewFolder', [$workplace, $folder]) }}" class="btn btn-outline-primary">
                             <i class="bi bi-eye"></i> Voir
                         </a>
                         <form method="POST" action="{{ route('workplaces.content.pinFolder', [$workplace, $folder]) }}" style="display: inline;">

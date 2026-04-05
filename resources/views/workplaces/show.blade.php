@@ -126,11 +126,13 @@
                     <div class="row g-3">
                         @foreach($pinnedFolders as $pf)
                         <div class="col-sm-6 col-md-3">
-                            <div class="text-center p-3 rounded-3" style="background: #f8f9fa; transition: background 0.2s;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
-                                <i class="bi bi-folder-fill text-warning d-block mb-2" style="font-size: 2rem;"></i>
-                                <div class="fw-semibold small text-truncate" title="{{ $pf->folder->name ?? '—' }}">{{ $pf->folder->name ?? 'Sans titre' }}</div>
-                                <div class="text-muted" style="font-size: 0.65rem;">{{ $pf->shared_at->diffForHumans() }}</div>
-                            </div>
+                            <a href="{{ route('workplaces.content.viewFolder', [$workplace, $pf]) }}" class="text-decoration-none">
+                                <div class="text-center p-3 rounded-3" style="background: #f8f9fa; transition: background 0.2s;" onmouseover="this.style.background='#e9ecef'" onmouseout="this.style.background='#f8f9fa'">
+                                    <i class="bi bi-folder-fill text-warning d-block mb-2" style="font-size: 2rem;"></i>
+                                    <div class="fw-semibold small text-dark text-truncate" title="{{ $pf->folder->name ?? '—' }}">{{ $pf->folder->name ?? 'Sans titre' }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">{{ $pf->shared_at->diffForHumans() }}</div>
+                                </div>
+                            </a>
                         </div>
                         @endforeach
                     </div>
@@ -255,7 +257,7 @@
                         <div class="tab-pane fade" id="foldersPane" role="tabpanel">
                             <div class="list-group list-group-flush">
                                 @forelse($workplace->folders->take(8) as $folder)
-                                <div class="list-group-item border-0 px-4 py-3">
+                                <a href="{{ route('workplaces.content.viewFolder', [$workplace, $folder]) }}" class="list-group-item list-group-item-action border-0 px-4 py-3">
                                     <div class="d-flex align-items-center">
                                         <div class="me-3" style="width: 36px; height: 36px; background: #fef9e7; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                             <i class="bi bi-folder-fill text-warning"></i>
@@ -278,7 +280,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                                 @empty
                                 <div class="text-center text-muted py-5">
                                     <i class="bi bi-folder-x d-block mb-2" style="font-size: 2rem; opacity: 0.3;"></i>

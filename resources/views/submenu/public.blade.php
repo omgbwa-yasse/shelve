@@ -116,7 +116,7 @@
         </div>
         <div class="submenu-content" id="publicDocumentsMenu">
             <div class="submenu-item">
-                <a class="submenu-link" href="{{ route('public.records.index') }}">
+                <a class="submenu-link" href="{{ route('public.public.records.index') }}">
                     <i class="bi bi-folder"></i> {{ __('records') }}
                 </a>
             </div>
