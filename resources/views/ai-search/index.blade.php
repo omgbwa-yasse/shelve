@@ -611,7 +611,8 @@ function sendMessage() {
         if (data.success) {
             addAIMessage(data.response, data.results || []);
         } else {
-            addAIMessage(data.response || 'Une erreur est survenue.', []);
+            console.error('AI search failed:', data.error || 'Unknown error');
+            addAIMessage(data.error || 'Une erreur est survenue.', []); // Use dynamic error or default
         }
     })
     .catch(error => {
