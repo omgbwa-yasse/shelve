@@ -90,7 +90,7 @@ class Attachment extends Model
      */
     public function getFullPathAttribute(): string
     {
-        return storage_path('app/' . $this->path);
+        return storage_path('app/public/' . $this->path);
     }
 
     /**
@@ -144,7 +144,7 @@ class Attachment extends Model
             default => 'attachments',
         };
 
-        $path = $file->storeAs($directory, $filename, 'local');
+        $path = $file->storeAs($directory, $filename, 'public');
 
         // Calculate hashes
         $filePath = storage_path('app/' . $path);
